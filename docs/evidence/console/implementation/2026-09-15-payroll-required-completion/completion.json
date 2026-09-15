@@ -1,0 +1,41 @@
+{
+  "classification": "implementation-evidence-not-product-authority",
+  "owner": "/root",
+  "scope": "Required payroll remote completion, retained native-wait capacity, app composition and executable CI reachability",
+  "verified_runtime_sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+  "ci_inventory_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "implementation": [
+    "Required completion preserves the same admitted connection, primary/peer and observer/sender epoch through COMMIT and remote confirmation.",
+    "Caller deadline returns UNKNOWN without granting additional original-pool capacity during unresolved native COMMIT. Recovery drains then closes that original channel; transport/cancel cleanup closes the original pool before releasing uncertain capacity.",
+    "No local-COMMIT fallback, extra cancellation pool, detach, leaked connection or changed reader visibility contract.",
+    "Real AppState/config/auth/router and workflow-spawn composition verifies Required policy injection.",
+    "CI commands supervise each of owner9, observer1 and app3 separately. Fixed lexical checks reject dropped, extra, ignored and conditional cases; actual compiler/runtime evidence is retained separately."
+  ],
+  "proof": {
+    "historical_same_command_red_green": "Three clean def8e170 semantic failures, then the same exact command strings passed at2f4cb8db; final helper and test bytes matched integration.",
+    "runtime": "13 exact commands: owner9 each1PASS/8filtered, observer1PASS/0filtered with49 internal scenarios, app3 each1PASS/25filtered;0ignored throughout.",
+    "other_checks": "App config21PASS; CI preflight66PASS with453 bypass mutations; full executed checker15PASS including3 Cargo fixtures; recovery invocation84PASS; Python preparation15PASS; default-feature strict Clippy all-targets on platform-db/payroll-adapter/app PASS.",
+    "final_ci_probe": "Exact admitted node scripts/check-executed-tests.mjs probe PASS at928e1e48 after independently reviewed positive-only inventory pins. Cargo fmt --all --check and git diff --check PASS.",
+    "full_verify": "Historical npm run verify atf0431013 exited1 solely at missing config-test reachability. Every other gate passed there. That full command has not been rerun on this final candidate; do not report full verify green."
+  },
+  "rejected_alternatives": [
+    "PostgreSQL18.6 disables statement_timeout before COMMIT and transaction_timeout before SyncRep; timer-based backend reclamation was disproven. Original design, failed assertions and independent approval withdrawals remain retained.",
+    "CI checkerV1/V2 allowed real ignored/conditional/extra-source bypasses. V3 closes the selected fixed-source cases; it is not arbitrary Rust macro verification."
+  ],
+  "limits": [
+    "The capacity bound applies per live pool/process, not across restarts or rolling deployments. No guarantee of backend termination during partition or shutdown progress after runtime destruction.",
+    "App composition is real AppState/router/worker use, not full binary/deployment/all worker-path certification. Paused app tests clear fixture native synchronous policy to isolate the explicit owner confirmation boundary.",
+    "Feature-enabled app test compilation emits existing unused/dead-code warnings; strict Clippy evidence is default-feature only.",
+    "Typed public completion_unknown503 and workflow staging error preservation remain next implementation, including outer408/lost reply and fresh approval-reference caveats.",
+    "Account deactivation6 has historical2PASS/4semanticFAIL; baseline6 is source inventory only. Account14 candidate is still separately reviewed, not passing evidence.",
+    "Auth216 historical full run is193PASS/23FAIL; later focused terms repair is not a full-run194/22 claim.",
+    "Remaining native nonpayable payroll, Account/current-context, Cedar, Foundry/action/draft and Leptos SSR business flow work stays open. Whole Console, production exposure, payments and legal compliance are not complete."
+  ],
+  "pre_mortem": "An indeterminate commit is reported as success/rollback, retry duplicates effects, uncertain connections consume replacement capacity, or checker/source counts are misreported as executed coverage.",
+  "blast_radius": "Payroll completion helper and existing app wiring; narrow CI/test fixtures. No production configuration, payment or legal change.",
+  "detection": "Native pause/transport-loss/replay fault tests, same-pool contention controls, immutable receipt/draft counts, installed observer controls and real app dispatch/spawn tests.",
+  "rollback": "Use a compatible Required completion implementation and preserve receipts. Do not restore unbounded native-wait capacity release or pretend software rollback reverses committed data.",
+  "stop_conditions": "Source drift during snapshot verification, false failure oracle, weakened test, new local fallback, extra identity/effect, unsupported production claim.",
+  "retention": "Explicit artifact allowlist with SHA256 and deterministic gzip; selected source files bound to exact regular Git blobs. No runtime databases or private fixture environments copied. DB URLs detected in retained source/logs are synthetic constants or unevaluated shell variables.",
+  "review": "Existing exact source/test/CI reviews retained. Independent final evidence/source-equivalence review pending before repository import."
+}

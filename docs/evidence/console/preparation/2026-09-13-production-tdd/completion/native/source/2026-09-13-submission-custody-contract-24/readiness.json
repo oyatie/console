@@ -1,0 +1,23 @@
+{
+  "status": "PENDING_SCOPED_REVIEW",
+  "closed_if_accepted": [
+    "F01 explicit SOURCE_INPUT24/preparation/submission identity and canonical component limits",
+    "F02 proposed concrete independent submission byte holder and CompanyActor/attempt/receipt key shape",
+    "F03 exact readable intent versus later decision evidence distinction and protection prerequisites"
+  ],
+  "remaining": [
+    "Full source bodies/projection/head and current semantic validation",
+    "Sealed unit/linkage/state/retained-location and reverse result/purpose adoption physical constraints",
+    "Complete required-evidence inventory/cardinality/lock plan",
+    "Fixed owner SQL signatures/bodies/canonical decoder correspondence/ACL/downgrade enforcement",
+    "F05-F08 migration/provider/journal/recovery/harness final contracts",
+    "W01-W04 integration, current-authority alignment,4 integrated design reviews/exact approval then executable tests/exact approval/RED admission"
+  ],
+  "next": "Close sealed unit and result/purpose adoption physical graph with exact retained-state transitions and finalizer parameters; no new parallel draft or evidence engine.",
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

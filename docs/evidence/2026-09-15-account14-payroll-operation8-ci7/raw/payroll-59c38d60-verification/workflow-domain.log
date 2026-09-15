@@ -1,0 +1,13 @@
+   Compiling console-workflow-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/domain)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.98s
+     Running unittests src/lib.rs (/private/tmp/console-account30-cargo/debug/deps/console_workflow_domain-ca337ddfccc9f64c)
+
+running 5 tests
+test tests::finalized_runs_are_terminal_and_non_reopenable ... ok
+test tests::legal_run_edges_pass_and_illegal_ones_fail ... ok
+test tests::node_terminal_states_have_no_outgoing_edges ... ok
+test tests::run_status_roundtrips_db_spelling ... ok
+test tests::terminal_run_statuses_map_to_the_check_column ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

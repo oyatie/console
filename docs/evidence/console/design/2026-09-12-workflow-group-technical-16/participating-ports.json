@@ -1,0 +1,102 @@
+{
+  "status": "PROPOSED_NOT_COMPILED",
+  "rule": "in_conn borrows SAME PgConnection; no new pool/commit/detached work/network. Consumer-declared port and composition-root adapter wiring preserve layer boundary; app adds no business SQL. Executing owner owns transaction. Missing required participant refuses enrollment.",
+  "ports": [
+    {
+      "method": "prepare_transfer_in_conn",
+      "owner": "workflow",
+      "input": "exact current task refs/epochs, typed selection and reason/context refs",
+      "result": "Nonmutating input/evidence preview; same common action from every entrance"
+    },
+    {
+      "method": "apply_transfer_in_conn",
+      "owner": "workflow",
+      "input": "plan/task/epoch + current participant facts + authoritative receipt absence",
+      "result": "One assignment/custody/capacity/effect reconciliation and receipt, no commit"
+    },
+    {
+      "method": "change_work_charge_in_conn",
+      "owner": "platform/group",
+      "input": "verified exact task/epoch/old/new account/units and owning receipt binding",
+      "result": "Atomic charge/counter/event with Company mutation; no raw counter override"
+    },
+    {
+      "method": "retire_historical_charge_in_conn",
+      "owner": "platform/group",
+      "input": "retained Group/Company/task/epoch + conclusive owner outcome",
+      "result": "Release-only exact old charge, never new admission"
+    },
+    {
+      "method": "complete_work_in_conn",
+      "owner": "workflow",
+      "input": "exact task revision/completion criterion + authoritative owner effect",
+      "result": "Task terminal and capacity release same tx; not a generic done boolean"
+    },
+    {
+      "method": "resolve_candidate_feasibility_in_conn",
+      "owner": "policy/identity/workflow source owners",
+      "input": "mandated candidate/task/proposed assignment + complete correlated policy facts",
+      "result": "Minimal qualified feasible proof, no human token/salary projection"
+    },
+    {
+      "method": "claim_group_child_in_conn",
+      "owner": "workflow",
+      "input": "exact Group/parent/slot/child/attempt + expected claim generation",
+      "result": "Fenced transport claim after authoritative receipt check"
+    },
+    {
+      "method": "record_group_observation",
+      "owner": "platform/group",
+      "input": "verified immutable Company-owner receipt and slot binding",
+      "result": "Monotonic rebuildable metadata, no domain execute"
+    },
+    {
+      "method": "open_bound_review_in_conn",
+      "owner": "governance",
+      "input": "registered owner/purpose/basis/evidence binding and actual S",
+      "result": "Existing immutable request + exact binding/control; no own transaction"
+    },
+    {
+      "method": "record_bound_decision_in_conn",
+      "owner": "governance",
+      "input": "owning coordinator locked basis, actual D/AI1 proof, exact optional gate",
+      "result": "Existing immutable decision + control event; caller completes domain/work same tx"
+    },
+    {
+      "method": "consume_bound_gate_in_conn",
+      "owner": "governance",
+      "input": "exact EXECUTION_GATE + current command fingerprint/identity/expiry",
+      "result": "One permitted consumption in caller tx; REVIEW_DECISION rejected"
+    },
+    {
+      "method": "compose_payroll_review_in_conn",
+      "owner": "payroll",
+      "input": "locked exact R/C cycle/reservations/governance decisions/current integrity",
+      "result": "At most one deterministic completion; no fabricated human approval"
+    },
+    {
+      "method": "publish_review_in_conn",
+      "owner": "payroll with identity/policy participant",
+      "input": "exact approved source/target manifest/projection/recipient rights",
+      "result": "Immutable snapshot/current-slot/receipt/outbox; no network/issuance"
+    },
+    {
+      "method": "resolve_review_request_in_conn",
+      "owner": "payroll with workflow participant",
+      "input": "current issue/content/task/revision and complete response/publication proof",
+      "result": "Case response/outcome + task/capacity/receipt atomically"
+    },
+    {
+      "method": "sync_context_hint_in_conn",
+      "owner": "identity",
+      "input": "owner-verified candidate-producing source change and Account guard",
+      "result": "Hint + context_generation in same source transaction"
+    },
+    {
+      "method": "list_account_contexts",
+      "owner": "identity application + Group/Company owner readers",
+      "input": "AccountPrincipal/query/opaque Account cursor, never homeCompany",
+      "result": "Bounded authorized projections and final control-vector revalidation"
+    }
+  ]
+}

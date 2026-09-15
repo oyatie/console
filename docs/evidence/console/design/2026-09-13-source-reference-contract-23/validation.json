@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-09-13T04:20:44.179795+00:00",
+  "candidate_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-13-source-reference-contract-23/verify-packet.py --commit 596356ec5c4778a6d835900d657f6a96b03ef9e4",
+      "result": "PASS",
+      "output": {
+        "candidate_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+        "core_files": 12,
+        "source_blobs": 15,
+        "structural_counts": {
+          "new_tables": 0,
+          "foreign_keys": 35,
+          "unique_targets": 21,
+          "generated_columns": 44
+        },
+        "selected_reference_branches": 10,
+        "admission_paths": 5,
+        "screen_cases": 11,
+        "nonexecuted_cases": 20,
+        "reader_links": 6,
+        "validation_scope": "Static regular-blob/source custody; SQL token/reference census; finite conceptual branches only. No SQL parse/typecheck/catalog/runtime, performance or Verus proof.",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "verus_proofs_executed": 0,
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check 1dbc1214f7a57ca56b41521fce0a97b390c69567 596356ec5c4778a6d835900d657f6a96b03ef9e4",
+      "result": "PASS"
+    }
+  ],
+  "initial_failure": "git diff --check 1dbc1214f7a57ca56b41521fce0a97b390c69567 3d919db789bb55a9726e53016dfc5b00f77033c1 failed on33 CRLF lines; normalized two CSV files and reran on final SHA. Initial static verifier passed.",
+  "limits": "Static custody/token/reference census and finite conceptual branch reasoning only. SQL parsing/typechecking/catalog/runtime, product tests and Verus proofs0.20 proposed cases not executed."
+}

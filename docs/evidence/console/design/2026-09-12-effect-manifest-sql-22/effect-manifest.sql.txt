@@ -1,0 +1,192 @@
+-- PROPOSED STRUCTURAL SQL ONLY; NOT AN APPLIED OR COMPLETE MIGRATION.
+-- Requires actual0177 receipt and independently provisioned20 confined NOLOGIN role.
+-- This file deliberately grants NO outer command EXECUTE to any LOGIN.
+-- Source registration/Account actor/owner roster, seven typed source reciprocal FKs,
+-- and adoption/gate/attempt finalizers must be installed before enrollment.
+BEGIN;
+ALTER TABLE public.ont_action_command_receipts
+  ADD COLUMN source_effect_protocol text,
+  ADD COLUMN source_effect_count smallint,
+  ADD COLUMN source_effect_digest bytea,
+  ADD CONSTRAINT source22_receipt_presence CHECK (
+    (source_effect_protocol IS NULL AND source_effect_count IS NULL AND source_effect_digest IS NULL)
+    OR (source_effect_protocol IS NOT NULL AND source_effect_count IS NOT NULL AND source_effect_digest IS NOT NULL
+      AND source_effect_protocol='SOURCE_EFFECTS21'
+      AND source_effect_count BETWEEN 1 AND 1024
+      AND pg_catalog.octet_length(source_effect_digest)=32));
+-- Legacy reader compatibility only: all-null cannot authorize an enrolled source action.
+-- Current0177 BEFORE UPDATE/DELETE immutability remains, including these new columns.
+CREATE TABLE public.ont_action_source_effects (
+  org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE RESTRICT,
+  command_id uuid NOT NULL,
+  ordinal smallint NOT NULL CHECK(ordinal BETWEEN 0 AND 1023),
+  family_code smallint NOT NULL CHECK(family_code BETWEEN 1 AND 7),
+  effect_kind smallint NOT NULL CHECK(effect_kind IN (1,2)),
+  root_id uuid NOT NULL,
+  revision bigint NOT NULL CHECK(revision>0),
+  custody_digest bytea NOT NULL CHECK(pg_catalog.octet_length(custody_digest)=32),
+  successor_root_id uuid,
+  successor_revision bigint CHECK(successor_revision>0),
+  successor_custody_digest bytea CHECK(pg_catalog.octet_length(successor_custody_digest)=32),
+  PRIMARY KEY(org_id,command_id,ordinal),
+  UNIQUE(org_id,family_code,root_id,revision,effect_kind),
+  CHECK ((effect_kind=1 AND successor_root_id IS NULL AND successor_revision IS NULL AND successor_custody_digest IS NULL)
+    OR (effect_kind=2 AND family_code BETWEEN 5 AND 7
+      AND successor_root_id IS NOT NULL AND successor_revision IS NOT NULL AND successor_custody_digest IS NOT NULL
+      AND successor_root_id<>root_id)),
+  CONSTRAINT source22_member_receipt_fk FOREIGN KEY(org_id,command_id)
+    REFERENCES public.ont_action_command_receipts(org_id,command_id) ON DELETE RESTRICT NOT DEFERRABLE
+);
+CREATE UNIQUE INDEX source22_one_successor_claim
+  ON public.ont_action_source_effects(org_id,family_code,root_id) WHERE effect_kind=2;
+ALTER TABLE public.ont_action_source_effects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ont_action_source_effects FORCE ROW LEVEL SECURITY;
+CREATE POLICY source22_member_company ON public.ont_action_source_effects
+  USING(org_id=NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid)
+  WITH CHECK(org_id=NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid);
+-- Same-creation-tx revocation closes0031 defaults; inherited membership is separately catalog-audited.
+REVOKE ALL ON public.ont_action_source_effects
+  FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+GRANT SELECT,INSERT ON public.ont_action_source_effects TO console_owner_commit_writer;
+GRANT SELECT ON public.ont_action_command_receipts TO console_owner_commit_writer;
+REVOKE UPDATE,DELETE,TRUNCATE ON public.ont_action_source_effects FROM console_owner_commit_writer;
+REVOKE TRUNCATE ON public.ont_action_command_receipts
+  FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd,console_owner_commit_writer;
+
+-- INVOKER guards retain the invoking outer finalizer's effective role.
+-- Marking these SECURITY DEFINER as that same writer would make the role check tautological.
+CREATE FUNCTION public.source22_header_insert_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog SET row_security=on AS $$
+BEGIN
+  IF NEW.source_effect_protocol IS NOT NULL THEN
+    IF current_user <> 'console_owner_commit_writer' THEN
+      RAISE EXCEPTION 'source receipt writer refused' USING ERRCODE='42501';
+    END IF;
+    IF NEW.org_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid THEN
+      RAISE EXCEPTION 'source receipt scope refused' USING ERRCODE='42501';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER source22_header_insert_guard BEFORE INSERT ON public.ont_action_command_receipts
+  FOR EACH ROW EXECUTE FUNCTION public.source22_header_insert_guard();
+
+CREATE FUNCTION public.source22_member_insert_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog SET row_security=on AS $$
+DECLARE
+  v_protocol text;
+  v_count smallint;
+  v_xmin xid;
+BEGIN
+  IF current_user <> 'console_owner_commit_writer' THEN
+    RAISE EXCEPTION 'source member writer refused' USING ERRCODE='42501';
+  END IF;
+  IF NEW.org_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid THEN
+    RAISE EXCEPTION 'source member scope refused' USING ERRCODE='42501';
+  END IF;
+  SELECT r.source_effect_protocol,r.source_effect_count,r.xmin
+    INTO v_protocol,v_count,v_xmin FROM public.ont_action_command_receipts r
+    WHERE r.org_id=NEW.org_id AND r.command_id=NEW.command_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'source manifest header unavailable' USING ERRCODE='23514';
+  END IF;
+  IF v_protocol IS DISTINCT FROM 'SOURCE_EFFECTS21'
+     OR v_count IS NULL OR v_count NOT BETWEEN 1 AND 1024
+     OR v_xmin IS DISTINCT FROM pg_catalog.pg_current_xact_id()::xid
+     OR NEW.ordinal IS NULL OR NEW.ordinal<0 OR NEW.ordinal>=v_count THEN
+    RAISE EXCEPTION 'source manifest append refused' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+CREATE TRIGGER source22_member_insert_guard BEFORE INSERT ON public.ont_action_source_effects
+  FOR EACH ROW EXECUTE FUNCTION public.source22_member_insert_guard();
+CREATE FUNCTION public.source22_member_immutable() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog AS $$
+BEGIN
+  RAISE EXCEPTION 'source effect members are immutable' USING ERRCODE='55000';
+END;
+$$;
+CREATE TRIGGER source22_member_immutable BEFORE UPDATE OR DELETE ON public.ont_action_source_effects
+  FOR EACH ROW EXECUTE FUNCTION public.source22_member_immutable();
+
+-- Deferred execution may occur after the outer SECURITY DEFINER returned to LOGIN.
+-- This fixed read-only validation function therefore runs as the confined writer.
+CREATE FUNCTION public.source22_validate_manifest() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog SET row_security=on AS $$
+DECLARE
+  v_count bigint;
+  v_min smallint;
+  v_max smallint;
+  v_order_ok boolean;
+  v_members bytea;
+  v_header bytea;
+  v_actual bytea;
+BEGIN
+  IF NEW.source_effect_protocol IS NULL THEN
+    RETURN NULL;
+  END IF;
+  IF NEW.org_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid THEN
+    RAISE EXCEPTION 'source manifest scope refused' USING ERRCODE='42501';
+  END IF;
+  IF NEW.source_effect_protocol IS DISTINCT FROM 'SOURCE_EFFECTS21'
+     OR NEW.source_effect_count IS NULL OR NEW.source_effect_count NOT BETWEEN 1 AND 1024
+     OR NEW.source_effect_digest IS NULL OR pg_catalog.octet_length(NEW.source_effect_digest)<>32 THEN
+    RAISE EXCEPTION 'source manifest header invalid' USING ERRCODE='23514';
+  END IF;
+  -- Indexed(org,command,ordinal) selection; immediate guard bounds cardinality<=1024.
+  -- Fixed115byte members, ordered aggregate rather than repeated growing bytea concatenation.
+  WITH bounded AS MATERIALIZED (
+    SELECT e.* FROM public.ont_action_source_effects e
+    WHERE e.org_id=NEW.org_id AND e.command_id=NEW.command_id ORDER BY e.ordinal LIMIT 1025
+  ), ordered AS (
+    SELECT b.*,lag(b.family_code) OVER w AS pf,lag(b.root_id) OVER w AS pr,
+      lag(b.revision) OVER w AS pv,lag(b.effect_kind) OVER w AS pk
+    FROM bounded b WINDOW w AS(ORDER BY b.ordinal)
+  ), framed AS (
+    SELECT o.ordinal,
+      (o.pf IS NULL OR ROW(o.family_code,o.root_id,o.revision,o.effect_kind)>ROW(o.pf,o.pr,o.pv,o.pk)) AS in_order,
+      pg_catalog.set_byte(pg_catalog.decode('00','hex'),0,o.family_code::integer)
+      ||pg_catalog.set_byte(pg_catalog.decode('00','hex'),0,o.effect_kind::integer)
+      ||pg_catalog.uuid_send(o.root_id)||pg_catalog.int8send(o.revision)||o.custody_digest
+      ||CASE WHEN o.effect_kind=2 THEN pg_catalog.decode('01','hex')||pg_catalog.uuid_send(o.successor_root_id)
+        ||pg_catalog.int8send(o.successor_revision)||o.successor_custody_digest
+        ELSE pg_catalog.decode(pg_catalog.repeat('00',57),'hex') END AS member_bytes
+    FROM ordered o
+  )
+  SELECT count(*),min(ordinal),max(ordinal),bool_and(in_order),string_agg(member_bytes,''::bytea ORDER BY ordinal)
+    INTO v_count,v_min,v_max,v_order_ok,v_members FROM framed;
+  IF v_count<>NEW.source_effect_count OR v_min IS DISTINCT FROM 0::smallint
+     OR v_max IS DISTINCT FROM (NEW.source_effect_count-1)::smallint OR v_order_ok IS NOT TRUE
+     OR v_members IS NULL OR pg_catalog.octet_length(v_members)<>115*NEW.source_effect_count THEN
+    RAISE EXCEPTION 'source manifest membership invalid' USING ERRCODE='23514';
+  END IF;
+  v_header:=pg_catalog.convert_to('console.source21.effects','UTF8')||pg_catalog.decode('00','hex')
+    ||pg_catalog.uuid_send(NEW.org_id)||pg_catalog.uuid_send(NEW.command_id)
+    ||pg_catalog.int4send(NEW.source_effect_count::integer);
+  v_actual:=pg_catalog.sha256(v_header||v_members);
+  IF v_actual IS DISTINCT FROM NEW.source_effect_digest THEN
+    RAISE EXCEPTION 'source manifest commitment invalid' USING ERRCODE='23514';
+  END IF;
+  RETURN NULL;
+END;
+$$;
+ALTER FUNCTION public.source22_validate_manifest() OWNER TO console_owner_commit_writer;
+CREATE CONSTRAINT TRIGGER source22_effect_manifest_complete
+  AFTER INSERT ON public.ont_action_command_receipts DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW WHEN(NEW.source_effect_protocol IS NOT NULL)
+  EXECUTE FUNCTION public.source22_validate_manifest();
+REVOKE ALL ON FUNCTION public.source22_header_insert_guard(),public.source22_member_insert_guard(),
+  public.source22_member_immutable(),public.source22_validate_manifest()
+  FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+-- Existing trigger ownership follows migration owner, except the explicit fixed validator definer.
+-- No LOGIN membership/SET ROLE/inheritance of console_owner_commit_writer is allowed.
+COMMIT;
+-- REQUIRED BEFORE SOURCE ENROLLMENT, absent here and not authorized to omit:
+-- 1 Exact source action/type/Account/CCF1 receipt binding; reject legacy-shaped source receipt
+--   even when ALL three fields above areNULL. Current0223 roster is insufficient.
+-- 2 Seven conditional source/member composite FKs, reciprocal source/claim membership,
+--   immutable source/head/claim enforcement and complete native result/subject correlation.
+-- 3 Exact domain adoption/private pin/attempt/work/gate participants and final time check.
+-- 4 Real-role/defaultACL/catalog/caller/subtransaction/restore proof and complete closure map.

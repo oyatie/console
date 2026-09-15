@@ -1,0 +1,12 @@
+{
+  "kind": "work.transfer.stop",
+  "body": {
+    "plan": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "plan_id": "f6ed8f81-428e-55a1-a0d7-c88561f65360",
+      "control_epoch": "1",
+      "content_digest": "58c42cef00af96beac1d6eca7b28b141175d8b22f833b19379a281209987a0ea"
+    },
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

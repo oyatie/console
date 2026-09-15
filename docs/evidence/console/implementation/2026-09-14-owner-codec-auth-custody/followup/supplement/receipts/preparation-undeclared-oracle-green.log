@@ -1,0 +1,30 @@
+▶ undeclared import gate
+  ✔ reports a bare specifier that the nearest package.json does not declare (25.54225ms)
+  ✔ accepts the same import once the manifest declares it (22.160584ms)
+  ✔ resolves against the nearest package.json, not only the root one (22.490625ms)
+  ✔ does not report node: builtins or relative specifiers (23.301791ms)
+  ✔ covers require() and dynamic import(), not just static import (27.210083ms)
+  ✔ reports a side-effect-only bare import under a comment and after a statement (20.925625ms)
+  ✔ reduces a subpath import to the package name before consulting the manifest (21.024209ms)
+  ✔ reports a scoped package that is absent from the manifest (19.626167ms)
+  ✔ does not mistake prose or SQL inside a string literal for an import specifier (21.85875ms)
+  ✔ excludes docs/evidence/ without swallowing a sibling directory (21.228583ms)
+  ✔ does not resolve a specifier against a package.json above the scan root (22.936417ms)
+  ✔ counts the files it scanned, so an empty scan cannot read as coverage (25.184041ms)
+  ✔ exits 1 and names the offending specifier when run as a CLI (52.589583ms)
+  ✔ exits 1 on the floor alone, with every specifier declared and no findings (55.346459ms)
+  ✔ exits 1 rather than passing on a scan that covered nothing (48.731959ms)
+  ✔ exits 0 stating what it scanned, against this repository (56.395834ms)
+  ✔ classifies docs/evidence as archived rather than scanning it (24.789875ms)
+  ✔ excludes only evidence artifacts that no workflow executes (23.728333ms)
+  ✔ goes red on the archived artifact the moment the classification is removed (26.474417ms)
+  ✔ finds no undeclared import anywhere in this repository (22.866958ms)
+✔ undeclared import gate (585.807625ms)
+ℹ tests 20
+ℹ suites 1
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 666.404667

@@ -1,0 +1,22 @@
+{
+  "status": "proposed_pending_independent_review",
+  "direction_record": "entity-versioning-direction.txt",
+  "target": "B06 action input drafts and scoped B07 recovery",
+  "evidence_base_sha": "b0569a87ea63d6686fd8e884411cc7f07c0f406d",
+  "scenarios": 50,
+  "screen_states": 18,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "remaining_gaps": [
+    "B03 durable Group operation",
+    "B04 general autonomous assignment and unknown distributed actor takeover",
+    "B07 rest of application screen state matrix",
+    "B08 monetary publication/disputes",
+    "Common-owner private draft physical-retention migration/operation",
+    "Independent integrity anchor and repair/backup operational detail"
+  ],
+  "operational_values": "Cadence/bounds/retention are explicit proposed defaults requiring exact design/operations policy before activation, not measured SLOs or statutory conclusions.",
+  "common_engine_contract": "entity-revision-contract.txt",
+  "history_limitation": "Whole-chain revision-existence/progress permission is required for timeline listing in this slice. Otherwise uniform nondisclosing unavailable; independently authorized pinned revision read/compare remains available."
+}

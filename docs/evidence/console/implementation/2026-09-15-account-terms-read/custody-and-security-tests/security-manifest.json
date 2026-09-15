@@ -1,0 +1,27 @@
+{
+  "kind": "ADDITIVE_PUBLIC_TERMS_SECURITY_TEST_CANDIDATE",
+  "base_sha": "dba42d1ab50afae99163f7b591e5749933d5dd25",
+  "author": "/root",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest.rs"
+  ],
+  "base_sha256": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+  "postimage_sha256": "d16fef923a33f334b7c8d306d0f4c75fcb9eabda70853b8d2144ee9d367d5ad3",
+  "artifacts": {
+    "module.rs": "4a7626a2107318315af1d61d228bd12b3c950551851f4e90351b1a626e330d75",
+    "candidate.patch": "f8b3980c251fd61842d3414db9bfce9df8b22eeacdf586ebb9830639797074bf",
+    "backend/app/tests/auth_rest.rs": "d16fef923a33f334b7c8d306d0f4c75fcb9eabda70853b8d2144ee9d367d5ad3"
+  },
+  "source_restoration": "Removing one additive sibling module recovers exact base source bytes. No existing fixture/helper/assertion modified.",
+  "count": {
+    "new": 2,
+    "runtime": 0
+  },
+  "cases": [
+    "account_browser::terms_read_security::public_reads_require_neither_signing_keys_nor_webauthn_services",
+    "account_browser::terms_read_security::registered_tampering_is_unavailable_and_exact_restoration_recovers"
+  ],
+  "oracles": "Real AppState::from_config from existing parsed configuration with both JWT and AuthRest services absent; retained restricted connection/root must remain. Tamper existing registered manifest/content,503 distinct from404, exact byte restoration restores200. Existing exact HTTP bytes/cache/no-cookie helpers and durable no-effect snapshots reused.",
+  "limits": "No fullAccount/browser/session/production/legal claim; file tests rebuild router and do not assert live invalidation. Standard local fixture administration only.",
+  "review_status": "Pending independent Inventory review; no source import or runtime yet"
+}

@@ -1,0 +1,116 @@
+{
+  "kind": "INDEPENDENT_IMMUTABLE_ACCOUNT_CRYPTO_ACCEPTANCE_TEST_REVIEW",
+  "reviewer": "/root/capture_review",
+  "author": "/root/inventory_repair",
+  "root_writer_and_runtime_operator": "/root",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "candidate_directory": "/private/tmp/account-token-crypto-acceptance-v3-candidate-f96eddd3",
+  "candidate_manifest_sha256": "d58fbdc37dda84dc94bed9ec0272ac96d7b78cf8ef917a19b83edf116e40d928",
+  "candidate_patch_sha256": "2110b59ce1877b226a29d09dc952054b9e2c49d45f7419755232cf592531b19e",
+  "candidate_file_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+  "candidate_module_sha256": "2949976eb0f2d1eaf220b5bdc7aabb6873acc2942c6f15a8b3492924dac0cbc9",
+  "guide_sha256": "1d6b18fcc4b4e6e8a6e3ab1dfc7a1380102a0a9f4250a4b2d2c96bd60d4f9cdf",
+  "frozen_api_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+  "api_independent_review_sha256": "b564a0c921e23da674fe276249892d99864114e30627a8adf46845ff9d338e40",
+  "verdict": "APPROVE_EXACT_ACCEPTANCE_TEST_CANDIDATE_WITH_MISSING_OWNER_COMPILE_BOUNDARY_REMAINING",
+  "findings": [],
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/account-token-crypto-acceptance-v3-candidate-f96eddd3/candidate.patch"
+      ],
+      "exit": 0,
+      "cwd": "private temporary immutable Git-base copy"
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account-token-crypto-acceptance-v3-candidate-f96eddd3/candidate.patch"
+      ],
+      "exit": 0,
+      "cwd": "private temporary immutable Git-base copy"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "/private/tmp/account-token-crypto-acceptance-v3-candidate-f96eddd3/account_crypto_module.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "/private/tmp/account-token-crypto-acceptance-v3-candidate-f96eddd3/backend/crates/platform/auth/tests/jwt_es256.rs"
+      ],
+      "exit": 0
+    }
+  ],
+  "static_evidence": {
+    "all_manifest_artifact_hashes_verified": true,
+    "api_bytes_unchanged_from_root_frozen_v3": true,
+    "existing_original14_tests_entire_source_byte_identical_prefix_from_git_base": true,
+    "private_patch_recreates_exact_postimage": true,
+    "test_declarations": {
+      "original": 14,
+      "new_grouped": 15,
+      "full_binary": 29
+    },
+    "guide_roster_matches_all15_new_declarations": true,
+    "v2_preserved_and_revision_bounded": "Only redundant unapproved legacy duplicate test removed; existing final no-echo test strengthened. All preceding nonredundant module bytes unchanged.",
+    "removed_case_ownership": "Fast compatibility-v2 now covers identical known legacy duplicate fields and recognized marker pairs including identical repeats; original approved tests are not removed.",
+    "fixed_error_no_echo_oracle": "For both Account and CSRF, a signed unknown field whose NAME is SECRET_MARKER must produce AuthError::Jwt(InvalidToken) before Debug/Display redaction checks. Access also has known assurance VALUE canary. CSRF assurance-value case remains an unknown-field rejection but is not sole leak oracle.",
+    "secret_surfaces": "Signed token compact/pretty Debug excludes full credential and encoded segments; returned claims and current access outcome Debug exclude Account/family/issuer. Error Display/Debug exclude hostile name/value, signed token and segments.",
+    "positive_oracles": "Owner-issued tokens independently decoded with configured ES256/issuer/fixed audience for wire inspection; unchanged same-signer reconstruction verified before hostile mutation. Positive access and valid expired access explicitly match different variants.",
+    "raw_duplicate_oracle": "Required-field duplicate custom SerializeMap directly signed without Value collapse, with raw body duplicate occurrence calibration.",
+    "temporal_oracle": "Trusted explicit now controls verification. Independent wire decoder disables wall-clock time checks only for inspection. Tests cover expiry boundary, causal/nonnegative times, lifetime bounds, expiry-only classification and near-year9999 ceiling clamp before arithmetic overflow.",
+    "protocol_scope": "Separate Account/CSRF closed schemas and fixed audience/kind; bidirectional legacy separation; no DB/session/Principal or HTTP proof.",
+    "no_ignore_should_panic_or_new_dependency_or_stub": true,
+    "runtime_discovered": "not run",
+    "runtime_executed": 0,
+    "cargo_db_docker_commands": 0,
+    "integration_source_or_evidence_mutations": 0
+  },
+  "runtime_classification": {
+    "baseline_status": "Immutable base lacks new Account types and methods; compile blocked and all 15 new runtime test assertions unreached. Reviewer has not run Cargo or observed a compiler exit.",
+    "prohibition": "Missing-owner compile errors are not behavioral RED and cannot replace the separate current-interface protocol3 lane. Formal admission must satisfy current DELIVERY; this static receipt is not implementation admission.",
+    "next_proof": "Root records exact actual compiler boundary/count0; after admitted owner work, unchanged15 selected and existing full auth targets must execute with exact discovered/executed counts."
+  },
+  "pre_mortem": "Crypto parser confuses protocols, drops duplicates, leaks attacker diagnostics, overflows issuance arithmetic, or classifies an invalid expired access token as refresh-eligible.",
+  "blast_radius": "One private additive existing test binary and root-frozen pure cryptographic API. No database, live Account state, browser identity, source-generation or dependency changes.",
+  "detection": "Exact frozen hashes and original14 prefix;15 grouped acceptance cases with same-signer controls, raw duplicates, signed hostile data, explicit time, variant checks and fixed error/redaction canaries.",
+  "rollback": "Preserve old immutable candidates and observed compile/runtime evidence. Root performs only reviewed isolated forward corrections without weakening existing tests.",
+  "stop_conditions": [
+    "API/candidate hash mismatch",
+    "Existing14 or approved protocol3 altered",
+    "Unapproved fake API/stub",
+    "Missing compiler/runtime probe treated as lane success",
+    "Secret output",
+    "Unrelated source/dependency changes",
+    "Any control, review or runtime failure"
+  ],
+  "remaining_holds": [
+    "Root observed compilation and authorized executable-lane admission",
+    "Actual runtime of all15 new assertions and legacy regressions",
+    "Upstream actual primary authentication and authoritative ACTIVE/current-generation/family ownership/revocation/absolute-lifetime checks before any expired-access CSRF fallback",
+    "HTTP/cookie/nonce/same-origin binding and custody transition",
+    "Production activation, rotation/cutover and legal/compliance authority"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

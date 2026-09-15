@@ -1,0 +1,103 @@
+{
+  "reviewer": "/root/preparation_recovery",
+  "browser_sources": {
+    "acceptance.spec.cjs": "0f2ac583a021b6819495d616bfb35da033c3201b05a91c63f30792615b5c24ff",
+    "reflow.cjs": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+    "oracle.spec.cjs": "5e8b6ecd0d5f7c7880c94e02603dc84dd3b4470baf1000de0a66c757dc306cc9",
+    "playwright.config.cjs": "d5ead572f631ccbee50d903b455290b6c2338f1c270a1d9aed2ab751e764869b"
+  },
+  "boundary_executions_sha256": "f551e8c1a1687a4cf7119106b86d4c78be2767006e635de6f60239c7eb1c3efd",
+  "boundary_rows": [
+    {
+      "id": "CTX-DIAGNOSTIC",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 20,
+        "executed": 20,
+        "passed": 16,
+        "failed": 4,
+        "filtered": 0
+      },
+      "classification": "BEHAVIORAL_RED"
+    },
+    {
+      "id": "SEC-CEDAR",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 5,
+        "executed": 5,
+        "passed": 2,
+        "failed": 3,
+        "filtered": 0
+      },
+      "classification": "BEHAVIORAL_RED"
+    },
+    {
+      "id": "SEC-REALTIME",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 5,
+        "executed": 2,
+        "passed": 0,
+        "failed": 2,
+        "filtered": 3
+      },
+      "classification": "BEHAVIORAL_RED"
+    },
+    {
+      "id": "SEC-TELEMETRY",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 166,
+        "executed": 2,
+        "passed": 0,
+        "failed": 2,
+        "filtered": 164
+      },
+      "classification": "BEHAVIORAL_RED"
+    },
+    {
+      "id": "MIGRATION",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 2,
+        "executed": 2,
+        "passed": 0,
+        "failed": 2,
+        "filtered": 0
+      },
+      "classification": "CATALOG_PREREQUISITE_BLOCKED"
+    },
+    {
+      "id": "ACCOUNT-HTTP",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 61,
+        "executed": 61,
+        "passed": 25,
+        "failed": 36,
+        "filtered": 0
+      },
+      "classification": "MIXED_PREREQUISITES_AND_PRIOR_BOUNDARIES"
+    },
+    {
+      "id": "RECOVERY",
+      "source_hashes_match": true,
+      "log_hash_matches": true,
+      "counts": {
+        "discovered": 2,
+        "executed": 2,
+        "passed": 1,
+        "failed": 1,
+        "filtered": 0
+      },
+      "classification": "ONE_BEHAVIORAL_RED_ONE_PASS"
+    }
+  ]
+}

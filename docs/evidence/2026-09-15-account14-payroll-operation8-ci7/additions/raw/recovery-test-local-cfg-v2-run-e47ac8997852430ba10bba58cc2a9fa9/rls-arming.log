@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running `/private/tmp/console-account30-cargo/debug/console-gate-rls-arming`
+console-gate-rls-arming: checking workspace at /private/tmp/console-production-tdd-preparation-20260913/backend
+console-gate-rls-arming: PASSED

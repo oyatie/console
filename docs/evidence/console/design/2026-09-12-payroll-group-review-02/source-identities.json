@@ -1,0 +1,100 @@
+{
+  "source_base": "05200e43af13b527ce031b04369e05852862f1d6",
+  "sources": [
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "sha256": "adfa4d1b1395f03af2853b412e9a65c64966f9a573f16e1b50e29cdaea2135e3",
+      "git_blob": "e4f580c348aa2360985040d51e74994313e641df"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/roster.rs",
+      "sha256": "26a04d1aad4bb59cfeab1ee5545e89cd7f06dd90f82c3efb0fbb3f7821b2009f",
+      "git_blob": "54d6cbbb6c1711e65afd57a27134a527ecf8f374"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+      "sha256": "070c1da569abd4dab31326f2d21953b480dd39d59b21cd5eed3df92b4aa401ae",
+      "git_blob": "5d356d3479a3847506e976be86e360ef7a961f70"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/payslip_draft.rs",
+      "sha256": "62de1465995b26f13724a6c2e3edc015db8d8b8390094944650eabaeebac6f48",
+      "git_blob": "0c328148b9f099a965362d7c4978c44738da4514"
+    },
+    {
+      "path": "backend/crates/payroll/domain/src/lib.rs",
+      "sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92",
+      "git_blob": "d2143ea831717fc307f23b2c04e17b637e6eb62c"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/lifecycle.rs",
+      "sha256": "49ad599ed56162070b9430a35cce3c34c4f2e18743767c6f5c28587aba834aed",
+      "git_blob": "33bf65ac2d3975bf41f888461082e0afb0903c6c"
+    },
+    {
+      "path": "backend/crates/payroll/rest/src/payslip_draft.rs",
+      "sha256": "783ebaa28d1a84244018700546db156204f009a5553361dad760da10561cd348",
+      "git_blob": "d2d6db3a6f6e48f85da4a05908ea97eb04ebabdd"
+    },
+    {
+      "path": "backend/crates/platform/request-context/src/lib.rs",
+      "sha256": "83ca8ec103174d2e706da28b39515aa1852316de2c5d24faef0c56105dc05e63",
+      "git_blob": "ec5419c2e92e7928bed2747185a0b6d91e7c1004"
+    },
+    {
+      "path": "backend/crates/platform/group/src/lib.rs",
+      "sha256": "260f3f3e1bb5c0837f6d7a7847e13db559fab30bfe2ec7ed623fb9a497aad636",
+      "git_blob": "c5058b642b760f3b258a405afa2882ea9bfc3442"
+    },
+    {
+      "path": "backend/crates/governance/adapter-postgres/src/lib.rs",
+      "sha256": "0e7f7b37a67816f2a2b973da7b72775233dc3ba70f746312ab4a31ef3e9609f3",
+      "git_blob": "1d7d18a3e7a17d2684fc25c1c471b23c8a2256bf"
+    },
+    {
+      "path": "backend/crates/ontology/application/src/prepared.rs",
+      "sha256": "82b2bb5c13ae7cbf0b2f5127f496eaae31a0a336ce8d048f4757a0f6e0890117",
+      "git_blob": "5c4ec8cd030b463bdf6364a3110c8f84b7c58757"
+    },
+    {
+      "path": "backend/crates/ontology/rest/src/lib.rs",
+      "sha256": "b51fb6929cba515d8961f6b6c4479e2c9037502c82276944a613d2e41c87f0a9",
+      "git_blob": "628995399c59e200620a25a36628b4a916241cc5"
+    },
+    {
+      "path": "backend/crates/workflow/runtime/src/engine.rs",
+      "sha256": "f9b89e807f6e4f694ab2cbcd567b6aaee70c69732f4dd8f0be728172dd8169de",
+      "git_blob": "1deb830dde099c52c0e415ea6dfc95b61e29c0fa"
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5",
+      "git_blob": "8de02d08b143ed387e4f7737e2b3066dd4084519"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0210_payroll_statutory_rates_and_contract_wages.sql",
+      "sha256": "410e5015f96899235c5768a4aad708cf5c517d3ac38f7d18edfc11606511375e",
+      "git_blob": "3a7d7cea0482a4c6793c226e140d1c73fdf970fd"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql",
+      "sha256": "9b0f786d715621a88d29178f628277d29f626e464aa597cffc169032dd810b5a",
+      "git_blob": "61219b74f97cc18c7a308d7485c8066f499b98e4"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0077_create_workflow_runtime_spine.sql",
+      "sha256": "3e68ba2ba21def1d3b302419d7dc3227ae9e6623e439368c7e8224a909a4d180",
+      "git_blob": "a560d8994b11eec60746b3447bbde6f9a069d8aa"
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql",
+      "sha256": "c4ef36f24582b1d3034c7212877103bb72724138bef1d66dabbef24410fa40ba",
+      "git_blob": "477fbc4fe47c7e9374cffa6fd117e2a98d397c19"
+    }
+  ]
+}

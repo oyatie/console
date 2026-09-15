@@ -1,0 +1,160 @@
+{
+  "kind": "INDEPENDENT_FINITE_RETENTION_SUPPLEMENT_REVIEW",
+  "reviewer": "/root/fast_gate_review",
+  "preparer": "/root/capture_review",
+  "head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "allowlist_path": "/private/tmp/account-session-retention-supplement-capture-20260915/retention-allowlist.json",
+  "allowlist_sha256": "734baacd06e441c2b93b551069a8d82d9d43acb022a36fcdeecbf7116c78cc55",
+  "verdict": "APPROVE_EXACT17_PAYLOAD_SERIAL_IMPORT_BY_ROOT",
+  "payload_count": 17,
+  "archive_bytes": 159804,
+  "original_bytes": 973252,
+  "category_counts": {
+    "full191": 2,
+    "retention": 1,
+    "npm-default-sandbox": 1,
+    "fixture77-preparation": 13
+  },
+  "checks": [
+    "All17 source/archive regular files, unique paths, exact recorded sizes and SHA256 hashes.",
+    "All17 gzip decompressions byte-equal original named input.",
+    "Archive paths remain under private candidate; relative paths match destination rooted in exact supplement directory with no traversal/symlink.",
+    "Exact17 archives plus allowlist, no unlisted payload files.",
+    "Primary allowlist hash matches linked immutable primary candidate.",
+    "Completed old sandbox failure evidence remains separate from then-active local-permission rerun; fixture77 payload is preparation only."
+  ],
+  "records": [
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/full191/account-auth-rest-full191-failure-classification-fast.json.gz",
+      "archive_sha256": "54dfa5caead168d0a87610a527adc3204b37852dcff4cd958158744277e98e69",
+      "original_sha256": "5a70b0e32e8958b53aff062323c77b533693704a31351e8aa5d40d4059089544",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/full191/account-auth-rest-full191-source-roster-independent-capture.json.gz",
+      "archive_sha256": "f06f116b902d7d7582a33da2341d7126ecf244677a346601961b982f9b245f74",
+      "original_sha256": "3d6b0d4c355ef1c48be536bcc16f82ba34631ab8fea817c6affb09403d42e724",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/retention/account-session-retention-second-pass-validation-capture.json.gz",
+      "archive_sha256": "687c0e5e196c0d139c4895b7dc94d6abe871040de31e65099217f7c85b66a96c",
+      "original_sha256": "26ebdef4c9943623c045c7ce23f504909a169511a19ae1787a3879bf2c5fcd9f",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/npm-default-sandbox/account-session-f96eddd3-npm-verify.log.gz",
+      "archive_sha256": "674a02a4569388fb75768f1584881e70d43aa19a8ac710881f1b4993991754bf",
+      "original_sha256": "2e5dd33276dd79543f843eb48a2decadf95e09eb4ef69980392d0d0bf9a38cc5",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/account-session-fixture77-independent-review-capture.json.gz",
+      "archive_sha256": "f9bb085cfacaeb260ef8e72e6d5ed6c791e97fa49107233b8199e03752782ee5",
+      "original_sha256": "94387cf84b2efff254eab82c3de68fca086aa6f792ac98eb2653f02d0009bb17",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/account-session-fixture-validation-plan-fast.json.gz",
+      "archive_sha256": "19d21b8bfaf1d17eb0f49b150a27a23cdf9965d7e9466bccc50eb8d1b45a5ac3",
+      "original_sha256": "18ab429bd819378020ab5780b18c554062cf70f786182883e7da8399c3dea617",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/manifest.json.gz",
+      "archive_sha256": "257dd9a5b0ca646f5f4a2909d49e1b05bd9ac9ab82c24138c8db939ee2bfd082",
+      "original_sha256": "254c39a68a92088ee329785a83108c486fb8b2148b9145a4813616f532ed9f2a",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/check-parser.py.gz",
+      "archive_sha256": "376f5cedd2f9a65dbaff163a643e5985ec38f9db10c72150461badee195c7353",
+      "original_sha256": "4576b0734c8826867a00fe97f50d15db494396a94cb8796307a7f85d138529e7",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/driver.sh.gz",
+      "archive_sha256": "e3eca19c48d5f611df50a4f8a0e6f48dca2275a1b7e2a183e82da3452bcada8c",
+      "original_sha256": "b96c9674a9e3c60ea657ad1a2469120fc1dac01d97875b9926b316b758e4185d",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/fixture-roster.json.gz",
+      "archive_sha256": "2c4511db43b31686cb231d82a2c9e7fe46298349e569a4171863bee294ad9f88",
+      "original_sha256": "20762b55d61f3cfc150dbb633d4800a029503a01c6ff0062ff337bc924d1102b",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/only.txt.gz",
+      "archive_sha256": "3971dd1e568e3dd70bd6af90059f0e7e3d6d21ab3cf4d2fa276b58869db13ca2",
+      "original_sha256": "f760d1d13595f913bb609fd975337f7c2e25f83964c14d5f59842cf28d3457a1",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/parser-check-receipt.json.gz",
+      "archive_sha256": "166ac045d08a57f034011c2869f383cc16495b5dc494b4ba21589168e08e0e06",
+      "original_sha256": "02d45398fa44b9f84a94328a56e3dd026826a57be8ce53a0fd9ef0663fcca90c",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/postgres-map.json.gz",
+      "archive_sha256": "429ed4458d23c8532a3ec1fdf070a9b2053eeea7677b1a2afbf510d84323fc69",
+      "original_sha256": "2cc161fd8a747741306d0ac2149755df11c7825ce9ebd762669901fdc1fa7401",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/preflight-check-receipt.json.gz",
+      "archive_sha256": "53046da237266b2cbda46ecd51683abc52cff50402918766df209c4eab4d8a0e",
+      "original_sha256": "f0c5ecff2f252e3bab52603a065b5047f513cd2f8f92be8da4f8d77ea5b46130",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/probe.py.gz",
+      "archive_sha256": "258f03ba207c2a4cdab6cde80671f9a151c5d11e37d2609e130b1b6a96d7509d",
+      "original_sha256": "971fe03db86c5b3f276bd6fc95380b67e1efa8d78a0fe1fb878f979087e46093",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/selected.jsonl.gz",
+      "archive_sha256": "38ee2c68b42f795663616ad1245d706eed37c1dca3a72bdc3148e4141942f6be",
+      "original_sha256": "1d3a26339f16cca817c629e60ed03c874b6a8cbdfd03ff8ed68c88c3a684c8b4",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    },
+    {
+      "destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/validate-results.py.gz",
+      "archive_sha256": "9959ac62154a4075ce9116616b8dd7b26cb0db935fb89f3d412e0759fdf7ae86",
+      "original_sha256": "5fdd97fd980a69ec0b35a630abdd01fd40f2f8337609691d54579c385c657c8e",
+      "roundtrip": "byte_exact",
+      "regular_file_and_path_bounds": "PASS"
+    }
+  ],
+  "remaining_holds": [
+    "Root sole repository writer must import only the17 listed archives and review records, with exact readback.",
+    "This review does not turn prior npm failure or fixture77 preparation into runtime PASS.",
+    "Full19123 failures and all production/rollout HOLDs remain separately tracked."
+  ],
+  "runtime_commands_executed": 0,
+  "repository_writes": 0,
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

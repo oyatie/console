@@ -1,0 +1,7 @@
+{
+  "checks": 11,
+  "passed": 11,
+  "meaning": "1actual retainedRED+9malformed-output negative controls+1synthetic parserGREEN;0newRustexecution",
+  "probe_sha256": "b45d1aa74eb2a980e6103682d17b1381a50d72a416d892f397f8c818af172e71",
+  "contract_sha256": "28329ea489e991ae32dc8b84ac33e8f0f500ce0d5fb64d2d207fa7d15fa1b478"
+}

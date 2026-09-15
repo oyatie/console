@@ -1,0 +1,60 @@
+{
+  "head": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "bindings": [
+    {
+      "path": "backend/app/src/durability_composition_tests.rs",
+      "sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "same_as_base": true
+    },
+    {
+      "path": "backend/app/src/workflow_drain.rs",
+      "sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "same_as_base": true
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "same_as_base": true
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "sha256": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+      "same_as_base": false
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1",
+      "same_as_base": true
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "sha256": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+      "same_as_base": false
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "sha256": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+      "same_as_base": false
+    },
+    {
+      "path": "backend/crates/kernel/core/src/error.rs",
+      "sha256": "e0697960d1cba3beb35ccd0cf10b1ae94c5d208e2d6c80264928faf9c4062932",
+      "same_as_base": true
+    },
+    {
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "same_as_base": true
+    },
+    {
+      "path": "backend/crates/platform/db/src/durability.rs",
+      "sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "same_as_base": true
+    },
+    {
+      "path": "tools/lanes/recovery/supervise_recovery.py",
+      "sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c",
+      "same_as_base": true
+    }
+  ]
+}

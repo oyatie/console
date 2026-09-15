@@ -1,0 +1,21 @@
+{
+  "classification": "evidence",
+  "base_sha": "c6a154ffff06c7d97e144db393615eae1e6bfb81",
+  "counts": {
+    "new_tables": 1,
+    "functions": 3,
+    "triggers": 3,
+    "foreign_keys": 9
+  },
+  "source_blobs": 15,
+  "nonexecuted_cases": 21,
+  "lifecycle_rows": 7,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

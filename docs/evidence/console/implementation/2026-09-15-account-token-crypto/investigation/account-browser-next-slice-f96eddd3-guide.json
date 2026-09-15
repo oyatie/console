@@ -1,0 +1,155 @@
+{
+  "kind": "READ_ONLY_NEXT_WORKFLOW_AND_MECHANICAL_GUIDE",
+  "author": "/root/inventory_repair",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "writer": "/root",
+  "immutable_target": "Approved BW31 Company-free browser lifecycle through terms, primary-passkey enrollment/login, live Account session, me/empty contexts, CSRF/refresh/logout; no production activation",
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "scope": "Investigation only. No source edits, Cargo, Docker, PostgreSQL, server, or lane execution by this agent. This artifact is advice to the root, not lane admission or a substitute for reviewed exact public interfaces.",
+  "authority": {
+    "entry": "README.md; docs/current/PRODUCT.md; docs/current/ROADMAP.md; docs/current/DELIVERY.md",
+    "design30": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+    "bw31": "5f9f3b15704deaf8e81a682e4475af489d164210",
+    "test_approvals": {
+      "browser04": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+      "session05": "3305cd3fdce03a04d4b5d354617dd911d9da49ca",
+      "terms06": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171"
+    },
+    "receipts": "docs/evidence/console/approvals/2026-09-13-{design30,wire31,browser04,session05,terms06}/*-approval.json",
+    "status_caution": "Frozen proposed/awaiting-approval labels in original packets are historical; later exact approval receipts govern. terms06 also retains later user direction consolidating preparation/review instead of piecemeal checkpoints."
+  },
+  "probe": {
+    "existing_target": "app-auth-rest-pg; Cargo selection -p console-app --test auth_rest account_browser::",
+    "source": "backend/app/tests/auth_rest.rs:3772",
+    "expected_discovered": 25,
+    "historical_source": "068c1d8fd74f4818c92708a5007673e2356a3988",
+    "historical_run": "/private/tmp/account-auth-rest-full179-22999a56bdc94b00853b5d496e77f964",
+    "historical_results": {
+      "all_auth_rest": {
+        "executed": 179,
+        "pass": 149,
+        "fail": 30
+      },
+      "account_browser": {
+        "executed": 25,
+        "pass": 7,
+        "fail": 18
+      }
+    },
+    "failure_classification": "All18 browser failures reached Response::json at auth_rest.rs:3976.16 actual404 vs expected200; public_terms_without_authority_returns_503 and configured_missing_artifact_fails_closed actual404 vs503. No SQLSTATE in these18 failure blocks.5 oracle controls and2 actual terms SQL tests passed. Crypto, atomic activation, CSRF and later route assertions remain unreached.",
+    "next_requirement": "Root current full191/25browser execution must establish actual current RED and exact selection/cleanup; admit/run only through tools/lanes/fanout.py. Historical failure is not current lane admission. Same admitted command must be GREEN after integration; retain the first-route blockers as evidence, never count unseen assertions as tested.",
+    "positive_boundary": "company_free_registration_me_and_empty_contexts:4699 checks exact terms artifacts, real passkey ceremony, committed evidence, strict me projection, actual empty contexts, no invented users/company_actors, unchanged Company/Employment/Person population.",
+    "deeper_checks": "acknowledgment retry:4777; nonce/origin/challenge retry:4818; concurrent completion/replay:4881; lost response/swapped handle:4952; refresh/logout:5034; refresh-only read-only:5118; parser separation:5157; ES256/proof/time/generation:5470,5534,5628,5680,5770; retained/same-digest publication/artifact recovery:6015,6083,6157."
+  },
+  "facts": [
+    {
+      "location": "backend/crates/platform/auth-rest/src/lib.rs:308; backend/app/src/lib.rs:3717",
+      "fact": "Existing auth router has v1 routes only. It is merged outside tenant domain middleware and inside normal request timeout; this is the existing mount for a sibling Account browser router. Current production source has no v2 Account routes or Account session parser."
+    },
+    {
+      "location": "backend/crates/platform/auth-rest/src/lib.rs:158,181,227,275; backend/app/tests/auth_rest.rs:4104",
+      "fact": "AuthRestConfig already carries RP settings/ES256 keys/refresh limits; AuthRestState retains separate auth_database. Browser fixture uses full AppConfig/AppState startup and supplies CONSOLE_ACCOUNT_TERMS_ARTIFACT_ROOT; current production config does not consume that key."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/jwt.rs:19,83,270,299",
+      "fact": "AccessTokenInput and AccessClaims require org and tenant roles. Existing issuer provides reusable PEM/ES256 configuration and crypto, but its access method cannot represent Account. AS1 requires distinct aud console.account.v1 and token_kind account_v1, with no org/roles and live family/generation validation."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/webauthn.rs:316,328,703,850,1012",
+      "fact": "PasskeyService constructs pinned Webauthn, but existing register/login SQL requires users/org and tenant RLS, returns AuthenticationOutcome.org_id, and claims ceremony before the Account guard. Reuse library verifier/state serialization and credential update mechanics with Account-specific transaction paths; do not reuse current tenant orchestration."
+    },
+    {
+      "location": "backend/crates/platform/auth/src/refresh.rs:49,156,372,584",
+      "fact": "RefreshTokenStore generates and hashes opaque tokens, rotates/revokes families and enforces absolute lifetime. Existing methods require Company lookup/audit/RLS and intentionally reject Account-fenced subjects. Reuse primitive/mechanical behavior in Account transaction methods, preserving single-use and no grace replay."
+    },
+    {
+      "location": "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql:1; ops/postgres-finalize-account-custody.sql:480,495,497,502",
+      "fact": "0226 creates six dormant Account/terms relations. Finalizer grants only narrow read/lock verbs to owners and account_legacy_fenced_v1 execution to Auth. There is no runtime Account CRUD or current/retained terms projection helper. Startup enforces exact catalog fingerprints; schema/helper changes must be serialized with custody profiles, generated SQL, and preservation checks."
+    },
+    {
+      "location": "backend/crates/platform/db/migrations/0004_create_auth.sql:6,18,34,46; 0034_enforce_org_id_rollout.sql:17; 0035_enable_rls_rollout.sql:26",
+      "fact": "Existing auth tables still have users FKs, mandatory org provenance and Company RLS. ACCOUNT_V1 family columns and BW31 ceremony binding columns have no numbered migration. AS1 schema-candidate.json:461-489 specifies ownership replacement/protocol fields; wrappers alone cannot pass Company-free acceptance."
+    },
+    {
+      "location": "backend/app/tests/auth_rest.rs:4608,4658; docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json company_actors",
+      "fact": "Unreached committed assertions demand family protocol ACCOUNT_V1 and directly query company_actors. No company_actors table exists in numbered migrations at this base. Add its actual approved identity-owned immutable attribution schema with Company RLS and no enrollment rows, never a fixture-only dummy table or weakened absence assertion."
+    },
+    {
+      "location": "backend/crates/platform/request-context/src/account.rs:15,34",
+      "fact": "AuthorityBindingSnapshot/check_exact_authority_binding is operand equality only; its header explicitly denies that it authenticates a session/capability. Current context owner, populated candidate navigation and switch semantics remain unimplemented."
+    }
+  ],
+  "mechanical_owner_split": {
+    "serial_root_before_fanout": [
+      "Bind exact current RED, immutable source/test/design target, lane names and allowed paths. Freeze minimal shared Account identity/session/terms types and SQL routine inputs/outputs in one root-owned interface revision before independent implementations.",
+      "Retain existing platform/auth credential owner, identity Account lifecycle owner, provisioning orchestration, auth-rest adapter and App composition. Add modules inside those crates; no new auth service/crate or generic plugin/port framework. Root owns shared exports, Cargo/BUCK/lockfiles, migration numbering, generated custody manifests/SQL, OpenAPI/CI and authority records.",
+      "Resolve and implement the serialized AS1 auth-table custody transition as one audited prerequisite: preserve UUIDs/key bytes/counters/token hashes/revocations; change users/simple+composite Company FKs to Account ownership; nullable nonauthorizing org provenance; protocol/generation/auth_time/assurance and same-Account family/token FK; BW31 ceremony flow/nonce/origin/terms bindings; remove employer credential DML/cascade authority and close all legacy callers on the restricted transport.",
+      "Do not let a migration broadly backfill account_security and fence all legacy users accidentally. Existing-account cutover needs its own exact preservation/eligibility plan and reviewed drain. Any legacy compatibility path must retain the permanent fence and must not grant business roles Account credential access.",
+      "Add narrow Auth owner routines for Account guard/current session/opaque key-token lookup and terms projections/mutations. Keep publisher mutation separate. Existing current exact six-table/function custody profile must be advanced coherently, not bypassed or weakened to accept drift."
+    ],
+    "private_implementer_auth_core": {
+      "suggested_owned_files": "New platform/auth/src/account.rs and/or account_{jwt,webauthn,refresh}.rs; existing jwt.rs/webauthn.rs/refresh.rs only exact root-approved primitive extensions. Identity Account types/guard and provisioning Account enrollment orchestration need a single designated owner, not competing writes.",
+      "shared_types": "Account identity UUID, closed AccountAccessClaims, closed AccountCsrfClaims, PASSKEY_PRIMARY assurance, validated AccountSession(account_id,family_id,exact_generation,auth_time,absolute_expiry), immutable TermsReleaseRef/item set, secret-bearing issued-session output with redacted/no Debug/Serialize. Names are implementation choices; wire fields/constants come from approved AS1/BW31.",
+      "mechanics": [
+        "Separate verified Account crypto from legacy claims. ES256 only, exact configured issuer/fixed Account or CSRF audience and token kind, strict claim set/UUID/version/time bounds. No unverified claim routes to a more permissive parser. Access/proof never accepted interchangeably.",
+        "Account-specific passkey ceremony methods use pinned Webauthn verifier; resident-required creation options and exact server-created16-byte Account handle; nonce hash/configured origin/challenge/terms revision are stored. Login resolves exact credential material then cryptographically verifies and rechecks Account ownership; unsigned userHandle is never authority.",
+        "Provisioning orchestrator owns begin/commit and Account guard before family/key/ceremony mutation. Registration locks Account then terms head FOR SHARE then sorted family/token/key/ceremony; validate exact acknowledgments/current artifact before atomic key+acceptances+same-Account security events+ACTIVE+family+ceremony consume. Invalid attempts roll back with retry possible; consumed attempt cannot remint.",
+        "Login under Account guard uses complete retained accepted manifest/item/evidence, independent of current terms head. Key-counter change, family creation and ceremony consumption commit atomically only after eligible consent; missing consent after valid proof403 without effects; missing authority503.",
+        "Session reads verify ACTIVE, exact generation/protocol/Account-family ownership, expiry/revocation and absolute lifetime. Read-only refresh inspection supports CSRF without consuming/extending anything. Rotation preserves family/auth_time/assurance; actual reuse revokes as existing contract. Logout revokes exact own family, replay401 no effects."
+      ]
+    },
+    "private_implementer_http_config_composition": {
+      "suggested_owned_files": "New platform/auth-rest/src/account_browser.rs and terms artifact adapter module; root-owned minimal wiring edits to auth-rest/src/lib.rs and app/src/lib.rs. Keep crypto/core files excluded.",
+      "mechanics": [
+        "Mount all12 routes from BW31 routes.json outside Company middleware via existing timed auth composition. Missing authority remains typed503, never route404. App startup parses trusted artifact root once and injects it; no per-request environment mutation or client path/network lookup.",
+        "Load bounded release-root fixtures/artifact-index.json into allowlisted digest/path metadata; enforce relative registered paths/root containment and immutable exact bytes/content digest/type. Current head is database authority, never local index preference. Retained manifest/content continue serving when current head is unsupported. Unknown digest404, registered unavailable503.",
+        "Use closed serde wrappers from wire.schema.json, native WebAuthn subobjects, exact route error envelopes. Parse recognized cookies once; reject duplicate cookies, Authorization and malformed mixed transport. Enforce byte limits before large buffering, HTTPS configured Origin for POSTs, supplied same-origin Fetch Metadata; no credentialed CORS or Referer fallback.",
+        "Always Secure/HttpOnly/Path=/ no Domain on __Host cookies; Lax access and Strict refresh/enrollment/login. Do not reuse the v1 configurable-insecure cookie helper or body-token response. Credentials/proofs stay out of Debug, tracing/capture, response JSON, SSR/hydration and URLs. Private/proof/POST responses no-store/no-cache and appropriate Vary.",
+        "CSRF GET validates independent cookie session with access preferred; fallback only absent/expired access; compare multiple successfully validated credentials for ambiguity. POST proof binds exact independently authenticated Account/family/generation. Errors never mutate credentials or clear cookies on foreign-origin input.",
+        "Project only AccountProjection with registered account.session.logout revision1. Empty contexts must come from successful current owner lookup proving no contexts; unavailable lookup503. Do not hardcode [] for all Accounts or fabricate CompanyActor on GET. Lost-response server behavior supports fresh primary login and exact Account identity; actual browser UI/network coordination remains separate acceptance."
+      ]
+    },
+    "parallelism_limit": "Workers may prepare independent private candidates only after formal meaningful RED admission and exact interfaces/allowlists. They do not edit shared integration root or migrations. Root combines in dependency order, compiler/selected tests, then independent source/runtime review. If exact owner or schema boundary is unresolved, investigate that dependency rather than write a placeholder implementation."
+  },
+  "terms_authority": {
+    "source": "docs/evidence/console/design/2026-09-13-account-browser-wire-31/{wire.schema.json,routes.json,storage-refinement.json,fixtures/artifact-index.json}",
+    "reusable": "0226 receipt/head/acceptance composite tuple and immutable receipt guard, current Auth transport/readiness, bounded filesystem standard library operations.",
+    "hold": "TEST_ONLY fixtures and direct test seed_terms are test inputs, not publisher CAS/operator approval/content authority proof. No production content publication from this lane."
+  },
+  "later_path": [
+    "Populated Account/current-context owner fixtures with GN16 complete current policy/cursor behavior; equality helper is insufficient.",
+    "Approved durable action_input_draft save/restore/seal/cancel and closed dispatch via existing ontology owner. owner-test-inventory.json explicitly has no reached draft lifecycle/custody/CCF1 evidence. common_action_composer.rs:68,183 is an existing presentation renderer; it neither authorizes nor persists and is not mounted into the app action workflow.",
+    "Use existing payroll stage_draft_run_in_tx:349, stage_draft_run_returning_id_in_tx:396 and lifecycle calculate_run_in_tx:515; current API lifecycle/draft-golden/tenant/self-read tests are reusable substrate, not proof of native30 owner registration. Integrate NONPAYABLE_REVIEW monetary publication/own historical corrected publication through current authority and Leptos SSR; payable writes remain revoked by0222.",
+    "Maintain full Console Foundry/Ontology/Actions/Fusion breadth and native communications/collaborative sheets commitments as later scoped work. Intelligence/AIP clone, live credential recovery/cutover, production, payment and legal authority remain separate HOLD."
+  ],
+  "completion_and_holds": {
+    "finish": "Root admitted current browser probe green, exact25 discovered/executed accounting, positive lifecycle plus all selected negatives and no-effects snapshots reached, custody/auth protocol preservation and reader regression probes green, independent code/runtime review, record head/reviewers/remaining HOLDs.",
+    "pre_mortem": "A green terms503 adapter hides missing credential owners; fake Company or broad auth grants pass superficial routing tests; partial activation or old employer paths restore sign-in authority; stale terms/cookie fallback hides unavailable authority.",
+    "blast_radius": "Identity global auth/custody and browser session protocol; segregate from Company domain data and public release authority. Existing auth table migration affects all legacy callers, not just the12 new HTTP routes.",
+    "detection": "Frozen browser positive/negative/no-effects oracles; exact runtime role/catalog profile, legacy reader regression, concurrent completion/replay and retained terms checks. Do not equate route-level reachability with crypto/rollback proof.",
+    "rollback": "Reviewed forward source rollback with enrollment held closed; retain Account/security permanent fence, key and consent evidence, consumed ceremonies and revoked families. Never restore a pre-revocation DB/key snapshot or roll back into old employer-owned auth access.",
+    "stop": "Missing current RED; unresolved shared schema/interface; collateral file writes; weakening frozen tests; unexpected grants, Account merge/fake Company, active enrollment before legacy closure/drain, secrets in output; any probe/review failure remains failure.",
+    "remaining_holds": "Real resident-capable browser and cross-tab/network/late-cookie race acceptance; populated contexts; measured rate/pending/capacity/cleanup; single-key replica identity/cutover/drain/rollback; qualified content publisher authority; production/payment/legal. Existing broader approval does not establish these tests or grant live activation."
+  },
+  "source_sha256": {
+    "backend/crates/platform/auth/src/jwt.rs": "a67e2204bdbe8b3dfe1cbf96851e38ce3b331c760939e697136fa97528ed367f",
+    "backend/crates/platform/auth/src/refresh.rs": "74fa05d8456bdf1e9d8d8eb73928b89bae469f2531d601f4f80b138cc206c6d8",
+    "backend/crates/platform/auth/src/webauthn.rs": "4ecaa2656040482112872b795daecee16b2d15ee1ad7d6052018410755672b57",
+    "backend/crates/platform/auth-rest/src/lib.rs": "9faf699f8b0853dbb8bfa0822e2e107ac31d3113dcb1bf7b083299e32ee119de",
+    "backend/app/src/lib.rs": "534ba2bf73699dbe322406ca287828c42f3d62e7a343fdc79638b145f8db3cfa",
+    "backend/app/tests/auth_rest.rs": "9e62c1e0c2c4d81cc8c5d6c62210d59851bcdb44a11e26f49c4eab10478d7b25",
+    "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql": "3f03683d7f117cf094c58e1230283de1dfa816be33de5573aa55e761985a8afc",
+    "ops/postgres-finalize-account-custody.sql": "eb090fe7a67ba216097a0ec04672030116bf0550ba6772ac17d90e888f94f7ab",
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011",
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json": "b90fc33ad97191af147fbae8c87b6833c577359ea3ef259226455ce6e1d28f75",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt": "f73a36e813041f7498c90fde5a3fb97cc056a85d823af2ba81c00d53b33b3298",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/wire.schema.json": "e89b185f2e1d94c0a04265113b7ef92b2932422949457d5ad4545f34c0b60075"
+  }
+}

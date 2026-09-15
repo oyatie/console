@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "console.submission24",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Preparation24"
+    },
+    {
+      "$ref": "#/$defs/SourcePayloadRef24"
+    },
+    {
+      "$ref": "#/$defs/SubmissionMetadata24"
+    }
+  ],
+  "$defs": {
+    "SourceInputIdentity24": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "SOURCE_INPUT24"
+        },
+        "org_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "draft_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "revision_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/PositiveRevision"
+        },
+        "input_schema_ref": {
+          "$ref": "../2026-09-12-owner-execution-contract-20/input-reference.schema.json#/$defs/InputSchemaRef20"
+        },
+        "draft_source_hash": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        },
+        "source_input_digest": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "protocol",
+        "org_id",
+        "draft_id",
+        "revision_id",
+        "revision",
+        "input_schema_ref",
+        "draft_source_hash",
+        "source_input_digest"
+      ],
+      "additionalProperties": false
+    },
+    "Preparation24": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "SOURCE_PREPARATION24"
+        },
+        "unit_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceInputIdentity24"
+        },
+        "control_revision": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/PositiveRevision"
+        },
+        "editing_epoch": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/PositiveRevision"
+        },
+        "action_type_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "object_type_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "owner_key": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/RegisteredAsciiId"
+        },
+        "owner_action": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/RegisteredAsciiId"
+        },
+        "target_binding_digest": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        },
+        "custody_binding_digest": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "format",
+        "unit_id",
+        "source",
+        "control_revision",
+        "editing_epoch",
+        "action_type_id",
+        "object_type_id",
+        "owner_key",
+        "owner_action",
+        "target_binding_digest",
+        "custody_binding_digest"
+      ],
+      "additionalProperties": false
+    },
+    "SourcePayloadRef24": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "SOURCE_DRAFT_REVISION24"
+        },
+        "preparation_unit_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "preparation_digest": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        },
+        "source": {
+          "$ref": "#/$defs/SourceInputIdentity24"
+        }
+      },
+      "required": [
+        "kind",
+        "preparation_unit_id",
+        "preparation_digest",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "SubmissionMetadata24": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "SOURCE_SUBMISSION24"
+        },
+        "preparation": {
+          "$ref": "#/$defs/Preparation24"
+        },
+        "attempt_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "command_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "command_fingerprint": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "format",
+        "preparation",
+        "attempt_id",
+        "command_id",
+        "command_fingerprint"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

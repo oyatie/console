@@ -1,0 +1,115 @@
+{
+  "head": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+  "results": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_auth_database_",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "expected_executed": 7,
+      "actual_result": [
+        "ok",
+        "7",
+        "0",
+        "0",
+        "0",
+        "141"
+      ],
+      "log": "account_auth_database_.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "auth_target_parser::",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "expected_executed": 8,
+      "actual_result": [
+        "ok",
+        "8",
+        "0",
+        "0",
+        "0",
+        "140"
+      ],
+      "log": "auth_target_parser__.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_custody_startup::custody_genuine_no_database_configuration_keeps_existing_behavior",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "expected_executed": 1,
+      "actual_result": [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "147"
+      ],
+      "log": "account_custody_startup__custody_genuine_no_database_configuration_keeps_existing_behavior.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "account_custody_startup::custody_configured_database_failure_does_not_become_no_database_mode",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "expected_executed": 1,
+      "actual_result": [
+        "ok",
+        "1",
+        "0",
+        "0",
+        "0",
+        "147"
+      ],
+      "log": "account_custody_startup__custody_configured_database_failure_does_not_become_no_database_mode.log"
+    }
+  ],
+  "source_after_head": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+  "status_after": ""
+}

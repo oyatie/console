@@ -1,0 +1,216 @@
+{
+  "kind": "ACTUAL_EXECUTION_EVIDENCE_NOT_SLICE_ACCEPTANCE",
+  "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+  "rows": [
+    {
+      "id": "CTX-DIAGNOSTIC",
+      "package": "console-platform-request-context",
+      "selector": "--lib",
+      "counts": {
+        "discovered": 20,
+        "executed": 20,
+        "passed": 16,
+        "failed": 4,
+        "filtered": 0
+      },
+      "classification": "BEHAVIORAL_RED",
+      "failure": "Four real HTTP formatter body-equality assertions fail after status/header checks; fixed public failure controls pass.",
+      "boundary": "HTTP error response formatter, synthetic diagnostic input",
+      "limits": [
+        "No actual SQL-origin witness",
+        "No general route/trace/egress proof"
+      ],
+      "sources": [
+        "backend/crates/platform/request-context/src/lib.rs"
+      ],
+      "log": "console-preparation-request-context-67693004.log",
+      "source_sha256": {
+        "backend/crates/platform/request-context/src/lib.rs": "dd15344be6488b64deb357258610d7421bf0a70f3432b5315238d4167d2017af"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "f5a84ef8ca622867c6ecdc4468be3516152d1213c6eda02e0c43c449bd498e53",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    },
+    {
+      "id": "SEC-CEDAR",
+      "package": "console-platform-authz",
+      "selector": "--test cedar_diagnostic_fail_closed",
+      "counts": {
+        "discovered": 5,
+        "executed": 5,
+        "passed": 2,
+        "failed": 3,
+        "filtered": 0
+      },
+      "classification": "BEHAVIORAL_RED",
+      "failure": "Allow survives real Cedar evaluation diagnostics in command/row/field helpers.",
+      "boundary": "Compiled policy evaluation; clean permit and forbid positive controls",
+      "limits": [
+        "Does not establish policy administration, DB loading or caller completeness"
+      ],
+      "sources": [
+        "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs"
+      ],
+      "log": "console-preparation-cedar-67693004.log",
+      "source_sha256": {
+        "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs": "914385a944d375c70c6c24e4e5e901bf98c3a20a0b80966e402c1b51b24d2dd6"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "6d9340b2af5c87d582de0af413a6131f2cef4e9ae3de1f9484322b46acc60725",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    },
+    {
+      "id": "SEC-REALTIME",
+      "package": "console-platform-realtime",
+      "selector": "--test hub same_account_",
+      "counts": {
+        "discovered": 5,
+        "executed": 2,
+        "passed": 0,
+        "failed": 2,
+        "filtered": 3
+      },
+      "classification": "BEHAVIORAL_RED",
+      "failure": "Two active Company contexts of same Account receive each other\u2019s message/ack events.",
+      "boundary": "Actual shared dispatch; existing for_tests connection fixture",
+      "limits": [
+        "DB membership loader bypassed by existing fixture",
+        "Same-tenant Company projection test, not cross-tenant isolation theorem"
+      ],
+      "sources": [
+        "backend/crates/platform/realtime/tests/hub.rs"
+      ],
+      "log": "console-preparation-realtime-67693004.log",
+      "source_sha256": {
+        "backend/crates/platform/realtime/tests/hub.rs": "29d6adf7aea6b2d2727d1035328ed288d598cf1db46fa9ac8ebdd0741698dfb2"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "39ada7bbc343def9aee3400662a4179f7b6c6a172c62f04f68c34fa61e802fd2",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    },
+    {
+      "id": "SEC-TELEMETRY",
+      "package": "console-app",
+      "selector": "--lib security_diagnostic_sink_tests",
+      "counts": {
+        "discovered": 166,
+        "executed": 2,
+        "passed": 0,
+        "failed": 2,
+        "filtered": 164
+      },
+      "classification": "BEHAVIORAL_RED",
+      "failure": "Actual DbError/RequestContextError conversion emits private synthetic diagnostic to tracing; real stable production event present.",
+      "boundary": "Production conversion and captured tracing subscriber",
+      "limits": [
+        "Synthetic formatter fault, not DB-induced HTTP fault",
+        "Later paired-equality assertion blocked by earlier leak assertion"
+      ],
+      "sources": [
+        "backend/app/src/console_telemetry.rs"
+      ],
+      "log": "console-preparation-telemetry-67693004.log",
+      "source_sha256": {
+        "backend/app/src/console_telemetry.rs": "84d10c46eaade3f2ac0fd9808e0fd2f61ad256c00e33c96c7735cdb112db8095"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "67258fd52e534afac4723f607a7675315fcb4ade2f3027385531c25cdfaaaf47",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    },
+    {
+      "id": "MIGRATION",
+      "package": "console-app",
+      "selector": "--test account_migration",
+      "counts": {
+        "discovered": 2,
+        "executed": 2,
+        "passed": 0,
+        "failed": 2,
+        "filtered": 0
+      },
+      "classification": "CATALOG_PREREQUISITE_BLOCKED",
+      "failure": "Actual migrations225 and current migration entrypoint execute after real credential/refresh/audit production; accounts/account_security/company_actors absent.",
+      "boundary": "Numbered catalog migration only",
+      "limits": [
+        "Preservation/backfill/revocation assertions not reached",
+        "Cannot admit session/context/authz/mixed-version implementation on this failure",
+        "Current auth producer must remain compatible with225 through catalog lane; later auth transition requires frozen real legacy producer before removing compatibility"
+      ],
+      "sources": [
+        "backend/app/tests/account_migration.rs"
+      ],
+      "log": "console-preparation-migration-67693004.log",
+      "source_sha256": {
+        "backend/app/tests/account_migration.rs": "a313e2611cb7aabeaab49029e23bd6dd6ca1e3f30e090bc0749e6334d484186a"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "10748b61f63642021291a6eafdb1e982155f786f1d9c11b5f202aebea6d668a7",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    },
+    {
+      "id": "ACCOUNT-HTTP",
+      "package": "console-app",
+      "selector": "--test auth_rest",
+      "counts": {
+        "discovered": 61,
+        "executed": 61,
+        "passed": 25,
+        "failed": 36,
+        "filtered": 0
+      },
+      "classification": "MIXED_PREREQUISITES_AND_PRIOR_BOUNDARIES",
+      "failure": "Full mapped Account suite retains59 earlier tests and2new publisher privilege prerequisites; inspect individual failures, no blanket domain RED.",
+      "boundary": "Actual auth HTTP and storage tests",
+      "limits": [
+        "2new publisher tests fail at missing catalog before role mutation/privilege assertions",
+        "Exact rejected ephemeral FK exception untouched"
+      ],
+      "sources": [
+        "backend/app/tests/auth_rest.rs",
+        "backend/app/tests/auth_rest/account_storage.rs",
+        "backend/app/tests/auth_rest/publication_privileges.rs"
+      ],
+      "log": "console-preparation-auth-final.log",
+      "source_sha256": {
+        "backend/app/tests/auth_rest.rs": "207ef8e388e76969e321286c14b91f9175a90bc9b8d63c53306d3205fd548b24",
+        "backend/app/tests/auth_rest/account_storage.rs": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5",
+        "backend/app/tests/auth_rest/publication_privileges.rs": "20fdcc350261b94a4bfbb12e5a4f0cc923397e134f3d5fa8e4bd60ff4955f621"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "dbea67a61634ceaf518f12f991f784de911a2c9ad4598db01de250e3bc01d5ab",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    },
+    {
+      "id": "RECOVERY",
+      "package": "console-payroll-adapter-postgres",
+      "selector": "--test recovery",
+      "counts": {
+        "discovered": 2,
+        "executed": 2,
+        "passed": 1,
+        "failed": 1,
+        "filtered": 0
+      },
+      "classification": "ONE_BEHAVIORAL_RED_ONE_PASS",
+      "failure": "After original SyncRep backend termination, locally visible receipt replay returns success before remote_apply; lost COMMIT reply case reconciles one effect.",
+      "boundary": "Two local durablePG18.6nodes, real LOGIN and PgPayRunPort",
+      "limits": [
+        "Not acknowledged data-loss proof; remote WAL flush not measured",
+        "Original assumption receipt visible while original backend waits SyncRep was disproved and retained",
+        "Typed unknown/app-side wait needs explicit witness/classifier; an unclassified error/timeout cannot admit owner implementation",
+        "Not independent failure-domain or deployed failover certification"
+      ],
+      "sources": [
+        "backend/crates/payroll/adapter-postgres/tests/recovery.rs"
+      ],
+      "log": "console-preparation-recovery-final.log",
+      "source_sha256": {
+        "backend/crates/payroll/adapter-postgres/tests/recovery.rs": "47b206ec5baacf32e9a6cd68dffa7b5b1f1b0fcb4ed7cb4b6f5cef98fcad4430"
+      },
+      "source_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+      "log_sha256": "27f83b87c40a3ee3d32ff68ebaa44a53d4f16ec0f08ae0654d060fe6a33ecb26",
+      "test_approval": "CONSOLIDATED_APPROVAL_PENDING"
+    }
+  ],
+  "note": "Counts refer to selected Cargo target totals and executable filters; retained logs determine individual failure stage. Historical source-identical runs retain their original invocation chronology. No sum is represented as whole-slice coverage."
+}

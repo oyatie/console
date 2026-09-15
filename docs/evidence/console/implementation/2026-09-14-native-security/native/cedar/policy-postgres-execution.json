@@ -1,0 +1,26 @@
+{
+  "candidate_sha": "19a94c2fef2adb711cd0e9e2b972d8b83384f829",
+  "command": [
+    "bash",
+    "tools/lanes/pgtest.sh",
+    "/private/tmp/console-native30-cedar-20260914",
+    "cargo",
+    "test",
+    "--locked",
+    "-p",
+    "console-platform-authz",
+    "--test",
+    "policy"
+  ],
+  "env": {
+    "DOCKER_CONTEXT": "colima-console-design30",
+    "RUSTC_WRAPPER": "",
+    "CARGO_INCREMENTAL": "1",
+    "CARGO_TARGET_DIR": "/private/tmp/console-account30-cargo",
+    "RUSTUP_TOOLCHAIN": "1.98.1"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 9.55,
+  "log": "policy-postgres.log",
+  "database": "Existing disposable PG18.6 runner generates private credentials and removes own container/volume"
+}

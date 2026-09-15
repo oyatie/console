@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/review_completeness",
+  "status": "APPROVE_PROPOSAL_ONLY_APPLICATION_REQUIRES_EXPLICIT_TRUSTED_USER_APPROVAL",
+  "unchanged_source_sha256": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5",
+  "patch_sha256": "f450999524242cbe0f036b93e77fe17c2c33fc1351b26f0562a344b305fd44ce",
+  "proposal_sha256": "b4f963d08cc0343a2e64800d88710da0d340d3f005a9b6fea84e33e2a9f7182d",
+  "proposed_source_sha256_verified_in_memory_only": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+  "assessment": [
+    "Existing foreign_keys query filters source and target namespaces to public; exception cannot match cross-schema names.",
+    "Exact validated ceremony_bindings(ceremony_id)->ceremonies(id) edge required with DELETE CASCADE and UPDATE NO ACTION/RESTRICT.",
+    "All other Account custody foreign-key destructive delete/update assertions and forbidden employer targets retained unchanged.",
+    "Existing migration0144 declares this exact ephemeral cascade edge. No whole-table or all-cascade exemption.",
+    "Five compiled pure-predicate checks passed including8tuple/action mutations and3other destructive-edge actions; not a database integration test."
+  ],
+  "commands": [
+    "rustc --edition 2024 --test /private/tmp/console-ephemeral-predicate-review-20260914.rs -o /private/tmp/console-ephemeral-predicate-review-20260914",
+    "/private/tmp/console-ephemeral-predicate-review-20260914"
+  ],
+  "discovered": 5,
+  "executed": 5,
+  "passed": 5,
+  "failed": 0,
+  "filtered": 0,
+  "predicate_source_sha256": "2f52e8056020a732e10e38511317712d4c00ea5f07029d3c8c9be94072f87212",
+  "applied": false,
+  "restriction": "Automatic approval review rejected applying the source-test correction; exact trusted-user approval remains mandatory. This review does not override it."
+}

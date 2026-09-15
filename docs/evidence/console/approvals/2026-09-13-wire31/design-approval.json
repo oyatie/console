@@ -1,0 +1,22 @@
+{
+  "classification": "evidence",
+  "status": "USER_DESIGN_SHA_APPROVED_BY_CONTEXTUAL_ASSENT",
+  "approved_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "frozen_packet_sha": "19299cfdd5f3b808667155901257225b1d769eee",
+  "inherited_design30_approval_preserved": true,
+  "user_message": {
+    "timestamp": "2026-09-13T20:26:57.130Z",
+    "text": "다음"
+  },
+  "binding": "User 다음 directly follows approval request naming this exact SHA; interpreted as assent to proceed with the next test-authoring stage. Exact original wording retained; not a claim user literally wrote 승인.",
+  "preceding_approval_request": {
+    "timestamp": "2026-09-13T20:24:01.436Z",
+    "text": "브라우저 Account 보완 설계를 수정하고 **4차 독립 검토에서 전원 동의**를 받았습니다.\n\n- 약관 동의를 정확한 발행·승인 이력에 영구 연결.\n- 가입 요청·응답 유실과 중복 재시도의 복구 규칙 확정.\n- 패스키·쿠키·CSRF·필드별 정보 노출 계약 보완.\n\n구조 예제 **23개 검증 통과**. 실제 제품·브라우저·부하 테스트는 아직 수행하지 않았습니다. 기존 staged 파일 94개는 그대로 보존했습니다.\n\n[보완 설계와 검토 결과](/Users/jasonlee/Developer/console/docs/evidence/console/design/2026-09-13-account-browser-wire-31/approval-request.txt)의 SHA `5f9f3b15704deaf8e81a682e4475af489d164210`를 승인하시겠어요?\n\n기존 승인 이후 저장 구조와 브라우저 계약이 추가되어, [DELIVERY.md:25](/Users/jasonlee/Developer/console/docs/current/DELIVERY.md:25)의 정확한 설계 SHA 승인 규칙이 적용됩니다. 승인 후 **실행 테스트 작성 → 독립 검토·테스트 승인 → RED 검증 기반 구현**으로 이어갑니다."
+  },
+  "source_file": "rollout-2026-09-11T16-59-27-01a09244-a53e-7c83-b38a-73150cfa02dd.jsonl",
+  "source_prefix_bytes": 138849360,
+  "source_prefix_sha256": "a98ad59fbc70a2c43a7c046b1a3ff8e7ee859560b55e03817c0459bf8a750289",
+  "test_sha_approved": false,
+  "implementation_admitted": false,
+  "production_authorized": false
+}

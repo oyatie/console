@@ -1,0 +1,55 @@
+Console — 구현 착수까지 남은 일 / 2026-09-12
+분류: 설계 제안과 현황 평가. 현재 PRODUCT/ROADMAP/DELIVERY를 대체하지 않는다.
+
+R1. 현재 판단
+첫 구현 착수 전 통합 설계 단계다. 아직 구현 승인 직전 단계라고 말할 수 없다. 초안·권한·검토·복구·전사 실행의 여러 어려운 경계는 범위를 한정한 독립 검토를 통과했지만, 입력부터 업무 결과까지 연결한 최종 계약과 실행 가능한 승인 테스트가 없다.
+남은 일을 여섯 묶음 W01–W06으로 관리한다. W01–W04는 설계/계약 완성, W05는 통합 설계 검토와 정확한 SHA 승인, W06은 실행 테스트 후보 작성·독립 검토·정확한 SHA 승인이다. 여섯 묶음은 동량의 작업이나 여섯 번의 대화를 뜻하지 않는다. W06 완료 후에도 승인된 테스트 commit의 유효한 RED probe로 lane을 admit해야 구현 착수가 가능하다.
+퍼센트나 완료 날짜를 산출할 근거는 부족하다. 문서/시나리오 개수는 남은 구현 난이도의 분모가 아니다. W04에서 owner별 변경면과 테스트 harness를 확정한 후 실제 작업량 추정을 갱신한다. 매 단계 보고는 새로 닫힌 항목, 남은 불확실성, 다음 종료 조건을 보여준다. 같은 주제를 반복 정교화하는 것만으로 진척으로 계산하지 않는다.
+
+R2. 세 가지 준비 상태를 구분한다
+① 첫 수직 기능 구현 준비: native 급여 입력 → 근거 준비 → 계산 → 저장된 결과 확인 → 필요한 검토/정정/복구. Leptos SSR, 기존 Rust owner 재사용, payable=false. Group 전사 관리와 권한별 작업 연속성을 경계 안에서 증명한다. 이미 만들어진 run의 계산 버튼만으로 native 업무 완주라고 부르지 않는다.
+② 파일럿 운영 준비: 1 tenancy/Group, 6 Company 합계 2,000명, Console 운영. 코드와 테스트뿐 아니라 실제 배포/복구/보존/지원, 운영 권한, 적용 업무별 자격 있는 검토가 필요하다. 파일럿의 실제 첫 사용 업무 목록은 아직 별도 확정 대상이다. 숫자만 확정됐다고 채용부터 급여 지급까지 전부 첫 오픈 범위로 간주하지 않는다.
+③ Console 전체 준비: 전체 Foundry suite와 Console 공용 기능 및 업무군의 세부 기능 목록, 공유 엔진 경계, 의존성, 단계별 수락 시나리오가 필요하다. 기존 19개 기능군은 탐색 목록이며 전체 기능 동등성의 증거가 아니다. 전체 엔진의 필요한 경계는 지금 설계하되 모든 미래 화면/함수의 상세 계약을 첫 급여 구현의 선행 조건으로 만들지 않는다. 미완료 기능은 목록에 남기고 구현 시점을 구분한다.
+
+R3. 지금까지 실제로 확보한 것
+제품 소스는 05200e43af13b527ce031b04369e05852862f1d6 기준이다. 기존 Leptos SSR 조회, Company RLS와 canonical writer, 급여 초안 계산은 재사용 기반이다. 이 문서 작성 중 제품 회귀 테스트를 새로 실행한 것은 아니다.
+후보03: Account 지속성, CompanyActor 귀속, 외부/내부 동일 인가 경계, 업무 결정과 실행허가 구분, 승인 초안 정정의 범위별 설계 수락.
+후보04: 한 PayRun의 부분 검토/정확한 coverage, 보이지 않는 항목을 맹목적으로 결재하지 않는 흐름의 범위별 설계 수락.
+후보05: 공통 객체 revision을 재사용하는 draft, CAS, 재접속, sealed attempt, private/work-bound custody의 범위별 설계 수락.
+후보06: draft 보존/삭제/독립 복구 증거의 설계 수락. 실제 공급자·SQL ACL·복구 훈련을 통과했다는 의미는 아니다.
+후보07: 선택된 최대 6법인의 기존 급여 초안 계산에 한정한 durable Group operation, 독립 Company 결과, 취소/재시도/부분 공개 설계 수락. 모든 종류의 전사 업무 엔진 완료가 아니다.
+각 범위는 review-receipt.json의 exact SHA에 한정한다. 원래 scope.json의 pending 상태와 후속 수락 receipt를 구분한다. 기존 네 독립 설계 검토는 공백을 발견했고, 이후 부분 보완은 최종 통합 후보에 대한 네 검토의 consensus를 대신하지 않는다. 승인된 design SHA와 test SHA는 아직 없다. 후보03–07 CSV는 비실행 oracle이며 제품 테스트 성공 횟수가 아니다.
+
+R4. 첫 구현 전에 남은 여섯 묶음
+W01 — 업무 배정·인계: 후보 자격과 Cedar 권한을 분리하고, 업무 단위 한 담당자, 부재/복귀/영구 이전, 과부하·후보 부재·수동 경로, saved draft와 unknown attempt의 인계 fence를 닫는다. 법인/사업장에 현지 담당자가 없어도 같은 계약이 성립해야 한다. 다음 작업은 assignment-next.txt의 유한한 검토 범위다. 이번 문서가 B04를 닫지는 않는다.
+W02 — 화면과 입력 완주: V01–V10을 하나의 상태/행동 행렬로 통합한다. 어디서 시작하고, 무엇이 자동 채워지고, 무엇을 확인해야 하며, 어떤 권한에서 어떤 액션이 나타나는지 고정한다. 정상/빈/거부/부분/오래됨/실패/미확정마다 보이는 데이터, 보존 입력, 담당자, 복구 액션, 포커스 목적지를 둔다. 처음 쓰는 사용자가 한 화면씩 찾아다니지 않아도 필요한 근거와 다음 행동이 드러나야 한다. 메모/링크도 관련 결정 지점에 권한 내에서 노출한다. 시각 목업만으로 완료하지 않고 task walkthrough와 테스트 가능한 DOM/접근성 요구를 함께 만든다.
+W03 — 본인 결과와 정정 요청: 본인 금액 DTO, 공개 시점/대상 revision, 과거 고용·퇴직 후 접근, 정정 요청과 처리 결과를 구체화한다. 읽기 전용 readiness 화면은 금액 명세서의 대체물이 아니다. 추천 경계는 비지급 계산 초안과 본인 공개/정정 흐름을 구분해 모두 설계하되, 어느 흐름이 첫 구현 대상인지는 최종 통합 후보에 명시하는 것이다. 실제 법적 임금명세서 발행·지급·신고는 별도 자격/권한 조건을 갖는다. 사용자에게 보이지 않는 미결정을 구현자에게 넘기지 않는다.
+W04 — 실행 가능한 통합 계약: 후보01 G01–G08 및 후보02 P01–P06를 소유자/API/상태/원자성/정답으로 연결한다. native 계약급여를 import 가짜 행 없이 계산 입력으로 정규화하고, verified source의 실제 생성/검증 경로를 만든다. 적용 기간·월중 변경·고용 형태별 지원/차단 profile, 동일 효력일 정정, 재준비/재마감/재계산, direct REST와 공통 Action의 동일 guards/replay를 확정한다. 외부 법률 권위와 독립 합성 금액 oracle을 분리한다. 모든 경우를 차단하는 테스트는 정상 계산 증거가 아니다.
+W04의 기술 산출물: 정확한 route/DTO/typed input/error 목록, revision/receipt 식별자, canonical writer와 participating transaction ports, 잠금 순서, migration/backfill/호환/rollback 계약, 데이터 분류/retention 범위, 변경 파일과 보호 테스트, 재현 가능한 fixture/harness, 부하·비용 기준. 구현하지 않은 코드의 실측 성공을 요구하는 것이 아니라 무엇을 어떻게 증명할지 먼저 결정한다. 현재 없는 payroll application crate를 기존 owner라고 기록하지 않는다.
+W04에서 상충 가정 해결: 후보07의 법인별 30초 execution deadline 및 lease와, 전사 2,000명 300초 목표/1,800명 집중 법인 fixture를 하나의 workload 계약으로 검토한다. 두 숫자가 반드시 모순이라는 결론은 아직 없지만, 함께 만족한다는 근거도 없다. 측정 전 임의 SLA로 승격하거나 시간초과를 rollback 증거로 사용하지 않는다. 동기 처리 유지/작업 분할/재개 가능한 계산 중 선택은 실제 owner 원자성과 측정 비용에 근거한다.
+W05 — 통합 설계 수락 및 권한 정합성: current PRODUCT는 공용 연락/office editing 등을 제외하고 있으므로 인터뷰의 확대 요구와 일치하는 current-authority 변경 후보와 단계별 범위를 준비한다. 지금 evidence만으로 HOLD를 해제하지 않는다. 첫 구현이 의존하는 변경은 착수 전에 정합성을 확보하고, 미래 모듈까지 모두 구현 승인받는 것으로 확대하지 않는다. 기존 검토 finding별 해결 증거와 미완료 범위를 하나의 immutable 후보에 묶고 DELIVERY에 따른 네 독립 설계 검토, consensus, 명시적 design SHA 승인을 받는다. material 수정은 해당 검토로 돌아간다. 이전 doc-link 진단의 미분류 authority candidate와 깨진 링크도 동결된 과거 증거를 고치지 않는 적법한 방법으로 해소하고 필수 authority gate를 실제 통과해야 한다.
+W06 — 실행 테스트와 구현 인계: 승인 설계에 맞춰 meaningful positive/negative, Company/field/derived-data 비공개, 실제 runtime RLS, 동시성/receipt/unknown recovery, 금액 oracle, Leptos 브라우저·키보드/접근성, migration 호환/rollback을 필요한 범위에 작성한다. 실제 discovery/execution 수와 실패 assertion을 기록하고 독립 검토 후 명시적 test SHA 승인을 받는다. 환경 오류/timeout/0 tests를 RED lane으로 쓰지 않는다. exact approved test commit에서 fanout.py admit/run 및 동일 probe GREEN이 구현 성공 조건이다. 테스트 후보는 아직 작성하지 않는다.
+
+R5. 의존 순서와 과잉 설계 방지
+W01과 W03은 각각 정리할 수 있다. W02는 지금 시작할 수 있지만 W01/W03의 결정과 맞춰 닫아야 한다. W04는 기존 소유자와 구체 API를 조사하며 병행할 수 있고 W01–W03 통합 후 확정한다. W05의 authority 후보 준비는 일찍 시작하되 최종 설계 검토는 통합 후보에 붙인다. W06은 승인된 design SHA 이후다. 지금의 안전한 다음 행동은 W01 설계와 독립 검토이며 제품 구현은 아니다.
+종료 기준: 추가 문서가 아니라 한 가지 정상 업무를 실제 입력부터 결과 readback까지 구현자가 임의 해석 없이 만들 수 있고, 실패/경합/인가 거부 때의 유일한 허용 결과가 테스트 oracle로 정의된 상태. 새로운 제품 아이디어는 전체 목록에 보존하되 현재 수직 기능 불변식에 영향을 주지 않으면 이 경로의 선행 조건으로 넣지 않는다.
+
+R6. 파일럿 운영 전에 추가로 필요한 일
+PILOT01 범위: 첫 오픈 대상 사람/법인/사업장/업무와 지원 고용·계산 profile, 전환/교육/수동 대체 운영을 명시한다. 2,000명 전체 모든 업무를 무근거로 약속하지 않는다.
+PILOT02 배포/복구: 운영 topology/region/예산, 접근 관리/회수, backup와 독립 erasure journal custody, 복구 후 현재 권한·receipt·unknown 외부 효과 대조, 실제 복구 훈련과 readmission. off-limits OCI 자원은 변경 대상이 아니다.
+PILOT03 보안/성능: 합성 두 번째 Group으로 교차 tenant 공격을 시험하고 6Company 편중 부하/대량 조회와 interactive 격리, RLS runtime role, SSR/hydration/search/export/공유·알림 누출, 재시도 폭주·queue bound를 확인한다. 구현 전에는 재현 가능한 기준을, 구현 후에는 실제 결과를 요구한다.
+PILOT04 운영 책임: 온콜/큐 담당자, 권한 있는 수동 복구, telemetry와 민감정보 최소화, incident/보존/삭제/고객지원, 비용 상한과 rollback 훈련. 새 기능을 꺼도 receipt/초안/미확정 결과는 복구 가능해야 한다.
+PILOT05 자격/외부 연동: 실제 적용 세금·사회보험·노무 source와 qualified review, 신고/지급/메일 공급자별 credentials/쿼터/중복 방지/상태대조, 별도 go-live 및 관련 HOLD 해제. 구현 준비와 production 승인을 혼동하지 않는다.
+가정: 200 동시 사용자, 시트 문서당 20명, RPO 5분/RTO 60분 등은 사용자 확정이 아니라 기존 연구의 검증용 후보다. 실제 운영 계약 전에 비용과 증거로 결정한다.
+
+R7. Console 전체 범위도 잃지 않는다
+FULL01 공통 객체 엔진: typed schema/관계/함수/객체 집합, revision/history/lineage, Action/결재, 정책/필드/파생 정보/외부 narrow time-bound 공유, 검색/자동화/책임/보존의 일관된 계약. 모든 종류를 거대 enum이나 급여 전용 DB로 묶지 않는다.
+FULL02 HR 업무 지도: 지원/채용/온보딩, 다양한 고용 및 비근로자 사용 관계, 근태/지각/병가/연차/무단결근, 노무 절차/징계, 퇴사/증명서, 주휴수당/임금/퇴직금/4대보험/신고를 각 입력→근거→결정→효과→정정 story로 관리한다. 법률 결론은 별도 검증하며 휴가 인계 실패를 자동 불허 근거로 사용하지 않는다.
+FULL03 공용 업무 UX: 공용·경영기획·인사/노무·재무/회계·구매/총무·법무/준법·사업운영·생산·품질·장비·안전·정책·데이터·시스템은 업무공간 분류 후보이며 고정 역할/권한이 아니다. 권한 내 내 업무/객체/업무공간 탐색, 공통 액션/입력 shell, 연락 전용 공간과 지속 draft를 설계한다. 40개 아이콘이나 업무마다 별도 객체 화면으로 늘리지 않는다. 메일/메신저/캘린더의 검색·공유·인계는 실제 native 관계와 수명주기로 설계한다.
+FULL04 기업용 시트: 셀의 literal/formula/object-property/reference 구분, typed writeback through Action, 정책별 결과/수식/lineage 노출, concurrent edit/conflict/undo/버전, import/export/함수 지원 범위, 큰 문서 성능. 별도 초안 VCS를 재발명할 이유는 없지만 공통 객체 revision이 협업 수식 계산까지 자동 해결한다는 주장도 하지 않는다.
+FULL05 Foundry leaf inventory: 연결/CDC/stream, 변환/오케스트레이션, datasets/branch/quality/lineage, 시계열·공간·미디어, ontology/interfaces/functions, Actions/automations, 분석/workbooks, Fusion/Notepad, 앱 빌더/OSDK/SDK/API, 모델 개발/운영과 AIP, 관측, 패키징/fleet, 보안/admin/cost를 세부 기능·소유자·대체/재사용·의존성·수락 증거로 확장한다. 버전/조사 기준일을 고정해 움직이는 경쟁 제품을 무한 완료 기준으로 삼지 않는다. 동등성 또는 의도적 차이는 사용자 검토가 필요한 범위 결정이지 조용한 누락이 아니다. Intelligence는 현재 별도 repository/HOLD 경계를 존중한다.
+전체 기능별 상태는 발견됨/설계됨/검토됨/테스트됨/구현됨/운영 검증됨을 구분해야 한다. 첫 payroll 준비 정도를 전체 Console 완성도로 보고하지 않는다.
+
+R8. LLM 개발 준비에 필요한 결정
+기존 연구의 권고를 그대로 새로운 root 지침으로 복제하지 않는다. 작업 packet마다 관측 가능한 결과, exact design/test/base SHA, UI→application→owner→policy→transaction→outbox/readback 추적, 단일 writer/허용 경로, 입력/오류/경합/복구 계약, 실행 probe와 stop/rollback을 제공한다. fixture·보호 테스트·CI·sandbox가 강제할 것을 자연어 약속으로 대신하지 않는다.
+개발 환경과 의존성/DB 초기화가 재현 가능하고, 보호 테스트 수정이 구분되며, 비밀 없는 합성 데이터로 검증해야 한다. 요약/인계에는 사실과 추정, 실행 수, 미해결 HOLD를 남긴다. instruction A/B 평가를 전체 제품 구현의 필수 선행으로 추가하지 않는다. 새 instruction 최적화를 채택하려면 기존 연구의 안전성과 실효성 평가를 따로 수행한다. 이 문서는 2026년 6–9월 온라인 합의를 새로 조사하거나 검증했다는 주장이 아니다.

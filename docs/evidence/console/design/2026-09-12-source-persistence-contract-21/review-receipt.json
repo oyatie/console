@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-13T02:53:53.085447+00:00",
+  "status": "SCOPED_SOURCE_CUSTODY_AND_INFORMATION_FLOW_SPEC_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Final exact correction accepted, retaining prior full scoped review; exact-SHA static verifier passed.",
+      "independently_verified_static_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Final exact correction accepted, retaining prior full scoped review; exact-SHA static verifier passed.",
+      "independently_verified_static_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "F01/F02: full source custody/batch/Account/workflow/adoption DTOs and seven source/head/claim tables, conditional and reciprocal FK/trigger/finalizer/ACL bodies",
+    "F03: exact staged/domain/private retained-unit and snapshot states, binding/pins/adoption/disposal adapters and provider issuance",
+    "F04/F08: complete sink/caller/refinement inventory, actual credential/egress deployment and executable harness/proof specification",
+    "F05-F07: migration/enrollment, independent journal/custody, current-authority and business recovery",
+    "Actual Verus information-flow/arithmetic proof and runtime/DB/egress measurements not performed; no whole-system confidentiality claim",
+    "Final authority-aligned integrated design four independent rounds and explicit exact design SHA approval, then independently reviewed/approved executable test candidate and named RED implementation admission",
+    "Separate release/production/payment/legal authority"
+  ]
+}

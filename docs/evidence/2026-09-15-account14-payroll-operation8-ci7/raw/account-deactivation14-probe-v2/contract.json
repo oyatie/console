@@ -1,0 +1,83 @@
+{
+  "roster": [
+    "account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay",
+    "account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects",
+    "account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits",
+    "account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot",
+    "account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep",
+    "account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift",
+    "account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution",
+    "account_custody_deactivation::guard_races::immediate_security_fk_waits_for_account_root_update_lock",
+    "account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects",
+    "account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation",
+    "account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation",
+    "account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect",
+    "account_custody_deactivation::unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation",
+    "deactivate_revokes_passkeys_and_sessions_as_runtime_role"
+  ],
+  "failures": {
+    "account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay": {
+      "location": "423:9",
+      "diagnostic": "COMPANY_DEACTIVATION_CHANGED_ACCOUNT_CUSTODY: Account state/generation and key/family/token history must survive",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation": {
+      "location": "423:9",
+      "diagnostic": "COMPANY_DEACTIVATION_CHANGED_ACCOUNT_CUSTODY: Account state/generation and key/family/token history must survive",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation": {
+      "location": "526:9",
+      "diagnostic": "UNAVAILABLE_ACCOUNT_AUTHORITY_MUTATED_COMPANY_OR_CUSTODY: current classification is mandatory before effects",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect": {
+      "location": "526:9",
+      "diagnostic": "UNAVAILABLE_ACCOUNT_AUTHORITY_MUTATED_COMPANY_OR_CUSTODY: current classification is mandatory before effects",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot": {
+      "location": "834:13",
+      "diagnostic": "COMPANY_DID_NOT_WAIT_FOR_EXACT_ENROLLMENT_TRANSACTION",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep": {
+      "location": "834:13",
+      "diagnostic": "COMPANY_DID_NOT_WAIT_FOR_EXACT_ENROLLMENT_TRANSACTION",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits": {
+      "location": "943:13",
+      "diagnostic": "NATIVE_FK_DID_NOT_WAIT_FOR_EXACT_BUSINESS_TRANSACTION",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects": {
+      "location": "943:13",
+      "diagnostic": "NATIVE_FK_DID_NOT_WAIT_FOR_EXACT_BUSINESS_TRANSACTION",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects": {
+      "location": "1050:17",
+      "diagnostic": "UNSUPPORTED_ISOLATION_MUST_REFUSE_LEGACY_DECISION: repeatable read",
+      "kind": "semantic"
+    },
+    "account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution": {
+      "location": "1137:22",
+      "diagnostic": "function public.account_company_deactivation_guard_v1(uuid, uuid) does not exist",
+      "kind": "stage-blocked",
+      "code": "42883"
+    },
+    "account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift": {
+      "location": "1240:22",
+      "diagnostic": "function public.account_company_deactivation_guard_v1(uuid, uuid) does not exist",
+      "kind": "stage-blocked",
+      "code": "42883"
+    }
+  },
+  "driver_sha256": "908e195cc928a4de846fdd68092f49f5201eeac6bd6618f0ac491285308ba51a",
+  "source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "source_path": "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+  "panic_path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+  "baseline_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "limits": "Only these9 first semantic boundaries and2 separate missing guard stage blockers are accepted RED. At least1semantic failure required. All other failures126. Exact14GREEN required for success."
+}

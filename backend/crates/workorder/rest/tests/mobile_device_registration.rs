@@ -120,6 +120,11 @@ struct Harness {
 /// The mobile router on a `console_rt` pool — the role production runs as — plus
 /// an access token for `user_id`.
 async fn harness(pool: &PgPool, user_id: UserId, role: &str, branches: Vec<BranchId>) -> Harness {
+    let auth_database = console_platform_test_support::login_test_pool(
+        pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -146,7 +151,10 @@ async fn harness(pool: &PgPool, user_id: UserId, role: &str, branches: Vec<Branc
     let service = mobile_router(MobileRestState::<UnusedObjectStore>::new(
         rt_pool.clone(),
         PgWorkOrderStore::new(rt_pool),
-        Some(verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database,
+        )),
         None,
     ));
     Harness { service, token }
@@ -184,8 +192,9 @@ async fn post_device(service: axum::Router, token: &str) -> JsonResponse {
 
 /// `BranchScope::All`: authorized, and the audit row's branch stays NULL rather
 /// than carrying a minted UUID that belongs to no branch.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn all_scoped_actor_registers_and_the_audit_branch_is_null(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let branch_id = seed_branch(&pool, "Device Region A", "Device Branch A").await;
         let user = UserId::new();
@@ -207,8 +216,9 @@ async fn all_scoped_actor_registers_and_the_audit_branch_is_null(pool: PgPool) {
 
 /// `BranchScope::Branches({b})`: authorized, and the audit row carries the
 /// ACTOR's branch.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn member_registers_and_the_audit_row_carries_the_actor_branch(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let branch_id = seed_branch(&pool, "Device Region B", "Device Branch B").await;
         let user = UserId::new();
@@ -228,8 +238,9 @@ async fn member_registers_and_the_audit_row_carries_the_actor_branch(pool: PgPoo
 /// denies it (`authorize_capability` rejects an empty scope up front), so this
 /// one must too. The device row must not exist afterwards — the refusal has to
 /// land before the INSERT, not merely blank an audit column.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn empty_branch_scope_is_refused_at_the_handler(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let user = UserId::new();
         seed_user_without_branch(&pool, user, "MECHANIC").await;

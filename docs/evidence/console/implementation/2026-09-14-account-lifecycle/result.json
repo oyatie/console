@@ -1,0 +1,56 @@
+{
+  "base_sha": "b6f81a7bf155eaf7289ce26811cfb2a2d52ce0ea",
+  "status": "FK_CORRECTION_APPLIED_ACCOUNT_LIFECYCLE_AMENDMENT_REVIEWED_NOT_IMPLEMENTED",
+  "completed": [
+    "Previously approved exactFKtestcorrection applied in cca76fee; no DBschema change in thatcommit",
+    "Actual migration0165 and productionstartup incompatibility independently traced",
+    "No-membership administrator-finalization alternative exercised on disposablePostgreSQL",
+    "Evidenceoracle deficiencies fixed in independentv2; prior evidence preserved",
+    "Exact refineddesign reviewed by3independentnativeagents; no final designblockers",
+    "Archivedv2inputs recreated from225exactGitblobs andsourcehashes withoutDockerreexecution"
+  ],
+  "candidate_design_sha256": "a3cdb0b70d52ac70a0a8f016e6b098ed5680eed2119fe4855a823caf50a4d230",
+  "final_reviewers": [
+    "/root/finish_browser",
+    "/root/review_completeness",
+    "/root/lifecycle_contract_review"
+  ],
+  "latest_experiment_counts": {
+    "control_groups_passed": 8,
+    "immutable_legacy_sql_applications": 450,
+    "databases": 2,
+    "authenticated_login_positives": 6,
+    "exact_table_42501_refusals": 6,
+    "new_hostile_checker_controls": 2,
+    "required_evidence_copies": 20,
+    "successful_evidence_copies": 20,
+    "rust_tests_executed": 0
+  },
+  "commands": [
+    {
+      "command": "python3 /private/tmp/console-account-lifecycle-experiment-v2-20260914/run.py",
+      "result": "PASS_BOUNDED_EXPERIMENT",
+      "execution": "20successfulcheckedDockerartifactcopies; rawcommands in experiment-v2/result.json"
+    },
+    {
+      "command": "python3 docs/evidence/console/implementation/2026-09-14-account-lifecycle/experiment-v2/recreate-inputs.py docs/evidence/console/implementation/2026-09-14-account-lifecycle/experiment-v2 /private/tmp/console-production-tdd-preparation-20260913 /private/tmp/console-account-lifecycle-archive-replay-20260914",
+      "result": "PASS_SOURCE_RECONSTRUCTION",
+      "meaning": "All225historicalGitblobs and explicitexperimentinputs reconstructed/hashed. Not anotherdatabaseexecution."
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "limits": [
+    "No Accountmigrationorproductionfinalizer implemented in this stage",
+    "ExistingAccountdraft remains preserved and uncommitted; four-membershiptestproposal unapplied",
+    "No executableLC01\u2013LC08lifecycleTDDpackage or admission claimed",
+    "450SQLfileapplications is not450tests; zeroRusttests in the newmechanismexperiment",
+    "SecondDB replay sequential, notconcurrency/overloadcertification",
+    "No hostedpublication/merge/deployment/operatorcredentialprovisioning/exposure"
+  ],
+  "pending_decision": "One revision-bound approval of security-sensitive migrationcompletion/fixture lifecycle refinement; priorFKapproval remains applied and is not requestedagain.",
+  "repository_requirement": "docs/current/DELIVERY.md high-risk method requires revision-bound explicit designapproval and materialdesignchanges returntoreview. This amendment introduces separately authenticated privileged ownershipfinalization and servingadmission beyond the original2filedraft.",
+  "next_after_design_approval": "Author/review executableboundarytests per LC01\u2013LC08 and exact fixturepatch; establish meaningfulRED at eachowner before dependentimplementation. Keep futureAccountDDLordering and productionprovisioning as their explicitgates."
+}

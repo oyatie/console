@@ -1,0 +1,155 @@
+{
+  "owner": "/root/inventory_repair",
+  "requested_by": "/root/capture_review",
+  "status": "FROZEN_READ_ONLY_SOURCE_CENSUS",
+  "head_sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+  "search": {
+    "argv": [
+      "git",
+      "grep",
+      "-n",
+      "-E",
+      "CanonicalPortError|PayrollDraftStaging",
+      "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "--",
+      "*.rs"
+    ],
+    "scope": "Every tracked .rs file at exact Git head, no cfg exclusions; verified corresponding working bytes; secondary source/generator/consumer searches and macro reads",
+    "raw": "tracked-rust-references.txt",
+    "aliases_found": 0,
+    "generated_trait_impls_found": 0
+  },
+  "implementations": [
+    {
+      "trait": "CanonicalPortError",
+      "type": "CompanyError",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/company.rs",
+      "line": 143
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "EmploymentError",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs",
+      "line": 440
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "JobPositionError",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/job_position.rs",
+      "line": 180
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "OrgUnitError",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+      "line": 173
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "PersonError",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/person.rs",
+      "line": 186
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "KindMapFixture",
+      "path": "backend/crates/ontology/canonical-domain/src/canonical_contract.rs",
+      "line": 87
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "std::convert::Infallible",
+      "path": "backend/crates/ontology/canonical-domain/src/lib.rs",
+      "line": 589
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "StubPortError",
+      "path": "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "line": 120
+    },
+    {
+      "trait": "CanonicalPortError",
+      "type": "PayRunError",
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "line": 511
+    },
+    {
+      "trait": "PayrollDraftStaging",
+      "type": "PgPayRunPort",
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "line": 820
+    },
+    {
+      "trait": "PayrollDraftStaging",
+      "type": "LockAfterGate",
+      "path": "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "line": 214
+    }
+  ],
+  "cfg_notes": [
+    "CompanyError, EmploymentError, JobPositionError, OrgUnitError, PersonError: unconditional public modules from ontology/canonical-adapter-postgres/src/lib.rs46-52. PayRunError/PgPayRunPort unconditional public pay_run module payroll/adapter-postgres/src/lib.rs16.",
+    "Infallible impl is unconditional canonical-domain/lib589. KindMapFixture is cfg(test) module canonical_contract (canonical-domain/lib674-675). StubPortError is cfg(test) projected_dispatch_derivation (ontology/rest/lib3306-3307).",
+    "Infallible error consumers include generic NoPort<O> canonical_contract40, generic StubPort<O,Q> projected_dispatch_derivation175 and BlockingPort ontology/rest/lib3465. These are consumers of one shared impl, not extra impls.",
+    "LockAfterGate is an ordinary integration-test implementation in workflow/adapter-postgres/tests/payroll_drain_period_lock.rs214 with no feature cfg. Recovery.rs is integration-test source requiring its separate native fixture; no feature guard. App composition source is cfg(all(test,feature=test-recovery)) at app/lib173-174; test-recovery enables test-postgres (app/Cargo32).",
+    "canonical_ports macro canonical-domain/lib644 emits object markers, named port marker traits and blanket CanonicalPort aliases; it emits no CanonicalPortError implementation. Buck generator740/preflight566 references are comments describing existing pure mapping tests, not implementations."
+  ],
+  "canonical_change_impact": [
+    "Add a default borrowing classifier at canonical-domain/lib584; false default leaves8 other impls source-compatible and requires only PayRunError override at pay_run511. No shared KernelError taxonomy expansion required.",
+    "Production generic conversion occurs ontology/rest/lib503-511 after spawn_blocking. Inspect classifier before consuming into_kernel_error; keep typed owner unknown distinct from JoinError and unrelated Internal.",
+    "Direct into_kernel_error mapping controls in canonical_contract101/110/115, company510/518/524, employment1202/1215/1225/1235, pay_run941/949 and StubPortError test must retain existing409/422/500 behavior. The inherited mapping can remain Internal for callers that explicitly consume into_kernel_error.",
+    "App/lib2914 manually maps EmploymentError because canonical-domain is dev-only there; this is not another trait implementation/dispatch site and need not gain a new product dependency. payroll/lifecycle.rs230 has an unrelated inherent into_kernel_error method, not a trait impl."
+  ],
+  "staging_change_impact": [
+    "Declare a payroll-specific error/future in consumer-owned workflow/domain. Existing PortFuture317 remains Result<T,KernelError> for8 WorkflowRuntimePort methods484-532. Change only PayrollDraftStaging::stage585 and its2 implementations.",
+    "PgPayRunPort stage821 maps CompletionError::Operation through existing PgPayrollError->KernelError at841-843 and Unknown through lossy internal text844. Replace only those mappings with typed Operation/CompletionUnknown.",
+    "LockAfterGate signature215 and import19 change to the specific future alias; injected SQL error currently maps to KernelError::internal at224 and requires explicit Operation wrapping or a narrow From<KernelError> conversion. It delegates typed inner.stage225 unchanged.",
+    "Runtime consumer is workflow/adapter-postgres/lib881 match; error handling must distinguish Unknown while keeping original status PENDING or FAILED unchanged (phase1 accepts both at795, current Err891); aggregate Result<u64,KernelError>781 and ACK behavior remain unchanged.",
+    "App workflow_drain constructs concrete owner84-85 and passes it through drain at166; app m2_real_engine_drive249/309/569/594 and workflow integration142/180/248 call the drain, so they need behavioral verification but no stage signature rewrite.",
+    "4 direct calls in pay_run_port_as_runtime_role743/753/770/808 infer error types; existing two error checks use Display text for NOT NULL and locked-period behavior, so Operation Display should preserve underlying KernelError text.",
+    "8 direct stage calls in recovery.rs761/783/909/1267/1442/1466/1494/1540 infer outputs. Two specific assertion sites1271/1273 and1513/1515 access KernelError.kind/message and must become explicitly reviewed typed Unknown assertions. Preserve all retained-capacity, pool-close, original identity, native wait and exact-row assertions.",
+    "App composition startup string check311 targets AppError::Config admission, not stage and should not be mechanically rewritten. Workflow composition912 exercises spawned production drain and needs behavioral retention, not direct signature edits."
+  ],
+  "narrow_constraints": [
+    "workflow-domain currently has no thiserror/sqlx/platform-db/payroll-adapter dependencies. std::fmt::Display (plus std::error::Error if desired), Debug and existing KernelError suffice for a typed consumer error; do not add a dependency/lockfile edit just for a derive.",
+    "Keep future Send and lifetime bound and keep PayrollDraftStaging usable as dyn. A dedicated Result<bool,PayrollStageError> boxed future or existing-style dedicated alias suffices; no associated error genericization of all workflow ports.",
+    "No downcasts or diagnostic string-prefix classifiers. Typed false default is no special classification, not proof of no write. Current approval renewal clarification and audit-after-owner caveats remain separate contract obligations.",
+    "Changing recovery assertion type is a semantic test amendment requiring new exact test review; current frozen retained-capacity acceptance cannot silently stand in for typed-boundary approval."
+  ],
+  "counts": {
+    "canonical_error_implementations": 9,
+    "staging_implementations": 2,
+    "static_stage_call_sites": 14,
+    "source_files_bound": 31,
+    "compiler_discovered": 0,
+    "runtime_executed": 0,
+    "cargo_invocations": 0,
+    "database_calls": 0,
+    "repository_writes": 0
+  },
+  "premortem": "Test doubles or cfg-only consumers are missed; broad alias edits change unrelated ports; string compatibility is mistaken for typed semantics; direct KernelError field assertions silently disappear.",
+  "blast_radius": "Read-only census; proposed typed seams and explicitly identified test signature/assertion impacts only.",
+  "detection": "Exact-head tracked Rust reference inventory, manual macro/cfg/consumer tracing, all bound working bytes equal Git blobs.",
+  "rollback": "Reject private census; no source mutations.",
+  "stop_conditions": [
+    "Unbound head/source drift",
+    "New trait implementations/aliases/generated sources",
+    "Implicit weakening of existing assertions",
+    "Production/approval/rollback claims inferred from type census"
+  ],
+  "remaining_holds": [
+    "Capture private design/tests and independent review",
+    "Root exact-head source/test approval and lane admission",
+    "Actual compile/discovery/runtime proof",
+    "Production/API authority as separately approved"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

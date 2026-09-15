@@ -1,0 +1,15 @@
+id,family,source_path,anchor,required_change
+S01,POPULATION|EMPLOYMENT,backend/crates/ontology/canonical-adapter-postgres/src/employment.rs,write_in_tx; insert_employee_record; apply_employment_change; source bindings,Historical binding and all membership-changing writers join guards; period gate before source/domain writes
+S02,POPULATION,backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs,OrgUnit create/revise,Hierarchy affects scope predicates; source and policy epochs before facts
+S03,POPULATION,backend/crates/leave/adapter-postgres/src/lib.rs,create_employee_atomic / employee create orchestration,Actual employee creation joins canonical owner source guard; no omitted unbound new person
+S04,WAGE,backend/crates/payroll/adapter-postgres/src/payslip_draft.rs,insert_contract_wage_in_tx; contract_wage_in_force_in_tx,Same corrected interval resolver on every native/legacy enrolled reader; insert and correction guarded
+S05,ATTENDANCE,backend/app/src/hr.rs,create_my_attendance_record,Consolidate clock/material INSERT into attendance owner; period lock key+family before insert/previous-state query
+S06,ATTENDANCE,backend/crates/attendance/adapter-postgres/src/lib.rs,exception resolution; month close; amendments,Do not treat empty checks or CONFIRM as coverage; guard every outcome/source change
+S07,LEAVE,backend/crates/leave/adapter-postgres/src/lib.rs,leave create/decision/charge/cancel,Pending and resolved paid consequences remain exact coverage facts; mutations bump LEAVE
+S08,CALENDAR,backend/crates/leave/application/src/lib.rs,WorkCalendarPort,Typed borrowed source contract added; leave pure port remains consumer
+S09,CALENDAR,backend/crates/leave/adapter-postgres/src/lib.rs,ManualReferenceCalendar / composition,Replace only enrolled source with attendance-owned resolved calendar; manual fallback remains blocked
+S10,ARTIFACT,backend/crates/docs/adapter-postgres/src/lib.rs,register_copy; append_custody_event; apply_legal_hold; dispose_object,Exact provider-version attestation and all source/domain pins before admission/disposal
+S11,ARTIFACT,backend/crates/platform/storage/src/lib.rs,confirm_upload; copy_and_verify_replica; get/head/copy,Exact immutable-version reads/verification; no latest-key/optional-checksum success
+S12,QUALIFICATION|TAX_EVIDENCE|ELIGIBILITY,backend/crates/payroll/adapter-postgres/src/lifecycle.rs,select_source_amounts; calculate_run_in_tx,New native owner modules follow same adapter; legacy VERIFIED_SOURCE_ROW never native proof
+S13,GLOBAL_RULE_BUNDLE,backend/crates/platform/db/migrations/0210_payroll_statutory_rates_and_contract_wages.sql,global statutory rate publication,"Migration-only source; drain/compatible exact kernel bundle, no fake Company guard"
+S14,SOURCE_RETENTION,backend/crates/platform/erasure-ledger/src/lib.rs,append / append_once,Borrowed-connection batch participation and independent recovery; not an already implemented pin guard

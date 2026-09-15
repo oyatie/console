@@ -1,0 +1,31 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "security_dependency": "8559a2fdb678dcffd881db8435bea0fd94fdab746c548b3a20db9f0f44620fcb",
+  "files": [
+    {
+      "path": "contract.txt",
+      "bytes": 3673,
+      "sha256": "18f9d896ffa636c224bd33f645c9180124a5864f0a1e41b056b1ea8d39083011"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 421,
+      "sha256": "d5f32b530b4357a45d896b1b139497fd44a4aedccfdd9f2bed7515817f7aeb63"
+    },
+    {
+      "path": "publication-completion-tests.rs",
+      "bytes": 9955,
+      "sha256": "e5b7e70ad91fea91c296221df1aa3ee7796d2f771d7ccb174b243edb1f894a24"
+    },
+    {
+      "path": "validate-boundary-oracles.py",
+      "bytes": 912,
+      "sha256": "b896475328b342696c9b7d92774be26762897c11d223e172d3c27ae39cc3c784"
+    },
+    {
+      "path": "wire.schema.json",
+      "bytes": 17599,
+      "sha256": "e89b185f2e1d94c0a04265113b7ef92b2932422949457d5ad4545f34c0b60075"
+    }
+  ]
+}

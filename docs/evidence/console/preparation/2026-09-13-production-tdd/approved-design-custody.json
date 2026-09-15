@@ -1,0 +1,3175 @@
+{
+  "classification": "evidence",
+  "source_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "source_file_count": 522,
+  "files": [
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/acceptance-cases.csv",
+      "git_blob": "4d8cbb6f97d64f4ae7ec16a74a1ead05222cbd54",
+      "sha256": "37728bf3b1eedc37a3af72d6eb143d73cd52a2f38ac9880bed114c85928bb00f",
+      "bytes": 4618,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/4d8cbb6f97d64f4ae7ec16a74a1ead05222cbd54.gz",
+        "compressed_sha256": "d1106157798e3422e4f45243b3005db919e92d9ec0f2d07d56c8edf01f4fad63"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/action-contracts.json",
+      "git_blob": "9d4be44e222778af6fff47db6ad0a82a88bdd9c0",
+      "sha256": "007bc16a9d55e2b189937798e5103180228369b1fc5e6375163d8978b0ed5d02",
+      "bytes": 7499
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/PRODUCT.md",
+      "git_blob": "e904705c42f320ede29480371bba78cd8bd8266b",
+      "sha256": "fb90ab36fc063a722ff15742d0d15ee883e84190132473a724b4482ff29a8dd3",
+      "bytes": 15073
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/ROADMAP.md",
+      "git_blob": "d1de9236629ab9e04202d1bb3daaf7e5b3a12364",
+      "sha256": "76c304c1be565f640a29836bb204ce8c7d3c5df91d1d821a7ee4959daac14a0c",
+      "bytes": 10490
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority.patch",
+      "git_blob": "b89786c4a18fa1199189c452441ced5bfbd085e2",
+      "sha256": "364e3b12218eb2c7626af7ec4afd55e705e727731e88f2962653148999ba82df",
+      "bytes": 9714,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/b89786c4a18fa1199189c452441ced5bfbd085e2.gz",
+        "compressed_sha256": "e647e689ce52bcc46a5a3337490581d6d8387cd457fe9ea096be60da2e44b14f"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/candidate.html",
+      "git_blob": "e154cd165bd35e7a656fe7705d23bc7bfbbca97c",
+      "sha256": "3784af64de372aa1c60a5140bd4b31f837fb53b379ceaa4bcd2e6a54192c0d91",
+      "bytes": 32460
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/entry.txt",
+      "git_blob": "99b222772ff41e6cd02dc42f0944f581e94ca52e",
+      "sha256": "7e56b498b5189f3d3647aedf619db41e575985d8fcc19c7d9b8ba825aad99fb6",
+      "bytes": 3932
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/implementation-gaps.csv",
+      "git_blob": "429be8c4234c947c05800c4e26623b89c85d9e58",
+      "sha256": "8e8857203fe45ca74ea12db2ce0a0adf2c59240ea0b14c66acbeb2858f270662",
+      "bytes": 2122,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/429be8c4234c947c05800c4e26623b89c85d9e58.gz",
+        "compressed_sha256": "392c3671ccbdf505ed02b634451711d7061302572c5b69c1a452e44996b8a1e5"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/native-input-contract.txt",
+      "git_blob": "ccdfc067829d1d5a1e576cebf3bde2d987bd9e89",
+      "sha256": "ea277dff6b2ea9ac9f983ca7591d4fad9d37619ce3e249a2451ffd02fc93933c",
+      "bytes": 3595
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/record.json",
+      "git_blob": "d8076a8dfc611d987b87f41b889bc469324310c5",
+      "sha256": "1dd9d0acdde2130cfc49afecaae9172d2b402b685d6a85985bb1e54e4b4b132f",
+      "bytes": 2770
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/screen-contracts.json",
+      "git_blob": "277b4456278d355f5f1b99fd7e172c1e34a8f455",
+      "sha256": "82124154bd4363751b99d59e760ec60d349030b386bd11dff9daca30ba3349b6",
+      "bytes": 12297
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/source-trace.json",
+      "git_blob": "7929f8109fa474adf756edd406e5a2e71cc456eb",
+      "sha256": "1036c83812b49016e304404a63f60a6842bbe201623f46ca4bedbb427354e532",
+      "bytes": 113874
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/state-transitions.csv",
+      "git_blob": "3875a87dc1efc2295b6cac917d84c37dbf091532",
+      "sha256": "cb08e477ff61ba966710b310fa2e9ed3c77337ee28993e7bf91619eb3b56014b",
+      "bytes": 1432,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/3875a87dc1efc2295b6cac917d84c37dbf091532.gz",
+        "compressed_sha256": "fb346a100d001ec68eed7e0ce7a4180e46155c9023e6e6a5a94b684511eaefcd"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/validation-input.json",
+      "git_blob": "99ce71563a0111fd9623158d1a48aba44bc43bc2",
+      "sha256": "4099ccfc31a76280ca23040cb1a1d13af7a15fbe2530caa1d4edf67b30141fb7",
+      "bytes": 195
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/validation.json",
+      "git_blob": "736caaeea75e2a305fda5d4763d8fa546e9e92b3",
+      "sha256": "856f08e3a59b0c3415526952d246e5894a7c9779d2e734a00a1e1882fcb1493a",
+      "bytes": 892
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt",
+      "git_blob": "09e0dca1ec52aff72bbea91e3af23e1af8bc342b",
+      "sha256": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011",
+      "bytes": 14652
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/boundary-api.json",
+      "git_blob": "436c5129e2a63739da583938b77441c04ec3fcf0",
+      "sha256": "36e39f63920c79be1e951b16db53478d7ddb103e0825d2aef20db032b988eab8",
+      "bytes": 8946
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/entry.txt",
+      "git_blob": "fdabb51ce703be647fac63251d208bdca65cc4a4",
+      "sha256": "e413a99755a341df9c0378c2056be453f1bde08df01fdd5f234f5b0838a930f5",
+      "bytes": 1817
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/migration-and-proof.txt",
+      "git_blob": "37c65fde59a919993c701bf57cff61dca1c2c22b",
+      "sha256": "bf730839a8c9feb25c44452a82db9d3e0250f8b6da6fcffce7c7933397ea503a",
+      "bytes": 8495
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/policy-contract.txt",
+      "git_blob": "ee07a8fd90c87e13d5b809fbfe08159d49ec1c89",
+      "sha256": "f6a0054d0f6adc220a433f587ca1897e7e9e4b90571fc16459ff298fb5b82692",
+      "bytes": 17517
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/proof-cases.csv",
+      "git_blob": "c1ad07211914a2848e6b76352c9a2a91a5f95790",
+      "sha256": "616a7729e4cfd3988c0e41c43d441a9dfe12ff8d37ed1ec72d248530ef56fc96",
+      "bytes": 5721
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/record.json",
+      "git_blob": "b7388ef03132e2cc32ddda74f9b9119b82ba68d1",
+      "sha256": "45c11c6ae5901588b0e67d561b78dd5b9ef4c6d72b7cc207c7f6fe28f30a77ab",
+      "bytes": 3670
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/review-history.json",
+      "git_blob": "05b1038b375838e963148782ff54a7de4e6c212e",
+      "sha256": "7cfbd0e8b42a6a46995931474f425d37e3913ccae06322d323e04b46ca1bc4f6",
+      "bytes": 948
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/review-receipt.json",
+      "git_blob": "b46677ca3b75c96340df4f08be200958b36d7b8c",
+      "sha256": "fef226272645e121da1aec6ad1b658cf9e74d8532d8c379cebdac53717f816a0",
+      "bytes": 2431
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/review.html",
+      "git_blob": "03b9488dc04573b54a4634f0f83a9a7e5ca56dc0",
+      "sha256": "1778b14407931f096a0466718188a6c771cc4fcbb690b04b50225f530ea80e42",
+      "bytes": 3031
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/schema-candidate.json",
+      "git_blob": "bee4da9b1e5aac4b9e2907dd1706787b95e8a9ca",
+      "sha256": "b90fc33ad97191af147fbae8c87b6833c577359ea3ef259226455ce6e1d28f75",
+      "bytes": 21837
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/scope.json",
+      "git_blob": "31cad2764a329d4a4d887ee3fc7e25d48794b87b",
+      "sha256": "03cc9a41f477867dea7b84627424c96e2efd8eb78cd3f38795ae9534acae5ed2",
+      "bytes": 1344
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/source-identities.json",
+      "git_blob": "b0a206549a48e8bb2176ec543e3671e91ca7c942",
+      "sha256": "bfb2e5108f95d2a445a22eac5949241f202d2c10e8e5353215c3cb011ad53a84",
+      "bytes": 12882
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/validation.json",
+      "git_blob": "ba8d8400b9afd34fb3773ef33fab2fd3bf183caf",
+      "sha256": "35da9b4f2fcf2cc63746078e2f8a8be0574f74928f66c9e50b65d4d23b3eed85",
+      "bytes": 1835
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/verify-packet.py",
+      "git_blob": "45c51f9c1004fba78a2f243529450cbfe4787772",
+      "sha256": "d2d0d54b45fc6841ee38b4317e3a2cc75471726650bbbb07b13247ff4d4fd562",
+      "bytes": 4065
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/writer-enrollment.csv",
+      "git_blob": "8dff9f46a2d0d89beed1a819245ef4e96d06a210",
+      "sha256": "18003250ed6430eaf54cdff4fa968610ef419f1ebeb06467e23a32f5e0a53aa4",
+      "bytes": 5017
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/acceptance-plan.csv",
+      "git_blob": "95e7fe00db9379f6db974b1930b64b3c6b4926b4",
+      "sha256": "fb8b87a06e4a33481c5114d3f6ea87f0296b3609d86619a19d11cf5586de4738",
+      "bytes": 9955
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/doc-link-diagnostic.json",
+      "git_blob": "16ac5815a5e8108025115381c69d272de339e61e",
+      "sha256": "f2d72729119d133646467cfa80745b14206c2b2bc539ba98a063046263bc779a",
+      "bytes": 1318
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/draft-contract.txt",
+      "git_blob": "a752a191ae552bc283f541466300b92699112595",
+      "sha256": "24b4d0ba93484f5cc65e362c70fdc7f25db653a4039d4e57ae25baeb791b7bc1",
+      "bytes": 28194
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/entity-revision-contract.txt",
+      "git_blob": "06441876ac22f48c3532d3becdb988254a8c4b28",
+      "sha256": "7227e966b01fd82c42e712d9ccf16e060227388df4128eddb752eea15a8e4236",
+      "bytes": 17333
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/entity-versioning-direction.txt",
+      "git_blob": "37f6d7ac8d1daa694b0130813556233323c85a4f",
+      "sha256": "6956413171ce9c5af5cefe23eff94696a12bd223a5bd397fe3b0091a8fb16265",
+      "bytes": 5267
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/entry.txt",
+      "git_blob": "ae9747f8db3c32b6411b87ae8b545d1981c802ab",
+      "sha256": "78c4c616c529813d1adad7cf16a108da217d37806d1b1ac0aaaddcb4fad2e882",
+      "bytes": 2238
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/record.json",
+      "git_blob": "902dcbd53e90f34e850821bf15ca948ff64d470f",
+      "sha256": "26b93fa34478a325c68fdd601a646e7b175849f485141a8f7fda92f1b50b42ea",
+      "bytes": 3365
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/review-history.json",
+      "git_blob": "4f0446327c46797f83ef337096520509609000d5",
+      "sha256": "08cdcf47ca35a47220b8baf2e1e0b7d8a887332ff0e705030ca1488767d9a49d",
+      "bytes": 1244
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/review-receipt.json",
+      "git_blob": "c059fa605a48c6d040e1bdff0bc442fe72a69681",
+      "sha256": "a2423570573745a987f66d72cdd1b6033c8d22dc471e4ec7ca2c26deb73ce757",
+      "bytes": 1549
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/review.html",
+      "git_blob": "8f1ec1bce7bdaa799518e2808829fe7d9e7e2534",
+      "sha256": "d1b1e22985cb23de7f6584645566b3a8d2d2d4bdae582cd57b1bf029dae8e5cd",
+      "bytes": 7432
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/scope.json",
+      "git_blob": "e453ec73a36ea286769cc1cfa4051c79c052cb1d",
+      "sha256": "0155e4f01c58e07b2769275ade78cd7374451e1384eb6eb8a713773445e1f475",
+      "bytes": 1248
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/screen-states.csv",
+      "git_blob": "b382fb8c1e33cfb8ab2334bfdc37989062d48f73",
+      "sha256": "bb813d934a4ab6b7f98eb77b82bf70e318f5e4b69de2b96b747774508147df0f",
+      "bytes": 2438
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/source-identities.json",
+      "git_blob": "bc0048c4b5f5c8913acaca29b3b72b7228d85787",
+      "sha256": "710d302d6481b92cbe510e5494e8c81b8841a87755fd1b9b8712b4a2930b6ddd",
+      "bytes": 2585
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/validation.json",
+      "git_blob": "1266d1c4e556359d931aeca5adc5db052c735eb6",
+      "sha256": "3b5eabcfd5118ec792826397e1e60763e5e78f7f9eba2a9efd661be08e85b8df",
+      "bytes": 1907
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/verify-packet.py",
+      "git_blob": "a24bb963820f6358a4970afe2a5d5377a5d75537",
+      "sha256": "9310e1d71f81ce4120cc3c4d87b136772d1e5fd9e2ae6e08443ff3c7341e3d2f",
+      "bytes": 3470
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/acceptance-plan.csv",
+      "git_blob": "ba9f828ce7d328a0b593de6f92509867b63b2fcf",
+      "sha256": "d848f57f7a3450c832a58205ddfc8925c91b2e18b079d674de0821a8c8d7e749",
+      "bytes": 13096
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/access-model.txt",
+      "git_blob": "3a52291f483032d53c93d8b6f9752a56295201e6",
+      "sha256": "9d32e0d3fe8a7f033ab6dfac6ac3fe92b542d5f4f831a5b2fb43ee60a11342e0",
+      "bytes": 43472
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/access-path-matrix.csv",
+      "git_blob": "cd0b73c2c552b28cf848920df8c64bd21ebf6d01",
+      "sha256": "3d346cd0dd4ff06ea62b79233e0bc888ca582500be32674485a64d327d1c864f",
+      "bytes": 4076
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/actor-and-identity.txt",
+      "git_blob": "743b777a0e774c0062a0cdcfc227f3977fbebc1f",
+      "sha256": "2a487dafb1255fbdd3e81b38085d8216bc056066fc13f89789888b170725bdee",
+      "bytes": 22378
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/approval-and-correction.txt",
+      "git_blob": "65405491d11d7462db9ba5ddf085c26ec3b36737",
+      "sha256": "9b30d44c8714521e12f6d6e76929486168f8c3bb3b917d56257a3897dc4869e9",
+      "bytes": 16564
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/continuity-and-certificates.txt",
+      "git_blob": "71107594f55b9ef777458158f0bdb80eb6166889",
+      "sha256": "a91fdb7e08c744993f0fa8003eb01ef52c3c9a3c028fd845f0d482c717fcde15",
+      "bytes": 18504
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/entry.txt",
+      "git_blob": "fd93b20788a42aecde8fbed922341d955af19374",
+      "sha256": "db3a2e957a32da7983d29ef4a3c9d00b2965aca35dc24066b1cd58f58b067c1c",
+      "bytes": 2123
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/inspiration.txt",
+      "git_blob": "e61da5510393d4d6ce94bd7f72c7cb27574f1357",
+      "sha256": "4b4d2f933f1749746ad30cb9172d217896588aa9bac2b22281e0affd32fa75ad",
+      "bytes": 1587
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/cedar.html",
+      "git_blob": "ff22e93326800f26f70844b60cbed18993cf71e4",
+      "sha256": "2a136e83e4e09862697e87f217ec5f9e147d9633d4e5d52daffb3fe57b576208",
+      "bytes": 35509,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/ff22e93326800f26f70844b60cbed18993cf71e4.gz",
+        "compressed_sha256": "9d123afb950d9182d1cff680ed51965b0783bb77ea2df6c0130728cb3c76c547"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/cedar.json",
+      "git_blob": "af12dff20ba990cad49701e35e4b949a4e925d4d",
+      "sha256": "0cd624f028fa5c9e4db6deaef186563f092bde04c31a9efcf92f5c065e03f1fb",
+      "bytes": 294
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/cedar.txt",
+      "git_blob": "e6069cde1659580ac992262e04a11d95406533ee",
+      "sha256": "d4a3ad1879f6ede492e9c212021e7b2381dd55dee74bec0c3ffa9440af23e73f",
+      "bytes": 14603,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/e6069cde1659580ac992262e04a11d95406533ee.gz",
+        "compressed_sha256": "ef26062a3cc8afc41299231b9bbb61d197f297089385f69b6e1809262ec06e44"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/discord.html",
+      "git_blob": "2d0b2f0df3df956f66dcb6e88296fd67dba08358",
+      "sha256": "b695e5115df5315b29748091303d7f51b33a660ce43aab780702636713448f29",
+      "bytes": 559177,
+      "materialization": {
+        "format": "gzip",
+        "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/approved-raw/2d0b2f0df3df956f66dcb6e88296fd67dba08358.gz",
+        "compressed_sha256": "40529d9563f614928f6ac64cb4539d2cced465508cfb89f6a8c7c59ad347911b"
+      }
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/discord.json",
+      "git_blob": "8afb5c0af0445db2ff8c5a079fa731b3a0f52b9c",
+      "sha256": "036c044b95b8b2880961c9eb90c843469a35adc823c2d07e63336cffbcfff55f",
+      "bytes": 299
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/public-sources/discord.txt",
+      "git_blob": "e8eaf596965d13b6af436ef0dace8b8b4357be9c",
+      "sha256": "0dd846899468fa15d13dbd3b9bcf76f04a1add93af32a6c074f0137087579e5b",
+      "bytes": 20622
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/record.json",
+      "git_blob": "ef27fa909c268e46001d6665538526514dd6f206",
+      "sha256": "8c721dd3abd9c98c37cef536e8cdf9590bc710870817c2af7128db258b10cb8e",
+      "bytes": 4116
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/review-receipt.json",
+      "git_blob": "730a7967cd21843b0774490b6268e234d34f4b6d",
+      "sha256": "cee3ea0ef806c55503ba2cd2f365adb5fe281cc89c068c556548368c48660f06",
+      "bytes": 2345
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/review.html",
+      "git_blob": "8548cb7b569ef972c107b5f7fce5aee9207aa31d",
+      "sha256": "22a8ea90469130464c7fb55e44c9c41a2e52433f0c9ac4531b09f72dcf66e874",
+      "bytes": 11564
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/reviews.json",
+      "git_blob": "ae2a63af349541745302625cf6ef970226877be9",
+      "sha256": "aecc806f2d26e09b73b9a96f5c26a8694deca0c2247058543d339cb10442b5fc",
+      "bytes": 2188
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/scope.json",
+      "git_blob": "d94b004353d787f6f0b7fea9763e8267ccab7b08",
+      "sha256": "4764d38647364e1e3fd97b835925f3e2788cd937cedc31cf65ae6421d22e8277",
+      "bytes": 1582
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/source-identities.json",
+      "git_blob": "ca13fdc4f44e113c5f7339bcb69a3fd86677aeb0",
+      "sha256": "f66bec82eee869619c3adad4ff6830de6163ba365354de79c81c5fd0800b72d7",
+      "bytes": 6702
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/user-invariant.json",
+      "git_blob": "948d563b4e1dc2a682718be7283f56e6ece51d9e",
+      "sha256": "2f601c24699effe333acbb573068e027e25d378538328ff60bc81921097cccc5",
+      "bytes": 3443
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/validation.json",
+      "git_blob": "2defd48a612aefe732c591760c4fac8d3bcf8294",
+      "sha256": "788c3e1332f1ed42a3f7651a2c491bb87a164f9e16dd1b4bff7246fc837262fd",
+      "bytes": 35684
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/acceptance-plan.csv",
+      "git_blob": "c18babaeda2b55608b80dc103203cc20be86a080",
+      "sha256": "c267e28552fd025cee04e1071a3b7a1ef8a6b80096821fb1ae6496757bda5eed",
+      "bytes": 8764
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/assignment-contract.txt",
+      "git_blob": "48326384b790e580180878e2ed7970cefece6933",
+      "sha256": "79e9bc3e344e2736aab88ad3a1c533e147d6679e5d3827e2ae2497dd84776637",
+      "bytes": 35371
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/entry.txt",
+      "git_blob": "03eed2cba1c20f4a93337169022edb5fe65cce21",
+      "sha256": "3fe3c29e389067cf69b031df1259de9753ce930e01b1a172dd29c455048b279c",
+      "bytes": 2326
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/record.json",
+      "git_blob": "83c18467ce5d03c0a79b753706842ac99ddf86e1",
+      "sha256": "a3a2b4e913c2b6d1366f62c94322ffb8b3bcffface77d2fb11178da0c8326066",
+      "bytes": 2637
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/review-history.json",
+      "git_blob": "5c3904d99e57ffedc707b39fe2e3dcc24f51dbdf",
+      "sha256": "b0e41990928a13a2f7263baf469b75c804c994a7eb86a94890029d789bdf3124",
+      "bytes": 726
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/review-receipt.json",
+      "git_blob": "a8ff449658c274a3d9d2068d96b850edc7b7700d",
+      "sha256": "abfadd5de96b8626031de428653810afe6894699e7d6f993ae95daa34f23eab9",
+      "bytes": 1284
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/review.html",
+      "git_blob": "032d1755f22c3f4711ce0f1f9b95dc7003addbc4",
+      "sha256": "cf7592f08e6004955aceaf12a026e698637ac0f5b591497a8e727a635da1fd45",
+      "bytes": 39761
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/scope.json",
+      "git_blob": "8bd8c17f22a2f95e7d3345c7117c90267cc3ef2f",
+      "sha256": "60361f5a1185694b1c0997450bcf0baf1189ccec8937c8030ac82695d4e3e2a6",
+      "bytes": 972
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/screen-states.csv",
+      "git_blob": "6c094267551f7d7c494eafdad61dacf5327d864b",
+      "sha256": "1e9ce338340accb18b15a6264c221be82624d43969f8c37876b2f563200a1293",
+      "bytes": 2614
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/source-identities.json",
+      "git_blob": "d4e3489c196d09e32147ba22bde8769fe4105833",
+      "sha256": "9c25da74f97fce6c72a6de21d35a322a63d84054fc4d64f629fb04122ebc0dae",
+      "bytes": 4112
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/validation.json",
+      "git_blob": "c015bab5cfcf6953a0e4fbd6affda69b874b8c89",
+      "sha256": "9921601037b254a39ea67dae505dc0a32132d8223a020cde013c29eeb80b76ee",
+      "bytes": 1290
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-assignment-continuity-09/verify-packet.py",
+      "git_blob": "2f383e6cfed5f16488e78648b76df0ef45cd760c",
+      "sha256": "bfeabc12a36576c8dfb518d2361b2dd346c4d94654819a36d2cf9d72533e7407",
+      "bytes": 3282
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/boundary-ports.json",
+      "git_blob": "ccc9a888296fef9c0dc62e36de73e8400c774781",
+      "sha256": "9b695429c8e1c73c02fd683eaa4d0c2c0fa2a07a0225c3d58f400153a807fc92",
+      "bytes": 7273
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "git_blob": "3a1b036ba3975b98550e5adfbd0c77c39374d6d4",
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83",
+      "bytes": 15542
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "git_blob": "097b837bb42ce916d9e15777eadf5b5125a15d3d",
+      "sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe",
+      "bytes": 7569
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/entry.txt",
+      "git_blob": "eedf12227161bda7a3fce34f36738c1cfc2720fd",
+      "sha256": "ef855f40b2b9484e352db058fe0321726fdaab144a61a9bab6f157ee5ef20a0d",
+      "bytes": 2037
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/fingerprint-vectors.json",
+      "git_blob": "dc0143093dcbc51971f77dd95393af92ec0283ad",
+      "sha256": "02c804d2a82600e013a3a122752f9d82ce5f733e6adffa466e88aec082848711",
+      "bytes": 57965
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/migration-and-proof.txt",
+      "git_blob": "82f97aff421c52e5ae4d1a63670f5476dd86b549",
+      "sha256": "54a665ce9703dd25949f9ad73641d88134e43f131555953ed516eb956b655a2d",
+      "bytes": 6341
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/proof-cases.csv",
+      "git_blob": "1e6735521270fda29eb395d28e9a20b39cfd91b1",
+      "sha256": "f246799efdc0f2872970fc90d15255d54d52ff7516ba002d9354d75688621a65",
+      "bytes": 5602
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/record.json",
+      "git_blob": "894251a602b8d05929ab1101815d488207c97b8d",
+      "sha256": "b9c2f6146303070a216a0a179737d58af295fc80888f2468e81826724c29083f",
+      "bytes": 3799
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/registration-contract.txt",
+      "git_blob": "0378c1d159849106e3c9e6ff34fac51c59e13646",
+      "sha256": "19d53204eb859b19c037974adeced39b0b3e90302d1ee7a634ff1336a704d59c",
+      "bytes": 6928
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/registration.csv",
+      "git_blob": "a03df6ea25d8e785b344dd7a9fee0ef1b40db0b3",
+      "sha256": "50bce656da13a558cfd0e8dd0845379290c0ba5d4b65a0466a322f61b24fe0fe",
+      "bytes": 1651
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/review-history.json",
+      "git_blob": "2afe576dd860f55ab9aecf3117aef7f9aad12fb8",
+      "sha256": "67b359de84c12e7a55294a71eb67af3e1e1cc033039ab594949fdffa375c1ea4",
+      "bytes": 936
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/review-receipt.json",
+      "git_blob": "380d42882321254b28a4fa642ec698d10cc2604a",
+      "sha256": "b174475043764b93857b550d1d509935ca222d64afb0442a149eda003a4b1035",
+      "bytes": 2085
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/review.html",
+      "git_blob": "753bc56c69f80b51c3a440cd1db27b2e24bd32a7",
+      "sha256": "d08a1138c598f61d1280a4847ea0062fb84126ffe4809a67d7edd9ecc1fa5194",
+      "bytes": 3052
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "git_blob": "5ca655e24b73882cbb14943af37697fa46373150",
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928",
+      "bytes": 10527
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/scope.json",
+      "git_blob": "1373a1181028f8d5b8c447c1f25aa71ffbad79b6",
+      "sha256": "79b00f02baa114af5d862f84d2fef28c713f0c7f9685d78e87b4205d34cf25b8",
+      "bytes": 1183
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/source-identities.json",
+      "git_blob": "37ffc25c1b915e7d2ffe99a000b435565bcf1a5d",
+      "sha256": "0d3a683e65b02bceb16ca24a48c8f07872892d662369b150e2fd8bb5dd29ec64",
+      "bytes": 7333
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/validation.json",
+      "git_blob": "a12da9def6b8b77bb4c317685645413165c0f101",
+      "sha256": "d3aded1ac60d6fac60720536cc3318ab90d6071fe507f5601558f22904cb6619",
+      "bytes": 1934
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/verify-packet.py",
+      "git_blob": "fb6e09d70a72be07fadc47994e2402a435cdb167",
+      "sha256": "fcaa977875b9e493f4f2defff65a9332ade27ca8baae1cab929f6965434a9d39",
+      "bytes": 5173
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/acceptance-plan.csv",
+      "git_blob": "14985785aa13a8744571a5a4d1769fb095039f8e",
+      "sha256": "f829e09cbc74183f05d9787bcf3e9e2566537adc785d73ea17fb29a237fc1e7e",
+      "bytes": 7162
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/entry.txt",
+      "git_blob": "6aefcb6a8cb432d089b4b2c89dbc6e4437c78d3a",
+      "sha256": "c23ee01d6371c93df3fa5e439f79d7d735bba59d8432b5d3d1bec9da90f5bfc5",
+      "bytes": 2071
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/record.json",
+      "git_blob": "e3cbc75f93d7c1b9422b5e1e5da6a62c29f6a884",
+      "sha256": "d7a8360d25ef8f4fb1185c040a02f3a2a5dc1e7e640f3839442a28211f23220d",
+      "bytes": 2883
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/retention-contract.txt",
+      "git_blob": "4aca7112465a8588e5b5b5bd8902ddc8c9eb6ffd",
+      "sha256": "33c036143089dc54d26c045c34d7f688c41f4224de495a0d7db1bb2411eafc08",
+      "bytes": 25657
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/review-history.json",
+      "git_blob": "4d46cd678ec1d1ebb2111dd369a88900ccd6cb1d",
+      "sha256": "f5a2c4ccc6c0d2db99b66a94cc8246b577c87e1613aab872ba7fff8d37e0d8d4",
+      "bytes": 1025
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/review-receipt.json",
+      "git_blob": "c8f0d3bcc2b145dd9f1043c037f3b777888dc34a",
+      "sha256": "bca0ae4992859edf516d6003038ae5670fd5c413dee6b00b8dafa0fb1f4af1a0",
+      "bytes": 1377
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/review.html",
+      "git_blob": "7761e35bba2fd2740021be4a5d0d4f9df9ad811d",
+      "sha256": "0126562e6177a305d0e095d8c63a37bdab82db10d10ab618bc23a598e2fb5a95",
+      "bytes": 8536
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/scope.json",
+      "git_blob": "6d700a6f81823e0992f89faff04708e128b13a9c",
+      "sha256": "1936a06d1d570ac4f15818d373c5b6958c610f9a6452b2cf480f1238c18282a0",
+      "bytes": 945
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/screen-states.csv",
+      "git_blob": "fa28b99045c6b0486cee0d9b1c58927ef9697894",
+      "sha256": "e7fbd45dda489f462a7759df90a44aa2679aa902e480561cbd2240dbe7a61ca4",
+      "bytes": 1936
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/source-identities.json",
+      "git_blob": "f201a67e093130c331b7ca9e01e675f9727d3b0a",
+      "sha256": "43f95694f3a36d6eaf8a09fa7edd43a66c425063e9839a5114f7d272873dc9b1",
+      "bytes": 2329
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/validation.json",
+      "git_blob": "494a81de73cf0f53d32292ec0768c4338d3b4075",
+      "sha256": "a9d448094396e99ba2713165505498a4779f198b7bd1642f4261744c78cf738b",
+      "bytes": 1672
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/verify-packet.py",
+      "git_blob": "29a85b3a18f9b8bdecd58ec5ac0db03505c71c00",
+      "sha256": "3ff46ad068cc0c51a8ea879a81613d32193a65ed48d406a9682b68a7b4f68829",
+      "bytes": 3351
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/effect-manifest.sql.txt",
+      "git_blob": "995676aea6c02ca639ae75ecb591dc52633a7569",
+      "sha256": "5a666884fcedb30627e6210e5591acd313b058650580de8d91c09268bc666603",
+      "bytes": 11270
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/entry.txt",
+      "git_blob": "cac0a3c9ee3fcb54e95eb759838e8e498924d801",
+      "sha256": "d4f251faadb400d34f1ec3e3c32f3606803bb8012a08ac49d265245b0e0b4381",
+      "bytes": 1801
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/implementation-closure-map.json",
+      "git_blob": "a2d884ba4bed1a0c252346d2bfcba07ec5413e70",
+      "sha256": "f28e210b63c5c4bd5867e7f5a789820d09d4af73a68ac1665fbeeb10669d4d8a",
+      "bytes": 9153
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/proof-cases.csv",
+      "git_blob": "ce58440567bad103c4e052f6b1c09ef619743fdb",
+      "sha256": "782a1c851fbe67ec52e3a13b196ccba6bdef7d2b0549a68f0f8a8dde076e27d8",
+      "bytes": 2910
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/readiness.json",
+      "git_blob": "d0daeb28350565e5444bb945a73a254bab2fa96b",
+      "sha256": "cb20e37c0eeb6e14861cf37be76b78a470486ffa2436a64e07035293cc1c91b2",
+      "bytes": 638
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/record.json",
+      "git_blob": "34160c3c10903aadd72ab0899b26dc594aa05860",
+      "sha256": "50d1b7ea7eed63492ae92cc9b88301467d4a7b28c8c5e0c64fca0bfa286f95e6",
+      "bytes": 3636
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/review-history.json",
+      "git_blob": "e41e1537445d4ed7a6c824f7bb6f6132546bdff8",
+      "sha256": "e7259288684dd254ba8cf8847c7a196123adf596de962a75fcd8f8787b2d3ff5",
+      "bytes": 1238
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/review-receipt.json",
+      "git_blob": "1e527141514e6be394c1386e56f492135cc828da",
+      "sha256": "be9f583b522cb3e76b569c88bc4ad8653f85b19ff9300ebb763e10a3b6c3b25a",
+      "bytes": 2522
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/review.html",
+      "git_blob": "5e583f2c0afc65e3d73d35c71260ea2426480403",
+      "sha256": "169c7dc3744ecc90a54bf65a3cc915f2f3dd76e808441b8b3b4202d9f9077235",
+      "bytes": 1999
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/scope.json",
+      "git_blob": "2039204151840a8db4e206b41c372745295ab5bf",
+      "sha256": "d195c0a45ace2d9544d727dfbed172ecd964b8b01bbf66fa82cf93510027e5a9",
+      "bytes": 545
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/source-identities.json",
+      "git_blob": "965a6b8322ea6c49eebbb1ed9206ccda9962f959",
+      "sha256": "fea5046229829e7d3ea25a70216dfc273d0b7ffb543f7703c74c9a682b8c4193",
+      "bytes": 6010
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/transaction-contract.txt",
+      "git_blob": "e8711cfd9a714fca4ec886169045e62038989151",
+      "sha256": "3f5719ee40562c7a351b66a27771e79b0ba7ff6d18661052312fd775f54f8be8",
+      "bytes": 7185
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/validation.json",
+      "git_blob": "d627a8a5e76dcff88d27cd4e3015f7ab79b14eb8",
+      "sha256": "33b2a70581e3cb9fd9cdb4d378c393a9a5a120603b09322fdbb2d2ea686c99c4",
+      "bytes": 1394
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/verify-packet.py",
+      "git_blob": "b94441059eb88f77359ab91119f945a370695eaa",
+      "sha256": "a3997017d774303ff5c77c2dba47eab48d3c3194c03217cc36517d86539a72b2",
+      "bytes": 4921
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/acceptance-plan.csv",
+      "git_blob": "0af037ee6331a6e5d7e2dfc2b16f15bedacbe570",
+      "sha256": "868e582cc2497a9ecd1baddc297ab7e74a1753afdf28c7476067ce442f793a9f",
+      "bytes": 8152
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/entry.txt",
+      "git_blob": "b0f1f8a0cea33587a76bb417d73efa5d6cf0b532",
+      "sha256": "8d822d64fec9fd879b8f322950baf6c8b6b0b7db2cb18f320290e9e2bb174365",
+      "bytes": 2130
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/group-contract.txt",
+      "git_blob": "17cf3fc61958898f579b5b3d6badd2ad52aed7e4",
+      "sha256": "309a96f5f5cc2ed331a83399d8acb70f9ca88727e3c466340c0484101b56c605",
+      "bytes": 30850
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/organization-steering.txt",
+      "git_blob": "d655be58eab1f8180a3f73d0b706b5ca1c078c15",
+      "sha256": "1ba71917ebf060da7866451f05e0808870e004f65a089b56cc2e1e75d7ebdc7e",
+      "bytes": 1108
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/record.json",
+      "git_blob": "58ba8659e6665f82019b2411694eb56930c2e7a6",
+      "sha256": "aca74dd338bc5ac1245f728efd9c4dded5c4507584d6155eaa1acaeb735d5347",
+      "bytes": 3006
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/review-history.json",
+      "git_blob": "f532396a963502f08ad74677d8a087d3c4ab1abd",
+      "sha256": "7cba6592f8b177365da28d0723fa8c7282bce5018058fe150151387be6418e65",
+      "bytes": 956
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/review-receipt.json",
+      "git_blob": "3d0ecd4cdeda662dc584f7f441fb032f9b92f8aa",
+      "sha256": "89bc50accd6a170e596f87e1d8b161f2d8850729c58c28089c9f29e25bd0ad35",
+      "bytes": 1348
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/review.html",
+      "git_blob": "5e4c491a028e83e6c1ef2a6efd3ab968e3e0ef67",
+      "sha256": "71715b05f108b4593db8474446ed6755cb0c93e241f5b6cc1c62d2c52934c899",
+      "bytes": 8729
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/scope.json",
+      "git_blob": "aaec1a3e3b78a9a81797d503eaec6aa9bc72fd0b",
+      "sha256": "318041e299786b845e63925890d8827497b790ed317ee22d2f29b4902fb0abf6",
+      "bytes": 1067
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/screen-states.csv",
+      "git_blob": "702dc9cd1f70e56fa8d6b9e8a941e6f5c774f005",
+      "sha256": "6f19f9ad005bce509dff774b9dbafdbe677c27abd701ab8bbbaa7f6c2ea9c816",
+      "bytes": 1675
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/source-identities.json",
+      "git_blob": "fe683789c4a59dbae04b58175102452be3e626b1",
+      "sha256": "79f18a9edf87bdb2f3df696703c67e5d97e2528475893e85c9ad3116e5ed09de",
+      "bytes": 3031
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/validation.json",
+      "git_blob": "ca812665a7f4f8c08d72b928fcc1e3a2707f407b",
+      "sha256": "cfa8f9a9f1163baf4616af28d71e421bf118ffafe44fe7fee02bd15a9d30e49e",
+      "bytes": 1609
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/verify-packet.py",
+      "git_blob": "6cac9ce52f66648ca60d293c1a5495151879efc0",
+      "sha256": "65f462d84237064eb2ecf36cfca2ef974fe8a4fef92d221487d8a34c8c0e830d",
+      "bytes": 3373
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/assignment-next.txt",
+      "git_blob": "abd3df3e7de07b781cd9196fbe34f75d8f4483f5",
+      "sha256": "2110b15c44e6d1974f79c3c962be83c4cc694a4cb7a6dd2a832976e087095180",
+      "bytes": 8690
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/entry.txt",
+      "git_blob": "1e6fc7efb2aece062a7a80e8e88c3d993b017a5d",
+      "sha256": "64b1ebd76fcb45ba77e02bb73e48fc670c094d078d051794bf9383317817c0b7",
+      "bytes": 1955
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/readiness.txt",
+      "git_blob": "56cb1238f4353899dbf79259890f748f35fa3ae4",
+      "sha256": "c358c9591e281e2521b1652ebe4afef9ae42fcb02ec4a219679ada10f3893f70",
+      "bytes": 15868
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/record.json",
+      "git_blob": "51eee481ab3af84a9faddd762927770f7c1b4e80",
+      "sha256": "6c099a047190bf8b25d1f94f74a05153825559e5d31693dcafa95c2dcd738cdd",
+      "bytes": 2137
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/review-receipt.json",
+      "git_blob": "1815fd9eaa0cd6d508615bb70dcf2ffed8a42ee9",
+      "sha256": "832b7024a66267c80ac2d36a770e14e10aea007d3981adc7f7f907b45c4b2d5a",
+      "bytes": 945
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/review.html",
+      "git_blob": "1d20ac01f8b987208d6b7baaaf7d2eb6e69201cf",
+      "sha256": "0f0015fc4303c5ead753b4cb32b608b31eef8086880c2db4a0df573a8f5de2bf",
+      "bytes": 19959
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/scope.json",
+      "git_blob": "a109cb068827ef256f9a2470cf4983e5c5a58897",
+      "sha256": "4e007508c6ca61966692a094f97434c65966d70403d0a8fb7003fe108f0704a8",
+      "bytes": 465
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/source-identities.json",
+      "git_blob": "7fa340158100a3872ec6173dd1dd9c77568dc772",
+      "sha256": "cbff10097ce97cd95dfdb5e47244ef70844624938401ad1699f17e1daea4e0a0",
+      "bytes": 6166
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/validation.json",
+      "git_blob": "dda39daf44c08f33e4c1a18bb8d0ab6952754b9d",
+      "sha256": "9148d25e41534b6aea17f69243b62e05e1a12d397a90509f9d4e924d137791e6",
+      "bytes": 1426
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/verify-packet.py",
+      "git_blob": "877659f4e0b0ec09357e6043d31ccf05ea24a473",
+      "sha256": "66ae81716eceeb6a806a45911f44949e17aef89d252887a0d6457b8e246bbc8b",
+      "bytes": 3142
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/work-packages.csv",
+      "git_blob": "c0a3dc04eeb043c22c3c2b5827ee00c29d6bcc25",
+      "sha256": "9417508b59d90118f99972f38fc0f143a3412e4c29748b9db18356dd84d1cb08",
+      "bytes": 3391
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/closure-register.json",
+      "git_blob": "ff57cbb8521a78dd89f534d1d1cc24adcc9de795",
+      "sha256": "89aab9b3678686e2baa484358204649dcedf1c5a3290a28b47bf86c98b07ead1",
+      "bytes": 6592
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/constraints.csv",
+      "git_blob": "087435e7f5cfdc00175da070a8e2a2d54f48c3b3",
+      "sha256": "c147707df53fde08e54ed2a2b4c3688cd50d823c5d63d3c40ca061c56c312cc3",
+      "bytes": 6079
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/entry.txt",
+      "git_blob": "8af104916f2a241de72f72ab14e40edb54823d44",
+      "sha256": "7db5c280cdf1dc139db27ea2c22de45d0b218c16403ff50df08144b20c113a5a",
+      "bytes": 2063
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/integration-contract.txt",
+      "git_blob": "74fa75a5d20da640aff982b63f2cbecdd4f86cc1",
+      "sha256": "1310129b0bbd5bc8455075197d47ce639b33b4420d2c8d6816a089d2cac3716c",
+      "bytes": 5460
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/proof-cases.csv",
+      "git_blob": "387dea872702987910d8fc781b1125a3af8e59ac",
+      "sha256": "8b034cddb7d3f46e795bc24dff7518816dc4b053fd96dc9b497e6c1a25b94d24",
+      "bytes": 6588
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/readiness.txt",
+      "git_blob": "649afd511514b3bcbcbe561e0a1408e8230ac0a0",
+      "sha256": "25e9ca6af028ac0ebe8d962e415d4e97b6b67cd4156d59e058fcb806fe2170f0",
+      "bytes": 2252
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/record.json",
+      "git_blob": "c9294ab81e30516d425686a380b2db17a02ad79d",
+      "sha256": "01ac180f925f1a0ab91c5e1c73175fc65184071ee1d53c92b345b55c1adc3c16",
+      "bytes": 3991
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-and-recovery.txt",
+      "git_blob": "e6d179ea1b93c1d07171654e8c140269cae946ed",
+      "sha256": "b66bdeac58be1dcca57e74af0b889d1e1c6afe3f0900849bc6e7ec780ece18c3",
+      "bytes": 12006
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-records.json",
+      "git_blob": "fe4a6b0781766f15f2d15d68578f0260b891c5e9",
+      "sha256": "e98cf009c8dc8622436b3e23ad9288dd3d1dc9f41927985c3607cd7647131d81",
+      "bytes": 6314
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/review-history.json",
+      "git_blob": "064918b254d81386f5abe5575a83560fa1e320e8",
+      "sha256": "68170dcf986f3eda15b0cc780da577b61014ac358c060b9d0f4a711e8223c07a",
+      "bytes": 969
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/review-receipt.json",
+      "git_blob": "1425b83ec2f1aba563a74e055f7d21326c857db9",
+      "sha256": "b05be74acc33ec3e0540ba892af00c372d5a0023ca185ac60ced27a91ff4b5d2",
+      "bytes": 1627
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/review.html",
+      "git_blob": "56bc97dbe68934f0f67d11e01090290f74355691",
+      "sha256": "ee9ad3245b771bb30bb65e3aa83d67c07e9f4dda8ed90d47a4e2ea8cd41b0947",
+      "bytes": 1788
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/roles-and-migration.txt",
+      "git_blob": "5e257f111884186c3cd9bb90a914494116f4a0e8",
+      "sha256": "03f7632da712e6259d2d0ee884e0d47d2041d9c4db12ec8f82038e53899e85f5",
+      "bytes": 7695
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/scope.json",
+      "git_blob": "30a7a2a7289a56bf92f4424d4099169da432b012",
+      "sha256": "f1526617771ee98580ec6c3af4926219d0398665dc0c3be427a4dd530839e9ce",
+      "bytes": 950
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/source-identities.json",
+      "git_blob": "00a57e74061a6f40cf53a57e24abc2556f98f52e",
+      "sha256": "eb8527a12bdb7e3685d30624ed6469e92c75967358a8fca4029def5031f331e3",
+      "bytes": 25862
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/storage-catalog.json",
+      "git_blob": "43dbe1fda040ec6724c3d1c36359de44786df14d",
+      "sha256": "74f62dfecba7b378a3ac7ae424558d128bae2c2aeb9523207893fcdd6e931a83",
+      "bytes": 55326
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/validation.json",
+      "git_blob": "b60e493cb54a2246ad5c1caa064b109fa9302b82",
+      "sha256": "94b1034f0a58a8a0a522b85528e0e8bdc00a1352102db20270399e30ba48bc79",
+      "bytes": 2087
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/verify-packet.py",
+      "git_blob": "7572f2b66955eaf38e8c3b231f29ffe1332910a1",
+      "sha256": "99e7d88f3ded0915e30bd859bff6e477af23f5e94d91cc8650417e924b87a1fd",
+      "bytes": 4387
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/workload-and-proof.txt",
+      "git_blob": "63576dd3f2a43316855d0b0c3986a2cca4d74073",
+      "sha256": "c31109b284aa1d58207fc2621748798640590e3d313a6645b633be889c90ded6",
+      "bytes": 8153
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/workloads.json",
+      "git_blob": "ae19dae786fa3e222edb085209bc2aa8f16c74db",
+      "sha256": "33a19bd59af309fcf5ec341e180fccbde525a7596182afd9c9736e3c7686310e",
+      "bytes": 3768
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/entry.txt",
+      "git_blob": "4b50c1cb794d0f936acdef6effe83d1fd4e53ab5",
+      "sha256": "123afbb882ee931348e8d23085a759a013a6f629c5c5f88c79fed15f77ae8f4d",
+      "bytes": 1812
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/native-contract.txt",
+      "git_blob": "9b835b016d59903d880277944347d2755be02dbe",
+      "sha256": "ecb0d073f1998a87e05968c96505e3d4fdb5264647460ec77931067bfd95c5dd",
+      "bytes": 8939
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+      "git_blob": "3b61dd54bbb29bada57823fe33fbb2acde56ff4e",
+      "sha256": "cf49487e8de7a427092b6f97c0b8a7d901f3805d465403c5f7dc54c9f419f62b",
+      "bytes": 25641
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/normalization-vectors.json",
+      "git_blob": "e0a1e1a4255663e984dd8a84273beadb4d389b7c",
+      "sha256": "0176d3bdc77fdca3119ebfb3a98dc7269807516fe09b3aec694e71d4f5ac12f7",
+      "bytes": 48731
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/owner-and-migration.txt",
+      "git_blob": "5e709d5a2ae520e8528d661f70dae268261c3da9",
+      "sha256": "48ab817eef2e1bec6d7e786d5d3001c5b4935c3aa615eb0e2ec3548bc31086dc",
+      "bytes": 9535
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/physical-contract.sql.txt",
+      "git_blob": "10e6e02d3e4264b59552555b85da542b479176f8",
+      "sha256": "531c8b6acdb596544f2d1a75d001267fe4255a62a89229eff212af84eb06f1db",
+      "bytes": 19021
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/proof-cases.csv",
+      "git_blob": "93246f93dbfddff5c8cfcb7c1e1566d746797f51",
+      "sha256": "5ec8219306e32eb4e2656b7d09a57c5a5e480901ad76791851f2e069fd22fdb4",
+      "bytes": 4556
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/readiness.json",
+      "git_blob": "58f4887249c01cc2ce1ad4453032ee257a048b8e",
+      "sha256": "1919479e2f7ab8ddfb3ef4378fa158eab4a50c036ec92fbafea04b2264df3e5d",
+      "bytes": 2260
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/record.json",
+      "git_blob": "d6e284d4edb8e6c2199c0bd89caf72568e63b2b1",
+      "sha256": "788460322d7c31992c38079505b7143d75e327294140557e57e3c90f4eac5415",
+      "bytes": 3875
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/review-history.json",
+      "git_blob": "d134b79ca380dade7e09fb3a0bfce7ee19066f3c",
+      "sha256": "e668ffa4db7dcf2484d29db780d7d93ef0f6f5450504768c2a260c11332b69fa",
+      "bytes": 879
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/review-receipt.json",
+      "git_blob": "1aed78051ee1af97e5c79de77d0fcaf3a5601b0c",
+      "sha256": "b31d0e169c56e9f33df1eeb6d42c6d21d07419ad2bd2bcfe6c163f47fc01268c",
+      "bytes": 1921
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/review.html",
+      "git_blob": "ced885dffa8ff82e3945556b6cd4ae50497ff588",
+      "sha256": "e916ff213f850086d18c8f9dfe7bc9778f2772889adf09134e5747335bf064f7",
+      "bytes": 2273
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/scalar-and-encoding.txt",
+      "git_blob": "8191158b2e95f3e9b021e470837011992a821f1b",
+      "sha256": "fd9f54f39801df50120a03b685c9a37497179741a98ce4e5fc563f8bfbfd4157",
+      "bytes": 5556
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/scope.json",
+      "git_blob": "9bdbc8978c435bcc1d871e3ba12633a2af71473f",
+      "sha256": "33c56405d4149940dd2b0c37f2902029ec59a603874337cc0d386950db8f5c80",
+      "bytes": 584
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/source-identities.json",
+      "git_blob": "ecd4524456fb8fd0a84ef55b6be186ebc86e085b",
+      "sha256": "97d19cd7752036e43526c98d049f830dbb677ce7863fff13e76157269ed1c4c9",
+      "bytes": 12402
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/source-slot-cardinality.json",
+      "git_blob": "baead5ac50e0061995c147fe88f003a9cdc9c5ea",
+      "sha256": "c7b3de12a98592a2e3cb2d7de7de90469cc4b282fe247d76a528fb91e4123fa0",
+      "bytes": 8978
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/validation.json",
+      "git_blob": "270855207bd97b2697474241a1f932cfa2c11b93",
+      "sha256": "541e5828f61651bb7aa39dfd61b435ca7c65659709afb38d5d1794301869b90f",
+      "bytes": 1985
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/verify-packet.py",
+      "git_blob": "e88a31ae6ab7ab1f78dd0a1a98c617ae3dcb4734",
+      "sha256": "eee42f0fc9ed333fe75ef5d959ea811063720a7812dd02b8cc5e38892cecfaf9",
+      "bytes": 5451
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/entry.txt",
+      "git_blob": "66dcdabfaf00257fa0e28dbc7929de77fc781110",
+      "sha256": "5e9e80f9486e2812f640cc084663e6fd790f373bccb7ada52738be939c6ea512",
+      "bytes": 1984
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/execution-contract.txt",
+      "git_blob": "eca5781d09b7b82c07926cc3ecf0b2fc1a923a43",
+      "sha256": "31bb997397930864df193de1021f0e7c480d4eb5e941d86cefcd5bffa3c1b17e",
+      "bytes": 12025
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "git_blob": "aff340c2dfde3b58bb5c05ef44e8640e33f291ed",
+      "sha256": "eb3a9d21cfe9fa111f47f7f30ddaf410da515aa2902ef4d18c76e156e425b60a",
+      "bytes": 10017
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/native-contract.txt",
+      "git_blob": "58ea22fc435d8890cdaa8a5ab7a419e8c2b87077",
+      "sha256": "cd579d50ca833015cfc69e0e1bc353deae5f3e81300a44c2108c494bfd339049",
+      "bytes": 18704
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/numeric-oracles.json",
+      "git_blob": "347fa531335de58729ecceb3d0a41076701be09d",
+      "sha256": "13415cdcd923824be7dc375f46e3a189de8cc766fdab274a27933560498c843a",
+      "bytes": 3393
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/owner-map.csv",
+      "git_blob": "1d3b76d5e4607657638d1089a36c5c12a26aff65",
+      "sha256": "95ada325729f46bfb471589f0bb3541e1209c89e8afb60a539d136b71c3e7e85",
+      "bytes": 2824
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/record.json",
+      "git_blob": "0ea3e32ac6da91de791fbf5478f9e12d7dae0e55",
+      "sha256": "06d032555c21ddfb0aa63f6940dec4e8eeb1935fb7130cf1cf5ecaca29466779",
+      "bytes": 3406
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/remaining-work.csv",
+      "git_blob": "262264d84fc5c5a8b180d17fd2a97b80d66766ce",
+      "sha256": "29e75c4f2b1c116bd33b959bff204e1b032759045a65700afe0f849e6a4158b5",
+      "bytes": 1506
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/review-history.json",
+      "git_blob": "78e884aaad5ecb8d33f0eef79073f6f75ea35a7e",
+      "sha256": "2808b4522f8fea84334164dbeb96808124483a479746b64d91264fb455b8d1a9",
+      "bytes": 1152
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/review-receipt.json",
+      "git_blob": "f677eeb221f8ec35bd4745908579109644831446",
+      "sha256": "98e5e14fbc9b17e5e3ee864850e30fa74a8293bcd892407aeb750553d1e256e0",
+      "bytes": 1838
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/review.html",
+      "git_blob": "09ab98f6a1082b5f7f5b77b9583e451452b23c87",
+      "sha256": "6bb4cc57d92d6dd72014f339305df7cd00399e0285dc5e98ba4dd723723fe9a9",
+      "bytes": 3526
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/scope.json",
+      "git_blob": "5b8803285137da0a10c31dbfddb74754d4a592c1",
+      "sha256": "aeb8967652ff32ad9f35f8bdadc20cc1f609f81b787b56386b7fc0bfc80292f6",
+      "bytes": 592
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/source-identities.json",
+      "git_blob": "3a1225e214eaef4d04a7e2f583830a8b06d34264",
+      "sha256": "c129ebea88214e7f2723cb997b12c66dfafc585b6cee56105cc0360a68c81600",
+      "bytes": 8946
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/validation.json",
+      "git_blob": "bb25c61a4ca48c32c2f9ed3f77d80df5b14deb5e",
+      "sha256": "397044b548131ebdcdf9510431ebfde187a23a9b5eaedb6e472e8cefd5ce7a53",
+      "bytes": 1996
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/verify-packet.py",
+      "git_blob": "a3a324c785417708f10a6d8edc491afcd14b7708",
+      "sha256": "90daecaef3dcc8e5048cf17b235f3e9b4138ad2324e65b092cbab097f52e2b42",
+      "bytes": 5005
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/wire-candidate.json",
+      "git_blob": "48069703d0a68566379153471ec604e0eed9413b",
+      "sha256": "28e16342cb0e3d05d77006a74a3696196bdda0fb4a08908731c734bed872c862",
+      "bytes": 9883
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/acceptance-plan.csv",
+      "git_blob": "b7eaa0d8a783834c88a5e18b702358139294e7d7",
+      "sha256": "83884b1092fabd6fcea924562af677893d82e0a8083de81bd597fe8b0cae5891",
+      "bytes": 8701
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/entry.txt",
+      "git_blob": "587dc7d646bd92b11b93b8c2e5a2487a5ea78d33",
+      "sha256": "8348a8a5957caa02d3ea492399e4862517052d2625d26524aed8ddc49d6247cb",
+      "bytes": 2101
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/handover-triggers.txt",
+      "git_blob": "3f74430c328e0b914125816c9547ba6ab31c92b3",
+      "sha256": "7cceee99c6067f5cc1a1e95aa93949e7d0ceca4b5a268af507ce410b2fa14e77",
+      "bytes": 9748
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/own-result-contract.txt",
+      "git_blob": "a0705dd59ebd079967ac2e65123408c6cf4409b4",
+      "sha256": "d5322773ce16b459234ed823eae1cadce1be5d7bc0f44e53a5f200119dd088b2",
+      "bytes": 30986
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/record.json",
+      "git_blob": "e00289014db093eb317160b3fc8f600ee7c518bc",
+      "sha256": "2b57e62d0a54cf76381215c4fdfb4dac88e338c69b953d56f80f46ff7d2fdf2b",
+      "bytes": 2793
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/review-history.json",
+      "git_blob": "02dccda700327d358fca9a8801b8daabf289430e",
+      "sha256": "7224d31c0aa7a82ad5412b0e8abb906fa5ae65a48e6f6a3a2a34d61f0ee49ce7",
+      "bytes": 752
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/review-receipt.json",
+      "git_blob": "2125475e3ccba6f3bd2c01411fab64822061471b",
+      "sha256": "0834fd5b0c00c00e2da36c529cc6574daa5dad60ac63f811ec415303f27b4979",
+      "bytes": 1470
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/review.html",
+      "git_blob": "21fa58412b8c4172946509147dab0e4aa3364bc3",
+      "sha256": "7fd4b7573fefced9a8603e5a58f8f49bc2a4c103bbc41de107f8e05e9a5638d8",
+      "bytes": 43679
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/scope.json",
+      "git_blob": "e232737421e6a9ed49bccce0d10869effc8c42bf",
+      "sha256": "6ed7419580ceb38676eec0b5199c60888aef3b07fbddb5ae1b7959e913722332",
+      "bytes": 833
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/screen-states.csv",
+      "git_blob": "c739c02b7bcff38a0bd50a9bb26f9277c1b10918",
+      "sha256": "1b2f1b2eaa1a3e9e2c3bef12908834244b8415babf97f7119cf1dde70b028187",
+      "bytes": 2767
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/source-identities.json",
+      "git_blob": "29f2179756356fedeee80ec2a3517ed719c0b7db",
+      "sha256": "37d5d32f76601a88466e9d70a98b5925781f95db125b7e82eebf98f0aecfd0ea",
+      "bytes": 3498
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/validation.json",
+      "git_blob": "f80a7965c344b62f7d190111f544d4b10fdccf7f",
+      "sha256": "0a0c587583f08a24bb4b949ce1691bf8b38b65e29923ba77281710ae920adf05",
+      "bytes": 1291
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-own-payroll-review-10/verify-packet.py",
+      "git_blob": "b1a5064bfa82672ecb6686a59b9c78e92b50cd35",
+      "sha256": "f58429c5fb6687e1e4b49292c4134e47156c54bd237c1a143fd9c4a506a5a4b1",
+      "bytes": 3366
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/boundary-witnesses.json",
+      "git_blob": "8431b5b0360bbf3880abc59f2099f9aec5b2f07d",
+      "sha256": "78d6dd807067b0c957a58870ae4a320e1fed56b406936265f98d8a335ffca6e3",
+      "bytes": 8613
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/caller-census.csv",
+      "git_blob": "f7bb9c37e562218cb532e8fdeb3a8d835b1f212f",
+      "sha256": "d5839106aa66a4baa2992717f63b03e6c86b3a797a9070e99efeeacb0219b65c",
+      "bytes": 4415
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/constraint-owner-matrix.csv",
+      "git_blob": "50e1d3a3475184e5aa1196e80386089174b7b4a5",
+      "sha256": "80103fae5c9e6669b26ee8b5b0c0bf9d95e05ac57bb86bb6801bf32926ba6778",
+      "bytes": 3273
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/entry.txt",
+      "git_blob": "c123a9ee1ff567db7c4cb7eb22a65af7cad95968",
+      "sha256": "1349f1ee6fe2bab7d36861612f131df1dd35921ae3d92052bd57ada0fafcfe57",
+      "bytes": 2093
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/execution-contract.txt",
+      "git_blob": "53bd4d767eb554804008bac84e90bc49b59da727",
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0",
+      "bytes": 9214
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/guard-and-owner-schema.sql.txt",
+      "git_blob": "3fc21c96b0c6b80439efab46e9eae07a64267986",
+      "sha256": "a7e3e1eb9d7be46599af6eb9cc1b3c45dcdaeb6603bb8354aa5b7e714be7f9a8",
+      "bytes": 4624
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/input-reference.schema.json",
+      "git_blob": "7e1e4ab1215fec1d0211a9a431b3cc96a95019c7",
+      "sha256": "056cec98ab410113e361db65bc12596e4552b372a9445d3ba46c9d5f6159c126",
+      "bytes": 3647
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/locking-and-constraints.txt",
+      "git_blob": "514789dcfc156e58bb2679e14e3180e1b3545c44",
+      "sha256": "4243eeca95676a4fd1709a516ecaa97773a112bb8939a0ae6c1b7b5899c86276",
+      "bytes": 5443
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/owner-interfaces.json",
+      "git_blob": "345183a11ed144e935d7b88ea3a082f2d7f0a095",
+      "sha256": "8048886625e384c8c5a107b5106ec48e3b8f8ac07b6a2b2464fd8732de67be10",
+      "bytes": 13735
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/payload-and-adoption.txt",
+      "git_blob": "9a4b2330a71757a2a75da3d00582886b313e605e",
+      "sha256": "14cacc3a7de2e4f3a4fd46a287c22844e9f4c5f75f83edb6cfa694c9d89adbfa",
+      "bytes": 6633
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/privilege-and-enrollment.txt",
+      "git_blob": "96c00db73293e6bb4eebdcb669790d53df5ed282",
+      "sha256": "6c179ec2c3dfb9278d0e8274646ffcb337ec128ec72539d94741746aeeb02c0e",
+      "bytes": 5748
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/proof-cases.csv",
+      "git_blob": "14003d7f5d4ae9b154609ea4a27f0199ade387d1",
+      "sha256": "84ed1af7d2a5ab5aac6609166d63d8497a58e2a0df1493ee0ad86a80bb5636cb",
+      "bytes": 4212
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/readiness.json",
+      "git_blob": "636fb05c8cdd1ffeae6a268f2a134f6c4a698c7a",
+      "sha256": "635dfda50b718475af40ab223afbef50597fe618a71e49daa9a8199c111af1de",
+      "bytes": 1952
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/record.json",
+      "git_blob": "e9e5a8f3217165ac0b5f3d4857ae442217721e97",
+      "sha256": "839f8404b26dfb87e3a1195857a9dcc34881975da0989383f284287b1a5ada23",
+      "bytes": 5069
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/review-history.json",
+      "git_blob": "da5979aef59a33bf6e6028470a97fc505b1711bb",
+      "sha256": "933b3f48d450b060ec54cb2d976041edf8f3958114f38fff5ae3ad5a80ebfeed",
+      "bytes": 1389
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/review-receipt.json",
+      "git_blob": "f39a5e938041db26a290dcce6a01ea1b65e1d051",
+      "sha256": "7d309d5375b1b20543167a8b2d54964975c15cc64ec102777ad196fb7486e57b",
+      "bytes": 2369
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/review.html",
+      "git_blob": "3c5e52b2e410866e20e3f704c7c72a3d7e24b79a",
+      "sha256": "a2028d31f7249ecb5a995974946a368622735ddbc4473dd4da03ba90b1c1c157",
+      "bytes": 3779
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/rust-pin-receipt.json",
+      "git_blob": "72827d49c35f7f91d2511249e3c028d4306fcea8",
+      "sha256": "91b206210db370c4b4e54823619f43b12e9567fab088e301e7c323d73860f201",
+      "bytes": 8020
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/scope.json",
+      "git_blob": "55d647008d835a370fe0ebc32638731708a67b4f",
+      "sha256": "8cf16b407cc1d1fc72209557479b5cd87af9ff882f59a0394ddaf64fb23a1cbe",
+      "bytes": 689
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/source-identities.json",
+      "git_blob": "be62b62e0b7a54b98761fe228eee31cc73906f8b",
+      "sha256": "f53820c63726a01137095ace189fef80ec0bb22495bc1446e550b3cd13825b02",
+      "bytes": 16320
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/validation.json",
+      "git_blob": "12b9ed99bcc15ad96221e7d279652958a882a2b7",
+      "sha256": "49dd96f4cf75b25a14bf766a4307f4e96f89a6b0fbb1bf87e565a760a87a4cfc",
+      "bytes": 1809
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/verification-strategy.txt",
+      "git_blob": "266fd3eeb7bf59544a130e79d6f731baa8c68e87",
+      "sha256": "30ee407e39d74c8bc6afc5dc4667e07b39185e30ed120280713892a4d872443f",
+      "bytes": 7528
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/verify-packet.py",
+      "git_blob": "de87650b9dd77aa7b533896217e5d2897c049ecd",
+      "sha256": "2dc052de6dbcbbd5001022f8f0907bde66c3204bde3134c3781e8d3dc523ad4f",
+      "bytes": 7975
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/verus-sources.json",
+      "git_blob": "dc6c34a0a33d4354a0a9646b66bbd10af4c11cec",
+      "sha256": "734755fb85b12dcc8e9e6a4dd3e03f6014bd36d1273883e3382f6fcdb589b34b",
+      "bytes": 3770
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/acceptance-plan.csv",
+      "git_blob": "cb550dc31adf4aabdb820aba46232ab356dd36af",
+      "sha256": "9d7af5657ae9f6ed63dbea8a9f0cb1c9b0c46119b3af33a7954ac9da7b1b695c",
+      "bytes": 7946
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/coverage-contract.txt",
+      "git_blob": "67bd1039234982cd520b510c6a427f8e04c62fed",
+      "sha256": "cbd2bee32916648e3ba43a38536f0d517d3cf73d2f08ff89389c2da1236cfb60",
+      "bytes": 35470
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/entry.txt",
+      "git_blob": "1d085453db3f754d807830c94096e5a6498ff1fe",
+      "sha256": "5b29e70ffba1afa9c4af9565fd5971b120f0da21f69fd450f25abef835030dcb",
+      "bytes": 1957
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/record.json",
+      "git_blob": "79a5a4a7d6425f47e48e00134e112a16884a4866",
+      "sha256": "b8c3ef9b74de3d610caa66dba8cf3c0728a844fec6d770479be77e85a9933848",
+      "bytes": 2609
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/review-history.json",
+      "git_blob": "8432bf6a4a96130e54c8974be09862fa45412625",
+      "sha256": "7351cd01844c6e41c111d0edd7bc9dda7d3e86295d7838ff2a6c4f676d5ff908",
+      "bytes": 1632
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/review-receipt.json",
+      "git_blob": "fb2ea3244d52bf7ce87f897f17ef16877eadc507",
+      "sha256": "193384646ae2b9da51ec637779c1129fcfa745b3c6b125ee64848e687e0895b0",
+      "bytes": 1346
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/review.html",
+      "git_blob": "010563b981690ec4b408777720a1512aa24e5b55",
+      "sha256": "899b65f664fae6ded6a95512321334edc980512a8cb96483c90ef7749e7b27aa",
+      "bytes": 9244
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/scope.json",
+      "git_blob": "312a9312e64021df1fe6a28500ceefc52bcf57d1",
+      "sha256": "7913248a36fbd794bd675ad2a6c7f3116b5f0f5f625695df17d5a8e3601daf04",
+      "bytes": 941
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/screen-states.csv",
+      "git_blob": "7ea160c437234562fbbd35519a06b82b4b8deab3",
+      "sha256": "e71e45d9c3fb886b756e382344d93886c688841c77157f641b8c22cc348674ef",
+      "bytes": 2859
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/source-identities.json",
+      "git_blob": "5f61dfb1a744fe3667e93a58abb8cdd92941e4ae",
+      "sha256": "61ed3159ef5a96dd2da26205fbf92393018540715434de99b79dc9d3dc1956c1",
+      "bytes": 1627
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/validation.json",
+      "git_blob": "fb8a0ac8650fa87c6c97152f68de81a7d03cd81b",
+      "sha256": "2519f22f86b19b127bfc4d02318145f10efc530d79462274a93d4758f0a9f3fd",
+      "bytes": 2660
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/doc-link-check.txt",
+      "git_blob": "7751d5c36bc6932f25e9e45fd613d0f3aa5cb88d",
+      "sha256": "f01e4113150e0be10288d2ce1bf6e225518a5cc36e8907ee64cc59835a4602ff",
+      "bytes": 781
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/doc-link-sandbox.txt",
+      "git_blob": "f8067d807c5866b77812ea0ef50ae38298ab7b41",
+      "sha256": "517e4b2885dd4e4edb74d1c2e8572995e09aebacfa756ecedb2f0605cdf113a2",
+      "bytes": 193
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/entry.txt",
+      "git_blob": "158b86628d21361d9b8bb2c3f573eb60c6b10b02",
+      "sha256": "a0b9fa59fbc84466f169ca381ef29c5b97852029f90032642f3fd7422b41ae5b",
+      "bytes": 1818
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/full-diff-check.txt",
+      "git_blob": "4b41ab4fc360af3d6d147ed9a09333fbe10fed69",
+      "sha256": "379e437eb54520463c9366d21a47b504760d9846cd292fedb27932501d6563a7",
+      "bytes": 27065
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/gap-register.csv",
+      "git_blob": "8054e76d78dd25ef6c3b3d4cb8163365b4178927",
+      "sha256": "935b7c32fbbf1f04e37c0547d25e707482d1f2200c7faea297cba18fd7110136",
+      "bytes": 2705
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/independent-reviews.json",
+      "git_blob": "7576e0735e5c97ef6d18478e06b4010e57052ac5",
+      "sha256": "ac219fcd3174efde41fd1d2b6d45e11260f61e8eed38ebcc45d9535698df780d",
+      "bytes": 8294
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/inventory-readback.json",
+      "git_blob": "1cc7508683c369201f03983ebb0b9cdff6becacb",
+      "sha256": "cca6ec71abc50b90437f132b06ae05ba3c2c0c53efe65f82224abeb5f245c906",
+      "bytes": 484
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/record.json",
+      "git_blob": "142075753d8d21d5eb97c74176ad79a7a236fd9a",
+      "sha256": "cbd724416b521e11bf7aa6e48befc0c8ba54296823df76f90d795c3e60c0fbb3",
+      "bytes": 2662
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/resolution-contract.txt",
+      "git_blob": "2ad10218d79627163f393abb2932afafb0446962",
+      "sha256": "8b4b693d18f127ea8e66a4ff7d26a76f35a68cf5ffc2e639efc076d73281c7b0",
+      "bytes": 23341
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/review.html",
+      "git_blob": "22fc2eccf41d69b77d0c1cf51bc37e4cfc0c1995",
+      "sha256": "30442fce72589eef819f172f0e81409a04c2836513fb2d232343d7bcb31a7cdc",
+      "bytes": 10396
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/source-identities.json",
+      "git_blob": "301f25b9be58fd66e7011a3db32d294b1510dc7f",
+      "sha256": "a57383cd4dc6567dcb4c3b862dd3161ce44c9fae7394972aad9fa4cf6248f114",
+      "bytes": 4456
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/test-oracle-plan.csv",
+      "git_blob": "a3580a542a3d2f37a8465884cefac7e5d8278e57",
+      "sha256": "ce8697e2de7e24e4e7ec2ec1a8499f0cb56da4f9045641ff3de4546c4ad7d8af",
+      "bytes": 7123
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/validation.json",
+      "git_blob": "61a5c52cd01af64fe701bb6a184f646783582167",
+      "sha256": "3ae6a80921d0c9ebf7b0048e13b3a49c8eda2797d0591ea6fefff9f0c30bd1f6",
+      "bytes": 1328
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/command-map.json",
+      "git_blob": "71e56b304cc82d652c0db65582b2c409ff17f903",
+      "sha256": "b0343e9855a32f73d867f8e170b21cbe0a9f412032584e10a4c6e3578578c794",
+      "bytes": 16909
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/entry.txt",
+      "git_blob": "8a2b06166408a28f263e92350235e5ad5c28da3d",
+      "sha256": "d85c9caca9b98e0e8938f024ae431f45c8497ed165af6b3ea7ac09c7f8decda3",
+      "bytes": 2049
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/input-overlays.json",
+      "git_blob": "1aafc58a30abb4ec2afa11bd0ad79d2d8f36ce6e",
+      "sha256": "67668fffb69204aa53432531532e15af9e1842b0b7e8802969904a913fc3cd0b",
+      "bytes": 4096
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/journeys.json",
+      "git_blob": "8cd9c64e9f5f63b297713e837e28f09efc28f0ba",
+      "sha256": "ffa56b0db3ec3f6a929548cc1a4fde10c9bdf8e858b9175af37d1374cb7c00a8",
+      "bytes": 15197
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/record.json",
+      "git_blob": "74de3e56d7cfadf7023debf4b186ae0c4a3e4a91",
+      "sha256": "40e05e23f32018aba7880e1af4870676da8efacb326c2227fa2cbafc0d69e23c",
+      "bytes": 3253
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/review-history.json",
+      "git_blob": "55a0ac777e9fde6b7e1a93aa0565cf26340611b4",
+      "sha256": "276c38b706d32a40dff4a33231407b1b96794c16d8a1e0163461e909cb02d77e",
+      "bytes": 1112
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/review-receipt.json",
+      "git_blob": "b8f9d5539f4140390a46ef09fe1c6bf3d5945042",
+      "sha256": "5ba019ba1e6c90a4aa5ea5f093f8b89cb748bbcf83d4ca84865ff8f2530e9a2e",
+      "bytes": 1647
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/review.html",
+      "git_blob": "7f45b4205c61e32f707da6b0c796ae94b6c8c532",
+      "sha256": "0fb4ce518c235811aadc64473be8ab94682b1b4497a4ddd08ff807b319c71e79",
+      "bytes": 167807
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/scope.json",
+      "git_blob": "08e8b616b10f40b49eda8b7f792d47ca8156ca57",
+      "sha256": "05607ec83cc2aeb9dabbcd89fc875f913be696ac7149a1165c5a241b16ec4b9b",
+      "bytes": 1099
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt",
+      "git_blob": "a852ae945e3be5d9a6e31f479b1810ba4940e716",
+      "sha256": "1e6f33eafe14226a999fab50edd9e9d298a89e3ffcb365af710b7ec723eec7bd",
+      "bytes": 23622
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-map.json",
+      "git_blob": "0b22680721f006ffa800d1e6cb0ed23ee915640a",
+      "sha256": "309d797c018ac38f1362cf9e789f2b33cf6545050e7da7b28ec44d5c1c657bb5",
+      "bytes": 17263
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/source-identities.json",
+      "git_blob": "e63efc00c2f072cdf4e87ec244a7868cb41dc11e",
+      "sha256": "d0e9c5cb5ebf54458cf09594db705d1499e7f8aae30fca99703e8ec6d55a3ec5",
+      "bytes": 4161
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/state-matrix.csv",
+      "git_blob": "56644a52d751bb369faf13379a20c5c9bb8c6b62",
+      "sha256": "ec793d3c5025c81154e5ea81bd7107003f4a1f79e9cdeaa6b198db2e0b957af7",
+      "bytes": 70151
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/validation.json",
+      "git_blob": "72d80506a7805936885d94dcd16dc08f3bb8cd2c",
+      "sha256": "89ba1fe6ad20b26b0e8b1c1e8aa00f1641f9989bd6a622c0b3e2e30bb74069f2",
+      "bytes": 1821
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/verify-packet.py",
+      "git_blob": "cf7e673504cf2fa762af45fbc60b425bf9e63f51",
+      "sha256": "649d818c4af63cb7511abfcbe996bb99b7fcde93a7dbe5ce21723d22d77d9e23",
+      "bytes": 4676
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/dependency-contract.csv",
+      "git_blob": "808caddc0a6f382cbc43549e69c3da140f84a4a8",
+      "sha256": "7eb670e0b092915b028baf59b3eb34acff965bcca7a2f390e18d07ac4a70cff8",
+      "bytes": 1899
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/encoding-and-packages.txt",
+      "git_blob": "c5a92c31d4245575861ff01ac09f4c0064140350",
+      "sha256": "6e2a33d756a8b19d5d370d7513bf8d32531ec23ccde35a7ba3821c28e979255f",
+      "bytes": 10957
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/entry.txt",
+      "git_blob": "e38203a2833594c6e0b05c11635014d15e1d9b86",
+      "sha256": "cfe62b605331ca755b49afeff9e821962b2f90985f6814883ea122fc36d66f51",
+      "bytes": 1742
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/normalization-vectors.json",
+      "git_blob": "d68f0161ac358fba97abb2c938dcc6deaee5a9cb",
+      "sha256": "e8da94a456a059a5b6764dac852896981278683502d5e55251b06bfb3b427368",
+      "bytes": 71826
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/proof-cases.csv",
+      "git_blob": "2fea05383ce4ef5ee29cfdd0e99785b1eba6bb9d",
+      "sha256": "bac8dac65d58b43875c8c899d8627566f56d02c9efb3b67b52bb42759dec2647",
+      "bytes": 4286
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/readiness.json",
+      "git_blob": "d7062ed69043172fe367e0bf78bb73c937f614de",
+      "sha256": "7f2ff3c42cb8dd6be84e544d12169cfb73456df4224ccf9b57eee11b71db1956",
+      "bytes": 960
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/record.json",
+      "git_blob": "bb7065cb81d7cabd0e5a0acd61343d271a320d90",
+      "sha256": "b3cbeeea26bff62d53e3cdc396cb02412401d793813e75ac896ce135053807e0",
+      "bytes": 4034
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/repair-and-readiness.txt",
+      "git_blob": "23cb7259a407a0a65d88576128406a5389a4dc5d",
+      "sha256": "62dbc439d156c4d94d46e7ab3d7e28027e7af6a211d5a8cd385c085bd9e3b787",
+      "bytes": 4832
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/review-history.json",
+      "git_blob": "44ebc037071e7cdced31e9266eeffc47e8eaed50",
+      "sha256": "7e6b91a1d5b40a0cdc143451ffb7b045c6fdcc398ebb9aed3d91a6eb5517eda4",
+      "bytes": 1626
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/review-receipt.json",
+      "git_blob": "18e603568f9815fab8d012da1b6861e6a2913d8a",
+      "sha256": "dd380fef00ccb2ccd79b7199990bfa76bfd9f79e6c1da193b4529409e495e8be",
+      "bytes": 2294
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/review.html",
+      "git_blob": "f49419f4c6d09c2919c472e5cac6e5330a562b94",
+      "sha256": "49d5edf6b8cc27fa437b28b9885b8aa24e22e75fc9f280a767c0b8c46a1c5cc7",
+      "bytes": 3589
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/scope.json",
+      "git_blob": "bbb67526200546e3b29ba5090afcb4a75cd084ca",
+      "sha256": "bc940aa82324432aa476894aecc1fa17ad186b4ba94aa0b888c0701689cb2675",
+      "bytes": 456
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-contract.txt",
+      "git_blob": "3fdb4732c1a481efe92dda5be49de18754695b16",
+      "sha256": "ecd92c45511c4b72ed044252ab5ba8e5f90d4ac6672d3cb8682cf5126808c695",
+      "bytes": 19700
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-identities.json",
+      "git_blob": "6e708dcf1848e8fd0b35b60e0e4d9af64c72eb4b",
+      "sha256": "f00ba9bbaa3be4e4d9620495c3f8efe2abb215c6de0aa6a2587b91e1cc5ac135",
+      "bytes": 16925
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "git_blob": "6e3cc7ce9dfe00d5c43d56a6be863ff6104d0dc4",
+      "sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e",
+      "bytes": 66226
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/state-contract.json",
+      "git_blob": "07436a946949c92c404ccb149f5b8b7320b91a16",
+      "sha256": "1908c1e49f95c94b77ffaf5d30874f1f00c05e8c9639123aa0ba7c9509188329",
+      "bytes": 3671
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/validation.json",
+      "git_blob": "f1065e98f51d3ebd17666becfea5afaf9971c61d",
+      "sha256": "062acfc25e07ae63cce7d26d4e1e782fa43f5d38fd2f787e6426262c3a31ac51",
+      "bytes": 2739
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/verify-packet.py",
+      "git_blob": "349140885c808b295108eccb606403b108082c22",
+      "sha256": "6d3367ef8e66101c1bdf4c4b06fe5279151b9fb5c2026cd4b78507049ce5d30a",
+      "bytes": 10672
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/entry.txt",
+      "git_blob": "334141890478c6c2324501ae0eb5c12de4791086",
+      "sha256": "29af5b6c184df0dbe5ed5d1a49b1f024fa0200ee5c704e52964fb5a1398c2bcf",
+      "bytes": 2365
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/information-flow.txt",
+      "git_blob": "9377868b07ff614a3035a995d520cea267cd3611",
+      "sha256": "58e5d378abac3ae742b160baa0c8dc646fdead657d466300137eae10c991748d",
+      "bytes": 8967
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/membership-witnesses.json",
+      "git_blob": "b0f27e4f021f09119b8a79d70935b0bba4204676",
+      "sha256": "dcc12c1119da8010323c5c1a36c709193832913e30c9205657700f0776b028d9",
+      "bytes": 4793
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/persistence-contract.txt",
+      "git_blob": "400b4ed48226580890fb2bca6681a65091366b46",
+      "sha256": "4c3907f6335dd21d9d94a43549e9fff50a0be79191aea311a14d9404e2089cc9",
+      "bytes": 12310
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/proof-cases.csv",
+      "git_blob": "864524bd0f01b3431ad781a1b15b83eed54c8a32",
+      "sha256": "dcaf4d34a8502b3e4848df5f3626e2efc23714478ce2f2d4054e639c3fca1a33",
+      "bytes": 4409
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/readiness.json",
+      "git_blob": "52c3594c8c9964c458296ee27225c86fa44d7edd",
+      "sha256": "2fff6926925743da963c096fbaa3f93f9da7a8f899f00dba0e99056db98b197f",
+      "bytes": 2011
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/record.json",
+      "git_blob": "987141db759aabba13c0cd87dd5ecd9bcf71664e",
+      "sha256": "0642766ae0cd5d9524404eb197a9e2530460d04cc538dc9a8b6346ca3940bb83",
+      "bytes": 4150
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/result-membership.json",
+      "git_blob": "b95cbf5e91e3680ec337fd07a5aa779411b10d8d",
+      "sha256": "68d8061dcb64bd65a0469e77f77d69e99929e54415677173e26bb88066295bfc",
+      "bytes": 4814
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/review-history.json",
+      "git_blob": "9a6aa669bdd88d12bb5cc6438290bd9d5e0256e8",
+      "sha256": "3526f51ab9b0425e12e0d8a78a1e171bac2a9557560ec7547446f18e6a9d746d",
+      "bytes": 1651
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/review-receipt.json",
+      "git_blob": "91175b783ce06d614d8867d5c0b0776a2731851a",
+      "sha256": "e156a0c61ad3d3057e50e42e3edc6faeae4ec5e7f33796ab3db38fff6cca2f04",
+      "bytes": 2440
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/review.html",
+      "git_blob": "4d71c802299c208862a0443603acb5ea7dadffa4",
+      "sha256": "3fecd054454256bfd697ceaad513060b9d5824352aa7485fd9a3b33aea41d95e",
+      "bytes": 1884
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/scope.json",
+      "git_blob": "552f3b38780bed7b966b1a929fe24af96494dc8f",
+      "sha256": "dd6e0ac4c025bed0ae841cb83e99cfc8a73b9a391e050a8a4f6cc7bc7ab99cd8",
+      "bytes": 629
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/sink-census.csv",
+      "git_blob": "0d7caebcb550f8271c30a66f4d8c336c181f583a",
+      "sha256": "56823c2b8ad25018e0e89a134f061585d8a6f08cdd85f8de6f8c90588ef9b61b",
+      "bytes": 1978
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/source-identities.json",
+      "git_blob": "55df7020344d888a3446814fd211ee6daa7f8529",
+      "sha256": "abd1b2512ea5fb59da87bcb6b5dbb49f75e238b7e3cadb75f5fe899d09b9737f",
+      "bytes": 8819
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/source-key-matrix.json",
+      "git_blob": "73683c9762c1e7d3fd73eee34eaf930a1237f94f",
+      "sha256": "5dc5aecb3510b92f9226653e5bfec234f3f75d5303dd20a34eeaa4d9b9a5fd0c",
+      "bytes": 9275
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/validation.json",
+      "git_blob": "53f573c41e6daf2ea78a266608fcb431e90d79bf",
+      "sha256": "50f5c550aa8e7a6aa904676c62e6df0c488eca306674ea72fdf20bf769cda46a",
+      "bytes": 1535
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/verify-packet.py",
+      "git_blob": "8058ec1213a1e6cfb226fa19a4b88a27c0c2214a",
+      "sha256": "2bbaba980e7be8badbdd72a1ca3d2955f35c15b40286f9dcf2a3d236d9c0400a",
+      "bytes": 5075
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/entry.txt",
+      "git_blob": "f36f47fbdcfe37c9db64bb991ad1778794d51fbb",
+      "sha256": "7cf4b77321bf9a5dccb1ad5d29e05839bbb8050c9182c810126fa61ba4905479",
+      "bytes": 2035
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/evidence-assessment-contract.txt",
+      "git_blob": "5fd38acf5c97dc491c10580097bbf9bfcadc025e",
+      "sha256": "e5f4c504633276feb841bca1515444bf85a80e518a6c43bcf8f48ff2d00badee",
+      "bytes": 17076
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/historical-attendance-contract.txt",
+      "git_blob": "ba91e5f2c9fb69b919f9a56147a27a0248ab6b85",
+      "sha256": "8167e8928f4817823f23c30b747c4f75502c5f28db8ba8acb14b9dbc14a66191",
+      "bytes": 10101
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/integration-and-readiness.txt",
+      "git_blob": "c3844f59ac5327948a4052fcd964e8bdfcaa9a5c",
+      "sha256": "13bec336e947a470b8ea0682c59e48337ef0577ea2444797df13135ed277bc8b",
+      "bytes": 3803
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/np1-command-vectors.json",
+      "git_blob": "f516562c5e92b7d7ab04c48af73705d2dc450b3b",
+      "sha256": "f564c0c144a15c173c783c12df0f78a8c528309cfd1420ac1ffc1089476f0050",
+      "bytes": 71038
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/proof-cases.csv",
+      "git_blob": "75d44762c5f6550f0bb9728f603dd355a2c2ca1d",
+      "sha256": "56281333eed1db4e670c7198fe94326bc81138a63e89b25514a7916ec8287b79",
+      "bytes": 6540
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/record.json",
+      "git_blob": "ab4a61e34fdd53a695bf2883da369435a409f2f7",
+      "sha256": "39a6afc11bd7ec901a7be62986230ae34fa34f1a64e1e14062352c8c0bd3f1b7",
+      "bytes": 4302
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/review-history.json",
+      "git_blob": "aa802ea7d1739689f9d853e029b5fa7d131e7319",
+      "sha256": "6e52a2f84800a069595eff46157edcdfb6496e716f373736e4a09b7c128806d1",
+      "bytes": 1371
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/review-receipt.json",
+      "git_blob": "8dc3a4b54f9001ca1ce9bda328ad6f28ed89d63d",
+      "sha256": "2e85c7891ff519c2fb22ad3f178e33256593d3231867081b8de5bac4de99dd43",
+      "bytes": 1883
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/review.html",
+      "git_blob": "0357467dc2f1cefb33cac31c74198ae356ca7ecb",
+      "sha256": "d9dcf20b61674c0f351a764155186d188c1c17fab30e53645ebd2928e45c4dc8",
+      "bytes": 3080
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "git_blob": "53eae8f5184e890b06ba91d7131c25a2dcd3299f",
+      "sha256": "3198b1380551e1103afb4bcb8c2805b000944ffcc004ffd337fa5b46b03921a7",
+      "bytes": 22012
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/scope.json",
+      "git_blob": "22d8c3c9db8eee074fcf538d5b5165261cea4b7b",
+      "sha256": "63f7335ee652c8da4878628bc4c507cd30fed8ef5a5d3908ca0a7ff20bc52687",
+      "bytes": 1178
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/source-actions.json",
+      "git_blob": "4199bfc99e9f467d39a1fb34c984cc38f54688c3",
+      "sha256": "3a4eaf593a0962ec07f717565afabc5990f7b6709fea8c913daaa7d76503d53e",
+      "bytes": 6005
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/source-guard-contract.txt",
+      "git_blob": "47c92a19d4b7c50416787289647208ba1c62c715",
+      "sha256": "636d7cb67f76115947eecc225b77177135bed6e7ac05801650e3c005c9414dd0",
+      "bytes": 6148
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/source-identities.json",
+      "git_blob": "89159d771f750f6b38f2521e40d8890825ea09fb",
+      "sha256": "f7be78d81672f24bfd4f904d491618e519192f62c51ce41eb5011f2fc629492c",
+      "bytes": 8101
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/synthetic-tax-source.csv",
+      "git_blob": "ef0e42e158a091d73cc1d3896bbbddf82eb681e5",
+      "sha256": "0d622f398c3b5558fbca3fd8f35d62bc8f6e4a43d7cf6290c9c2d62035822aa5",
+      "bytes": 165
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/temporal-witnesses.json",
+      "git_blob": "7e050cad832903ff3834dbdb0811a894dc094061",
+      "sha256": "ce2785b0f9d6bf6a850d9204d27cc3b152831a5d1b4c1f6ec7fda0d3d0fa5044",
+      "bytes": 2023
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/validation.json",
+      "git_blob": "145ab030b1d7b15db435365a13aa17167ec77838",
+      "sha256": "0ee89cfc58e4830f1937ad24d3adad462a5a6535063bba01bed72fc33b2a2933",
+      "bytes": 2270
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/verify-packet.py",
+      "git_blob": "c516301ed5ec05b0570969d7fd8a0cfb3cc2770d",
+      "sha256": "fd6486d1df32fcde877a8e47d7991ac70ee9fe86230413f660f8a930a3178ef6",
+      "bytes": 10088
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/wire-types.json",
+      "git_blob": "6db92ae3a5a8c33021e75c828f076e99e742ed6f",
+      "sha256": "1889da14b09dfb040581da37c12ec28d4d25d26e46ea15b8eeaeba86f26fc96f",
+      "bytes": 12867
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/writer-enrollment.csv",
+      "git_blob": "4159a06d952c59336effcd0163047cf2036c966c",
+      "sha256": "94db353d71c8ef2f275af1ad304d0aa242ec8391772cf637a2f1cd1c3a509441",
+      "bytes": 2930
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/action-inputs.json",
+      "git_blob": "0d6675bc1dfe228d4d759f2553be99f3f836de8b",
+      "sha256": "ac215c0eeaaaa20f4f443d6a1937cd48dff2812e9ea730e3b35f418444cf0ab9",
+      "bytes": 5273
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/common-action-principle.txt",
+      "git_blob": "80ac63af596389fcdc5e1b4c9670377326dfcc9a",
+      "sha256": "95fa01089c78cf67d13d2b027533ffedd658b07f5cbdfe075c82e67cd56b43d3",
+      "bytes": 3336
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/entry.txt",
+      "git_blob": "e89a195f1dc5db632a69aeb8b0dc92057792d354",
+      "sha256": "910ee713f0568e8c712b7fe857a96c10f30ab8bcd9d2e8b9ab9ab5a942475107",
+      "bytes": 1906
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/group-and-navigation.txt",
+      "git_blob": "548661e4db5a1c2643d6132fb7a98627514e5ae8",
+      "sha256": "1e881e73650e65df99c12b539db9f9bfc4944023c6374a7836a97cce71236c8b",
+      "bytes": 12997
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/group-command-witnesses.json",
+      "git_blob": "a30dae53d033450032367c3a77cf77c6e5a4695c",
+      "sha256": "8e387f032bcf22d2f79edb6df78c3eaebf74dc130faa76bb879ff5098a917624",
+      "bytes": 6422
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/participating-ports.json",
+      "git_blob": "3af784206df60b3847c77e73216db619a46d9c69",
+      "sha256": "81a00add9639e6804e086fa271c297e0e1b460cf9737b0b91bade063a31a8cf6",
+      "bytes": 4608
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/proof-cases.csv",
+      "git_blob": "586d2472251d3b91e2375dccd1cdd66f78f1ec31",
+      "sha256": "631442ed099e2940b3cb5bec518668e2a25fcf027d0d9bcd573742867f57a41f",
+      "bytes": 9960
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/record.json",
+      "git_blob": "53ac6c0e290564b0712b7a57023a1a90ef1de8a2",
+      "sha256": "0f897966057a9dd334e72048835660ef8f1c24d8082b487ac6f4c2ffbe57b162",
+      "bytes": 3819
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/review-and-publication.txt",
+      "git_blob": "2dadc097bec3e5fd1e5aec97fcf99338b4c96fd7",
+      "sha256": "7a05edb7b8ea62a8707fa4e65b346ba0d8e0ce08e7117e02d1eb55c0f0d8629c",
+      "bytes": 13067
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/review-history.json",
+      "git_blob": "0b0ecfc0d51794432b3a2748bece6bcdf46e75a1",
+      "sha256": "302ea859ff1de7c282141740e0020dfe91c56d60814e77a4ce286266fe92c2b8",
+      "bytes": 1081
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/review-receipt.json",
+      "git_blob": "b799b71fbc85ac0ce669799be871f2c80a734808",
+      "sha256": "b77055a4cf6d31556c570c9ef393e669421cdf212efc1300c7a5a926447dce12",
+      "bytes": 1872
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/review.html",
+      "git_blob": "555945485fdbb6d2b17f4334deb43919e0801818",
+      "sha256": "ba1917bc27d7f8839a512494df35b3a0bbd2915a5736549461fb492555b2bdce",
+      "bytes": 2783
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "git_blob": "dbebca11200d0f01862e10a391c91b0efe47fdcb",
+      "sha256": "cfbf02b629e719cc884e668e1e7755abee10cac35f1e182975bbf0a873a77813",
+      "bytes": 32146
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/scope.json",
+      "git_blob": "7c5e58e7b74697dee42df8af6fd00de4526726e4",
+      "sha256": "bf17ae66c7afd2b0b6d8748fe52b5beb233245a778e089bbf323d670785c0b40",
+      "bytes": 1152
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/source-identities.json",
+      "git_blob": "30ce6d83326e66fc69069c516f0dbbfcc46236ad",
+      "sha256": "c1a37ef8faf6d656bda53fded5332a0bc00b7afa6455bb39b63ed4790b4d75e9",
+      "bytes": 11239
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/validation.json",
+      "git_blob": "b15d765c91629b5db4f3dd716c4f062454cf7bb9",
+      "sha256": "51d17c704a51cd099950de5b50ce95836c2f703038c2ebfa7dd008084474c685",
+      "bytes": 2010
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/verify-packet.py",
+      "git_blob": "74c1a6cb366f33df44f786005c97c15727feb973",
+      "sha256": "b8ffdd40b757fc6d0fa9c9c40fbf332e12018dd5c25184cfb610b65fe699061f",
+      "bytes": 5490
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/work-and-capacity.txt",
+      "git_blob": "6446044da5e7594c433c9e852c93d448be1a03ca",
+      "sha256": "0131548013bd6bb98baee6fbaa48ecc167961957aef0f9d4af0a01562e236ffd",
+      "bytes": 10090
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/binding-adoption.sql.txt",
+      "git_blob": "b2f5036464a537f914d8aa836233df282b740c33",
+      "sha256": "a422044f1b0040b33bfd88a96c1b094adaaee57de71333c5d8b31e88be41b2bc",
+      "bytes": 12921
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/choices.txt",
+      "git_blob": "6a474fd06bade6a18450fc1d6f0f611af515f882",
+      "sha256": "2ee62d0ac766dc5b4c3cff2f0c7dc3827cf923be3c39133601089b6f1121e6a5",
+      "bytes": 1307
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/contract.txt",
+      "git_blob": "0aa9b0f89f68ec6196c954f12dc04ade699470b1",
+      "sha256": "b52d2c9432f78dd4efc104a5c916b99f530f159772e09fba6790d4a4af535151",
+      "bytes": 13458
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/entry.txt",
+      "git_blob": "7c957dd17371243612507c2d1cfd45c2816460a8",
+      "sha256": "144b3b63bfbc0f68e19baf519449756c1de0667108a3c6a1e7b662abdee1f30e",
+      "bytes": 1736
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/lifecycle.csv",
+      "git_blob": "85c0742534a5825e45fe86f69a4137c66702e5e7",
+      "sha256": "40409680165c744999f5ad7c96b0e9751c45f9f0d5ccf7745316078d5bbc4116",
+      "bytes": 1574
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/proof-cases.csv",
+      "git_blob": "9133018470bd0d0110d54315ca82f628219ce10b",
+      "sha256": "123a8b892e338504a6b185235215c133e39438b27930474a8b517e54eb9c5bba",
+      "bytes": 3151
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/readiness.json",
+      "git_blob": "6df00e54448273269d1e9463255c1dda665f5ec2",
+      "sha256": "93861565cb88059fb66c9b8e6a3f53b5d99cbf9e6a205726ddd3ecb56d8abb59",
+      "bytes": 1473
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/record.json",
+      "git_blob": "f86761865e77a13c96a6ac2ac8c7185becddc305",
+      "sha256": "3e0c37da081878ccda5a3741ecbc2ad7ef8ba12f9acff6035897f142984e404e",
+      "bytes": 3607
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/review-history.json",
+      "git_blob": "a657cbb4e24255a88a71fa8b5d7eda14a1c4f211",
+      "sha256": "91908144a7811202d93b750ca114a067696425692f7ba77beb68098fec4c54ca",
+      "bytes": 834
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/review-receipt.json",
+      "git_blob": "ba5e781904d8efa2714e90031aa4d8152a20536e",
+      "sha256": "c824fd5e311756a14cf3a1ba6ad7641fdcec18c370e761c71f4351d9db30a2c8",
+      "bytes": 2475
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/review.html",
+      "git_blob": "8c6b938074e17943c6b89705952408826113624a",
+      "sha256": "852f801819b26a23016c952f6517aee71fe51a3c535fe556a21bad18ab7befd2",
+      "bytes": 1819
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/scope.json",
+      "git_blob": "3bde4255da1c5d36de593dd0d3ff7445d63bb32e",
+      "sha256": "b46f16d00f776bdf98ecf4b3bbf06b92d185924d6102f2c04ab33ef490ac1559",
+      "bytes": 512
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/source-identities.json",
+      "git_blob": "bbf5b4c6332a89045432deb5c1663c8838112e2f",
+      "sha256": "4788423b7c5d5902d890c788c56a9fcbb7c2c2a2fab22d502551ffdd1a028bcc",
+      "bytes": 4735
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/validation.json",
+      "git_blob": "f3baa2aa4df2ececaf0ac0198179c08cf50be646",
+      "sha256": "f9dbae73748d2bf5f5b9ad2e1fd7715aaff43766952767905b8be8555466494a",
+      "bytes": 1570
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/verify-packet.py",
+      "git_blob": "037060f7cfa888ab0189200c80312e7dbbd58b18",
+      "sha256": "d4f92cfdd54f42c26f7cc2709c63bdc433186c70c49f8b6b78a21b609380b1a6",
+      "bytes": 4684
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/action-inventory.json",
+      "git_blob": "5d82bda0ec8d3f9db87d49095fcc74ca6a65319a",
+      "sha256": "9fd07ebe08b7c11f6bdac7b889a64e32eb3817eb3e71fcea26f9e16f54636cb8",
+      "bytes": 8498
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/budgets.json",
+      "git_blob": "02ba480a772eabb8b227603fdce5a0446bc0cb9f",
+      "sha256": "cbcbb179fdd8f0d6f87dfb782f364ad6cac4310046ab4ca193bb9c9755a8056a",
+      "bytes": 3461
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/choices.txt",
+      "git_blob": "e391d75453ae85c9bec02607415590186b5020f2",
+      "sha256": "a9cce388ce092ff852852430fa648dea7df2425861df56b3a5c592b2d6947a6f",
+      "bytes": 1287
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/contract.txt",
+      "git_blob": "b619360fe6cbe50eee8c0abdb3eaf4ec90295ba5",
+      "sha256": "8e59a8c76e87f752d70010667b647216f76c3672dd35c6792828fb1c8d575dfc",
+      "bytes": 14860
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/dependency-templates.json",
+      "git_blob": "463813059174a5de9889f7975738e75a1e58147c",
+      "sha256": "de6018168902506a031e38b36b2aa6f89c01d59a6f3f98ece48794752318de7c",
+      "bytes": 6370
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/entry.txt",
+      "git_blob": "a47b3c2711e5facc6a27869665d2763f29321b4a",
+      "sha256": "63ff11fcdbe0129e473816ffd9773e41cd7531d1934fe327dec28d0d61468834",
+      "bytes": 1817
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/lifecycle.csv",
+      "git_blob": "090d5f89447bb2ad99200282f58b7c3c0f03dc17",
+      "sha256": "935cbd680a96f1126e6d04b9eb8c198e3f67eff2058405f63d1b69afa9b52c70",
+      "bytes": 3072
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/proof-cases.csv",
+      "git_blob": "b4e0144c463516cdecbe0ea3e5db050ef778525e",
+      "sha256": "ce59ddc9017fd4bfd698c17732832762eb9abf23e776aaabf526633723b99c83",
+      "bytes": 4922
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/readiness.json",
+      "git_blob": "8ce3aa583cdd009587f992f214b385ed853d2ffc",
+      "sha256": "e5b8f825cd8cc763e7eceb37fc6d5d09bb304e3ae25d1fd485334b9afc4efb1e",
+      "bytes": 1525
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/record.json",
+      "git_blob": "cdf13f98690ba266642a6406cd815b3bd7109066",
+      "sha256": "da011dcc21f37578749db111c28e7ac7d7b9c26a3e5d44006e397436769a13d0",
+      "bytes": 4341
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/reference-rules.json",
+      "git_blob": "78e93463f72b014a8bee0ec1a095f710fb35ba06",
+      "sha256": "cba7d6cc01282ad47144d8fc81d0d0c79c2af051b546a7b326a9e889bcaa7872",
+      "bytes": 9393
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/review-history.json",
+      "git_blob": "223851d5ac34a249a6036dcf7cd6b0eb4985ea29",
+      "sha256": "21adf807a6296c478381737281cf7ba1b3654a99dd90b6d830f1419301591315",
+      "bytes": 1499
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/review-receipt.json",
+      "git_blob": "94a35146727c2ac07fd11db34158d69ba0fe107f",
+      "sha256": "2decf62d16c95389275ac2edb22e46296165994e88e1dae78fd2e85d9ea9e706",
+      "bytes": 2727
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/review.html",
+      "git_blob": "d8c086e97b01922911f1ad315f040a58eded39e7",
+      "sha256": "88e8a1a48bb2d16c9dc89bcd46a734ad2109ea505d7ec8372a4922308feeaf8d",
+      "bytes": 2137
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/schema-reference-sites.json",
+      "git_blob": "5106682617b3ca59befb95c1439aa9fd48ca2613",
+      "sha256": "d9575f91a59aeed54abe359b50397d8882c42c444cf4b5f137fa9288d1cf959a",
+      "bytes": 109183
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/scope.json",
+      "git_blob": "cd84c3d197a6ca1e4190146c602b53cf449caeb2",
+      "sha256": "e877a32f115b18d53c9e9374efa5f50ef3d6b6c478054680dde329b8875ed891",
+      "bytes": 681
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/source-identities.json",
+      "git_blob": "d2a67e1f4a8882f4d69492f1f8f7d857bb2475d0",
+      "sha256": "88a351674d1793a744b4dce713bbbd20c9ec69ff9120b150aa8c073c98207c0b",
+      "bytes": 5019
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/validation.json",
+      "git_blob": "e1a0bbeca771400efe7e2fa96009d5e33f147e87",
+      "sha256": "42e0be7c7870bf28abf38121b3037115541f3d14ee85fbe4d09edfeb3e301f37",
+      "bytes": 1779
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-evidence-protection-contract-26/verify-packet.py",
+      "git_blob": "a1682ae771be21017181e9fb5883089fb8a89dd9",
+      "sha256": "044b69f95f0d3cf537c6a3b7064ca5b282ce2651f3a1817cdad7946c1bfcb270",
+      "bytes": 6234
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/PRODUCT.proposed.txt",
+      "git_blob": "fa5b0cf1963cd92b1d859ff94e05e75d52583da7",
+      "sha256": "95d355c8eba7ce56594db8aaacc213133eb18eae32f9fe79945c940088010c4e",
+      "bytes": 15861
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/ROADMAP.proposed.txt",
+      "git_blob": "6eb1b60f2048ab9795b51ba0d4655e0ed563525b",
+      "sha256": "16862f4bb350b74d417cea291396f355680ef1ade0e7fc32bbcd74cc2ca12d37",
+      "bytes": 10321
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/action-bindings.csv",
+      "git_blob": "c7ccd1edee6bc21b3f2841baad118382b56beac6",
+      "sha256": "00ed92ad8bbe52307d68b064c11a9cebc10cae1b5742c6b7fa2f2bc5545cdeaf",
+      "bytes": 4579
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/action-types.schema.json",
+      "git_blob": "69f86f875a8b282cb13e51b6c27ed28ff6982a62",
+      "sha256": "5b750dfa665cdf306d00bbb93f626e10d54ca54ae5700dfa545e9d98dc7b6ee2",
+      "bytes": 127363
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/actor-migration.csv",
+      "git_blob": "0346e314d5131c03307b38459768ba19c27e2275",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/approval-request.txt",
+      "git_blob": "02039001a0cb42f67c969e7e574ae621fe10d628",
+      "sha256": "fe43914a0afcec23be07cdc69de7b3c3e9350b709f8934f987e37f1e6157e693",
+      "bytes": 3736
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/authority-proposal.txt",
+      "git_blob": "d4121ac694214c0155039c6e0d07c5e882156c7a",
+      "sha256": "97d22db164f7b0342fad21bb3badd81c42005755f39bfd556042c5a19699e6d0",
+      "bytes": 711
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/concurrency-protocol.txt",
+      "git_blob": "175701c7e20d981ce2c83faedd0f30b3a4041d11",
+      "sha256": "3f77aa275b29c50713516397f6771e560fdc6709bddd9e6146328e9418ce4c04",
+      "bytes": 11476
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/control-types.schema.json",
+      "git_blob": "f753d3da2a56b27e05b17f9b285400183b1c0e6c",
+      "sha256": "f3ac26a2acde711369fae3a3fab84a824d1e7b757a7c3b23674759dc057a68f2",
+      "bytes": 25081
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/custody-schema.sql.txt",
+      "git_blob": "0c7a3b2f85b1cda13308f968b7a81c4d5e6e4db5",
+      "sha256": "12eb8d07c6241c19bc780d92e902ee26da5ca91c15dc6182324409c0d8017265",
+      "bytes": 12528
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/entry.txt",
+      "git_blob": "bee2a0fc1a4b1722942bf64b0388500092ccfcfc",
+      "sha256": "e1c398bb17cfcc8831e9ccb165a645f1636b83a64cb82cea1300afb5c1ac174c",
+      "bytes": 1710
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/fixtures.json",
+      "git_blob": "11aa1dc5fe13ad3098e68097e0d1011a63b063da",
+      "sha256": "6c1bf3f5aa4b8c8cdc80d3fb55cd1196e75a894167d4d84125b5aaa18be94351",
+      "bytes": 3366
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/integration-corrections.txt",
+      "git_blob": "9cfda06ce9ed95b6ef355616803f2a3d76f56392",
+      "sha256": "64bee5a92aa40613fdb3918b2bc0b68a4b1af55e9a03d31dc54156377b20da6b",
+      "bytes": 18369
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/journal-types.schema.json",
+      "git_blob": "83283c54bcdcb6a390887a780b27cb2d7b25d7e8",
+      "sha256": "37fc788c2adc33c7e5e9f833652361051d40898874d4131353a5573b75604d22",
+      "bytes": 20927
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/object-owner-custody-contract.txt",
+      "git_blob": "6542b810f56b1341177f398af315633699b25fa6",
+      "sha256": "4b2b68613fc20cfa788db2e551cbdfccc9b84aeadd2cf3994fa847f977fd6f36",
+      "bytes": 18590
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/operations-recovery-information-flow.txt",
+      "git_blob": "6b5a2648cd5d41b72ce515529dea90dc7eaaad93",
+      "sha256": "479b8d0e470ada6b09de4ff68d82e6a173f5e80d436cc86c69c346404abd7846",
+      "bytes": 34730
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/owner-bindings.json",
+      "git_blob": "01aa056a28b3ad03eafab166866bcd7691fc97d2",
+      "sha256": "22f5a93e393c8e3d34b0122ad0572c196c37b6ac8c1b2225de560d428522bd9d",
+      "bytes": 65637
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/participant-contract.txt",
+      "git_blob": "76303a24af8b51bf971e68a9444836765d468924",
+      "sha256": "e03e008016abe6102ed23c1f24c1e943f511a0e2387c2761967c900d31254c2b",
+      "bytes": 8918
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/physical-contract.txt",
+      "git_blob": "0647672db11b3d10e1d60a8c90d25815f2b4cbd4",
+      "sha256": "6203a25304842304f8eda34c41f516b5845153d21b0be2ff3aa46d7634368726",
+      "bytes": 15782
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/readiness.json",
+      "git_blob": "95fc61fd20e1bf607499d358c82d502ce3ed4a35",
+      "sha256": "98c52efe986cf4f002234906893772e3c22f48cfc73af5ffb6da6006962bc74e",
+      "bytes": 3359
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/record.json",
+      "git_blob": "4f39c25b9de58a1962dd4121c8b6a9a671275cca",
+      "sha256": "466923635f1571a5149c16c6434be6d4d297563d76feae7773b2815ca5ef38ec",
+      "bytes": 13584
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/review-history.json",
+      "git_blob": "9f0c0eca0d4eb85975a0c5c6241e362227f8a4e6",
+      "sha256": "c5df2ef2c8694fb53f11c331a2797b2157c31a4f5d358a2b67a3f6b5f0fd1310",
+      "bytes": 2468
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/review-receipt.json",
+      "git_blob": "7dc45d7f5cccc31f01dfcc0697b35f93a82fe061",
+      "sha256": "46b242d49603b4ae6b68ed988a307defb07c3782f68f7bdb4ebd38f244314f02",
+      "bytes": 3356
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/review.html",
+      "git_blob": "b6e59fe9c4754a296634ea30c929512954f8e68c",
+      "sha256": "2c6151dffae0a9a80ef8ff4c8aa0bfd55d23b2b250eaa72dc695d7b234074478",
+      "bytes": 7211
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/review.txt",
+      "git_blob": "aeff4ca43a3fc201d6074186d57127e3b83955e5",
+      "sha256": "9fe2770602eaf75ad91c65d1710e484ba96fecc53cb5b51abe8f81c9b48c4738",
+      "bytes": 5151
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/run-manifest.json",
+      "git_blob": "6199f6c095e9611931e2c1e19518578bdf357802",
+      "sha256": "97b0180e5d54614497c2e68930ec3349a3d9d1d6fd3b33f0a7ba84cab6c3f902",
+      "bytes": 2834
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/screen-integration.txt",
+      "git_blob": "74261708e19762d3b8207da2c7f4263dcef0ebde",
+      "sha256": "590c670f709b6b0d50550d2ea24851307d48042ec8ae3bcfe63fd52fe6bbbcf5",
+      "bytes": 8869
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/source-census.csv",
+      "git_blob": "96d17f17f98eade1bbef7a8d26647120dca78476",
+      "sha256": "5c5a66fdb15a7d10dcdfd20e6f72d9a04a03ddabe6372e36d5326251f108662c",
+      "bytes": 2761
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/source-identities.json",
+      "git_blob": "970fb53bf71045f28435cc226ed114df3fb82484",
+      "sha256": "91567c3f149349fd2276a5609c4091dfbdfedac530d7371bccaa31ccba36e5f8",
+      "bytes": 60242
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/source-sink-map.csv",
+      "git_blob": "2f4b9af458d0b1deb079d47e9e541a37c9af7e17",
+      "sha256": "d5bac022c9fd7ffa08b3325d68129897a668e32c494d4df9c29ffdb74bbdb376",
+      "bytes": 4178
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/storage-mapping.json",
+      "git_blob": "e687dbfa078803e8d27ba417848d1656ec7a118c",
+      "sha256": "6e3c8ce9bf945a251cbacf3bb432bb87ca62c6bffe79653b1a6491d208b9bb98",
+      "bytes": 175583
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/types.schema.json",
+      "git_blob": "0ff027776952acee37f84843dfeb3f9735892fdb",
+      "sha256": "875a3ee2159aa40608fd8d091ad2e92ef58b84e26ab75b2c423d688e8c095a55",
+      "bytes": 54595
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/validation.json",
+      "git_blob": "493daa47f76371f51cabff86ce881774ea07bfd4",
+      "sha256": "f2a27de606f4f17cdaf523f829ba7393bb48c619872205304755061d380c1952",
+      "bytes": 1544
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/verification-plan.txt",
+      "git_blob": "4eafc6077ca1960de4c4bf23d526dca825804eda",
+      "sha256": "e969a90902b0975a1dc437df1ffdb30634ff833092527961da595cdd27a5e9b5",
+      "bytes": 2887
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-28/verify-packet.py",
+      "git_blob": "5ed355cf8d2c7c3e0c76d01b90c1364a6867c8f6",
+      "sha256": "1cbcf41994f1ff327aa1f77bbba10721729ab1299f2afaf131a6c3ead1b5cc1b",
+      "bytes": 3875
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/PRODUCT.proposed.txt",
+      "git_blob": "fa5b0cf1963cd92b1d859ff94e05e75d52583da7",
+      "sha256": "95d355c8eba7ce56594db8aaacc213133eb18eae32f9fe79945c940088010c4e",
+      "bytes": 15861
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/ROADMAP.proposed.txt",
+      "git_blob": "6eb1b60f2048ab9795b51ba0d4655e0ed563525b",
+      "sha256": "16862f4bb350b74d417cea291396f355680ef1ade0e7fc32bbcd74cc2ca12d37",
+      "bytes": 10321
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/action-bindings.csv",
+      "git_blob": "c7ccd1edee6bc21b3f2841baad118382b56beac6",
+      "sha256": "00ed92ad8bbe52307d68b064c11a9cebc10cae1b5742c6b7fa2f2bc5545cdeaf",
+      "bytes": 4579
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/action-types.schema.json",
+      "git_blob": "66e20ca9e82d0311fb1dcc7fd4893b47a90a5a36",
+      "sha256": "8ec4e1b31d7b4b600245003baa68927faacf995a2b520dd28b8d75a464ff6b35",
+      "bytes": 128411
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/actor-migration.csv",
+      "git_blob": "0346e314d5131c03307b38459768ba19c27e2275",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/approval-request.txt",
+      "git_blob": "17041395c07c40a856aa7328a4ca7a17c409ff7c",
+      "sha256": "85dedc53c0402743ddf42204839782a44e0ae6398a55dd998ae82278ef0c5f81",
+      "bytes": 2669
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/authority-proposal.txt",
+      "git_blob": "d4121ac694214c0155039c6e0d07c5e882156c7a",
+      "sha256": "97d22db164f7b0342fad21bb3badd81c42005755f39bfd556042c5a19699e6d0",
+      "bytes": 711
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/concurrency-protocol.txt",
+      "git_blob": "175701c7e20d981ce2c83faedd0f30b3a4041d11",
+      "sha256": "3f77aa275b29c50713516397f6771e560fdc6709bddd9e6146328e9418ce4c04",
+      "bytes": 11476
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/control-types.schema.json",
+      "git_blob": "b74124ca0459abd8631b551974249042e27dbe8c",
+      "sha256": "1b81693ce40e095f8f5758785126cb0d6c0dcb25e50b8eb0401433aec38764ab",
+      "bytes": 30517
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/custody-schema.sql.txt",
+      "git_blob": "0c7a3b2f85b1cda13308f968b7a81c4d5e6e4db5",
+      "sha256": "12eb8d07c6241c19bc780d92e902ee26da5ca91c15dc6182324409c0d8017265",
+      "bytes": 12528
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/design-corrections.txt",
+      "git_blob": "c5742ba3b9b193fb06abde8c548adb4050ccf857",
+      "sha256": "821a0e0ec21458bfb213c1806bdddb23f61e88a263e6da79b99d4b9cb8e0eb8e",
+      "bytes": 17635
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/entry.txt",
+      "git_blob": "2407893072093a9208b97e3f537f7a02f7dd805d",
+      "sha256": "32b5edf01888bc6dde71e08d6010afd841e2cf75c7348b44bddff723e43d9001",
+      "bytes": 1271
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/finding-closures.json",
+      "git_blob": "61139604ec2c186b2d824b9d15ba491f3ab8fb03",
+      "sha256": "4abbc72596a663c0acc09380ea9e14315f5d1fc16e790effa85229b46f7f18b6",
+      "bytes": 2236
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/fixtures.json",
+      "git_blob": "11aa1dc5fe13ad3098e68097e0d1011a63b063da",
+      "sha256": "6c1bf3f5aa4b8c8cdc80d3fb55cd1196e75a894167d4d84125b5aaa18be94351",
+      "bytes": 3366
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/integration-corrections.txt",
+      "git_blob": "6462855829618829cd0d41454198a8147a52a4fa",
+      "sha256": "4d32bbf3193d90d3f6dda66aaa416fe5d0ae25e852afc4bce44128a04654d4b4",
+      "bytes": 18666
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/journal-types.schema.json",
+      "git_blob": "83283c54bcdcb6a390887a780b27cb2d7b25d7e8",
+      "sha256": "37fc788c2adc33c7e5e9f833652361051d40898874d4131353a5573b75604d22",
+      "bytes": 20927
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/object-owner-custody-contract.txt",
+      "git_blob": "6542b810f56b1341177f398af315633699b25fa6",
+      "sha256": "4b2b68613fc20cfa788db2e551cbdfccc9b84aeadd2cf3994fa847f977fd6f36",
+      "bytes": 18590
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/operations-recovery-information-flow.txt",
+      "git_blob": "6b5a2648cd5d41b72ce515529dea90dc7eaaad93",
+      "sha256": "479b8d0e470ada6b09de4ff68d82e6a173f5e80d436cc86c69c346404abd7846",
+      "bytes": 34730
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/owner-bindings.json",
+      "git_blob": "31c9c79de055a8f181e4510346f69992db818113",
+      "sha256": "f5aff8a0231a122e91545a69314bd1af0f5b8f775dd23d882ba3c3e4c6028296",
+      "bytes": 66282
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/participant-contract.txt",
+      "git_blob": "b4da01129d0c65605fb9779c2befb564f5b1cbf5",
+      "sha256": "7a1a43cdfcc0bb57ca8f4c792d6cdfd1e32d008cc0e0d640c688cf166a6dddf4",
+      "bytes": 9266
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/physical-contract.txt",
+      "git_blob": "ede704d241fe00bbf55f85f9d44f70a7e0a9ee02",
+      "sha256": "3264630a280243a1e2fef485d673d7169fde575f728b460cd80bb0a9b4fa56be",
+      "bytes": 17088
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/readiness.json",
+      "git_blob": "fe2ac3159b7da5c1b602d29de2b12e111dfe14c8",
+      "sha256": "462657da4e1953d9ee3cb81df019ebba7d17710cfa0f805e325f0a063037e448",
+      "bytes": 3518
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/record.json",
+      "git_blob": "e7ed25927eb19afc6c6e2551bc96c12d3af6595c",
+      "sha256": "c55b8734f49c14821c2d7c7f43ec849868a1f85de7fe892cfab8a6f4cdb61e13",
+      "bytes": 13582
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/review-receipt.json",
+      "git_blob": "6771aa3bc44b45ebdd641b52910c4081a75b9c87",
+      "sha256": "b0ba0e97537e0cc2675782d78df45a0ff59a41b3fa05e76b9b264f83bd15d3c6",
+      "bytes": 3806
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/review.html",
+      "git_blob": "9910685cba760c604b1f7f9c615c889041686326",
+      "sha256": "c7b5bc0d891688ccbd84bf197df2defdb5aac2189df61de1e2e23d3ad5df4590",
+      "bytes": 1156
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/review.txt",
+      "git_blob": "89239a4091f2d0804037192c204e2bd30bfe4d81",
+      "sha256": "7a7f1a418c14e0602013d56c5462296e515a64aa7bf32d9fd903d172d663c0f9",
+      "bytes": 541
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/revision-origin.json",
+      "git_blob": "fe6c92c5cdce22d62061c3f5d81a43f6c423c507",
+      "sha256": "03f589bd64b1ad701b9241b7bd41501fd28414decd53f86f1f7399a684b44bb0",
+      "bytes": 8706
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/run-manifest.json",
+      "git_blob": "25a38227a6c583fbbae0e24a26b5cc286cac5568",
+      "sha256": "744437a0fc82341914327afe6487669e35646d18f73747e5fbff167319f7b6fc",
+      "bytes": 3392
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/screen-integration.txt",
+      "git_blob": "91116a064eff08e7aeee751689e900261ed77036",
+      "sha256": "30bd07bd4966bd7f95b0992d15a207e958409db9c93c851399819a8cdcc9cead",
+      "bytes": 9345
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/source-census.csv",
+      "git_blob": "96d17f17f98eade1bbef7a8d26647120dca78476",
+      "sha256": "5c5a66fdb15a7d10dcdfd20e6f72d9a04a03ddabe6372e36d5326251f108662c",
+      "bytes": 2761
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/source-identities.json",
+      "git_blob": "970fb53bf71045f28435cc226ed114df3fb82484",
+      "sha256": "91567c3f149349fd2276a5609c4091dfbdfedac530d7371bccaa31ccba36e5f8",
+      "bytes": 60242
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/source-sink-map.csv",
+      "git_blob": "2f4b9af458d0b1deb079d47e9e541a37c9af7e17",
+      "sha256": "d5bac022c9fd7ffa08b3325d68129897a668e32c494d4df9c29ffdb74bbdb376",
+      "bytes": 4178
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/storage-mapping.json",
+      "git_blob": "d6bbebcc1e9fce0534f4a78b53aebcc22be39c8d",
+      "sha256": "8e4b951ed6ba5168e6a63ce3d946e2a26b29058ee5dca467023b695bdd9d39bb",
+      "bytes": 178961
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/types.schema.json",
+      "git_blob": "0ff027776952acee37f84843dfeb3f9735892fdb",
+      "sha256": "875a3ee2159aa40608fd8d091ad2e92ef58b84e26ab75b2c423d688e8c095a55",
+      "bytes": 54595
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/validation.json",
+      "git_blob": "134d0293f1c9b03f9dd1005487065c9d0fbeb8e3",
+      "sha256": "3484d129d833c99655eeb5bf15f29031b2b909955abafb8f5a2259ed8a41fe41",
+      "bytes": 1471
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/verification-plan.txt",
+      "git_blob": "96157a14afc1ed5513f467a949cb145d2b12b0ab",
+      "sha256": "63d9c7e3d76c902cea64c13aab84d155ff712dee6ef3da17e9ba4aa9c46909d7",
+      "bytes": 3333
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-29/verify-packet.py",
+      "git_blob": "5ed355cf8d2c7c3e0c76d01b90c1364a6867c8f6",
+      "sha256": "1cbcf41994f1ff327aa1f77bbba10721729ab1299f2afaf131a6c3ead1b5cc1b",
+      "bytes": 3875
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/PRODUCT.proposed.txt",
+      "git_blob": "fa5b0cf1963cd92b1d859ff94e05e75d52583da7",
+      "sha256": "95d355c8eba7ce56594db8aaacc213133eb18eae32f9fe79945c940088010c4e",
+      "bytes": 15861
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/ROADMAP.proposed.txt",
+      "git_blob": "6eb1b60f2048ab9795b51ba0d4655e0ed563525b",
+      "sha256": "16862f4bb350b74d417cea291396f355680ef1ade0e7fc32bbcd74cc2ca12d37",
+      "bytes": 10321
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/action-bindings.csv",
+      "git_blob": "c7ccd1edee6bc21b3f2841baad118382b56beac6",
+      "sha256": "00ed92ad8bbe52307d68b064c11a9cebc10cae1b5742c6b7fa2f2bc5545cdeaf",
+      "bytes": 4579
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/action-types.schema.json",
+      "git_blob": "439d5b42a03bbc6cb9facdb08e393b7636799143",
+      "sha256": "3aac115e3792430fbf6b5106d70e30ed2ca7626765051a00a3f2868553e85fc3",
+      "bytes": 130194
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/actor-migration.csv",
+      "git_blob": "0346e314d5131c03307b38459768ba19c27e2275",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/authority-proposal.txt",
+      "git_blob": "d4121ac694214c0155039c6e0d07c5e882156c7a",
+      "sha256": "97d22db164f7b0342fad21bb3badd81c42005755f39bfd556042c5a19699e6d0",
+      "bytes": 711
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/concurrency-protocol.txt",
+      "git_blob": "175701c7e20d981ce2c83faedd0f30b3a4041d11",
+      "sha256": "3f77aa275b29c50713516397f6771e560fdc6709bddd9e6146328e9418ce4c04",
+      "bytes": 11476
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/control-types.schema.json",
+      "git_blob": "187c25b9b4f38dd30de5f2ae9783bf739a105532",
+      "sha256": "56663ed3fa4af03145bdc0456fe46606695bab3a84568f6ac1e5a8bc93539330",
+      "bytes": 34545
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/custody-schema.sql.txt",
+      "git_blob": "0c7a3b2f85b1cda13308f968b7a81c4d5e6e4db5",
+      "sha256": "12eb8d07c6241c19bc780d92e902ee26da5ca91c15dc6182324409c0d8017265",
+      "bytes": 12528
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/design-corrections.txt",
+      "git_blob": "6abcef8094d96d34a75fba71d4f0bad475df39c8",
+      "sha256": "bc35ff8ff977aa7c521a230f87502921ae7a4c7ca8892e015023d6a790eadaf8",
+      "bytes": 17899
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/entry.txt",
+      "git_blob": "93aba614150c7231346222e54db5890834901de8",
+      "sha256": "4ddd59dbef9d71084d679a80c285d98a5e476f2481e04f2999be706ae6e971e1",
+      "bytes": 1342
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/fixtures.json",
+      "git_blob": "11aa1dc5fe13ad3098e68097e0d1011a63b063da",
+      "sha256": "6c1bf3f5aa4b8c8cdc80d3fb55cd1196e75a894167d4d84125b5aaa18be94351",
+      "bytes": 3366
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt",
+      "git_blob": "d8ae5367ceccea146f97e9061b011073e4a4db54",
+      "sha256": "fabf4d8592e7ea897272b040920ff550d79c64dec36bcc65e36c88d8eda626f4",
+      "bytes": 14764
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/integration-corrections.txt",
+      "git_blob": "6462855829618829cd0d41454198a8147a52a4fa",
+      "sha256": "4d32bbf3193d90d3f6dda66aaa416fe5d0ae25e852afc4bce44128a04654d4b4",
+      "bytes": 18666
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/journal-types.schema.json",
+      "git_blob": "83283c54bcdcb6a390887a780b27cb2d7b25d7e8",
+      "sha256": "37fc788c2adc33c7e5e9f833652361051d40898874d4131353a5573b75604d22",
+      "bytes": 20927
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/object-owner-custody-contract.txt",
+      "git_blob": "6542b810f56b1341177f398af315633699b25fa6",
+      "sha256": "4b2b68613fc20cfa788db2e551cbdfccc9b84aeadd2cf3994fa847f977fd6f36",
+      "bytes": 18590
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/operations-recovery-information-flow.txt",
+      "git_blob": "6b5a2648cd5d41b72ce515529dea90dc7eaaad93",
+      "sha256": "479b8d0e470ada6b09de4ff68d82e6a173f5e80d436cc86c69c346404abd7846",
+      "bytes": 34730
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/owner-bindings.json",
+      "git_blob": "82b6ba67fd1797e63515029348ddce0dd52bd0d1",
+      "sha256": "181e55b7313c2ce4c3996b345ec0d4a2d6aeb99fe5a3f3383354e0e9459ed23e",
+      "bytes": 66418
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/participant-contract.txt",
+      "git_blob": "656b7fb7240eb0b0c0d757f0f09703e17fb48381",
+      "sha256": "569bb08f5d7983a00a432a1c52d1ed8043ced847cb8cb09aa39e4afc518d183d",
+      "bytes": 9635
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/physical-contract.txt",
+      "git_blob": "7548808dd6ba6aea53c96894924a58cb1787d07a",
+      "sha256": "0cb892a71898cee7ea311b3d568a7f4f8ab35243c6beffecd6f08edc71c891af",
+      "bytes": 17455
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/readiness.json",
+      "git_blob": "4d388b00177b1210a848ddcc1e45b1f47fe3ef1e",
+      "sha256": "ef75a67339654ef4a06ce4f164f7cd26ed3231595a104fd953665f85040e3304",
+      "bytes": 3617
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/review.html",
+      "git_blob": "9910685cba760c604b1f7f9c615c889041686326",
+      "sha256": "c7b5bc0d891688ccbd84bf197df2defdb5aac2189df61de1e2e23d3ad5df4590",
+      "bytes": 1156
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/review.txt",
+      "git_blob": "857970d30e820550ca49adc2455409a3e18a168e",
+      "sha256": "e81413d93ad92146af64b1d7e323d7263bfa45d67c7b2c72e2b529b95e28c9bd",
+      "bytes": 641
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/revision-origin.json",
+      "git_blob": "d0781c8f75e66ed43cc7255aa84b4132abc2356e",
+      "sha256": "2062258afe60880e92a16d7665d06d5cbde1be0c6495ce55cb8fbd524ea63a67",
+      "bytes": 9264
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/run-manifest.json",
+      "git_blob": "25a38227a6c583fbbae0e24a26b5cc286cac5568",
+      "sha256": "744437a0fc82341914327afe6487669e35646d18f73747e5fbff167319f7b6fc",
+      "bytes": 3392
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt",
+      "git_blob": "d47abdfe20696c51c8229b065122077936f2365e",
+      "sha256": "bf37a4a87eb000bc649e2e513b5ae73339f948deea26618437784719868664f8",
+      "bytes": 9705
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/source-census.csv",
+      "git_blob": "96d17f17f98eade1bbef7a8d26647120dca78476",
+      "sha256": "5c5a66fdb15a7d10dcdfd20e6f72d9a04a03ddabe6372e36d5326251f108662c",
+      "bytes": 2761
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/source-identities.json",
+      "git_blob": "970fb53bf71045f28435cc226ed114df3fb82484",
+      "sha256": "91567c3f149349fd2276a5609c4091dfbdfedac530d7371bccaa31ccba36e5f8",
+      "bytes": 60242
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/source-sink-map.csv",
+      "git_blob": "2f4b9af458d0b1deb079d47e9e541a37c9af7e17",
+      "sha256": "d5bac022c9fd7ffa08b3325d68129897a668e32c494d4df9c29ffdb74bbdb376",
+      "bytes": 4178
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/storage-mapping.json",
+      "git_blob": "3893c8bc92cf307baa389029ce4d636d18a8eb90",
+      "sha256": "09fff6540daaf9f97b3b302c8bee102059327ab604886866feb6b64fef8c1ce4",
+      "bytes": 182212
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/types.schema.json",
+      "git_blob": "0ff027776952acee37f84843dfeb3f9735892fdb",
+      "sha256": "875a3ee2159aa40608fd8d091ad2e92ef58b84e26ab75b2c423d688e8c095a55",
+      "bytes": 54595
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/verification-plan.txt",
+      "git_blob": "01f0dacc56572e68c4fb3565026b6fb324a1abfc",
+      "sha256": "7470ee853b6602e05e40ceb870f4a816dbefbd6fedf9309ce54f02ba89d51b9d",
+      "bytes": 3653
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/verify-packet.py",
+      "git_blob": "5ed355cf8d2c7c3e0c76d01b90c1364a6867c8f6",
+      "sha256": "1cbcf41994f1ff327aa1f77bbba10721729ab1299f2afaf131a6c3ead1b5cc1b",
+      "bytes": 3875
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/contract.txt",
+      "git_blob": "8e6440cfd3eb1fb6fb64b8513795b7eba2ead911",
+      "sha256": "228d38e3dd1cb10cc26dbc1f7ff9e1a8f2b91a389624da166dbf80efd71ae0b2",
+      "bytes": 10995
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/entry.txt",
+      "git_blob": "38bb07fdb777db8b6b4cf4be4ff9ec04714ece88",
+      "sha256": "8d8854b678f09c2fb787caed4cb040dfab306db38efa8134d56152abdf61cd3e",
+      "bytes": 1955
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/input-storage-flow.csv",
+      "git_blob": "9b1d3b12b6d337e70d803fa8f73707a83c2595d2",
+      "sha256": "57e3e6b46be12d4de23240e16a963861932b343368a680cd5b5b690519b159da",
+      "bytes": 3941
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/options.txt",
+      "git_blob": "08ffb19d223ac3637ba751c4bdaa69008655fecc",
+      "sha256": "63286e60cfdbc29dcc1c2d7791027406c0637ab7749d35b8c2b34d2d9d3bc6f5",
+      "bytes": 1813
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/proof-cases.csv",
+      "git_blob": "73a22254473bfc20b7f0cf7c4983264c41373f6e",
+      "sha256": "d6479b81de13d2bb2d31aebbca370b8c371e521037747e6e4e485a167c3908d4",
+      "bytes": 3156
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/readiness.json",
+      "git_blob": "75f37c9520b398dacce376d65475eee73a2b3fee",
+      "sha256": "8c59f54d12fdb48b5c85b5022f604b59cb20c39f68e488b7b2a87013621605b4",
+      "bytes": 1442
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/record.json",
+      "git_blob": "5eab0d34aae14036e689797034e09e51d1166c54",
+      "sha256": "4f4f1f6fda359ce9d3dbea234805fa7281a952e717f5cb72fa383dc8dd33eba8",
+      "bytes": 3664
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/reference-map.json",
+      "git_blob": "75253d2bbea90bc2516d267b022eae8fb567cd14",
+      "sha256": "88e526905f0c20942dd0338c1156de5d58d83fa23ba12f4d00aaa5e4dcd7dae5",
+      "bytes": 3537
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/review-history.json",
+      "git_blob": "a9b211e8e755d28ead5b2b64add6c88891aab69e",
+      "sha256": "17d2d437199c230a25102dd9708e6ee541430dbeda82a0512ab30704c6021c05",
+      "bytes": 820
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/review-receipt.json",
+      "git_blob": "b3449f974ffbc8b7416216843f50d191c0de0f66",
+      "sha256": "22da00e7e4a2f2ee29d7205c1876c73fff38c9f35574dba22b9efae7cf10c610",
+      "bytes": 2464
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/review.html",
+      "git_blob": "b120ab79efe6ed33a7dea9f76b9d1cbbc8892c72",
+      "sha256": "463069eb8b3611d99d22a5d5c50c414ae7de2afbfda85ba13a8364f491c190df",
+      "bytes": 1819
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/scope.json",
+      "git_blob": "82308d5ae9c1b3fd63cc0bf2d65d9312c33e936b",
+      "sha256": "be2223737d1d0ff9c67046b5c20205bffc3d64201dcef637e6b146f949d8296c",
+      "bytes": 568
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/source-identities.json",
+      "git_blob": "5a2bae27860078665bdeeb1745098242cbcba118",
+      "sha256": "ab9fa9e4a658732bd5a0f5177b2d5e94fa0967ef80c17230b621e4cf1f7ac77d",
+      "bytes": 4767
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/source-reference.sql.txt",
+      "git_blob": "17af92c6ced79ef57610ff6feb52ed22f4d264b1",
+      "sha256": "a1116c31753ea0b2e7b6c6aec1be8e1b89bbc7f90192b8153194b278fde9eb0e",
+      "bytes": 28178
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/validation.json",
+      "git_blob": "82f1dc1ca621d6a27d4c0ae1d92a576a9f97eaec",
+      "sha256": "2f16156bc0199174c41f0107548678f9ec9fcf8cf504db0e4a458e38cdb356fb",
+      "bytes": 1784
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-source-reference-contract-23/verify-packet.py",
+      "git_blob": "0f425e7cbd60c105ede05f21db10e4673e791777",
+      "sha256": "483512645dbb582f59b653ebefb7824ce26e82ca3a850ee9d74913e365b5db53",
+      "bytes": 4975
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/contract.txt",
+      "git_blob": "aff2d8d025e41ac1f24b0a29270f57abe5eff155",
+      "sha256": "cf7c1eeba17475722d7d93e76e5b144805dadca39502c4a824998e986d81c3c2",
+      "bytes": 12361
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/entry.txt",
+      "git_blob": "2d7e25a3b127b03bdffe968ebe9b76916a078301",
+      "sha256": "6a00357db5cc53412c5f6ba464a09fc2f53bc1dfb6aa113eef5213c13a881b6c",
+      "bytes": 1674
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/framing-vectors.json",
+      "git_blob": "14fe574fb0d47add5b0ff348317c072f1f6d4f7e",
+      "sha256": "4d4cb9ab6a81f909a9073e41782729c02c6da8a1a10ccdea2586e93742b7d17f",
+      "bytes": 39385
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/proof-cases.csv",
+      "git_blob": "3ccf497fcec0e7439f8575a661140937f085c59b",
+      "sha256": "81046f60f50a6e050ffa2af1bba4e51055fd07e301e622b2361619599a25cd36",
+      "bytes": 2564
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/readiness.json",
+      "git_blob": "6e776b910560326d72ad6460f09d4ef25539e605",
+      "sha256": "5739f29f59a6ca09ca4e9011ae1da066c62dbf210d3fe778aa9b3e21f188f3a7",
+      "bytes": 1337
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/record.json",
+      "git_blob": "7e77c6aec45a7f0fe1d763af0a4832a28226f280",
+      "sha256": "90c656ac9b5aff7adaf578f653949718b544a840ef910f3531d367ea1569a698",
+      "bytes": 3546
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/review-history.json",
+      "git_blob": "173d3375c84b78bb437453b027a7c2647968ed24",
+      "sha256": "6d4ce8c6091d68d4091da0ab7bec8407945d0af8951d96305a8c2a63f0b77bfe",
+      "bytes": 592
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/review-receipt.json",
+      "git_blob": "0df5a4838c470ff0a5c620bb91d130c44546ff6a",
+      "sha256": "525ae49b5215d69a92008dfdf7cf1981ea6e2cf1066a54cec5f752796b4140c3",
+      "bytes": 2445
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/review.html",
+      "git_blob": "703b73a1526277c2ed1583eb47d1a1d986ca2e27",
+      "sha256": "368625d059293cd5bc696f8670a6d62e23b09073383bf297cac1115e14192254",
+      "bytes": 1697
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/scope.json",
+      "git_blob": "65327a38d8ee9ade0016398c27f36a4a506439ef",
+      "sha256": "05d765b560d92cdb668de38613369973b3d0a711971306da98d9ecfaa941621f",
+      "bytes": 475
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/source-identities.json",
+      "git_blob": "2e0d01c76ceb685ecf32834c9ef46c36f3574e51",
+      "sha256": "897ce26dc4addc255f31eee4c5ff209dd8b6c6f13ba61e73c9c0042609b4b5ea",
+      "bytes": 5083
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/storage.sql.txt",
+      "git_blob": "ea7c1f3bf66a60de2140750dc47bcc7bf2047e6f",
+      "sha256": "d5deaeb0f39f3b93dbf2424566c86bc4df770bd36a0d7f0f7bee52e9a19193f0",
+      "bytes": 4583
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+      "git_blob": "e2b31159926360df0c5ed43c8e3feec28020002c",
+      "sha256": "21f89a8849abd39dd1edee2d7eba71dfb24cb4d543bc4f8c54b93f7598088a65",
+      "bytes": 5070
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/validation.json",
+      "git_blob": "db469eeaa7ec310e50e7449ea7f185da28ed05e0",
+      "sha256": "2c0ef612154a7795ca9a7c648a32595d6d274db036fc9ab873606f2205dc3157",
+      "bytes": 1671
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-submission-custody-contract-24/verify-packet.py",
+      "git_blob": "ebe834a3d63c3fcfa8d4831e65a54220aecc1182",
+      "sha256": "54c98b1eee372a0610729ca454bae18f9143f3298f4c784d6ed01491b23e4f96",
+      "bytes": 5935
+    }
+  ],
+  "rule": "Exact regular blobs from approved design tree. Historical status strings remain immutable; actual approval receipts and later BW31 refinements determine state."
+}

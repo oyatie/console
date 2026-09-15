@@ -1,0 +1,39 @@
+{
+  "kind": "draft.start",
+  "body": {
+    "action": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "action_type_id": "f1d79ef7-b755-5f41-9b82-af961c378a9c",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "registration_revision": "1",
+      "manifest_digest": "48b0765c8ee7b59ebc6d5fde7b5276cab51f4cc7577241827bee3ab98d9980b8"
+    },
+    "target": {
+      "kind": "EXISTING",
+      "object": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+        "object_id": "a9c0ed1f-ca5a-56a8-9994-f9e31cfeab23"
+      }
+    },
+    "schema": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "schema_id": "66c23db2-1517-5b07-9e61-301941c8b182",
+      "revision": "1",
+      "definition_revision": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+        "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+        "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+        "version": "1",
+        "row_hash": "6c8f417aeebf503e4fa244dddd9b020d1f98875bc5633ee279457bee2c1e21a0"
+      },
+      "codec_digest": "801456e461b695e2ce247b5c6d1578788286678ead8aceed0b451c0d7f5c4ffc"
+    },
+    "custody": {
+      "kind": "ACCOUNT",
+      "account_id": "ec1cd8d0-3cce-5d1d-9a4b-e5df71f80a19"
+    },
+    "intent_slot": "fixture"
+  }
+}

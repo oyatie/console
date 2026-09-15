@@ -1,0 +1,32 @@
+[
+  {
+    "lane": "VERIFY-format-followup",
+    "owner": "/root",
+    "worktree": "/private/tmp/console-format-followup-20260914",
+    "base_sha": "9c846602511043014a039b77335e762e37032bea",
+    "allow": [
+      "backend/app/tests/auth_rest.rs",
+      "backend/app/tests/health_readiness.rs",
+      "backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+      "backend/crates/platform/realtime/tests/hub.rs"
+    ],
+    "probe": "cd backend && RUSTUP_TOOLCHAIN=1.98.1 cargo fmt --all -- --check > /private/tmp/verify-format-probe-current.log 2>&1",
+    "target": "Pinned rustfmt accepts retained tests without behavior change",
+    "guide": "Run pinned cargo fmt; retain only named four files and inspect formatter output for assertion, literal, or cfg changes. No semantic edits.",
+    "pre_mortem": "Formatting could unintentionally include unrelated files or alter test data",
+    "blast_radius": "Four existing Rust test source files, whitespace and module order only",
+    "detection": "Exact fmt RED/GREEN and independent diff review",
+    "rollback": "Revert isolated formatting commit",
+    "stop_conditions": [
+      "Any assertion, literal, cfg, or behavior change",
+      "Any fifth file changed"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Application acceptance",
+      "Production exposure"
+    ]
+  }
+]

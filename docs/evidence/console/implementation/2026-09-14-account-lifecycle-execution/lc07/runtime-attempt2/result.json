@@ -1,0 +1,207 @@
+{
+  "project": "console-lc07-950b6cfdbe18",
+  "evidence": "/private/tmp/lc07-runtime-evidence-O7Djra",
+  "cases": [
+    {
+      "name": "independent-local-socket-inventory-before-migration",
+      "status": "PASS"
+    },
+    {
+      "name": "actual-migrator-creates-six-dormant-staging-tables",
+      "status": "PASS"
+    }
+  ],
+  "commands": [
+    {
+      "bin": "git",
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "status": 0,
+      "log": "1.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "config",
+        "--quiet"
+      ],
+      "status": 0,
+      "log": "2.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "up",
+        "-d",
+        "--wait",
+        "--wait-timeout",
+        "90",
+        "postgres"
+      ],
+      "status": 0,
+      "log": "3.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "run",
+        "--rm",
+        "postgres-topology"
+      ],
+      "status": 0,
+      "log": "4.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT system_identifier::text || '|' || (SELECT oid FROM pg_catalog.pg_database WHERE datname=current_database()) FROM pg_catalog.pg_control_system()"
+      ],
+      "status": 0,
+      "log": "5.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "port",
+        "postgres",
+        "5432"
+      ],
+      "status": 0,
+      "log": "6.log"
+    },
+    {
+      "bin": "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/console-app",
+      "args": [],
+      "status": 0,
+      "log": "7.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT string_agg(relname || ':' || pg_get_userbyid(relowner), ',' ORDER BY relname) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')"
+      ],
+      "status": 0,
+      "log": "8.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "build",
+        "account-finalize"
+      ],
+      "status": 1,
+      "log": "9.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-950b6cfdbe18",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-z20Y9s/override.yml",
+        "down",
+        "--volumes",
+        "--remove-orphans"
+      ],
+      "status": 0,
+      "log": "10.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "ps",
+        "-aq",
+        "--filter",
+        "label=com.docker.compose.project=console-lc07-950b6cfdbe18"
+      ],
+      "status": 0,
+      "log": "11.log"
+    }
+  ],
+  "scope": "Actual local Compose PostgreSQL/topology/operator image and host-built API; not published app image or Kubernetes",
+  "binary_sha256": "722fd4b7c7e9a56a7cb116402381d29871ef2347e8e2e592ec56481db0540e5e",
+  "source_head": "96cd8f773ce68d758e928e1ca09d5956c34bf2ae",
+  "status": "FAIL",
+  "reason": "Error: docker failed 1: 9.log",
+  "cleanup": "owned-project-absent"
+}

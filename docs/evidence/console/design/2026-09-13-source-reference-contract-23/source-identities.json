@@ -1,0 +1,94 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql",
+      "git_blob": "2c7edee4d3df10d881c9bf9a64ed6cf9a8785846",
+      "sha256": "ec392fd637fab3629bf1435ff3a4333aa7326fa08c7bdb1ffc04f40a324dca35"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/source-key-matrix.json",
+      "git_blob": "73683c9762c1e7d3fd73eee34eaf930a1237f94f",
+      "sha256": "5dc5aecb3510b92f9226653e5bfec234f3f75d5303dd20a34eeaa4d9b9a5fd0c"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-source-persistence-contract-21/persistence-contract.txt",
+      "git_blob": "400b4ed48226580890fb2bca6681a65091366b46",
+      "sha256": "4c3907f6335dd21d9d94a43549e9fff50a0be79191aea311a14d9404e2089cc9"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/effect-manifest.sql.txt",
+      "git_blob": "995676aea6c02ca639ae75ecb591dc52633a7569",
+      "sha256": "5a666884fcedb30627e6210e5591acd313b058650580de8d91c09268bc666603"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/transaction-contract.txt",
+      "git_blob": "e8711cfd9a714fca4ec886169045e62038989151",
+      "sha256": "3f5719ee40562c7a351b66a27771e79b0ba7ff6d18661052312fd775f54f8be8"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-effect-manifest-sql-22/implementation-closure-map.json",
+      "git_blob": "a2d884ba4bed1a0c252346d2bfcba07ec5413e70",
+      "sha256": "f28e210b63c5c4bd5867e7f5a789820d09d4af73a68ac1665fbeeb10669d4d8a"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/state-contract.json",
+      "git_blob": "07436a946949c92c404ccb149f5b8b7320b91a16",
+      "sha256": "1908c1e49f95c94b77ffaf5d30874f1f00c05e8c9639123aa0ba7c9509188329"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "git_blob": "6e3cc7ce9dfe00d5c43d56a6be863ff6104d0dc4",
+      "sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/evidence-assessment-contract.txt",
+      "git_blob": "5fd38acf5c97dc491c10580097bbf9bfcadc025e",
+      "sha256": "e5f4c504633276feb841bca1515444bf85a80e518a6c43bcf8f48ff2d00badee"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "git_blob": "53eae8f5184e890b06ba91d7131c25a2dcd3299f",
+      "sha256": "3198b1380551e1103afb4bcb8c2805b000944ffcc004ffd337fa5b46b03921a7"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt",
+      "git_blob": "a852ae945e3be5d9a6e31f479b1810ba4940e716",
+      "sha256": "1e6f33eafe14226a999fab50edd9e9d298a89e3ffcb365af710b7ec723eec7bd"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/input-overlays.json",
+      "git_blob": "1aafc58a30abb4ec2afa11bd0ad79d2d8f36ce6e",
+      "sha256": "67668fffb69204aa53432531532e15af9e1842b0b7e8802969904a913fc3cd0b"
+    },
+    {
+      "commit": "1dbc1214f7a57ca56b41521fce0a97b390c69567",
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-map.json",
+      "git_blob": "0b22680721f006ffa800d1e6cb0ed23ee915640a",
+      "sha256": "309d797c018ac38f1362cf9e789f2b33cf6545050e7da7b28ec44d5c1c657bb5"
+    }
+  ]
+}

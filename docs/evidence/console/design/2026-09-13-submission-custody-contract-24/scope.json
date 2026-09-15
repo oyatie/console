@@ -1,0 +1,17 @@
+{
+  "base_sha": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+  "classification": "evidence",
+  "new_tables_proposed": 1,
+  "nonexecuted_cases": 18,
+  "synthetic_vectors": 3,
+  "source_blobs": 16,
+  "maximum_frame_bytes": 147499,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

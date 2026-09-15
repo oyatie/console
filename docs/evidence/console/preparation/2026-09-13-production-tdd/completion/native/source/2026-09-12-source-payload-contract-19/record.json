@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_source_payload_design_with_open_integration",
+  "recorded_at": "2026-09-12T23:41:50.817281+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "3f9da4b668a232eee77310a4d4704591d904c5d6",
+  "reviewed_contract_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+  "predecessor_record": "../2026-09-12-native-manifest-contract-18/record.json",
+  "predecessor_record_sha256": "788460322d7c31992c38079505b7143d75e327294140557e57e3c90f4eac5415",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "dependency-contract.csv",
+      "bytes": 1899,
+      "sha256": "7eb670e0b092915b028baf59b3eb34acff965bcca7a2f390e18d07ac4a70cff8"
+    },
+    {
+      "path": "encoding-and-packages.txt",
+      "bytes": 10957,
+      "sha256": "6e2a33d756a8b19d5d370d7513bf8d32531ec23ccde35a7ba3821c28e979255f"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1742,
+      "sha256": "cfe62b605331ca755b49afeff9e821962b2f90985f6814883ea122fc36d66f51"
+    },
+    {
+      "path": "normalization-vectors.json",
+      "bytes": 71826,
+      "sha256": "e8da94a456a059a5b6764dac852896981278683502d5e55251b06bfb3b427368"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 4286,
+      "sha256": "bac8dac65d58b43875c8c899d8627566f56d02c9efb3b67b52bb42759dec2647"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 960,
+      "sha256": "7f2ff3c42cb8dd6be84e544d12169cfb73456df4224ccf9b57eee11b71db1956"
+    },
+    {
+      "path": "repair-and-readiness.txt",
+      "bytes": 4832,
+      "sha256": "62dbc439d156c4d94d46e7ab3d7e28027e7af6a211d5a8cd385c085bd9e3b787"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1626,
+      "sha256": "7e6b91a1d5b40a0cdc143451ffb7b045c6fdcc398ebb9aed3d91a6eb5517eda4"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2294,
+      "sha256": "dd380fef00ccb2ccd79b7199990bfa76bfd9f79e6c1da193b4529409e495e8be"
+    },
+    {
+      "path": "review.html",
+      "bytes": 3589,
+      "sha256": "49d5edf6b8cc27fa437b28b9885b8aa24e22e75fc9f280a767c0b8c46a1c5cc7"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 456,
+      "sha256": "bc940aa82324432aa476894aecc1fa17ad186b4ba94aa0b888c0701689cb2675"
+    },
+    {
+      "path": "source-contract.txt",
+      "bytes": 19700,
+      "sha256": "ecd92c45511c4b72ed044252ab5ba8e5f90d4ac6672d3cb8682cf5126808c695"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 16925,
+      "sha256": "f00ba9bbaa3be4e4d9620495c3f8efe2abb215c6de0aa6a2587b91e1cc5ac135"
+    },
+    {
+      "path": "source-types.schema.json",
+      "bytes": 66226,
+      "sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e"
+    },
+    {
+      "path": "state-contract.json",
+      "bytes": 3671,
+      "sha256": "1908c1e49f95c94b77ffaf5d30874f1f00c05e8c9639123aa0ba7c9509188329"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 2739,
+      "sha256": "062acfc25e07ae63cce7d26d4e1e782fa43f5d38fd2f787e6426262c3a31ac51"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 10672,
+      "sha256": "6d3367ef8e66101c1bdf4c4b06fe5279151b9fb5c2026cd4b78507049ce5d30a"
+    }
+  ],
+  "remaining_holds": [
+    "F01/F02 partial: source/native/common interface, physical owner/helper/trigger/ACL/caller/transport/adoption and retention integration",
+    "F03-F08 issuance/custody/identity/credential topology/recovery/migration/admission/harness closure from17",
+    "Real qualified rules, issuer/credential sources and normalizer supply; no legal conclusion from synthetic fixtures",
+    "Final authority-aligned integrated design four independent review rounds and explicit exact design SHA approval",
+    "Executable test candidate independent review and explicit exact test SHA approval before actual named RED implementation admission",
+    "Separate release/exposure/legal/payment authority"
+  ]
+}

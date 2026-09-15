@@ -1,0 +1,1465 @@
+{
+  "scope": "S4 bounded CTX/PROJ/EVENT acceptance source and proof/enrollment harness; independent review required. Product and all-adapter acceptance NOT claimed.",
+  "source_discovered_test_functions": 58,
+  "compiled": 0,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "behavioral_red": 0,
+  "cases": [
+    {
+      "case_ids": [
+        "CTX-01"
+      ],
+      "authored": [
+        {
+          "function": "ctx_maximum_populated_page_one_is_complete_projected_and_read_only",
+          "source": "context-discovery-acceptance.rs",
+          "line": 25
+        },
+        {
+          "function": "ctx_thirty_three_real_group_candidates_refuse_whole_scan_instead_of_truncating",
+          "source": "context-discovery-acceptance.rs",
+          "line": 293
+        },
+        {
+          "function": "ctx_two_hundred_fifty_seven_real_company_candidates_refuse_without_partial_disclosure",
+          "source": "context-discovery-acceptance.rs",
+          "line": 309
+        },
+        {
+          "function": "ctx_known_undiscoverable_target_and_unknown_target_have_same_public404",
+          "source": "context-topology-acceptance.rs",
+          "line": 10
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDED_SOURCE_AUTHORED_INDEPENDENT_REVIEW_REQUIRED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_maximum_populated_page_one_is_complete_projected_and_read_only",
+          "required_discovery_match": "ctx_maximum_populated_page_one_is_complete_projected_and_read_only"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_thirty_three_real_group_candidates_refuse_whole_scan_instead_of_truncating",
+          "required_discovery_match": "ctx_thirty_three_real_group_candidates_refuse_whole_scan_instead_of_truncating"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_two_hundred_fifty_seven_real_company_candidates_refuse_without_partial_disclosure",
+          "required_discovery_match": "ctx_two_hundred_fifty_seven_real_company_candidates_refuse_without_partial_disclosure"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_known_undiscoverable_target_and_unknown_target_have_same_public404",
+          "required_discovery_match": "ctx_known_undiscoverable_target_and_unknown_target_have_same_public404"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Known undiscoverable direct-target404 and exact closure across all discovery source families beyond actual directly assigned policies."
+      ],
+      "implementation_prerequisites": [
+        "actual ordinary owner and exact schemas/registration",
+        "current caller/source bindings and complete integration discovery/execution",
+        "no product green or end-to-end persisted tax world claim"
+      ]
+    },
+    {
+      "case_ids": [
+        "CTX-02"
+      ],
+      "authored": [
+        {
+          "function": "ctx_revocation_and_denied_to_allowed_invalidate_whole_scan_cursor",
+          "source": "context-discovery-acceptance.rs",
+          "line": 38
+        },
+        {
+          "function": "ctx_foreign_query_and_future_cursor_binding_refuse_uniformly",
+          "source": "context-discovery-acceptance.rs",
+          "line": 104
+        },
+        {
+          "function": "ctx_empty_is_success_and_unavailable_is_not_empty",
+          "source": "context-discovery-acceptance.rs",
+          "line": 141
+        },
+        {
+          "function": "ctx_cursor_has_five_minute_lifetime_and_expires_at_real_authoritative_time",
+          "source": "context-discovery-acceptance.rs",
+          "line": 183
+        },
+        {
+          "function": "ctx_future_allow_outside_page_one_invalidates_cursor_without_epoch_change",
+          "source": "context-discovery-acceptance.rs",
+          "line": 213
+        },
+        {
+          "function": "ctx_detach_reattach_witnesses_atomic_candidate_fence_and_fresh_membership_incarnation",
+          "source": "context-topology-acceptance.rs",
+          "line": 95
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDED_SOURCE_AUTHORED_INDEPENDENT_REVIEW_REQUIRED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_revocation_and_denied_to_allowed_invalidate_whole_scan_cursor",
+          "required_discovery_match": "ctx_revocation_and_denied_to_allowed_invalidate_whole_scan_cursor"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_foreign_query_and_future_cursor_binding_refuse_uniformly",
+          "required_discovery_match": "ctx_foreign_query_and_future_cursor_binding_refuse_uniformly"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_empty_is_success_and_unavailable_is_not_empty",
+          "required_discovery_match": "ctx_empty_is_success_and_unavailable_is_not_empty"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_cursor_has_five_minute_lifetime_and_expires_at_real_authoritative_time",
+          "required_discovery_match": "ctx_cursor_has_five_minute_lifetime_and_expires_at_real_authoritative_time"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_future_allow_outside_page_one_invalidates_cursor_without_epoch_change",
+          "required_discovery_match": "ctx_future_allow_outside_page_one_invalidates_cursor_without_epoch_change"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_detach_reattach_witnesses_atomic_candidate_fence_and_fresh_membership_incarnation",
+          "required_discovery_match": "ctx_detach_reattach_witnesses_atomic_candidate_fence_and_fresh_membership_incarnation"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual membership detach/reattach incarnation transition and topology/source-generation atomicity lock race. Pure unexpected-future full authority-vector boundary authored separately; DB provenance remains separate."
+      ],
+      "implementation_prerequisites": [
+        "actual ordinary owner and exact schemas/registration",
+        "current caller/source bindings and complete integration discovery/execution",
+        "no product green or end-to-end persisted tax world claim"
+      ]
+    },
+    {
+      "case_ids": [
+        "CTX-03"
+      ],
+      "authored": [
+        {
+          "function": "replica_key_identity_requires_homogeneity_and_replacement_revokes_old_credentials",
+          "source": "replica-key-acceptance.rs",
+          "line": 13
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance replica_key_identity_requires_homogeneity_and_replacement_revokes_old_credentials",
+          "required_discovery_match": "replica_key_identity_requires_homogeneity_and_replacement_revokes_old_credentials"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "SEC-CONTEXT-01"
+      ],
+      "authored": [
+        {
+          "function": "current_active_company_never_uses_other_switchable_company_and_old_context_expires",
+          "source": "current-context-projection-acceptance.rs",
+          "line": 12
+        },
+        {
+          "function": "context_result_revocation_refuses_existing_opaque_context_but_fresh_unrevoked_read_succeeds",
+          "source": "current-context-projection-acceptance.rs",
+          "line": 145
+        },
+        {
+          "function": "exact_binding_accepts_equal_current_operands",
+          "source": "authority-vector-acceptance.append.rs",
+          "line": 24
+        },
+        {
+          "function": "exact_binding_rejects_each_stale_and_unexpected_future_operand",
+          "source": "authority-vector-acceptance.append.rs",
+          "line": 29
+        },
+        {
+          "function": "exact_binding_rejects_each_account_session_and_scope_identity",
+          "source": "authority-vector-acceptance.append.rs",
+          "line": 42
+        },
+        {
+          "function": "ctx_other_account_actual_allowed_a_does_not_gain_b_from_first_account",
+          "source": "context-topology-acceptance.rs",
+          "line": 47
+        },
+        {
+          "function": "live_buffered_actual_projection_refuses_after_switch_and_fresh_b_emits",
+          "source": "live-context-invalidation-acceptance.rs",
+          "line": 11
+        },
+        {
+          "function": "context_cursor_actual_switch_invalidates_prior_scan_and_new_scan_succeeds",
+          "source": "live-context-invalidation-acceptance.rs",
+          "line": 88
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDED_SOURCE_AUTHORED_INDEPENDENT_REVIEW_REQUIRED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance current_active_company_never_uses_other_switchable_company_and_old_context_expires",
+          "required_discovery_match": "current_active_company_never_uses_other_switchable_company_and_old_context_expires"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance context_result_revocation_refuses_existing_opaque_context_but_fresh_unrevoked_read_succeeds",
+          "required_discovery_match": "context_result_revocation_refuses_existing_opaque_context_but_fresh_unrevoked_read_succeeds"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance exact_binding_accepts_equal_current_operands",
+          "required_discovery_match": "exact_binding_accepts_equal_current_operands"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance exact_binding_rejects_each_stale_and_unexpected_future_operand",
+          "required_discovery_match": "exact_binding_rejects_each_stale_and_unexpected_future_operand"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance exact_binding_rejects_each_account_session_and_scope_identity",
+          "required_discovery_match": "exact_binding_rejects_each_account_session_and_scope_identity"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance ctx_other_account_actual_allowed_a_does_not_gain_b_from_first_account",
+          "required_discovery_match": "ctx_other_account_actual_allowed_a_does_not_gain_b_from_first_account"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance live_buffered_actual_projection_refuses_after_switch_and_fresh_b_emits",
+          "required_discovery_match": "live_buffered_actual_projection_refuses_after_switch_and_fresh_b_emits"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance context_cursor_actual_switch_invalidates_prior_scan_and_new_scan_succeeds",
+          "required_discovery_match": "context_cursor_actual_switch_invalidates_prior_scan_and_new_scan_succeeds"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Explicit Y allowedA/deniedB positive fixture; live/cursor/control invalidation after actual switch across all enabled adapters. Exact numeric/identity binding function tests authored, actual DB switch/revocation retained."
+      ],
+      "implementation_prerequisites": [
+        "actual ordinary owner and exact schemas/registration",
+        "current caller/source bindings and complete integration discovery/execution",
+        "no product green or end-to-end persisted tax world claim"
+      ]
+    },
+    {
+      "case_ids": [
+        "SEC-PROJECTION-01"
+      ],
+      "authored": [
+        {
+          "function": "hidden_company_label_changes_do_not_change_allowed_context_projection",
+          "source": "current-context-projection-acceptance.rs",
+          "line": 84
+        },
+        {
+          "function": "native_aliases_hide_other_company_changes_while_emitting_permitted_salary",
+          "source": "native-projection-alias-acceptance.rs",
+          "line": 159
+        },
+        {
+          "function": "native_same_run_two_real_members_expose_only_actual_granted_line_gross",
+          "source": "native-projection-alias-acceptance.rs",
+          "line": 198
+        },
+        {
+          "function": "proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders",
+          "source": "projector-counterfactual-acceptance.rs",
+          "line": 35
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDED_SOURCE_AUTHORED_INDEPENDENT_REVIEW_REQUIRED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance hidden_company_label_changes_do_not_change_allowed_context_projection",
+          "required_discovery_match": "hidden_company_label_changes_do_not_change_allowed_context_projection"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance native_aliases_hide_other_company_changes_while_emitting_permitted_salary",
+          "required_discovery_match": "native_aliases_hide_other_company_changes_while_emitting_permitted_salary"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance native_same_run_two_real_members_expose_only_actual_granted_line_gross",
+          "required_discovery_match": "native_same_run_two_real_members_expose_only_actual_granted_line_gross"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders",
+          "required_discovery_match": "proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual coupled HTTP+SSR+live+cache+events+egress collector/fixture over two public-equivalent native worlds; owner11alias semantic matrix and real HTTP collector body authored, no claim full transport enrollment. Additional same-line hidden-tax field mutation with authorized positive and no allowed precondition change.",
+        "S3 hidden employee is outside observed one-member run population; require actual two-supported-member run fixture for nonvacuous same-run restricted projection."
+      ],
+      "implementation_prerequisites": [
+        "actual ordinary owner and exact schemas/registration",
+        "current caller/source bindings and complete integration discovery/execution",
+        "no product green or end-to-end persisted tax world claim"
+      ]
+    },
+    {
+      "case_ids": [
+        "SEC-PROJECTION-02"
+      ],
+      "authored": [
+        {
+          "function": "native_original_command_replay_rechecks_disclosure_after_real_grant_revocation",
+          "source": "native-replay-disclosure-acceptance.rs",
+          "line": 25
+        },
+        {
+          "function": "native_original_calculation_replay_fresh_context_reduces_fields_without_second_effect",
+          "source": "native-replay-disclosure-acceptance.rs",
+          "line": 90
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDED_SOURCE_AUTHORED_INDEPENDENT_REVIEW_REQUIRED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance native_original_command_replay_rechecks_disclosure_after_real_grant_revocation",
+          "required_discovery_match": "native_original_command_replay_rechecks_disclosure_after_real_grant_revocation"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance native_original_calculation_replay_fresh_context_reduces_fields_without_second_effect",
+          "required_discovery_match": "native_original_calculation_replay_fresh_context_reduces_fields_without_second_effect"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual calculated original command with field-only grant reduction, fresh still-authorized context, current projected replay omitting denied amount while preserving original receipt and one effect. S3 covers whole-grant revocation/old-context refusal only."
+      ],
+      "implementation_prerequisites": [
+        "actual ordinary owner and exact schemas/registration",
+        "current caller/source bindings and complete integration discovery/execution",
+        "no product green or end-to-end persisted tax world claim"
+      ]
+    },
+    {
+      "case_ids": [
+        "SEC-PROJECTION-03"
+      ],
+      "authored": [
+        {
+          "function": "control_reference_renderer_envelope_seals_exact_private_reference_json_and_html",
+          "source": "native-control-reference-acceptance.rs",
+          "line": 190
+        },
+        {
+          "function": "control_reference_cross_account_scope_field_schema_and_raw_reference_refuse",
+          "source": "native-control-reference-acceptance.rs",
+          "line": 237
+        },
+        {
+          "function": "control_reference_revocation_and_real_fifteen_minute_expiry_require_fresh_render",
+          "source": "native-control-reference-acceptance.rs",
+          "line": 295
+        },
+        {
+          "function": "control_reference_new_session_and_actual_switch_never_reuse_old_handle",
+          "source": "native-control-reference-acceptance.rs",
+          "line": 350
+        },
+        {
+          "function": "control_reference_actual_different_action_draft_cannot_consume_handle",
+          "source": "native-control-reference-acceptance.rs",
+          "line": 405
+        }
+      ],
+      "remaining_source": [],
+      "status": "COMPOSED_DRAFT_TEXT_AND_CONTROL_SOURCES",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance control_reference_renderer_envelope_seals_exact_private_reference_json_and_html",
+          "required_discovery_match": "control_reference_renderer_envelope_seals_exact_private_reference_json_and_html"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance control_reference_cross_account_scope_field_schema_and_raw_reference_refuse",
+          "required_discovery_match": "control_reference_cross_account_scope_field_schema_and_raw_reference_refuse"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance control_reference_revocation_and_real_fifteen_minute_expiry_require_fresh_render",
+          "required_discovery_match": "control_reference_revocation_and_real_fifteen_minute_expiry_require_fresh_render"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance control_reference_new_session_and_actual_switch_never_reuse_old_handle",
+          "required_discovery_match": "control_reference_new_session_and_actual_switch_never_reuse_old_handle"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance control_reference_actual_different_action_draft_cannot_consume_handle",
+          "required_discovery_match": "control_reference_actual_different_action_draft_cannot_consume_handle"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Permissible user-text preservation under a real stale handle requires registered action with user-editable input; RunCalculate only has server-owned expectations. Draft retained-chain/current-field preservation and exact Account/session/context/scope/action/field/schema/expiry/raw-ref cases authored."
+      ],
+      "external_source_packet": "/private/tmp/console-draft-owner-assertions-r3-20260913",
+      "external_manifest_sha256": "4c4cfc3fa39e99acfe72d07634495c7916332dee4e3d62583000ef6a2f3d1d41",
+      "external_review": "/private/tmp/security-review-draft-r3-20260913.json"
+    },
+    {
+      "case_ids": [
+        "PUB-01"
+      ],
+      "authored": [
+        {
+          "function": "pub_untrusted_copy_and_wrong_signature_have_no_custody_authority",
+          "source": "terms-publication-acceptance.rs",
+          "line": 137
+        },
+        {
+          "function": "pub_production_rejects_test_roots_and_missing_qualified_content",
+          "source": "terms-publication-acceptance.rs",
+          "line": 178
+        },
+        {
+          "function": "publisher_unknown_operator_challenge_replay_missing_file_and_public_json_refuse",
+          "source": "publication-boundary-acceptance.rs",
+          "line": 67
+        }
+      ],
+      "remaining_source": [],
+      "status": "COMPOSED_ROOT_PUBLICATION_SOURCE",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_untrusted_copy_and_wrong_signature_have_no_custody_authority",
+          "required_discovery_match": "pub_untrusted_copy_and_wrong_signature_have_no_custody_authority"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_production_rejects_test_roots_and_missing_qualified_content",
+          "required_discovery_match": "pub_production_rejects_test_roots_and_missing_qualified_content"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance publisher_unknown_operator_challenge_replay_missing_file_and_public_json_refuse",
+          "required_discovery_match": "publisher_unknown_operator_challenge_replay_missing_file_and_public_json_refuse"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual operator-challenge expiry case; complete public route/helper closure beyond two explicit untrusted JSON aliases."
+      ],
+      "external_source_owner": "/root",
+      "external_source_packet": "/private/tmp/console-publication-completion-r1-20260913",
+      "external_manifest_sha256": "d63574fdd1ca5076d824f006f1a6791aacdf16845ff6dd9e9b480f1efbed8ee1",
+      "external_review": "/private/tmp/native-independent-publication-completion-r1-review-20260913.json"
+    },
+    {
+      "case_ids": [
+        "PUB-02"
+      ],
+      "authored": [
+        {
+          "function": "pub_authenticated_custody_genesis_and_same_digest_republication",
+          "source": "terms-publication-acceptance.rs",
+          "line": 65
+        },
+        {
+          "function": "pub_expected_seven_concurrent_publishers_append_exactly_one_receipt",
+          "source": "terms-publication-acceptance.rs",
+          "line": 94
+        },
+        {
+          "function": "pub_actual_a_b_a_publications_do_not_revive_old_registration",
+          "source": "terms-publication-acceptance.rs",
+          "line": 470
+        },
+        {
+          "function": "publication_revision_genesis_successor_and_signed_bigint_boundaries",
+          "source": "publication-transition-acceptance.rs",
+          "line": 6
+        },
+        {
+          "function": "publication_revision_requires_exact_predecessor_and_never_repairs_a_head",
+          "source": "publication-transition-acceptance.rs",
+          "line": 29
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_authenticated_custody_genesis_and_same_digest_republication",
+          "required_discovery_match": "pub_authenticated_custody_genesis_and_same_digest_republication"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_expected_seven_concurrent_publishers_append_exactly_one_receipt",
+          "required_discovery_match": "pub_expected_seven_concurrent_publishers_append_exactly_one_receipt"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_actual_a_b_a_publications_do_not_revive_old_registration",
+          "required_discovery_match": "pub_actual_a_b_a_publications_do_not_revive_old_registration"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance publication_revision_genesis_successor_and_signed_bigint_boundaries",
+          "required_discovery_match": "publication_revision_genesis_successor_and_signed_bigint_boundaries"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance publication_revision_requires_exact_predecessor_and_never_repairs_a_head",
+          "required_discovery_match": "publication_revision_requires_exact_predecessor_and_never_repairs_a_head"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "PUB-03"
+      ],
+      "authored": [
+        {
+          "function": "pub_real_database_failure_rolls_back_receipt_and_head",
+          "source": "terms-publication-acceptance.rs",
+          "line": 267
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_real_database_failure_rolls_back_receipt_and_head",
+          "required_discovery_match": "pub_real_database_failure_rolls_back_receipt_and_head"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "PUB-04"
+      ],
+      "authored": [
+        {
+          "function": "pub_closed_manifest_validation_and_content_integrity",
+          "source": "terms-publication-acceptance.rs",
+          "line": 210
+        },
+        {
+          "function": "pub_symlink_escape_and_oversized_or_non_utf8_content_refuse_before_effect",
+          "source": "terms-publication-acceptance.rs",
+          "line": 438
+        },
+        {
+          "function": "publication_eight_registered_kinds_and_exact_wrapper_bytes_are_real_positive_controls",
+          "source": "publication-boundary-acceptance.rs",
+          "line": 28
+        }
+      ],
+      "remaining_source": [],
+      "status": "COMPOSED_ROOT_PUBLICATION_SOURCE",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_closed_manifest_validation_and_content_integrity",
+          "required_discovery_match": "pub_closed_manifest_validation_and_content_integrity"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_symlink_escape_and_oversized_or_non_utf8_content_refuse_before_effect",
+          "required_discovery_match": "pub_symlink_escape_and_oversized_or_non_utf8_content_refuse_before_effect"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance publication_eight_registered_kinds_and_exact_wrapper_bytes_are_real_positive_controls",
+          "required_discovery_match": "publication_eight_registered_kinds_and_exact_wrapper_bytes_are_real_positive_controls"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Exact UTF8 title/locale cardinality boundaries and independent remote/alias content-resolution refusal. Exact16384/16385wrapper bytes and8valid registered kinds now authored."
+      ],
+      "external_source_owner": "/root",
+      "external_source_packet": "/private/tmp/console-publication-completion-r1-20260913",
+      "external_manifest_sha256": "d63574fdd1ca5076d824f006f1a6791aacdf16845ff6dd9e9b480f1efbed8ee1",
+      "external_review": "/private/tmp/native-independent-publication-completion-r1-review-20260913.json"
+    },
+    {
+      "case_ids": [
+        "PUB-05"
+      ],
+      "authored": [
+        {
+          "function": "pub_registration_holds_share_through_commit_and_publisher_only_waits_on_head",
+          "source": "terms-publication-acceptance.rs",
+          "line": 333
+        },
+        {
+          "function": "pub_publisher_wins_real_head_lock_then_registration_refuses_without_activation",
+          "source": "terms-publication-acceptance.rs",
+          "line": 528
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_registration_holds_share_through_commit_and_publisher_only_waits_on_head",
+          "required_discovery_match": "pub_registration_holds_share_through_commit_and_publisher_only_waits_on_head"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_publisher_wins_real_head_lock_then_registration_refuses_without_activation",
+          "required_discovery_match": "pub_publisher_wins_real_head_lock_then_registration_refuses_without_activation"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "PUB-06"
+      ],
+      "authored": [
+        {
+          "function": "pub_security_definer_entrypoint_denies_real_runtime_logins",
+          "source": "terms-publication-acceptance.rs",
+          "line": 283
+        }
+      ],
+      "remaining_source": [],
+      "status": "COMPOSED_ROOT_PUBLICATION_SOURCE",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance pub_security_definer_entrypoint_denies_real_runtime_logins",
+          "required_discovery_match": "pub_security_definer_entrypoint_denies_real_runtime_logins"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual catalog-discovered additional helper aliases and dedicated publisher-role direct SQL forgery after final internal crypto-custody-to-transaction signature refinement."
+      ],
+      "external_source_owner": "/root",
+      "external_source_packet": "/private/tmp/console-publication-completion-r1-20260913",
+      "external_manifest_sha256": "d63574fdd1ca5076d824f006f1a6791aacdf16845ff6dd9e9b480f1efbed8ee1",
+      "external_review": "/private/tmp/native-independent-publication-completion-r1-review-20260913.json"
+    },
+    {
+      "case_ids": [
+        "PUB-07"
+      ],
+      "authored": [
+        {
+          "function": "newer_publication_with_old_artifact_configuration_closes_enrollment_preserves_existing_account",
+          "source": "publication-boundary-acceptance.rs",
+          "line": 136
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance newer_publication_with_old_artifact_configuration_closes_enrollment_preserves_existing_account",
+          "required_discovery_match": "newer_publication_with_old_artifact_configuration_closes_enrollment_preserves_existing_account"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "MIG-01"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "EXTERNAL_NAMED_OWNER_MIGRATION_COMPLETION",
+      "execution_gate": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance --features test-postgres mig_01",
+      "gate_status": "PROPOSED_AFTER_EXACT_OWNER_AND_NATIVE_FIXTURE_INTEGRATION;NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Root-owned M0 live catalog/actor/source/binary inventory packet pending independent review; not implemented here."
+      ],
+      "external_source_owner": "/root and /root/preparation_recovery",
+      "remaining_source_external": [
+        "Root-owned M0 live catalog/actor/source/binary inventory packet pending independent review; not implemented here."
+      ],
+      "not_claimed": "Root owns exact final migration packet and review; no completion inferred by this security packet."
+    },
+    {
+      "case_ids": [
+        "MIG-02"
+      ],
+      "authored": [
+        {
+          "function": "m1_real_cutover_preserves_active_revoked_and_unresolved_legacy_material",
+          "source": "migration-transition-acceptance.rs",
+          "line": 90
+        }
+      ],
+      "remaining_source": [],
+      "status": "EXTERNAL_NAMED_OWNER_MIGRATION_COMPLETION",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance m1_real_cutover_preserves_active_revoked_and_unresolved_legacy_material",
+          "required_discovery_match": "m1_real_cutover_preserves_active_revoked_and_unresolved_legacy_material"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Full oldJWT/body+cookieRefresh/OTP/passkey/device/live concurrent durable-fence attempts; actual pre-revoked passkey, twoGroup roles/epochs; real post-cutover fresh primary/recovery transition."
+      ],
+      "external_source_owner": "/root and /root/preparation_recovery",
+      "remaining_source_external": [
+        "Full oldJWT/body+cookieRefresh/OTP/passkey/device/live concurrent durable-fence attempts; actual pre-revoked passkey, twoGroup roles/epochs; real post-cutover fresh primary/recovery transition."
+      ],
+      "not_claimed": "Root owns exact final migration packet and review; no completion inferred by this security packet."
+    },
+    {
+      "case_ids": [
+        "MIG-03"
+      ],
+      "authored": [
+        {
+          "function": "m5_more_than_500_sources_form_exact_restartable_partition",
+          "source": "migration-transition-acceptance.rs",
+          "line": 205
+        },
+        {
+          "function": "m5_byte_budget_is_independent_of_row_limit",
+          "source": "migration-transition-acceptance.rs",
+          "line": 308
+        },
+        {
+          "function": "m5_source_version_change_cannot_silently_map_stale_input",
+          "source": "migration-transition-acceptance.rs",
+          "line": 386
+        },
+        {
+          "function": "m5_worker_backend_interruption_before_commit_has_no_partial_mapping",
+          "source": "migration-transition-acceptance.rs",
+          "line": 484
+        }
+      ],
+      "remaining_source": [],
+      "status": "EXTERNAL_NAMED_OWNER_MIGRATION_COMPLETION",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance m5_more_than_500_sources_form_exact_restartable_partition",
+          "required_discovery_match": "m5_more_than_500_sources_form_exact_restartable_partition"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance m5_byte_budget_is_independent_of_row_limit",
+          "required_discovery_match": "m5_byte_budget_is_independent_of_row_limit"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance m5_source_version_change_cannot_silently_map_stale_input",
+          "required_discovery_match": "m5_source_version_change_cannot_silently_map_stale_input"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance m5_worker_backend_interruption_before_commit_has_no_partial_mapping",
+          "required_discovery_match": "m5_worker_backend_interruption_before_commit_has_no_partial_mapping"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Related credential dependency-version closure; actual after-commit process loss rather than caller discard; different-ID concurrent batch partition. Exact final byte-budget partition and actual mapped preserved Account IDs now authored."
+      ],
+      "external_source_owner": "/root and /root/preparation_recovery",
+      "remaining_source_external": [
+        "Related credential dependency-version closure; actual after-commit process loss rather than caller discard; different-ID concurrent batch partition. Exact final byte-budget partition and actual mapped preserved Account IDs now authored."
+      ],
+      "not_claimed": "Root owns exact final migration packet and review; no completion inferred by this security packet."
+    },
+    {
+      "case_ids": [
+        "MIG-04"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "EXTERNAL_NAMED_OWNER_MIGRATION_COMPLETION",
+      "execution_gate": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance --features test-postgres mig_04",
+      "gate_status": "PROPOSED_AFTER_EXACT_OWNER_AND_NATIVE_FIXTURE_INTEGRATION;NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Root-owned dormant enrollment source packet pending independent review; not implemented here."
+      ],
+      "external_source_owner": "/root and /root/preparation_recovery",
+      "remaining_source_external": [
+        "Root-owned dormant enrollment source packet pending independent review; not implemented here."
+      ],
+      "not_claimed": "Root owns exact final migration packet and review; no completion inferred by this security packet."
+    },
+    {
+      "case_ids": [
+        "MIG-05"
+      ],
+      "authored": [
+        {
+          "function": "m6_actual_startup_requires_exact_manifest_and_independent_current_generation",
+          "source": "migration-transition-acceptance.rs",
+          "line": 439
+        }
+      ],
+      "remaining_source": [],
+      "status": "EXTERNAL_NAMED_OWNER_MIGRATION_COMPLETION",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance m6_actual_startup_requires_exact_manifest_and_independent_current_generation",
+          "required_discovery_match": "m6_actual_startup_requires_exact_manifest_and_independent_current_generation"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual catalog/alias/policy mutation and migration-startup lock witness; real old-vs-candidate compatibility execution beyond new-key/current process test."
+      ],
+      "external_source_owner": "/root and /root/preparation_recovery",
+      "remaining_source_external": [
+        "Actual catalog/alias/policy mutation and migration-startup lock witness; real old-vs-candidate compatibility execution beyond new-key/current process test."
+      ],
+      "not_claimed": "Root owns exact final migration packet and review; no completion inferred by this security packet."
+    },
+    {
+      "case_ids": [
+        "MIG-06"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "EXTERNAL_NAMED_OWNER_MIGRATION_COMPLETION",
+      "execution_gate": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance --features test-postgres mig_06",
+      "gate_status": "PROPOSED_AFTER_EXACT_OWNER_AND_NATIVE_FIXTURE_INTEGRATION;NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "ordinary signed TEST_ONLY custody and native/context owner producers",
+        "actual readonly SQL or owner projection; no seeded expected results"
+      ],
+      "historical_s3_remaining_source": [
+        "Root-owned rollback source packet pending independent review; uses shared corrected Process fixture."
+      ],
+      "external_source_owner": "/root and /root/preparation_recovery",
+      "remaining_source_external": [
+        "Root-owned rollback source packet pending independent review; uses shared corrected Process fixture."
+      ],
+      "not_claimed": "Root owns exact final migration packet and review; no completion inferred by this security packet."
+    },
+    {
+      "case_ids": [
+        "SEC-EVENT-01"
+      ],
+      "authored": [
+        {
+          "function": "registered_route_release_and_error_are_real_positive_controls",
+          "source": "public-telemetry-registry-acceptance.append.rs",
+          "line": 36
+        },
+        {
+          "function": "grammar_valid_private_labels_cannot_survive_public_normalization",
+          "source": "public-telemetry-registry-acceptance.append.rs",
+          "line": 44
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance registered_route_release_and_error_are_real_positive_controls",
+          "required_discovery_match": "registered_route_release_and_error_are_real_positive_controls"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance grammar_valid_private_labels_cannot_survive_public_normalization",
+          "required_discovery_match": "grammar_valid_private_labels_cannot_survive_public_normalization"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary owner source under test"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "SEC-EVENT-03"
+      ],
+      "authored": [
+        {
+          "function": "safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields",
+          "source": "safe-event-constructor-acceptance.append.rs",
+          "line": 5
+        },
+        {
+          "function": "proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders",
+          "source": "projector-counterfactual-acceptance.rs",
+          "line": 35
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDED_SOURCE_AUTHORED_INDEPENDENT_REVIEW_REQUIRED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields",
+          "required_discovery_match": "safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders",
+          "required_discovery_match": "proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders"
+        }
+      ],
+      "gate_status": "PROPOSED_NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "logical-observation-oracle.py"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual safe-event constructor/serializer source and public schedule fixture; independent extra-sanitized-event oracle negative is authored but is not product schedule acceptance."
+      ],
+      "implementation_prerequisites": [
+        "actual ordinary owner and exact schemas/registration",
+        "current caller/source bindings and complete integration discovery/execution",
+        "no product green or end-to-end persisted tax world claim"
+      ]
+    },
+    {
+      "case_ids": [
+        "SEC-EGRESS-01"
+      ],
+      "authored": [
+        {
+          "function": "configured_storage_get_returns_exact_direct_endpoint_bytes",
+          "source": "storage-no-redirect-acceptance.rs",
+          "line": 42
+        },
+        {
+          "function": "configured_storage_get_never_follows_redirect_to_second_endpoint",
+          "source": "storage-no-redirect-acceptance.rs",
+          "line": 64
+        }
+      ],
+      "remaining_source": [],
+      "status": "AUTHORED_OWNER_PREREQUISITE_BLOCKED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance configured_storage_get_returns_exact_direct_endpoint_bytes",
+          "required_discovery_match": "configured_storage_get_returns_exact_direct_endpoint_bytes"
+        },
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance configured_storage_get_never_follows_redirect_to_second_endpoint",
+          "required_discovery_match": "configured_storage_get_never_follows_redirect_to_second_endpoint"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "ordinary owner source under test"
+      ],
+      "historical_s3_remaining_source": []
+    },
+    {
+      "case_ids": [
+        "SEC-EGRESS-02"
+      ],
+      "authored": [
+        {
+          "function": "bound_egress_checks_each_destination_identity_before_any_actual_outbound_request",
+          "source": "bound-egress-acceptance.rs",
+          "line": 12
+        }
+      ],
+      "remaining_source": [],
+      "status": "BOUNDARY_SOURCE_AND_FUTURE_ADAPTER_ENROLLMENT_CONTRACT_AUTHORED",
+      "execution_gate": [
+        {
+          "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --test security_owner_acceptance bound_egress_checks_each_destination_identity_before_any_actual_outbound_request",
+          "required_discovery_match": "bound_egress_checks_each_destination_identity_before_any_actual_outbound_request"
+        }
+      ],
+      "gate_status": "CANDIDATE_TARGET_REQUIRES_INTEGRATION;DISCOVER_AND_ASSERT_NONZERO_EXACT_FUNCTION_SET_BEFORE_EXECUTION",
+      "shared_fixture_or_oracle": [
+        "local-egress-peer.rs"
+      ],
+      "historical_s3_remaining_source": [
+        "Actual unavailable protected CSV/presigned/office/export adapter route refusals; boundary binding7dimensions/local-wire positive+revocation authored."
+      ],
+      "enrollment_contract": "sink-enrollment-contract.md",
+      "implementation_prerequisites": [
+        "actual enabled owner source binding and actual route/worker denial or applicable fixture/test enrollment before adapter acceptance; no invented future adapters"
+      ]
+    },
+    {
+      "case_ids": [
+        "VERUS-01"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "HARNESS_AND_NEGATIVE_RECIPES_AUTHORED_PRODUCTION_BODY_PREREQUISITE",
+      "execution_gate": "actual source-bound pinned Verus invocation after owner body integration",
+      "gate_status": "PROPOSED_NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "ordinary owner source under test"
+      ],
+      "historical_s3_remaining_source": [
+        "Author exact proof-obligation/harness/source-binding/negative-control inputs now; actual source-bound proof of absent production body is implementation work, never claimed green.",
+        "Bind actual new owner executable functions to Git blobs/bodies/toolchain/features/Verus/Z3 and external assumptions; cannot source-bind an absent body. Original supplied-value proof preserved."
+      ],
+      "authored_harness": [
+        "proof-harness/proof-obligations.rs",
+        "proof-harness/source_binding_gate.py",
+        "proof-harness/negative-recipes.json",
+        "proof-harness/README.md",
+        "sink-enrollment-contract.md"
+      ],
+      "implementation_prerequisites": [
+        "exact actual owner executable/caller/source/TCB binding",
+        "pinned Verus execution and designated source mutants",
+        "each enabled sink adapter accepted only after applicable tests and enrollment"
+      ]
+    },
+    {
+      "case_ids": [
+        "VERUS-02"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "HARNESS_AND_NEGATIVE_RECIPES_AUTHORED_PRODUCTION_BODY_PREREQUISITE",
+      "execution_gate": "actual source-bound pinned Verus invocation after owner body integration",
+      "gate_status": "PROPOSED_NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "logical-observation-oracle.py"
+      ],
+      "historical_s3_remaining_source": [
+        "Author exact proof-obligation/harness/source-binding/negative-control inputs now; actual source-bound proof of absent production body is implementation work, never claimed green.",
+        "Actual source-bound low-equivalence proof over Group and hidden-field worlds, source loader integrity and all logical sinks; no toy body or assumed output equality."
+      ],
+      "authored_harness": [
+        "proof-harness/proof-obligations.rs",
+        "proof-harness/source_binding_gate.py",
+        "proof-harness/negative-recipes.json",
+        "proof-harness/README.md",
+        "sink-enrollment-contract.md"
+      ],
+      "implementation_prerequisites": [
+        "exact actual owner executable/caller/source/TCB binding",
+        "pinned Verus execution and designated source mutants",
+        "each enabled sink adapter accepted only after applicable tests and enrollment"
+      ]
+    },
+    {
+      "case_ids": [
+        "VERUS-03"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "HARNESS_AND_NEGATIVE_RECIPES_AUTHORED_PRODUCTION_BODY_PREREQUISITE",
+      "execution_gate": "actual source-bound Verus mutation harness and runtime boundary gates",
+      "gate_status": "PROPOSED_NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "logical-observation-oracle.py"
+      ],
+      "historical_s3_remaining_source": [
+        "Author exact proof-obligation/harness/source-binding/negative-control inputs now; actual source-bound proof of absent production body is implementation work, never claimed green.",
+        "Actual source-bound wrongCompany/redaction/extraSafeEvent/unboundEgress mutations and positive useful output. Logical checker9controls are separate."
+      ],
+      "authored_harness": [
+        "proof-harness/proof-obligations.rs",
+        "proof-harness/source_binding_gate.py",
+        "proof-harness/negative-recipes.json",
+        "proof-harness/README.md",
+        "sink-enrollment-contract.md"
+      ],
+      "implementation_prerequisites": [
+        "exact actual owner executable/caller/source/TCB binding",
+        "pinned Verus execution and designated source mutants",
+        "each enabled sink adapter accepted only after applicable tests and enrollment"
+      ]
+    },
+    {
+      "case_ids": [
+        "VERUS-04"
+      ],
+      "authored": [],
+      "remaining_source": [],
+      "status": "HARNESS_AND_NEGATIVE_RECIPES_AUTHORED_PRODUCTION_BODY_PREREQUISITE",
+      "execution_gate": "source-sink enrollment gate after actual adapters",
+      "gate_status": "PROPOSED_NOT_EXECUTED",
+      "shared_fixture_or_oracle": [
+        "ordinary owner source under test"
+      ],
+      "historical_s3_remaining_source": [
+        "Author exact proof-obligation/harness/source-binding/negative-control inputs now; actual source-bound proof of absent production body is implementation work, never claimed green.",
+        "All28source-sink rows actual loader/projector/error/serializer/transport/currentContext test binding; enrollment manifest records residual exact rows."
+      ],
+      "authored_harness": [
+        "proof-harness/proof-obligations.rs",
+        "proof-harness/source_binding_gate.py",
+        "proof-harness/negative-recipes.json",
+        "proof-harness/README.md",
+        "sink-enrollment-contract.md"
+      ],
+      "implementation_prerequisites": [
+        "exact actual owner executable/caller/source/TCB binding",
+        "pinned Verus execution and designated source mutants",
+        "each enabled sink adapter accepted only after applicable tests and enrollment"
+      ]
+    }
+  ],
+  "revision": "S4",
+  "python_oracle_controls": 22,
+  "all_source_tests": [
+    {
+      "function": "exact_binding_accepts_equal_current_operands",
+      "source": "authority-vector-acceptance.append.rs",
+      "line": 24
+    },
+    {
+      "function": "exact_binding_rejects_each_stale_and_unexpected_future_operand",
+      "source": "authority-vector-acceptance.append.rs",
+      "line": 29
+    },
+    {
+      "function": "exact_binding_rejects_each_account_session_and_scope_identity",
+      "source": "authority-vector-acceptance.append.rs",
+      "line": 42
+    },
+    {
+      "function": "bound_egress_checks_each_destination_identity_before_any_actual_outbound_request",
+      "source": "bound-egress-acceptance.rs",
+      "line": 12
+    },
+    {
+      "function": "ctx_maximum_populated_page_one_is_complete_projected_and_read_only",
+      "source": "context-discovery-acceptance.rs",
+      "line": 25
+    },
+    {
+      "function": "ctx_revocation_and_denied_to_allowed_invalidate_whole_scan_cursor",
+      "source": "context-discovery-acceptance.rs",
+      "line": 38
+    },
+    {
+      "function": "ctx_foreign_query_and_future_cursor_binding_refuse_uniformly",
+      "source": "context-discovery-acceptance.rs",
+      "line": 104
+    },
+    {
+      "function": "ctx_empty_is_success_and_unavailable_is_not_empty",
+      "source": "context-discovery-acceptance.rs",
+      "line": 141
+    },
+    {
+      "function": "ctx_cursor_has_five_minute_lifetime_and_expires_at_real_authoritative_time",
+      "source": "context-discovery-acceptance.rs",
+      "line": 183
+    },
+    {
+      "function": "ctx_future_allow_outside_page_one_invalidates_cursor_without_epoch_change",
+      "source": "context-discovery-acceptance.rs",
+      "line": 213
+    },
+    {
+      "function": "ctx_thirty_three_real_group_candidates_refuse_whole_scan_instead_of_truncating",
+      "source": "context-discovery-acceptance.rs",
+      "line": 293
+    },
+    {
+      "function": "ctx_two_hundred_fifty_seven_real_company_candidates_refuse_without_partial_disclosure",
+      "source": "context-discovery-acceptance.rs",
+      "line": 309
+    },
+    {
+      "function": "ctx_known_undiscoverable_target_and_unknown_target_have_same_public404",
+      "source": "context-topology-acceptance.rs",
+      "line": 10
+    },
+    {
+      "function": "ctx_other_account_actual_allowed_a_does_not_gain_b_from_first_account",
+      "source": "context-topology-acceptance.rs",
+      "line": 47
+    },
+    {
+      "function": "ctx_detach_reattach_witnesses_atomic_candidate_fence_and_fresh_membership_incarnation",
+      "source": "context-topology-acceptance.rs",
+      "line": 95
+    },
+    {
+      "function": "current_active_company_never_uses_other_switchable_company_and_old_context_expires",
+      "source": "current-context-projection-acceptance.rs",
+      "line": 12
+    },
+    {
+      "function": "hidden_company_label_changes_do_not_change_allowed_context_projection",
+      "source": "current-context-projection-acceptance.rs",
+      "line": 84
+    },
+    {
+      "function": "context_result_revocation_refuses_existing_opaque_context_but_fresh_unrevoked_read_succeeds",
+      "source": "current-context-projection-acceptance.rs",
+      "line": 145
+    },
+    {
+      "function": "live_buffered_actual_projection_refuses_after_switch_and_fresh_b_emits",
+      "source": "live-context-invalidation-acceptance.rs",
+      "line": 11
+    },
+    {
+      "function": "context_cursor_actual_switch_invalidates_prior_scan_and_new_scan_succeeds",
+      "source": "live-context-invalidation-acceptance.rs",
+      "line": 88
+    },
+    {
+      "function": "m1_real_cutover_preserves_active_revoked_and_unresolved_legacy_material",
+      "source": "migration-transition-acceptance.rs",
+      "line": 90
+    },
+    {
+      "function": "m5_more_than_500_sources_form_exact_restartable_partition",
+      "source": "migration-transition-acceptance.rs",
+      "line": 205
+    },
+    {
+      "function": "m5_byte_budget_is_independent_of_row_limit",
+      "source": "migration-transition-acceptance.rs",
+      "line": 308
+    },
+    {
+      "function": "m5_source_version_change_cannot_silently_map_stale_input",
+      "source": "migration-transition-acceptance.rs",
+      "line": 386
+    },
+    {
+      "function": "m6_actual_startup_requires_exact_manifest_and_independent_current_generation",
+      "source": "migration-transition-acceptance.rs",
+      "line": 439
+    },
+    {
+      "function": "m5_worker_backend_interruption_before_commit_has_no_partial_mapping",
+      "source": "migration-transition-acceptance.rs",
+      "line": 484
+    },
+    {
+      "function": "control_reference_renderer_envelope_seals_exact_private_reference_json_and_html",
+      "source": "native-control-reference-acceptance.rs",
+      "line": 190
+    },
+    {
+      "function": "control_reference_cross_account_scope_field_schema_and_raw_reference_refuse",
+      "source": "native-control-reference-acceptance.rs",
+      "line": 237
+    },
+    {
+      "function": "control_reference_revocation_and_real_fifteen_minute_expiry_require_fresh_render",
+      "source": "native-control-reference-acceptance.rs",
+      "line": 295
+    },
+    {
+      "function": "control_reference_new_session_and_actual_switch_never_reuse_old_handle",
+      "source": "native-control-reference-acceptance.rs",
+      "line": 350
+    },
+    {
+      "function": "control_reference_actual_different_action_draft_cannot_consume_handle",
+      "source": "native-control-reference-acceptance.rs",
+      "line": 405
+    },
+    {
+      "function": "native_aliases_hide_other_company_changes_while_emitting_permitted_salary",
+      "source": "native-projection-alias-acceptance.rs",
+      "line": 159
+    },
+    {
+      "function": "native_same_run_two_real_members_expose_only_actual_granted_line_gross",
+      "source": "native-projection-alias-acceptance.rs",
+      "line": 198
+    },
+    {
+      "function": "native_original_command_replay_rechecks_disclosure_after_real_grant_revocation",
+      "source": "native-replay-disclosure-acceptance.rs",
+      "line": 25
+    },
+    {
+      "function": "native_original_calculation_replay_fresh_context_reduces_fields_without_second_effect",
+      "source": "native-replay-disclosure-acceptance.rs",
+      "line": 90
+    },
+    {
+      "function": "proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders",
+      "source": "projector-counterfactual-acceptance.rs",
+      "line": 35
+    },
+    {
+      "function": "registered_route_release_and_error_are_real_positive_controls",
+      "source": "public-telemetry-registry-acceptance.append.rs",
+      "line": 36
+    },
+    {
+      "function": "grammar_valid_private_labels_cannot_survive_public_normalization",
+      "source": "public-telemetry-registry-acceptance.append.rs",
+      "line": 44
+    },
+    {
+      "function": "publication_eight_registered_kinds_and_exact_wrapper_bytes_are_real_positive_controls",
+      "source": "publication-boundary-acceptance.rs",
+      "line": 28
+    },
+    {
+      "function": "publisher_unknown_operator_challenge_replay_missing_file_and_public_json_refuse",
+      "source": "publication-boundary-acceptance.rs",
+      "line": 67
+    },
+    {
+      "function": "newer_publication_with_old_artifact_configuration_closes_enrollment_preserves_existing_account",
+      "source": "publication-boundary-acceptance.rs",
+      "line": 136
+    },
+    {
+      "function": "publication_revision_genesis_successor_and_signed_bigint_boundaries",
+      "source": "publication-transition-acceptance.rs",
+      "line": 6
+    },
+    {
+      "function": "publication_revision_requires_exact_predecessor_and_never_repairs_a_head",
+      "source": "publication-transition-acceptance.rs",
+      "line": 29
+    },
+    {
+      "function": "replica_key_identity_requires_homogeneity_and_replacement_revokes_old_credentials",
+      "source": "replica-key-acceptance.rs",
+      "line": 13
+    },
+    {
+      "function": "safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields",
+      "source": "safe-event-constructor-acceptance.append.rs",
+      "line": 5
+    },
+    {
+      "function": "configured_storage_get_returns_exact_direct_endpoint_bytes",
+      "source": "storage-no-redirect-acceptance.rs",
+      "line": 42
+    },
+    {
+      "function": "configured_storage_get_never_follows_redirect_to_second_endpoint",
+      "source": "storage-no-redirect-acceptance.rs",
+      "line": 64
+    },
+    {
+      "function": "pub_authenticated_custody_genesis_and_same_digest_republication",
+      "source": "terms-publication-acceptance.rs",
+      "line": 65
+    },
+    {
+      "function": "pub_expected_seven_concurrent_publishers_append_exactly_one_receipt",
+      "source": "terms-publication-acceptance.rs",
+      "line": 94
+    },
+    {
+      "function": "pub_untrusted_copy_and_wrong_signature_have_no_custody_authority",
+      "source": "terms-publication-acceptance.rs",
+      "line": 137
+    },
+    {
+      "function": "pub_production_rejects_test_roots_and_missing_qualified_content",
+      "source": "terms-publication-acceptance.rs",
+      "line": 178
+    },
+    {
+      "function": "pub_closed_manifest_validation_and_content_integrity",
+      "source": "terms-publication-acceptance.rs",
+      "line": 210
+    },
+    {
+      "function": "pub_real_database_failure_rolls_back_receipt_and_head",
+      "source": "terms-publication-acceptance.rs",
+      "line": 267
+    },
+    {
+      "function": "pub_security_definer_entrypoint_denies_real_runtime_logins",
+      "source": "terms-publication-acceptance.rs",
+      "line": 283
+    },
+    {
+      "function": "pub_registration_holds_share_through_commit_and_publisher_only_waits_on_head",
+      "source": "terms-publication-acceptance.rs",
+      "line": 333
+    },
+    {
+      "function": "pub_symlink_escape_and_oversized_or_non_utf8_content_refuse_before_effect",
+      "source": "terms-publication-acceptance.rs",
+      "line": 438
+    },
+    {
+      "function": "pub_actual_a_b_a_publications_do_not_revive_old_registration",
+      "source": "terms-publication-acceptance.rs",
+      "line": 470
+    },
+    {
+      "function": "pub_publisher_wins_real_head_lock_then_registration_refuses_without_activation",
+      "source": "terms-publication-acceptance.rs",
+      "line": 528
+    }
+  ],
+  "honesty": "Source regex counts and parser checks are not Cargo discovery, compiled tests, execution, behavioral RED or proof verification.",
+  "not_claimed": "Source preparation does not prove product compilation, actual registration, Cargo discovery, execution, behavioral RED, verified Verus units, all adapter acceptance or production/legal authority."
+}

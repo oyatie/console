@@ -1,0 +1,18 @@
+{
+  "owner": "/root",
+  "classification": "design evidence",
+  "base_sha": "4c1640867e26af4ebacb19634641beda262ed50f",
+  "product_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "sql_tables_proposed": 1,
+  "sql_functions_proposed": 4,
+  "sql_triggers_proposed": 4,
+  "nonexecuted_cases": 19,
+  "full_f02_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

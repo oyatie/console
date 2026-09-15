@@ -1,0 +1,30 @@
+{
+  "owner": "/root",
+  "base_sha": "4eeffc670b48eb61d7a275e9518f7a0e3eab5efe",
+  "allowed_paths": [
+    "backend/crates/action-inbox/application/src/lib.rs",
+    "docs/evidence/console/verification/2026-09-13-repair-01/chunks-entry.json"
+  ],
+  "mechanical_guide": [
+    "Replace only test iterator chunks_exact(6) with as_chunks::<6>().0.iter()",
+    "Keep exact length assertion and all loop assertions",
+    "Same admitted Clippy probe GREEN; run existing unit tests; exact independent review"
+  ],
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --locked --manifest-path backend/Cargo.toml -p console-action-inbox-application --tests -- -D warnings > /private/tmp/console-repair30-checks/chunks-probe.log 2>&1",
+  "admission": "fanout.py admit exit0 with exact chunks_exact_to_as_chunks diagnostic",
+  "pre_mortem": "Remainder/order changes weaken pagination invariants",
+  "blast_radius": "One iterator in existing test only",
+  "detection": "Nonzero constant6, prior exact divisibility assertion, unchanged loop body,existingtest and independent review",
+  "rollback": "Reviewed reversal of iterator expression",
+  "reviewer": "/root/fresh29_security prospective equivalence ACCEPT",
+  "stop_conditions": [
+    "Changed assertions or test membership",
+    "Different grouping/order",
+    "Probe remains red"
+  ],
+  "remaining_holds": [
+    "CI app runner migration",
+    "Authority verification/adoption",
+    "Account implementation tests and approval"
+  ]
+}

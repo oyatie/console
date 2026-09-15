@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_technical_proposal",
+  "recorded_at": "2026-09-12T19:48:13.347842+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a27211a164716abc4473cc1c98b13bf5eaf61fac",
+  "reviewed_contract_sha": "598710b69bb7207dd4d5b5e0e8fbd60d7701dc45",
+  "predecessor_record": "../2026-09-12-account-policy-technical-13/record.json",
+  "predecessor_record_sha256": "45c11c6ae5901588b0e67d561b78dd5b9ef4c6d72b7cc207c7f6fe28f30a77ab",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "boundary-ports.json",
+      "bytes": 7273,
+      "sha256": "9b695429c8e1c73c02fd683eaa4d0c2c0fa2a07a0225c3d58f400153a807fc92"
+    },
+    {
+      "path": "draft-attempt-contract.txt",
+      "bytes": 15542,
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83"
+    },
+    {
+      "path": "encoding-contract.txt",
+      "bytes": 7569,
+      "sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2037,
+      "sha256": "ef855f40b2b9484e352db058fe0321726fdaab144a61a9bab6f157ee5ef20a0d"
+    },
+    {
+      "path": "fingerprint-vectors.json",
+      "bytes": 57965,
+      "sha256": "02c804d2a82600e013a3a122752f9d82ce5f733e6adffa466e88aec082848711"
+    },
+    {
+      "path": "migration-and-proof.txt",
+      "bytes": 6341,
+      "sha256": "54a665ce9703dd25949f9ad73641d88134e43f131555953ed516eb956b655a2d"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 5602,
+      "sha256": "f246799efdc0f2872970fc90d15255d54d52ff7516ba002d9354d75688621a65"
+    },
+    {
+      "path": "registration-contract.txt",
+      "bytes": 6928,
+      "sha256": "19d53204eb859b19c037974adeced39b0b3e90302d1ee7a634ff1336a704d59c"
+    },
+    {
+      "path": "registration.csv",
+      "bytes": 1651,
+      "sha256": "50bce656da13a558cfd0e8dd0845379290c0ba5d4b65a0466a322f61b24fe0fe"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 936,
+      "sha256": "67b359de84c12e7a55294a71eb67af3e1e1cc033039ab594949fdffa375c1ea4"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2085,
+      "sha256": "b174475043764b93857b550d1d509935ca222d64afb0442a149eda003a4b1035"
+    },
+    {
+      "path": "review.html",
+      "bytes": 3052,
+      "sha256": "d08a1138c598f61d1280a4847ea0062fb84126ffe4809a67d7edd9ecc1fa5194"
+    },
+    {
+      "path": "schema-candidate.json",
+      "bytes": 10527,
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1183,
+      "sha256": "79b00f02baa114af5d862f84d2fef28c713f0c7f9685d78e87b4205d34cf25b8"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 7333,
+      "sha256": "0d3a683e65b02bceb16ca24a48c8f07872892d662369b150e2fd8bb5dd29ec64"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1934,
+      "sha256": "d3aded1ac60d6fac60720536cc3318ab90d6071fe507f5601558f22904cb6619"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 5173,
+      "sha256": "fcaa977875b9e493f4f2defff65a9332ade27ca8baae1cab929f6965434a9d39"
+    }
+  ],
+  "remaining_holds": [
+    "W04b-03 actual source/qualification/artifact/temporal codecs and10NP1 nested DTO/digest closure",
+    "W04b-04 workflow/capacity/Group/review/publication physical ports and Account navigation",
+    "W04b-05 applied DDL/ACL/retention/adoption/recovery/migration/harness and measured workloads",
+    "W05 authority alignment and final4integratedreviews/explicit design SHA",
+    "W06 executable tests/review/explicit test SHA and RED admission",
+    "Production/legal/payment and full Console scope remain separate"
+  ]
+}

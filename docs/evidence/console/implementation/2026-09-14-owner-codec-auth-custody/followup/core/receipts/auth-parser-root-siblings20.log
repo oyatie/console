@@ -1,0 +1,30 @@
+   Compiling console-app v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/app)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.72s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/private/tmp/console-auth-parser-cargo/debug/deps/console_app-d25c0e0c45cf0467)
+
+running 20 tests
+test command_database_config_tests::api_accepts_distinct_leave_command_database_url ... ok
+test command_database_config_tests::api_rejects_command_urls_equal_to_runtime_or_each_other ... ok
+test command_database_config_tests::api_rejects_pairwise_equal_decoded_database_passwords ... ok
+test command_database_config_tests::api_with_database_requires_distinct_leave_command_database_url ... ok
+test command_database_config_tests::api_with_database_requires_distinct_ontology_command_database_url ... ok
+test command_database_config_tests::api_with_database_requires_platform_force_command_database_url ... ok
+test command_database_config_tests::blank_leave_command_database_url_fails_closed_for_database_backed_api ... ok
+test command_database_config_tests::connected_role_guards_require_exact_direct_identity_without_membership ... ok
+test command_database_config_tests::database_free_api_does_not_require_leave_command_database_url ... ok
+test command_database_config_tests::database_urls_reject_login_role_aliases_and_role_options ... ok
+test command_database_config_tests::database_urls_require_nonempty_decoded_passwords ... ok
+test command_database_config_tests::migration_identity_accepts_only_the_exact_owner_topology ... ok
+test command_database_config_tests::migration_identity_rejects_incoming_console_app_membership_edge ... ok
+test command_database_config_tests::migration_identity_rejects_membership_and_definer_drift ... ok
+test command_database_config_tests::serving_identity_query_checks_all_memberships_and_role_attributes ... ok
+test command_database_config_tests::serving_identity_rejects_outgoing_or_incoming_membership_edges ... ok
+test command_database_config_tests::serving_role_guards_reject_each_escalating_attribute ... ok
+test command_database_config_tests::serving_timeout_guards_accept_only_exact_effective_defaults ... ok
+test command_database_config_tests::worker_and_migrate_do_not_require_leave_command_database_url ... ok
+test command_database_config_tests::worker_requires_exact_runtime_login_but_migrate_keeps_owner_url ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 146 filtered out; finished in 0.01s
+

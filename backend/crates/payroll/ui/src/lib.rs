@@ -2,6 +2,8 @@
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
+pub mod common_action_composer;
+
 const PKG_JS: &str = "/pkg/console_payroll_ui.js";
 const PKG_WASM: &str = "/pkg/console_payroll_ui_bg.wasm";
 /// The whole stylesheet, inlined.

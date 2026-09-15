@@ -1,0 +1,1 @@
+S4 frozen2026-09-14. Source-only bounded closure candidate, independent review pending. Preserve S3 and all rejected evidence.0Rust compilation/Cargo discovery/execution/behavioral RED/Verus proof.

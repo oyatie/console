@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-09-12T16:40:36.996272+00:00",
+  "candidate_sha": "c86a2bfad0b641aa929111b5aa833cf8275032ac",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-implementation-readiness-08/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "c86a2bfad0b641aa929111b5aa833cf8275032ac",
+        "core_files_verified": 7,
+        "git_source_blobs_verified": 15,
+        "read_only_local_source_hashes_verified": 5,
+        "work_packages_discovered": 16,
+        "product_tests_executed": 0,
+        "reader_links_verified": 4,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --cached --check",
+      "stage": "Before reviewed candidate commit",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "stage": "After evidence validator creation",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Evidence integrity and local HTML links only; no browser visual or product verification",
+    "No current whole-repository documentation gate run; prior candidate05 document-link failure preserved and unresolved",
+    "Research hashes identify read-only local evidence, not a new online consensus search or imported Git custody",
+    "B04 remains OPEN; no approved integrated design/test SHA"
+  ]
+}

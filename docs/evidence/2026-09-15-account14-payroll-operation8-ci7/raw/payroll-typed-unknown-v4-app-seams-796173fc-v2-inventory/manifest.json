@@ -1,0 +1,9 @@
+{
+  "reviewer": "/root/inventory_repair",
+  "head_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "files": {
+    "source-bindings.json": "7483700cae9d3c8a0ec7cf6fcd3429edca29494647983334d791cbc5c504bcea",
+    "reviewed-v1-v4.diff": "852f5e83dcc4d9db767629c884cc89f47e166c3b1e324297ef65b8e449e76579",
+    "review.json": "afac1a6701d999641ce5d109e496d092f1ed5da92691c56c70ef709db7e04713"
+  }
+}

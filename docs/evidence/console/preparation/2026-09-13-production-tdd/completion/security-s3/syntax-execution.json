@@ -1,0 +1,106 @@
+{
+  "source_base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "rust_source_test_functions": 49,
+  "rust_parser_checks": [
+    {
+      "command": "rustfmt --edition 2024 --emit stdout authority-vector-acceptance.append.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout bound-egress-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout browser-auth-producer.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout context-discovery-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout context-owner-fixture.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout current-context-projection-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout expanded-custody-producer.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout local-egress-peer.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout logical-http-collector.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout migration-transition-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout native-control-reference-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout native-projection-alias-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout native-replay-disclosure-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout operator-custody-producer.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout public-telemetry-registry-acceptance.append.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout publication-boundary-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout publication-transition-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout real-process-producer.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout replica-key-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout security-grant-producer.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout storage-no-redirect-acceptance.rs",
+      "exit": 0
+    },
+    {
+      "command": "rustfmt --edition 2024 --emit stdout terms-publication-acceptance.rs",
+      "exit": 0
+    }
+  ],
+  "rust_compiled": 0,
+  "cargo_discovered": 0,
+  "rust_executed": 0,
+  "behavioral_red": 0,
+  "python_controls": {
+    "command": "python3 -B -m unittest -v test_logical_observation_oracle",
+    "discovered": 9,
+    "executed": 9,
+    "passed": 9,
+    "initial_attempt": "Import stopped on an unmatched parenthesis;0tests discovered/executed;corrected before final run"
+  },
+  "review_status": "S3 independent review pending. Early reviewer found alias out-of-population vacuity and lack of field-only replay; recorded as S4source gaps. AnyUnavailable false-positive branch removed."
+}

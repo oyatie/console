@@ -1,0 +1,58 @@
+{
+  "verdict": "APPROVE_EXACT_ADDITIVE_ORDINARY_OPERATION_CONTROL_FOR_ROOT_RUNTIME",
+  "reviewer": "/root/capture_review",
+  "candidate": "/private/tmp/payroll-operation-control-c1301628-v1-fast",
+  "candidate_manifest_sha256": "395de1c6c122237c581dfbf42a00de38e5e9da1835598df01526e03435fdda25",
+  "candidate_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+  "patch_sha256": "0e62463ef150e376bd0216e21128e3f3f3643ea8b299bc68a485e6e30180a12b",
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "current_head": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "target": "backend/app/src/durability_composition_tests.rs",
+  "blocking_findings": [],
+  "conclusions": [
+    "The actual engine emits one event. Actual Required PayRun staging seeds the same event/run/source/period/job with a differing connector; the new test neither fabricates a stage result nor writes a draft directly. PostgreSQL date casts and Option zip reproduce the real drainer construction, and the actual fresh owner seed must succeed before the error test proceeds.",
+    "Positive telemetry binds event/source, the ordinary staging failure prefix and exact provenance Conflict Display. StageDraftError::ProvenanceMismatch maps through PgPayrollError::Domain to KernelError::Conflict in c130 and through PayrollStageError::Operation with unchanged Display in current59c38. This is test observation of actual output, not proposed production text classification.",
+    "The collector retains all prior outcome records and only additionally captures ordinary failure and stop events. All original App7 code is byte-identical except this additive predicate; original saw_unknown is unchanged. The negative predicate rejects any unknown correlated by event, run or source.",
+    "Only one real workflow_drain::spawn occurs in this fresh-process test. Its stop log is emitted after run_tick returns, so the test waits for the whole pass before closing App pools; late successful ACK/audit in that pass remains observable. Exact owner/standby workflow_snapshot equality preserves the selected event and org/run histories it actually queries, not all database state.",
+    "Existing direct app dependencies provide PgPayRunPort, PayrollDraftStaging, StagePayrollDraft and tracing collector APIs. The public stage call infers the error type and is source-compatible with both the old KernelError and current typed result. No future-interface method is invented by the candidate.",
+    "This is a positive surrounding behavior control expected green, not a new executable RED implementation lane. It does not replace the typed UNKNOWN tests, ordinary period-lock suite or outer408/lost-response contract work."
+  ],
+  "counts": {
+    "manifest_artifacts": 18,
+    "immutable_source_bindings": 11,
+    "source_cases_before": 7,
+    "source_cases_after": 8,
+    "mechanical_checks": 12,
+    "rustfmt_checks": 1,
+    "private_git_apply_invocations": 4,
+    "compiler_discovered": 0,
+    "runtime_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "shared_writes": 0
+  },
+  "root_command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture",
+  "remaining_holds": [
+    "Root actual compile/discovery and exact1 supervised runtime",
+    "Preserve and execute required App7/primary controls at final head",
+    "Root App8 closed roster/CI reachability changes and exact-head closure",
+    "Outer408/disconnect public contract and unrelated Account/native enrollment/production authority"
+  ],
+  "premortem": "A false ordinary witness, differing natural key, premature shutdown or source-count-only coverage hides misclassification.",
+  "blast_radius": "One appended test and additive existing telemetry capture only.",
+  "rollback": "Reject private packet or root reverses exact verified patch; historical evidence preserved.",
+  "stop": [
+    "Target drift",
+    "Existing predicate/assertion loss",
+    "Non-executable or unsupervised test",
+    "Unexpected runtime first failure without classification"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism",
+    "Red Team",
+    "Operability",
+    "Blast radius",
+    "Zero trust"
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "status": "REVIEWED_NARROW_PIN_WITH_PREEXISTING_CLIPPY_FAILURES",
+  "recorded_at": "2026-09-13T02:22:56.879029+00:00",
+  "base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "candidate_sha": "2fbe2684155808a88fbc83636d5d27900e09c931",
+  "ownership": {
+    "owner": "/root",
+    "base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+    "immutable_target": "isolated exact-SHA toolchain configuration candidate",
+    "allowed": [
+      "backend/rust-toolchain.toml",
+      ".github/workflows/ci.yml",
+      ".github/workflows/nightly.yml",
+      "scripts/check-foundation-gates.mjs",
+      "scripts/check-ci-preflight.mjs",
+      "scripts/check-ci-preflight.test.mjs"
+    ],
+    "forbidden": "product behavior, dependencies/lockfiles, MSRV, historical evidence/current authority, releases/deployment",
+    "user_authority": "User explicitly requested pin Console Rust1.98.1",
+    "mechanical_guide": "named red pin probe via fanout admit -> synchronized literal version update -> existing focused contract/foundation tests and targeted Rust check -> independent exact-SHA diff review -> copy only verified changed blobs if main base bytes unchanged",
+    "lenses": [
+      "Chesterton Fence",
+      "Essentialism",
+      "Operability",
+      "Blast radius"
+    ],
+    "pre_mortem": "CI/mirror drift or new compiler diagnostic; fixture weakening; accidental history rewrite",
+    "detection": "pin probe + existing CI/foundation suite + exact allowlist/MSRV/lockfile preservation",
+    "rollback": "revert six pin updates together; no data transition",
+    "stop": "six aligned pins with honest focused verification limits; no production/release claim",
+    "reviewers": [
+      "/root/payroll_contract_review"
+    ]
+  },
+  "files": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "mode": "100644",
+      "git_blob": "12fe2a95f4a5d989fbddb5c495db13f75fcb7aa3",
+      "sha256": "68ed0f3aaae7be29f38bf6f00b185481aaebf53bc7d41b822997dc5416acc2c5"
+    },
+    {
+      "path": ".github/workflows/nightly.yml",
+      "mode": "100644",
+      "git_blob": "002568a2700baa9088e9fa865443edd7578583b6",
+      "sha256": "611aa99f35ea55e5ce9a1773b71ba7dbdfad0263bfd08a723fd0062df97fd1e4"
+    },
+    {
+      "path": "backend/rust-toolchain.toml",
+      "mode": "100644",
+      "git_blob": "caf4bcb6020ea31679c97eadf86a81e3f22d70a4",
+      "sha256": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7"
+    },
+    {
+      "path": "scripts/check-ci-preflight.mjs",
+      "mode": "100644",
+      "git_blob": "6cbf820b0e4e5314f8c034143a0e55bc13b1af36",
+      "sha256": "15a0000474529c0d27b8de006afb58134e8901e38e34e3c97b624e016621fab6"
+    },
+    {
+      "path": "scripts/check-ci-preflight.test.mjs",
+      "mode": "100644",
+      "git_blob": "725e92f9dbb9ff4a94b808997f1f907b893fe158",
+      "sha256": "8f8a1dc743b50c4ec8042f66d5be2dbb0e7f9b8001a54d58472dbae734c20b1b"
+    },
+    {
+      "path": "scripts/check-foundation-gates.mjs",
+      "mode": "100755",
+      "git_blob": "dbb6547ad4d51ccd712af94ad77969aaca4e31eb",
+      "sha256": "7cac83de50a00a7d250f6214b68f3ea91c0dcc09fb004175794b3f1c888024c3"
+    }
+  ],
+  "official_stable_manifest": {
+    "url": "https://static.rust-lang.org/dist/channel-rust-stable.toml",
+    "date": "2026-09-03",
+    "rust": "1.98.1",
+    "sha256": "a7c8774a5fd8441c997d94c029776cbc5eb111e9d72ab5d256fa69866644347e"
+  },
+  "admission": {
+    "probe": "python3 /private/tmp/console-rust-1981-receipts/assert-pin.py",
+    "base": "RED",
+    "command": "python3 tools/lanes/fanout.py admit --probe 'python3 /private/tmp/console-rust-1981-receipts/assert-pin.py'",
+    "result": "ADMITTED",
+    "candidate": "GREEN"
+  },
+  "verification": [
+    {
+      "command": "cargo +1.98.1 fmt --all -- --check",
+      "cwd": "backend",
+      "result": "PASS"
+    },
+    {
+      "command": "cargo +1.98.1 check --workspace --all-targets --locked --offline",
+      "cwd": "backend",
+      "result": "PASS",
+      "note": "proc-macro-error2 v2.0.1 future-incompatibility warning"
+    },
+    {
+      "command": "node --test --test-concurrency=1 scripts/check-foundation-gates.test.mjs scripts/check-ci-preflight.test.mjs",
+      "result": "PASS",
+      "discovered": 73,
+      "executed": 73,
+      "passed": 73,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Initial missing js-yaml resolved by locked npm ci --ignore-scripts --no-audit --no-fund. Sandbox Git write-tree failures resolved by authorized access rerun; no test changes."
+    },
+    {
+      "command": "node scripts/check-foundation-gates.mjs",
+      "result": "PASS",
+      "checks": 147
+    },
+    {
+      "command": "node scripts/check-ci-preflight.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    },
+    {
+      "command": "cargo +1.98.1 clippy --workspace --all-targets --locked --offline -- -D warnings",
+      "cwd": "backend",
+      "result": "FAIL",
+      "observed": "manual_unwrap_or_default in orgchange/rest/src/lib.rs:78 and identity/rest/src/lib.rs:217"
+    },
+    {
+      "command": "cargo +1.97.1 clippy --workspace --all-targets --locked --offline -- -D warnings",
+      "cwd": "unchanged base backend",
+      "result": "FAIL",
+      "observed": "manual_contains in platform/db/tests/group_of_one_invariant.rs:201; not a complete diagnostic census"
+    },
+    {
+      "command": "cargo +1.97.1 clippy -p console-orgchange-rest -p console-identity-rest --lib --locked --offline -- -D warnings",
+      "cwd": "unchanged base backend",
+      "result": "FAIL",
+      "observed": "Both same manual_unwrap_or_default diagnostics reproduced; observed1.98.1 failures pre-exist"
+    }
+  ],
+  "review": {
+    "reviewer": "/root/payroll_contract_review",
+    "candidate_sha": "2fbe2684155808a88fbc83636d5d27900e09c931",
+    "verdict": "SCOPED_ACCEPT",
+    "scope": "Six-file pin synchronization, no test weakening/MSRV/dependency change; review of stored proof. Baseline clarification recorded separately.",
+    "baseline_clarification": "Reviewer inspected targeted1.97.1 log and byte-compared both affected source files plus Cargo.toml/Cargo.lock to candidate; same diagnostics pre-exist. SCOPED_ACCEPT reconfirmed."
+  },
+  "remaining_holds": [
+    "Whole-workspace Clippy not green; observed warnings pre-exist, other diagnostic coverage incomplete",
+    "No merge/release/deployment or global HR/payroll implementation approval",
+    "Verus proof build and dependency compatibility not executed"
+  ],
+  "raw_log_custody": [
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/contract-tests.log",
+      "bytes": 38621,
+      "sha256": "3eea37133845cd1101c8f495e8e47d039e1ba2efeb8e8d96e1e93ce00db09969"
+    },
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/contract-tests-unsandboxed.log",
+      "bytes": 6478,
+      "sha256": "22337e2dec87376fbc262373d5492a520ff22d508ac059c3f588c73ecebc22ad"
+    },
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/clippy.log",
+      "bytes": 3814,
+      "sha256": "63a3589855e6a7a7c6b414334024576c313861eb9df4fb7977843843beb9db7d"
+    },
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/clippy-1971-baseline.log",
+      "bytes": 30362,
+      "sha256": "16f4ffd6238bd15dc26b1cb10ecd9039fb5ca4e0b32eee05b863374dc57677a9"
+    },
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/clippy-1971-targeted.log",
+      "bytes": 8334,
+      "sha256": "6e14a788cc7f22f456713a949668e96bf59ef66d52d80c977e9b9a7e9c319bd1"
+    },
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/foundation-gate.log",
+      "bytes": 8122,
+      "sha256": "29d0c2bb01be1eaa982ba3258dbc027685a1f4f416dfce420678dc49b259a5e2"
+    },
+    {
+      "path": "/private/tmp/console-rust-1981-receipts/preflight-gate.log",
+      "bytes": 30,
+      "sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e"
+    }
+  ],
+  "workspace_application": "Six reviewed regular Git blobs applied after all original main bytes matched base; HEAD unchanged; executable modes preserved."
+}

@@ -64,7 +64,12 @@ impl Harness {
         }
     }
 
-    fn service(&self) -> Router {
+    async fn service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -77,14 +82,22 @@ impl Harness {
         router(
             PlatformRestState::new(
                 self.rt_pool.clone(),
-                Some(verifier),
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
                 PlatformProvisioner::new(Duration::minutes(15)),
             )
             .with_force_remove_command_pool(Some(self.force_pool.clone())),
         )
     }
 
-    fn service_without_force_command(&self) -> Router {
+    async fn service_without_force_command(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -96,7 +109,10 @@ impl Harness {
         .unwrap();
         router(PlatformRestState::new(
             self.rt_pool.clone(),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
             PlatformProvisioner::new(Duration::minutes(15)),
         ))
     }
@@ -539,12 +555,13 @@ async fn seed_force_data(owner_pool: &PgPool, org_id: Uuid) -> Uuid {
 // ---------------------------------------------------------------------------
 // (a) Empty tenant: removed; shell + org gone; audit trail survives re-homed.
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn platform_admin_removes_empty_tenant_and_preserves_audit(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_id = onboard(&service, &platform_token, "acme").await;
 
@@ -606,12 +623,13 @@ async fn platform_admin_removes_empty_tenant_and_preserves_audit(owner_pool: PgP
 // ---------------------------------------------------------------------------
 // (b) Tenant WITH real data: refused 409; NOTHING deleted (tx rolled back).
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn removal_of_tenant_with_data_is_refused_and_rolls_back(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_id = onboard(&service, &platform_token, "inuse").await;
     seed_real_data(&owner_pool, org_id).await;
@@ -646,12 +664,13 @@ async fn removal_of_tenant_with_data_is_refused_and_rolls_back(owner_pool: PgPoo
 // ---------------------------------------------------------------------------
 // (c) A non-platform (tenant) principal is rejected with 403.
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_token_cannot_remove_a_tenant(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_id = onboard(&service, &platform_token, "victim").await;
 
@@ -674,12 +693,13 @@ async fn tenant_token_cannot_remove_a_tenant(owner_pool: PgPool) {
 // ---------------------------------------------------------------------------
 // (d) Cross-tenant: removing org A leaves org B's rows intact.
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn removing_one_tenant_does_not_touch_another(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_a = onboard(&service, &platform_token, "alpha").await;
     let org_b = onboard(&service, &platform_token, "beta").await;
@@ -705,12 +725,13 @@ async fn removing_one_tenant_does_not_touch_another(owner_pool: PgPool) {
 // (e) Audit-immutability is intact: a direct console_rt UPDATE still raises (the
 // removal re-home is the ONLY path that may release audit references).
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn direct_runtime_update_on_audit_events_is_still_rejected(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_id = onboard(&service, &platform_token, "audited").await;
 
@@ -734,16 +755,17 @@ async fn direct_runtime_update_on_audit_events_is_still_rejected(owner_pool: PgP
 }
 
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn force_removal_without_command_pool_fails_closed_and_preserves_target(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let token = harness.token(admin, OrgId::platform(), true);
-    let configured = harness.service();
+    let configured = harness.service().await;
     let org = onboard(&configured, &token, "no-force-pool").await;
     archive_org(&configured, &token, org).await;
     let (status, body) =
-        force_delete_org(&harness.service_without_force_command(), &token, org).await;
+        force_delete_org(&harness.service_without_force_command().await, &token, org).await;
     assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{body:?}");
     assert_eq!(body["error"]["code"], "platform_force_command_unavailable");
     assert!(
@@ -761,12 +783,13 @@ async fn force_removal_without_command_pool_fails_closed_and_preserves_target(ow
 //     survives re-homed to the sentinel; and a SECOND tenant's data is COMPLETELY
 //     untouched (tenant isolation — a force-delete must never cross orgs).
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn force_removes_archived_tenant_with_data_and_isolates_other_tenant(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     // Org A (to be force-wiped) and org B (the KNL-like bystander).
     let org_a = onboard(&service, &platform_token, "doomed").await;
@@ -913,12 +936,13 @@ async fn force_removes_archived_tenant_with_data_and_isolates_other_tenant(owner
 // (g) Force-remove of the platform sentinel is a no-op 404 (never wipe the
 //     platform tier's own anchor row).
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn force_remove_of_sentinel_is_not_found(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let (status, _body) =
         force_delete_org(&service, &platform_token, *OrgId::platform().as_uuid()).await;
@@ -936,12 +960,13 @@ async fn force_remove_of_sentinel_is_not_found(owner_pool: PgPool) {
 // ---------------------------------------------------------------------------
 // (h) A non-platform (tenant) principal cannot reach the force path (403).
 // ---------------------------------------------------------------------------
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_token_cannot_force_remove_a_tenant(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let admin = seed_platform_admin(&owner_pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
-    let service = harness.service();
+    let service = harness.service().await;
 
     let org_id = onboard(&service, &platform_token, "fvictim").await;
     archive_org(&service, &platform_token, org_id).await;

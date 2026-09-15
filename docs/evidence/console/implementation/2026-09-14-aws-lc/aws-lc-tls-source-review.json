@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "e18dba799438f68151f7cb14e4893a7364ddadbd",
+  "verdict": "ACCEPT_SOURCE_FOR_FREEZE_AND_EXECUTION",
+  "supersedes": "Provider selection in sqlx-tls-cleanup-source-review.json; independent cleanup acceptance retained",
+  "source_sha256": {
+    "backend/Cargo.toml": "6b1f0d179cf0f08c8742806dd60829729748bd8b31121d6d58d11e14fdea40bc",
+    "backend/Cargo.lock": "8c317700b1c6a404a56c27191270a47a0282ee6c1ed7a0945074b8aa1593166b",
+    "backend/crates/platform/jobs/Cargo.toml": "1dead40ae7447165e447bb2d4fa327775ac645b2612591f978c7f23ccb100bc0",
+    "backend/crates/comms/adapter-imap/src/lib.rs": "be23c6130371b7557ec273da8fcf7ea4d27910b2fbea275eb998f8b9d4bcf819",
+    "ops/postgres-finalize-account-custody.integration.test.py": "908adf6cafdaedb7ceec665083ffb6b158df0fcd79a8c3be5ccb1abd92e7fad4"
+  },
+  "blocking_findings": [],
+  "findings_resolved": [
+    "Initial AWS graph retained TLS ring through jobs SQLx0.8 convenience feature and upstream apalis-postgres tokio-comp default. Final manifests explicitly select Tokio+AWS-LC on both SQLx versions and preserve apalis migrate/chrono/tokio features."
+  ],
+  "review_evidence": [
+    "Fresh metadata shows rustls0.23.40 aws_lc_rs and no ring feature; both SQLx core0.8.6/0.9.0 select _tls-rustls-aws-lc-rs; lettre and tokio-rustls select AWS only. NonTLS direct ring use remains valid.",
+    "Upstream apalis-postgres1.0.0-rc.8 defaults are migrate,tokio-comp,chrono; tokio-comp expands only tokio plus SQLx runtime-tokio-rustls. Final explicit migrate,tokio,chrono plus alias runtime-tokio/AWS preserves runtime capabilities while replacing provider. No source cfg references to tokio-comp found.",
+    "Both SQLx versions and IMAP construct ClientConfig with explicit AWS provider. Lettre helper honors an existing process default, otherwise explicitly chooses AWS; repository search found no installed global override. No install_default mutation added.",
+    "IMAP retains WebPKI root certificates, safe protocol versions, original hostname and existing nonpermissive verification path. SMTP retains webpki-roots; no dangerous certificate verifier introduced.",
+    "Parsed entire old/new lockfile identities: zero existing version/source/checksum removals or changes; six added packages aws-lc-rs1.18.1,aws-lc-sys0.45.0,cmake0.1.58,dunce1.0.5,fs_extra1.3.0,jobserver0.1.35. Native build dependencies are real additional build requirements, not claimed absent.",
+    "Cleanup source hash908adf6c unchanged from independently executed14/14 machinery pass; exact resource-name and nonzero-exit rules remain."
+  ],
+  "validation": {
+    "metadata_source": "/private/tmp/console-custody-awslc-metadata.json",
+    "metadata_sha256": "31f1bd3078f40ee9d6dafab6931edb6f9066d4aa65b75ec5952ca55afb9582ea",
+    "lock_identity_comparison": "PASS",
+    "git_diff_check": "PASS",
+    "cargo_builds_by_reviewer": 0
+  },
+  "remaining_evidence": [
+    "Root must execute final graph IMAP/SMTP and relevant jobs checks, freeze exact source, then13 actual TLS wrapper cases. Earlier35 comms cases used predecessor feature graph and are not silently promoted.",
+    "AWS-LC provider selection does not establish FIPS configuration/certification or universal database TLS enforcement. Native build/toolchain availability and runtime validation remain empirical gates."
+  ]
+}

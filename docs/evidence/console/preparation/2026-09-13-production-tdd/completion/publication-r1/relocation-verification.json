@@ -1,0 +1,37 @@
+{
+  "source": "/private/tmp/console-publication-completion-r1-20260913",
+  "manifest_sha256": "d63574fdd1ca5076d824f006f1a6791aacdf16845ff6dd9e9b480f1efbed8ee1",
+  "all_original_members_verified": true,
+  "files": [
+    {
+      "original": "contract.txt",
+      "retained": "contract.txt",
+      "original_sha256": "18f9d896ffa636c224bd33f645c9180124a5864f0a1e41b056b1ea8d39083011",
+      "retained_sha256": "18f9d896ffa636c224bd33f645c9180124a5864f0a1e41b056b1ea8d39083011"
+    },
+    {
+      "original": "execution.json",
+      "retained": "execution.json",
+      "original_sha256": "d5f32b530b4357a45d896b1b139497fd44a4aedccfdd9f2bed7515817f7aeb63",
+      "retained_sha256": "d5f32b530b4357a45d896b1b139497fd44a4aedccfdd9f2bed7515817f7aeb63"
+    },
+    {
+      "original": "publication-completion-tests.rs",
+      "retained": "publication-completion-tests.rs",
+      "original_sha256": "e5b7e70ad91fea91c296221df1aa3ee7796d2f771d7ccb174b243edb1f894a24",
+      "retained_sha256": "e5b7e70ad91fea91c296221df1aa3ee7796d2f771d7ccb174b243edb1f894a24"
+    },
+    {
+      "original": "validate-boundary-oracles.py",
+      "retained": "validate-boundary-oracles.py",
+      "original_sha256": "b896475328b342696c9b7d92774be26762897c11d223e172d3c27ae39cc3c784",
+      "retained_sha256": "b896475328b342696c9b7d92774be26762897c11d223e172d3c27ae39cc3c784"
+    },
+    {
+      "original": "wire.schema.json",
+      "retained": "wire.schema.json",
+      "original_sha256": "e89b185f2e1d94c0a04265113b7ef92b2932422949457d5ad4545f34c0b60075",
+      "retained_sha256": "e89b185f2e1d94c0a04265113b7ef92b2932422949457d5ad4545f34c0b60075"
+    }
+  ]
+}

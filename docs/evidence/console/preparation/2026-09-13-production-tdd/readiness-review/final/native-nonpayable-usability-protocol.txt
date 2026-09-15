@@ -1,0 +1,469 @@
+# Native nonpayable workflow usability protocol
+
+Authored review protocol at `0f89f248812cbebd4e9be0997da7ed7812119ab6`, grounded in approved integrated design SHA `7b6e4c6836750a23fc5fc38bdd37ac391e970215`. Twelve tasks; zero participant sessions, zero observations and zero browser/product executions. No recruitment or external messages are requested.
+
+## Gates and method
+
+**Before implementation:** Independently review task prerequisites, essential information, observation schema, fixtures/oracles and alignment with approved owner/screen contracts; numerical targets remain hypotheses.
+
+**During implementation:** Optional prototype/formative evaluation may reveal design gaps, but does not substitute for owner-backed browser acceptance. Material changes return to design/test review.
+
+**Before slice acceptance:** Run representative owner-backed positive/error/recovery tasks with people who did not build the flow, disclose participant/sample limitations and resolve consequential findings.
+
+**Before production exposure:** Validate relevant tasks and accessibility for actual exposed population/topology and operating conditions; separate production authority remains required.
+
+**Later capabilities:** Define and evaluate their tasks at their own design/acceptance gates; this protocol does not certify communications, external sharing, full HR stories or sheets.
+
+**Participant selection:** Future representative users include experienced operators, new users, scoped reviewers, historical-own recipients and users of relevant assistive technology. These are task contexts, not authorization role classes. Current resource/field/action policy governs fixture access. No recruiting is requested now.
+
+**Moderation:** Give neutral business goals without control names or a solution path. Start unassisted; record exact point, wording and level of all assistance. Do not call coached completion unassisted success.
+
+**Independence:** Use people who did not implement the tested surface where practicable. A domain expert who did not build it tests semantics; a new user tests discoverability. Do not use one participant to satisfy both sides of a distinct-natural-person approval chain.
+
+**Task order:** Use the connected end-to-end chain where appropriate, but isolate tasks with actual owner-produced fixtures so earlier blocked prerequisites do not erase independent later observations. Fixture transitions are not participant accomplishments.
+
+**Configuration:** Record exact candidate/design/test/schema/fixture/browser/OS/viewport/zoom/JS/assistive-technology versions. Run no-JS/manual save and keyboard/reflow variants against the same owner use cases. A case blocked by an absent interface is BLOCKED_PREREQUISITE, not a usability failure or success.
+
+**Information measure:** Record whether each essential fact was visibly presented, participant-noticed without prompting, and accurately explained before the consequential action. A DOM assertion or acknowledgment click alone does not prove comprehension.
+
+**Owner oracle:** Use reviewed durable owner effects/receipts and expected authority state to corroborate task outcome. A success toast, route load or participant belief alone is insufficient. UI observation is not a universal security/concurrency proof.
+
+**Privacy:** Use synthetic bounded fixtures; collect only authorized study observations. Do not include hidden wages or actual private narratives in screenshots/telemetry. Permission to conduct future studies or recruit/send messages is not implied.
+
+**Standards:** Combine WCAG2.2 AA checks, keyboard/focus/reflow and assistive-technology investigation with user tasks. Neither automated checks nor a small user sample alone establishes conformance or legal compliance.
+
+## Observation rules
+
+Record exact candidate, configuration, fixtures, participant task context, outcome, errors, time, recovery, assistance and corroborating owner receipts. Role/context labels describe tasks; current policy governs access.
+
+Outcomes: SUCCESS_UNASSISTED, SUCCESS_ASSISTED, INCOMPLETE, INCORRECT_OR_UNSAFE_COMPLETION, ABANDONED, BLOCKED_PREREQUISITE, NOT_RUN.
+
+Assistance: NONE, NEUTRAL_INSTRUCTION_REPEAT, NONDIRECTIVE_CLARIFICATION, RECOVERY_PROMPT, DIRECT_INSTRUCTION, FACILITATOR_TAKEOVER.
+
+- Keep every attempted task in the study accounting, including failures and abandonment. Report blocked prerequisites separately from attempts at an available task; never hide them.
+- Report count and denominator alongside percentages; distinguish session count, task attempts, unique participants and independent end-to-end journeys.
+- Measure time only with explicit start/end and pauses; distinguish system latency from participant investigation and facilitator intervention.
+- Match save-and-return attempts to their original task/intent to avoid inflating starts or completions.
+- Report essential-information presentation and comprehension separately; do not infer the latter from a screen containing the text.
+- Tiny samples reveal issues but do not establish population success rates or statistical significance. No universal 90%/95% target is invented.
+- Acceptance requires independent review of actual observations and consequential findings; this authored protocol supplies no passing verdict.
+
+## Untested hypotheses
+
+- **UX-H01:** Users can distinguish saved, submitted, pending, approved, published and payable states from the interface without undocumented knowledge. No numerical target or observation is claimed.
+- **UX-H02:** The common composer and related-object context permit supported source repair and correction follow-up without off-screen task setup or prior future receipts. No numerical target or observation is claimed.
+- **UX-H03:** Keyboard/no-JS users can complete the essential first-slice actions and recover from stale/invalid inputs with acknowledged values preserved. No numerical target or observation is claimed.
+- **UX-H04:** New users can find the correct Company, object, historical publication and responsible next work with current policy-derived navigation. No numerical target or observation is claimed.
+
+## UX-NP-01 — Find the intended Company and resume the original draft
+
+**Existing surfaces:** V01, V02, S06.
+
+**Neutral goal:** Resume the saved work for the specified Company and period, then inspect another Company and return without changing the saved work's target.
+
+**Prerequisites:**
+
+- Two permitted Companies with distinct names and clearly different fixture data; one saved draft bound to the original Company; valid Account/context and current grants.
+- Actor has no access to a third seeded Company; fixture labels are synthetic.
+
+**Essential information to notice:**
+
+- Legal Company and business period; original draft identity; currently selected discovery scope; saved versus unsaved status.
+
+**Observable success:**
+
+- Finds the original draft through permitted navigation or deep link.
+- Explains that changing discovery scope did not retarget the draft.
+- Returns with allowed filters and acknowledged content intact.
+
+**Errors to observe:**
+
+- Wrong-Company intent selection or salary carryover.
+- Mistaking unavailable context for authorized empty results.
+- Hidden Company metadata displayed.
+
+**Recovery:** Introduce stale context cursor through the existing fault fixture; observe permitted refresh/known-object repair without revealing hidden labels or creating new draft intent.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:5`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:10`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:13`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-02 — Enter, save and restore native input using keyboard and no JavaScript
+
+**Existing surfaces:** V04, V05, S06.
+
+**Neutral goal:** Enter the supplied supported contract-wage change, correct an incomplete field, save it, then restore a permitted earlier field value before continuing.
+
+**Prerequisites:**
+
+- Approved supported numeric/profile fixture and exact values from independently reviewed domain oracle, not invented legal or wage assumptions.
+- Existing declared no-JS GET/POST composer implemented; exact owning source action and draft/history owner available.
+- Keyboard-only run; later repeated separately with hydration enabled; bounded nested/list field where admitted schema provides one.
+
+**Essential information to notice:**
+
+- Current versus proposed amount/unit; effective date and source evidence; incomplete text versus typed value; manual save state; restoration consequence.
+
+**Observable success:**
+
+- Completes labeled fields without pointer dependency; identifies error summary and reaches the erroneous field.
+- Observes durable save acknowledgment and restores only selected permitted fields as a new revision.
+- Explains that saved draft/restored field is not an executed business change.
+
+**Errors to observe:**
+
+- Color-only/unreachable errors; lost acknowledged input; shifted list row after item deletion.
+- False autosave with JS disabled; restoration overwrites hidden fields; history substitutes current values for missing originals.
+
+**Recovery:** Insert a stale field/item conflict using the owner fixture; observe preserved-input response, stable focus and explicit repair rather than silent retargeting.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:15`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:28`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:30`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:48`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-03 — Identify missing source qualification and request accountable repair
+
+**Existing surfaces:** V04, V05.
+
+**Neutral goal:** Determine why this selected input cannot be used and move it to the permitted repair path without claiming that it has been verified.
+
+**Prerequisites:**
+
+- A supported source object with missing/stale qualification, preserved edition/locator/narrative and a real registered repair route.
+- Participant can read enough to identify the permitted blocker but lacks source verification authority.
+
+**Essential information to notice:**
+
+- Exact source registration and revision; narrative and required qualification; current versus previous values; accountable next step; unsupported or unavailable status.
+
+**Observable success:**
+
+- Finds the relevant evidence and explains the blocker.
+- Uses the actual permitted repair path while retaining entered information.
+- Does not substitute a generic verified checkbox or fabricated value.
+
+**Errors to observe:**
+
+- Action guidance hides required evidence; repair asks for an unavailable future reference.
+- Participant believes acknowledgment establishes legal validity.
+- Confidential source details disclosed by blocker summary.
+
+**Recovery:** Make source preparation stale or unavailable; observe preservation of allowed input and a truthful accountable repair outcome.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:8`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-04 — Prepare, close and calculate a supported nonpayable run
+
+**Existing surfaces:** V03, V04, V06, V07.
+
+**Neutral goal:** Use the supplied supported population and source facts to prepare and calculate the run, then explain what has been completed and what remains.
+
+**Prerequisites:**
+
+- One complete independently reviewed numeric fixture: admitted profile, complete selected population, exact current calendar/coverage/qualification facts and expected outputs.
+- Actual owner-backed create/prepare/close/calculate adapters available; participant has only required current permissions.
+- Separate negative fixture contains an unsupported required member; it must remain in the declared population.
+
+**Essential information to notice:**
+
+- Company, period and selected population; required blockers versus warnings; source/currentness and output versions; exact units; payable=false.
+
+**Observable success:**
+
+- Completes the positive sequence and identifies the persisted calculated result and required next review.
+- Understands that calculation is not review approval or payment.
+- For unsupported required input, leaves the run visibly incomplete and identifies repair rather than omitting the member.
+
+**Errors to observe:**
+
+- Drops required members to show complete; guesses amounts/taxes; skips close/currentness.
+- Misreads receipt or progress decoration as domain completion.
+- Interprets NONPAYABLE as paid/issued.
+
+**Recovery:** Introduce a new source revision before calculation; observe stale-intent rejection and permitted re-preparation with old evidence retained.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:9`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:7`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:25`; `docs/current/PRODUCT.md:63`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-05 — Complete a scoped review and distinguish execution permission
+
+**Existing surfaces:** V07, V08, S01.
+
+**Neutral goal:** Review the evidence you are authorized to decide, complete that decision, and explain what your decision establishes without assuming access to the whole-run status.
+
+**Prerequisites:**
+
+- Actual calculated run with Unit/Common obligations and partial field visibility; separate qualified actors cover other obligations.
+- Natural-person submitter/decider and any optional gate independence are represented by separate eligible people/fixtures; do not have one participant impersonate both sides of the same decision.
+- One branch of the fixture uses an optional execution gate with an exact expiring command.
+
+**Essential information to notice:**
+
+- Own precise obligation and permitted evidence/differences; own completion does not itself establish whole-run approval. Actual remaining coverage or global status appears only with independent authorization; payroll decision versus command execution permission; expiry/currentness.
+
+**Observable success:**
+
+- Inspects mandatory permitted information and completes only the intended decision.
+- Explains why own completion is distinct from whole-run approval.
+- In optional-gate scenario, recognizes that granting permission did not execute the payroll decision.
+
+**Errors to observe:**
+
+- Blind approve-all over hidden evidence; broad signature substitutes for missing coverage.
+- Execution automatically follows gate permission without required gesture.
+- Role/title perceived as authorization; optional approval confused with domain review.
+
+**Recovery:** Expire a gate or change relevant evidence between preview and action; observe current revalidation, preserved permissible intent and a reachable responsible next step.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:9`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:12`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:18`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:42`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-06 — Correct an approved result through supersession
+
+**Existing surfaces:** V04, V07, V08.
+
+**Neutral goal:** A permitted source correction affects an approved run. Start the required successor work and show how the earlier approved result remains available.
+
+**Prerequisites:**
+
+- Approved run with immutable receipt and disclosed affected source revision; authorized correction/successor owner actions available.
+- A distinct REVIEWING-but-not-APPROVED fixture is optional comparison, using cycle revision rather than approved-run supersession.
+
+**Essential information to notice:**
+
+- Approved versus reviewing state; affected input/calculate/review dependencies; preserved prior result; successor scope; required new review.
+
+**Observable success:**
+
+- Chooses approved-run supersession, identifies the actual successor and retained original.
+- Does not treat a saved source update as a corrected approved publication.
+- Explains remaining calculation/review/publication work.
+
+**Errors to observe:**
+
+- Mutates an old approved result; takes REVIEWING-only revise path on approved run.
+- Assumes all earlier decisions carry over despite changed dependencies.
+- Confuses projection-only correction with changed monetary source.
+
+**Recovery:** Make the approved state/current successor expectation change before commit; observe preserved input and an authorized route to the actual current successor.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:6`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:42`; `docs/current/ROADMAP.md:50`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-07 — Publish and read a historical own nonpayable review copy
+
+**Existing surfaces:** S02, V10.
+
+**Neutral goal:** Publish the permitted review copy using the prepared approved result; in the separate recipient scenario, find your historical copy after Employment has ended and explain what it represents.
+
+**Prerequisites:**
+
+- Publisher and recipient are separate authorized scenarios; approved immutable result and exact recipient projection available.
+- Recipient Account remains current after Employment departure and has current historical-own permission; no payroll management grant.
+- Any broad selected-subject fixture uses bounded paging; do not require a human to inspect 2,000 rows to prove atomicity.
+
+**Essential information to notice:**
+
+- Exact source/publication version and recipient scope; NONPAYABLE_REVIEW meaning; permitted amounts/basis; historical Employment; current correction status distinct from original amount.
+
+**Observable success:**
+
+- Publisher understands scope and receives a publication receipt.
+- Recipient finds permitted historical amounts without employer-management navigation or inaccessible internal evidence.
+- Recipient explains that review publication is neither payment nor legal issuance.
+
+**Errors to observe:**
+
+- Employment departure removes persistent identity; hidden fields/recipients leak.
+- Paged screen implies partial publication despite atomic selected scope.
+- Current correction overwrites historical published amount.
+
+**Recovery:** Revoke one optional field permission; observe a useful authorized partial view or permitted denial without exposing cached hidden data.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:17`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:43`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-08 — Submit an own correction inquiry when no handler is available
+
+**Existing surfaces:** V10, S03.
+
+**Neutral goal:** Ask about the specified item on your published review copy and determine what happens when nobody can currently be assigned.
+
+**Prerequisites:**
+
+- Authorized historical publication with selected historical field/item and typed issue input; real submitted-case owner.
+- Registered handling process and supervised exception route valid; fixture has no eligible handler.
+- Synthetic narrative with no genuine personal information.
+
+**Essential information to notice:**
+
+- Original item/basis and issue scope; what narrative becomes visible on submit; draft versus submitted case; UNASSIGNED/pending exception; next tracking location.
+
+**Observable success:**
+
+- Creates a bounded issue tied to the correct historical publication item.
+- Submits successfully into the designed unassigned exception and finds its durable status.
+- Does not believe lack of assignee means lost submission or corrected result.
+
+**Errors to observe:**
+
+- Requires future task/response receipt to submit; forces requester to obtain unauthorized source permission.
+- Silently loses narrative or misbinds issue to current live wage.
+- Toasts-only success with no durable case.
+
+**Recovery:** Inject ACK loss at submission; observe original-command reconciliation before any repeat; then inspect permitted append/withdraw behavior without rewriting submitted content.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:10`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:19`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:43`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-09 — Arrange corrective follow-up without a prior correction receipt
+
+**Existing surfaces:** S04, S03, V10.
+
+**Neutral goal:** Respond to the pending issue by arranging permitted corrective work, then identify the evidence needed before the issue can be called corrected.
+
+**Prerequisites:**
+
+- Actual case/item and current handler; handler lacks wage-write permission; admitted WorkDefinition/target and registered resolver/repair path available.
+- First-correction branch has no correction receipt; existing-work branch has a compatible task for LINK; no-candidate branch yields supervised UNASSIGNED.
+- Later corrected-publication state is a separately prepared, owner-produced fixture; study does not pretend the handler performed unauthorized source work.
+
+**Essential information to notice:**
+
+- Latest issue narrative and historical basis; pending versus corrected; default CREATE/LINK work intent and permitted target; no source authority gained by assigning work; actual corrected publication required.
+
+**Observable success:**
+
+- Uses same response composer with nullable correction_receipt and valid CREATE or LINK.
+- Finds the durable linked work/pending response without navigating to an unrelated task-creation screen.
+- In final fixture identifies the actual corrected publication covering every issue; does not rely on task completion alone.
+
+**Errors to observe:**
+
+- Demands a future task ID or correction receipt; fabricates receipts.
+- Implicitly reuses unrelated inquiry task; creates duplicate follow-up instead of intentional LINK.
+- Marks corrected when only a task/source correction exists.
+
+**Recovery:** Change linked task epoch or configuration after preview; observe retained draft and existing repair route; for valid no-candidate state observe real supervised work rather than discarded response.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:5`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:9`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:18`; `docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt:28`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-10 — Transfer selected work and understand temporary return
+
+**Existing surfaces:** S05, S06.
+
+**Neutral goal:** Transfer the specified subset of work for a temporary absence, identify what the recipient receives, and explain what happens when the temporary period ends.
+
+**Prerequisites:**
+
+- Real tasks with one accountable owner each, saved work-custodied and Account-private drafts, eligible/ineligible candidates, capacity and current policy fixtures.
+- Participant uses existing TEMPORARY/PERMANENT composer; automatic routing is an alternate owner-produced fixture, not a new rule builder.
+
+**Essential information to notice:**
+
+- Exact selected tasks; duration and permitted rationale; candidate uncertainty/capacity; one owner per task; work-custodied input versus private/sealed intent; return needs current revalidation.
+
+**Observable success:**
+
+- Selects only intended tasks and sees real resulting assignments/receipts.
+- Explains that rights and sealed decisions do not transfer automatically.
+- Recognizes no-candidate fallback and a temporary return that may remain blocked pending revalidation.
+
+**Errors to observe:**
+
+- Confuses partial task selection with PARTIAL_SHARE; assumes automatic timer restoration grants authority.
+- Recipient inherits old actor's sealed command/private draft.
+- Unknown prior attempt is shown as harmless completed work.
+
+**Recovery:** Invalidate candidate capacity/right during preview or simulate A→B→A ownership; observe current revalidation and stale-tab refusal with permitted input preserved.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:11`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:31`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-11 — Track and stop selected-Company Group calculation
+
+**Existing surfaces:** V01, V02, V09.
+
+**Neutral goal:** Start the prepared calculation for the selected permitted Companies, inspect progress, then stop remaining work and explain the outcomes.
+
+**Prerequisites:**
+
+- One Group with at most six selected Companies, max one prepared target each; bounded complete manifests and actual Group owner adapters.
+- Fixture includes completed, pending and UNKNOWN child states; participant is authorized only for visible outcomes.
+- Group fixture uses one-Company business transactions; no mixed-Company payroll.
+
+**Essential information to notice:**
+
+- PREPARING versus ACTIVE; selected Company scope; each authorized last-known state/receipt; completed children retained; UNKNOWN still unresolved; stop prevents future effects rather than undoing past work.
+
+**Observable success:**
+
+- Selects intended targets, identifies per-Company outcomes and issues stop.
+- Explains which results are final, unresolved or prevented; avoids false all-complete aggregate.
+- If another actor must continue, recognizes successor intent rather than reuse of prior sealed command.
+
+**Errors to observe:**
+
+- Stop presented as undo; hidden counts disclosed by totals.
+- Pending/unknown treated as failed and blindly resubmitted.
+- Group selection used to expand child authority or retarget Company.
+
+**Recovery:** Introduce one Company stale/denied outcome and lost parent response; observe current authorized refresh and original operation reconciliation, preserving completed effects.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:12`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:40`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:41`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## UX-NP-12 — Recover from ambiguous submission and permission revocation
+
+**Existing surfaces:** V04, V07, V08, S03.
+
+**Neutral goal:** After the prepared action loses its response, determine its outcome safely. Then continue only with the information and actions still permitted after a permission change.
+
+**Prerequisites:**
+
+- Use one already admitted task flow from this protocol; exact original command and current session fixture; actual receipt lookup/UNKNOWN owner path.
+- Separately reviewed fault injection interrupts acknowledgment after possible commit; revocation branch changes current field/action permission.
+- No new retry action or generic failure harness is introduced for this study.
+
+**Essential information to notice:**
+
+- UNKNOWN versus definitive no-effect failure; original command identity in authorized detail; acknowledged versus unsaved input; allowed recovery route; current permission.
+
+**Observable success:**
+
+- Finds persistent result-check/reconciliation and explains why a new command is unsafe before resolution.
+- Recognizes an actual committed receipt or genuine no-effect result.
+- After revocation sees only permitted content/actions; retained server draft versus cleared client data is explained truthfully.
+
+**Errors to observe:**
+
+- Clicks retry-as-new on ambiguous outcome; treats timeout as rollback.
+- Stale DOM/hydration/history leaks hidden values; error page destroys authorized acknowledged input.
+- Interface promises unsaved-data recovery after required security clearing.
+
+**Recovery:** Observe recovery and focus/status announcements with keyboard and an assistive-technology configuration; after authority returns, revalidate and reconcile original intent before another action.
+
+**Source:** `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:4`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:7`; `docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt:17`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:23`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:29`; `docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt:49`.
+
+**Actual observations:** None. Status: AUTHORED_NOT_EXECUTED.
+
+## Interpretation and stop conditions
+
+**Critical:** Wrong Company/subject effect; duplicate effect from unsafe retry; unauthorized disclosure/action; false final/corrected/paid state; lost protected evidence or acknowledged input. Stop affected scenario and retain evidence.
+
+**Major:** Cannot discover/complete/recover an intended supported task without direct instruction; required decision information unavailable or misunderstood; keyboard/assistive-technology blocker.
+
+**Minor:** Recoverable confusion, wording, focus or efficiency issue with no incorrect effect; record recurring patterns.
+
+An absent prerequisite is reported as blocked rather than treated as evidence that the interaction passed or failed. Stop an affected critical scenario, retain evidence and return semantic changes through the repository’s existing design/test review. Repetition elsewhere cannot erase a consequential failure. This protocol itself clears no acceptance or production gate.

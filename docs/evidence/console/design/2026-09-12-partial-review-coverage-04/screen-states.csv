@@ -1,0 +1,16 @@
+screen,state,trigger,render,allowed_next,focus_and_preservation
+준비 task,loading,scoped projection 미도착,skeleton; 민감 old props재사용없음,없음,응답후 heading으로 focus; 기존 허용navigation 유지
+준비 task,authorized empty,내할당 없음,내 업무 없음; 전체인원0으로 표현않음,허용된 scope변경/새로고침,scope selector focus
+객체·단위,denied/revoked,객체/필드/Action중 관련권한없음,existence공개가능시만 제한; 캐시/props제거,허용된 돌아가기/권한요청,민감입력노출없는 안내 focus
+준비 form,validation error,허용필드의 typed 입력오류,해당필드 이유와 기존입력 보존,수정·재검증,첫 invalid field; 숨긴사실 이유노출않음
+준비 form,unsaved/offline,server draft ACK없음,저장안됨·재연결; 완료표시없음,재시도/명시discard,입력focus 유지; B06 persistence별도계약
+검토단위,ready/submitted,current proposal와필수근거허용,계산결과·차이·근거·S·issue를 action근처에 표시,approve/reject 또는 configured gate요청,검토heading; 필요한근거는검색없이표시
+실행허가,waiting/ready/refused/expired,optional gate 상태,급여결정과다른 label; 정확 requested effect,D의명시execute 또는 새intent,상태안내; gate만으로 task완료표시없음
+검토단위,partial evidence,필수근거 일부없음/권한불충족,이 결정에 필요한 자료 확인 필요; 허용된설명만,정정요청/적격자연결,blocker focus; blindapprove없음
+검토단위,stale/conflict,basis또는proposal변경,검토내용변경; 원결정은역사로분리,현재허용diff확인·새명령; old execute금지,변경요약 focus
+검토단위,rejected,정확proposal 반려,이 단위의 사유/근거·담당; 다른단위진행유지,정정 Action,정정대상필드 또는taskheading
+결정결과,unknown,commit여부응답없음,처리결과 확인중; 성공/실패 단정않음,samecommand receipt조회,결과영역 aria-live; 새ID실행버튼보류
+결정결과,local approved,내 exact set decision receipt있음,내 검토 완료; global허가없으면 남은수 미노출,원근거·receipt(현재권한),receipt heading; 선택범위복원
+범위현황,incomplete/unassigned,local승인됐지만필수범위미완료,허용된 coordinator만 reason/taskmetadata; 금액은별도,현재권한 assign/reassign/정정,해당 blocking task; 비밀대상명 일괄공개없음
+범위현황,complete,durable exact CoverageCompletion,허용된자에게 범위·review완료; nonpayable 명확,역사조회; 오류정정은AC1,completion heading; 지급버튼없음
+일괄결과,chunk partial,일부chunkcommit/unknown/unstarted,권한내 chunk별진실; whole성공표시없음,unknown조회후 미실행chunk만동일ID계속,실패/unknown chunk heading

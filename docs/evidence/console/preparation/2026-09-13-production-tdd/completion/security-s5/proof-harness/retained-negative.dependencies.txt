@@ -1,0 +1,5 @@
+/private/tmp/console-security-owner-assertions-s5-20260914/proof-harness/retained-negative.dependencies.txt: /private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/source-bound-known-false.rs
+
+/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/source-bound-known-false.rs:
+
+# env-dep:VERUSDOC

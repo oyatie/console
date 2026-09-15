@@ -1,0 +1,20 @@
+buck-preflight: pinned release 2026-07-15
+buck2 2026-07-14-1560aca2002865cd73d7cafb22c705cfb640b2bc
+[2026-09-14T23:16:48.589-04:00] Build ID: 180ce92e-91b0-47c2-ac19-79c8e8d4c754
+[2026-09-14T23:16:48.592-04:00] File changed: root//tools/buck/gen_first_party.py
+[2026-09-14T23:16:48.592-04:00] File changed: root//backend/app/BUCK
+[2026-09-14T23:16:48.592-04:00] File changed: root//backend/ci/gates/audit-coverage/BUCK
+[2026-09-14T23:16:48.592-04:00] 173 additional file change events
+root: /private/tmp/console-production-tdd-preparation-20260913
+prelude: /private/tmp/console-production-tdd-preparation-20260913/prelude
+toolchains: /private/tmp/console-production-tdd-preparation-20260913/toolchains
+none: /private/tmp/console-production-tdd-preparation-20260913/none
+[2026-09-14T23:16:48.616-04:00] Build ID: d5053573-1ee5-4b85-9faf-1d4436ddf784
+buck-preflight: enumerated 382 Rust test target(s)
+generated-face-registry: PASS
+snapshot-node-deps: linked verified dependencies at /private/tmp/console-production-tdd-preparation-20260913/buck-out/buck-preflight-snapshots/snapshot-k6h5ehss/node_modules
+generated 174 first-party BUCK files
+generated-face-gate: tier=cheap selected=1 deferred=1
+generated-face-gate: reindeer-third-party-rust (expensive) DEFERRED (run --tier all before merge)
+generated-face-gate: first-party-buck (cheap) PASS
+buck-preflight: cheap PASS

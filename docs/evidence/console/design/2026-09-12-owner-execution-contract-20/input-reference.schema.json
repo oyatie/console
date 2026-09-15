@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "console.owner20.source-input",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/SourcePayloadRef20"
+    },
+    {
+      "$ref": "#/$defs/CalendarDayPatch20"
+    }
+  ],
+  "$defs": {
+    "InputSchemaRef20": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "schema_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "schema_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "SourcePayloadRef20": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "SOURCE_DRAFT_REVISION"
+        },
+        "org_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "draft_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "revision_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/PositiveRevision"
+        },
+        "input_schema_ref": {
+          "$ref": "#/$defs/InputSchemaRef20"
+        },
+        "source_payload_digest": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "kind",
+        "org_id",
+        "draft_id",
+        "revision_id",
+        "revision",
+        "input_schema_ref",
+        "source_payload_digest"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarItem20": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "WEEKDAY"
+            },
+            "iso_weekday": {
+              "enum": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "iso_weekday"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "DATE"
+            },
+            "date": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Date"
+            }
+          },
+          "required": [
+            "kind",
+            "date"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CalendarDayPatch20": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "const": "REPLACE_REGISTERED_ITEM"
+        },
+        "field_id": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+        },
+        "item_key": {
+          "$ref": "#/$defs/CalendarItem20"
+        },
+        "value": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/ResolvedDayPlan"
+        }
+      },
+      "required": [
+        "operation",
+        "field_id",
+        "item_key",
+        "value"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

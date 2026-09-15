@@ -1,0 +1,15 @@
+{
+  "source": "Independent /root/review_completeness review of v1 evidence",
+  "verdict": "BOUNDED_MECHANISM_EVIDENCE_ONLY",
+  "observed": [
+    "All observed evidence copy commands succeeded;225Git-boundmigrationfiles applied in eachof2DBs",
+    "Owner/ACL/column metadata checks and transaction rollback are independent observations"
+  ],
+  "gaps": [
+    "Six individual runtime refusal logs were not copied out before container deletion",
+    "Generic permission denied string could refer to DB CONNECT, no explicit successfulconsole_rtloginpositivecontrol",
+    "run.py failed to require every evidence-copy command succeed; actual observedcopiesall0",
+    "Sequential second DB replay, not concurrent contention evidence"
+  ],
+  "disposition": "Preserve v1; v2 experiment commissioned to close login/control/copy deficiencies without altering priorresults. Neither version certifies production finalizer/appstartup."
+}

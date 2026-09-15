@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/finish_migration",
+  "test_candidate": "c3af787f78838b2249438c2038332c601cf0eb8b",
+  "implementation_candidate": "d8a6b8fa94d615c2bdddb7eb5b75af6131944295",
+  "worktree": "/private/tmp/console-authority-binding-20260914",
+  "clean": true,
+  "verdict": "APPROVE narrow pure exact-binding boundary",
+  "blocking_findings": [],
+  "source_checks": [
+    "Frozen security-s5 test module exact bytes preserved",
+    "Derived equality covers all eleven fields, six revision counters and five identity/scope operands",
+    "Both stale and future mismatches refused; optional Company exact comparison",
+    "No capability constructed, no IO, no serialization or Debug representation; static Forbidden mismatch",
+    "Existing minimum-freshness resolver logic unchanged"
+  ],
+  "independent_execution": {
+    "command": "/private/tmp/console-account30-cargo/debug/deps/console_platform_request_context-eb18b0b25f9aa6bc --test-threads=1",
+    "binary_sha256": "3f14affa3b039b84aa0f4bbfb21ac9ed84b1a404a2690f78b9dab059715cd1da",
+    "discovered": 23,
+    "executed": 23,
+    "passed": 23,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "new": 3,
+    "existing": 20
+  },
+  "source_sha256": {
+    "account.rs": "2c422f099069e2bc684811d166ee15867f71705c22c0cb2c02fd1e58c2d464d0",
+    "lib.rs": "36e9a0940ba611e7bc092560d4a5e7bb14cad93f3fd5a09b500fc97caa9e61ef"
+  },
+  "limits": [
+    "Did not independently rebuild; executed hash-verified implementer-built binary",
+    "Pure operands cannot establish DB provenance, authentication, authorization, or freshness independently",
+    "Live restricted-login loader/resolver integration remains outside this lane",
+    "No durability/replication or production exposure claim"
+  ]
+}

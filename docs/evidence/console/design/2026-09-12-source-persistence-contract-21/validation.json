@@ -1,0 +1,34 @@
+{
+  "recorded_at": "2026-09-13T02:53:53.085447+00:00",
+  "candidate_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-source-persistence-contract-21/verify-packet.py --commit 70f6b999ea712da151eff27e4db91b57624367f1",
+      "result": "PASS",
+      "output": {
+        "candidate_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+        "core_files": 13,
+        "source_blobs": 26,
+        "source_kinds": 7,
+        "sink_rows": 8,
+        "nonexecuted_cases": 26,
+        "synthetic_frames": 3,
+        "member_frame_bytes": 115,
+        "max1024_member_frame_bytes": 117821,
+        "reader_links": 7,
+        "validation_scope": "Static custody/reference/frame arithmetic only; no confidentiality theorem, full schema semantics, SQL or product execution",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "verus_proofs_executed": 0,
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check before each candidate commit",
+      "result": "PASS"
+    }
+  ],
+  "limits": "Static packet/reference/frame arithmetic only. No source table/SQL execution, full sink completeness audit, confidentiality theorem, Verus proof or runtime performance claim.",
+  "reviewer_invocation_note": "Payroll reviewer first omitted required --commit and received usage exit2; corrected exact-SHA invocation passed. No product test failure or skipped test."
+}

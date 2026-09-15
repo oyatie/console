@@ -1,0 +1,7 @@
+buckify.sh: local patch boundary verified
+[ERROR reindeer::fixups] unicode-general-category v1.1.0 has a build script, but fixups/unicode-general-category/fixups.toml does not say what to do with it. Add `buildscript.run = false` or `buildscript.run = true`
+[ERROR reindeer::buckify] pkg unicode-general-category-1.1.0 target build-script-build: rule generation failed: Unresolved fixup errors, fix them and rerun buckify.
+[ERROR reindeer::fixups] ahash v0.8.12 has a build script, but fixups/ahash/fixups.toml does not say what to do with it. Add `buildscript.run = false` or `buildscript.run = true`
+[ERROR reindeer::buckify] pkg ahash-0.8.12 target build-script-build: rule generation failed: Unresolved fixup errors, fix them and rerun buckify.
+[WARN  reindeer::buckify] Additional info on how to fix unresolved fixup errors: Every third-party build script needs an explicit reviewed fixup; do not downgrade this gate to warnings.
+[ERROR reindeer] Unresolved fixup errors, fix them and rerun buckify.

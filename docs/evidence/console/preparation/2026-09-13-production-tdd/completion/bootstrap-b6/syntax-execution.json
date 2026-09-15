@@ -1,0 +1,84 @@
+{
+  "classification": "RUSTFMT_PARSER_ONLY",
+  "checks": [
+    {
+      "file": "account-enrollment-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-test-bootstrap-b6-20260913/account-enrollment-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "dependencies/operator-custody-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-test-bootstrap-b6-20260913/dependencies/operator-custody-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "deployment-root-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-test-bootstrap-b6-20260913/deployment-root-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "ordinary-issuer-bootstrap.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-test-bootstrap-b6-20260913/ordinary-issuer-bootstrap.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    },
+    {
+      "file": "publish-then-root-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-native28-test-bootstrap-b6-20260913/publish-then-root-producer.rs"
+      ],
+      "exit_code": 0,
+      "stderr": ""
+    }
+  ],
+  "parsed_files": 5,
+  "compiled": false,
+  "discovered": 0,
+  "executed": 0
+}

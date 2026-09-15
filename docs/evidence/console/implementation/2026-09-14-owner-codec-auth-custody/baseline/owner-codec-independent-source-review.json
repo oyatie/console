@@ -1,0 +1,44 @@
+{
+  "reviewer": "/root/finish_browser",
+  "decision": "APPROVE implementation source and independently executed31test binary",
+  "source_hashes": {
+    "backend/crates/ontology/application/src/owner28.rs": "aa8c2a8c8a0a92db53a56c14e8f92ef96eeca524c695b6ad169a64757b267ee7",
+    "backend/crates/ontology/application/src/owner28/schema.rs": "5b8a3b9a08a8961f42251fba00d0c4c8ddae77658c29de5a82f48aa6505f65a7"
+  },
+  "resolved_findings": [
+    {
+      "finding": "Generic Deserialize bounded each field/container but not cumulative retained material",
+      "resolution": "Shared checked accepted-material budget passed across children, documented arbitrary upstream Deserializer allocation exclusion; use framed reader for untrusted streams."
+    },
+    {
+      "finding": "Default numeric visitor rejection could echo untrusted numeric values",
+      "resolution": "Explicit signed/unsigned/float numeric callbacks return fixed errors."
+    }
+  ],
+  "review_evidence": [
+    "Framed decoder validates tag and u32 length before bounded allocation, reads exact body and EOF, refuses noncanonical bytes.",
+    "Canonical ordering is explicit ASCII key order independent of serde_json preserve_order feature; body fingerprint retains domain separation.",
+    "Per-action canonical frame cap occurs before schema evaluation; duplicate keys, unknown envelope, depth/cardinality/NUL/numbers remain rejected.",
+    "Immutable schema resolver uses exact local resource map, denies unknown resources and external fallback; custom decimal bounds use checked i64 parse.",
+    "Programmatic scan of7embedded schema documents found no nested IDs/anchors/dynamic refs or literal $ref under const/enum/default/examples that per-definition rewriting would alter. Root oneOf wrappers are not selected definition bindings.",
+    "Plain decoded value is explicitly not authority/currentness/capability."
+  ],
+  "limits": [
+    "No hard process-RSS claim for arbitrary upstream Deserializer.",
+    "Final schema source differs from earlier reviewed version only by independently reviewed cfg(test) module mount.",
+    "fmt/clippy successful commands were reported by implementer; this reviewer independently executed actual31test binary."
+  ],
+  "candidate_sha": "3c56610086084fa4676d7def41adcfa39e712209",
+  "independent_execution": {
+    "command": "/private/tmp/console-account30-cargo/debug/deps/console_ontology_application-4785b4eab40d4b02",
+    "binary_sha256": "198ded7c6b2ce94e01b8ffce0cdf8325ec5b2669576e903e4e794fcc06f6fdba",
+    "log": "/private/tmp/owner-codec-31-independent-binary.log",
+    "log_sha256": "b42702fa800f4d9efec19e3d5cc9c95409006b07fa8b90bf6a811914e9cd5656",
+    "passed": 31,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "seconds": 0.28,
+    "cargo_used": false
+  }
+}

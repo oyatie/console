@@ -1,0 +1,58 @@
+{
+  "reviewer": "/root/finish_browser",
+  "manifest_sha256": "5357c82c0a248b405580f6b09f65cd87aa2e515fb780f519b309564692270cba",
+  "payloads": 109,
+  "counts": {
+    "source_files": 92,
+    "git_snapshots": 17
+  },
+  "git_heads": [
+    "11699e63dbc6d0d15f6fdd7f5deecd76ae119048",
+    "39d4e93ab7547b3887670e092b561034dd738a28",
+    "3ac0e50f837fa54e0d5efdd93509dbeca90e66e1",
+    "8135443f96ae3cad921d39394e8b1dd61d93714b",
+    "8bb6e24e2dd31f0da5c552cbf7625903d0b794ae",
+    "94fdccf97fb86aeb5e52c9202c0835eab5933255",
+    "c55f5d2a2c332610c43e36ad410fe69296f2550f",
+    "cc9fb6156900f089371c376892a31990a03d26b0",
+    "e1cf185743637129ca27b686870c85f0e239da21",
+    "e809f5d5d3926b73bcaba1be6b6d10a3834d173e"
+  ],
+  "index_closure": "exact109payloads+manifest; no duplicates/extras/symlinks/pathescapes",
+  "source_comparison_errors": [],
+  "core": "166retainedpayloads exacthash/size and exactclosure; manifest remains18a1791a9527b8f76e488c5ca889f4bdeebead0a7c9eaae0b0338538b452bf62",
+  "full_verify_failure_count": 13,
+  "full_verify_failures": [
+    "Cheap Buck2 generated-face admission",
+    "CI preflight contract tests",
+    "Buck disposable PostgreSQL harness regression",
+    "CI preflight contract",
+    "Executed-tests ratchet \u2014 a test binary must have a path from a workflow step",
+    "rustfmt check",
+    "Tenant-isolation gate",
+    "RLS-arming gate",
+    "Undeclared imports \u2014 every bare specifier must be declared",
+    "Request-body contract \u2014 spec fields must exist on the handler",
+    "Governed command-database DARK wiring regression",
+    "Production hardening contract",
+    "Production hardening regression tests"
+  ],
+  "exclusions_count": 41,
+  "exclusion_intersection": 0,
+  "manifest_stable_after_audit": true,
+  "decision": "APPROVE_FROZEN_RETENTION_SUPPLEMENT_ONLY",
+  "reviewed_exclusions": "All41sourceexclusions absent frompayloadindex; includes current boundarywiring, Accountclassification, active recovery logs, later finalverify and mutableprobe-current artifacts.",
+  "interpretation_review": [
+    "Fullverify retained accurately as FAILED13; attributionto9c846 remains rootreported rather than independentlyestablished bylog alone",
+    "Historical invalidtenantoracle approval, withdrawal and successor remain evidencehistory, not blanketendorsement",
+    "Repeatedtests/variants mustnot sum into uniquecoverage",
+    "Recoverycleanup is privateDocker-shim machinery; Buckenv diagnostic is no-sourcechange classification",
+    "Retaining exactbytes doesnotvalidateeveryunderlyingclaim or certify wholefollowup completion"
+  ],
+  "unchanged": "Audit wrote onlyoutside receipt; frozen supplement and core untouched",
+  "limits": [
+    "No implementation-readiness, release, production, actualHA/service, or completefollowup claim",
+    "No testexecution implied by retention audit",
+    "Missing currentwork correctly excluded rather than silentlyreportedcomplete"
+  ]
+}

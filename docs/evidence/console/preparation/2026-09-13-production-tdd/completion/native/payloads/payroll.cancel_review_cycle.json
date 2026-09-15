@@ -1,0 +1,13 @@
+{
+  "kind": "payroll.cancel_review_cycle",
+  "body": {
+    "cycle": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "run_id": "824563b2-d18b-501c-8f17-875db7c57313",
+      "cycle_id": "66006f75-2447-5e46-a7f9-d904131cd1cc",
+      "revision": "1",
+      "membership_digest": "6b1306d45a69bfe621b531e07b58e817c540fdf08653fd48f521bc3a6c85f5ba"
+    },
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

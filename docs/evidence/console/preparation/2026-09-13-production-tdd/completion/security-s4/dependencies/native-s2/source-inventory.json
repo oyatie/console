@@ -1,0 +1,101 @@
+{
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "author": "/root/fresh29_workflows",
+  "classification": "AUTHORED_SOURCE_OWNER_IMPLEMENTATION_PREREQUISITE",
+  "test_bodies_by_file": {
+    "native-owner-tests.rs": [
+      "native_owner_chain_produces_complete_nonpayable_review",
+      "native_first_prepare_is_durable_pending_before_terminal_effects",
+      "native_prepare_replay_returns_same_receipt_without_second_input",
+      "native_calculation_replay_returns_same_money_and_receipt",
+      "native_same_draft_control_command_changed_input_refuses",
+      "native_owner_wage_change_after_building_prevents_old_activation",
+      "native_blocked_population_cannot_close",
+      "native_two_original_calculate_intents_have_one_current_winner",
+      "review_partial_approvals_do_not_produce_completion",
+      "review_second_account_of_same_human_cannot_self_approve",
+      "native_expected_run_id_is_not_defaulted",
+      "native_expected_run_revision_is_not_defaulted",
+      "native_expected_input_revision_is_not_defaulted",
+      "native_expected_input_revision_null_is_not_defaulted",
+      "native_expected_calculation_revision_is_not_defaulted",
+      "native_expected_close_basis_null_is_not_defaulted",
+      "native_expected_review_cycle_id_is_not_defaulted"
+    ],
+    "native-lifecycle-tests.rs": [
+      "contract_wage_create_replays_exact_subject_fact_without_duplicate",
+      "contract_wage_correction_recovers_commit_and_preserves_original",
+      "native_create_is_header_only_and_original_command_replays",
+      "native_prepare_recovers_lost_building_ack_on_original_subject",
+      "native_reopen_preserves_history_and_current_projection_excludes_old_money",
+      "native_close_replay_does_not_unlock_or_replace_operational_basis",
+      "native_cancel_review_is_explicit_and_generic_reopen_refuses",
+      "approved_successor_is_unique_staged_and_preserves_old_decisions",
+      "native_review_revision_preserves_only_exact_unaffected_approval",
+      "native_review_open_rejects_each_wrong_nullable_expectation",
+      "review_withdraw_keeps_immutable_decision_and_replays_control_once"
+    ],
+    "source-preparation-tests.rs": [
+      "source_preparation_replay_retains_exact_schema_head_and_bytes",
+      "source_preparation_other_draft_unit_cannot_seal",
+      "source_preparation_changed_head_keeps_old_unit_but_cannot_seal_it"
+    ],
+    "artifact-owner-tests.rs": [
+      "artifact_upload_request_and_worker_verification_replay_exact_receipts",
+      "artifact_wrong_declared_digest_cannot_create_verified_source",
+      "artifact_reused_ticket_cannot_verify_changed_bytes_or_location_revision",
+      "artifact_parallel_worker_commands_append_one_verification",
+      "artifact_worker_boundary_refuses_account_token_before_owner_dispatch"
+    ],
+    "source-owner-tests.rs": [
+      "qualification_propose_recovers_actual_commit",
+      "qualification_verify_current_and_independent",
+      "qualification_revoke_keeps_history",
+      "qualification_revoke_race_one_winner",
+      "eligibility_propose_recovers_actual_commit",
+      "eligibility_verify_current_and_independent",
+      "eligibility_revoke_keeps_history",
+      "eligibility_revoke_race_one_winner",
+      "tax_propose_recovers_actual_commit",
+      "tax_verify_current_and_independent",
+      "tax_revoke_keeps_history",
+      "tax_revoke_race_one_winner"
+    ],
+    "rust-codec-assertions.rs": [
+      "rust_input_blocked_two_matches_independent_literal_bytes",
+      "rust_input_resolved_one_matches_independent_literal_bytes",
+      "rust_calculation_blocked_one_matches_independent_literal_bytes",
+      "rust_calculation_success_one_matches_independent_literal_bytes",
+      "rust_owner_direct_wage_matches_independent_literal_bytes",
+      "rust_owner_attempt_create_run_matches_independent_literal_bytes",
+      "rust_owner_gated_calculate_matches_independent_literal_bytes",
+      "rust_owner_publication_matches_independent_literal_bytes",
+      "rust_owner_case_response_matches_independent_literal_bytes",
+      "rust_input_decoder_rejects_truncation_every_byte_boundary",
+      "rust_native_decoder_rejects_trailing_bytes_and_bad_frame_lengths",
+      "rust_calc_decoder_requires_exact_input_custody_not_semantics",
+      "rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest"
+    ]
+  },
+  "rust_methods_authored": 61,
+  "sqlx_methods_authored": 48,
+  "rust_codec_methods_authored": 13,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "rust_compiled": false,
+  "python_schema_tests": 9,
+  "OWNER_IMPLEMENTATION_PREREQUISITE": [
+    "Ordinary Account/identity/context/serving/deployment owners and migration roles; exact interface-refinements.md",
+    "Native18/source19+23+24 retained writer and fixed owner protocols",
+    "Approved30 binder input newtypes/current owner reads/error taxonomy",
+    "Cargo target integration and actual admitted clean-tree RED probe before implementer lane"
+  ],
+  "SOURCE_NOT_AUTHORED": [
+    "Native protected retention: independent obligations, partial release, late hold, physical disposal (authoring S3)",
+    "Deterministic native/source lock rendezvous (S2 races use tokio joins; authoring S3)",
+    "Actual hostile database immutable custody mutation probes (authoring S3)",
+    "Complete streaming/load-budget fixture and executable workload oracle beyond bounded codec hostile-byte unit bodies"
+  ],
+  "fixture_isolation": "Fresh SQLx database per test. Real configured LOGIN roles and actual ordinary signed/passkey owner bootstrap. No seed loader/business INSERT/fake context.",
+  "scope": "26 registrations owned here; other29 assigned to actual root draft+attendance and workflow packets. Not an all55 complete-dimensions claim."
+}

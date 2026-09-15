@@ -1,0 +1,105 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "ACCEPTED_LOCAL_RUNTIME_EVIDENCE_WITH_EXPLICIT_SCOPE",
+  "candidate_sha": "7af6dfd4d3d3e70c274a485e4aabba583ea93a0d",
+  "build_head": "7a0ce898eadc507b54f1c4a2f4b10fc307e202f6",
+  "binary_sha256": "ee91e9aa0f3f8a6ada2094d4e5dbb14b190256a8935b56fab62210b4fff114bc",
+  "binary_hash_independently_verified": true,
+  "backend_diff_between_build_and_run": "empty",
+  "source_bindings": {
+    ".dockerignore": {
+      "sha256": "4c4fb6f15b5611811d5214b1f2c7c4a7f96873a728ec01bfd9bbb59268ac5586",
+      "git_blob": "32f7890d4b8400db3683189c93c295f28d6bb062"
+    },
+    "ops/compose.yml": {
+      "sha256": "953b254c5de3b870ec85494751410c72090d46017c1d14ea67361745ebf875ab",
+      "git_blob": "2f05ba77822fc6c8bd786ec4ec30328bce0de437"
+    },
+    "ops/account-custody.Dockerfile": {
+      "sha256": "582301f82a88bc25cc5f949bb6b13c384adec9f0377e031387a40efc111f3b73",
+      "git_blob": "a0b73bce142951cd6308428274ef30bbdc071699"
+    },
+    "ops/postgres-reconcile-topology.sh": {
+      "sha256": "4ebd04841ce334edbb32e3b424150c4c5898b2bd89d1c6cc727f6fb0d9ee52e8",
+      "git_blob": "a133534aaacea26294fb774cf642012d18c29abc"
+    },
+    "ops/postgres-finalize-account-custody.sh": {
+      "sha256": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47",
+      "git_blob": "57e4582ca56806a099e3645543a70a0db7e8ebb5"
+    },
+    "ops/postgres-finalize-account-custody.sql": {
+      "sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+      "git_blob": "2fc677e1a1ac181b25fb64d1f55de4f24446f1b7"
+    },
+    "ops/account-custody-migrations.sha384": {
+      "sha256": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+      "git_blob": "35ecd1d1f3128d58c6a273bfc5f20422191c4310"
+    },
+    "scripts/lib/dev-account-custody.mjs": {
+      "sha256": "40e411ef4bff4d77dba6197a586afe680e7a693387668b3d6858fed779022aba",
+      "git_blob": "225a8144cab003ed75e19200253fd44974dcb7ba"
+    }
+  },
+  "artifact_sha256": {
+    "/private/tmp/lc07-runtime-smoke.mjs": "12999edcba48fa71afd9d2df8a85c4c62416e62c0d5c1ca96b3e9e01d2df42a1",
+    "/private/tmp/lc07-frozen-binary.json": "eef84cc88ec9e85617f71447515e158108bedc692f5e614296446739ba0ec931",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/result.json": "8599645b33bf3ab0e6e2b7f5d5e9dd60541e95bbf2ad65d1ec84d42c4cb934a7",
+    "/private/tmp/lc07-final-build.log": "00170b7e6df4a302ad544ccb727d31082a1b710fde9c8fdbb54e83af1b4548d8"
+  },
+  "execution_log_sha256": {
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/1.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/2.log": "d1ca4af92bb6d456eca5d88c66b2458b5984ca5ce62844c5cc6bf71e478d6c91",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/3.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/4.log": "50a9622f5ab4ff3428162d040904a58e2bbc68eb94fdf1b946f4a2da85a9ac75",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/5.log": "f929863a118d531d08d7b39b7b829770b520d7e3501f0deaa7a03cc70ba6868f",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/6.log": "9e65b9a4d32452198605baa5a423b1ef62ff6e6bdefc27e676dc5e1b93a627d9",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/7.log": "15dd4819192f7c6e28759e6cefa298b1f3b11709e885d6b7915090dbd870218a",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/8.log": "5e30852de156d947ef3416e2f6c0d9f0832900729679036222b5535e2f9d340a",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/9.log": "fabdfab813bf0ff70b431769ec6461e6bd364d23da13c3bed39fe315113ff687",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/10.log": "90fcdd81baa006121203ef682f1055fb16c9ef0af6e57712c630a011f42eea8c",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/11.log": "3459c9ef0d9000f114b118b00b1fc9cac72aa581fbbe89447886cbb1318abaaf",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/12.log": "0f30cfd4549f0c2fbf87aa170f1fa78ca467bb50b83902a6aac73df6007cb4fe",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/13.log": "fabdfab813bf0ff70b431769ec6461e6bd364d23da13c3bed39fe315113ff687",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/14.log": "38625eaa4b4afcf67999e8e43200f7c595c04d39a0d1eb1f1ee2096d08940e4d",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/15.log": "56d20ba60a07ab088cee12e1936a182f16351eed752979a263f400bdd7b88e1f",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/16.log": "05cec78013827cba5025b5bfe6fc99a904fcbae1d02ccec523c2759d4288d1d1",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/17.log": "56d20ba60a07ab088cee12e1936a182f16351eed752979a263f400bdd7b88e1f",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/18.log": "fff2654516f7b8d93623fe18cfe7b47495a5d980779a5b88e322bf0c8352e8ec",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/19.log": "5b131d28ca2f1a93c1bf4dc2261b81f020168a105ad0ff899bc88b22ab8b01eb",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/20.log": "56d20ba60a07ab088cee12e1936a182f16351eed752979a263f400bdd7b88e1f",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/21.log": "d1ca4af92bb6d456eca5d88c66b2458b5984ca5ce62844c5cc6bf71e478d6c91",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/22.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/23.log": "b2e9685fe1c6acc3e8863165cf652c5aed4b6039d775cd4498eb83eb10cf5f70",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/24.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/25.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/26.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/27.log": "3459c9ef0d9000f114b118b00b1fc9cac72aa581fbbe89447886cbb1318abaaf",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/28.log": "5930d37c56621ddeac3ea272b69353c81106516b4f0b776caa85b45ded5abfbd",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/29.log": "abc098c6ddfd1950546e03a7d4db9223713ef7b3c9c2123ff3c5d71f853a6dbe",
+    "/private/tmp/lc07-runtime-evidence-uWK0kC/api.log": "554bca51481021f686c244c0615bfaf7c14979fd94f5d77e0134788ee2507c06"
+  },
+  "observed": {
+    "cases_passed": 7,
+    "command_logs": 29,
+    "api_log": 1,
+    "owned_containers_remaining": 0,
+    "owned_volumes_remaining": 0,
+    "owned_networks_remaining": 0,
+    "operator_image_absence": "independent inspect No such image exact unique tag",
+    "source_prepost_head_and_clean_status": "verified against logs; selected hashes match exact Git blobs"
+  },
+  "resolved_machinery_findings": [
+    "API port chosen through ephemeral bind preflight, child errors checked, shutdown bounded using exitCode and signalCode.",
+    "Container/volume/network inspections all attempted independently even after down failure; unknown result fails cleanup.",
+    "Unique operator image tag is inspected in finally regardless earlier ID availability; deletion requires owner label and recorded ID match when available; absence checked after removal.",
+    "Wrong-inventory case narrowed to no-owner-changes, finalization checks exact per-table owner map.",
+    "Frozen native binary hash independently matches build receipt and runtime; candidate backend content unchanged between build and execution."
+  ],
+  "limits": [
+    "Reviewer read logs and verified hashes; did not execute Docker/Cargo.",
+    "Actual local Compose PostgreSQL/topology and local operator image plus host-built native API only; not published app image, Kubernetes/CNI, production rollout or legal certification.",
+    "Wrong-inventory no-owner-changes and retry preservation compare six table owners, not arbitrary rows, ACLs or entire database state.",
+    "Runtime cleanup branches source-reviewed; this final run demonstrates successful cleanup, not independent fault injection of every failure branch.",
+    "Earlier provisional runs are historical and are not substituted for this bound result."
+  ]
+}

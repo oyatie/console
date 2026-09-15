@@ -1,0 +1,31 @@
+[
+  {
+    "lane": "RECOVERY-verified-cleanup-inventory",
+    "owner": "/root/finish_browser",
+    "base_sha": "c7aeb32d3b4326aff8bf03b0831b1bec34479247",
+    "allow": [
+      "tools/lanes/recovery/recovery_postgres.sh"
+    ],
+    "probe": "python3 tools/lanes/recovery/test_supervise_recovery.py RecoveryCleanupTests > /private/tmp/recovery-cleanup-probe-current.log 2>&1",
+    "target": "Fixture cleanup claims absence only after successful exactowned inventory of containers volumes networks",
+    "guide": "Replace3pipelineif tests with checkedcommand substitution/status and nonempty test; allremovals and inventories still attempted; fixederror on unavailable; no services/query/privilege changes. Same13caseprobeGREEN then all15supervisor+cleanup cases and relayregressions.",
+    "pre_mortem": "Daemon error masked as successfulabsence or unexpectedcommand swallowed",
+    "blast_radius": "Recovery localfixture cleanup only",
+    "detection": "13reviewedactualshell cases including full7command history; existing timeout/childgroup regressions",
+    "rollback": "Revert isolated cleanupsource; retain failedproofs",
+    "stop_conditions": [
+      "Unchecked Dockerinventory",
+      "Changedservice/privilege scope",
+      "Test weakening"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "review_receipt": "/private/tmp/recovery-cleanup-6160ffd2-independent-test-review.json",
+    "holds": [
+      "Realservice cleanup/run",
+      "HA durabilityfix",
+      "Productionexposure"
+    ]
+  }
+]

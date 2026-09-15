@@ -1,0 +1,1124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:console:evidence:native18-v1",
+  "$comment": "Design shape only. NC18 semantic/numeric/raw decoder validation required; not generated OpenAPI or deployed schema.",
+  "$defs": {
+    "UUID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "not": {
+        "const": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "PositiveRevision": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,18}$",
+      "x-decimal-min": 1,
+      "x-decimal-max": 9223372036854775807
+    },
+    "RevisionOrZero": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,18})$",
+      "x-decimal-min": 0,
+      "x-decimal-max": 9223372036854775807
+    },
+    "PositiveWon": {
+      "$ref": "#/$defs/PositiveRevision"
+    },
+    "NonnegativeWon": {
+      "$ref": "#/$defs/RevisionOrZero"
+    },
+    "UnixMicroseconds": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]{0,18})$",
+      "x-decimal-min": -9223372036854775808,
+      "x-decimal-max": 9223372036854775807
+    },
+    "CalculationRevision": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,9}$",
+      "x-decimal-min": 1,
+      "x-decimal-max": 2147483647
+    },
+    "Ordinal": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,2})$",
+      "x-decimal-min": 0,
+      "x-decimal-max": 255
+    },
+    "Hours": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,2}$",
+      "x-decimal-min": 1,
+      "x-decimal-max": 9223372036854775807
+    },
+    "Count": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,3})$"
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "Sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "RegisteredAsciiId": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "Note": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^[^\u0000]*$"
+    },
+    "Reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000,
+      "pattern": "^[^\u0000]*$"
+    },
+    "SourceFamily": {
+      "enum": [
+        "POPULATION",
+        "EMPLOYMENT",
+        "WAGE",
+        "ATTENDANCE",
+        "CALENDAR",
+        "LEAVE",
+        "ELIGIBILITY",
+        "TAX_EVIDENCE",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ]
+    },
+    "InclusivePeriod": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/Date"
+        },
+        "end": {
+          "$ref": "#/$defs/Date"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "RuleBundleRef": {
+      "type": "object",
+      "properties": {
+        "bundle_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "kernel_build_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "citation_set_sha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "kernel_build_sha256",
+        "citation_set_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "ProfileRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "profile_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "rule_bundle": {
+          "$ref": "#/$defs/RuleBundleRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "profile_id",
+        "revision",
+        "rule_bundle"
+      ],
+      "additionalProperties": false
+    },
+    "ScopeBasisRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "scope_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "scope_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "EligibilityRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "assessment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "assessment_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "TaxEvidenceRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "evidence_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "evidence_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "AttendanceCoverageRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "coverage_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "coverage_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "AttendanceCloseBasisRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "close_basis_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "close_basis_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "WageFactRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "base_wage_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "correction_revision": {
+          "$ref": "#/$defs/RevisionOrZero"
+        }
+      },
+      "required": [
+        "org_id",
+        "base_wage_id",
+        "correction_revision"
+      ],
+      "additionalProperties": false
+    },
+    "EmploymentBindingRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "binding_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "binding_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "employee_id",
+        "employment_id",
+        "binding_id",
+        "binding_revision"
+      ],
+      "additionalProperties": false
+    },
+    "EmploymentSegmentRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "from_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "to_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        }
+      },
+      "required": [
+        "org_id",
+        "employment_id",
+        "revision_id",
+        "revision",
+        "from_us",
+        "to_us"
+      ],
+      "additionalProperties": false
+    },
+    "ArtifactRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "evidence_object_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "copy_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attestation_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attestation_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "evidence_object_id",
+        "copy_id",
+        "attestation_id",
+        "attestation_revision"
+      ],
+      "additionalProperties": false
+    },
+    "SourceKind": {
+      "enum": [
+        "EMPLOYMENT_BINDING",
+        "EMPLOYMENT_REVISION",
+        "WAGE",
+        "ATTENDANCE_COVERAGE",
+        "ELIGIBILITY",
+        "TAX_EVIDENCE"
+      ]
+    },
+    "NativeSourceSlot": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "EMPLOYMENT_BINDING"
+            },
+            "selection": {
+              "enum": [
+                "SELECTED",
+                "CANDIDATE"
+              ]
+            },
+            "ordinal": {
+              "$ref": "#/$defs/Ordinal"
+            },
+            "ref": {
+              "$ref": "#/$defs/EmploymentBindingRef"
+            }
+          },
+          "required": [
+            "kind",
+            "selection",
+            "ordinal",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "EMPLOYMENT_REVISION"
+            },
+            "selection": {
+              "enum": [
+                "SELECTED",
+                "CANDIDATE"
+              ]
+            },
+            "ordinal": {
+              "$ref": "#/$defs/Ordinal"
+            },
+            "ref": {
+              "$ref": "#/$defs/EmploymentSegmentRef"
+            }
+          },
+          "required": [
+            "kind",
+            "selection",
+            "ordinal",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "WAGE"
+            },
+            "selection": {
+              "enum": [
+                "SELECTED",
+                "CANDIDATE"
+              ]
+            },
+            "ordinal": {
+              "$ref": "#/$defs/Ordinal"
+            },
+            "ref": {
+              "$ref": "#/$defs/WageFactRef"
+            }
+          },
+          "required": [
+            "kind",
+            "selection",
+            "ordinal",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ATTENDANCE_COVERAGE"
+            },
+            "selection": {
+              "enum": [
+                "SELECTED",
+                "CANDIDATE"
+              ]
+            },
+            "ordinal": {
+              "$ref": "#/$defs/Ordinal"
+            },
+            "ref": {
+              "$ref": "#/$defs/AttendanceCoverageRef"
+            }
+          },
+          "required": [
+            "kind",
+            "selection",
+            "ordinal",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ELIGIBILITY"
+            },
+            "selection": {
+              "enum": [
+                "SELECTED",
+                "CANDIDATE"
+              ]
+            },
+            "ordinal": {
+              "$ref": "#/$defs/Ordinal"
+            },
+            "ref": {
+              "$ref": "#/$defs/EligibilityRef"
+            }
+          },
+          "required": [
+            "kind",
+            "selection",
+            "ordinal",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "TAX_EVIDENCE"
+            },
+            "selection": {
+              "enum": [
+                "SELECTED",
+                "CANDIDATE"
+              ]
+            },
+            "ordinal": {
+              "$ref": "#/$defs/Ordinal"
+            },
+            "ref": {
+              "$ref": "#/$defs/TaxEvidenceRef"
+            }
+          },
+          "required": [
+            "kind",
+            "selection",
+            "ordinal",
+            "ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SourceSlotKey": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/SourceKind"
+        },
+        "selection": {
+          "enum": [
+            "SELECTED",
+            "CANDIDATE"
+          ]
+        },
+        "ordinal": {
+          "$ref": "#/$defs/Ordinal"
+        }
+      },
+      "required": [
+        "kind",
+        "selection",
+        "ordinal"
+      ],
+      "additionalProperties": false
+    },
+    "Blocker": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "MISSING_SOURCE",
+            "AMBIGUOUS_SOURCE",
+            "SOURCE_BOUND_EXCEEDED",
+            "SOURCE_INVALID",
+            "INCOMPLETE_EMPLOYMENT",
+            "INCOMPLETE_ATTENDANCE",
+            "UNRESOLVED_OBLIGATION",
+            "UNSUPPORTED_PROFILE",
+            "UNSUPPORTED_ROUNDING",
+            "ARITHMETIC_OVERFLOW",
+            "UNSUPPORTED_NEGATIVE_NET"
+          ]
+        },
+        "family": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceFamily"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_slots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceSlotKey"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "code",
+        "family",
+        "source_slots"
+      ],
+      "additionalProperties": false
+    },
+    "Arithmetic": {
+      "type": "object",
+      "properties": {
+        "gross_won": {
+          "$ref": "#/$defs/PositiveWon"
+        },
+        "taxable_monthly_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "pension_standard_monthly_income_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "monthly_standard_hours": {
+          "$ref": "#/$defs/Hours"
+        },
+        "income_tax_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "local_tax_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "tax_table_edition": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        }
+      },
+      "required": [
+        "gross_won",
+        "taxable_monthly_won",
+        "pension_standard_monthly_income_won",
+        "monthly_standard_hours",
+        "income_tax_won",
+        "local_tax_won",
+        "tax_table_edition"
+      ],
+      "additionalProperties": false
+    },
+    "UnitBasis": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "resolution": {
+              "const": "RESOLVED"
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/NativeSourceSlot"
+              },
+              "minItems": 6,
+              "maxItems": 256
+            },
+            "arithmetic": {
+              "$ref": "#/$defs/Arithmetic"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Blocker"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "resolution",
+            "source_refs",
+            "arithmetic",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resolution": {
+              "const": "BLOCKED"
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/NativeSourceSlot"
+              },
+              "minItems": 0,
+              "maxItems": 256
+            },
+            "arithmetic": {
+              "type": "null"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Blocker"
+              },
+              "minItems": 1,
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "resolution",
+            "source_refs",
+            "arithmetic",
+            "blockers"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SemanticContext": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "pay_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "earning_zone": {
+          "const": "Asia/Seoul"
+        },
+        "earning_start_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "earning_end_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "profile_ref": {
+          "$ref": "#/$defs/ProfileRef"
+        },
+        "scope_basis_ref": {
+          "$ref": "#/$defs/ScopeBasisRef"
+        }
+      },
+      "required": [
+        "period",
+        "pay_date",
+        "earning_zone",
+        "earning_start_us",
+        "earning_end_us",
+        "profile_ref",
+        "scope_basis_ref"
+      ],
+      "additionalProperties": false
+    },
+    "UnitSemantic": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "context": {
+          "$ref": "#/$defs/SemanticContext"
+        },
+        "basis": {
+          "$ref": "#/$defs/UnitBasis"
+        }
+      },
+      "required": [
+        "org_id",
+        "employee_id",
+        "context",
+        "basis"
+      ],
+      "additionalProperties": false
+    },
+    "UnitCustody": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "input_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "line_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "semantic_digest": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "org_id",
+        "run_id",
+        "input_revision",
+        "employee_id",
+        "line_id",
+        "semantic_digest"
+      ],
+      "additionalProperties": false
+    },
+    "GuardWitness": {
+      "type": "object",
+      "properties": {
+        "family": {
+          "$ref": "#/$defs/SourceFamily"
+        },
+        "generation": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "family",
+        "generation"
+      ],
+      "additionalProperties": false
+    },
+    "InputHeader": {
+      "type": "object",
+      "properties": {
+        "codec_version": {
+          "const": "native18-v1"
+        },
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "input_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "context": {
+          "$ref": "#/$defs/SemanticContext"
+        },
+        "membership_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "membership_basis_digest": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "guard_witnesses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GuardWitness"
+          },
+          "minItems": 10,
+          "maxItems": 10
+        },
+        "actor_account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "command_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "recorded_at_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        }
+      },
+      "required": [
+        "codec_version",
+        "org_id",
+        "run_id",
+        "input_revision",
+        "context",
+        "membership_count",
+        "membership_basis_digest",
+        "guard_witnesses",
+        "actor_account_id",
+        "command_id",
+        "recorded_at_us"
+      ],
+      "additionalProperties": false
+    },
+    "ResultRef": {
+      "type": "object",
+      "properties": {
+        "calculation_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "version": {
+          "$ref": "#/$defs/CalculationRevision"
+        }
+      },
+      "required": [
+        "calculation_id",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "CalculationOutcome": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "run_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "calculation_revision": {
+              "$ref": "#/$defs/CalculationRevision"
+            },
+            "input_revision": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "line_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "input_unit_digest": {
+              "$ref": "#/$defs/Sha256"
+            },
+            "state": {
+              "const": "SUCCESS"
+            },
+            "result_ref": {
+              "$ref": "#/$defs/ResultRef"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Blocker"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "org_id",
+            "run_id",
+            "calculation_revision",
+            "input_revision",
+            "employee_id",
+            "line_id",
+            "input_unit_digest",
+            "state",
+            "result_ref",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "run_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "calculation_revision": {
+              "$ref": "#/$defs/CalculationRevision"
+            },
+            "input_revision": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "line_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "input_unit_digest": {
+              "$ref": "#/$defs/Sha256"
+            },
+            "state": {
+              "const": "BLOCKED"
+            },
+            "result_ref": {
+              "type": "null"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Blocker"
+              },
+              "minItems": 1,
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "org_id",
+            "run_id",
+            "calculation_revision",
+            "input_revision",
+            "employee_id",
+            "line_id",
+            "input_unit_digest",
+            "state",
+            "result_ref",
+            "blockers"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BatchHeader": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "calculation_revision": {
+          "$ref": "#/$defs/CalculationRevision"
+        },
+        "input_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "input_manifest_digest": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "close_basis_ref": {
+          "$ref": "#/$defs/AttendanceCloseBasisRef"
+        },
+        "actor_account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "command_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "recorded_at_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "member_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "success_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "blocked_count": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "org_id",
+        "run_id",
+        "calculation_revision",
+        "input_revision",
+        "input_manifest_digest",
+        "close_basis_ref",
+        "actor_account_id",
+        "command_id",
+        "recorded_at_us",
+        "member_count",
+        "success_count",
+        "blocked_count"
+      ],
+      "additionalProperties": false
+    },
+    "WageCorrectionBody": {
+      "type": "object",
+      "properties": {
+        "base_wage_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "amount_won": {
+          "$ref": "#/$defs/PositiveWon"
+        },
+        "wage_kind": {
+          "enum": [
+            "MONTHLY",
+            "HOURLY"
+          ]
+        },
+        "monthly_standard_hours": {
+          "$ref": "#/$defs/Hours"
+        },
+        "source_note": {
+          "$ref": "#/$defs/Note"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "base_wage_id",
+        "amount_won",
+        "wage_kind",
+        "monthly_standard_hours",
+        "source_note",
+        "evidence_refs"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/UnitSemantic"
+    },
+    {
+      "$ref": "#/$defs/UnitCustody"
+    },
+    {
+      "$ref": "#/$defs/InputHeader"
+    },
+    {
+      "$ref": "#/$defs/CalculationOutcome"
+    },
+    {
+      "$ref": "#/$defs/BatchHeader"
+    },
+    {
+      "$ref": "#/$defs/WageCorrectionBody"
+    }
+  ]
+}

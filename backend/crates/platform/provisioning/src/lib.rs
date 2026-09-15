@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, KernelError, OrgId, TraceContext, UserId,
 };
+use console_platform_auth::{append_legacy_auth_audit_in_tx, guard_legacy_subject_in_tx};
 use console_platform_db::{insert_audit_event, with_audit, with_audits};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -69,6 +70,19 @@ pub enum ProvisioningError {
 
     #[error("conflict: {0}")]
     Conflict(String),
+}
+
+fn tenant_removal_error(error: sqlx::Error) -> ProvisioningError {
+    if matches!(&error, sqlx::Error::Database(db)
+        if db.code().as_deref() == Some("P0001")
+            && db.message() == "auth_legacy_purge.retained_custody")
+    {
+        ProvisioningError::Conflict(
+            "organization retains Account credentials and cannot be removed".to_owned(),
+        )
+    } else {
+        ProvisioningError::Sqlx(error)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -141,9 +155,8 @@ impl RosterProvisioner {
             now,
         )
         // Roster import stamps every row with KNL today (single-tenant import).
-        // Arm KNL as the GUC so the FORCE-RLS WITH CHECK on `users`,
-        // `user_branches`, and `auth_bootstrap_credentials` accepts these writes
-        // under the non-owner `console_rt` role.
+        // Arm KNL for Company user/branch writes and the fixed credential-owner
+        // issuance operation on this same audited transaction.
         .with_org(OrgId::knl())
         .with_snapshots(
             None,
@@ -194,9 +207,8 @@ impl BootstrapCredentialStore {
                 // Admin-issued OTP path: the request's tenant `org` is threaded in
                 // from the authenticated admin's verified token. `with_audit` arms
                 // `app.current_org` to that org from the audit event above (the
-                // `.with_org(org)` call), so the FORCE-RLS WITH CHECK on
-                // `auth_bootstrap_credentials` accepts the row for ANY tenant — not
-                // just KNL — and the credential is stamped with the real org.
+                // `.with_org(org)` call). The fixed credential-owner operation
+                // validates and stamps that same Company on the new credential.
                 issue_bootstrap_if_needed_tx(tx, user_id, org, now, ttl, IssueMode::RejectIfPresent)
                     .await?
                     .ok_or(ProvisioningError::ActiveBootstrapCredentialExists)
@@ -217,8 +229,8 @@ impl BootstrapCredentialStore {
     /// email itself is only used out-of-band to deliver the returned OTP.
     ///
     /// In ONE transaction with `app.current_org` armed to KNL by [`with_audits`],
-    /// so the `users` + `auth_bootstrap_credentials` inserts pass the FORCE-RLS
-    /// WITH CHECK as the non-owner `console_rt` role. Returns the one-time OTP exactly
+    /// the Business user insert and fixed credential-owner issuance remain atomic.
+    /// Returns the one-time OTP exactly
     /// like the admin path; the OTP value is NEVER audited or logged.
     pub async fn signup_open_member(
         &self,
@@ -237,6 +249,10 @@ impl BootstrapCredentialStore {
 
         with_audits::<_, BootstrapCredentialIssue, ProvisioningError>(pool, org, |tx| {
             Box::pin(async move {
+                sqlx::query("SELECT public.auth_legacy_company_lock_v1($1)")
+                    .bind(*org.as_uuid())
+                    .execute(tx.as_mut())
+                    .await?;
                 // (1) Create the MEMBER user in KNL. The GUC armed by `with_audits`
                 // scopes the insert to KNL so it passes the FORCE-RLS WITH CHECK.
                 let user_id: Uuid = sqlx::query_scalar(
@@ -304,9 +320,8 @@ impl BootstrapCredentialStore {
     /// caller's tenant — a user in another org is invisible and cannot be reset):
     ///   1. DELETE every `auth_webauthn_credentials` row for `user_id`, each audited
     ///      as `auth.passkey.admin_reset`. The old passkeys then fail login.
-    ///   2. Mint a fresh bootstrap OTP via [`issue_bootstrap_if_needed_tx`] in
-    ///      [`IssueMode::ForceReset`] (bypasses the now-stale passkey check and
-    ///      revokes any leftover open code), audited as `auth.otp.issue`.
+    ///   2. The same fixed credential-owner operation replaces any leftover open
+    ///      code with the new bootstrap OTP, audited as `auth.otp.issue`.
     ///
     /// Returns the one-time OTP exactly like [`Self::issue_for_zero_credential_user`]
     /// so the admin can hand it to the user. The OTP value is NEVER audited or logged.
@@ -320,19 +335,16 @@ impl BootstrapCredentialStore {
     ) -> Result<BootstrapCredentialIssue, ProvisioningError> {
         with_audits::<_, BootstrapCredentialIssue, ProvisioningError>(pool, org, |tx| {
             Box::pin(async move {
-                // (1) Revoke ALL of the target's passkeys. RETURNING the row ids so
-                // each deletion is audited individually. The GUC armed by
-                // `with_audits` scopes this DELETE to the caller's tenant, so a user
-                // in another org matches zero rows (cross-org reset is a no-op +
-                // generic "user not found" surfaced by the REST layer's prior read).
+                let issue = new_bootstrap_issue(user_id, now, ttl);
                 let deleted = sqlx::query(
-                    r#"
-                    DELETE FROM auth_webauthn_credentials
-                    WHERE user_id = $1
-                    RETURNING id, credential_id
-                    "#,
+                    "SELECT deleted_key_id AS id, deleted_credential_id AS credential_id FROM public.auth_legacy_reset_credentials_v1($1,$2,$3,$4,$5,$6)",
                 )
+                .bind(*org.as_uuid())
                 .bind(user_id)
+                .bind(issue.credential_id)
+                .bind(hash_token(issue.token.as_str()))
+                .bind(now)
+                .bind(issue.expires_at)
                 .fetch_all(tx.as_mut())
                 .await?;
 
@@ -359,15 +371,6 @@ impl BootstrapCredentialStore {
                         ),
                     );
                 }
-
-                // (2) Mint a fresh single-use OTP. ForceReset bypasses the
-                // passkey-existence rejection (the rows were just deleted in this same
-                // transaction) and revokes any stale open code so the new OTP is the
-                // user's sole valid recovery credential.
-                let issue =
-                    issue_bootstrap_if_needed_tx(tx, user_id, org, now, ttl, IssueMode::ForceReset)
-                        .await?
-                        .ok_or(ProvisioningError::ActiveBootstrapCredentialExists)?;
 
                 events.push(
                     AuditEvent::new(
@@ -407,9 +410,9 @@ impl BootstrapCredentialStore {
     /// from the caller's VERIFIED access token at the REST layer, never from the
     /// request body, so a caller can only ever hand off to itself.
     ///
-    /// Issuance semantics ([`IssueMode::ForceReset`], but WITHOUT touching
-    /// passkeys — the REST layer enforces the step-up gate for an already-enrolled
-    /// user before calling this):
+    /// The fixed self-replacement operation preserves all passkeys. The Auth
+    /// caller verifies any required primary step-up in the same transaction:
+    ///
     ///   * A user MID-ONBOARDING (just redeemed, zero passkeys) typically already
     ///     holds one OPEN bootstrap code (the one they redeemed; it is consumed
     ///     only at passkey registration). The partial-unique
@@ -418,55 +421,69 @@ impl BootstrapCredentialStore {
     ///     mints a fresh one in its place. The original code therefore stops
     ///     working the moment a handoff is issued — at most one live code exists.
     ///   * A user ADDING A DEVICE (already has a passkey) gets a fresh handoff code
-    ///     too; `ForceReset` bypasses the passkey-existence rejection that the
-    ///     admin path uses, but does NOT delete any passkey.
+    ///     too; the self-replacement operation does not require zero passkeys
+    ///     and does not delete any passkey.
     ///
     /// The TTL is SHORT (the caller passes e.g. 5 min — distinct from the 4h admin
     /// OTP) to keep the credential-handoff window tight. The code value is NEVER
     /// audited or logged; only the issuance event (action
-    /// `auth.passkey.enroll_handoff_issued`, target = the user) is recorded, armed
+    /// `auth.passkey.enroll_handoff_issued`, target = the issued credential) is recorded, armed
     /// to the caller's tenant so the FORCE-RLS WITH CHECK accepts the new row.
     pub async fn issue_self_enroll_handoff(
         &self,
-        pool: &PgPool,
+        auth_pool: &PgPool,
         user_id: Uuid,
         org: OrgId,
         now: OffsetDateTime,
         ttl: Duration,
     ) -> Result<BootstrapCredentialIssue, ProvisioningError> {
-        with_audits::<_, BootstrapCredentialIssue, ProvisioningError>(pool, org, |tx| {
-            Box::pin(async move {
-                // ForceReset: revoke any stale OPEN code for this user and mint a
-                // fresh one, WITHOUT requiring (or deleting) passkeys. Works both
-                // mid-onboarding (an open redeemed code is superseded) and for an
-                // already-enrolled add-device user (no open code -> clean insert).
-                let issue =
-                    issue_bootstrap_if_needed_tx(tx, user_id, org, now, ttl, IssueMode::ForceReset)
-                        .await?
-                        .ok_or(ProvisioningError::ActiveBootstrapCredentialExists)?;
+        let mut tx = auth_pool.begin().await?;
+        let issue = self
+            .issue_self_enroll_handoff_in_tx(&mut tx, user_id, org, now, ttl)
+            .await?;
+        tx.commit().await?;
+        Ok(issue)
+    }
 
-                let event = AuditEvent::new(
-                    Some(UserId::from_uuid(user_id)),
-                    AuditAction::new("auth.passkey.enroll_handoff_issued")?,
-                    "auth_bootstrap_credential",
-                    issue.credential_id.to_string(),
-                    TraceContext::generate(),
-                    now,
-                )
-                .with_org(org)
-                .with_snapshots(
-                    None,
-                    Some(serde_json::json!({
-                        "user_id": user_id,
-                        "expires_at": issue.expires_at,
-                        "purpose": "passkey_enrollment_handoff",
-                    })),
-                );
-
-                Ok((issue, vec![event]))
-            })
-        })
-        .await
+    /// The caller retains the transaction containing any required primary proof.
+    pub async fn issue_self_enroll_handoff_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        user_id: Uuid,
+        org: OrgId,
+        now: OffsetDateTime,
+        ttl: Duration,
+    ) -> Result<BootstrapCredentialIssue, ProvisioningError> {
+        guard_legacy_subject_in_tx(tx, org, user_id).await?;
+        let issue = new_bootstrap_issue(user_id, now, ttl);
+        sqlx::query("SELECT public.auth_legacy_self_bootstrap_replace_v1($1,$2,$3,$4,$5,$6)")
+            .bind(*org.as_uuid())
+            .bind(user_id)
+            .bind(issue.credential_id)
+            .bind(hash_token(issue.token.as_str()))
+            .bind(now)
+            .bind(issue.expires_at)
+            .execute(tx.as_mut())
+            .await?;
+        let event = AuditEvent::new(
+            Some(UserId::from_uuid(user_id)),
+            AuditAction::new("auth.passkey.enroll_handoff_issued")?,
+            "auth_bootstrap_credential",
+            issue.credential_id.to_string(),
+            TraceContext::generate(),
+            now,
+        )
+        .with_org(org)
+        .with_snapshots(
+            None,
+            Some(serde_json::json!({
+                "user_id": user_id,
+                "expires_at": issue.expires_at,
+                "purpose": "passkey_enrollment_handoff",
+            })),
+        );
+        append_legacy_auth_audit_in_tx(tx, &event).await?;
+        Ok(issue)
     }
 
     /// Redeem a one-time OTP (bootstrap token) as a FIRST SIGN-IN.
@@ -497,65 +514,59 @@ impl BootstrapCredentialStore {
     /// without revealing whether the token was unknown, expired, or already used.
     pub async fn redeem_otp(
         &self,
-        pool: &PgPool,
+        auth_pool: &PgPool,
+        token: &str,
+        now: OffsetDateTime,
+    ) -> Result<OtpRedemption, ProvisioningError> {
+        let mut tx = auth_pool.begin().await?;
+        let redemption = self.redeem_otp_in_tx(&mut tx, token, now).await?;
+        tx.commit().await?;
+        Ok(redemption)
+    }
+
+    /// Verify-only OTP redemption on the Auth transaction that will issue the
+    /// refresh family/session. Only the outer use case commits.
+    pub async fn redeem_otp_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
         token: &str,
         now: OffsetDateTime,
     ) -> Result<OtpRedemption, ProvisioningError> {
         let token_hash = hash_token(token);
-
-        // Atomic single-use claim + expiry check in one statement. RETURNING the
-        // owning user only when the row was still unconsumed, unrevoked, and
-        // unexpired — exactly the harden-1 invariant, so a redeemed OTP can never
-        // be replayed.
-        let mut tx = pool.begin().await?;
-
-        // Resolve the credential's tenant from the token hash FIRST, then arm the
-        // GUC, THEN do the RLS-gated read. `auth_bootstrap_credentials` is FORCE
-        // RLS (migration 0035), so as the non-owner `console_rt` role a lookup-by-hash
-        // returns ZERO rows until `app.current_org` is set — but the org is what we
-        // need to set it. The narrow SECURITY DEFINER resolver
-        // `platform_resolve_bootstrap_org` (migration 0038) returns only the
-        // credential's org_id, breaking that chicken-and-egg so OTP first sign-in
-        // works for ANY tenant. A NULL means the token is unknown: keep the same
-        // generic invalid-OTP error (no row), revealing nothing.
-        let Some(org_uuid) = resolve_bootstrap_org(&mut tx, &token_hash).await? else {
-            tx.rollback().await?;
-            return Err(ProvisioningError::InvalidBootstrapCredential);
-        };
+        let org_uuid = resolve_bootstrap_org(tx, &token_hash)
+            .await?
+            .ok_or(ProvisioningError::InvalidBootstrapCredential)?;
         sqlx::query("SELECT set_config('app.current_org', $1, true)")
             .bind(org_uuid.to_string())
             .execute(tx.as_mut())
             .await?;
-
-        // Verify-ONLY: a redeem mints a session but does NOT consume the code.
-        // Single-use is enforced at passkey REGISTRATION (consume_open_credentials_tx,
-        // atomic with the passkey insert via the harden-1 pattern), so an incomplete
-        // or cancelled enrollment never burns the code — the user can re-redeem until
-        // a passkey actually sticks. Expiry/revocation are still enforced here.
-        let claimed = sqlx::query(
-            r#"
-            SELECT id, user_id
-            FROM auth_bootstrap_credentials
-            WHERE token_hash = $1
-              AND consumed_at IS NULL
-              AND revoked_at IS NULL
-              AND expires_at > $2
-            "#,
+        // Correlation is not authentication. Lock Company/users/Account before
+        // rereading and validating the exact bootstrap row under those locks.
+        let user_id: Uuid = sqlx::query_scalar(
+            "SELECT user_id FROM auth_bootstrap_credentials WHERE token_hash=$1 AND org_id=$2",
         )
         .bind(&token_hash)
-        .bind(now)
+        .bind(org_uuid)
         .fetch_optional(tx.as_mut())
-        .await?;
-
-        let Some(row) = claimed else {
-            // Unknown, expired, revoked, or already-consumed: single generic error.
-            tx.rollback().await?;
-            return Err(ProvisioningError::InvalidBootstrapCredential);
-        };
-        let credential_id: Uuid = row.try_get("id")?;
-        let user_id: Uuid = row.try_get("user_id")?;
-
-        let requires_passkey_setup = count_user_passkeys_tx(&mut tx, user_id).await? == 0;
+        .await?
+        .ok_or(ProvisioningError::InvalidBootstrapCredential)?;
+        guard_legacy_subject_in_tx(tx, OrgId::from_uuid(org_uuid), user_id)
+            .await
+            .map_err(|error| match error {
+                console_platform_auth::AuthError::InvalidStoredData(_)
+                | console_platform_auth::AuthError::Kernel(_) => {
+                    ProvisioningError::InvalidBootstrapCredential
+                }
+                other => ProvisioningError::Auth(other),
+            })?;
+        let credential_id: Uuid = sqlx::query_scalar(
+            "SELECT id FROM auth_bootstrap_credentials WHERE token_hash=$1 AND user_id=$2 AND org_id=$3 AND consumed_at IS NULL AND revoked_at IS NULL AND expires_at>$4 FOR UPDATE",
+        )
+        .bind(&token_hash).bind(user_id).bind(org_uuid).bind(now)
+        .fetch_optional(tx.as_mut()).await?
+        .ok_or(ProvisioningError::InvalidBootstrapCredential)?;
+        let requires_passkey_setup =
+            count_user_passkeys_tx(tx, OrgId::from_uuid(org_uuid), user_id).await? == 0;
 
         let audit = AuditEvent::new(
             Some(UserId::from_uuid(user_id)),
@@ -573,10 +584,7 @@ impl BootstrapCredentialStore {
                 "requires_passkey_setup": requires_passkey_setup,
             })),
         );
-        insert_audit_event(&mut tx, &audit).await?;
-
-        tx.commit().await?;
-
+        append_legacy_auth_audit_in_tx(tx, &audit).await?;
         Ok(OtpRedemption {
             user_id,
             org_id: OrgId::from_uuid(org_uuid),
@@ -598,11 +606,12 @@ impl BootstrapCredentialStore {
         user_id: Uuid,
         now: OffsetDateTime,
     ) -> Result<(), ProvisioningError> {
+        guard_legacy_subject_in_tx(tx, org, user_id).await?;
         let consumed = sqlx::query(
             r#"
             UPDATE auth_bootstrap_credentials
             SET consumed_at = $2
-            WHERE user_id = $1
+            WHERE user_id = $1 AND org_id = $3
               AND consumed_at IS NULL
               AND revoked_at IS NULL
               AND expires_at > $2
@@ -611,6 +620,7 @@ impl BootstrapCredentialStore {
         )
         .bind(user_id)
         .bind(now)
+        .bind(*org.as_uuid())
         .fetch_all(tx.as_mut())
         .await?;
 
@@ -631,7 +641,7 @@ impl BootstrapCredentialStore {
             // invisible to the tenant.
             .with_org(org)
             .with_snapshots(None, Some(serde_json::json!({ "user_id": user_id })));
-            insert_audit_event(tx, &audit).await?;
+            append_legacy_auth_audit_in_tx(tx, &audit).await?;
         }
         Ok(())
     }
@@ -1779,10 +1789,18 @@ impl PlatformProvisioner {
         // the function below (so the trail records WHAT was removed, by name).
         let slug: Option<String> = fetch_org_tx(&mut tx, org_id).await.map(|org| org.slug).ok();
 
-        let outcome_code: String = sqlx::query_scalar("SELECT platform_remove_organization($1)")
-            .bind(org_id)
-            .fetch_one(tx.as_mut())
-            .await?;
+        let outcome_code: String =
+            match sqlx::query_scalar("SELECT platform_remove_organization($1)")
+                .bind(org_id)
+                .fetch_one(tx.as_mut())
+                .await
+            {
+                Ok(code) => code,
+                Err(error) => {
+                    tx.rollback().await?;
+                    return Err(tenant_removal_error(error));
+                }
+            };
 
         let outcome = match outcome_code.as_str() {
             "removed" => TenantRemovalOutcome::Removed,
@@ -1877,7 +1895,8 @@ impl PlatformProvisioner {
         .bind(now)
         // rls-arming: ok isolated SECURITY DEFINER control-plane command; the pool has no tenant-table grants.
         .fetch_one(pool)
-        .await?;
+        .await
+        .map_err(tenant_removal_error)?;
 
         match outcome_code.as_str() {
             "removed" => Ok(TenantRemovalOutcome::Removed),
@@ -2092,6 +2111,10 @@ async fn apply_roster_tx(
     now: OffsetDateTime,
     bootstrap_ttl: Duration,
 ) -> Result<RosterImportReport, ProvisioningError> {
+    sqlx::query("SELECT public.auth_legacy_company_lock_v1($1)")
+        .bind(*OrgId::knl().as_uuid())
+        .execute(tx.as_mut())
+        .await?;
     let mut resolved_branches: BTreeMap<(String, String), Uuid> = BTreeMap::new();
     let mut seen_branch_keys = BTreeSet::new();
     for user in &users {
@@ -2386,11 +2409,19 @@ enum IssueMode {
     /// or an open credential is an ERROR (the caller surfaces a 409). This is the
     /// safe default that keeps an admin from clobbering a user who can already log in.
     RejectIfPresent,
-    /// Admin credential RESET (account-recovery escape hatch): the caller has ALREADY
-    /// revoked the user's passkeys in this same transaction, so the passkey-existence
-    /// check is bypassed and any leftover open bootstrap credential is revoked before
-    /// a fresh one is minted. Always issues a new OTP.
-    ForceReset,
+}
+
+fn new_bootstrap_issue(
+    user_id: Uuid,
+    now: OffsetDateTime,
+    ttl: Duration,
+) -> BootstrapCredentialIssue {
+    BootstrapCredentialIssue {
+        credential_id: Uuid::new_v4(),
+        user_id,
+        token: generate_bootstrap_token(),
+        expires_at: now + ttl,
+    }
 }
 
 async fn issue_bootstrap_if_needed_tx(
@@ -2401,111 +2432,30 @@ async fn issue_bootstrap_if_needed_tx(
     ttl: Duration,
     mode: IssueMode,
 ) -> Result<Option<BootstrapCredentialIssue>, ProvisioningError> {
-    sqlx::query(
-        r#"
-        UPDATE auth_bootstrap_credentials
-        SET revoked_at = $1, revoked_reason = 'expired'
-        WHERE user_id = $2
-          AND consumed_at IS NULL
-          AND revoked_at IS NULL
-          AND expires_at <= $1
-        "#,
-    )
-    .bind(now)
-    .bind(user_id)
-    .execute(tx.as_mut())
-    .await?;
-
-    // ForceReset is the account-recovery escape hatch: the caller has just revoked
-    // every passkey for this user in the SAME transaction, so a non-zero count here
-    // would be a stale read of rows already deleted — skip the lockout-preserving
-    // passkey check entirely. SkipIfPresent / RejectIfPresent keep enforcing it.
-    if mode != IssueMode::ForceReset {
-        let passkey_count: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM auth_webauthn_credentials WHERE user_id = $1")
-                .bind(user_id)
-                .fetch_one(tx.as_mut())
-                .await?;
-        if passkey_count > 0 {
-            if mode == IssueMode::RejectIfPresent {
-                return Err(ProvisioningError::UserAlreadyHasPasskey);
-            }
-            return Ok(None);
+    let issue = new_bootstrap_issue(user_id, now, ttl);
+    let outcome: String =
+        sqlx::query_scalar("SELECT public.auth_legacy_bootstrap_issue_v1($1,$2,$3,$4,$5,$6)")
+            .bind(*org.as_uuid())
+            .bind(user_id)
+            .bind(issue.credential_id)
+            .bind(hash_token(issue.token.as_str()))
+            .bind(now)
+            .bind(issue.expires_at)
+            .fetch_one(tx.as_mut())
+            .await?;
+    match outcome.as_str() {
+        "issued" => Ok(Some(issue)),
+        "has_passkey" if mode == IssueMode::RejectIfPresent => {
+            Err(ProvisioningError::UserAlreadyHasPasskey)
         }
-    }
-
-    let existing_active: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        SELECT id
-        FROM auth_bootstrap_credentials
-        WHERE user_id = $1
-          AND consumed_at IS NULL
-          AND revoked_at IS NULL
-        FOR UPDATE
-        "#,
-    )
-    .bind(user_id)
-    .fetch_optional(tx.as_mut())
-    .await?;
-    if existing_active.is_some() {
-        match mode {
-            // Reset always supersedes any stale open code: revoke it so the freshly
-            // minted OTP is the user's single valid recovery code.
-            IssueMode::ForceReset => {
-                sqlx::query(
-                    r#"
-                    UPDATE auth_bootstrap_credentials
-                    SET revoked_at = $1, revoked_reason = 'reset'
-                    WHERE user_id = $2
-                      AND consumed_at IS NULL
-                      AND revoked_at IS NULL
-                    "#,
-                )
-                .bind(now)
-                .bind(user_id)
-                .execute(tx.as_mut())
-                .await?;
-            }
-            IssueMode::RejectIfPresent => {
-                return Err(ProvisioningError::ActiveBootstrapCredentialExists);
-            }
-            IssueMode::SkipIfPresent => {
-                return Ok(None);
-            }
+        "open_exists" if mode == IssueMode::RejectIfPresent => {
+            Err(ProvisioningError::ActiveBootstrapCredentialExists)
         }
+        "has_passkey" | "open_exists" => Ok(None),
+        _ => Err(ProvisioningError::Sqlx(sqlx::Error::Protocol(
+            "invalid bootstrap issuance outcome".to_owned(),
+        ))),
     }
-
-    let credential_id = Uuid::new_v4();
-    let token = generate_bootstrap_token();
-    let token_hash = hash_token(token.as_str());
-    let expires_at = now + ttl;
-
-    // Stamp the credential with the caller-supplied tenant `org`. The caller
-    // must arm the SAME org as `app.current_org` for the transaction so the row
-    // passes the FORCE-RLS WITH CHECK on `auth_bootstrap_credentials` (KNL roster
-    // import, a newly-onboarded org, or an admin-issued OTP).
-    sqlx::query(
-        r#"
-        INSERT INTO auth_bootstrap_credentials (
-            id, user_id, token_hash, issued_at, expires_at, org_id
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-        "#,
-    )
-    .bind(credential_id)
-    .bind(user_id)
-    .bind(token_hash)
-    .bind(now)
-    .bind(expires_at)
-    .bind(*org.as_uuid())
-    .execute(tx.as_mut())
-    .await?;
-
-    Ok(Some(BootstrapCredentialIssue {
-        credential_id,
-        user_id,
-        token,
-        expires_at,
-    }))
 }
 
 /// Seed the cold-start admin's bootstrap credential inside the caller's
@@ -2531,98 +2481,34 @@ async fn seed_cold_start_if_needed_tx(
     now: OffsetDateTime,
     ttl: Duration,
 ) -> Result<Option<(Uuid, Uuid)>, ProvisioningError> {
+    sqlx::query("SELECT public.auth_legacy_company_lock_v1($1)")
+        .bind(*OrgId::platform().as_uuid())
+        .execute(tx.as_mut())
+        .await?;
     let admin_id: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        SELECT id
-        FROM users
-        WHERE display_name = 'Cold Start Admin'
-          AND roles @> ARRAY['SUPER_ADMIN']::TEXT[]
-        ORDER BY id
-        LIMIT 1
-        FOR UPDATE
-        "#,
+        "SELECT id FROM users WHERE display_name='Cold Start Admin' AND roles @> ARRAY['SUPER_ADMIN']::text[] ORDER BY id LIMIT 1 FOR UPDATE",
     )
-    .fetch_optional(tx.as_mut())
-    .await?;
+    .fetch_optional(tx.as_mut()).await?;
     let Some(admin_id) = admin_id else {
         return Ok(None);
     };
-
-    let passkey_count: i64 =
-        sqlx::query_scalar("SELECT COUNT(*) FROM auth_webauthn_credentials WHERE user_id = $1")
+    let opened_id: Option<Uuid> =
+        sqlx::query_scalar("SELECT public.auth_legacy_bootstrap_seed_v1($1,$2,$3,$4,$5)")
             .bind(admin_id)
+            .bind(Uuid::new_v4())
+            .bind(token_hash)
+            .bind(now)
+            .bind(now + ttl)
             .fetch_one(tx.as_mut())
             .await?;
-    if passkey_count > 0 {
-        return Ok(None);
-    }
-
-    // Only a still-VALID (unexpired, unconsumed, unrevoked) credential blocks
-    // re-seeding. An EXPIRED open row must not wedge cold-start forever: once the
-    // short TTL lapses the operator needs a fresh window on the next boot, and the
-    // UPSERT below revives that expired row.
-    let existing_open: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        SELECT id
-        FROM auth_bootstrap_credentials
-        WHERE user_id = $1
-          AND consumed_at IS NULL
-          AND revoked_at IS NULL
-          AND expires_at > $2
-        LIMIT 1
-        "#,
-    )
-    .bind(admin_id)
-    .bind(now)
-    .fetch_optional(tx.as_mut())
-    .await?;
-    if existing_open.is_some() {
-        return Ok(None);
-    }
-
-    let credential_id = Uuid::new_v4();
-    let expires_at = now + ttl;
-    // UPSERT on the globally-unique token_hash: a fresh OTP inserts; a previously
-    // REVOKED, unconsumed row owned by THIS admin (e.g. the migration-0021/0023
-    // coss0000 row) is revived. Any other conflict (different user, or consumed)
-    // fails the WHERE, updates nothing, and returns no row -> reported as skipped.
-    let opened_id: Option<Uuid> = sqlx::query_scalar(
-        r#"
-        INSERT INTO auth_bootstrap_credentials (
-            id, user_id, token_hash, issued_at, expires_at, org_id
-        ) VALUES ($1, $2, $3, $4, $5, $6)
-        ON CONFLICT (token_hash) DO UPDATE
-            SET issued_at = EXCLUDED.issued_at,
-                expires_at = EXCLUDED.expires_at,
-                revoked_at = NULL,
-                revoked_reason = NULL,
-                consumed_at = NULL
-            WHERE auth_bootstrap_credentials.user_id = EXCLUDED.user_id
-              AND auth_bootstrap_credentials.consumed_at IS NULL
-              AND (auth_bootstrap_credentials.revoked_at IS NOT NULL
-                   OR auth_bootstrap_credentials.expires_at <= EXCLUDED.issued_at)
-        RETURNING id
-        "#,
-    )
-    .bind(credential_id)
-    .bind(admin_id)
-    .bind(token_hash)
-    .bind(now)
-    .bind(expires_at)
-    // The platform admin lives in the platform sentinel org; the credential
-    // carries it so the FORCE-RLS WITH CHECK (org_id = GUC) accepts the row.
-    .bind(*OrgId::platform().as_uuid())
-    .fetch_optional(tx.as_mut())
-    .await?;
-
     Ok(opened_id.map(|credential_id| (admin_id, credential_id)))
 }
 
 /// Resolve a bootstrap credential's tenant from its token hash, via the narrow
 /// SECURITY DEFINER resolver `platform_resolve_bootstrap_org` (migration 0038).
 ///
-/// `auth_bootstrap_credentials` is FORCE RLS, so the app's non-owner `console_rt`
-/// role cannot read a credential row by hash until `app.current_org` is armed —
+/// The bound Auth login cannot read a credential row by hash until the
+/// legacy Company is resolved and `app.current_org` is armed —
 /// but the org is exactly what we need to arm it. This resolver returns ONLY the
 /// org_id (nothing else), breaking that chicken-and-egg without widening any read
 /// surface. Returns `None` for an unknown hash.
@@ -2640,14 +2526,16 @@ async fn resolve_bootstrap_org(
 
 async fn count_user_passkeys_tx(
     tx: &mut Transaction<'_, Postgres>,
+    org: OrgId,
     user_id: Uuid,
 ) -> Result<i64, ProvisioningError> {
-    Ok(
-        sqlx::query_scalar("SELECT COUNT(*) FROM auth_webauthn_credentials WHERE user_id = $1")
-            .bind(user_id)
-            .fetch_one(tx.as_mut())
-            .await?,
+    Ok(sqlx::query_scalar(
+        "SELECT COUNT(*) FROM auth_webauthn_credentials WHERE user_id = $1 AND org_id = $2",
     )
+    .bind(user_id)
+    .bind(*org.as_uuid())
+    .fetch_one(tx.as_mut())
+    .await?)
 }
 
 /// Admin-issued OTP length and alphabet.

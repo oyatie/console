@@ -24,7 +24,7 @@ use console_benefit_domain::BenefitCategory;
 use console_kernel_core::{
     BenefitCatalogItemId, BranchId, BranchScope, ErrorKind, KernelError, SiteId, TraceContext,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, Feature, Principal, authorize_capability, authorize_org_wide,
 };
@@ -80,20 +80,23 @@ pub const BENEFIT_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct BenefitRestState {
     store: PgBenefitCatalogStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 impl BenefitRestState {
     #[must_use]
-    pub fn new(store: PgBenefitCatalogStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(
+        store: PgBenefitCatalogStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
 
 pub fn router(state: BenefitRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(
@@ -489,7 +492,7 @@ async fn principal_from_headers(
     state: &BenefitRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -501,6 +504,7 @@ async fn principal_from_headers(
         .map_err(|error| match error {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",
@@ -511,6 +515,11 @@ async fn principal_from_headers(
                     "token is not authorized for this benefit route",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

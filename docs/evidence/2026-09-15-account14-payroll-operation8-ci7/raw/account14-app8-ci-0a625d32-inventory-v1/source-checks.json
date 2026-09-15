@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "count": 10,
+  "checks": [
+    "five separate exact supervised App steps",
+    "new steps preserve exact executor and failure condition",
+    "removing only five steps restores entire parsed workflow",
+    "original thirteen supervisor commands and order exact",
+    "scripts/lib/recovery-test-invocations.mjs: only five roster lines added",
+    "tools/buck/test_preparation_wiring.py: only five roster lines added",
+    "supervisor regression only title and literal union count grow",
+    "preflight only five command strings and five proof entries added",
+    "preflight test retains every control and grows exact counts",
+    "baseline changes only three growth counts and App explanation"
+  ]
+}

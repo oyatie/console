@@ -1,0 +1,9 @@
+id,scope,status,concrete_exit
+W04b-01,AI1/Cedar/source scope guards,OPEN,Exact schema/facts/field-derived disclosure/actor FK and complete writer enrollment; runtime-role SQL ACL and no title grants
+W04b-02,Common draft/attempt/action receipt integration,OPEN,Physical typed DTO/SQL/lock/recovery ports; object/action registration; canonical fingerprint vectors;10 NP1 command nested source DTOs
+W04b-03,Payroll source and temporal owners,OPEN,Historical Employment and scheduled attendance reader/clock harness; artifact custody and source qualification/assessment admit-verify-revoke API/SQL
+W04b-04,PC1/AC1/PR1 and workflow/Group integration,OPEN,"Exact schema/API/participating owner ports for remaining screen commands, review reuse, own publication, assignment/capacity, Group children; complete compatible lock keys"
+W04b-05,Migration and measurable harness,OPEN,Exact DDL/backfill/ACL/compatibility target and protected tests; resource envelope and performance thresholds/fixtures
+W05,Current authority and whole-design acceptance,OPEN,Reconcile required authority scope; final immutable integrated candidate4independent rounds/consensus and explicit design SHA approval
+W06,Executable tests before implementation,NOT_STARTED,"Approved-design tests, independent review and explicit test SHA; true failing assertion and lane admission"
+PILOT/FULL,Production and complete Console scope,SEPARATE_OPEN,Deployment/legal/operational proof and all HR/common/Foundry feature inventories remain independent

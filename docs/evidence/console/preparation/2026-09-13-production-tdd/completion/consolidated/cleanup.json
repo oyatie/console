@@ -1,0 +1,10 @@
+{
+  "profile": "console-design30",
+  "scope": "Only isolated preparation VM; no unrelated container/VM or main-worktree mutation",
+  "readback": "Escalated colima status showed running; docker ps returned zero running containers. Sandbox-only status was misleading because socket access was denied.",
+  "command": "colima stop --profile console-design30",
+  "exit_code": 0,
+  "completion": "2026-09-14T06:47:29-04:00",
+  "result": "The instance colima-console-design30 has shut down",
+  "retained": "Review evidence, fixture sources and isolated build caches retained; no data volume deletion."
+}

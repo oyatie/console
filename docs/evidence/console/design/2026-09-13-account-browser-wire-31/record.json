@@ -1,0 +1,153 @@
+{
+  "status": "DESIGN_REVIEW_CONSENSUS_AWAITING_REVISION_BOUND_USER_APPROVAL",
+  "classification": "evidence",
+  "owner": "/root",
+  "base_sha": "a0ec77c04b5da572c7974c82601f29660977809d",
+  "reviewed_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "inherited_approved_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "source_tree_contract": "source-identities.json pins every regular blob in reviewed candidate; packaging adds review/proof metadata only, not substantive changes",
+  "review_rounds": 4,
+  "consensus_rounds": [
+    3,
+    4
+  ],
+  "review_identities": [
+    "/root/fresh29_security",
+    "/root/fresh29_operations",
+    "/root/fresh29_workflows"
+  ],
+  "product_tests_executed": 0,
+  "implementation_admitted": false,
+  "material_refinement_requires_approval": true,
+  "remaining_holds": [
+    "BW31 revision-bound approval",
+    "Complete Account executable test candidate, independent review and test SHA approval",
+    "Real RED implementation admission and implementation/review",
+    "Browser/crypto/migration/runtime/rollback/load operating-envelope proof",
+    "Existing-account reacceptance design and populated context acceptance work",
+    "Production exposure and qualified legal content/compliance authority"
+  ],
+  "main_workspace": "94 staged files preserved; main import evidence regular blobs only, unpublished",
+  "files": [
+    {
+      "path": "acceptance-candidates.json",
+      "bytes": 7366,
+      "sha256": "c1f5604a505dd27cff3a6090b892e78ddd85a99a52697b2983f82638e09de711"
+    },
+    {
+      "path": "action-registrations.json",
+      "bytes": 530,
+      "sha256": "424ebb76f61829d458ba2b2344c2e9e608b69b6ead08954c0b32325f704c13d4"
+    },
+    {
+      "path": "approval-request.txt",
+      "bytes": 1731,
+      "sha256": "59d0690f0b1da1c1cbeb7595c3c2b5c722c9ac92382324b0b2e05c841d030e6b"
+    },
+    {
+      "path": "contract.txt",
+      "bytes": 25196,
+      "sha256": "f73a36e813041f7498c90fde5a3fb97cc056a85d823af2ba81c00d53b33b3298"
+    },
+    {
+      "path": "dependency-identities.json",
+      "bytes": 2162,
+      "sha256": "7bd93765adcb20e349a8e18c0b9260a3e6476005b868f33308453710de0c87a4"
+    },
+    {
+      "path": "design-decisions.txt",
+      "bytes": 1598,
+      "sha256": "5ff9e6797ff240a96dea0399b3f0c94007f7e899ca31c9ce6a45082e7df6083a"
+    },
+    {
+      "path": "entry.json",
+      "bytes": 2118,
+      "sha256": "fdd454eaa7e7da460001132ecc934e7423e4c0ab65328d5b79bb8f05d57f3bf0"
+    },
+    {
+      "path": "examples.json",
+      "bytes": 8882,
+      "sha256": "4a1f66951611949f47ec0cfc0ae507abac74aa50ef86fbd453fe147e603936ed"
+    },
+    {
+      "path": "experiments.json",
+      "bytes": 3208,
+      "sha256": "a0487c990aeebb393d4f77ca6ce324e925aa1761948141dae513d5b13971d91f"
+    },
+    {
+      "path": "fixtures/artifact-index.json",
+      "bytes": 500,
+      "sha256": "3da96cdb0b108d2bea97f8e4b2e8f389bcf1e0dce75e74718bacd7a8008fe682"
+    },
+    {
+      "path": "fixtures/manifest.json",
+      "bytes": 554,
+      "sha256": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52"
+    },
+    {
+      "path": "fixtures/privacy.txt",
+      "bytes": 115,
+      "sha256": "4254fa64b821906ac2995f0829590ca151540929b05594a023afc99d228c23d2"
+    },
+    {
+      "path": "fixtures/service.txt",
+      "bytes": 102,
+      "sha256": "d58e7fdecdb5cf68640ae805ede9ce5613ace72bf9f92b9b9ccd0d2729646f2c"
+    },
+    {
+      "path": "inherited-sources.json",
+      "bytes": 2191,
+      "sha256": "dd9f8a446448f9c9918c1f48affa5b33b8eaafb2aaf6ef6131e02c233dc8ba42"
+    },
+    {
+      "path": "reviews/round-1.json",
+      "bytes": 1651,
+      "sha256": "8d84d11fb5b04875b7224111ea05a06f438396b2b4f546ee021860ea85816979"
+    },
+    {
+      "path": "reviews/round-2.json",
+      "bytes": 1285,
+      "sha256": "3a3b14ad41c16131c2a0cbded5d088420f0a57f0df72c41cb3712485af913a97"
+    },
+    {
+      "path": "reviews/round-3.json",
+      "bytes": 1141,
+      "sha256": "d401af4220cc250385c8b3b66edd8dd52bbd60f4cd5e3bf3747722dc53b43699"
+    },
+    {
+      "path": "reviews/round-4.json",
+      "bytes": 1360,
+      "sha256": "d66cade1dd9b9e635d0a73c9b89aaa5fd4eb8d8ecb58de8b1e6faeade673a90f"
+    },
+    {
+      "path": "routes.json",
+      "bytes": 2765,
+      "sha256": "29158432a5673571327718f04c2a53acd1406ade1bfcfdc02bf8d8992bc30c27"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 4087,
+      "sha256": "fe23f785d44d42f5e14a546f6731c450d3e70dbd6e3dab3990a7547a17223a71"
+    },
+    {
+      "path": "storage-refinement.json",
+      "bytes": 9767,
+      "sha256": "e1cd2e84ebcdea3ba215ca332a21475e56c8022db02774eb580abeca8cdfbb1f"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1309,
+      "sha256": "af6194114999068396eb5e61236e05936b321041b4ecf8361bfbf86ae2df301e"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 3276,
+      "sha256": "ed91f81df683ba75f012b1195e3eb6936ec6df3366ab7ee35cb091d23b766ea2"
+    },
+    {
+      "path": "wire.schema.json",
+      "bytes": 17599,
+      "sha256": "e89b185f2e1d94c0a04265113b7ef92b2932422949457d5ad4545f34c0b60075"
+    }
+  ]
+}

@@ -14,6 +14,16 @@
 !third-party/rust/vendor
 !third-party/rust/vendor/**
 
+# Fixed operator image inputs only; never send ops/.dev-secrets or inventories.
+!ops
+ops/**
+!ops/account-custody.Dockerfile
+!ops/postgres-finalize-account-custody.sh
+!ops/postgres-finalize-account-custody.sql
+!ops/postgres-finalize-account-credentials.sql
+!ops/postgres-install-durability-observer.sql
+!ops/account-custody-migrations.sha384
+
 # Prune heavy / irrelevant paths back out of the re-included trees.
 backend/target
 backend/.sqlx/query-*.tmp

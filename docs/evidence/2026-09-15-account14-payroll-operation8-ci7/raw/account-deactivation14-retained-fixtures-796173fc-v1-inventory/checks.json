@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "checks": [
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs: exact796 base/current binding",
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs: Rustfmtstdin parse/format pass",
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs: removing only fixture amendment recovers every original byte",
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs: same3test names",
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs: exact796 base/current binding",
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs: Rustfmtstdin parse/format pass",
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs: removing only fixture amendment recovers every original byte",
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs: same3test names",
+    "git apply --check /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+    "git apply  /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+    "git apply --reverse --check /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+    "git apply --reverse /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+    "applied postimages and inverse originals exact"
+  ],
+  "count": 13,
+  "rustfmt_invocations": 2,
+  "private_git_apply_invocations": 4,
+  "test_names": {
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": [
+      "replaying_deactivate_writes_no_second_transition_audit_row",
+      "replaying_deactivate_revokes_a_racing_credential",
+      "replaying_activate_writes_no_second_transition_audit_row"
+    ],
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": [
+      "subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role",
+      "bump_and_get_subject_authz_versions_via_store",
+      "update_user_delta_scopes_the_preview_receipt_gate"
+    ]
+  },
+  "source_test_count": 6,
+  "compiler_discovered": 0,
+  "rust_executed": 0,
+  "cargo_invocations": 0,
+  "database_commands": 0,
+  "integration_writes": 0
+}

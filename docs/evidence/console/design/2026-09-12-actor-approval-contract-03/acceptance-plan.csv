@@ -1,0 +1,57 @@
+id,scenario,given,required_outcome,contract_refs
+N01,퇴사 후 정상 로그인·발급,A Employment 종료; 업무 역할 0개; 개인 passkey 보유,같은 계정/key로 개인 로그인 성공; A 업무 실패; 과거 A기록 선택→적격 증명서 발급/원 receipt·artifact 재조회,"EC1.3,EC1.4,EC1.9"
+N02,마지막 고용 종료,모든 Employment 종료,현재 고용/ACTIVE CompanyActor 없이 개인 로그인·본인 기록 접근; 새 직원계정 생성 불필요,"EC1.1,EC1.4"
+N03,다른 업무 보존,A퇴사; B의 독립적으로 유효한 업무권한 존재,A업무권한 회수; B별도권한 정상; 개인credential수/key 동일; 글로벌 session sweep 없음,EC1.3
+N04,공통 계정·자원 정책,같은 Account로 본인기록과 별도 허용된 업무에 접근; 이전 업무권한 회수,진입경로나 내부/외부 명칭에 무관하게 현재 허용 자원·Action만 성공; 새 Account토큰을 legacy handler의 법인권한으로 오인하지 않음,"AM1.2,AM1.8,EC1.4"
+N05,회사 관리자 계정 탈취 차단,Company UserManage/SubordinateUserCreate 보유 관리자,개인 계정 deactivate/reset/OTP발급·다른 회사권한 회수 불가; Company업무철회만 허용,"EC1.1,EC1.2"
+N06,계정 보안 정지·복구,실제 account-security authority가 침해계정 정지,개인로그인/세션 차단 및 증거보존; 검증된 복구로 동일계정 회복; 퇴사처리와 다른경로,"EC1.1,EC1.7"
+N07,사내 SSO만 있던 퇴사자,기업메일/SSO 이용 불가; 개인수단 사전등록 못함,본인 재검증을 통한 계정복구 요청 지속; 재직/회사관리자의 새계정 생성 요구 없이 복구,"EC1.2,EC1.7"
+N08,개인 기록 IDOR,다른사람 Employment/certificate UUID 또는 다른tenant 참조,기록·존재·급여·동료정보 노출/발급 없음; 본인 과거기록은 정상,"EC1.4,EC1.7"
+N09,과거기록 증명서 의미,ENDED Employment로 현재 재직 증명 type 선택,형식상 현재재직 사실을 만들지 않음; 적합한 과거이력 type·근거만 발급 가능,EC1.5
+N10,발급 중 원천 정정·응답유실,preview후 source/template 변경; 별도 사례 issuecommit후 응답유실,전자는 새 사실 검토; 후자는 동일issue/receipt/artifact 회복; enqueue를 발급으로 표시하지 않음,"EC1.5,EC1.6"
+N11,발급 담당 퇴사,담당변경/미배정·source보완 필요,현재 적격역할로 요청연속성 보존; 부재 시 담당연결필요 상태; Console지원이 issuer인척 발급하지 않음,EC1.6
+N12,재입사,퇴사 후 동일인이 재입사,동일계정과 과거증명서 유지; 새Employment/권한 검증; old권한/승인/token 자동부활 없음,EC1.3
+N13,법인 저장소 삭제 의존성,기존 법인 profile/evidence 의존성이 남음; 별도 Account-only 등록도 존재,미이전 의존성이 있으면 법인 hard-delete 차단; Account·credential 보존; 새 계정에 dummy Company/users 불필요,"AM1.3,EC1.8"
+N14,타법인 실저장 양성,B관계 Account + A CompanyActor + 명시된 A정책grant + 검증subject,원 account UUID로 A wage/run/approval/receipt commit·readback; 가짜 A users row와 B payroll 효과 없음,"AI1.2,AI1.3,AI1.8"
+N15,anchor는 권한 아님,"ACTIVE anchor, payroll grant 없음",관련 읽기/쓰기 실패; grant 추가 후 현재권한으로만 성공,"AI1.1,AI1.3"
+N16,동일인 다른계정·나중 merge,동일subject alias; 다른subject였다가 pending중 merge,SOD거부; pendingproof stale·재검토; old완료receipt는 보존/후속 integrity hold,"AI1.4,AI1.6"
+N17,등록 경쟁/회수,같은 expected binding version으로 상충등록; 계정/Group/targetscope회수,한 current binding 또는 conflict suspension; 회수commit뒤 oldproof new효과불가; ownhistorical권리와work회수 분리,"AI1.5,AI1.6"
+N18,급여 결정·실행허가 구분,"S/D/Q/G actor matrix, 추가gate 유무","기본 S≠D; gate있으면 Q=D,Q≠G 및 명시policy; G허가만으로 payroll승인상태변경 없음","AC1.1,AC1.3"
+N19,승인 대상 바꿔치기,type-only gate / 다른submission / 변경reason·amount·command,owner가 정확한효과digest 불일치 거부; 소비·급여효과없음; 원결과replay 별도,"AC1.2,AC1.4"
+N20,승인완료 정정 양성,APPROVED/nonpayable/noexternal effect; 같은period 정정,새 STAGED successor; 이전 SUPERSEDED·승인이력보존; fresh계산/제출/독립결정 요구,AC1.5
+N21,정정 동시성/응답유실,두 distinct supersede commands 경쟁; 별도 samecommandlostreply,current successor 하나; loser conflicts; 동일명령은 같은 predecessor/successor receipt; orphan없음,AC1.6
+N22,정정 vs 지급/발급 경합,같은 predecessor에 schedule/issue/payable change와 supersede 경쟁,"공유fence로 하나의유효순서; 외부commit이 먼저면 정정거부, 정정먼저면 predecessor 후속효과거부",AC1.6
+N23,잘못된 승인원천 회수,"approved old tax source revoked, 새 correction evidence 적격",old source가 invalid여도 정정시작 가능; 새prepare에는 유효source 요구; 영구차단루프 없음,AC1.6
+N24,대체안 반려,successor REJECTED,그 successor에서 수정/재제출 가능; old승인안 부활/이력삭제 없음; 집계 active leaf만,AC1.5
+N25,Account 보안과 업무 counter 분리,login originCompany=A이고 유일한Employment도A; 개인refreshfamily존재,A work_generation만 변경; old A업무토큰불가; account-security counter/개인refresh 유지; 모든roles없어도 같은계정 로그인/발급가능,"EC1.3,EC1.4"
+N26,회사 없는 지원자 가입,Account 외 Company/users/Employee/Employment/work-role row 없음,자기 소유 인증으로 로그인·허용된 지원서 제출/본인상태 조회; dummy row·급여수준 인간검증 요구 없음,"AM1.3,AM1.4"
+N27,지원→입사→퇴사 연속성,동일 Account의 지원서·검증된 채용·근로관계 종료,같은 계정으로 전환 없이 허용 업무와 본인증명서 이용; 구권한 자동부활 없음,"AM1.4,AM1.5,EC1.3"
+N28,지원자 데이터 경계,자기 지원서 계정이 평가/타인 지원/직접채용 API 호출,공개 허용된 본인상태만 조회; 내부평가·동료정보·self-hire 거부; 기존 recruiting owner 유지,AM1.4
+N29,내외부 명칭 무권한,명칭만 internal/external/applicant/vendor로 변경,실제 관계·정책 불변이면 권한/객체 의미 불변; 현재 허용된 업무를 external 명칭으로 차단하지 않음,"AM1.1,AM1.8,AM1.9"
+N30,메뉴·직접접근·필드 동일 경계,허용/불허 업무 및 민감정보; direct URL/API/search/notification/attachment/export 호출,허용 DTO만 전달; 메뉴·캐시가 권한증명이 되지 않음; 집계차분도 누출하지 않음,AM1.8
+N31,업무 범위 변경과 진행중 화면,A의 일부 업무권한 회수; B별도권한 유지; 열린 초안 존재,A 민감 props/cache 제거·서버 거부; 여전히 허용된 초안/B권한 보존; 원 결과는 현재 조회권한으로 확인,"AM1.8,EC1.3"
+N32,향후 한정 외부업무,미래 engagement 초대의 수신자/대상/행위/만료 변경,예정 oracle: 범위 밖 접근 거부·만료 후 효과 금지·Account 보존; 미래 vendor 구현/테스트 완료 주장 없음,AM1.6
+N33,대체된 안의 과거 staging 재시도,승인안 supersede 후 import 변경; 이전 create/drain 같은 명령 재시도,원 roster/source/검증/계산/승인 필드 불변; 역사 결과만 replay; 다른 provenance conflict; 새 생성으로 redirect 없음,"AC1.5,AC1.6"
+N34,직급 없는 회사,사전정의 직함/직급/직업역할 0개; 고객정의 업무관계와 정책 존재,지원·검토·결재·증명서 및 허용된 화면 정상; HR/EXEC/SITE_MANAGER enum/seed 불필요,"AM1.9,AI1.9,AC1.8"
+N35,다른 운영체계·같은 기능,A/B가 다른 조직·책임 객체를 정의; 같은 Action 수행권한 명시,회사마다 코드수정이나 고정직급 매핑 없이 같은 owner Action 사용; Company 범위 격리,AM1.9
+N36,명칭과 권한 독립,직함 이름만 변경; 별도 사례 같은직함 다른권한/다른직함 같은권한,이름변경은 권한/화면 불변; 실제 scope/policy만 허용 차이를 결정; 승진 label로 자동권한상승 없음,AM1.9
+N37,정책·배정 변경을 통한 자기승격 차단,일반사용자가 직무/배정/정책 객체를 수정해 범위 밖 급여권한 획득 시도,owner·현재위임한도·검토/게시 정책으로 차단; preview 무효과; 허용된 변경만 버전·감사·회수 반영,AM1.9
+N38,다중 배정 범위 결합,A급여 조회와 B인원조회만 허용,A급여/B인원은 허용; B급여는 거부; 행위와 scope를 cross-product 합치지 않음,AM1.10
+N39,특정인 보수 제한,급여묶음 보유·보호대상 compensation forbid 적용; 일반 직원정보 읽기는 허용,보호대상 금액/read/edit/export 거부; 허용된 인사필드/다른 급여는 정상; 다른 bundle/context로 우회 불가,AM1.10
+N40,부서·사업장과 유효일,지정된 A법인 scope 및 explicit descendants; B법인 같은주소; 전보일 도래,지정관계만 조회; 같은주소 B나 미포함 하위조직 자동노출 없음; 전보 뒤 현재권한과 과거 case권한 별도평가,AM1.10
+N41,비밀정보 파생·역산,전체합계와 visible합계·단일인필터·sheet수식·알림·export 조합,보호금액을 노출하는 결과 차단; 부분합계를 전체로 오인시키지 않음; 권한 없는 원값 브라우저 미전송,"AM1.10,AM1.12"
+N42,부분 열람 급여 완료 의미,준비/결정자가 일부 금액을 읽을 수 없음,허용 작업 진행보존·나머지 적격자/blocked로 연결; 누락 계산/맹목승인/whole approved 금지; 세부 분할결정 계약은 OPEN,"AM1.10,AC1.9"
+N43,Cedar forbid 오류,관련 forbid에서 required fact 누락 오류; 다른 permit은 true,Cedar diagnostics 오류를 앱경계에서 거부; skip-on-error Allow를 노출/실행 허가로 쓰지 않음,AM1.12
+N44,허용·금지·예외 의미,동시에 matching permit/forbid; 별도 정책으로 검증된 한정 예외,금지가 우선; 추가 permit/admin 명칭으로 우회 불가; 적법한 정책변경/예외 조건만 영향·감사; 기본 미허용과 금지 구분,"AM1.10,AM1.12"
+N45,유효권한 미리보기,정책 편집자는 변경권한만 있고 대상 급여 읽기는 없음,허용된 정책영향/diff만 표시; impersonation/급여 노출/미리보기 자체 권한부여 없음,AM1.11
+N46,엔티티와 정보의 별도 공개,같은 인사카드 read 허용; 보수/계좌 등 일부 필드 불허,동일객체/컴포넌트에 허용필드만 전달; 엔티티 자체 불허면 이름/링크/존재도 누출 없음,AM1.13
+N47,제한·빈값·오류 구분,필드존재는 공개 가능; 별도 필드존재조차 비공개,전자는 허용된 제한 표시를 빈값과 구분; 후자는 hidden key/section 미노출; SSR/props에 원값 없음,AM1.13
+N48,부분 수정의 보존,숨겨진 보수값이 있는 카드에서 허용 연락처 수정; 별도 unauthorized 보수입력,허용 수정은 숨긴값 유지; omitted를 null로 취급하지 않음; 불허필드 포함 명령은 실패/무효과,AM1.13
+N49,관계·역사로 우회,현재 인사카드는 허용; 연결계약/급여thread/과거revision의 비밀값 불허,관계·대상·history/diff/receipt도 현재정보권한 적용; label/count/hash/시각으로 비밀 누출 없음,AM1.13
+N50,채팅 기밀 링크 수신자별 표현,sender 객체권한 있음; recipient thread권한만 있음,대화는 읽되 객체 제목/thumbnail/민감필드/token 미노출; 권한 있는 수신자는 허용 카드 정상,AM1.14
+N51,링크 전달·검색·알림 경계,권한 없는 사람에게 quote/forward/pin; 알림·search·외부메일 생성,변형된 연락경로도 객체권한 미부여; private metadata/token 복사 없음; 외부 scanner 무효과,AM1.14
+N52,공유는 별도 Action,객체 read만 있음; 별도 share허용자와 승인 recipient/expiry 존재,read만으로 grant 생성 거부; 허용자는 narrow bound share; onward 확대·만료우회 거부,AM1.14
+N53,읽기전용에서 상태변경 시도,view허용/execute불허; 버튼조작·직접 API·server function·sheet 호출,owner에서 거부; 객체/승인소비/업무완료 모두 무효과; 허용된 read는 정상,AM1.15
+N54,preflight 뒤 권한변경,준비 성공 후 권한회수/자원버전 변경; 이후 execute,current owner guard가 실패; stale witness로 효과없음; 보존된 허용입력과 적격 회복 경로,AM1.15
+N55,프리뷰·GET 무효과,브라우저 prefetch 또는 email scanner가 action/entity 링크 GET,업무변경/공유grant/결재 없음; access telemetry만 별도권한 경계,AM1.15
+N56,일괄·자동화 우회 차단,읽기 사용자 또는 일부 target만 허용된 actor가 worker/bulk 경유,승인된 정확 target/행위만 가능; 고권한 worker로 scope확대 없음; 상세 부분성공/불명결과 B03/B04 OPEN,AM1.15

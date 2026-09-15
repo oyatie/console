@@ -1,0 +1,84 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_21817" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_21817, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[92m   Compiling[0m console-app v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/app)
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 1m 36s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+cargo-postgres: === app-auth-rest-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_fence_transport_ -- --test-threads=1
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 1.13s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+
+running 4 tests
+test account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence ... FAILED
+test account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage ... FAILED
+test account_fence_transport::account_fence_transport_same_database_real_startup_control ... ok
+test account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential ... FAILED
+
+failures:
+
+---- account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence stdout ----
+
+thread 'account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence' (31568628) panicked at app/tests/auth_rest/account_fence_transport.rs:88:21:
+AUTH_DATABASE_BINDING: another valid database hid the persisted fence
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage stdout ----
+
+thread 'account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage' (31569453) panicked at app/tests/auth_rest/account_fence_transport.rs:352:9:
+AUTH_POOL_RETAINED: real startup must retain an authenticated auth backend
+
+---- account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential stdout ----
+
+thread 'account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential' (31575065) panicked at app/tests/auth_rest/account_fence_transport.rs:278:18:
+AUTH_POOL_CREDENTIAL: startup ignored the invalid auth credential
+
+
+failures:
+    account_fence_transport::account_fence_transport_other_database_cannot_silently_report_absence
+    account_fence_transport::account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage
+    account_fence_transport::account_fence_transport_startup_consumes_configured_auth_credential
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 144 filtered out; finished in 24.49s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`
+cargo-postgres-timing: {"name": "app-auth-rest-pg", "package": "console-app", "seconds": 34.181, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-auth-rest-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

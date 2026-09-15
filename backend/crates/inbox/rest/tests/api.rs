@@ -106,8 +106,14 @@ fn inject_allow_credential(
     serde_json::from_value(value).unwrap()
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn inbox_receipt_flow_is_person_scoped_and_passkey_gated(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -140,8 +146,14 @@ async fn inbox_receipt_flow_is_person_scoped_and_passkey_gated(pool: PgPool) {
     .unwrap();
     let rt_pool = runtime_role_pool(&pool).await;
     let service = router(
-        InboxRestState::new(PgInboxStore::new(rt_pool), Some(verifier))
-            .with_passkey_step_up(Some(passkey_service())),
+        InboxRestState::new(
+            PgInboxStore::new(rt_pool),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
+        )
+        .with_passkey_step_up(Some(passkey_service())),
     );
     let token_a = issue_token(
         private_pem.as_bytes(),
@@ -280,8 +292,14 @@ async fn inbox_receipt_flow_is_person_scoped_and_passkey_gated(pool: PgPool) {
     assert_eq!(anon.status(), StatusCode::UNAUTHORIZED);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn inbox_payslip_filter_is_person_scoped_and_not_receipt_gated(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -354,8 +372,14 @@ async fn inbox_payslip_filter_is_person_scoped_and_not_receipt_gated(pool: PgPoo
     );
     let rt_pool = runtime_role_pool(&pool).await;
     let service = router(
-        InboxRestState::new(PgInboxStore::new(rt_pool), Some(verifier))
-            .with_passkey_step_up(Some(passkey_service())),
+        InboxRestState::new(
+            PgInboxStore::new(rt_pool),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
+        )
+        .with_passkey_step_up(Some(passkey_service())),
     );
     let payslip_id = payslip.id.to_string();
     let legal_id = legal.id.to_string();

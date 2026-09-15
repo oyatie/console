@@ -1,0 +1,24 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Console 통합 설계 검토28</title><style>body{font:16px/1.8 system-ui,sans-serif;color:#171717;background:#fafafa;max-width:1000px;margin:40px auto;padding:0 24px}h1{font-size:26px}pre{white-space:pre-wrap;font:inherit}a{color:#174b87}ul{columns:2}li{break-inside:avoid;overflow-wrap:anywhere}@media(max-width:700px){ul{columns:1}}</style><h1>Console 통합 설계 검토28</h1><pre>콘솔 첫 구현 통합 설계 후보28
+이 문서는 검토 요청이며 승인·구현·성능 입증 기록이 아니다. 전체 제품 목표는 Foundry/Ontology/Actions/Fusion 상당 기능을 갖춘 일반 객체 기반 업무 플랫폼이다. 첫 구현은 기존 합의대로 비지급 급여의 실제 입력→준비→근태 마감→계산→부분 공개 검토→정정→본인 공개/문의와 이에 필요한 공통 Account·정책·초안·업무 인계·전사 진행을 연결한다. 메일·메신저·캘린더·협업 시트와 전체 HR 상세 stories는 제품 목표에서 제거하지 않으며 후속 범위로 명시한다.
+
+1. 이번에 통합한 내용
+기존03-26의 행동 계약과11 화면 상태를 유지하면서, 모호한 입력/결과/참조를 닫힌 타입과 실제 소유자에 연결했다. 입력 다시 열기의 누락을 V04/V07에 추가했다. 초안은 공통 객체 revision을 사용하고 실제 업무 결과는 해당 domain owner가 만든다. 전달 사유는 별도 파이프가 아니며 일부 분담은 선택한 업무 단위 각각의 책임 이전이다. Account는 퇴사와 무관하게 유지되고 접근은 현재 Cedar resource/field/action 판단에 따른다.
+
+2. 동시성 선택과 한계
+첫 테스트 대상은 기존 PostgreSQL 업무 소유자/원자적 커밋/RLS 구조다. 이것은 MVCC 우월성이나100만 명 대응을 입증하지 않는다. 불필요한 배타 핀 잠금은 공유 admission+배타 lifecycle 후보로 바꾸고, 부재 predicate·공동 제약·권한 철회·hotkey·unknown 결과를 같은 oracle로 비교한다.2천/5만/100만 명은 데이터 규모이며 동시 편집자와 분리한다. 처리량은 아직 측정하지 않았다.
+
+3. 증거 보존과 수명
+원본과 파생 복사본을 정확히 식별한다. 준비·봉인·게시·채택·핀·결재 소비·결과 영수증이 실제 소유자 트랜잭션에 연결된다.2천 명의 극단적 입력은 직접 확장만으로128MiB/65,536node 한도를 넘으므로, 안정적인 자식 핀을 가진 좁은 immutable inventory를 사용한다. 보존 closure는 현재 source 사용 적합성과 별개다. 보존 정책은 실제 객체/qualified basis와 명시적 기간을 입력으로 받고 법정 기간을 추측하지 않는다.
+
+4. 운영·복구·정보흐름
+외부 삭제 권한은 단일 issuer만 가지며 독립 holder가 dispatch/stop 순서를 기록한다. 중지 요청과 실제 중지 완료를 구분하고, HEAD에서 bytes가 보인다는 이유만으로 이전 DELETE가 끝났다고 판단하지 않는다. 복구는 현재 독립 timeline·authority·journal·issuer 상태를 확인한 뒤 재개한다. 동기 복제된 성공 영수증과 응답이 없었던 command의 부재 증명도 다르다. SSR뿐 아니라 hydration, live update, 오류, 로그, 다운로드, network sink까지 통합 projection 대상으로 정했다. Verus는 실제 실행 함수의 관계적 정보흐름 검증을 목표로 하며 OS/DB/crypto/timing까지 자동 보장한다고 주장하지 않는다.
+
+5. 읽는 순서
+screen-integration.txt와action-bindings.csv로 사용자 입력/결과를 확인하고,object-owner-custody-contract.txt→physical-contract.txt/storage-mapping.json→operations-recovery-information-flow.txt→concurrency-protocol.txt/run-manifest.json 순으로 검토한다. 상세 타입은4개 schema 파일, 소유자55개 등록은owner-bindings.json, 기존 위험 경로는source-sink-map.csv와actor-migration.csv에 있다. source-identities.json은 기존 근거218개 regular Git blob에 고정한다. 오래된 문서의 OPEN/선택 문구가 상충하면28이 명시적으로 바꾼 항목만 대체하고 나머지는 기존 구체 행동 계약을 따른다.
+
+6. 승인 경계
+현재 PRODUCT/ROADMAP을 바꾸지 않았다. 정확한 제안 전문을 PRODUCT.proposed.txt/ROADMAP.proposed.txt로 제공한다. 전체 독립 검토4회와 지적 해결 후 정확한 design SHA를 사용자 승인 대상으로 제시한다. 그 승인을 받은 다음에만 실행 가능한 테스트 후보를 작성·독립 검토하고 정확한 test SHA 승인을 요청한다. 이후 real RED probe와fanout admission을 통해 구현한다. 자체 승인이나 이 검토의 정적 PASS로 구현·배포를 허용하지 않는다.
+
+7. 증거를 혼동하지 않는 기준
+verify-packet.py는 문서/참조/소스 hash/등록 연결을 확인한다. JSON schema 인스턴스 검증, product/SQL/Verus 실행, 실제 부하·provider·복구 훈련은0건이다. 선언된 하드웨어·지연·queue·복구 수치는 실험 후보이며 provisioned 환경이나 보장 SLA가 아니다. 실제 catalog/alias/로그 경로 검증, 독립 failure-domain 배치, 보존·법률 source qualification과 운영 노출 권한은 후속 실행/운영 증거가 필요하다.
+</pre><h2>구체 계약과 근거</h2><ul><li><a href="PRODUCT.proposed.txt">PRODUCT.proposed.txt</a></li><li><a href="ROADMAP.proposed.txt">ROADMAP.proposed.txt</a></li><li><a href="action-bindings.csv">action-bindings.csv</a></li><li><a href="action-types.schema.json">action-types.schema.json</a></li><li><a href="actor-migration.csv">actor-migration.csv</a></li><li><a href="authority-proposal.txt">authority-proposal.txt</a></li><li><a href="concurrency-protocol.txt">concurrency-protocol.txt</a></li><li><a href="control-types.schema.json">control-types.schema.json</a></li><li><a href="custody-schema.sql.txt">custody-schema.sql.txt</a></li><li><a href="entry.txt">entry.txt</a></li><li><a href="fixtures.json">fixtures.json</a></li><li><a href="journal-types.schema.json">journal-types.schema.json</a></li><li><a href="object-owner-custody-contract.txt">object-owner-custody-contract.txt</a></li><li><a href="operations-recovery-information-flow.txt">operations-recovery-information-flow.txt</a></li><li><a href="owner-bindings.json">owner-bindings.json</a></li><li><a href="physical-contract.txt">physical-contract.txt</a></li><li><a href="readiness.json">readiness.json</a></li><li><a href="review.txt">review.txt</a></li><li><a href="run-manifest.json">run-manifest.json</a></li><li><a href="screen-integration.txt">screen-integration.txt</a></li><li><a href="source-census.csv">source-census.csv</a></li><li><a href="source-identities.json">source-identities.json</a></li><li><a href="source-sink-map.csv">source-sink-map.csv</a></li><li><a href="storage-mapping.json">storage-mapping.json</a></li><li><a href="types.schema.json">types.schema.json</a></li><li><a href="verification-plan.txt">verification-plan.txt</a></li><li><a href="verify-packet.py">verify-packet.py</a></li></ul></html>

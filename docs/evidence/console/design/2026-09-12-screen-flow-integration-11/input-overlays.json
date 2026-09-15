@@ -1,0 +1,82 @@
+[
+  {
+    "state": "EDITING_UNSAVED",
+    "trigger": "typed edit after last ACK",
+    "visible": "입력 중 · 저장 안 됨",
+    "allowed_actions": [
+      "DRAFT_SAVE"
+    ],
+    "focus": "입력 focus 유지",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  },
+  {
+    "state": "SAVING",
+    "trigger": "one in-flight CAS save",
+    "visible": "저장 중 · 서버 확정 전",
+    "allowed_actions": [
+      "NONE"
+    ],
+    "focus": "입력 focus 유지",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  },
+  {
+    "state": "SAVED",
+    "trigger": "all current local input covered by serverACK",
+    "visible": "서버에 저장됨",
+    "allowed_actions": [
+      "DRAFT_SAVE",
+      "OPEN_HISTORY"
+    ],
+    "focus": "불필요 focus 이동 없음",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  },
+  {
+    "state": "OFFLINE_UNACKNOWLEDGED",
+    "trigger": "no network/ACK",
+    "visible": "미저장 입력 있음 · 재연결/명시 leave",
+    "allowed_actions": [
+      "RESULT_RECONCILE"
+    ],
+    "focus": "입력 focus 유지",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  },
+  {
+    "state": "SEALED_READY",
+    "trigger": "exact input sealed but effect not confirmed",
+    "visible": "입력 확정 · 업무 결과 아직 없음",
+    "allowed_actions": [
+      "RESULT_RECONCILE",
+      "CANCEL_PENDING"
+    ],
+    "focus": "exact intent 요약",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  },
+  {
+    "state": "CUSTODY_CHANGED",
+    "trigger": "assignment/lifecycle epoch changed",
+    "visible": "담당 변경 · 이전 탭 쓰기 금지",
+    "allowed_actions": [
+      "REFRESH",
+      "RECOVERY_ROUTE"
+    ],
+    "focus": "현재 context heading",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  },
+  {
+    "state": "EXPIRED_OR_INTEGRITY_HOLD",
+    "trigger": "retention/schema/integrity unavailable",
+    "visible": "이용 불가 · 현재값으로 대체 금지",
+    "allowed_actions": [
+      "RECOVERY_ROUTE"
+    ],
+    "focus": "오류 heading",
+    "contract": "UX1.5;FD1",
+    "composition": "Overlay supplements business matrix; current permission and command preconditions remain mandatory. SAVED adds no business restriction; unsaved/saving requires confirmed input before effect; sealed forbids edits; unknown effect overrides all retry-as-new; no overlay grants action rights."
+  }
+]

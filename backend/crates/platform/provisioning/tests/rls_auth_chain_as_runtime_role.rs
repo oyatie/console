@@ -1,34 +1,22 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-//! THE GATE for the pre-auth RLS fix (launch-blocking).
-//!
-//! An adversarial audit proved that under the prod runtime role `console_rt`
-//! (NOSUPERUSER, NOBYPASSRLS, FORCE RLS) the three pre-auth auth paths read/write
-//! the FORCE-RLS org-scoped auth tables with `app.current_org` UNSET, so RLS
-//! returns ZERO rows / rejects the WITH CHECK and the paths are broken in prod —
-//! while the existing tests pass only because `sqlx::test` connects as a
-//! BYPASSRLS superuser (masking the bug).
-//!
-//! This test runs the WHOLE auth chain as the genuine NON-OWNER `console_rt` role
-//! (a dedicated pool whose every connection does `SET ROLE console_rt`), exactly like
-//! production. It proves, as `console_rt`:
-//!   * OTP redeem finds the seeded bootstrap credential and issues a session,
-//!   * passkey registration-finish INSERTs with the correct org,
-//!   * passkey login finds the credential and authenticates,
-//!   * admin-issues-OTP for a NON-KNL tenant -> that tenant's user redeems it
-//!     (cross-tenant new-account registration),
-//!   * a cross-org credential is NOT visible (isolation preserved).
-//!
-//! It FAILS on the pre-fix code (GUC unset -> zero rows / WITH CHECK violation)
-//! and PASSES after the fix (the narrow SECURITY DEFINER resolvers + per-path
-//! set_config arm the tenant before each RLS-gated read/write).
+//! Real-login transport comparison for existing, unmigrated legacy subjects.
+//! Credential operations use console_auth_rt; Company business setup/reads use
+//! console_rt. Migration-owner pools are confined to seed data and observations.
+//! Preserve cryptographic verification, replay and exact subject correlation.
+//! Legacy employer OTP/reset/signup expectations here do NOT authorize those
+//! actions for migrated Accounts; cutover and Company-free enrollment need their
+//! own tests before Account activation. Missing auth topology is a prerequisite
+//! failure, never successful execution of the downstream crypto assertions.
 
 use console_kernel_core::OrgId;
 use console_platform_auth::{
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, WebauthnSettings,
 };
 use console_platform_provisioning::{BootstrapCredentialStore, RosterProvisioner};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
 use url::Url;
 use uuid::Uuid;
@@ -68,26 +56,8 @@ fn passkey_service() -> PasskeyService {
     .unwrap()
 }
 
-/// Build a SECOND pool from the migrated `sqlx::test` pool's connection options,
-/// whose every connection runs `SET ROLE console_rt` on checkout. Statements issued
-/// through this pool therefore execute as the genuine non-owner RUNTIME role —
-/// FORCE RLS applies and BYPASSRLS does not — exactly as production connects.
-async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
-    let options = owner_pool.connect_options().as_ref().clone();
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _meta| {
-            Box::pin(async move {
-                // SET ROLE (session-scoped) makes every subsequent statement on
-                // this connection run as `console_rt`. The connection started as the
-                // superuser, so it has the privilege to assume the role.
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(options)
-        .await
-        .unwrap()
+async fn auth_role_pool(owner_pool: &PgPool) -> PgPool {
+    login_test_pool(owner_pool, TestDatabaseLogin::Auth).await
 }
 
 /// Seed an `organizations` row + one user in it, as the OWNER (superuser) pool
@@ -148,7 +118,7 @@ async fn seed_admin(owner_pool: &PgPool, org: Uuid, tag: &str) -> Uuid {
     admin_id
 }
 
-/// Register a discoverable passkey for `user_id` in `org` as `console_rt`, returning
+/// Register a discoverable passkey for `user_id` in `org` through its supplied restricted pool, returning
 /// the stored credential id. Exercises start/finish registration (the
 /// registration-finish INSERT is the org-stamped write the fix unblocks).
 async fn register_passkey_as_runtime(
@@ -168,7 +138,7 @@ async fn register_passkey_as_runtime(
             },
         )
         .await
-        .expect("start_registration must succeed as console_rt");
+        .expect("start_registration must succeed through its supplied restricted pool");
 
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential = authenticator
@@ -181,11 +151,11 @@ async fn register_passkey_as_runtime(
     let stored = service
         .finish_registration(rt_pool, org, registration.ceremony_id, credential)
         .await
-        .expect("finish_registration must INSERT the passkey as console_rt");
+        .expect("finish_registration must INSERT the passkey through its supplied restricted pool");
     assert_eq!(stored.user_id, user_id);
 
     // The credential row must carry the REAL org (the OrgId::knl() hardcode bug
-    // would mis-stamp a non-KNL tenant). Verify as console_rt under the right GUC.
+    // would mis-stamp a non-KNL tenant). Verify through its supplied restricted pool under the right GUC.
     let stamped_org = credential_org_as_runtime(rt_pool, org, &stored.credential_id).await;
     assert_eq!(
         stamped_org,
@@ -196,7 +166,7 @@ async fn register_passkey_as_runtime(
     (stored.credential_id, authenticator)
 }
 
-/// Read a credential's org_id as `console_rt` with the GUC armed to `org`.
+/// Read a credential's org_id through its supplied restricted pool with the GUC armed to `org`.
 async fn credential_org_as_runtime(
     rt_pool: &PgPool,
     org: OrgId,
@@ -230,27 +200,30 @@ async fn issue_admin_otp_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uuid)
             Duration::hours(24),
         )
         .await
-        .expect("admin OTP issuance must succeed for any tenant as console_rt");
+        .expect(
+            "admin OTP issuance must succeed for any tenant through its supplied restricted pool",
+        );
     issue.token.as_str().to_owned()
 }
 
 // ===========================================================================
 // (1) KNL: full chain — admin OTP -> redeem -> passkey register -> passkey login.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let rt_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
-    // Admin issues a one-time code for the pre-provisioned user (as console_rt).
+    // Admin issues a one-time code for the pre-provisioned user (through its supplied restricted pool).
     let otp = issue_admin_otp_as_runtime(&rt_pool, knl, user_id).await;
 
-    // OTP first sign-in: redeem must FIND the bootstrap credential as console_rt.
+    // OTP first sign-in: redeem must FIND the bootstrap credential through its supplied restricted pool.
     let redemption = BootstrapCredentialStore
         .redeem_otp(&rt_pool, &otp, OffsetDateTime::now_utc())
         .await
-        .expect("OTP redeem must find the seeded credential as console_rt");
+        .expect("OTP redeem must find the seeded credential through its supplied restricted pool");
     assert_eq!(redemption.user_id, user_id);
     assert_eq!(redemption.org_id, knl);
     assert!(redemption.requires_passkey_setup);
@@ -259,13 +232,14 @@ async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
     RefreshTokenStore
         .issue_family(
             &rt_pool,
+            &rt_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),
             Duration::days(30),
         )
         .await
-        .expect("session mint (refresh family) must pass RLS as console_rt");
+        .expect("session mint (refresh family) must pass RLS through its supplied restricted pool");
 
     // Passkey registration-finish INSERTs the credential with the correct org.
     let service = passkey_service();
@@ -273,11 +247,11 @@ async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
         register_passkey_as_runtime(&service, &rt_pool, knl, user_id).await;
 
     // Passkey LOGIN: usernameless discoverable auth must resolve the user FROM
-    // the credential as console_rt and authenticate.
+    // the credential through its supplied restricted pool and authenticate.
     let authentication = service
         .start_authentication(&rt_pool)
         .await
-        .expect("start_authentication as console_rt");
+        .expect("start_authentication through its supplied restricted pool");
     let challenge = inject_allow_credential(authentication.challenge, &credential_id);
     let assertion = authenticator
         .do_authentication(Url::parse("https://auth.example.com").unwrap(), challenge)
@@ -285,24 +259,25 @@ async fn knl_auth_chain_works_as_runtime_role(owner_pool: PgPool) {
     let outcome = service
         .finish_authentication(&rt_pool, authentication.ceremony_id, assertion)
         .await
-        .expect("passkey login must authenticate as console_rt");
+        .expect("passkey login must authenticate through its supplied restricted pool");
     assert_eq!(outcome.user_id, user_id);
     assert_eq!(outcome.org_id, knl);
 }
 
 // ===========================================================================
 // (2) NON-KNL tenant: admin-issues-OTP -> that tenant's user redeems it.
-// Proves cross-tenant new-account registration works as console_rt (the KNL hardcode
+// Proves cross-tenant new-account registration works through its supplied restricted pool (the KNL hardcode
 // + no-GUC bug broke this for every tenant other than KNL).
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn non_knl_admin_otp_and_redeem_work_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let rt_pool = auth_role_pool(&owner_pool).await;
     let org2 = OrgId::from_uuid(ORG_T2);
     let _admin = seed_admin(&owner_pool, ORG_T2, "T2").await;
     let user_id = seed_org_and_user(&owner_pool, ORG_T2, "T2").await;
 
-    // Admin issues a one-time code for a NON-KNL tenant user (as console_rt). Before
+    // Admin issues a one-time code for a NON-KNL tenant user (through its supplied restricted pool). Before
     // the fix this either mis-stamped KNL or failed the WITH CHECK outright.
     let otp = issue_admin_otp_as_runtime(&rt_pool, org2, user_id).await;
 
@@ -314,16 +289,17 @@ async fn non_knl_admin_otp_and_redeem_work_as_runtime_role(owner_pool: PgPool) {
         "admin-issued OTP must be stamped with the request's tenant, not KNL"
     );
 
-    // That tenant's user redeems it and gets a session, all as console_rt.
+    // That tenant's user redeems it and gets a session, all through its supplied restricted pool.
     let redemption = BootstrapCredentialStore
         .redeem_otp(&rt_pool, &otp, OffsetDateTime::now_utc())
         .await
-        .expect("non-KNL tenant OTP redeem must succeed as console_rt");
+        .expect("non-KNL tenant OTP redeem must succeed through its supplied restricted pool");
     assert_eq!(redemption.user_id, user_id);
     assert_eq!(redemption.org_id, org2);
 
     RefreshTokenStore
         .issue_family(
+            &rt_pool,
             &rt_pool,
             user_id,
             org2,
@@ -331,10 +307,10 @@ async fn non_knl_admin_otp_and_redeem_work_as_runtime_role(owner_pool: PgPool) {
             Duration::days(30),
         )
         .await
-        .expect("non-KNL session mint must pass RLS as console_rt");
+        .expect("non-KNL session mint must pass RLS through its supplied restricted pool");
 }
 
-/// Read a bootstrap credential's org_id by its OTP, as `console_rt` with the GUC
+/// Read a bootstrap credential's org_id by its OTP, through its supplied restricted pool with the GUC
 /// armed to `org` (so the read is allowed and we can confirm the stamp).
 async fn bootstrap_org_as_runtime(rt_pool: &PgPool, org: OrgId, otp: &str) -> Option<Uuid> {
     use sha2::{Digest, Sha256};
@@ -361,48 +337,69 @@ async fn bootstrap_org_as_runtime(rt_pool: &PgPool, org: OrgId, otp: &str) -> Op
 // ===========================================================================
 #[sqlx::test(migrations = "../db/migrations")]
 async fn cross_org_credential_is_isolated_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let auth = auth_role_pool(&owner_pool).await;
+    let business = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
     let knl = OrgId::knl();
     let org2 = OrgId::from_uuid(ORG_T2);
-
     let knl_user = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
     let t2_user = seed_org_and_user(&owner_pool, ORG_T2, "T2").await;
-
-    // Register a passkey in each tenant.
     let service = passkey_service();
-    let (knl_cred, _) = register_passkey_as_runtime(&service, &rt_pool, knl, knl_user).await;
-    let (t2_cred, _) = register_passkey_as_runtime(&service, &rt_pool, org2, t2_user).await;
+    let (knl_cred, mut knl_authenticator) =
+        register_passkey_as_runtime(&service, &auth, knl, knl_user).await;
+    let (t2_cred, mut t2_authenticator) =
+        register_passkey_as_runtime(&service, &auth, org2, t2_user).await;
 
-    // KNL's credential is invisible to org2's GUC, and vice versa.
-    assert_eq!(
-        credential_org_as_runtime(&rt_pool, org2, &knl_cred).await,
-        None,
-        "KNL credential must be invisible under org2's tenant GUC"
-    );
-    assert_eq!(
-        credential_org_as_runtime(&rt_pool, knl, &t2_cred).await,
-        None,
-        "org2 credential must be invisible under KNL's tenant GUC"
-    );
+    // Neither an own-Company nor another-Company GUC grants credential access.
+    // SQLSTATE42501 proves privilege denial; an empty RLS result is insufficient.
+    for org in [knl, org2] {
+        for credential_id in [&knl_cred, &t2_cred] {
+            let mut tx = business.begin().await.unwrap();
+            sqlx::query("SELECT set_config('app.current_org', $1, true)")
+                .bind(org.as_uuid().to_string())
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let error = sqlx::query(
+                "SELECT credential_id FROM auth_webauthn_credentials WHERE credential_id = $1",
+            )
+            .bind(credential_id)
+            .fetch_all(&mut *tx)
+            .await
+            .expect_err("Company runtime must not inspect any credential");
+            assert_eq!(
+                error.as_database_error().and_then(|e| e.code()).as_deref(),
+                Some("42501")
+            );
+            tx.rollback().await.unwrap();
+        }
+    }
 
-    // But each is visible under its OWN tenant GUC.
-    assert_eq!(
-        credential_org_as_runtime(&rt_pool, knl, &knl_cred).await,
-        Some(*knl.as_uuid())
-    );
-    assert_eq!(
-        credential_org_as_runtime(&rt_pool, org2, &t2_cred).await,
-        Some(ORG_T2)
-    );
+    // Positive controls retain actual WebAuthn proof and exact subject correlation.
+    for (credential, authenticator, user, org) in [
+        (&knl_cred, &mut knl_authenticator, knl_user, knl),
+        (&t2_cred, &mut t2_authenticator, t2_user, org2),
+    ] {
+        let authentication = service.start_authentication(&auth).await.unwrap();
+        let challenge = inject_allow_credential(authentication.challenge, credential);
+        let assertion = authenticator
+            .do_authentication(Url::parse("https://auth.example.com").unwrap(), challenge)
+            .unwrap();
+        let outcome = service
+            .finish_authentication(&auth, authentication.ceremony_id, assertion)
+            .await
+            .unwrap();
+        assert_eq!(outcome.user_id, user);
+        assert_eq!(outcome.org_id, org);
+    }
 }
 
 // ===========================================================================
-// (4) Roster import (KNL) must also pass RLS as console_rt: it writes users +
+// (4) Roster import (KNL) must also pass RLS through its supplied restricted pool: it writes users +
 // bootstrap credentials stamped KNL, so the GUC must be armed.
 // ===========================================================================
 #[sqlx::test(migrations = "../db/migrations")]
 async fn roster_import_works_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let rt_pool = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
     // The KNL org must exist for the FK on users.org_id.
     seed_org_and_user(&owner_pool, *OrgId::knl().as_uuid(), "KNL").await;
     // A region + branch are required for the roster's branch memberships.
@@ -422,7 +419,9 @@ async fn roster_import_works_as_runtime_role(owner_pool: PgPool) {
     let report = RosterProvisioner::new(Duration::hours(24))
         .import_json(&rt_pool, &roster, OffsetDateTime::now_utc())
         .await
-        .expect("roster import must pass RLS as console_rt (GUC armed to KNL)");
+        .expect(
+            "roster import must pass RLS through its supplied restricted pool (GUC armed to KNL)",
+        );
     assert_eq!(report.users_created, 1);
     assert_eq!(report.bootstrap_credentials_issued.len(), 1);
 }
@@ -454,7 +453,7 @@ async fn seed_region_branch(owner_pool: &PgPool, org: Uuid) -> (String, String) 
     (region_name, branch_name)
 }
 
-/// Count `user_id`'s passkeys as `console_rt` with the GUC armed to `org`.
+/// Count `user_id`'s passkeys through its supplied restricted pool with the GUC armed to `org`.
 async fn passkey_count_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uuid) -> i64 {
     let mut tx = rt_pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
@@ -474,13 +473,13 @@ async fn passkey_count_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uuid) -
 
 // ===========================================================================
 // (5) Admin credential RESET (account-recovery escape hatch): a user who already
-// has a passkey gets it revoked AND a fresh OTP minted, atomically, as console_rt.
+// has a passkey gets it revoked AND a fresh OTP minted, atomically, through its supplied restricted pool.
 // The OLD passkey then no longer authenticates and the new OTP redeems + lets the
 // user re-enroll. Proves the lockout the security trace found is recoverable.
 // ===========================================================================
 #[sqlx::test(migrations = "../db/migrations")]
 async fn admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let rt_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
@@ -516,7 +515,7 @@ async fn admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role(o
             Duration::hours(24),
         )
         .await
-        .expect("admin credential reset must succeed as console_rt");
+        .expect("admin credential reset must succeed through its supplied restricted pool");
 
     // The user's passkeys are gone.
     assert_eq!(
@@ -544,7 +543,7 @@ async fn admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role(o
     let redemption = BootstrapCredentialStore
         .redeem_otp(&rt_pool, issue.token.as_str(), OffsetDateTime::now_utc())
         .await
-        .expect("the freshly minted reset OTP must redeem as console_rt");
+        .expect("the freshly minted reset OTP must redeem through its supplied restricted pool");
     assert_eq!(redemption.user_id, user_id);
     assert_eq!(redemption.org_id, knl);
     assert!(
@@ -571,12 +570,12 @@ async fn admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role(o
 // (7) Self-service add-passkey STEP-UP gate: an already-enrolled user must assert
 // an EXISTING passkey (user verification) before a NEW credential is issued, so a
 // stolen session (bearer token, no authenticator) cannot silently add a device.
-// Proves, as console_rt: count > 0 requires step-up; a valid step-up of the user's
+// Proves, through its supplied restricted pool: count > 0 requires step-up; a valid step-up of the user's
 // OWN passkey (UV=true) is accepted; another user's passkey is rejected.
 // ===========================================================================
 #[sqlx::test(migrations = "../db/migrations")]
 async fn add_passkey_step_up_gate_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let rt_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
     let other_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL2").await;
@@ -676,7 +675,7 @@ async fn admin_reset_audit_count(owner_pool: &PgPool, user_id: Uuid) -> i64 {
 // ===========================================================================
 #[sqlx::test(migrations = "../db/migrations")]
 async fn admin_credential_reset_is_tenant_scoped_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let rt_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
     let org2 = OrgId::from_uuid(ORG_T2);
 
@@ -717,17 +716,19 @@ async fn admin_credential_reset_is_tenant_scoped_as_runtime_role(owner_pool: PgP
 
 // ===========================================================================
 // (5) Open self-service signup (#38): create a NEW MEMBER user in KNL + mint its
-// OTP, ATOMICALLY, as console_rt. The signup INSERTs into `users` (FORCE RLS) and
+// OTP, ATOMICALLY, through its supplied restricted pool. The signup INSERTs into `users` (FORCE RLS) and
 // `auth_bootstrap_credentials` (FORCE RLS) stamped KNL, so the GUC must be armed
 // by `with_audits` or the WITH CHECK rejects the row. Then the new user redeems
-// its own code and gets a session — the same first-sign-in path, all as console_rt.
+// its own code and gets a session — the same first-sign-in path, all through its supplied restricted pool.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn open_signup_creates_member_and_redeems_as_runtime_role(owner_pool: PgPool) {
-    let rt_pool = runtime_role_pool(&owner_pool).await;
+    prepare_account_test_database(&owner_pool).await;
+    let rt_pool = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
+    let auth_pool = auth_role_pool(&owner_pool).await;
     let knl = OrgId::knl();
 
-    // Self-service signup: create the MEMBER user in KNL + mint its OTP as console_rt.
+    // Self-service signup: create the MEMBER user in KNL + mint its OTP through its supplied restricted pool.
     let issue = BootstrapCredentialStore
         .signup_open_member(
             &rt_pool,
@@ -736,10 +737,12 @@ async fn open_signup_creates_member_and_redeems_as_runtime_role(owner_pool: PgPo
             Duration::hours(1),
         )
         .await
-        .expect("open signup must create the user + OTP under RLS as console_rt");
+        .expect(
+            "open signup must create the user + OTP under RLS through its supplied restricted pool",
+        );
 
     // The new user exists in KNL with exactly the lowest-privilege MEMBER role —
-    // verified as console_rt under KNL's GUC (it would be invisible under any other).
+    // verified through its supplied restricted pool under KNL's GUC (it would be invisible under any other).
     let roles = user_roles_as_runtime(&rt_pool, knl, issue.user_id).await;
     assert_eq!(
         roles,
@@ -749,14 +752,14 @@ async fn open_signup_creates_member_and_redeems_as_runtime_role(owner_pool: PgPo
 
     // The credential is stamped KNL (not a foreign tenant), proving the WITH CHECK
     // accepted it under the armed GUC.
-    let stamped = bootstrap_org_as_runtime(&rt_pool, knl, issue.token.as_str()).await;
+    let stamped = bootstrap_org_as_runtime(&auth_pool, knl, issue.token.as_str()).await;
     assert_eq!(stamped, Some(*knl.as_uuid()));
 
-    // First sign-in: the new MEMBER redeems its own emailed code as console_rt.
+    // First sign-in: the new MEMBER redeems its own emailed code through its supplied restricted pool.
     let redemption = BootstrapCredentialStore
-        .redeem_otp(&rt_pool, issue.token.as_str(), OffsetDateTime::now_utc())
+        .redeem_otp(&auth_pool, issue.token.as_str(), OffsetDateTime::now_utc())
         .await
-        .expect("the open-signup OTP must redeem as console_rt");
+        .expect("the open-signup OTP must redeem through its supplied restricted pool");
     assert_eq!(redemption.user_id, issue.user_id);
     assert_eq!(redemption.org_id, knl);
     assert!(redemption.requires_passkey_setup);
@@ -764,17 +767,18 @@ async fn open_signup_creates_member_and_redeems_as_runtime_role(owner_pool: PgPo
     // And the redeemed MEMBER can mint a session (refresh-family issue is RLS-gated).
     RefreshTokenStore
         .issue_family(
-            &rt_pool,
+            &auth_pool,
+            &auth_pool,
             issue.user_id,
             knl,
             OffsetDateTime::now_utc(),
             Duration::days(30),
         )
         .await
-        .expect("the new MEMBER's session mint must pass RLS as console_rt");
+        .expect("the new MEMBER's session mint must pass RLS through its supplied restricted pool");
 }
 
-/// Read a user's `roles` array by id, as `console_rt` with the GUC armed to `org`
+/// Read a user's `roles` array by id, through its supplied restricted pool with the GUC armed to `org`
 /// (so the FORCE-RLS read on `users` is allowed). `None` when the row is invisible
 /// under that tenant.
 async fn user_roles_as_runtime(rt_pool: &PgPool, org: OrgId, user_id: Uuid) -> Option<Vec<String>> {

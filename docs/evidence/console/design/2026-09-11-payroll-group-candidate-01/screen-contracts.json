@@ -1,0 +1,343 @@
+[
+  {
+    "id": "V01",
+    "name": "전사/법인 범위 선택",
+    "proposed_route": "/_ui/workspaces/payroll",
+    "actors": [
+      "전사 인사/급여 담당",
+      "법인 담당"
+    ],
+    "purpose": "동일 tenant에서 관리 범위를 선택한다.",
+    "inputs": [
+      "scope=group_all|company_set|company; group_id; company_ids는 서버 resolver 결과의 부분집합",
+      "기간 YYYY-MM; 화면용 필터는 URL에, 대상 snapshot은 초안에 고정"
+    ],
+    "required_information": [
+      "현재 Group·실제 권한 범위·각 법인의 업무 상태",
+      "제한된 법인의 존재/개수는 인가 없이 표시하지 않음"
+    ],
+    "actions": [
+      "A01"
+    ],
+    "recovery": [
+      "권한 변경→범위 재해석, 원 초안 대상 불변",
+      "새 법인 추가→기존 승인 대상에 자동 편입 금지",
+      "선택 불가와 권한 있는 빈 결과를 구분"
+    ],
+    "source_refs": [
+      "T11",
+      "T12"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V02",
+    "name": "전사 급여 진행",
+    "proposed_route": "/_ui/workspaces/payroll?scope=…&period=…",
+    "actors": [
+      "전사 급여 담당",
+      "법인 담당"
+    ],
+    "purpose": "여섯 법인의 진행을 비교하고 필요한 대상만 한 번에 처리한다.",
+    "inputs": [
+      "법인/run 선택 집합",
+      "상태/미완료/담당/기간 필터"
+    ],
+    "required_information": [
+      "법인별 기간·대상/차단 수·계산 version·최근 변경·필요 조치",
+      "전사 합계는 모든 대상의 허용/완전한 데이터일 때만; 부분합은 범위 표시",
+      "읽기 시점과 자료 실패를 표시하며 승인 snapshot으로 사용하지 않음"
+    ],
+    "actions": [
+      "A01",
+      "A02",
+      "A09"
+    ],
+    "recovery": [
+      "일부 법인 읽기 실패→미확인 영역 명시, 전체 완료 금지",
+      "배치 실패→V09에서 대상별 복구",
+      "상세에서 복귀 시 선택/스크롤 유지"
+    ],
+    "source_refs": [
+      "T11",
+      "T14",
+      "T16"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V03",
+    "name": "급여 작업 만들기",
+    "proposed_route": "/_ui/workspaces/payroll/new",
+    "actors": [
+      "생성 권한이 있는 급여 담당"
+    ],
+    "purpose": "기존 사람·법인·근로관계로 급여 작업을 만든다.",
+    "inputs": [
+      "대상 법인 또는 확정 법인 집합",
+      "월/기간; 회사별 서로 다른 기간은 미리보기에서 확인",
+      "기존 생성은 run correlation UUID를 초안에서 한 번 생성; command_id도 재시도 동안 유지",
+      "connector/job는 원천 연결이 실제 있을 때만 시스템이 넣음; 사용자에게 기술 문자열 입력 금지"
+    ],
+    "required_information": [
+      "대상 고용관계와 제외 이유",
+      "입력 원천의 native/import 구분과 준비 정도",
+      "중복 가능 기존 run 링크"
+    ],
+    "actions": [
+      "A02",
+      "A09"
+    ],
+    "recovery": [
+      "응답 유실→동일 command 재조회/replay",
+      "생성 receipt의 draft_run_id로 상세 이동; correlation run_id로 조회 금지",
+      "대상 0명도 생성될 수 있으나 준비 완료로 표시하지 않음"
+    ],
+    "source_refs": [
+      "T01",
+      "T02",
+      "T03"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V04",
+    "name": "대상·입력·근거 검토",
+    "proposed_route": "/_ui/workspaces/payroll/runs/:draft_run_id/inputs",
+    "actors": [
+      "급여 담당",
+      "허용된 HR 검토자"
+    ],
+    "purpose": "누락을 보고 원 사실을 수정하며 실제 계산에 쓰일 입력을 고정한다.",
+    "inputs": [
+      "대상 employment_ref와 근태/계약급여/공식세액 근거 refs 선택·확인",
+      "기존 알려진 참조는 자동 채움; 직접 금액 입력 시 원 소유 사실 생성/정정으로 연결",
+      "필요한 사실의 typed 값/출처/효력일; 메모는 근거 참조와 함께 유지"
+    ],
+    "required_information": [
+      "대상별 준비/미확정·입력 출처·근로관계·단위·효력기간",
+      "검증 세액의 실제 근거와 version; 사용자가 verified 체크만으로 승격할 수 없음",
+      "이전 계산과 입력 차이, 중요한 미해결 메모",
+      "import readiness와 native 계약급여가 현재 다른 계산 경로라는 차이"
+    ],
+    "actions": [
+      "A03",
+      "A04",
+      "A05"
+    ],
+    "recovery": [
+      "원 입력 정정 후 복귀; 기존 검토 snapshot stale 처리",
+      "근거 없음→해당 항목 담당·보완 경로, 추정 세액 금지",
+      "현재 native→run 연결 부재를 숨겨 완료하지 않음"
+    ],
+    "source_refs": [
+      "T03",
+      "T04",
+      "T05",
+      "T06"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V05",
+    "name": "계약급여 입력/정정",
+    "proposed_route": "/_ui/workspaces/hr/people/:employee_id/contract-wage",
+    "actors": [
+      "현재 PayrollRunManage가 허용된 담당"
+    ],
+    "purpose": "기존 원 소유 계약급여 행위를 입력 화면으로 제공한다.",
+    "inputs": [
+      "employee_id는 객체에서 전달",
+      "effective_from YYYY-MM-DD",
+      "wage_kind MONTHLY|HOURLY",
+      "amount_won 양의 i64",
+      "monthly_standard_hours 양의 i32",
+      "source_note 자유문 + 제안된 contract/evidence_ref는 별도 검토 후 확장"
+    ],
+    "required_information": [
+      "법인·사람·고용관계·현재 급여/시행일",
+      "변경 적용일과 영향을 받을 기간",
+      "시급제 저장 가능 ≠ 현재 개인 초안에서 계산 가능"
+    ],
+    "actions": [
+      "A03"
+    ],
+    "recovery": [
+      "현재 API에 요청키 기반 replay가 확인되지 않으므로 timeout 뒤 무조건 POST 반복 금지",
+      "같은 효력일 충돌/정정 방식은 원 소유 계약의 검증 필요",
+      "저장 후 wage id·근거를 readback; payroll run 재계산 연결은 A04 필요"
+    ],
+    "source_refs": [
+      "T05",
+      "T06",
+      "T18"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V06",
+    "name": "근태 마감 확인",
+    "proposed_route": "/_ui/workspaces/payroll/runs/:draft_run_id/close",
+    "actors": [
+      "마감 권한 있는 급여 담당"
+    ],
+    "purpose": "계산 대상과 기간을 확인하고 실제 마감을 수행한다.",
+    "inputs": [
+      "attest=true는 사용자가 검토 후 명시 확인; 기본 자동 체크 금지"
+    ],
+    "required_information": [
+      "nonempty roster·근태자료·period lock·미결 휴가 경고",
+      "마감은 신청/관측·법률 사실의 무조건 확정이 아님",
+      "경고와 필수 차단을 구분"
+    ],
+    "actions": [
+      "A05"
+    ],
+    "recovery": [
+      "서버 실행 시 동일 검사를 재수행",
+      "stale preflight→변경 사유/현재 근거 표시",
+      "경고마다 의무 결재를 발명하지 않음"
+    ],
+    "source_refs": [
+      "T07",
+      "T17"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V07",
+    "name": "계산 결과와 차이",
+    "proposed_route": "/_ui/workspaces/payroll/runs/:draft_run_id",
+    "actors": [
+      "급여 담당",
+      "허용된 검토자"
+    ],
+    "purpose": "저장된 계산 결과와 누락·차이를 확인한다.",
+    "inputs": [
+      "계산 실행; 필요한 입력 정정은 V04로 이동",
+      "행/예외 필터; 전월 비교는 동등 조건/권한 확인"
+    ],
+    "required_information": [
+      "version·calculated_lines·blocked_lines·규칙/출처",
+      "전체 계산되지 않으면 total_net_won은 미확정; 부분 금액을 전체 합계로 표현 금지",
+      "payable=false; 개인 명세의 보험 차감 잔액을 순지급액으로 표시 금지",
+      "기존 CALCULATING은 같은 트랜잭션 중간 값이며 다른 세션이 반드시 볼 수 있는 진행 상태로 가정하지 않음"
+    ],
+    "actions": [
+      "A06",
+      "A07",
+      "A08"
+    ],
+    "recovery": [
+      "timeout→결과 확인 후 재시도 여부 결정",
+      "입력 변경→새 revision/calculation 요구; 기존 승인 재사용 금지",
+      "하나의 blocked line이 전체 run의 법률 적합성을 의미하지 않음"
+    ],
+    "source_refs": [
+      "T04",
+      "T06",
+      "T08",
+      "T16"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V08",
+    "name": "급여 검토/결재",
+    "proposed_route": "/_ui/approvals/:request_id",
+    "actors": [
+      "권한 있는 제출자",
+      "독립된 자연인 검토자"
+    ],
+    "purpose": "제출한 정확한 변경·계산·증거를 검토한다.",
+    "inputs": [
+      "승인 또는 급여안 거절; 거절 시 reason 필수",
+      "보완 요청·협의 등 공용 행위는 업무별 별도 계약; 연차에 급여 REJECT를 재사용하지 않음"
+    ],
+    "required_information": [
+      "법인/대상·입력 snapshot·계산 version·차이·필수 근거",
+      "제출자/검토자의 자연인 구별·현재 권한",
+      "현재 직접 REST lifecycle과 ontology wrapper의 보장 차이"
+    ],
+    "actions": [
+      "A07",
+      "A08"
+    ],
+    "recovery": [
+      "승인 소진 뒤 projected owner 실패→재요청/복구가 필요함을 현재 증거에 맞게 표시",
+      "APPROVED는 지급 완료 아님",
+      "정정은 새로운 검토 대상으로; rejected→withdraw는 편집 재개이고 계산 재실행이 아님"
+    ],
+    "source_refs": [
+      "T08",
+      "T09",
+      "T10",
+      "T13"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V09",
+    "name": "전사 묶음 실행/복구",
+    "proposed_route": "/_ui/operations/:operation_id",
+    "actors": [
+      "요청자",
+      "권한 있는 운영 담당"
+    ],
+    "purpose": "한 요청의 법인별 결과를 끝까지 추적한다.",
+    "inputs": [
+      "실패/미실행 대상만 재시도",
+      "미실행 취소; 실행 후 정정은 개별 보상 액션",
+      "예외 담당 변경은 동일 scope/적합성 검증"
+    ],
+    "required_information": [
+      "operation/group/target snapshot·child command/receipt·실행자·시점",
+      "성공·미실행·미확정·실패·재검토 상태와 다음 행동",
+      "권한 회수 후 제한 자료의 재노출 금지"
+    ],
+    "actions": [
+      "A09"
+    ],
+    "recovery": [
+      "동일 child command 재사용; 완료한 법인은 중복 실행 금지",
+      "worker 중단 후 durable 상태로 재개",
+      "멤버십 변화/권한 회수→해당 child 보류; 전체 성공 토스트 금지"
+    ],
+    "source_refs": [
+      "T02",
+      "T10",
+      "T11",
+      "T12"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  },
+  {
+    "id": "V10",
+    "name": "본인 급여 내역",
+    "proposed_route": "/_ui/me/payroll",
+    "actors": [
+      "직원"
+    ],
+    "purpose": "자신의 급여 준비/명세 상태를 이해하고 정정을 요청한다.",
+    "inputs": [
+      "본인 기간 선택",
+      "허용된 이의/정정 요청과 근거 입력; 별도 액션 설계 필요"
+    ],
+    "required_information": [
+      "현재 self-service readiness와 실제 금액 명세를 구분",
+      "관리자용 source bookkeeping 제외",
+      "현재 개인 payslip-draft API는 Manage 권한이므로 직원에게 그대로 연결 금지"
+    ],
+    "actions": [],
+    "recovery": [
+      "접근 불가 상태를 빈 명세로 위장하지 않음",
+      "계산 미완료/자료 지연/미발급을 구분"
+    ],
+    "source_refs": [
+      "T06",
+      "T14",
+      "T16"
+    ],
+    "status": "Proposed screen contract; route/UI not implemented by this candidate"
+  }
+]

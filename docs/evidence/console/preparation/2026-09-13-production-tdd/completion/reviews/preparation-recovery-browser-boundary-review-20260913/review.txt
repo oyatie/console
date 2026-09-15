@@ -1,0 +1,29 @@
+# Browser and boundary execution independent review
+
+Reviewer /root/preparation_recovery. Root remains sole repository writer. Reviewed current root worktree /private/tmp/console-production-tdd-preparation-20260913, HEAD67693004c16edd192e744529512bf8fec09ad2b1 plus root-authored browser/evidence additions. Exact reviewed file hashes are in verification.json. This receipt does not claim whole-slice acceptance, actual native owner execution, complete WCAG compliance or production exposure.
+
+## Browser additions: APPROVED SOURCE FOR OWNER-FIXTURE EXECUTION
+
+Keyboard case discovers input and Save via bounded normal Tab traversal, types with browser keyboard, activates Enter, requires actual POST303 and saved acknowledgement, then reloads actual persisted value. No focus injection, route fulfillment, synthetic owner response or test-only app action is used. Existing fixture loader requires per-project/case synthetic owner-produced credentials, exact fixture digest/candidate and owned loopback application. These dependencies remain prerequisites; this review ran no real application case.
+
+Original narrow reflow assertions had a false-positive oracle: width320 overflow:hidden parent with width800 form and Save button x600 passes Playwright toBeVisible and document scrollWidth==clientWidth==320. Independently reproduced using installed Chromium with synthetic page.setContent only; save box x600,y21,width39.0625,height22. This is a checker counterexample, not a product UI test.
+
+Root repaired the shared reflow helper: company/input/save/submit require initial horizontal bounding boxes within viewport before automatic scrolling, then scrollIntoViewIfNeeded plus full IntersectionObserver viewport ratio. Vertical scrolling remains allowed. The helper rejects the exact reported clipping counterexample; this scope is scalar composer controls and does not prohibit data-grid horizontal scrolling. The two new checker tests include a tall-page reachable-controls positive control and the clipped offscreen control negative.
+
+Exact independent command (cwd root worktree):
+PLAYWRIGHT_BROWSERS_PATH=/private/tmp/console-preparation-browsers NODE_PATH=/private/tmp/console-preparation-browser/node_modules CONSOLE_BROWSER_OUTPUT=/private/tmp/preparation-recovery-browser-review-results node /private/tmp/console-preparation-browser/node_modules/@playwright/test/cli.js test --config docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs --project oracle --grep 'reflow oracle'
+Exit0; selected/discovered2, executed2, passed2, retries0. This was approved escalated execution because the filesystem sandbox prevents Chromium Mach-port registration. Earlier default-cache launch failed because installed browser lived under /private/tmp; corrected-cache sandbox launch failed before tests at Mach-port permission. Neither is product RED. No network or real app mutation occurred in these synthetic oracle runs. No browser install was performed.
+
+## Boundary-executions: classifications and custody verified
+
+All seven rows' declared source hashes match current source bytes. All seven declared log hashes match actual retained /private/tmp logs. Parsed Cargo result lines agree with each row's counts; filtered counts are distinct from executed counts. Detailed values retained in verification.json.
+
+CTX-DIAGNOSTIC:20executed16pass4fail at diagnostic-independent HTTP body equality after status/header checks. Synthetic formatter input proves this boundary, not actual SQL-origin route/egress coverage.
+SEC-CEDAR:5executed2pass3fail, actual evaluation diagnostics survive Allow. No claim of policy administration/loading/caller completeness.
+SEC-REALTIME:5discovered2executed2fail3filtered, actual shared dispatch with existing for_tests loader shortcut. Same Account active-Company projection boundary, not global cross-tenant theorem.
+SEC-TELEMETRY:166discovered2executed2fail164filtered, real DbError/RequestContextError conversions emit canaries. Source checks stable production events before leak assertions; later paired-equality assertion is not reached. No actual database-induced HTTP fault claimed.
+MIGRATION:2executed2fail at explicit missing accounts/account_security/company_actors prerequisite after actual225 fixture/migrator. Preservation/backfill/revocation assertions not reached; no broader migration/authz acceptance.
+ACCOUNT-HTTP:61executed25pass36fail, mixed prior behavioral boundaries and catalog prerequisites. Both new publisher cases fail at missing catalog before role mutation/privilege assertions. No blanket domain-RED label or rejected FK exception approval.
+RECOVERY:2executed1pass1fail, real LOGIN/PgPayRunPort on local PG18.6 primary/synchronous standby. Lost COMMIT response reconciles one effect. Replay success while standby replay remained paused after original SyncRep backend termination is the actual failed assertion. Original live-SyncRep receipt-visibility hypothesis remains disproved historical fixture evidence. This does not prove acknowledged WAL data loss, independent failure domains or deployed failover; flush frontier was not measured. Typed app-side unknown/wait classification remains required before a repair can call unclassified failure success.
+
+No tests were deleted, weakened or skipped by this review. No Cargo, migration, PostgreSQL, VM or application action was rerun. Rollback of acceptance-source change is targeted new revision preserving evidence; stop on changed reviewed sources or missing actual owner fixture before application claims.

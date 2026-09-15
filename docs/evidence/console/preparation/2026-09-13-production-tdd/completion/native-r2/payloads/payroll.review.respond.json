@@ -1,0 +1,26 @@
+{
+  "kind": "payroll.review.respond",
+  "body": {
+    "expected": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "case_id": "53da7ce8-0707-50fc-a954-b72c2956c54d",
+      "content_revision": "1",
+      "control_revision": "1"
+    },
+    "task": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "task_id": "cd4cc409-6c89-559c-9409-0bfb7f028010",
+      "assignment_epoch": "1",
+      "control_revision": "1"
+    },
+    "dispositions": [
+      {
+        "kind": "ANSWERED",
+        "item_id": "be398863-5464-5264-bd2f-8d1e2970defa",
+        "evidence": [],
+        "answer": "해당 계산에 사용된 계약 금액을 확인했습니다."
+      }
+    ],
+    "explanation": "검토 근거를 확인했습니다."
+  }
+}

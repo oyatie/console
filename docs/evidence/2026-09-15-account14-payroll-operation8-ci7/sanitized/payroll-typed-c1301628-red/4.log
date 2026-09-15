@@ -1,0 +1,528 @@
+recovery-fixture run=console-recovery-18291-a0745170 evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.31utCA
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+warning: unused import: `console_kernel_core::KernelError`
+   --> app/src/action_inbox.rs:596:9
+    |
+596 |     use console_kernel_core::KernelError;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `super::InboxError`
+   --> app/src/action_inbox.rs:598:9
+    |
+598 |     use super::InboxError;
+    |         ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `console_action_inbox_application::canonical_action_link_kind`
+   --> app/src/action_inbox.rs:599:9
+    |
+599 |     use console_action_inbox_application::canonical_action_link_kind;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Read` and `Write`
+   --> app/src/audit_chain_signer.rs:331:19
+    |
+331 |     use std::io::{Read, Write};
+    |                   ^^^^  ^^^^^
+
+warning: unused import: `std::net::TcpListener`
+   --> app/src/audit_chain_signer.rs:332:9
+    |
+332 |     use std::net::TcpListener;
+    |         ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::sync::Arc`
+   --> app/src/audit_chain_signer.rs:333:9
+    |
+333 |     use std::sync::Arc;
+    |         ^^^^^^^^^^^^^^
+
+warning: unused import: `std::thread`
+   --> app/src/audit_chain_signer.rs:334:9
+    |
+334 |     use std::thread;
+    |         ^^^^^^^^^^^
+
+warning: unused imports: `InMemoryEd25519Signer`, `SealSignTransport`, and `SealSigner`
+   --> app/src/audit_chain_signer.rs:336:40
+    |
+336 |     use console_platform_audit_chain::{InMemoryEd25519Signer, SealSignTransport, SealSigner};
+    |                                        ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^  ^^^^^^^^^^
+
+warning: unused import: `super::*`
+   --> app/src/audit_chain_signer.rs:338:9
+    |
+338 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `calamine::Range`
+    --> app/src/hr.rs:8763:9
+     |
+8763 |     use calamine::Range;
+     |         ^^^^^^^^^^^^^^^
+
+warning: unused import: `super::*`
+    --> app/src/objects.rs:2546:9
+     |
+2546 |     use super::*;
+     |         ^^^^^^^^
+
+warning: unused import: `super::*`
+    --> app/src/office.rs:1200:9
+     |
+1200 |     use super::*;
+     |         ^^^^^^^^
+
+warning: unused import: `super::*`
+   --> app/src/workbench.rs:749:9
+    |
+749 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `std::collections::BTreeSet`
+   --> app/src/workbench.rs:750:9
+    |
+750 |     use std::collections::BTreeSet;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `OrgId` and `UserId`
+   --> app/src/workbench.rs:752:31
+    |
+752 |     use console_kernel_core::{OrgId, UserId};
+    |                               ^^^^^  ^^^^^^
+
+warning: unused import: `super::*`
+   --> app/src/workflow_object_context.rs:566:9
+    |
+566 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `std::collections::BTreeSet`
+   --> app/src/workflow_object_context.rs:567:9
+    |
+567 |     use std::collections::BTreeSet;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `OrgId` and `UserId`
+   --> app/src/workflow_object_context.rs:569:31
+    |
+569 |     use console_kernel_core::{OrgId, UserId};
+    |                               ^^^^^  ^^^^^^
+
+warning: unused imports: `EffectiveFeatureGrant` and `Role`
+   --> app/src/workflow_object_context.rs:570:34
+    |
+570 |     use console_platform_authz::{EffectiveFeatureGrant, Role};
+    |                                  ^^^^^^^^^^^^^^^^^^^^^  ^^^^
+
+warning: unused import: `super::*`
+   --> app/src/workflow_schedules.rs:353:9
+    |
+353 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused import: `time::macros::datetime`
+   --> app/src/workflow_schedules.rs:354:9
+    |
+354 |     use time::macros::datetime;
+    |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::*`
+   --> app/src/lib.rs:415:9
+    |
+415 |     use super::*;
+    |         ^^^^^^^^
+
+warning: unused imports: `PRODUCTION_CAPACITY_SLOTS_PATH`, `PRODUCTION_OPERATION_RECORDS_PATH`, `PRODUCTION_PLANS_PATH`, `PRODUCTION_PLAN_PATH`, `PRODUCTION_PLAN_RELEASE_PATH`, `PRODUCTION_SOURCE_INGRESS_PATH`, `PRODUCTION_SOURCE_SYSTEMS_PATH`, `PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH`, and `PRODUCTION_SOURCE_SYSTEM_ROTATE_PATH`
+   --> app/src/lib.rs:417:9
+    |
+417 |         PRODUCTION_CAPACITY_SLOTS_PATH, PRODUCTION_OPERATION_RECORDS_PATH, PRODUCTION_PLAN_PATH,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^
+418 |         PRODUCTION_PLAN_RELEASE_PATH, PRODUCTION_PLANS_PATH, PRODUCTION_SOURCE_INGRESS_PATH,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+419 |         PRODUCTION_SOURCE_SYSTEM_DISABLE_PATH, PRODUCTION_SOURCE_SYSTEM_ROTATE_PATH,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+420 |         PRODUCTION_SOURCE_SYSTEMS_PATH,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `console_ontology_canonical_domain::DispatchTarget`
+    --> app/src/lib.rs:2996:9
+     |
+2996 |     use console_ontology_canonical_domain::DispatchTarget;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::net::SocketAddr`
+    --> app/src/lib.rs:5247:9
+     |
+5247 |     use std::net::SocketAddr;
+     |         ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `ConnectInfo` and `Extension`
+    --> app/src/lib.rs:5249:25
+     |
+5249 |     use axum::extract::{ConnectInfo, Extension};
+     |                         ^^^^^^^^^^^  ^^^^^^^^^
+
+warning: unused import: `axum::routing::get`
+    --> app/src/lib.rs:5250:9
+     |
+5250 |     use axum::routing::get;
+     |         ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `console_platform_request_context::TrustedClientIp`
+    --> app/src/lib.rs:5251:9
+     |
+5251 |     use console_platform_request_context::TrustedClientIp;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `http::Request`
+    --> app/src/lib.rs:5252:9
+     |
+5252 |     use http::Request;
+     |         ^^^^^^^^^^^^^
+
+warning: unused import: `tower::ServiceExt`
+    --> app/src/lib.rs:5253:9
+     |
+5253 |     use tower::ServiceExt;
+     |         ^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `Body` and `to_bytes`
+    --> app/src/lib.rs:5445:22
+     |
+5445 |     use axum::body::{Body, to_bytes};
+     |                      ^^^^  ^^^^^^^^
+
+warning: unused import: `axum::routing::get`
+    --> app/src/lib.rs:5446:9
+     |
+5446 |     use axum::routing::get;
+     |         ^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `http::Request`
+    --> app/src/lib.rs:5447:9
+     |
+5447 |     use http::Request;
+     |         ^^^^^^^^^^^^^
+
+warning: unused import: `tower::ServiceExt`
+    --> app/src/lib.rs:5448:9
+     |
+5448 |     use tower::ServiceExt;
+     |         ^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AppConfig`, `AppRole`, `AppState`, `DatabaseDependency`, and `install_metrics_recorder`
+    --> app/src/lib.rs:5450:17
+     |
+5450 |     use super::{AppConfig, AppRole, AppState, DatabaseDependency, install_metrics_recorder};
+     |                 ^^^^^^^^^  ^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `BranchId`
+    --> app/src/lib.rs:5582:31
+     |
+5582 |     use console_kernel_core::{BranchId, BranchScope, OrgId, UserId};
+     |                               ^^^^^^^^
+
+warning: unused import: `super::authorize_audit_attestation`
+    --> app/src/lib.rs:5585:9
+     |
+5585 |     use super::authorize_audit_attestation;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `tower::ServiceExt`
+    --> app/src/lib.rs:5648:9
+     |
+5648 |     use tower::ServiceExt;
+     |         ^^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::REQUEST_TIMEOUT`
+    --> app/src/lib.rs:5651:9
+     |
+5651 |     use super::REQUEST_TIMEOUT;
+     |         ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `DEFAULT_SERVICE_NAME` and `dispatch_apalis_worker_name`
+    --> app/src/lib.rs:5727:17
+     |
+5727 |     use super::{DEFAULT_SERVICE_NAME, dispatch_apalis_worker_name};
+     |                 ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `ensure_expected_migration_database_budgets`
+    --> app/src/lib.rs:5776:45
+     |
+5776 |         enforce_migration_database_budgets, ensure_expected_migration_database_budgets,
+     |                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AppConfig`, `AppRole`, `ensure_expected_migration_database_identity`, `ensure_expected_serving_database_identity`, `ensure_expected_serving_database_timeouts`, `postgres_options_set_role`, `serving_database_identity_query`, and `validate_database_url_identity`
+    --> app/src/lib.rs:6120:9
+     |
+6120 |         AppConfig, AppRole, RoleAttributes, RoleMembership, SubordinateRoleContract,
+     |         ^^^^^^^^^  ^^^^^^^
+6121 |         ensure_expected_migration_database_identity, ensure_expected_serving_database_identity,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+6122 |         ensure_expected_serving_database_timeouts, postgres_options_set_role,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+6123 |         serving_database_identity_query, validate_database_url_identity,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `console_platform_email::StubEmailMode`
+    --> app/src/lib.rs:6888:9
+     |
+6888 |     use console_platform_email::StubEmailMode;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `AppConfig`, `AppState`, `DatabaseDependency`, `EMAIL_STUB_MODE_ENV`, `email_config_from_vars`, and `email_stub_mode_from_vars`
+    --> app/src/lib.rs:6891:9
+     |
+6891 |         AppConfig, AppState, DatabaseDependency, EMAIL_STUB_MODE_ENV, email_config_from_vars,
+     |         ^^^^^^^^^  ^^^^^^^^  ^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^
+6892 |         email_stub_mode_from_vars,
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `vars` is never used
+   --> app/src/audit_chain_signer.rs:340:8
+    |
+340 |     fn vars(pairs: &[(&str, &str)]) -> HashMap<String, String> {
+    |        ^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `obs` is never used
+   --> app/src/cedar_parity.rs:425:8
+    |
+425 |     fn obs(divergent: bool, roles: &[&str]) -> ParityObservation {
+    |        ^^^
+
+warning: function `canonical_employee_fields` is never used
+    --> app/src/hr.rs:8204:4
+     |
+8204 | fn canonical_employee_fields(raw_row: &Value) -> EmployeeCanonicalFields {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `raw_decimal_text` is never used
+    --> app/src/hr.rs:8254:4
+     |
+8254 | fn raw_decimal_text(raw_row: &Value, headers: &[&str]) -> Option<String> {
+     |    ^^^^^^^^^^^^^^^^
+
+warning: constant `SECRET` is never used
+    --> app/src/office.rs:1202:11
+     |
+1202 |     const SECRET: &str = "test-office-shared-secret";
+     |           ^^^^^^
+
+warning: function `format_publish_findings` is never used
+    --> app/src/workflow_studio.rs:6769:4
+     |
+6769 | fn format_publish_findings(findings: Vec<WorkflowSimulationFinding>) -> String {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `maintenance_completion_execution_definition` is never used
+    --> app/src/workflow_studio.rs:8067:8
+     |
+8067 |     fn maintenance_completion_execution_definition() -> Value {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `policy_decision_definition` is never used
+    --> app/src/workflow_studio.rs:8683:8
+     |
+8683 |     fn policy_decision_definition() -> Value {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `create_request` is never used
+    --> app/src/workflow_studio.rs:8708:8
+     |
+8708 |     fn create_request(definition: Value, object_type: &str) -> CreateWorkflowDefinitionRequest {
+     |        ^^^^^^^^^^^^^^
+
+warning: function `workflow_row` is never used
+    --> app/src/workflow_studio.rs:8726:8
+     |
+8726 |     fn workflow_row(definition: Value, object_type: &str) -> WorkflowVersionRow {
+     |        ^^^^^^^^^^^^
+
+warning: function `canonical_workflow_definition` is never used
+    --> app/src/workflow_studio.rs:8752:8
+     |
+8752 |     fn canonical_workflow_definition(object_type: &str) -> Value {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `action_update_node` is never used
+    --> app/src/workflow_studio.rs:8834:8
+     |
+8834 |     fn action_update_node(object_type: &str, status: &str) -> Value {
+     |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `notification_node` is never used
+    --> app/src/workflow_studio.rs:8853:8
+     |
+8853 |     fn notification_node(object_type: &str, status: &str) -> Value {
+     |        ^^^^^^^^^^^^^^^^^
+
+warning: function `audit_node` is never used
+    --> app/src/workflow_studio.rs:8873:8
+     |
+8873 |     fn audit_node(object_type: &str, status: &str) -> Value {
+     |        ^^^^^^^^^^
+
+warning: function `end_node` is never used
+    --> app/src/workflow_studio.rs:8890:8
+     |
+8890 |     fn end_node(status: &str) -> Value {
+     |        ^^^^^^^^
+
+warning: function `node` is never used
+    --> app/src/workflow_studio.rs:8902:8
+     |
+8902 |     fn node(
+     |        ^^^^
+
+warning: function `input_port` is never used
+    --> app/src/workflow_studio.rs:8926:8
+     |
+8926 |     fn input_port(key: &str, port_type: &str, label: &str) -> Value {
+     |        ^^^^^^^^^^
+
+warning: function `output_port` is never used
+    --> app/src/workflow_studio.rs:8930:8
+     |
+8930 |     fn output_port(key: &str, port_type: &str, label: &str) -> Value {
+     |        ^^^^^^^^^^^
+
+warning: function `branch_port` is never used
+    --> app/src/workflow_studio.rs:8934:8
+     |
+8934 |     fn branch_port(key: &str, label: &str) -> Value {
+     |        ^^^^^^^^^^^
+
+warning: function `port` is never used
+    --> app/src/workflow_studio.rs:8938:8
+     |
+8938 |     fn port(key: &str, direction: &str, port_type: &str, label: &str) -> Value {
+     |        ^^^^
+
+warning: function `edge` is never used
+    --> app/src/workflow_studio.rs:8942:8
+     |
+8942 |     fn edge(
+     |        ^^^^
+
+warning: function `policy_row` is never used
+    --> app/src/workflow_studio.rs:8953:8
+     |
+8953 |     fn policy_row(definition: Value) -> WorkflowVersionRow {
+     |        ^^^^^^^^^^
+
+warning: function `edit` is never used
+    --> app/src/workflow_studio.rs:9132:8
+     |
+9132 |     fn edit(display: &str) -> NormalizedWorkflowDefinitionUpdate {
+     |        ^^^^
+
+warning: function `principal` is never used
+    --> app/src/lib.rs:5587:8
+     |
+5587 |     fn principal(role: Role, branch_scope: BranchScope) -> Principal {
+     |        ^^^^^^^^^
+
+warning: function `slow` is never used
+    --> app/src/lib.rs:5653:14
+     |
+5653 |     async fn slow() -> &'static str {
+     |              ^^^^
+
+warning: function `compose` is never used
+    --> app/src/lib.rs:5660:8
+     |
+5660 |     fn compose(timeout: Duration) -> Router {
+     |        ^^^^^^^
+
+warning: constant `RUNTIME_URL` is never used
+    --> app/src/lib.rs:6126:11
+     |
+6126 |     const RUNTIME_URL: &str = "postgresql://<redacted-userinfo>@db/console";
+     |           ^^^^^^^^^^^
+
+warning: constant `LEAVE_COMMAND_URL` is never used
+    --> app/src/lib.rs:6127:11
+     |
+6127 |     const LEAVE_COMMAND_URL: &str = "postgresql://<redacted-userinfo>@db/console";
+     |           ^^^^^^^^^^^^^^^^^
+
+warning: constant `ONTOLOGY_COMMAND_URL` is never used
+    --> app/src/lib.rs:6128:11
+     |
+6128 |     const ONTOLOGY_COMMAND_URL: &str =
+     |           ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `PLATFORM_FORCE_COMMAND_URL` is never used
+    --> app/src/lib.rs:6130:11
+     |
+6130 |     const PLATFORM_FORCE_COMMAND_URL: &str =
+     |           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `migration_memberships` is never used
+    --> app/src/lib.rs:6133:8
+     |
+6133 |     fn migration_memberships() -> Vec<RoleMembership> {
+     |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `migration_subordinate_roles` is never used
+    --> app/src/lib.rs:6145:8
+     |
+6145 |     fn migration_subordinate_roles() -> Vec<SubordinateRoleContract> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `full_email_vars` is never used
+    --> app/src/lib.rs:6896:8
+     |
+6896 |     fn full_email_vars() -> HashMap<String, String> {
+     |        ^^^^^^^^^^^^^^^
+
+warning: function `app_pairs` is never used
+    --> app/src/lib.rs:6910:8
+     |
+6910 |     fn app_pairs() -> Vec<(&'static str, String)> {
+     |        ^^^^^^^^^
+
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (lib test) generated 79 warnings (run `cargo fix --lib -p console-app --tests` to apply 44 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.48s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/lib.rs (/private/tmp/console-account30-cargo/debug/deps/console_app-b68d3f23bb411cd1)
+
+running 1 test
+test durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events ... topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+ALTER SYSTEM
+t
+
+thread 'durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events' (38648819) panicked at app/src/durability_composition_tests.rs:1639:10:
+typed stage Unknown must be distinguished at the real drainer boundary: Elapsed(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+ALTER SYSTEM
+t
+FAILED
+
+failures:
+
+failures:
+    durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 29 filtered out; finished in 9.45s
+
+error: test failed, to rerun pass `-p console-app --lib`
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.31utCA exit=101

@@ -1,0 +1,53 @@
+{
+  "manifest_sha256": "47c6d6b3c33e647e4fb7840ca50aeae46798ea69c7907f5689a27c89ef715ecc",
+  "files": [
+    {
+      "original": "binder-sequence.rs",
+      "retained": "binder-sequence.rs",
+      "original_sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de",
+      "retained_sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de"
+    },
+    {
+      "original": "caller-map.json",
+      "retained": "caller-map.json",
+      "original_sha256": "bbe087d9fd0d8de4e059e2011a9b1d64f1121e475b384683fba41f283907e163",
+      "retained_sha256": "bbe087d9fd0d8de4e059e2011a9b1d64f1121e475b384683fba41f283907e163"
+    },
+    {
+      "original": "interface-refinement.txt",
+      "retained": "interface-refinement.txt",
+      "original_sha256": "abc836e1e22fe324279bc21a69250f4783955493b7497b9d4cf7c8bcab8d1ae7",
+      "retained_sha256": "abc836e1e22fe324279bc21a69250f4783955493b7497b9d4cf7c8bcab8d1ae7"
+    },
+    {
+      "original": "native-owner-tests.rs",
+      "retained": "native-owner-tests.rs",
+      "original_sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213",
+      "retained_sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213"
+    },
+    {
+      "original": "negative-assertions.rs",
+      "retained": "negative-assertions.rs",
+      "original_sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d",
+      "retained_sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d"
+    },
+    {
+      "original": "source-owner-producer.rs",
+      "retained": "source-owner-producer.rs",
+      "original_sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815",
+      "retained_sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815"
+    },
+    {
+      "original": "source-owner-tests.rs",
+      "retained": "source-owner-tests.rs",
+      "original_sha256": "54809d011ec52e261267da3d07b4663078867d5dd4364185091765dd5d5de36f",
+      "retained_sha256": "54809d011ec52e261267da3d07b4663078867d5dd4364185091765dd5d5de36f"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "5d4aa8efbe893dd2d8710f8432ac57edf32fba1b05c69ea67aca8d9a0f4f297a",
+      "retained_sha256": "5d4aa8efbe893dd2d8710f8432ac57edf32fba1b05c69ea67aca8d9a0f4f297a"
+    }
+  ]
+}

@@ -24,8 +24,9 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const IDEMPOTENCY_KEY: &str = "maintenance-settlement-0001";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn settlement_chain_closes_order_into_cost_with_audit_readback(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = Keys::generate();
     let branch_id = seed_branch(&owner_pool, "정비 Region", "정비 Branch").await;
     let admin_id = UserId::new();
@@ -42,10 +43,8 @@ async fn settlement_chain_closes_order_into_cost_with_audit_readback(owner_pool:
     seed_equipment(&owner_pool, branch_id, "2643").await;
     let admin = keys.token(admin_id, OrgId::knl(), "ADMIN", vec![branch_id]);
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
-    let service = build_router(app_state(
-        console_rt_pool(&owner_pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(console_rt_pool(&owner_pool).await, keys.public_pem.clone()).await);
 
     let work_order_id = drive_to_report(
         &service,
@@ -201,8 +200,9 @@ async fn settlement_chain_closes_order_into_cost_with_audit_readback(owner_pool:
     }
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn settlement_enforces_eligibility_four_eyes_and_void_discipline(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = Keys::generate();
     let branch_id = seed_branch(&owner_pool, "정산 Region", "정산 Branch").await;
     let admin_a = UserId::new();
@@ -222,10 +222,8 @@ async fn settlement_enforces_eligibility_four_eyes_and_void_discipline(owner_poo
     let token_a = keys.token(admin_a, OrgId::knl(), "ADMIN", vec![branch_id]);
     let token_b = keys.token(admin_b, OrgId::knl(), "ADMIN", vec![branch_id]);
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
-    let service = build_router(app_state(
-        console_rt_pool(&owner_pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(console_rt_pool(&owner_pool).await, keys.public_pem.clone()).await);
 
     // A settlement cannot be opened before the report exists.
     let received = send(
@@ -364,8 +362,9 @@ async fn settlement_enforces_eligibility_four_eyes_and_void_discipline(owner_poo
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn pbac_denies_and_cross_tenant_reads_are_isolated_without_leakage(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = Keys::generate();
     let branch_id = seed_branch(&owner_pool, "격리 Region", "격리 Branch").await;
     let admin_id = UserId::new();
@@ -391,10 +390,8 @@ async fn pbac_denies_and_cross_tenant_reads_are_isolated_without_leakage(owner_p
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
     let member = keys.token(member_id, OrgId::knl(), "MEMBER", vec![branch_id]);
     let outsider = keys.token(outsider_id, other_org, "ADMIN", vec![other_branch]);
-    let service = build_router(app_state(
-        console_rt_pool(&owner_pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(console_rt_pool(&owner_pool).await, keys.public_pem.clone()).await);
 
     let work_order_id = drive_to_report(
         &service,
@@ -492,8 +489,9 @@ async fn pbac_denies_and_cross_tenant_reads_are_isolated_without_leakage(owner_p
     assert_eq!(outsider_list.json["items"].as_array().unwrap().len(), 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn lens_and_filters_expose_maintenance_classification_truthfully(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let keys = Keys::generate();
     let branch_id = seed_branch(&owner_pool, "렌즈 Region", "렌즈 Branch").await;
     let admin_id = UserId::new();
@@ -511,10 +509,8 @@ async fn lens_and_filters_expose_maintenance_classification_truthfully(owner_poo
     let preventive_equipment = seed_equipment(&owner_pool, branch_id, "3102").await;
     let admin = keys.token(admin_id, OrgId::knl(), "ADMIN", vec![branch_id]);
     let mechanic = keys.token(mechanic_id, OrgId::knl(), "MECHANIC", vec![branch_id]);
-    let service = build_router(app_state(
-        console_rt_pool(&owner_pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(console_rt_pool(&owner_pool).await, keys.public_pem.clone()).await);
 
     let create = send(
         &service,
@@ -804,8 +800,17 @@ impl Keys {
     }
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -813,7 +818,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 async fn console_rt_pool(owner_pool: &PgPool) -> PgPool {

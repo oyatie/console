@@ -1,0 +1,174 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling libc v0.2.186
+   Compiling typenum v1.20.1
+   Compiling serde_core v1.0.228
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde v1.0.228
+   Compiling version_check v0.9.5
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.9
+   Compiling cfg-if v1.0.4
+   Compiling dunce v1.0.5
+   Compiling fs_extra v1.3.0
+   Compiling pkg-config v0.3.33
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling pin-project-lite v0.2.17
+   Compiling icu_normalizer_data v2.2.0
+   Compiling icu_properties_data v2.2.0
+   Compiling utf8_iter v1.0.4
+   Compiling aws-lc-rs v1.18.1
+   Compiling crossbeam-utils v0.8.21
+   Compiling futures-core v0.3.32
+   Compiling zeroize v1.9.0
+   Compiling generic-array v0.14.7
+   Compiling bytes v1.11.1
+   Compiling parking_lot_core v0.9.12
+   Compiling cmov v0.5.4
+   Compiling equivalent v1.0.2
+   Compiling rustls-pki-types v1.14.1
+   Compiling zmij v1.0.23
+   Compiling ctutils v0.4.2
+   Compiling once_cell v1.21.4
+   Compiling scopeguard v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling untrusted v0.9.0
+   Compiling allocator-api2 v0.2.21
+   Compiling futures-sink v0.3.32
+   Compiling serde_json v1.0.150
+   Compiling autocfg v1.5.1
+   Compiling memchr v2.8.2
+   Compiling time-core v0.1.8
+   Compiling hybrid-array v0.4.12
+   Compiling itoa v1.0.18
+   Compiling powerfmt v0.2.0
+   Compiling thiserror v2.0.18
+   Compiling foldhash v0.2.0
+   Compiling num-conv v0.2.2
+   Compiling percent-encoding v2.3.2
+   Compiling rustls v0.23.40
+   Compiling num-traits v0.2.19
+   Compiling time-macros v0.2.27
+   Compiling syn v2.0.117
+   Compiling form_urlencoded v1.2.2
+   Compiling hashbrown v0.16.1
+   Compiling deranged v0.5.8
+   Compiling tracing-core v0.1.36
+   Compiling hashbrown v0.17.1
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling tinyvec_macros v0.1.1
+   Compiling subtle v2.6.1
+   Compiling futures-io v0.3.32
+   Compiling slab v0.4.12
+   Compiling futures-task v0.3.32
+   Compiling rand_core v0.10.1
+   Compiling getrandom v0.4.2
+   Compiling log v0.4.32
+   Compiling parking v2.2.1
+   Compiling crc-catalog v2.5.0
+   Compiling futures-util v0.3.32
+   Compiling digest v0.11.3
+   Compiling crc v3.4.0
+   Compiling indexmap v2.14.0
+   Compiling hashlink v0.11.1
+   Compiling time v0.3.47
+   Compiling tinyvec v1.11.0
+   Compiling webpki-roots v1.0.8
+   Compiling uuid v1.23.3
+   Compiling base64 v0.22.1
+   Compiling hmac v0.13.0
+   Compiling unicode-normalization v0.1.25
+   Compiling chacha20 v0.10.2
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-bidi v0.3.18
+   Compiling hkdf v0.13.0
+   Compiling md-5 v0.11.0
+   Compiling futures-channel v0.3.32
+   Compiling dotenvy v0.15.7
+   Compiling stringprep v0.1.5
+   Compiling whoami v2.1.2
+   Compiling byteorder v1.5.0
+   Compiling jobserver v0.1.35
+   Compiling socket2 v0.6.4
+   Compiling mio v1.2.1
+   Compiling cpufeatures v0.2.17
+   Compiling cpufeatures v0.3.0
+   Compiling cc v1.2.63
+   Compiling sha2 v0.11.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling concurrent-queue v2.5.0
+   Compiling crossbeam-queue v0.3.12
+   Compiling digest v0.10.7
+   Compiling tokio v1.52.3
+   Compiling bitflags v2.13.0
+   Compiling hex v0.4.3
+   Compiling event-listener v5.4.1
+   Compiling sha2 v0.10.9
+   Compiling heck v0.5.0
+   Compiling cmake v0.1.58
+   Compiling aws-lc-sys v0.45.0
+   Compiling synstructure v0.13.2
+   Compiling rand v0.10.1
+   Compiling zerofrom-derive v0.1.7
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling serde_derive v1.0.228
+   Compiling displaydoc v0.2.6
+   Compiling thiserror-impl v2.0.18
+   Compiling tracing-attributes v0.1.31
+   Compiling tokio-macros v2.7.0
+   Compiling zerofrom v0.1.8
+   Compiling tracing v0.1.44
+   Compiling atoi v2.0.0
+   Compiling yoke v0.8.3
+   Compiling tokio-stream v0.1.18
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling smallvec v1.15.2
+   Compiling either v1.16.0
+   Compiling parking_lot v0.12.5
+   Compiling futures-intrusive v0.5.0
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_collections v2.2.0
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_provider v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling icu_properties v2.2.0
+   Compiling idna_adapter v1.2.2
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling rustls-webpki v0.103.13
+   Compiling sqlx-core v0.9.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling console-gate-tenant-isolation v0.1.0 (/private/tmp/console-account-classification-20260914/backend/ci/gates/tenant-isolation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.22s
+     Running unittests src/lib.rs (/private/tmp/console-account-classification-cargo/debug/deps/console_gate_tenant_isolation-9d964ce1cbf42c6a)
+
+running 2 tests
+
+thread 'tests::account_catalog_tables_are_owner_only' (29795407) panicked at ci/gates/tenant-isolation/src/lib.rs:1210:9:
+Account catalog must be owner-only, not global-read: [("accounts", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-accounts-1789441084778935000/migrations/0001_catalog.sql", detail: "table 'accounts' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_security", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_security-1789441084779555000/migrations/0001_catalog.sql", detail: "table 'account_security' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_security_events", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_security_events-1789441084780123000/migrations/0001_catalog.sql", detail: "table 'account_security_events' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_head", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_head-1789441084780643000/migrations/0001_catalog.sql", detail: "table 'account_terms_head' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_acceptances", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_acceptances-1789441084781176000/migrations/0001_catalog.sql", detail: "table 'account_terms_acceptances' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_release_receipts", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_release_receipts-1789441084781781000/migrations/0001_catalog.sql", detail: "table 'account_terms_release_receipts' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }])]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test tests::account_catalog_tables_are_owner_only ... FAILED
+
+thread 'tests::account_catalog_rejects_direct_runtime_and_public_grants' (29795406) panicked at ci/gates/tenant-isolation/src/lib.rs:1240:9:
+direct Account catalog grants escaped classification: [("accounts", "console_rt", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-accounts-1789441084778936000/migrations/0001_catalog.sql", detail: "table 'accounts' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("accounts", "PUBLIC", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-accounts-1789441084779810000/migrations/0001_catalog.sql", detail: "table 'accounts' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_security", "console_rt", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_security-1789441084780340000/migrations/0001_catalog.sql", detail: "table 'account_security' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_security", "PUBLIC", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_security-1789441084780903000/migrations/0001_catalog.sql", detail: "table 'account_security' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_security_events", "console_rt", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_security_events-1789441084781456000/migrations/0001_catalog.sql", detail: "table 'account_security_events' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_security_events", "PUBLIC", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_security_events-1789441084781986000/migrations/0001_catalog.sql", detail: "table 'account_security_events' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_head", "console_rt", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_head-1789441084782543000/migrations/0001_catalog.sql", detail: "table 'account_terms_head' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_head", "PUBLIC", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_head-1789441084783104000/migrations/0001_catalog.sql", detail: "table 'account_terms_head' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_acceptances", "console_rt", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_acceptances-1789441084783504000/migrations/0001_catalog.sql", detail: "table 'account_terms_acceptances' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_acceptances", "PUBLIC", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_acceptances-1789441084783898000/migrations/0001_catalog.sql", detail: "table 'account_terms_acceptances' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_release_receipts", "console_rt", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_release_receipts-1789441084784613000/migrations/0001_catalog.sql", detail: "table 'account_terms_release_receipts' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }]), ("account_terms_release_receipts", "PUBLIC", [Violation { kind: UnclassifiedTable, file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-gate-tenant-isolation-account_terms_release_receipts-1789441084785134000/migrations/0001_catalog.sql", detail: "table 'account_terms_release_receipts' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale." }])]
+test tests::account_catalog_rejects_direct_runtime_and_public_grants ... FAILED
+
+failures:
+
+failures:
+    tests::account_catalog_rejects_direct_runtime_and_public_grants
+    tests::account_catalog_tables_are_owner_only
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p console-gate-tenant-isolation --lib`

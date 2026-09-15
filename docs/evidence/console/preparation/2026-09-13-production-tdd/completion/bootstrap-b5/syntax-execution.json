@@ -1,0 +1,72 @@
+{
+  "classification": "RUST_PARSER_ONLY",
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-test-bootstrap-b5-20260913/account-enrollment-producer.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-test-bootstrap-b5-20260913/deployment-root-producer.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-test-bootstrap-b5-20260913/ordinary-issuer-bootstrap.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-test-bootstrap-b5-20260913/publish-then-root-producer.rs"
+      ],
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2021",
+        "--emit",
+        "stdout",
+        "--config",
+        "skip_children=true",
+        "/private/tmp/console-native28-test-bootstrap-b5-20260913/dependencies/operator-custody-producer.rs"
+      ],
+      "returncode": 0
+    }
+  ],
+  "compiled": false,
+  "executed_tests": 0
+}

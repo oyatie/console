@@ -1,0 +1,97 @@
+{
+  "head": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "driver_sha256": "908e195cc928a4de846fdd68092f49f5201eeac6bd6618f0ac491285308ba51a",
+  "probe_sha256": "b45d1aa74eb2a980e6103682d17b1381a50d72a416d892f397f8c818af172e71",
+  "all_receipt_artifact_hashes_verified": true,
+  "receipt_artifact_count": 13,
+  "source_prepost_byte_equal_clean_head": true,
+  "regular_git_source_blobs_checked": 1005,
+  "test_source_matches_exact_approved_v4": true,
+  "raw_test_roster": [
+    [
+      "account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::immediate_security_fk_waits_for_account_root_update_lock",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect",
+      "ok"
+    ],
+    [
+      "account_custody_deactivation::unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation",
+      "ok"
+    ],
+    [
+      "deactivate_revokes_passkeys_and_sessions_as_runtime_role",
+      "ok"
+    ]
+  ],
+  "counts": {
+    "executed": 14,
+    "passed": 14,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "cargo_invocations_in_saved_run": 1,
+    "new_cargo_invocations_by_reviewer": 0,
+    "new_database_commands_by_reviewer": 0,
+    "shared_writes_by_reviewer": 0
+  },
+  "binary_readback": {
+    "path": "/private/tmp/console-account30-cargo/debug/deps/deactivate_revokes_credentials-7f1d12c6a5032217",
+    "sha256": "042eebb23ccde31b522be6592e76df13c5b41dc2ee10b27f55b7cb35afedfd3f",
+    "size_bytes": 29088800,
+    "contains_intended_test_support_manifest": true,
+    "contains_old_test_support_manifest": false
+  },
+  "cleanup_confirmed": true,
+  "retained_artifacts": {
+    "driver-receipt.json": "b35f6dc92cfdddb2094013ec86a3f34ef3fb8d4dd0724ec6ed2aa75db6e12617",
+    "source-before.json": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+    "source-after.json": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+    "probe.log": "39906632340a84a0a716c2bdf10311ce686f69540da8eaebf12d12f38576825a",
+    "probe-exit.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "cleanup.txt": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+    "containers-after.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-dispatch.txt": "f122c9a7b6f01997bd1d882f72e4631468e99205f0a0a3587c6eaf4e9e12a9d0"
+  }
+}

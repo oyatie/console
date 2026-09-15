@@ -1,0 +1,275 @@
+{
+  "status": "PROPOSED_FIXED_OWNER_CONTRACT_NOT_COMPILED",
+  "transaction_owner": "actual domain adapter; common draft-only operations owned by ontology adapter",
+  "participant_borrow": "&mut PgConnection with future tied to borrow, no stored connection/pool checkout/commit/spawn",
+  "sql_login": "console_ontology_cmd",
+  "sql_definer": "console_owner_commit_writer (proposed NOLOGIN)",
+  "operations": [
+    {
+      "action": "calendar.publish",
+      "owner": "attendance",
+      "input_contract": "CalendarPayload",
+      "writes": "work_calendar_revisions",
+      "exclusive_families": [
+        "CALENDAR"
+      ],
+      "shared_families": [
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "attendance_source_api.commit_calendar",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "calendar.assign",
+      "owner": "attendance",
+      "input_contract": "CalendarAssignmentPayload",
+      "writes": "work_calendar_assignment_revisions",
+      "exclusive_families": [
+        "CALENDAR",
+        "POPULATION"
+      ],
+      "shared_families": [
+        "EMPLOYMENT",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "attendance_source_api.commit_assignment",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "attendance.coverage.publish",
+      "owner": "attendance",
+      "input_contract": "CoveragePayload",
+      "writes": "attendance_coverage_revisions",
+      "exclusive_families": [
+        "ATTENDANCE"
+      ],
+      "shared_families": [
+        "EMPLOYMENT",
+        "CALENDAR",
+        "LEAVE",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "attendance_source_api.commit_coverage",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "attendance.close_basis.publish",
+      "owner": "attendance",
+      "input_contract": "ClosePayload",
+      "writes": "attendance_native_close_bases",
+      "exclusive_families": [
+        "ATTENDANCE"
+      ],
+      "shared_families": [
+        "POPULATION",
+        "EMPLOYMENT",
+        "WAGE",
+        "CALENDAR",
+        "LEAVE",
+        "ELIGIBILITY",
+        "TAX_EVIDENCE",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "attendance_source_api.commit_close_basis",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "leave.decide",
+      "owner": "leave",
+      "input_contract": "CurrentLeaveDecision20",
+      "writes": "leave_requests and optional owner-bound disposition common revision",
+      "exclusive_families": [
+        "LEAVE",
+        "ATTENDANCE"
+      ],
+      "shared_families": [
+        "EMPLOYMENT",
+        "CALENDAR",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "leave_api.commit_source_decision",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "source.propose",
+      "owner": "payroll",
+      "input_contract": "AdmissionPayload",
+      "writes": "qualification or eligibility or tax revision/head",
+      "exclusive_families": [
+        "TARGET_SOURCE_FAMILY"
+      ],
+      "shared_families": [
+        "DYNAMIC_DECLARED_DEPENDENCY_UNION"
+      ],
+      "finalizer": "payroll_source_api.commit_proposal",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "source.verify",
+      "owner": "payroll",
+      "input_contract": "VerifyPayload",
+      "writes": "source verified revision/head and optional predecessor supersede/claim",
+      "exclusive_families": [
+        "TARGET_SOURCE_FAMILY"
+      ],
+      "shared_families": [
+        "DYNAMIC_DECLARED_DEPENDENCY_UNION"
+      ],
+      "finalizer": "payroll_source_api.commit_verification",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "source.revoke",
+      "owner": "payroll",
+      "input_contract": "RevokePayload",
+      "writes": "source revoked revision/head",
+      "exclusive_families": [
+        "TARGET_SOURCE_FAMILY"
+      ],
+      "shared_families": [
+        "ARTIFACT"
+      ],
+      "finalizer": "payroll_source_api.commit_revocation",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "payroll.prepare",
+      "owner": "payroll",
+      "input_contract": "Native18PrepareInput",
+      "writes": "payroll_input_revisions/units/source_refs and stable native line/head",
+      "exclusive_families": [
+        "NONE"
+      ],
+      "shared_families": [
+        "POPULATION",
+        "EMPLOYMENT",
+        "WAGE",
+        "ATTENDANCE",
+        "CALENDAR",
+        "LEAVE",
+        "ELIGIBILITY",
+        "TAX_EVIDENCE",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "payroll_native_api.commit_input",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "payroll.calculate",
+      "owner": "payroll",
+      "input_contract": "Native18CalculateInput",
+      "writes": "payroll_calculation_batches/units and existing money/head",
+      "exclusive_families": [
+        "NONE"
+      ],
+      "shared_families": [
+        "POPULATION",
+        "EMPLOYMENT",
+        "WAGE",
+        "ATTENDANCE",
+        "CALENDAR",
+        "LEAVE",
+        "ELIGIBILITY",
+        "TAX_EVIDENCE",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ],
+      "finalizer": "payroll_native_api.commit_calculation",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    },
+    {
+      "action": "docs.version.attest",
+      "owner": "docs",
+      "input_contract": "ArtifactAttestation15",
+      "writes": "docs_evidence_version_attestations/current projection",
+      "exclusive_families": [
+        "ARTIFACT"
+      ],
+      "shared_families": [
+        "NONE"
+      ],
+      "finalizer": "docs_source_api.commit_attestation",
+      "entry_contract": "Canonical CCF1 command with exact SourcePayloadRef20 or native18 input refs; trusted bounded prepared owner rows; current account/Company/schema/head/receipt/gate/retained binding; finalizer rechecks structure and final time",
+      "row_result": "OwnerEffectReceiptRef20 projected under current disclosure, not raw prepared payload",
+      "generic_workflow": "same draft/attempt/gate/receipt/work owners; no reason-derived variant"
+    }
+  ],
+  "dynamic_rules": [
+    "TARGET_SOURCE_FAMILY is exactly QUALIFICATION|ELIGIBILITY|TAX_EVIDENCE derived from registered source action, not caller family text",
+    "DYNAMIC_DECLARED_DEPENDENCY_UNION is complete bounded19 source graph; every used guard predeclared; target exclusive wins over shared before locking",
+    "NONE means no source semantic write; payroll input/result persistence does not create new wage/attendance/source eligibility fact",
+    "Exact payroll create/native prepare line stabilization must not mutate population selection truth; if a path does, add declared POPULATION exclusive before acquisition or refuse",
+    "Every source publication may pin/adopt source units under9d EXCLUSIVE without incrementing ARTIFACT generation unless artifact semantic state changes"
+  ],
+  "methods": [
+    {
+      "name": "probe_receipt_in_conn",
+      "owner": "common receipt owner",
+      "input": "exact immutable Company command/provenance under7 fence",
+      "result": "historical receipt/provenance absence, never new-effect authority"
+    },
+    {
+      "name": "lock_source_plan_in_conn",
+      "owner": "platform/db plus native lock owners",
+      "input": "compiled complete predeclared LO20 resource/mode union",
+      "result": "same transaction locks and current row identities, no caller-asserted locked token"
+    },
+    {
+      "name": "resolve_current_sources_in_conn",
+      "owner": "each actual source adapter through app forwarding",
+      "input": "19 exact refs/predicates plus independently preloaded bytes by exact version/hash",
+      "result": "typed full source facts, ambiguity/bounds/expiry/current guards for trusted Rust validation"
+    },
+    {
+      "name": "evaluate_source_or_kernel",
+      "owner": "existing domain/application pure rules",
+      "input": "typed closed source basis and pinned admitted builds",
+      "result": "typed owner outcome or blocker; no I/O/permission token"
+    },
+    {
+      "name": "commit_registered_owner_in_conn",
+      "owner": "selected fixed SQL owner finalizer",
+      "input": "exact canonical command + trusted prepared rows in declared byte/count shape",
+      "result": "atomic provisional domain/gate/pins/attempt/work/audit/receipt; caller still must commit"
+    },
+    {
+      "name": "project_receipt_in_conn",
+      "owner": "receipt and result source owners",
+      "input": "current discovery/history/field policy and exact retained result refs",
+      "result": "safe DTO or nondisclosure, never a signal to reexecute"
+    }
+  ],
+  "open_signatures": [
+    "CurrentLeaveDecision20 extends current0217 CAS with Account/command/attempt/gate and exact decision witness; full wire/FK columns remain integrated F01/F02",
+    "Native18PrepareInput/CalculateInput refer to frozen12/18 schema and owner validation; complete SQL prepared-row carrier/signatures remain F02",
+    "Private shared retained-unit/gate/work/Account participant SQL types and bodies remain integrated13-17 F02/F03/F04; missing blocks enrollment",
+    "OwnerEffectReceiptRef20 is a conceptual reference to the existing14 governed result/receipt binding, not a new closed DTO. Exact native/source result projection and wire signature remain F01/F02.",
+    "commit_registered_owner_in_conn names a conceptual fixed dispatcher to registered owner finalizers; not an implemented API, arbitrary SQL function name or caller-supplied callback."
+  ]
+}

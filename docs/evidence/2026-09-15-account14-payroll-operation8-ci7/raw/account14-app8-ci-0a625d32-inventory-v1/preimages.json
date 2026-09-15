@@ -1,0 +1,9 @@
+{
+  ".github/workflows/ci.yml": "3ac68326e809780332a35a2e90043e8409ce69fcef1b75595dbb8ee22f7a070d",
+  "scripts/lib/recovery-test-invocations.mjs": "498ac4f0cd4e3f0c465257ab8f1de0311b9b24098aa160f541d16099e71f20da",
+  "scripts/lib/recovery-test-invocations.test.mjs": "2a71ce282b6373a3d533597121f23bdd9f76a4f1ddd8cf0e3435c91d3e448260",
+  "tools/buck/test_preparation_wiring.py": "73c75ae43fcc996ab2830b6c83eaf5b5da0064d6b7a66057523035e1e7814dd0",
+  "scripts/check-ci-preflight.mjs": "8ff3871b60b343bbc80c6028bad3fb42e85694bf836c7f43fe4bd398d5a0fd60",
+  "scripts/check-ci-preflight.test.mjs": "94a13437619d7f19c78668b517e06ba2a89dfb8a1c3aabed238463c578be8a70",
+  "docs/program/executed-tests-baseline.json": "166ed21d79532582dc59a90cbd73f6a415d8409a6ecf58864d4f5b05d8ffea99"
+}

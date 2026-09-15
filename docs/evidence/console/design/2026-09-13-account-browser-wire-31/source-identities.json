@@ -1,0 +1,115 @@
+{
+  "source_design_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "files": [
+    {
+      "path": "acceptance-candidates.json",
+      "git_blob": "fa18c5a1ad35e31e7b668a35cd0c65a08779e106",
+      "bytes": 7366,
+      "sha256": "c1f5604a505dd27cff3a6090b892e78ddd85a99a52697b2983f82638e09de711"
+    },
+    {
+      "path": "action-registrations.json",
+      "git_blob": "56dce7fa664bd4a8cce455020129cf4cc677048a",
+      "bytes": 530,
+      "sha256": "424ebb76f61829d458ba2b2344c2e9e608b69b6ead08954c0b32325f704c13d4"
+    },
+    {
+      "path": "contract.txt",
+      "git_blob": "2c8a8197cb847d3992d208150ab39f24d3e08fe2",
+      "bytes": 25196,
+      "sha256": "f73a36e813041f7498c90fde5a3fb97cc056a85d823af2ba81c00d53b33b3298"
+    },
+    {
+      "path": "design-decisions.txt",
+      "git_blob": "c5a0227467ac1057cf3b3b8a7735ac9a0159326d",
+      "bytes": 1598,
+      "sha256": "5ff9e6797ff240a96dea0399b3f0c94007f7e899ca31c9ce6a45082e7df6083a"
+    },
+    {
+      "path": "entry.json",
+      "git_blob": "ae58a31fdf233bd660621dc52b8cc936a578ea93",
+      "bytes": 2118,
+      "sha256": "fdd454eaa7e7da460001132ecc934e7423e4c0ab65328d5b79bb8f05d57f3bf0"
+    },
+    {
+      "path": "examples.json",
+      "git_blob": "a6276986deb4258a8bf9f32ec8d5eec7f5eb67ae",
+      "bytes": 8882,
+      "sha256": "4a1f66951611949f47ec0cfc0ae507abac74aa50ef86fbd453fe147e603936ed"
+    },
+    {
+      "path": "experiments.json",
+      "git_blob": "82d4c70c18135073492eb772109d39a8ce5d435c",
+      "bytes": 3208,
+      "sha256": "a0487c990aeebb393d4f77ca6ce324e925aa1761948141dae513d5b13971d91f"
+    },
+    {
+      "path": "fixtures/artifact-index.json",
+      "git_blob": "4afbe656e355430e46f5a5d4cc66ebd323852d1b",
+      "bytes": 500,
+      "sha256": "3da96cdb0b108d2bea97f8e4b2e8f389bcf1e0dce75e74718bacd7a8008fe682"
+    },
+    {
+      "path": "fixtures/manifest.json",
+      "git_blob": "8f6138f386a06f1a6aa96126c170713c07f817e0",
+      "bytes": 554,
+      "sha256": "3643e74a128a2fb3facce194264bcb40487dc79548b4d3b734b1de90be76fe52"
+    },
+    {
+      "path": "fixtures/privacy.txt",
+      "git_blob": "236da99969ffd8478d7758afce9ef83f5df9d299",
+      "bytes": 115,
+      "sha256": "4254fa64b821906ac2995f0829590ca151540929b05594a023afc99d228c23d2"
+    },
+    {
+      "path": "fixtures/service.txt",
+      "git_blob": "5ae232e572b5b755326505fc0366581a1b97b677",
+      "bytes": 102,
+      "sha256": "d58e7fdecdb5cf68640ae805ede9ce5613ace72bf9f92b9b9ccd0d2729646f2c"
+    },
+    {
+      "path": "inherited-sources.json",
+      "git_blob": "31c098a66fe1f81bf9de3dd6538b9b23d1f5016f",
+      "bytes": 2191,
+      "sha256": "dd9f8a446448f9c9918c1f48affa5b33b8eaafb2aaf6ef6131e02c233dc8ba42"
+    },
+    {
+      "path": "reviews/round-1.json",
+      "git_blob": "dd5668a68e8175989782ef2cac2265e4c432b1ae",
+      "bytes": 1651,
+      "sha256": "8d84d11fb5b04875b7224111ea05a06f438396b2b4f546ee021860ea85816979"
+    },
+    {
+      "path": "reviews/round-2.json",
+      "git_blob": "13455bea68b2519b02827f330cfed758b9c7d407",
+      "bytes": 1285,
+      "sha256": "3a3b14ad41c16131c2a0cbded5d088420f0a57f0df72c41cb3712485af913a97"
+    },
+    {
+      "path": "routes.json",
+      "git_blob": "ab5cce2bf25406e06de9b9f06c9bd908a6a78382",
+      "bytes": 2765,
+      "sha256": "29158432a5673571327718f04c2a53acd1406ade1bfcfdc02bf8d8992bc30c27"
+    },
+    {
+      "path": "storage-refinement.json",
+      "git_blob": "b2928f0232d55e69661dd3bd9cfab49ad7ae36bb",
+      "bytes": 9767,
+      "sha256": "e1cd2e84ebcdea3ba215ca332a21475e56c8022db02774eb580abeca8cdfbb1f"
+    },
+    {
+      "path": "verify.py",
+      "git_blob": "b03f347d965afde30c131b95f22f7290f086555b",
+      "bytes": 3276,
+      "sha256": "ed91f81df683ba75f012b1195e3eb6936ec6df3366ab7ee35cb091d23b766ea2"
+    },
+    {
+      "path": "wire.schema.json",
+      "git_blob": "5274cea33f12767c4a0d7cf912a6332b208a2963",
+      "bytes": 17599,
+      "sha256": "e89b185f2e1d94c0a04265113b7ef92b2932422949457d5ad4545f34c0b60075"
+    }
+  ],
+  "regular_blob_count": 18,
+  "claim": "Candidate regular-blob identities, exact worktree readback; no product validation"
+}

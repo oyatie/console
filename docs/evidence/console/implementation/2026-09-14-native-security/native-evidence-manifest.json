@@ -1,0 +1,263 @@
+{
+  "source_candidate_sha": "d2cd4c47975afec364d3e2baeba8100db6281d90",
+  "records": [
+    {
+      "retained_path": "native/cedar/candidate.patch",
+      "source_bytes": 3050,
+      "source_sha256": "5586b00d4461fa4660251dccc1e6c2c08b39b97527f9e8da8db0e047daf2ecbc",
+      "retained_sha256": "5586b00d4461fa4660251dccc1e6c2c08b39b97527f9e8da8db0e047daf2ecbc"
+    },
+    {
+      "retained_path": "native/cedar/clippy.log.gz",
+      "source_bytes": 2005,
+      "source_sha256": "b9f0d08033c7c048b9722b306a31d3efe5dfd738fd41bbc0de0bb8cca04d4eca",
+      "retained_sha256": "b66f64ce014380f933be9ab9aa7d9d83dab779b3760e78604d8b709d261e80f5"
+    },
+    {
+      "retained_path": "native/cedar/dispatch-contract.json",
+      "source_bytes": 1906,
+      "source_sha256": "918dd44c24a7dc3d7eda5480bb324576450011a0db66d43ef259380bf40bb2dd",
+      "retained_sha256": "918dd44c24a7dc3d7eda5480bb324576450011a0db66d43ef259380bf40bb2dd"
+    },
+    {
+      "retained_path": "native/cedar/execution.json",
+      "source_bytes": 4643,
+      "source_sha256": "1cd20bd992d3a6794a1669e2ae7dd21f009a28d2cd9afada19a3660240a44458",
+      "retained_sha256": "1cd20bd992d3a6794a1669e2ae7dd21f009a28d2cd9afada19a3660240a44458"
+    },
+    {
+      "retained_path": "native/cedar/fmt.log.gz",
+      "source_bytes": 0,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "retained_path": "native/cedar/green.log.gz",
+      "source_bytes": 862,
+      "source_sha256": "1307b5d0b254c4f5c326925aeaf1824fe96ff7da7e1f3ca819a05c5cae65f989",
+      "retained_sha256": "43f1ce5940e47a94d2559dbb8f10ce7f65e80ee2b23fb94f5a530c624718d3d3"
+    },
+    {
+      "retained_path": "native/cedar/package.log.gz",
+      "source_bytes": 17349,
+      "source_sha256": "02ab089dddc452a7619f5c81369a535f0e4e7ba4746459002f6e76e54193c01e",
+      "retained_sha256": "b191a41e71b8cbce15949c270f1da18096d157c7ef0b2a9a32c73d413c0756bf"
+    },
+    {
+      "retained_path": "native/cedar/policy-postgres-execution.json",
+      "source_bytes": 695,
+      "source_sha256": "6de94649e230f77f514e58eb91df74b00ec126f228e642ddf6189233ee9406a4",
+      "retained_sha256": "6de94649e230f77f514e58eb91df74b00ec126f228e642ddf6189233ee9406a4"
+    },
+    {
+      "retained_path": "native/cedar/policy-postgres.log.gz",
+      "source_bytes": 5636,
+      "source_sha256": "0af715d8ad7d1c0a036ae89f514953ba184003cc1ef2031b4a2971418fcb1b61",
+      "retained_sha256": "9cf82d46d3a57e7c4304f0075b7ab698a75310bc05dc714437c41b3e76542c82"
+    },
+    {
+      "retained_path": "native/cedar/red.log.gz",
+      "source_bytes": 2228,
+      "source_sha256": "e2bf1675f4d8ae754086ead5d3e913c00d04fc603de0b509e93633e5e5accee2",
+      "retained_sha256": "4f9c390ee29c64a2b64821b5aa2e1f14af4b0b5ea51995f4c48b296290202abd"
+    },
+    {
+      "retained_path": "native/realtime/candidate.patch",
+      "source_bytes": 1030,
+      "source_sha256": "2c340128a55319925bb80e2f3d25f8a05514bf6e78a78c4106815e904ba2b007",
+      "retained_sha256": "2c340128a55319925bb80e2f3d25f8a05514bf6e78a78c4106815e904ba2b007"
+    },
+    {
+      "retained_path": "native/realtime/clippy.log.gz",
+      "source_bytes": 2078,
+      "source_sha256": "fb558fd4555922a1b3a247e14763239439b4033698c9c87966247da4713b5537",
+      "retained_sha256": "40924ab5390d3cca050736358682377511082a107efd74b2a1e2b48120e97c64"
+    },
+    {
+      "retained_path": "native/realtime/dispatch-contract.json",
+      "source_bytes": 1767,
+      "source_sha256": "4eb1b5be7dfd9a90b47a7b234b479a5f4f65b81779eec7e73ac46a87023d299f",
+      "retained_sha256": "4eb1b5be7dfd9a90b47a7b234b479a5f4f65b81779eec7e73ac46a87023d299f"
+    },
+    {
+      "retained_path": "native/realtime/execution-receipt.json",
+      "source_bytes": 4353,
+      "source_sha256": "767e1db2843a7c80a8b0d6f245f9c39c45ba57d39043af6d148fcf8da50bdbb1",
+      "retained_sha256": "767e1db2843a7c80a8b0d6f245f9c39c45ba57d39043af6d148fcf8da50bdbb1"
+    },
+    {
+      "retained_path": "native/realtime/fmt.log.gz",
+      "source_bytes": 0,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "retained_path": "native/realtime/green.log.gz",
+      "source_bytes": 591,
+      "source_sha256": "aa1873a22d78dedda54b64a25de2443282c764e014aa746935f3865c64039ac8",
+      "retained_sha256": "5c02a0365928b535679606a7453cd9fe2618ad9c8b1b880e2f1063e8e009beda"
+    },
+    {
+      "retained_path": "native/realtime/non-db.log.gz",
+      "source_bytes": 1577,
+      "source_sha256": "f56bd552214680eac6f884ee6293c99d20fea502d54d9dad6fa38564e2efba45",
+      "retained_sha256": "945716b3aa4327523a651b744f691c22c83e78293bc37e34c3a77049235a6c63"
+    },
+    {
+      "retained_path": "native/realtime/red.log.gz",
+      "source_bytes": 5562,
+      "source_sha256": "bb9250cf56c2fa34306c6b052b86084594deb84106c5a7a83d5981b058b7918a",
+      "retained_sha256": "ad6be7b62d7293ce9b7c229f3714bd66e75693470263e467151523e21642ef85"
+    },
+    {
+      "retained_path": "native/telemetry/clippy.log.gz",
+      "source_bytes": 22200,
+      "source_sha256": "75a3b59d8f10362f7a048b3fd66f1022878561a2eadfc34ea9f1d37ee188e4ce",
+      "retained_sha256": "13f2e5b7ab7a6c3169f1f96446dd1b3cb1d25c0822d2dc44c872f50cad480e55"
+    },
+    {
+      "retained_path": "native/telemetry/discovered.log.gz",
+      "source_bytes": 13504,
+      "source_sha256": "dd752a7afaae2cae49a8d962a5cc59ab49557d4c95cd464e5f0790077c6fef03",
+      "retained_sha256": "05efc3fd7224c1abbc3af2e64a99bc9c0429f7d7e121bfb953351993439af938"
+    },
+    {
+      "retained_path": "native/telemetry/dispatch-contract.json",
+      "source_bytes": 1737,
+      "source_sha256": "82af784e6fa12551c286ef1b2ca065a9837c61863c81846e2bf4f07f0c3ee88f",
+      "retained_sha256": "82af784e6fa12551c286ef1b2ca065a9837c61863c81846e2bf4f07f0c3ee88f"
+    },
+    {
+      "retained_path": "native/telemetry/execution.json",
+      "source_bytes": 3463,
+      "source_sha256": "d544bb7269be8441fa76d42024776100eef2454a32434d11b346e789db3eb426",
+      "retained_sha256": "d544bb7269be8441fa76d42024776100eef2454a32434d11b346e789db3eb426"
+    },
+    {
+      "retained_path": "native/telemetry/fmt-after.log.gz",
+      "source_bytes": 0,
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "retained_path": "native/telemetry/fmt-before.log.gz",
+      "source_bytes": 344,
+      "source_sha256": "1c3d50adcdbecc1da629516ca5cd943bfb48fea8476d784d15a37ee9b18ff562",
+      "retained_sha256": "4b197deb1bcf1db7e3f369c73a44db8addc2ee8fadae3f87249b046497f602f5"
+    },
+    {
+      "retained_path": "native/telemetry/green.log.gz",
+      "source_bytes": 944,
+      "source_sha256": "3fe3dc12c890c7395401b6f20ba5ca5969772b6363b91fe38c504ad7f477c1a8",
+      "retained_sha256": "90899fd26802493a53f64ceb8fe2b145aaaa0efe7ef6c9c7f3e38c08deba13ec"
+    },
+    {
+      "retained_path": "native/telemetry/ownership.json",
+      "source_bytes": 1120,
+      "source_sha256": "869f90e6b914418e0891311d7f9e7141f8ed82a28d7427223df6169d3acdc52a",
+      "retained_sha256": "869f90e6b914418e0891311d7f9e7141f8ed82a28d7427223df6169d3acdc52a"
+    },
+    {
+      "retained_path": "native/telemetry/red.log.gz",
+      "source_bytes": 23084,
+      "source_sha256": "51e934dae121d89131338761cbebfbdc51d89c8652e62d76dd600b64f9590a34",
+      "retained_sha256": "775d1010023778d3ef6471f7e578b183ec2a8562e09bca07729b82bf5b031ca9"
+    },
+    {
+      "retained_path": "native/integration/cedar.log.gz",
+      "source_bytes": 819,
+      "source_sha256": "9d8042aef205ce4ad6a2c9be98a8d312fa28bbfecffcef540de2e71c28a4eb05",
+      "retained_sha256": "0603f4099f1f6ea581cb1bc8d23e0b09141e5d437fb18b05c583b0a5f0086c2d"
+    },
+    {
+      "retained_path": "native/integration/context.log.gz",
+      "source_bytes": 2162,
+      "source_sha256": "0ec5c33cb6b77649b829a49372306daa5d6a95cb4fa585b2765eacf0fa01b863",
+      "retained_sha256": "d6e93d6c317eb184da480051603f07ff09889b2bd9d63981595912c0d9dd71ef"
+    },
+    {
+      "retained_path": "native/integration/db-runner-execution.json",
+      "source_bytes": 462,
+      "source_sha256": "3c60d07d54321524cd491eeda40aeff0ae11e739873de2c3e9038f4ddbcaaa0a",
+      "retained_sha256": "3c60d07d54321524cd491eeda40aeff0ae11e739873de2c3e9038f4ddbcaaa0a"
+    },
+    {
+      "retained_path": "native/integration/db-runner.log.gz",
+      "source_bytes": 6981,
+      "source_sha256": "89400e5fde29222a37fa2c6930742132d0a7364e09ba3017df9c1a014bb09fab",
+      "retained_sha256": "2039cf562d3c670a7c18693707b743dbc8fd31d3a1842fe4af2e533debbc398f"
+    },
+    {
+      "retained_path": "native/integration/db-target-0.log.gz",
+      "source_bytes": 1278,
+      "source_sha256": "6ed3be432393ccd1abb81117d1416a233a4e43063d8434c49a72499c3a138b8e",
+      "retained_sha256": "13ab68441023d42214139d1ff2096b67aa88d51378561234623df58c32e3d08a"
+    },
+    {
+      "retained_path": "native/integration/db-target-1.log.gz",
+      "source_bytes": 21716,
+      "source_sha256": "1cc33b1851c7fb091cf5a293ee2c94c9c9c3026ac36cd66620e542171ab5f7e0",
+      "retained_sha256": "54ec615aabea7ed8f0886c4f828d7097e50eeef5bba9b71893b9585e6a407902"
+    },
+    {
+      "retained_path": "native/integration/db-target-results.json",
+      "source_bytes": 690,
+      "source_sha256": "68dfc03f009debe72f46f9ea6c4eb6ab52c9ee715f67304e466934f90fcd0b4d",
+      "retained_sha256": "68dfc03f009debe72f46f9ea6c4eb6ab52c9ee715f67304e466934f90fcd0b4d"
+    },
+    {
+      "retained_path": "native/integration/http-offline-compile-runtime-db.json",
+      "source_bytes": 746,
+      "source_sha256": "244a41f09fab4b78f8c9551c3944011d54365503cca744411c8f28cce78551d0",
+      "retained_sha256": "244a41f09fab4b78f8c9551c3944011d54365503cca744411c8f28cce78551d0"
+    },
+    {
+      "retained_path": "native/integration/http-offline-compile-runtime-db.log.gz",
+      "source_bytes": 3714,
+      "source_sha256": "a370b5f39b82da14db7d12675fe7a2170477f12657378b143faad19008ef8c02",
+      "retained_sha256": "98dcfbaf44f32d9449a1046763ea0fd413942e5235f6a7c5a307d87fe8a03b45"
+    },
+    {
+      "retained_path": "native/integration/named-probes.json",
+      "source_bytes": 2219,
+      "source_sha256": "78c807a671cf2eb04195ad73e02b4806507001c42927614744e47414c102797a",
+      "retained_sha256": "78c807a671cf2eb04195ad73e02b4806507001c42927614744e47414c102797a"
+    },
+    {
+      "retained_path": "native/integration/realtime.log.gz",
+      "source_bytes": 545,
+      "source_sha256": "cd5091cecdcfb3b9a87d5dd71ec111f02c9ddbc56b4bfff18c990f287d2793be",
+      "retained_sha256": "f6bff3a59e220eefa114469a39dcbcee9eae27ed5a9b22f3d0c9272d829089b7"
+    },
+    {
+      "retained_path": "native/integration/telemetry.log.gz",
+      "source_bytes": 8249,
+      "source_sha256": "57500e63296adb5afa8060ea3fd0c725d0ba78d1fd5e75cfffffcdf884ce8617",
+      "retained_sha256": "591dfdb66321fbfe774455f3f794184ee18ebdd18b9e30261eebc7ae5ca1a3ff"
+    },
+    {
+      "retained_path": "native/reviews/cedar-independent-review.json",
+      "source_bytes": 3536,
+      "source_sha256": "38f4d5157b925e2a844b12a8276645966cd7c33e7fe63279c6e5b3241a46b64c",
+      "retained_sha256": "38f4d5157b925e2a844b12a8276645966cd7c33e7fe63279c6e5b3241a46b64c"
+    },
+    {
+      "retained_path": "native/reviews/integrated-native-review.json",
+      "source_bytes": 3665,
+      "source_sha256": "4749565ab6b193bb501d508fe505029f640482a1e8225e5c6e985148aec2d84c",
+      "retained_sha256": "4749565ab6b193bb501d508fe505029f640482a1e8225e5c6e985148aec2d84c"
+    },
+    {
+      "retained_path": "native/reviews/realtime-independent-review.json",
+      "source_bytes": 2642,
+      "source_sha256": "49509cb0509483dee18eb66955e20b10cecbe82441629b1be38b86437bebdd06",
+      "retained_sha256": "49509cb0509483dee18eb66955e20b10cecbe82441629b1be38b86437bebdd06"
+    },
+    {
+      "retained_path": "native/reviews/telemetry-independent-review.json",
+      "source_bytes": 2360,
+      "source_sha256": "33ccdfae0c9ce9956f61696f639c27e59c226ab0947725a5f1d3a276cbf41c53",
+      "retained_sha256": "33ccdfae0c9ce9956f61696f639c27e59c226ab0947725a5f1d3a276cbf41c53"
+    }
+  ]
+}

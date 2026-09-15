@@ -1,0 +1,15 @@
+[
+  {
+    "lane": "native30-status-custody",
+    "ok": false,
+    "seconds": 128.2,
+    "changed_files": [
+      "ools/lanes/fanout.py"
+    ],
+    "out_of_slice": [
+      "ools/lanes/fanout.py"
+    ],
+    "answer": "Repaired changed-path custody in [fanout.py](/Users/jasonlee/Developer/console-lanes/lane-native30-status-custody/tools/lanes/fanout.py:172): checked porcelain-v1 NUL parsing, exact `os.fsdecode` paths, complete untracked files, and both rename/copy paths. Git failures now propagate.\n\n- Probe: baseline 8 executed / 1 passed / 7 failed \u2192 final 8/8 passed.\n- Existing `python3 tools/lanes/fanout.test.py`: 24 checks passed. `py_compile` and `git diff --check` passed.\n- HEAD remains `0863a6175fb2d010f5894af52c72e3c85fed297c`; only `tools/lanes/fanout.py` is modified and unstaged. Tests remain byte-identical; no commit, staging, or outer-harness manipulation.",
+    "error": ""
+  }
+]

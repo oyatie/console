@@ -1,0 +1,91 @@
+{
+  "status": "PASS_PRIVATE_STATIC_MECHANICAL_ONLY",
+  "head_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "target": "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+  "source_names": [
+    "deactivate_revokes_passkeys_and_sessions_as_runtime_role",
+    "active_account_custody_survives_company_deactivation_and_replay",
+    "nonactive_account_security_is_not_reclassified_by_company_deactivation",
+    "unavailable_account_authority_preserves_fenced_subject_before_company_effect",
+    "unavailable_account_authority_cannot_select_unfenced_legacy_revocation",
+    "unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation",
+    "immediate_security_fk_waits_for_account_root_update_lock",
+    "enrollment_commit_winner_uses_fresh_fenced_snapshot",
+    "enrollment_rollback_winner_selects_exact_legacy_sweep",
+    "company_commit_holds_native_fk_until_legacy_sweep_commits",
+    "business_backend_death_rolls_back_partial_company_and_credential_effects",
+    "repeatable_read_and_serializable_refuse_without_effects",
+    "guard_requires_company_subject_context_and_business_only_execution",
+    "exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift"
+  ],
+  "source_attributes": 14,
+  "new_test_functions": 0,
+  "original6_prefix_preserved_bytes": 26081,
+  "original6_exact_after_removing_additive_module": true,
+  "V2_nowait_death_witness_and_V3_slug_bytes_unchanged": true,
+  "same5_approved_design_preimages_match_928e1e48": true,
+  "rustfmt_parse_argv": [
+    "rustfmt",
+    "--edition",
+    "2024",
+    "--emit",
+    "stdout"
+  ],
+  "rustfmt_parse_stdin": "new private V4 source",
+  "rustfmt_parse_exit": 0,
+  "rustfmt_check_argv": [
+    "rustfmt",
+    "--check",
+    "--edition",
+    "2024",
+    "/private/tmp/account-deactivation14-928e1e48-v4-inventory/deactivate_revokes_credentials.rs"
+  ],
+  "rustfmt_check_exit": 0,
+  "private_apply_inverse": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account-deactivation14-v4-private-apply-17fzg3b2",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account-deactivation14-v4-private-apply-17fzg3b2",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account-deactivation14-v4-private-apply-17fzg3b2",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/account-deactivation14-928e1e48-v4-inventory/candidate.patch"
+      ],
+      "cwd": "/private/tmp/account-deactivation14-v4-private-apply-17fzg3b2",
+      "exit": 0
+    }
+  ],
+  "compiler_discovered": 0,
+  "runtime_executed": 0,
+  "cargo_invocations": 0,
+  "database_calls": 0,
+  "repository_writes": 0
+}

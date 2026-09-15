@@ -1,0 +1,40 @@
+{
+  "reviewed_candidate_sha": "c4871c8b1e5baa55b476c50b06bdbb646a62d1ad",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "writer": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "scope": "Own subject/field disclosure/exit continuity/case response and WA2 ordinary handover",
+      "resolved": [
+        "PR-C01 / PR-B01"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "scope": "Publication lineage/current slot, owner atomicity/replay/case closure and plan cancellation fence",
+      "resolved": [
+        "PR-B01",
+        "PR-B02"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "b08_status": "BOUNDED_NONPAYABLE_OWN_REVIEW_BEHAVIOR_ACCEPTED",
+  "wa2_status": "WORKLOAD_REQUEST_INSTRUCTION_HANDOVER_ADDENDUM_ACCEPTED",
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "remaining_gaps": [
+    "W02 integrated V01\u2013V10/input recovery matrix",
+    "W04 exact APIs/DTO/SQL/ACL/migration/lock and numeric/runtime proof",
+    "Current authority scope alignment; whole-design consensus and explicit design/test SHA approvals",
+    "Legal issuance/payment/export/external sharing and production authority remain separate"
+  ]
+}

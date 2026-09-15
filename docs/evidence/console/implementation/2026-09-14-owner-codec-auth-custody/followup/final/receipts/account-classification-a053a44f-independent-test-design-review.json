@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE test candidate and separate owner-only classification design before source admission",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "head_sha": "a053a44f47714bdea685da6c82d97e994d2a7594",
+  "source_sha256": "480e388a3eb625865fa3eef4ef8684d7df4cfb36c9c8c66d31ef9e459fcd10a7",
+  "observed_red": {
+    "log": "/private/tmp/account-classification-red.log",
+    "executed": 2,
+    "passed": 0,
+    "failed": 2,
+    "filtered": 19,
+    "case_inventory": "All6classification and12table/recipient combinations accumulate before final assertions"
+  },
+  "review": [
+    "Exact68testlines added; existing tests/source predicates unchanged",
+    "Actual publicscanner migration files, not only allowlist membership assertions",
+    "Require nonempty owner-only rationale and absence from globalread list",
+    "Require OwnerOnlyTableGrant for both console_rt/PUBLIC on each table",
+    "0226 dormant migration revokes PUBLIC and named serving-role privileges for all6relations; existing custody design supports separate classification"
+  ],
+  "approved_source_scope": "Add exactly6rationale entries to owner_only_table_allowlist; no globalread entries, runtime privileges, SQL, migrations or dependencies",
+  "approved_test_refinement": "On integration replace temporary accounts-UnclassifiedTable baseline expectation with unknown sentinel UnclassifiedTable assertion while adding mandatory6owner-only+12grant controls; retain original candidate evidence and document changed classification contract",
+  "limits": [
+    "Classification scanner evidence is not effective PostgreSQL privilege proof",
+    "Existing account projection37RED and rejected ownerUPDATE grant unchanged",
+    "Final exact source/refinement require diff review and same probesGREEN",
+    "Parser repair must remain independently reviewable from classification decision"
+  ]
+}

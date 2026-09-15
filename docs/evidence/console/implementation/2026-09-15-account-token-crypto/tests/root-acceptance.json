@@ -1,0 +1,15 @@
+{
+  "kind": "ROOT_ADDITIVE_TEST_ACCEPTANCE",
+  "owner": "/root",
+  "base_sha": "c7cfefe607aa4acc15b24dc8a25bb862c55e03fe",
+  "reviewed_source_base": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "test_file_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+  "original_tests_preserved": 14,
+  "new_test_declarations": 15,
+  "binary_total": 29,
+  "author": "/root/inventory_repair",
+  "independent_reviewer": "/root/capture_review",
+  "runtime_executed": 0,
+  "admission_boundary": "Missing Account cryptographic owner API must first be observed as actual compiler prerequisite. This is not15executed behavioral failures; no fake stubs are permitted. Deeper runtime assertions execute only after the real owner exists.",
+  "scope": "Company-free closed Account access/CSRF ES256 issuance and verification in existing JwtIssuer/JwtVerifier; no live session authority or browser registration claim."
+}

@@ -1,0 +1,49 @@
+{
+  "owner": "/root",
+  "base_sha": "a3159b35501e5d37a37a9ccb0f9206f690642333",
+  "target": "Resolve approval-blocking verification defects with unchanged product behavior and complete test reachability",
+  "phase": "Explicitly requested Rust1.98.1 pin",
+  "allowed_paths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/nightly.yml",
+    "backend/rust-toolchain.toml",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "scripts/check-foundation-gates.mjs",
+    "docs/evidence/console/verification/2026-09-13-repair-01"
+  ],
+  "mechanical_guide": [
+    "Source all6 pin changes from inspected tracked main delta; exact version substitutions only",
+    "Verify requested1.98.1 via same admitted probe",
+    "Retain existing check contracts and tests; review exact commit",
+    "Declare later repair scopes separately before changes"
+  ],
+  "pre_mortem": "Toolchain drift between CI/local; unrelated user changes imported; maintenance mistaken for Account implementation",
+  "blast_radius": "Rust pin and matching CI/check expectations; no lockfile/schema/product behavior changes",
+  "detection": "Exact6file substitution assertions, independent review,existing checker tests",
+  "rollback": "Reviewed forward reversal of pin snapshot; main originals remain untouched",
+  "reviewers": [
+    "/root/fresh29_operations",
+    "/root/fresh29_security"
+  ],
+  "stop_conditions": [
+    "Non-pin main delta",
+    "Missing/nonexecutable/green admission probe",
+    "Unexpected source mutation",
+    "Regression failure"
+  ],
+  "remaining_holds": [
+    "REST Clippy,classification parser,Buck app test build repairs",
+    "Current-authority final validation/adoption",
+    "Complete Account test candidate review and explicit approval",
+    "Production/payment/legal authority"
+  ],
+  "main_source_sha256": {
+    ".github/workflows/ci.yml": "68ed0f3aaae7be29f38bf6f00b185481aaebf53bc7d41b822997dc5416acc2c5",
+    ".github/workflows/nightly.yml": "611aa99f35ea55e5ce9a1773b71ba7dbdfad0263bfd08a723fd0062df97fd1e4",
+    "backend/rust-toolchain.toml": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7",
+    "scripts/check-ci-preflight.mjs": "15a0000474529c0d27b8de006afb58134e8901e38e34e3c97b624e016621fab6",
+    "scripts/check-ci-preflight.test.mjs": "8f8a1dc743b50c4ec8042f66d5be2dbb0e7f9b8001a54d58472dbae734c20b1b",
+    "scripts/check-foundation-gates.mjs": "7cac83de50a00a7d250f6214b68f3ea91c0dcc09fb004175794b3f1c888024c3"
+  }
+}

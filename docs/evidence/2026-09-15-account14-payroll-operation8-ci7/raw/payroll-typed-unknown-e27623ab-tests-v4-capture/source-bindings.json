@@ -1,0 +1,9 @@
+{
+  "base_sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+  "files": {
+    "backend/app/src/durability_composition_tests.rs": "a7a4cbd3d56c5321500964027571837223a3f9bb3720fa8b60e5fa3ef06bf1aa",
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": "71379230d443c8f049045b6b6a226318e3e4d5381227e134f054e25575881142",
+    "backend/crates/payroll/adapter-postgres/tests/recovery.rs": "4440c53f96708c965c6ae15ded946b6b815dead05637e6472bc991fb08222e36",
+    "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": "2ccced8a2b4431fb00257de2554a3002f4c56e3f26ce3df8b47cf9b4d593e0cb"
+  }
+}

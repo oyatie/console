@@ -1,0 +1,161 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "status": "BROWSER_R3_SELECTED_HYDRATION_SOURCE_CANDIDATE",
+  "members": [
+    {
+      "path": "browser-acceptance-producer.rs",
+      "sha256": "602949bb40b95484b32f3f8468093df9b2a1f6f5f65dd5702019112b1c89959b",
+      "bytes": 12863
+    },
+    {
+      "path": "browser-auth-producer.rs",
+      "sha256": "2cf499110ec906d167c299ed3ce996906c66dd02bfca7dbc51115df686ce68f1",
+      "bytes": 6065
+    },
+    {
+      "path": "browser-case-producer.rs",
+      "sha256": "1a17e57086bb312364293b5105d596cfe2ddfcd72554d1ff63e6f4d8a01d8c4e",
+      "bytes": 15448
+    },
+    {
+      "path": "browser-discovery.json",
+      "sha256": "c18540f3941f838813c6ec5057428d149504cc463bc00c02c86fcf169e51c331",
+      "bytes": 2712
+    },
+    {
+      "path": "browser-runtime-helpers.rs",
+      "sha256": "2d7e896666c6f2b7cbd4533e009b0f99a17cf6298a09a00a6af0acf9bf8366cd",
+      "bytes": 6623
+    },
+    {
+      "path": "helper-execution.json",
+      "sha256": "05f157c721905468d004866690dcf713f5b9127f9dd3f39fab85d7f3a8830693",
+      "bytes": 444
+    },
+    {
+      "path": "helper-execution.log",
+      "sha256": "f829bf1577b2e22fc57e50bb4d21f655d1ebbd7c2877b3c8abfc44c67f7d3d63",
+      "bytes": 3442
+    },
+    {
+      "path": "helper-smoke/Cargo.lock",
+      "sha256": "c78d62cdb8c2b13731fd0aeeaa77a27b012e7e51a1936080f3d301a34c25e20e",
+      "bytes": 19554
+    },
+    {
+      "path": "helper-smoke/Cargo.toml",
+      "sha256": "5bd77739f4e059d725a94b6960c9c439e3bd36b686c26558b8265ac1bfb5c0a4",
+      "bytes": 341
+    },
+    {
+      "path": "helper-smoke/src/actor-migration.csv",
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "bytes": 8170
+    },
+    {
+      "path": "helper-smoke/src/lib.rs",
+      "sha256": "e1ab6aad274f45a80f74562116cdd477a53223f9b30ffc701a1aba050cd88c54",
+      "bytes": 7653
+    },
+    {
+      "path": "javascript-execution.json",
+      "sha256": "de1969120bd90b58b3dec99e39661570ca320498cc11fa3a136846cb141ed674",
+      "bytes": 1394
+    },
+    {
+      "path": "owner-contract.txt",
+      "sha256": "527a19536a1957b91698d5e7d67ece1fc978a0bead7c4c05f620809d071424e9",
+      "bytes": 5183
+    },
+    {
+      "path": "payroll-source-facts-producer.rs",
+      "sha256": "015cc3062f4f6918adda88b6133c82d073d45c7741e0919c097c7fae4333d9b9",
+      "bytes": 6115
+    },
+    {
+      "path": "playwright/acceptance.spec.cjs",
+      "sha256": "a69ec757181e79e179c33b23ee3ccc94c09be94768fe72441a1ce813a3e2e1a7",
+      "bytes": 8956
+    },
+    {
+      "path": "playwright/console-browser-final-oracles-20260914.log.gz",
+      "sha256": "e8de1bae24ebd4e1bf4bdaa3b0234cac49076db3d08f4b54c1f247f0810d0cff",
+      "bytes": 3449
+    },
+    {
+      "path": "playwright/console-browser-final-oracles-escalated-20260914.log.gz",
+      "sha256": "00e917bf9a513af50d967511d06b49c9924bcc1e2328500395ea9c80bc4cddb5",
+      "bytes": 507
+    },
+    {
+      "path": "playwright/effective-submissions.cjs",
+      "sha256": "4f0cc37c5777a29f56aeeca1dfdfa06d6331f273cf1b13dcc4348e93c69daa4d",
+      "bytes": 964
+    },
+    {
+      "path": "playwright/final-execution.json",
+      "sha256": "758a8e1c5f664d57ee2f21b3e45431e065aa143a37274819369668d293ce2d19",
+      "bytes": 1957
+    },
+    {
+      "path": "playwright/fixture.cjs",
+      "sha256": "dd153b32e1016d0c76dfc7f62fb72d3ba2e0f71f28bbb6efa5d4576ac34c29b1",
+      "bytes": 3026
+    },
+    {
+      "path": "playwright/historical-r2-execution.json",
+      "sha256": "d135cc0dfadaab26507d302853bb70b9f2e9fc9d487fbbf56d47ce8f80df75fa",
+      "bytes": 1988
+    },
+    {
+      "path": "playwright/historical-r2-fixture-contract.txt",
+      "sha256": "05555bfd7be318e8303e3348b563ec80abb8edd10fc1a29c20468fccf6c0062c",
+      "bytes": 5608
+    },
+    {
+      "path": "playwright/hydration.spec.cjs",
+      "sha256": "cdff8e7c5d729775085337523ecc92ef76a8167ff301eaa551b8db4bc18f10a7",
+      "bytes": 5365
+    },
+    {
+      "path": "playwright/oracle.spec.cjs",
+      "sha256": "5e8b6ecd0d5f7c7880c94e02603dc84dd3b4470baf1000de0a66c757dc306cc9",
+      "bytes": 2502
+    },
+    {
+      "path": "playwright/playwright.config.cjs",
+      "sha256": "c7af0ab8d4f0b29a8f801a1e2a1151196d326abe0c1ff6da0deaf5160bc26515",
+      "bytes": 755
+    },
+    {
+      "path": "playwright/reflow.cjs",
+      "sha256": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+      "bytes": 1172
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "sha256": "ca5fc3d248651f8717f598ffcf98ab467d13d373854613c82415a35726734f94",
+      "bytes": 2549
+    },
+    {
+      "path": "r2-parent-manifest.json",
+      "sha256": "e6882f42276bde84aea14873e77dfe911fda45c3dabd250a4e236271461f5c07",
+      "bytes": 2630
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "9b4ae42761e669a97a87ba179df739f464e5eaaaf48a47ce4c6bce4761045e04",
+      "bytes": 2170
+    },
+    {
+      "path": "transport-refinement.json",
+      "sha256": "9079307efdcc44a4b643797745bd05997d534da57458fe6bc34bff45d42ed9c4",
+      "bytes": 2856
+    },
+    {
+      "path": "two-subject-producer.rs",
+      "sha256": "5d6b644fac22909929213f72eca310dfa1e666d572b14071a14a342cd473e71a",
+      "bytes": 7849
+    }
+  ]
+}

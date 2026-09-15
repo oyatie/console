@@ -1,0 +1,26 @@
+{
+  "owner": "/root",
+  "base_sha": "193075e0fdeee81a8f953068e5f8add66bb99ff1",
+  "immutable_target": "Restore generated third-party build-script closure preserving upstream compiler/target behavior and Rust1.98.1",
+  "probe": "PATH=\"/private/tmp/console-authority30-dotslash:$PATH\" RUSTUP_TOOLCHAIN=1.98.1 fnm exec --using=24.16.0 tools/buck/preflight.sh --full-generated-faces > /private/tmp/console-prep-build-probe.log 2>&1",
+  "allowed_paths": [
+    "third-party/rust/fixups",
+    "third-party/rust/BUCK",
+    "docs/evidence/console/preparation/2026-09-13-production-tdd"
+  ],
+  "forbidden": "Product sources, dependency versions, lockfile, gate weakening, main index, production runtime",
+  "mechanical_guide": "Root solewriter after realREDfanoutadmit; per-package build scripts reviewed; serialize generated outputs; independent code/evidence review before closure",
+  "pre_mortem": "All-false fix loses compiler/targetcfg or schemahash; ambientGit contaminates wasmversion; generatedrules fail to run",
+  "detection": "Exact12missingfixup baseline; upstreamchecksums; samegateGREEN; actual generated buildscript targets and declared inputs",
+  "rollback": "Frozenbase and generateddiff; no sharedGit reset; no dependencyupgrade",
+  "stop_conditions": [
+    "Unexpected baseline failure",
+    "Generated gate remainsRED",
+    "Broken upstreamsourcebinding",
+    "Independentblockingfinding"
+  ],
+  "remaining_holds": [
+    "ProductTDDpreparation",
+    "Runtime/Verus/load/deploymentproof"
+  ]
+}

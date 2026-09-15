@@ -1,0 +1,23 @@
+{
+  "classification": "DESIGN_EVIDENCE_ONLY",
+  "base": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+  "product": "05200e43af13b527ce031b04369e05852862f1d6",
+  "source_blobs": 16,
+  "schema_definitions": 89,
+  "schema_reference_sites": 345,
+  "atomic_reference_rules": 21,
+  "unwrapped_identity_rules": 23,
+  "dependency_templates": 14,
+  "action_sites": 14,
+  "family_overlays": 7,
+  "lifecycle_sites": 16,
+  "nonexecuted_cases": 29,
+  "whole_design_approved": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

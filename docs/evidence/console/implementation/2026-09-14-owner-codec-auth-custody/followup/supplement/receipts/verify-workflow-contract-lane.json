@@ -1,0 +1,31 @@
+[
+  {
+    "lane": "VERIFY-workflow-contract-alignment",
+    "owner": "/root",
+    "worktree": "/private/tmp/console-format-followup-20260914",
+    "base_sha": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e",
+    "allow": [
+      "scripts/check-ci-preflight.mjs",
+      "tools/ci/check-nightly-workflow.mjs"
+    ],
+    "probe": "node scripts/check-ci-preflight.mjs > /private/tmp/verify-workflow-contract-probe-current.log 2>&1",
+    "target": "Existing guards recognize reviewed auth boot command and enforce added nightly auth topology regression",
+    "guide": "Update only Boot smoke parsed run digest to exact CI source already reviewed in2cf397f1. Add exact existing Restricted auth topology integration regression name/run to ordered nightly contracts. Preserve all prior steps and equality/failure guards. No CI, tests, or dependency changes.",
+    "pre_mortem": "Blind digest refresh could bless altered shell; inspect source provenance and retain mutation controls",
+    "blast_radius": "Two development workflow guards; no actual workflow execution or privilege changes",
+    "detection": "Actual preflight RED/GREEN; complete preflight/nightly suites and targeted source mutation controls",
+    "rollback": "Revert bounded checker changes",
+    "stop_conditions": [
+      "Unexpected workflow diff",
+      "Test or workflow edit",
+      "Removed or relaxed checker predicate"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Actual CI credential authentication execution",
+      "Production exposure"
+    ]
+  }
+]

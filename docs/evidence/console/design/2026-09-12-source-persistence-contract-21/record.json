@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_source_custody_and_cross_customer_information_flow_spec",
+  "recorded_at": "2026-09-13T02:53:53.085447+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+  "reviewed_contract_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+  "predecessor_record": "../2026-09-12-owner-execution-contract-20/record.json",
+  "predecessor_record_sha256": "839f8404b26dfb87e3a1195857a9dcc34881975da0989383f284287b1a5ada23",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "entry.txt",
+      "bytes": 2365,
+      "sha256": "29af5b6c184df0dbe5ed5d1a49b1f024fa0200ee5c704e52964fb5a1398c2bcf"
+    },
+    {
+      "path": "information-flow.txt",
+      "bytes": 8967,
+      "sha256": "58e5d378abac3ae742b160baa0c8dc646fdead657d466300137eae10c991748d"
+    },
+    {
+      "path": "membership-witnesses.json",
+      "bytes": 4793,
+      "sha256": "dcc12c1119da8010323c5c1a36c709193832913e30c9205657700f0776b028d9"
+    },
+    {
+      "path": "persistence-contract.txt",
+      "bytes": 12310,
+      "sha256": "4c3907f6335dd21d9d94a43549e9fff50a0be79191aea311a14d9404e2089cc9"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 4409,
+      "sha256": "dcaf4d34a8502b3e4848df5f3626e2efc23714478ce2f2d4054e639c3fca1a33"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 2011,
+      "sha256": "2fff6926925743da963c096fbaa3f93f9da7a8f899f00dba0e99056db98b197f"
+    },
+    {
+      "path": "result-membership.json",
+      "bytes": 4814,
+      "sha256": "68d8061dcb64bd65a0469e77f77d69e99929e54415677173e26bb88066295bfc"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1651,
+      "sha256": "3526f51ab9b0425e12e0d8a78a1e171bac2a9557560ec7547446f18e6a9d746d"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2440,
+      "sha256": "e156a0c61ad3d3057e50e42e3edc6faeae4ec5e7f33796ab3db38fff6cca2f04"
+    },
+    {
+      "path": "review.html",
+      "bytes": 1884,
+      "sha256": "3fecd054454256bfd697ceaad513060b9d5824352aa7485fd9a3b33aea41d95e"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 629,
+      "sha256": "dd6e0ac4c025bed0ae841cb83e99cfc8a73b9a391e050a8a4f6cc7bc7ab99cd8"
+    },
+    {
+      "path": "sink-census.csv",
+      "bytes": 1978,
+      "sha256": "56823c2b8ad25018e0e89a134f061585d8a6f08cdd85f8de6f8c90588ef9b61b"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 8819,
+      "sha256": "abd1b2512ea5fb59da87bcb6b5dbb49f75e238b7e3cadb75f5fe899d09b9737f"
+    },
+    {
+      "path": "source-key-matrix.json",
+      "bytes": 9275,
+      "sha256": "5dc5aecb3510b92f9226653e5bfec234f3f75d5303dd20a34eeaa4d9b9a5fd0c"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1535,
+      "sha256": "50f5c550aa8e7a6aa904676c62e6df0c488eca306674ea72fdf20bf769cda46a"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 5075,
+      "sha256": "2bbaba980e7be8badbdd72a1ca3d2955f35c15b40286f9dcf2a3d236d9c0400a"
+    }
+  ],
+  "remaining_holds": [
+    "F01/F02: full source custody/batch/Account/workflow/adoption DTOs and seven source/head/claim tables, conditional and reciprocal FK/trigger/finalizer/ACL bodies",
+    "F03: exact staged/domain/private retained-unit and snapshot states, binding/pins/adoption/disposal adapters and provider issuance",
+    "F04/F08: complete sink/caller/refinement inventory, actual credential/egress deployment and executable harness/proof specification",
+    "F05-F07: migration/enrollment, independent journal/custody, current-authority and business recovery",
+    "Actual Verus information-flow/arithmetic proof and runtime/DB/egress measurements not performed; no whole-system confidentiality claim",
+    "Final authority-aligned integrated design four independent rounds and explicit exact design SHA approval, then independently reviewed/approved executable test candidate and named RED implementation admission",
+    "Separate release/production/payment/legal authority"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "kind": "ROOT_APPROVED_ACCOUNT_ROOT_TRANSITION_TEST_CANDIDATE",
+  "base_before_import": "7e39e1e6e22660b30fc2ab1bb48802c83049c0b4",
+  "source_base": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "test_manifest_sha256": "c7dc67828123c33cfdb5ffd7b8aa775d97201ed490c4bddac26743da4f2e4763",
+  "independent_review_sha256": "b04aaddd16ec132d1b163fd9305fa78a7008a60de2702869e4c4d7d433ce4ae0",
+  "approved_by": "/root",
+  "independent_reviewer": "/root/fast_gate_review",
+  "test_author": "/root/capture_review",
+  "test_postimages": 5,
+  "static_attribute_change": {
+    "source": "backend/app/tests/auth_rest.rs",
+    "before": 196,
+    "after": 206
+  },
+  "runtime_executed": 0,
+  "new_bodies": 10,
+  "expected_selected": 10,
+  "expected_filtered": 206,
+  "expected_total": 216,
+  "decision": "Approve exact V2 tests and its explicit contract amendments. Existing names/attributes/assertions retained except reviewed exact-root equations and fixture setup. No weakened security oracle.",
+  "records": [
+    {
+      "origin": "/private/tmp/account-root-transition-contract-d66e2112-capture-v3.json",
+      "archive": "contract-v3.json.gz",
+      "source_sha256": "e3e2363ad811914b8b7c5efc2c64f7091358390d0a6e8a4feaf84d13cd5cc264",
+      "archive_sha256": "6256576260e623953713157d39ba270f34404b2b65613209a048587ad5b51c8b"
+    },
+    {
+      "origin": "/private/tmp/account-root-transition-tests-d66e2112-v1/manifest.json",
+      "archive": "tests-v1-manifest.json.gz",
+      "source_sha256": "c41ac6ac8a41f321d788c36a027d104adc2ac080d2162622ad6b893bf0d02b6f",
+      "archive_sha256": "4407de735e65cb4944e4191c2d958d1378dd6d7bbee35f05c9e7afbe2dab4bba"
+    },
+    {
+      "origin": "/private/tmp/account-root-transition-tests-d66e2112-v1/tests.patch",
+      "archive": "tests-v1.patch.gz",
+      "source_sha256": "d2651182bc33c2213c91556ddce485b654c9fc90bd08ebd87e15b51ee837a200",
+      "archive_sha256": "ebb2d458a5b9ecf63cd94d15f6fbb93840d1ae2aeab54330fe74e8fe632f084c"
+    },
+    {
+      "origin": "/private/tmp/account-root-tests-v1-independent-review-fast.json",
+      "archive": "tests-v1-review.json.gz",
+      "source_sha256": "10126d59ce7ecd242aa8cf440fddbb13ecd73fad2451b87ee524effab8273cac",
+      "archive_sha256": "01b86ebae07eaae8e028024f6594d10656f18040c79d6cd48cc205366166c4b0"
+    },
+    {
+      "origin": "/private/tmp/account-root-transition-tests-d66e2112-v2/manifest.json",
+      "archive": "tests-v2-manifest.json.gz",
+      "source_sha256": "c7dc67828123c33cfdb5ffd7b8aa775d97201ed490c4bddac26743da4f2e4763",
+      "archive_sha256": "ead80ca374b1a069661cbceba9f872d091191cb4ebdd7eda07ee3315b4c515ca"
+    },
+    {
+      "origin": "/private/tmp/account-root-transition-tests-d66e2112-v2/tests.patch",
+      "archive": "tests-v2.patch.gz",
+      "source_sha256": "76f6006370d7d0b96f99f3009b9eda63315aa2d17af53ff9b9031f2231543909",
+      "archive_sha256": "57c7e2232f23db804770f2ffe6fc281fb5a26189fcf07de8319a5d5dd7e08011"
+    },
+    {
+      "origin": "/private/tmp/account-root-transition-tests-d66e2112-v2/GUIDE.md",
+      "archive": "tests-v2-guide.md.gz",
+      "source_sha256": "51d0d82a1e1ed370fd383ece5c4f1776f2c2915ac50c631b30c4125c8e521b8e",
+      "archive_sha256": "0f634c84c938323b746d22fdf3ed09e90e8c03e002a6504140b79758a1bc1c42"
+    },
+    {
+      "origin": "/private/tmp/account-root-tests-v2-independent-review-fast.json",
+      "archive": "tests-v2-review.json.gz",
+      "source_sha256": "b04aaddd16ec132d1b163fd9305fa78a7008a60de2702869e4c4d7d433ce4ae0",
+      "archive_sha256": "8e5ebc264b209055b16cd715e3373354e3c2a7660f4db8a533ce1adb909e1c4d"
+    },
+    {
+      "origin": "/private/tmp/console-account-bridge-fk-order-result/experiment.sql",
+      "archive": "mechanism.sql.gz",
+      "source_sha256": "97d5e452785c56c4d6ecacada538d08482c8a0867b59e17fd829b6692aa24606",
+      "archive_sha256": "9cbeef40fd7f092e2cd57c9f83c889f728f6701121352370fd3f5e198141c0b4"
+    },
+    {
+      "origin": "/private/tmp/console-account-bridge-fk-order-result/stdout.log",
+      "archive": "mechanism.log.gz",
+      "source_sha256": "c4fc260219b22f2c0e551eedcfb9b82b79d6f9b053045722d44bdbf5aac64937",
+      "archive_sha256": "dc20c4ce102d220360a0d567dcf8c1958cca8addfb984bd04484964dc5e67b83"
+    },
+    {
+      "origin": "/private/tmp/console-account-bridge-fk-order-result/receipt.json",
+      "archive": "mechanism-receipt.json.gz",
+      "source_sha256": "e8125482be1412a4c10fa5f8cd88e8fee2973365618e41599bb603ae8ba40e4a",
+      "archive_sha256": "edf1a2205f9ceff5b96f42e29e4a5734db15960ae5e3e6a979e4e8e1ac2bc2a2"
+    },
+    {
+      "origin": "/private/tmp/account-bridge-fk-mechanism-independent-review-fast.json",
+      "archive": "mechanism-review.json.gz",
+      "source_sha256": "186a0981b0af0777bc0346cd9be3c25e685fd39ce4dda6faf4e06ef3d70a256b",
+      "archive_sha256": "19ca207de7926fc47ab751c8ad8e332afa4f835a505f4e3ce97abd1e6ae7cc0d"
+    },
+    {
+      "origin": "/private/tmp/account-root-transition-test-inventory-update.log",
+      "archive": "static-inventory-update.log.gz",
+      "source_sha256": "7ec0d54f665fcc642d4593627ea328f1bf49a2751128ec23f3b9b139c4b6cea4",
+      "archive_sha256": "70fa07ecd4ce274bf269fc1a1cfddc326d81430dc8e97b4936176cc6dc743499"
+    }
+  ],
+  "remaining": [
+    "Actual compiled semantic RED and lane admission",
+    "Exact source implementation and same probe GREEN",
+    "Affected full compatibility and build fixture source closure",
+    "Full auth custody/actor/browser, durable draft/policy/payroll/SSR work",
+    "Production/payment/legal authority"
+  ]
+}

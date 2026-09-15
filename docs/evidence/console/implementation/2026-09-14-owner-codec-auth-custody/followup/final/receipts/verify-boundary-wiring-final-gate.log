@@ -1,0 +1,6 @@
+test binaries defined         : 384
+reachable from a CI step      : 384
+declared test attrs in reachable sources: 2953  (static; cfg/ignore-unaware)
+executed nowhere              : 1
+reachable only through buck2  : 13  (--gap to list; the Buck2 exit has to wire these)
+  dark  backend/crates/platform/storage/tests/seaweedfs_worm.rs

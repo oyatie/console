@@ -1,0 +1,52 @@
+{
+  "candidate_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+  "recorded_at": "2026-09-12T22:48:51.600467+00:00",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.7",
+    "git": "git version 2.55.0"
+  },
+  "invocations": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-native-manifest-contract-18/verify-packet.py --commit 720b0920fcfd8277f11686081937ccd09a77f1f0",
+      "exit_code": 0,
+      "result": {
+        "candidate_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+        "core_files": 14,
+        "source_blobs": 40,
+        "closed_shape_definitions": 43,
+        "object_shapes": 33,
+        "reference_links_resolved": 143,
+        "native_table_declarations": 7,
+        "canonical_reference_vectors": 18,
+        "invalid_fragment_oracles_not_executed": 10,
+        "nonexecutable_proof_cases": 30,
+        "reader_links": 12,
+        "w04_complete": false,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false
+      }
+    },
+    {
+      "command": "git diff --check 8575461bae72c4242e76d11a79deefdedaf67f86..720b0920fcfd8277f11686081937ccd09a77f1f0",
+      "exit_code": 0,
+      "result": "No whitespace errors"
+    },
+    {
+      "command": "git status --short",
+      "at_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+      "exit_code": 0,
+      "result": "clean before receipts"
+    }
+  ],
+  "limits": [
+    "Evidence identities/schema reference closure/canonical vector arithmetic only",
+    "JSON Schema shape and proposed SQL not executed as product validation; no product tests, migration, DB, auth, recovery, load or browser tests",
+    "10 invalid fragments and30 proof cases are nonexecutable expected outcomes, not passing product tests",
+    "No full-repository gate, merged state, implementation or production readiness claim"
+  ],
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "sql_executed": false
+}

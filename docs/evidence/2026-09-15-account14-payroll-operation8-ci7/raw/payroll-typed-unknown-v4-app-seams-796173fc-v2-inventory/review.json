@@ -1,0 +1,172 @@
+{
+  "status": "NO_REMAINING_ACTIONABLE_STATIC_APP_SEAM_BLOCKER_FOUND_V4_RUNTIME_HOLD",
+  "reviewer": "/root/inventory_repair",
+  "author": "/root/capture_review",
+  "scope": "Bounded read-only review of current-interface app append: fixture/API prerequisites, fault placement, native waiter discrimination, real governance renewal, audit ACL and tracing subscriber. This is not full acceptance approval or future compatibility semantic approval.",
+  "head_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "candidate_manifest_sha256": "e14dfe66a20403ef23bba7136403000b950edfbac4f90e1b31f9cdec5ef670b0",
+  "primary_patch_sha256": "8e54f40d01161cde6d826a14d453be7dbdab8d8ae7f72fc5e1d846494a1dc081",
+  "app_append_sha256": "b0a10c4bd0f097532c3b9ab15a89a7100a700d914a359641bcadd4824e9c80ab",
+  "findings": [],
+  "corrected_before_freeze": [
+    "V1 invalid rustfmt heading removed before V1 freeze.",
+    "V2 REST negative control uses direct axum::http reexport instead of undeclared http crate.",
+    "V3 approval renewal preserves original decision object as well as original consumption object.",
+    "V4 workflow PENDING and FAILED iterations use distinct status-derived organization tags; seed_org_rls_off lowercases and prefixes tag with org-, so both slugs are distinct and satisfy migration0026 shape."
+  ],
+  "conclusions": [
+    {
+      "fact": "The ordinary tenant principal route fences through Auth, then resolves branch scope and effective grants. These helper transactions use set_config and SELECT, without audit insertion or domain writes. SUPER_ADMIN branch resolution returns All immediately.",
+      "evidence": [
+        "backend/crates/platform/request-context/src/lib.rs:322",
+        "backend/crates/platform/request-context/src/lib.rs:384",
+        "backend/crates/platform/authz/src/lib.rs:1680",
+        "backend/crates/platform/authz/src/lib.rs:1981"
+      ],
+      "inference": "No pre-owner native WAL commit was found in these authentication/authorization helpers that would defeat the paused-replay owner witness."
+    },
+    {
+      "fact": "Real projected dispatch commits required four-eyes consumption before owner dispatch; receipt replay bypasses spending an approval again. Request kind create_run and target run UUID match prepared binding, and decide payload includes required requested_by.",
+      "evidence": [
+        "backend/crates/ontology/rest/src/lib.rs:1875",
+        "backend/crates/ontology/rest/src/lib.rs:1891",
+        "backend/crates/ontology/application/src/prepared.rs:205",
+        "backend/crates/platform/db/migrations/0164_bind_consume_four_eyes.sql:40"
+      ],
+      "inference": "The observer EXECUTE revoke after startup can target Required owner admission after genuine approval consumption; old-reference refusal and renewal preserve command identity."
+    },
+    {
+      "fact": "Canonical audit emission follows a successful owner dispatch and uses registry pool with_audits; console_rt has audit INSERT and SELECT. The candidate checks effective denied privilege and exact restored ACL.",
+      "evidence": [
+        "backend/crates/ontology/rest/src/lib.rs:1920",
+        "backend/crates/ontology/rest/src/lib.rs:2262",
+        "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql:85"
+      ],
+      "inference": "The audit privilege fault is placed after confirmed owner completion; ordinary500 followed by replay repair is a coherent surrounding-behavior control."
+    },
+    {
+      "fact": "The candidate requires an active console_rt IPC/SyncRep waiter in the test database, after a database-time boundary, holding RowExclusiveLock on both payroll_draft_runs and ont_action_command_receipts. It subsequently binds PID/backend_start and requires the waiter still active before replay recovery.",
+      "evidence": [
+        "app-append.rs:243"
+      ],
+      "inference": "The predicate distinguishes the payroll owner from other app-pool commits. Actual PG18 wait timing and lock visibility still require root runtime evidence; static review is not a native waiter demonstration."
+    },
+    {
+      "fact": "The workflow case sets one global tracing subscriber in a fresh exact supervised process; AppState setup does not invoke the separately defined app init_tracing. The custom layer records string/debug fields and requires exact outcome/event/run/source binding. Existing drainer only logs an undifferentiated stage error.",
+      "evidence": [
+        "backend/app/src/lib.rs:4675",
+        "backend/crates/workflow/adapter-postgres/src/lib.rs:881",
+        "app-append.rs:529"
+      ],
+      "inference": "The current-interface case has a plausible genuine product RED at the missing typed unknown log after the native confirmation witness. Parser success cannot establish compiler compatibility or event delivery."
+    },
+    {
+      "fact": "V4 differs from V1 App append only by exact original-approval-decision retention assertion and status-derived unique seed tags. REST fragment changes only direct axum::http StatusCode path. Unique resulting slugs are org-typed-unknown-pending and org-typed-unknown-failed; both match current organization slug shape.",
+      "evidence": [
+        "backend/crates/platform/test-support/src/lib.rs:71",
+        "backend/crates/platform/db/migrations/0026_create_organizations.sql",
+        "backend/crates/ontology/rest/Cargo.toml"
+      ],
+      "inference": "These specific static blockers/retention gap are corrected; prior fault-placement conclusions carry forward because their source bytes are unchanged."
+    }
+  ],
+  "checks": {
+    "all_manifest_artifacts_hash_match": {
+      "DESIGN.md": true,
+      "README.md": true,
+      "REVISION.md": true,
+      "app-append.rs": true,
+      "base/backend/app/src/durability_composition_tests.rs": true,
+      "base/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": true,
+      "base/backend/crates/payroll/adapter-postgres/tests/recovery.rs": true,
+      "base/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": true,
+      "checks.json": true,
+      "compatibility-append.rs": true,
+      "compatibility-post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": true,
+      "compatibility-post/backend/crates/payroll/adapter-postgres/tests/recovery.rs": true,
+      "compatibility-post/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": true,
+      "compatibility.patch": true,
+      "current-head-bindings.json": true,
+      "mechanical-attempt1.json": true,
+      "post/backend/app/src/durability_composition_tests.rs": true,
+      "post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": true,
+      "post/backend/crates/payroll/adapter-postgres/tests/recovery.rs": true,
+      "post/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": true,
+      "primary.patch": true,
+      "rest-append.rs": true,
+      "run-primary.sh": true,
+      "source-bindings.json": true,
+      "trait-census.json": true,
+      "trait-source-bindings.json": true,
+      "v1-checks.json": true,
+      "v1-manifest.json": true,
+      "v2-checks.json": true,
+      "v2-manifest.json": true,
+      "v3-checks.json": true,
+      "v3-manifest.json": true
+    },
+    "four_current_preimages_match": {
+      "backend/app/src/durability_composition_tests.rs": true,
+      "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs": true,
+      "backend/crates/payroll/adapter-postgres/tests/recovery.rs": true,
+      "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": true
+    },
+    "prior_thirteen_source_bindings_unchanged": true,
+    "exact_v1_to_v4_app_delta": true,
+    "exact_v1_to_v4_rest_delta": true,
+    "distinct_valid_fixture_slugs": [
+      "org-typed-unknown-pending",
+      "org-typed-unknown-failed"
+    ],
+    "tracked_worktree_clean_at_review": true
+  },
+  "counts": {
+    "candidate_artifact_hashes_verified": 32,
+    "current_preimages_verified": 4,
+    "source_bindings": 16,
+    "compiler_discovered": 0,
+    "rust_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  },
+  "remaining_holds": [
+    "Full immutable independent primary acceptance review by Fast",
+    "Root exact compiler discovery and runtime execution",
+    "Manual first-failure classification: compilation/setup/42883/waiter failure is not product RED",
+    "Actual native SyncRep timing and relation lock visibility",
+    "Fresh-process global subscriber installation at runtime",
+    "Future typed-interface compatibility semantic approval",
+    "Admitted implementation and same-probe GREEN",
+    "Exact-head CI/public contract/production authority",
+    "Existing Operation workflow behavior and proposed classifier breadth are outside this bounded App seam approval and remain explicit design/acceptance HOLDs."
+  ],
+  "pre_mortem": "Wrong fault phase or fixture/subscriber failure can masquerade as a product RED.",
+  "blast_radius": "Read-only review; only new private receipt files written.",
+  "detection": "Immutable candidate hashes, four matching preimages, source citations, distinct root runtime classification.",
+  "rollback": "Reject this receipt without modifying frozen candidate or shared source.",
+  "stop_conditions": [
+    "Source drift",
+    "Need for Cargo/DB/Docker/integration mutation",
+    "Claiming actual RED from static inference"
+  ],
+  "legal_or_production_conclusion": "None",
+  "supersedes": {
+    "review_path": "/private/tmp/payroll-typed-unknown-app-seams-796173fc-v1-inventory/review.json",
+    "review_sha256": "72a414fea4a8dd0a5d83cc0fa4f51509c084740c000f27be3f3a82dab0b32f60",
+    "reason": "Prior V1 bounded review missed repeated workflow seed tag causing duplicate organization slug; retain it as historical only, not approval. Fast independently found this defect; Capture V4 repairs it."
+  },
+  "review_misses": [
+    {
+      "candidate": "V1",
+      "problem": "Both workflow loop iterations used typed-unknown-workflow; seed_org_rls_off derives a globally unique slug from tag, and ON CONFLICT(id) does not handle this different-org slug conflict. FAILED iteration could fail setup after PENDING recovers.",
+      "found_by": "/root/fast_gate_review",
+      "acknowledged_by": "/root/inventory_repair",
+      "fixed_in": "V4",
+      "evidence": [
+        "backend/crates/platform/test-support/src/lib.rs:71",
+        "app-append.rs:579"
+      ]
+    }
+  ]
+}

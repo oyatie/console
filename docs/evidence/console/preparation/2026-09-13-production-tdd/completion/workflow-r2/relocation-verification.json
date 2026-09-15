@@ -1,0 +1,55 @@
+{
+  "source": "/private/tmp/console-workflow15-owner-assertions-r2-20260913",
+  "manifest_sha256": "7e7a231afb3d02967f9ed9da075f591dda3ca8bb56caa759663db63080c2bb0c",
+  "all_original_members_verified": true,
+  "files": [
+    {
+      "original": "packet-contract.md",
+      "retained": "packet-contract.txt",
+      "original_sha256": "000db1a92559ce1f1ef2b4f2f495e475d18a4575e7f570e7284ea682ca8efd6d",
+      "retained_sha256": "000db1a92559ce1f1ef2b4f2f495e475d18a4575e7f570e7284ea682ca8efd6d"
+    },
+    {
+      "original": "parent-r1-manifest.json",
+      "retained": "parent-r1-manifest.json",
+      "original_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454",
+      "retained_sha256": "7b1c271fda522816633dc91a1fc095daf3436abd78ce813614da9c800eb04454"
+    },
+    {
+      "original": "publication-readback.sql",
+      "retained": "publication-readback.sql",
+      "original_sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227",
+      "retained_sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227"
+    },
+    {
+      "original": "registration-coverage.json",
+      "retained": "registration-coverage.json",
+      "original_sha256": "6068cb8db959e60c69716c8ce64dbec622979751fa7df5bb2317e579bd0bb721",
+      "retained_sha256": "6068cb8db959e60c69716c8ce64dbec622979751fa7df5bb2317e579bd0bb721"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "0ff0a383adf4af3bda1ffb0d33d6c605cd6b2f479f0fb955ce7c062c38a5d07d",
+      "retained_sha256": "0ff0a383adf4af3bda1ffb0d33d6c605cd6b2f479f0fb955ce7c062c38a5d07d"
+    },
+    {
+      "original": "workflow-fixture.rs",
+      "retained": "workflow-fixture.rs",
+      "original_sha256": "53b14e48f836156fa23b9f726dcaf19104794c078e852392256f9936408eaa88",
+      "retained_sha256": "53b14e48f836156fa23b9f726dcaf19104794c078e852392256f9936408eaa88"
+    },
+    {
+      "original": "workflow-owner-tests.rs",
+      "retained": "workflow-owner-tests.rs",
+      "original_sha256": "edc8a83a30e78d7d4b7245d6b34caf685a6406da9b38993e1da8cbdd83ab6b45",
+      "retained_sha256": "edc8a83a30e78d7d4b7245d6b34caf685a6406da9b38993e1da8cbdd83ab6b45"
+    },
+    {
+      "original": "workflow-race-projection-tests.rs",
+      "retained": "workflow-race-projection-tests.rs",
+      "original_sha256": "3179c01be13271ebe75653f11aa3f978063ed350bd7bbc7e931ff4648a6537c9",
+      "retained_sha256": "3179c01be13271ebe75653f11aa3f978063ed350bd7bbc7e931ff4648a6537c9"
+    }
+  ]
+}

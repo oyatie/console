@@ -1,0 +1,531 @@
+{
+  "status": "Proposed physical schema/constraint specification; not migration DDL or catalog proof",
+  "tables": [
+    {
+      "name": "accounts",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity",
+      "columns": {
+        "id": "UUID NOT NULL",
+        "created_at": "TIMESTAMPTZ NOT NULL"
+      },
+      "primary_key": [
+        "id"
+      ],
+      "constraints": [
+        "No Company/role/Employment FK",
+        "id immutable; legacy users.id mapping preserved"
+      ],
+      "access": "No ordinary Company-runtime direct DML. Account/auth owner and narrowly scoped read/lock functions only; PUBLIC revoked; Company grants confer none.",
+      "lock": "Root created with account_security in one identity transaction"
+    },
+    {
+      "name": "account_security",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity security; auth participates",
+      "columns": {
+        "account_id": "UUID FK accounts RESTRICT",
+        "security_state": "PENDING_ENROLLMENT|ACTIVE|SECURITY_SUSPENDED|RECOVERY_REQUIRED",
+        "security_generation": "BIGINT >=1",
+        "revision": "BIGINT >=1",
+        "updated_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "account_id"
+      ],
+      "constraints": [
+        "Mandatory for every Account before usable",
+        "Generation/revision never decrease",
+        "Company work-relation transition cannot update this row"
+      ],
+      "access": "No ordinary Company-runtime direct DML. Account/auth owner and narrowly scoped read/lock functions only; PUBLIC revoked; Company grants confer none.",
+      "lock": "SHARE for authenticated read/effect; EXCLUSIVE first for security mutation; before family/key/ceremony"
+    },
+    {
+      "name": "company_actors",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity",
+      "columns": {
+        "org_id": "UUID FK organizations RESTRICT",
+        "account_id": "UUID FK accounts RESTRICT",
+        "admission_receipt_id": "UUID",
+        "entitlement_ref": "ImmutableOwnerRef",
+        "created_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "org_id",
+        "account_id"
+      ],
+      "constraints": [
+        "Immutable attribution only",
+        "Admission receipt same Company and exact Account",
+        "No eligibility or workforce-active bool"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Creation under identity/Company guard; never delete to revoke work"
+    },
+    {
+      "name": "account_terms_acceptances",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity security",
+      "columns": {
+        "account_id": "UUID FK accounts RESTRICT",
+        "terms_kind": "RegisteredTermsKind",
+        "terms_version": "TEXT nonblank",
+        "content_sha256": "BYTEA length32",
+        "accepted_at": "TIMESTAMPTZ",
+        "security_event_id": "UUID"
+      },
+      "primary_key": [
+        "account_id",
+        "terms_kind",
+        "terms_version"
+      ],
+      "constraints": [
+        "Immutable owner-verified acceptance; content digest fixed for registered version"
+      ],
+      "access": "No ordinary Company-runtime direct DML. Account/auth owner and narrowly scoped read/lock functions only; PUBLIC revoked; Company grants confer none.",
+      "lock": "Account EXCLUSIVE, atomic with required enrollment event"
+    },
+    {
+      "name": "account_security_events",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity security",
+      "columns": {
+        "id": "UUID",
+        "account_id": "UUID FK accounts RESTRICT",
+        "kind": "RegisteredSecurityEvent",
+        "occurred_at": "TIMESTAMPTZ",
+        "actor_account_id": "UUID FK accounts RESTRICT or null for verified system event",
+        "session_id": "UUID nullable",
+        "evidence_ref": "ImmutableOwnerRef nullable",
+        "payload": "Typed minimized event object"
+      },
+      "primary_key": [
+        "id"
+      ],
+      "constraints": [
+        "Append-only subject/security audit",
+        "No raw token/key/identity document",
+        "Not employer audit feed"
+      ],
+      "access": "No ordinary Company-runtime direct DML. Account/auth owner and narrowly scoped read/lock functions only; PUBLIC revoked; Company grants confer none.",
+      "lock": "Written with owning security transition; retention references required"
+    },
+    {
+      "name": "group_authority_guards",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity/group authority helper",
+      "columns": {
+        "group_id": "UUID FK groups RESTRICT",
+        "topology_epoch": "BIGINT >=1",
+        "identity_epoch": "BIGINT >=1"
+      },
+      "primary_key": [
+        "group_id"
+      ],
+      "constraints": [
+        "Initialized atomically with Group before enrollment",
+        "Monotonic/no ordinary delete, including archive",
+        "Global Group helper does not arm Company RLS"
+      ],
+      "access": "No raw Company-role DML; narrow fixed-scope owner helper returns/locks opaque epochs; PUBLIC revoked",
+      "lock": "First sorted Group guard(s); SHARE effects, EXCLUSIVE identity/topology changes"
+    },
+    {
+      "name": "company_authority_guards",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity authority helper",
+      "columns": {
+        "org_id": "UUID FK organizations RESTRICT",
+        "epoch": "BIGINT >=1"
+      },
+      "primary_key": [
+        "org_id"
+      ],
+      "constraints": [
+        "Not the legacy policy_versions bundle version",
+        "Exists before every enrolled surface; missing fails closed",
+        "Monotonic epoch bump in same fact-writer transaction"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "After Group and sorted Accounts/families, before work/domain; SHARE reads/effects, EXCLUSIVE authority-fact mutation"
+    },
+    {
+      "name": "group_human_subjects",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity",
+      "columns": {
+        "group_id": "UUID FK groups RESTRICT",
+        "human_id": "UUID",
+        "registry_id": "UUID reference admitted pilot registry",
+        "issuer_subject_ref": "OpaqueRegistrySubjectId",
+        "created_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "group_id",
+        "human_id"
+      ],
+      "constraints": [
+        "UNIQUE(group_id,registry_id,issuer_subject_ref)",
+        "Only one admitted registry per pilot Group unless reviewed equivalence",
+        "Opaque registry key requires actual verified human evidence, not UUID distinctness"
+      ],
+      "access": "Narrow Group identity owner; no Company HR profile data grants; raw artifact remains separate owner",
+      "lock": "Group EXCLUSIVE before mutation"
+    },
+    {
+      "name": "group_identity_binding_revisions",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity",
+      "columns": {
+        "group_id": "UUID",
+        "binding_id": "UUID",
+        "revision": "BIGINT >=1",
+        "alias_kind": "ACCOUNT|PERSON",
+        "account_id": "UUID nullable FK accounts RESTRICT",
+        "person_org_id": "UUID nullable",
+        "person_id": "UUID nullable",
+        "human_id": "UUID",
+        "status": "PROPOSED|VERIFIED|SUSPENDED|SUPERSEDED",
+        "valid_from": "TIMESTAMPTZ",
+        "valid_until": "TIMESTAMPTZ nullable",
+        "case_ref": "ImmutableOwnerRef",
+        "proof_digest": "BYTEA32",
+        "proposer_account_id": "UUID",
+        "verifier_account_id": "UUID nullable",
+        "verified_at": "TIMESTAMPTZ nullable"
+      },
+      "primary_key": [
+        "group_id",
+        "binding_id",
+        "revision"
+      ],
+      "constraints": [
+        "XOR ACCOUNT(account_id only) / PERSON(composite Company Person only)",
+        "FK(group_id,human_id) group_human_subjects",
+        "PERSON reference verified through canonical Person owner, no profile writes",
+        "valid_until > valid_from when present",
+        "VERIFIED requires current qualified evidence and independent verified natural persons"
+      ],
+      "access": "Narrow Group identity owner read/projection; append-only; own security policy",
+      "lock": "Group EXCLUSIVE for changes, then sorted involved Accounts and Company guards; no self-certified bootstrap"
+    },
+    {
+      "name": "group_identity_binding_heads",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity",
+      "columns": {
+        "group_id": "UUID",
+        "binding_id": "UUID",
+        "current_revision": "BIGINT >=1",
+        "alias_kind": "ACCOUNT|PERSON",
+        "account_id": "UUID nullable",
+        "person_org_id": "UUID nullable",
+        "person_id": "UUID nullable"
+      },
+      "primary_key": [
+        "group_id",
+        "binding_id"
+      ],
+      "constraints": [
+        "Composite FK to binding revision; alias fixed for binding",
+        "Partial UNIQUE(group_id,account_id) for ACCOUNT",
+        "Partial UNIQUE(group_id,person_org_id,person_id) for PERSON",
+        "CAS expected current revision; suspended alias cannot acquire another parallel head"
+      ],
+      "access": "Narrow Group identity owner mutation only",
+      "lock": "Group EXCLUSIVE serializes alias insert/merge/split and current proof changes"
+    },
+    {
+      "name": "tenant_identity_root_receipts",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity supervised provisioning",
+      "columns": {
+        "group_id": "UUID FK groups RESTRICT",
+        "receipt_id": "UUID UNIQUE",
+        "registry_ref": "ImmutableOwnerRef",
+        "policy_ref": "ImmutableOwnerRef",
+        "operator_a": "UUID FK accounts RESTRICT",
+        "operator_b": "UUID FK accounts RESTRICT",
+        "issuer_subject_a": "OpaqueRegistrySubjectId",
+        "issuer_subject_b": "OpaqueRegistrySubjectId",
+        "reviewer_evidence_ref": "ImmutableOwnerRef",
+        "recorded_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "group_id"
+      ],
+      "constraints": [
+        "Single-use initial root; operators and issuer subjects distinct under supervised registry evidence",
+        "No tenant upload verified=true; no payroll grants",
+        "Recovery is append-only linked owner receipt, not overwrite of initial root"
+      ],
+      "access": "Separate authorized provisioning function; no ordinary runtime INSERT/UPDATE/DELETE",
+      "lock": "Group EXCLUSIVE and named Account guards"
+    },
+    {
+      "name": "policy_role_revisions",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity policy owner",
+      "columns": {
+        "org_id": "UUID",
+        "role_id": "UUID",
+        "revision": "BIGINT >=1",
+        "display_name": "TEXT1..80",
+        "status": "DRAFT|PUBLISHED|RETIRED",
+        "schema_ref": "ImmutableOwnerRef",
+        "digest": "BYTEA32",
+        "created_by": "UUID",
+        "created_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "org_id",
+        "role_id",
+        "revision"
+      ],
+      "constraints": [
+        "FK(role_id,org_id) existing policy_roles",
+        "Actor attribution CompanyActor",
+        "Immutable published content; changes append revision"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Company authority EXCLUSIVE before publication/head change"
+    },
+    {
+      "name": "policy_capability_clauses",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity policy owner",
+      "columns": {
+        "org_id": "UUID",
+        "role_id": "UUID",
+        "role_revision": "BIGINT >=1",
+        "clause_id": "UUID",
+        "action_ref": "RegisteredActionRevisionRef",
+        "resource_kind_ref": "RegisteredTypeRevisionRef",
+        "field_group_ref": "ImmutableOwnerRef nullable",
+        "condition_ast": "Typed closed condition grammar"
+      },
+      "primary_key": [
+        "org_id",
+        "role_id",
+        "role_revision",
+        "clause_id"
+      ],
+      "constraints": [
+        "Composite FK role revision",
+        "Action/type/property refs validate exact registered owner schema at publish",
+        "Clause preserves action/scope/field/conditions correlation",
+        "No arbitrary Cedar text or undefined JSON operands"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Immutable with bundle revision; complete compiler input digest"
+    },
+    {
+      "name": "policy_assignment_revisions",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity policy owner",
+      "columns": {
+        "org_id": "UUID",
+        "assignment_id": "UUID",
+        "revision": "BIGINT >=1",
+        "account_id": "UUID",
+        "role_id": "UUID",
+        "role_revision": "BIGINT >=1",
+        "scope_id": "UUID",
+        "scope_revision": "BIGINT >=1",
+        "field_narrowing_ref": "ImmutableOwnerRef nullable",
+        "valid_from": "TIMESTAMPTZ",
+        "valid_until": "TIMESTAMPTZ nullable",
+        "purpose_ref": "ImmutableOwnerRef nullable",
+        "relationship_refs": "Typed immutable ref vector",
+        "delegation_ceiling_ref": "ImmutableOwnerRef",
+        "issuer_account_id": "UUID",
+        "approval_ref": "ImmutableOwnerRef nullable",
+        "state": "ACTIVE|REVOKED"
+      },
+      "primary_key": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "constraints": [
+        "Root is existing user_role_assignments.id after Account-aware migration",
+        "Account FK company_actors; exact same-Company bundle/scope references",
+        "valid_until > valid_from when present",
+        "Old unique(org,user,role) replaced only after old writers refuse/understand enrolled records",
+        "First supported roots Account-bound; subject-group expansion awaits guarded membership owner"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Company authority EXCLUSIVE before change; preserve all historical revisions"
+    },
+    {
+      "name": "policy_assignment_heads",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity policy owner",
+      "columns": {
+        "org_id": "UUID",
+        "assignment_id": "UUID",
+        "current_revision": "BIGINT >=1"
+      },
+      "primary_key": [
+        "org_id",
+        "assignment_id"
+      ],
+      "constraints": [
+        "FK exact assignment revision",
+        "CAS expected head, no silent replacement of other scope roots"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Company EXCLUSIVE; bump epoch once per committed batch"
+    },
+    {
+      "name": "policy_scope_revisions",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity policy owner; source facts stay domain-owned",
+      "columns": {
+        "org_id": "UUID",
+        "scope_id": "UUID",
+        "revision": "BIGINT >=1",
+        "selector_kind": "COMPANY|ORG_UNIT|TASK|OBJECT",
+        "selector_ref": "Typed Company-owned object identity",
+        "include_descendants": "BOOLEAN",
+        "schema_ref": "ImmutableOwnerRef"
+      },
+      "primary_key": [
+        "org_id",
+        "scope_id",
+        "revision"
+      ],
+      "constraints": [
+        "Company boundary fixed; descendant rule only on registered hierarchy types",
+        "No unvalidated SQL/query text or labels",
+        "Actual membership is owner/current-fact-derived under Company guard"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Immutable definition; underlying hierarchy changes also Company EXCLUSIVE"
+    },
+    {
+      "name": "policy_field_group_revisions",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "identity policy metadata owner",
+      "columns": {
+        "org_id": "UUID",
+        "field_group_id": "UUID",
+        "revision": "BIGINT >=1",
+        "object_schema_ref": "ImmutableOwnerRef",
+        "property_ids": "Bounded exact registered property identity vector"
+      },
+      "primary_key": [
+        "org_id",
+        "field_group_id",
+        "revision"
+      ],
+      "constraints": [
+        "No future-field wildcard",
+        "Schema change requires explicit revalidation and new publication where relevant",
+        "Property IDs checked under owning schema guard"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command.",
+      "lock": "Immutable; publication/schema changes Company EXCLUSIVE"
+    },
+    {
+      "name": "authorized_query_cursors",
+      "status": "PROPOSED_NEW_TABLE",
+      "owner": "authorization projection owner",
+      "columns": {
+        "org_id": "UUID",
+        "cursor_hash": "BYTEA32",
+        "account_id": "UUID FK accounts RESTRICT",
+        "query_digest": "BYTEA32",
+        "scope_ref": "ImmutableOwnerRef",
+        "authority_epoch": "BIGINT >=1",
+        "schema_plan_digest": "BYTEA32",
+        "last_key": "Typed authorized sort key/object identity",
+        "expires_at": "TIMESTAMPTZ"
+      },
+      "primary_key": [
+        "org_id",
+        "cursor_hash"
+      ],
+      "constraints": [
+        "Opaque random256bit handle, only hash stored; 5minute expiry",
+        "Current Account+Company+query+epoch checked; not a read grant",
+        "Last key never raw hidden sort field; max100 page rows",
+        "Cleanup TTL only this ephemeral cursor, never business receipt/history"
+      ],
+      "access": "ENABLE/FORCE Company RLS USING+WITH CHECK exact current org; composite Company FKs; immutable revisions have no runtime UPDATE/DELETE; mutation only through admitted owning command. Read only exact authenticated current Account cursor; no user-controlled target query.",
+      "lock": "Read under same authority snapshot; create after projected authorized page state"
+    }
+  ],
+  "existing_table_transitions": [
+    {
+      "tables": [
+        "auth_webauthn_credentials",
+        "auth_webauthn_ceremonies",
+        "auth_refresh_token_families",
+        "auth_refresh_tokens",
+        "auth_bootstrap_credentials"
+      ],
+      "change": "Retarget all user_id ownership to accounts; remove composite users/Company ownership requirements after validation; legacy org provenance nullable/non-authorizing; remove Company cascade and policy access; preserve bytes and revocations"
+    },
+    {
+      "tables": [
+        "auth_refresh_token_families"
+      ],
+      "change": "Add protocol ACCOUNT_V1|LEGACY_COMPANY, account_security_generation>=1 for ACCOUNT_V1, auth_time and typed assurance; UNIQUE(id,user_id) for same-Account token FK"
+    },
+    {
+      "tables": [
+        "auth_refresh_tokens"
+      ],
+      "change": "FK(family_id,user_id)->auth_refresh_token_families(id,user_id); retain rotation/reuse and absolute lifetime"
+    },
+    {
+      "tables": [
+        "auth_device_login_handoffs",
+        "auth_webauthn_ceremony_bindings"
+      ],
+      "change": "Migrate Account binding without paired mandatory Company; preserve exact action/ceremony proof/nonce/single-use, no business authority from handoff"
+    },
+    {
+      "tables": [
+        "ont_action_command_receipts",
+        "employee_contract_wages",
+        "gov_approval_requests",
+        "gov_approvals",
+        "gov_approval_consumptions",
+        "user_role_assignments",
+        "policy_assignment_preview_receipts",
+        "subject_authz_versions"
+      ],
+      "change": "Reached composite actor FKs to company_actors(org_id,account_id); reviewed subset only; Employee/Employment subject FKs unchanged"
+    },
+    {
+      "tables": [
+        "audit_events",
+        "payroll_draft_runs",
+        "payroll_run_exceptions"
+      ],
+      "change": "Reached global actor refs to accounts; retain Company ownership and immutable attribution; Account security audit separated"
+    },
+    {
+      "tables": [
+        "workflow_runs",
+        "workflow_waiting_tasks"
+      ],
+      "change": "Actor FK closure before Account-only tasks; exact owning table catalog and final workflow ports W04b-04, no claimed migration here"
+    },
+    {
+      "tables": [
+        "policy_roles"
+      ],
+      "change": "Add current_revision nullable for legacy rows, composite FK(org_id,id,current_revision)->policy_role_revisions; enrolled head must reference exact PUBLISHED revision; head/status projection changed atomically with authority epoch/catalog receipt"
+    }
+  ],
+  "scalar_contract": "UUID immutable identities; BIGINT monotonic versions encoded decimal strings on new wire; RFC3339 instants; half-open validity; typed immutable refs require registered owner/Company/schema/hash identity; no generic client JSON as authority",
+  "unresolved": [
+    "Exact DDL/function signatures and applied catalog inventory require W04 migration candidate after integrated schema dependencies",
+    "Shared action/schema revision registration, evidence-case/custody refs and complete task/draft/Group participating ports remain W04b-02..04"
+  ]
+}

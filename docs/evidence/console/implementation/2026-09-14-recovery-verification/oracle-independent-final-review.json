@@ -1,0 +1,71 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate_sha": "11e4fcadf1bfb2e35253439a4998481e7fe82a8b",
+  "verdict": "ACCEPTED_WITH_EXPLICIT_PROOF_BOUNDARIES",
+  "source_bindings": {
+    "ops/dr/recovery-manifest.py": {
+      "sha256": "ff4663ece33cc755302fd518015f4b8ff5c6b3e2279486ce0fdf4c2ec27f32ef",
+      "git_blob": "1d52fc92381bf95ceaee841c0130a1d137d7a494"
+    },
+    "ops/dr/cnpg-restore-drill.sh": {
+      "sha256": "51af4b43e559ca4595fad307981a2fac15f39f112b5d761cd93dc23ce6810d86",
+      "git_blob": "99fffeb7ec8dcb7564b83e24833c9a278e209668"
+    },
+    "ops/dr/cnpg-restore-drill.md": {
+      "sha256": "09264fbf3b5790e2c509367346b72a981bd07d35cf5d11da5130831426aad048",
+      "git_blob": "5a14424250e74bdde395ffddafa7c72be063c516"
+    },
+    "ops/dr/recovery-manifest.integration.test.py": {
+      "sha256": "afa849baf26c03a5beb53c884ab55412b8e9d3dc55e02270205db9b0d204766a",
+      "git_blob": "ff273f1db72c99e72a8bdf0f02fcbefebc0d1de1"
+    },
+    "ops/dr/test_recovery_manifest.py": {
+      "sha256": "1ee2b8c5e926117090f5dc181f8b38642a3467620c7cf3e3ea70cd4eec805903",
+      "git_blob": "a1ac3662025c5e16ada39cbd2c09dcd00785f476"
+    },
+    "scripts/check-production-hardening.test.mjs": {
+      "sha256": "f2e643a3dff367dda50ce4e633b65abea436854b80c0f40ed3983dddd9c9be36",
+      "git_blob": "828cc9038eef97ae05972c8757b22532c09bb6f7"
+    },
+    "docs/documentation-index.json": {
+      "sha256": "f5b6e2fed23b97649e6511cfafae369b9c75c9dd5a659ce48bb9cea0a33c2d7d",
+      "git_blob": "4f9d8ce4084f5246416e88da1bad93d68b2c1c47"
+    },
+    "docs/documentation-manifest.seed.json": {
+      "sha256": "7c0aba58c8dabd999abf2d6a3ad613b67aecd2bec9ae2d831d1d22bdac21c1bf",
+      "git_blob": "81dc1b91b4514a41e8578fcbb28d77aeddf96cc5"
+    }
+  },
+  "supersedes": "/private/tmp/console-restore-oracle-source-review.json",
+  "resolved_hold": [
+    "Unique container name and ownership label are registered before create within try/finally, so lost-create reply no longer loses custody.",
+    "Every fixture subprocess has a 30-second timeout.",
+    "Cleanup checks labels before removal and refuses unrelated owners. Removal failure or timeout still reaches independent absence inspection. Unknown or remaining resource state fails instead of asserting successful cleanup.",
+    "Four fault controls invoke the actual main() lifecycle and verify predeclared ownership, unrelated-owner refusal, and absence inspection after failed/timed-out removal."
+  ],
+  "independent_execution": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s ops/dr -p test_recovery_manifest.py",
+    "discovered": 19,
+    "executed": 19,
+    "passed": 19,
+    "failed": 0,
+    "docker_runs": 0
+  },
+  "owner_execution_review": {
+    "real_postgres": "9/9 PASS and owned_container_cleanup=confirmed",
+    "node": "93/93 PASS, 0 skipped",
+    "python": "19/19 PASS",
+    "log_sha256": {
+      "/private/tmp/console-ha-recovery-20260914/oracle-postgres-r2-green.log": "89d3ca53f6a746b29b68421432a43e3267ecac3b2acbe4984c007d5fc7191753",
+      "/private/tmp/console-ha-recovery-20260914/production-hardening-r2.log": "c3ff62c18633e1a6d04539597058d0a139a0d0a58419f8ee865de0f52598b1e7",
+      "/private/tmp/console-ha-recovery-20260914/oracle-controls-r2.log": "2fac78f56ae4120ebd7687711fe2841178957acbfe10090e40b0976aa8906de2"
+    }
+  },
+  "limits": [
+    "Owner PostgreSQL execution logs reviewed, not independently rerun.",
+    "Acceptance applies to content comparator and bounded disposable fixture, not actual backup restore, WAL-target reach, HA failover, RPO/RTO, cross-store recovery, or no-data-loss certification.",
+    "Comparator exclusions and broader production recovery HOLDs from the preceding core review remain in force.",
+    "Cleanup refusal is fail-closed; a Docker daemon outage can still require operator resource reconciliation.",
+    "No product source edits were performed by reviewer."
+  ]
+}

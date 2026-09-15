@@ -1,0 +1,7 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running `/private/tmp/console-account30-cargo/debug/console-gate-rls-arming`
+console-gate-rls-arming: checking workspace at /private/tmp/console-production-tdd-preparation-20260913/backend
+console-gate-rls-arming: FAILED - 3 violation(s):
+  [BarePoolQuery] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs:252: .fetch_one(&pool) executes on a bare pool with no armed app.current_org GUC — wrap the read in with_org_conn(self.pool(), current_org()?, ..) / with_audit(s), or add `// rls-arming: ok <reason>` if the table is global/non-RLS
+  [BarePoolQuery] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs:630: .fetch_one(pool) executes on a bare pool with no armed app.current_org GUC — wrap the read in with_org_conn(self.pool(), current_org()?, ..) / with_audit(s), or add `// rls-arming: ok <reason>` if the table is global/non-RLS
+  [BarePoolQuery] /private/tmp/console-production-tdd-preparation-20260913/backend/app/src/durability_composition_tests.rs:861: .fetch_one(pool) executes on a bare pool with no armed app.current_org GUC — wrap the read in with_org_conn(self.pool(), current_org()?, ..) / with_audit(s), or add `// rls-arming: ok <reason>` if the table is global/non-RLS

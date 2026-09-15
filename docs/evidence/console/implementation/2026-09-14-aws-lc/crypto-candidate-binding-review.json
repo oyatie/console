@@ -1,0 +1,66 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate_sha": "69c86eee174e31dadd1332ab37e5d84e9a22d4a0",
+  "verdict": "ACCEPT_EXACT_CRYPTO_CANDIDATE_WITH_NATIVE_BUCK_PENDING",
+  "prior_crypto_review": "audit-aws-lc-migration-source-review.json",
+  "prior_reviewed_source_test_blob_matches": 6,
+  "execution_declared_source_paths_checked": [
+    "backend/Cargo.lock",
+    "backend/Cargo.toml",
+    "backend/app/BUCK",
+    "backend/crates/platform/audit-chain/BUCK",
+    "backend/crates/platform/audit-chain/Cargo.toml",
+    "backend/crates/platform/audit-chain/src/external.rs",
+    "backend/crates/platform/audit-chain/src/lib.rs",
+    "third-party/rust/BUCK",
+    "third-party/rust/fixups/aws-lc-rs/fixups.toml",
+    "third-party/rust/fixups/aws-lc-sys/fixups.toml",
+    "third-party/rust/fixups/ring/fixups.toml",
+    "tools/buck/gen_first_party.py"
+  ],
+  "pending_evidence_attachment": {
+    "path": "docs/evidence/console/implementation/2026-09-14-aws-lc/execution.json",
+    "sha256": "e6a051f48b4e156a88136ef727647ae99ddba5f298ffef360331f0b9016503b4",
+    "custody": "Exists in working tree but is not a blob in candidate69c86eee; acceptance binds these exact bytes separately, not as already committed evidence."
+  },
+  "independent_readback": {
+    "compatibility_and_library": "18passed,0failed,0ignored,0filtered",
+    "postgres": "24passed,0failed,0ignored,0filtered",
+    "generator": "35testsOK",
+    "red_tree": "4015lines,1ring line",
+    "green_tree": "4273lines,0ring lines; file describes normal,build,dev extension"
+  },
+  "claims_review": [
+    "Status explicitly CARGO_VERIFIED_BUCK_EXECUTION_PENDING; not native build acceptance.",
+    "Current execution report distinguishes inactive optional Ring lock retention, noFIPS, noLinux release, historical customer verification and unresolved Account work. No wholeConsole or production completion claim.",
+    "Same command oracle conserved; green broadens dependency edge kinds to include dev. Compatibility baseline is correctly reported as conservation rather than invented RED.",
+    "Source/lock versions and trust-verifier boundaries retain prior review. Generated Buck mechanisms themselves remain assigned to independent build reviewer."
+  ],
+  "minor_wording": "Before native build completes, phrase local-Darwin result limit prospectively rather than implying a native result already exists. No source blocker.",
+  "remaining_holds": [
+    "Actual native Buck build/run and its pinned-source/link closure proof.",
+    "Final evidence integration requires new candidate/attachment custody readback; this receipt does not put working-tree evidence into69c86eee.",
+    "Production historical anchors/seals, Linux release/FIPS/production/fullConsole remain outside acceptance."
+  ],
+  "reviewer_commands": "git show immutable blobs, SHA256 checks, read/decompress evidence; no Cargo rerun",
+  "evidence_hashes": {
+    "audit-awslc-compat-green.log.gz": "350cac6a65ff419299a45dac986f3d28b06ce6491ec2b07833e4c88b0738ba68",
+    "audit-awslc-pg-green.log.gz": "99ad62ea0a33bbb45c8994e7cb44e8cfa89500c7424337c5d6ce35438281b6e7",
+    "no-ring-clippy.log.gz": "04e34a626588e607b6fdc22b6e7e3ad796a50898d7c5aa88b7b97c90fae9a051",
+    "compatibility-ring-baseline.log.gz": "09ce9686b6dd02408ecd846072def659b0d19ab609f4a3e93541705482250ffd",
+    "no-ring-final-all-targets-tree.txt.gz": "1d275d29f160855f9214fff064f00e6a0d36f0590fb6ae0aed8d13da8b20b6af",
+    "differential-torsion-results.json.gz": "49fd4ba817e64a148f2a84e81a9773c39a4681672acc560c32ef74659af9b720",
+    "awslc-final-libraries.log.gz": "4827133538d55869d7e52f46c5815963ec56f277c7e29c12aaba16c83f042edb",
+    "no-ring-generator-tests.log.gz": "449077ff62edbe3948c634aa706ad7ce1919286006aae8e1695866266230d5c1",
+    "no-ring-generator-tests-clean-green.log.gz": "3ff832fde1e31bdbb4d73944bf2ed06e16cd58b923e19dcbd7a924847aaa4439",
+    "awslc-apalis-adapter-green.log.gz": "03f9e45957864b0d4a2d6591a5f050d44b9d0f33f74cd721fd05664772e69fef",
+    "no-ring-buckify-final.log.gz": "04083e3212feb8a17a96b5cb7e692560657c6dbb771f4fb5958723eee2fd59c5",
+    "differential-Cargo.toml.gz": "cb3f797b7cc0f278cedecc63cebf4afb823bd015fae58bc9ed64ca62927687b4",
+    "differential-src-main.rs.gz": "63e0b6b20459ca8683b4d4d00e45d74cb165444db4eb9e6ebac8de889d022329",
+    "active-dependency-tree-red.txt.gz": "5b17b143b9e325b22a60d5bd85806e14ab76e318311ff8c224403c16f27e796e",
+    "differential-results.json.gz": "368f94829d4d415baabe603c0651a3eebda7584a47cb8400f9dc0524c6c668d9",
+    "awslc-combined-custody-green.log.gz": "ec2aaebc73237f18b461665ea00edf531e2319f284d89d26671d6ee8d80bd02d",
+    "differential-Cargo.lock.gz": "13cd5ea290e63951e8007857883d9fdded045a40522a56de9cc472c600966599",
+    "differential-wycheproof-ed25519.json.gz": "de7a4bc0f5aefc8461be4c56ba8223779b6aaf4d2a27ca1c1e682a170bd80356"
+  }
+}

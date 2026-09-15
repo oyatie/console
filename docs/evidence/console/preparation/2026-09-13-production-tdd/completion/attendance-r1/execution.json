@@ -1,0 +1,23 @@
+{
+  "parsers": [
+    {
+      "file": "attendance-owner-producer.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "attendance-owner-tests.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "leave-owner-tests.rs",
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "source_test_bodies": 11,
+  "rust_compiled": 0,
+  "cargo_discovered": 0,
+  "rust_executed": 0
+}

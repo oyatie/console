@@ -1,0 +1,136 @@
+{
+  "classification": "Evidence planning map, not current product/delivery authority",
+  "current_phase": 1,
+  "phases_before_implementation": [
+    {
+      "id": 1,
+      "name": "Complete first-slice W01-W04 contracts, including F01-F08 technical closure and product/screen reconciliation",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": 2,
+      "name": "Reconcile current authority, four independent integrated design reviews and exact-SHA owner approval",
+      "status": "NOT_STARTED_AS_FINAL_INTEGRATED_ROUNDS"
+    },
+    {
+      "id": 3,
+      "name": "Executable tests/proof candidates against approved design, independent review and exact-SHA approval",
+      "status": "NOT_STARTED"
+    },
+    {
+      "id": 4,
+      "name": "Admit actual named RED command on approved test commit and begin implementation",
+      "status": "NOT_ADMITTED"
+    }
+  ],
+  "items": [
+    {
+      "id": "F01",
+      "title": "Typed inputs/results and canonical codecs",
+      "status": "PARTIAL",
+      "remaining_design_output": "Complete source custody envelopes, calendar batch input, Account/workflow/adoption fields and every nullable/reference/range rule",
+      "design_exit": "No generic TypedRef/payload holes in any selected callable boundary; every actual codec and maximum transport witness named",
+      "later_execution_evidence": "Schema/codec tests and mutation/boundary execution after approved test/implementation stages"
+    },
+    {
+      "id": "F02",
+      "title": "Physical schema and owner transactions",
+      "status": "PARTIAL",
+      "remaining_design_output": "Consolidate13-22 tables/keys; seven source/head/claim DDL; source reciprocal FKs; all finalizer/actor/gate/adoption/ACL bodies",
+      "design_exit": "Every selected write has exact SQL identity/constraint/caller/lock/index contract;22 structural member SQL does not close whole item",
+      "later_execution_evidence": "Run clean/upgrade PostgreSQL catalogs, roles, races, rollback and query plans"
+    },
+    {
+      "id": "F03",
+      "title": "Retention and independent adoption",
+      "status": "OPEN_FINAL_CONTRACT",
+      "remaining_design_output": "Exact private/staged/domain units, seal linkage, required submission copies/pins, disposal states and external issuance serialization",
+      "design_exit": "Concrete adapter/provider contracts and complete copy/lifetime inventory; no placeholder that cleanup may erase required evidence",
+      "later_execution_evidence": "Provider fault/hold/cancel/readback and restore tests, actual issued credentials"
+    },
+    {
+      "id": "F04",
+      "title": "Execution identity and information flow",
+      "status": "OPEN_FINAL_CONTRACT",
+      "remaining_design_output": "Actual roles/processes/pools/caller provenance; source legacy-shape refusal; complete source->sink map, active customer tenant/Cedar/egress contracts; typed DB-error projection across response/log/trace sinks and DB-side diagnostics configuration",
+      "design_exit": "All trusted/unverified boundaries and allowed releases declared; no missing caller or job-title authority; exact Verus relational properties",
+      "later_execution_evidence": "Verus proofs on actual exec code; safe API/nonvacuity checks; runtime isolation/RLS/egress/log checks"
+    },
+    {
+      "id": "F05",
+      "title": "Migration and enrollment",
+      "status": "OPEN_FINAL_CONTRACT",
+      "remaining_design_output": "Exact legacy/catalog census, restartable backfill/quarantine, dependency manifest, cutover/rollback/compatible readers",
+      "design_exit": "Deterministic phases and repair/rollback rules; no legacy fact gets fabricated qualified provenance",
+      "later_execution_evidence": "Execute clean and seeded upgrade/rollback under reviewed test/implementation versions"
+    },
+    {
+      "id": "F06",
+      "title": "Independent journal and custody selection",
+      "status": "OPEN_FINAL_CONTRACT",
+      "remaining_design_output": "Select concrete holder/provider capability and append/CAS/idempotency/signature/rollover/serving-fence protocol",
+      "design_exit": "Choose supported design, dependencies and failure rules; actual vendor deployment evidence is later",
+      "later_execution_evidence": "Provision separately authorized services and verify independent append/readback/fences"
+    },
+    {
+      "id": "F07",
+      "title": "Recovery and current authority",
+      "status": "OPEN_FINAL_CONTRACT",
+      "remaining_design_output": "Specify independent source/freshness/completeness for identities, grants, topology, effects, work and gates",
+      "design_exit": "Restore cannot serve merely because historical rows load; explicit reconciliation/unknown/refusal/readmission rules",
+      "later_execution_evidence": "Execute restore/loss/revocation/rerun drills with actual independent sources"
+    },
+    {
+      "id": "F08",
+      "title": "Executable verification and deployment plan",
+      "status": "OPEN_FINAL_CONTRACT",
+      "remaining_design_output": "Name harnesses, role/bootstrap fixtures, clock/barriers/fault points, pilot envelope and p95/p99/resource/error denominators",
+      "design_exit": "Precise tests/proofs/measurements to write, assumptions and acceptance criteria; no need to claim results before implementation",
+      "later_execution_evidence": "Run tests/proofs/load after approved implementation; release evidence separately"
+    }
+  ],
+  "dependency_order": [
+    "F01<->F02 align together; close concrete wire and persistence identities",
+    "F03/F04 use those identities and can be specified in parallel with independent ownership",
+    "F05 uses F02-F04; F06 uses F03/F04; F07 uses F05/F06/current authority",
+    "F08 acceptance planning starts now, final harness inputs bind completed F01-F07"
+  ],
+  "this_candidate_closes_if_scoped_reviewed": "F02.EFFECT_MANIFEST_STRUCTURAL_SPEC: actual bounded header/member SQL shapes, guards, frame validator and constraint/ACL statement bodies",
+  "does_not_close": [
+    "Whole F02",
+    "All-null source downgrade refusal",
+    "Seven native source/claim reciprocal integrity",
+    "Whole retention lifecycle and all participant bodies",
+    "Information-flow proof or full sink audit",
+    "Final integrated design approval"
+  ],
+  "implementation_distance": "Still in design completion, not almost coding. No defensible percent/time estimate from candidate count; each item closes on listed outputs, not more prose or repeated scoped reviews.",
+  "anti_expansion_rule": "Prior71 conceptual relations are an inventory, not permission to create71 tables. Reuse existing owners/storage; every additional relation requires a concrete unresolved invariant. Update this finite map by evidence, not a new independent checklist per example.",
+  "pilot": "Console operated;1 customer Group tenant,6 Companies,2000 total people. Cross-customer negative fixtures use a distinct second tenant; not a change to pilot population.",
+  "production_separate": "Actual provider/credential deployment, legal/payment authority and production exposure are later separately authorized evidence; do not confuse them with writing a complete design contract.",
+  "map_boundary": "F01-F08 elaborate W04 technical integration only. They do not replace W01-W03 user workflow/screen/self-service closure, authorize the full interview scope, or establish whole Foundry-suite readiness.",
+  "first_slice_reconciliation": {
+    "source": "2026-09-12-implementation-readiness-08/work-packages.csv",
+    "status": "RECONCILIATION_REQUIRED; inherited exits are not newly certified complete by22",
+    "items": [
+      {
+        "id": "W01",
+        "required_exit": "Assignment/handover: deterministic candidate selection, capacity races, task/draft/attempt fences and manual recovery, general reasons using one flow."
+      },
+      {
+        "id": "W02",
+        "required_exit": "Input/screen completion V01-V10: entry, command/DTO, preserved input, next responsible actor, focus/accessibility, loading/empty/denied/conflict/recovery states aligned to final contracts."
+      },
+      {
+        "id": "W03",
+        "required_exit": "Explicit first-slice self-disclosure/correction scope: own amounts, historical employment, publication and correction; exclusions remain recorded as incomplete."
+      },
+      {
+        "id": "W04",
+        "required_exit": "Integrated owner/API/calculation/compatibility contracts: F01-F08 below."
+      }
+    ],
+    "authority_exit": "Reconcile selected scope with current PRODUCT/ROADMAP through reviewed authority work before implementation; interview evidence alone does not release communications, office editing or other existing HOLDs."
+  },
+  "full_console_boundary": "First implementation, pilot operation and full Console completion are distinct.08 FULL01-FULL05 remain separate work: shared engine, complete HR/attendance/labor/payroll story inventory, communications/calendar UX, enterprise coediting sheets, and versioned leaf-level Foundry-suite capability inventory/acceptance. Do not require the entire suite finished before the first coherent implementation slice; do not silently drop these requested capabilities."
+}

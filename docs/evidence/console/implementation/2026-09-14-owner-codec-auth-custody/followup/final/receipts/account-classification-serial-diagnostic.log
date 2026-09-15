@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running unittests src/lib.rs (/private/tmp/console-account-classification-cargo/debug/deps/console_gate_tenant_isolation-9d964ce1cbf42c6a)
+
+running 2 tests
+test tests::account_catalog_rejects_direct_runtime_and_public_grants ... ok
+test tests::account_catalog_tables_are_owner_only ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.01s
+

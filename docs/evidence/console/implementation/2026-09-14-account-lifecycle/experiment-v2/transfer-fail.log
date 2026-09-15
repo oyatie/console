@@ -1,0 +1,1 @@
+psql:/experiment/transfer-fail.sql:4: ERROR:  division by zero

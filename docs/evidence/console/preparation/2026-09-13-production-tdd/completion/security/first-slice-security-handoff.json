@@ -1,0 +1,42 @@
+{
+  "base_sha": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "author": "/root/fresh29_security",
+  "status": "AUTHORED_ONLY_NO_TEST_EXECUTION",
+  "files": [
+    {
+      "path": "cedar_diagnostic_fail_closed.rs",
+      "sha256": "583d1310bd2cb2b6b82885ecba036f7d8e27f82ba6ea39ce84be67f6e75b278b",
+      "bytes": 5631
+    },
+    {
+      "path": "realtime-company-fanout.append.rs",
+      "sha256": "20f02e3ed6764e05fc0c78542efffbdae5d2ac6a419c662a6fc3bb541b9f5f49",
+      "bytes": 2438
+    },
+    {
+      "path": "telemetry-diagnostic-sink.append.rs",
+      "sha256": "f7d781c72c1277ea8316f04db793744c3365c91fc2e4a39c52774a225f10d804",
+      "bytes": 3130
+    },
+    {
+      "path": "first-slice-security-test-design.txt",
+      "sha256": "d2db9d557833f5e2537168d6e7a28cbfa1630f18dd32f785d453792830dc1c6d",
+      "bytes": 41063
+    },
+    {
+      "path": "security-fixture-vectors.json",
+      "sha256": "1064e97ed216936aa4eef17b1ebce59bfdf54868afbfc3ac72d8812d040c454a",
+      "bytes": 2415
+    },
+    {
+      "path": "first-slice-security-source-custody.json",
+      "sha256": "9ae3e024fe8b91f2a601aede849091a4e19149cc52071b1c3f132fa1917edd3b",
+      "bytes": 6478
+    },
+    {
+      "path": "first-slice-security-test-map.json",
+      "sha256": "46c5c5780907d2cfef9f1420df27ce77c4d55e43b1bdeb6fd67b8f15163e227f",
+      "bytes": 21193
+    }
+  ]
+}

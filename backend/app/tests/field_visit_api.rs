@@ -25,8 +25,9 @@ const AUDIENCE: &str = "console-api";
 const TICKETS: &str = "/api/v1/support/tickets";
 const FIELD_SITES: &str = "/api/v1/field/sites";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn authenticated_runtime_role_completes_field_visit_story(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -403,8 +404,9 @@ async fn authenticated_runtime_role_completes_field_visit_story(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn field_console_denies_without_leakage(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -583,8 +585,9 @@ async fn field_console_denies_without_leakage(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn field_console_isolates_tenants_as_runtime_role(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let knl = OrgId::knl();
@@ -738,10 +741,14 @@ async fn send_without_idempotency(
 }
 
 async fn dispatch(pool: &PgPool, keys: &Keys, request: Request<Body>) -> (StatusCode, Value) {
-    let response = build_router(app_state(pool.clone(), keys.public_pem.clone()).unwrap())
-        .oneshot(request)
-        .await
-        .unwrap();
+    let response = build_router(
+        app_state(pool.clone(), keys.public_pem.clone())
+            .await
+            .unwrap(),
+    )
+    .oneshot(request)
+    .await
+    .unwrap();
     let status = response.status();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     (
@@ -754,9 +761,18 @@ async fn dispatch(pool: &PgPool, keys: &Keys, request: Request<Body>) -> (Status
     )
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
             ("CONSOLE_JWT_ISSUER", ISSUER.into()),
@@ -765,6 +781,7 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(pool: &PgPool, org: OrgId, name: &str) -> BranchId {

@@ -1,0 +1,32 @@
+[
+  {
+    "lane": "FP01-auth-topology",
+    "base_sha": "349253875189f37b75532c93af47bd57c668bac3",
+    "owner": "/root",
+    "probe": "DOCKER_CONTEXT=colima-console-custody-20260914 python3 ops/postgres-auth-topology.integration.test.py",
+    "allow": [
+      "ops/postgres-reconcile-topology.sh"
+    ],
+    "target": "existing topology script; exact approved21case test SHA b3cb67cd499ecf38cef07e3cbf89baaa30175f13a86a0b42e645b9594bcb4cf1",
+    "guide": "Create restricted auth LOGIN with no credential by default, preserve existing absent credential setting; optional nonempty distinct credential through suppressed psql env. Validate all flags and membership BEFORE old topology repair. No grants/migrations/auth activation. Same21case probe green.",
+    "reviewers": [
+      "/root/review_completeness",
+      "/root/finish_migration"
+    ],
+    "pre_mortem": "Role drift accidentally repaired or credential printed/rotated on omission.",
+    "blast_radius": "Root isolated topology script only, no shared running data.",
+    "detection": "Real SCRAM denial, preserved metadata/hash, injected flags/memberships and adversarial server logs.",
+    "rollback": "Revert local source; never delete credential or weaken roles in live data.",
+    "stop_conditions": [
+      "Unexpected mutations on refusal",
+      "Secret disclosure",
+      "Unconfirmed owned fixture cleanup"
+    ],
+    "holds": [
+      "Function projection",
+      "Auth pool and all route fencing",
+      "Activation",
+      "Production and HA"
+    ]
+  }
+]

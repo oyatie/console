@@ -1,0 +1,34 @@
+[
+  {
+    "argv": [
+      "env",
+      "RUSTUP_TOOLCHAIN=1.98.1",
+      "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+      "SQLX_OFFLINE=true",
+      "cargo",
+      "check",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "--workspace",
+      "--all-targets"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/account-crypto-alltargets-2179b0da.log"
+  },
+  {
+    "argv": [
+      "rustfmt",
+      "+1.98.1",
+      "--edition",
+      "2024",
+      "--check",
+      "backend/crates/platform/auth/src/jwt/account.rs",
+      "backend/crates/platform/auth/src/jwt.rs",
+      "backend/crates/platform/auth/src/lib.rs"
+    ],
+    "exit": 0,
+    "log": "/private/tmp/account-crypto-fmt-2179b0da.log"
+  }
+]

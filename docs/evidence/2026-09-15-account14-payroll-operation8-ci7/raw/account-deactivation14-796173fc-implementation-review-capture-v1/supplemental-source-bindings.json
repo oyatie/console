@@ -1,0 +1,29 @@
+{
+  "head": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "bindings": [
+    {
+      "path": "backend/crates/identity/rest/src/lib.rs",
+      "sha256": "a8eb2cbba9ba0ee50ce345d48df9e5d892c208d225223c3435b28f5c7ed34a5d"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/webauthn.rs",
+      "sha256": "4ecaa2656040482112872b795daecee16b2d15ee1ad7d6052018410755672b57"
+    },
+    {
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb"
+    },
+    {
+      "path": "tools/ci/cargo_needs_postgres.sh",
+      "sha256": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29"
+    },
+    {
+      "path": "tools/ci/postgres-cargo-map.json",
+      "sha256": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs",
+      "sha256": "22f3d294be85c1a5f3f4e25d6003f4516af5ac05d7d387e97acbce6c3b15f25d"
+    }
+  ]
+}

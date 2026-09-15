@@ -99,7 +99,11 @@ async fn fixture(owner_pool: &PgPool) -> (OrgId, UserId, UserId, PgPayRunPort) {
     let submitter = seed_org_and_user(owner_pool, ORG, "payrun").await;
     let decider = seed_org_and_user(owner_pool, ORG, "payrun2").await;
     let runtime_pool = runtime_role_pool(owner_pool).await;
-    let port = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let port = PgPayRunPort::new(
+        runtime_pool,
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     (OrgId::from_uuid(ORG), submitter, decider, port)
 }
 
@@ -1300,7 +1304,11 @@ async fn empty_tenant_pay_run_fixture(
     let positions = PgJobPositionPort::new(runtime_pool.clone(), handle.clone());
     let persons = PgPersonPort::new(runtime_pool.clone(), handle.clone());
     let employment = PgEmploymentPort::new(runtime_pool.clone(), handle.clone());
-    let port = PgPayRunPort::new(runtime_pool.clone(), handle);
+    let port = PgPayRunPort::new(
+        runtime_pool.clone(),
+        handle,
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let org = OrgId::from_uuid(ORG);
 
     execute_sync(

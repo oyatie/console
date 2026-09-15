@@ -1,0 +1,4 @@
+   Compiling console-contracts v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/contracts)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.91s
+     Running `/private/tmp/console-account30-cargo/debug/console-openapi-gen`
+wrote /private/tmp/console-production-tdd-preparation-20260913/backend/openapi/openapi.yaml (1225418 bytes)

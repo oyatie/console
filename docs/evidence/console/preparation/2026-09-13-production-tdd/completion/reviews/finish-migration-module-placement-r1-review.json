@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/finish_migration",
+  "files": {
+    "check.py": "55280e3c3db0777710599b32ae5f43f28438e70f7181e075f1bf7a693429d06a",
+    "build.py": "d55ffdc78b56f52fa60d66dff8d611e09a304a610c364f4ac131fc3c8853d5d4",
+    "module-placement.json": "a03fa21791dc666995006095617c0334c2aa29a6a658587b3794de40ca401e8c",
+    "mechanical-guide.txt": "ef4ce6e7eb437020b6b1aa3b3d4725f881545d68e2208de96e30df53fc748822"
+  },
+  "disposition": "HOLD_MECHANICAL_CHECKER_COMPLETENESS",
+  "independently_reproduced_accepted_mutations": [
+    "entries=[]",
+    "all entries crate_refs=[]",
+    "migration_remaining_tests parent_module=native_fixture",
+    "all declaration strings empty"
+  ],
+  "problem": "Verifier validates supplied reference metadata rather than independently deriving source/declaration/parent/asset closure; no exact selected-source roster cardinality. Existing positive+3negative controls insufficient to support closing mechanical wiring.",
+  "required_fix": "Anchor exact selected source/target/parent roster; recompute references/assets from pinned source or byte-identical reviewed regeneration; validate actual declaration files against mapped roots; add4hostile controls.",
+  "manual_review_accepted": [
+    "migration remaining child needs transition private source_keys; grandchild preserved exact legacy aliases",
+    "migration transition and rollback direct children account_migration",
+    "auth fixture/private helpers direct auth_rest children",
+    "owner-local tests use actual package --lib, no imaginary security_owner_acceptance",
+    "module declarations append to existing roots without overwriting their existing declarations",
+    "dev dependencies use existing workspace/path where present and preserve existing Tokio features; serializers/coordinated lockfile changes explicitly lane gated"
+  ],
+  "limits": "Exact successor with S8/R3 overlays still pending; no owner or macro expansion compilation claimed."
+}

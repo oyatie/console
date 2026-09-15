@@ -1,0 +1,121 @@
+{
+  "source": "/private/tmp/console-migration-readiness-r2-20260913",
+  "manifest_sha256": "e8b6678b3ff853c09938cccab0c809b89819e6bdb0c53d1f330588e8a17f236a",
+  "all_original_members_verified": true,
+  "files": [
+    {
+      "original": "actor-migration.csv",
+      "retained": "actor-migration.csv",
+      "original_sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "retained_sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392"
+    },
+    {
+      "original": "catalog_snapshot.sql",
+      "retained": "catalog_snapshot.sql",
+      "original_sha256": "f7bd241e891298ba21f504593769d8a759d3073b243baba74d86ac1521d3afaf",
+      "retained_sha256": "f7bd241e891298ba21f504593769d8a759d3073b243baba74d86ac1521d3afaf"
+    },
+    {
+      "original": "execution.json",
+      "retained": "execution.json",
+      "original_sha256": "b660a6a3bc435e0e4f61512a0118b33ba81b2d9dd2a5708902f38d8bb0ee737a",
+      "retained_sha256": "b660a6a3bc435e0e4f61512a0118b33ba81b2d9dd2a5708902f38d8bb0ee737a"
+    },
+    {
+      "original": "machinery/Cargo.lock",
+      "retained": "machinery/Cargo.lock",
+      "original_sha256": "ac1963a0c438f514923d22a949f79e9ad145a18ae2dd0cc61bfa753472f981cf",
+      "retained_sha256": "ac1963a0c438f514923d22a949f79e9ad145a18ae2dd0cc61bfa753472f981cf"
+    },
+    {
+      "original": "machinery/Cargo.toml",
+      "retained": "machinery/Cargo.toml",
+      "original_sha256": "abc47d0171b7af982e0452108834840df532899edbd309b34be3e3b4b524d8c8",
+      "retained_sha256": "abc47d0171b7af982e0452108834840df532899edbd309b34be3e3b4b524d8c8"
+    },
+    {
+      "original": "machinery/main.rs",
+      "retained": "machinery/main.rs",
+      "original_sha256": "306b20973a235129e4b49a3f5701700fc3ef62751a2f8fdca2c8fd112e00bdd4",
+      "retained_sha256": "306b20973a235129e4b49a3f5701700fc3ef62751a2f8fdca2c8fd112e00bdd4"
+    },
+    {
+      "original": "machinery/run.py",
+      "retained": "machinery/run.py",
+      "original_sha256": "342c6b3c0cc75d736195d4042bbb1ce78036e1a83bb1ea0afbf29bac5dcbe5dd",
+      "retained_sha256": "342c6b3c0cc75d736195d4042bbb1ce78036e1a83bb1ea0afbf29bac5dcbe5dd"
+    },
+    {
+      "original": "migration-admission-tests.rs",
+      "retained": "migration-admission-tests.rs",
+      "original_sha256": "3997fa2e5b9d4a03fe39e38af20c02b780fe7f69d738aeb7c25aeb9ff7360d37",
+      "retained_sha256": "3997fa2e5b9d4a03fe39e38af20c02b780fe7f69d738aeb7c25aeb9ff7360d37"
+    },
+    {
+      "original": "migration-machinery-check.log",
+      "retained": "migration-machinery-check.log.gz",
+      "original_sha256": "d690858dbc5e9a79b81ac1b9740300a9f5ad1faf1ba2b26c7cb0c6b68f7704e3",
+      "retained_sha256": "8c0f66a59ddd93761598f2222f7656bf0665a5459d56502a25aefaf4a0586864"
+    },
+    {
+      "original": "migration-machinery-check2.log",
+      "retained": "migration-machinery-check2.log.gz",
+      "original_sha256": "793082aa69e6912d2056b209aaa7c47ed6e743848afc160e07b6ee6919cb69a0",
+      "retained_sha256": "18e5ed4076fb0c77a89aa06c41547025be87c3ea01a185c12257e31d01ae563c"
+    },
+    {
+      "original": "migration-machinery-run1.log",
+      "retained": "migration-machinery-run1.log.gz",
+      "original_sha256": "e5487b9dfbe849d04f53dd83bfedbb7247f900fa4cba3a38baf0aa731b7f236e",
+      "retained_sha256": "01e2d4e207f5f8fcbc62e0855ebe13c472d746c45a6119f2ef140e181f2f6441"
+    },
+    {
+      "original": "migration-machinery-run2.log",
+      "retained": "migration-machinery-run2.log.gz",
+      "original_sha256": "b47c613bd5ac6304aff87b4e3df1b03919a67b07cdebdb44ea0b0a7f876bcbcf",
+      "retained_sha256": "8f9a50bab20a68407b910822e2850184c641e2aedad6bf410794ed83c5a262a9"
+    },
+    {
+      "original": "migration-machinery-run3.log",
+      "retained": "migration-machinery-run3.log.gz",
+      "original_sha256": "5fc6bf871ca81c655544329590a4fbb2a40ef50b56cb4144e5d964c1a188053f",
+      "retained_sha256": "39ec7fff5fd9e6a0333fcf154f3fe4df755098946a861cf34859dcca798ac601"
+    },
+    {
+      "original": "migration-machinery-run4.log",
+      "retained": "migration-machinery-run4.log.gz",
+      "original_sha256": "d732c717f515f35ec555e63f25f554edb0b5fb14cb77a3d0c04f3fd65bac967b",
+      "retained_sha256": "c9d8605df3d9415f7feca62b99d4f1526decf187d339a7ef69a8140596f40f4e"
+    },
+    {
+      "original": "migration-rollback-tests.rs",
+      "retained": "migration-rollback-tests.rs",
+      "original_sha256": "9c7fddc7b5c44f846898c85b3be4ab56c9d2ebd512270d278f270a6743428c27",
+      "retained_sha256": "9c7fddc7b5c44f846898c85b3be4ab56c9d2ebd512270d278f270a6743428c27"
+    },
+    {
+      "original": "owner-interface-contract.txt",
+      "retained": "owner-interface-contract.txt",
+      "original_sha256": "721879e9f6c5c6e01e9b4890ea14fdb31554af8d42d0e3c769549ab63fd6e194",
+      "retained_sha256": "721879e9f6c5c6e01e9b4890ea14fdb31554af8d42d0e3c769549ab63fd6e194"
+    },
+    {
+      "original": "parent-manifest.json",
+      "retained": "parent-manifest.json",
+      "original_sha256": "f3008ce4e8c79c7298c1d203afb8bedca53a39aa0f8bdbef1eff3dc669936420",
+      "retained_sha256": "f3008ce4e8c79c7298c1d203afb8bedca53a39aa0f8bdbef1eff3dc669936420"
+    },
+    {
+      "original": "postgres-snapshot-producer.rs",
+      "retained": "postgres-snapshot-producer.rs",
+      "original_sha256": "a8366561ee42b6d904ab6c4a2ca142fbe027cf277a1ad8534386c43cc0181125",
+      "retained_sha256": "a8366561ee42b6d904ab6c4a2ca142fbe027cf277a1ad8534386c43cc0181125"
+    },
+    {
+      "original": "r2-execution.json",
+      "retained": "r2-execution.json",
+      "original_sha256": "b09d908f89730fd30f9211adf0fd81117c42b424ff1addeae3ba27465f4edffa",
+      "retained_sha256": "b09d908f89730fd30f9211adf0fd81117c42b424ff1addeae3ba27465f4edffa"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-09-13T05:48:28.110971+00:00",
+  "candidate_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-13-adoption-lifecycle-contract-25/verify-packet.py --commit 48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+      "result": "PASS",
+      "output": {
+        "candidate_sha": "48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+        "core_files": 11,
+        "source_blobs": 15,
+        "counts": {
+          "new_tables": 1,
+          "functions": 3,
+          "triggers": 3,
+          "foreign_keys": 9
+        },
+        "frame_overhead_bytes": 43,
+        "maximum_frame_bytes": 147499,
+        "tuple_presence_masks": 16,
+        "nonexecuted_cases": 21,
+        "lifecycle_rows": 7,
+        "reader_links": 6,
+        "validation_scope": "Static regular-blob/reference/SQL token census and tuple/frame arithmetic only; no SQL parse/typecheck/catalog/runtime, semantic lifecycle proof or Verus.",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "verus_proofs_executed": 0,
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check c6a154ffff06c7d97e144db393615eae1e6bfb81 48349e4d5fe0f3f462ab46a037779e6b938e2aac",
+      "result": "PASS"
+    }
+  ],
+  "limits": "Static custody/reference/token census and frame/tuple arithmetic only;21proposed cases not executed. No SQL parsing/typechecking/catalog/runtime, current protection proof, product or Verus execution."
+}

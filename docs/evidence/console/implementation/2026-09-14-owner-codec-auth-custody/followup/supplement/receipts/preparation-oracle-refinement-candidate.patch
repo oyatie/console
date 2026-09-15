@@ -1,0 +1,37 @@
+--- a/scripts/check-undeclared-imports.test.mjs
++++ b/scripts/check-undeclared-imports.test.mjs
+@@ -328,7 +328,13 @@
+   });
+ 
+   it("goes red on the archived artifact the moment the classification is removed", () => {
+-    const { findings } = evaluateUndeclaredImports(repoRoot, []);
++    const artifact = "docs/evidence/console/wave4/L-F1/browser-window-host.mjs";
++    // Replay the exact archived artifact without pinning the growing archive census.
++    const root = fixture({
++      "package.json": emptyManifest,
++      [artifact]: readFileSync(join(repoRoot, artifact)),
++    });
++    const { findings } = evaluateUndeclaredImports(root, []);
+ 
+     assert.deepEqual(findings, [
+       { file: "docs/evidence/console/wave4/L-F1/browser-window-host.mjs", line: 30, specifier: "playwright" },
+--- a/scripts/prototype-chain-lookup-baseline.json
++++ b/scripts/prototype-chain-lookup-baseline.json
+@@ -4,7 +4,7 @@
+   "residuals": [
+     {
+       "file": "scripts/console/run-verification-queue.mjs",
+-      "line": 249,
++      "line": 250,
+       "kind": "undefined-compare",
+       "key": "key",
+       "snippet": "if (FORBIDDEN_WRAPPER_ENV.some((key) => process.env[key] !== undefined)) fail('wrapper-affecting environment is forbidden for compatible exact-SHA cohorts');",
+@@ -12,7 +12,7 @@
+     },
+     {
+       "file": "scripts/console/run-verification-queue.mjs",
+-      "line": 312,
++      "line": 313,
+       "kind": "optional-computed",
+       "key": "key",
+       "snippet": "const available = () => Object.fromEntries(RESOURCE_KEYS.map((key) => [key, resourceBudgets?.[key] ?? Number.MAX_SAFE_INTEGER]));",

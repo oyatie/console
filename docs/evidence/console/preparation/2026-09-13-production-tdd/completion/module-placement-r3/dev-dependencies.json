@@ -1,0 +1,79 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "status": "PROPOSED_DEV_DEPENDENCIES_AFTER_LANE_ADMISSION",
+  "backend/app/Cargo.toml": {
+    "dev-dependencies": {
+      "console-ontology-application": {
+        "workspace": true
+      },
+      "console-platform-group": {
+        "path": "../crates/platform/group"
+      },
+      "openssl": {
+        "version": "=0.10.80"
+      },
+      "rand": {
+        "version": "=0.8.6"
+      },
+      "tempfile": {
+        "version": "=3.27.0"
+      },
+      "cookie": {
+        "version": "=0.18.2"
+      },
+      "regex": {
+        "version": "=1.12.4"
+      },
+      "csv": {
+        "version": "=1.4.0"
+      },
+      "tokio": {
+        "workspace": true,
+        "features_to_add": [
+          "process",
+          "fs"
+        ],
+        "preserve_existing_features": [
+          "io-util",
+          "net",
+          "macros",
+          "rt-multi-thread"
+        ]
+      },
+      "socket2": {
+        "version": "=0.6.4"
+      },
+      "futures-util": {
+        "version": "=0.3.32"
+      },
+      "tokio-tungstenite": {
+        "version": "=0.29.0",
+        "features": [
+          "connect",
+          "handshake"
+        ]
+      }
+    }
+  },
+  "backend/crates/payroll/adapter-postgres/Cargo.toml": {
+    "dev-dependencies": {
+      "console-ontology-application": {
+        "workspace": true
+      },
+      "hex": {
+        "workspace": true
+      }
+    }
+  },
+  "backend/crates/platform/request-context/Cargo.toml": {
+    "dev-dependencies": {},
+    "note": "uuid already direct dependency; do not add test support/SQLx for pure authority-vector append"
+  },
+  "notes": [
+    "rand0.8.6 matches OsRng.fill_bytes and RngCore used by enrolled-account producers; newer rand majors are not source-compatible substitutes",
+    "cookie/regex/csv/tempfile versions match actually compiled browser helper Cargo.lock; openssl0.10.80 and rand0.8.6 already backend locked dependencies",
+    "openssl uses host native OpenSSL tooling; verify existing openssl-sys discovery; no vendored feature silently added",
+    "Serialize all Cargo manifest/lockfile/BUCK regeneration through root-owned lane; do not update dependencies ad hoc per packet",
+    "Owner product dependencies and public exports remain actual-owner implementation decisions; these additions are test-only edges, not approval for adapter-to-adapter production edges"
+  ]
+}

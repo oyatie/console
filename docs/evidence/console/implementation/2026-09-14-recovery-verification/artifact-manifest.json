@@ -1,0 +1,77 @@
+{
+  "independent-ha-gap-audit.txt": {
+    "source": "/private/tmp/console-ha-recovery-gap-audit-20260914.txt",
+    "source_sha256": "4e30f8da2f9dbce81a98ea8177e2dd580bda0d74eea88923f545a1a203a56e1b",
+    "artifact_sha256": "4e30f8da2f9dbce81a98ea8177e2dd580bda0d74eea88923f545a1a203a56e1b"
+  },
+  "replay-barrier-independent-review.json": {
+    "source": "/private/tmp/receipt-replay-rowlock-design-independent-review.json",
+    "source_sha256": "741cb40203709a03bdf06dd0524f86718ea9640e8eb61a88bf742f184eb1f583",
+    "artifact_sha256": "741cb40203709a03bdf06dd0524f86718ea9640e8eb61a88bf742f184eb1f583"
+  },
+  "oracle-independent-review-r1.json": {
+    "source": "/private/tmp/console-restore-oracle-source-review.json",
+    "source_sha256": "aa011d2c0b3d64fcda41b5bd48b06deeacba5a324128d9a58da69f2599bce349",
+    "artifact_sha256": "aa011d2c0b3d64fcda41b5bd48b06deeacba5a324128d9a58da69f2599bce349"
+  },
+  "oracle-independent-final-review.json": {
+    "source": "/private/tmp/console-restore-oracle-final-review.json",
+    "source_sha256": "5a4d8359bfe174f3e8cbe71ddcaa2ffd259a43dcffb08e9b81f4eecc1a1fb13b",
+    "artifact_sha256": "5a4d8359bfe174f3e8cbe71ddcaa2ffd259a43dcffb08e9b81f4eecc1a1fb13b"
+  },
+  "oracle-red.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/oracle-red.log",
+    "source_sha256": "5df88dd887382b8621e13fa95f9ecb81109856eff2e19858525848266aaf41a5",
+    "artifact_sha256": "15c54416395a49f19761e2fae65ebcacba0cb0025f05b9ef547063282bdd14aa"
+  },
+  "oracle-controls-r2.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/oracle-controls-r2.log",
+    "source_sha256": "2fac78f56ae4120ebd7687711fe2841178957acbfe10090e40b0976aa8906de2",
+    "artifact_sha256": "1837aa4c261db36639501331cbfbac26ed1c924d0d777fc6ee52f2f6c189933a"
+  },
+  "oracle-postgres.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/oracle-postgres.log",
+    "source_sha256": "8c28e7bd0f17d948c4013cbe6ce3913fb9b7b5a48d81ca90174338583716f815",
+    "artifact_sha256": "1268737e442c0c898085c1dc766acc46b3d4ae1fcbd3359beff74da081b96c70"
+  },
+  "oracle-postgres-r2-green.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/oracle-postgres-r2-green.log",
+    "source_sha256": "89d3ca53f6a746b29b68421432a43e3267ecac3b2acbe4984c007d5fc7191753",
+    "artifact_sha256": "8cafbadb2c619394aad3f2f09e632eef79c3251e1c2ff6d53726a0cf9c649387"
+  },
+  "production-hardening-r2.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/production-hardening-r2.log",
+    "source_sha256": "c3ff62c18633e1a6d04539597058d0a139a0d0a58419f8ee865de0f52598b1e7",
+    "artifact_sha256": "5bf4ae44b4217d55e20d701e8117875ed81243f78a18aa32dbaa4030adc3eb8a"
+  },
+  "remote-apply-current-escalated.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/remote-apply-current-escalated.log",
+    "source_sha256": "e0b54f8b16be6736c773f9f19c52a2c840751b1035408c72f2b91ab577e0016a",
+    "artifact_sha256": "a8477c8a9ad3b7b4b9ffda240ab6c135e5d09485d169dd2acb1bff49d4d4cc17"
+  },
+  "doc-link-tests.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/doc-link-tests.log",
+    "source_sha256": "c8b8c2bc8a2f48c7af7592b46eaae3897e0b0b12a6ef7d5cbb590acaf30cb6d4",
+    "artifact_sha256": "b3c29581a5ef6fd67b8677795f27c93365de5a9bbdf51ac673a1f2bfd6868bad"
+  },
+  "documentation-check-final.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/documentation-check-final.log",
+    "source_sha256": "ec04c6447efc85d6d91c4d1a11bfeab03bfe9b8f86f56921726c87d4af7970a0",
+    "artifact_sha256": "a530db5b12a797d6946f5d4e365f468af3686aa8918331157c380bcf2e85fec1"
+  },
+  "doc-link-followup-review.json": {
+    "source": "/private/tmp/console-restore-doc-link-followup-review.json",
+    "source_sha256": "02e91eb803b64930d9448cdfde3d78b2ab45f55be513e1996f637c85f9e3d570",
+    "artifact_sha256": "02e91eb803b64930d9448cdfde3d78b2ab45f55be513e1996f637c85f9e3d570"
+  },
+  "doc-links-repaired-staged.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/doc-links-repaired-staged.log",
+    "source_sha256": "00caf9a1c8a9e7789092af83b4b1b59bd2b06af414a5bf542afe5b8d50b4428e",
+    "artifact_sha256": "d361a8b22ed09178075f45e4347fb9bb18c45bbc3094504f43a7a91b0802c960"
+  },
+  "documentation-check-repaired.log.gz": {
+    "source": "/private/tmp/console-ha-recovery-20260914/documentation-check-repaired.log",
+    "source_sha256": "28151539d3351403df294af0efc934598294dfde843e84973c481c1b5b4e6d22",
+    "artifact_sha256": "c0985ba54c6b201f14a4e85fac7dea6eb6a9ec2eeb7a66b9ee38954f18f49934"
+  }
+}

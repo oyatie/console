@@ -1,0 +1,83 @@
+{
+  "kind": "BOUNDED_CFG_COMMIT_DISCOVERY_PREFLIGHT_ADDENDUM",
+  "reviewer": "/root/fast_gate_review",
+  "writer_and_runtime_owner": "/root",
+  "head_sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+  "parent_sha": "6fa6443d5b3a9df81f2a254d6c875942be64a488",
+  "status": "APPROVED_EXACT_COMMITTED_CFG_CHANGE_AND_SAVED_DISCOVERY",
+  "prior_review": {
+    "path": "/private/tmp/recovery-test-local-cfg-v2-review-fast.json",
+    "sha256": "11fbd7f6058860d4cb2fa391f550f7065d4d0103a96b9fbd837d40c18fac4350"
+  },
+  "commit_readback": {
+    "clean": true,
+    "changed_paths": [
+      "backend/app/src/durability_composition_tests.rs",
+      "scripts/lib/recovery-test-invocations.mjs"
+    ],
+    "postimage_sha256": {
+      "backend/app/src/durability_composition_tests.rs": "ae58a39fb4caa820ef49e6cedf196d0785df8efa7f54f7284aa75bd67cd861e9",
+      "scripts/lib/recovery-test-invocations.mjs": "962f760265b3bd9e31d024fb6d0ced20bda4df09d9218e1b77cbe2fd978d7193"
+    },
+    "original_approved_tests_retained": true
+  },
+  "saved_discovery": {
+    "raw_logs_independently_recounted": true,
+    "before31_equals_after31": true,
+    "unique_names_per_list": 31,
+    "app_recovery_names_per_list": 8,
+    "executed_per_list": 0,
+    "runtime_by_reviewer": 0
+  },
+  "saved_preflight": {
+    "initial_failed": true,
+    "initial_unresolved_inventory_diagnostics": 34,
+    "raw_initial_log_does_not_expose_subprocess_stderr": true,
+    "separate_root_reproduction": {
+      "command": [
+        "git",
+        "write-tree"
+      ],
+      "exit": 128,
+      "failure": "index.lock Operation not permitted"
+    },
+    "source_trace": "check-ci-preflight.mjs:1701 invokes write-tree; nonzero status returns null inventory. isCanonicalRegularRepositorySource then returns false, producing the observed34 resolution diagnostics. Separate reproduction corroborates the environment failure but is not stderr captured from the initial preflight process.",
+    "permitted_git_rerun": "CI preflight contract passed.",
+    "same_source_rerun": "Root reported unchanged source; reviewed clean commit matches approved postimages.",
+    "independent_rerun": false
+  },
+  "artifact_sha256": {
+    "/private/tmp/recovery-test-local-cfg-23fa2771/baseline-discovery.log": "becd76cf6da23be04b7f6b3c0e008203a2435fb48d8083e1c028d795dc920b80",
+    "/private/tmp/recovery-test-local-cfg-v2/discovery.log": "37fcc29f1defdabe2380803a2bc31440679bc1c92bafffc713c3bd78b3beeb97",
+    "/private/tmp/recovery-test-local-cfg-v2/discovery-preservation.json": "60da1fb587329d2dcafb2a364fde94c0cd794b15d8130b57bb019e6f3790403a",
+    "/private/tmp/recovery-test-local-cfg-v2/preflight.log": "dca694ace5dbfb5b50eae15e4b960124d30ce11e5c3691af4b559dc4a175238a",
+    "/private/tmp/recovery-test-local-cfg-v2/preflight-git-access.log": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+    "/private/tmp/recovery-test-local-cfg-v2/git-write-tree-denial.json": "37fae1f32c5c2f8202c455fe387eab751d0a2da9fc5a539edc982bab1faa740d"
+  },
+  "native_trace_crosscheck": {
+    "capture_addendum": "/private/tmp/native-browser-start-trace-23fa2771-capture.json",
+    "capture_addendum_sha256": "974f949607fb9bce25c2f0f49d4b4b40e9e94baa37b49ef2f8db694e5c1e4296",
+    "raw_log_sha256": "eea0804f982f6456fff1da3b7a258cf77b510199608ae7a7c8e52468a7258a23",
+    "source_base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+    "counts": {
+      "executed": 1,
+      "passed": 0,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 215
+    },
+    "confirmed_boundary": "4034 -> start4528 -> enrolled4654 -> case4818 identifies POST registration/start returning404; preceding sequential public terms/manifest/content assertions completed in this execution.",
+    "limits": "New backtrace execution only; no retroactive strengthening of old trace-free404. Fixture assertions are not publication authority. Registration challenge/finish/session/me/contexts postconditions unreached."
+  },
+  "additional_reviewer_checks": "Read-only Git/blob/log/source review and Python recount; 0Cargo/DB/Docker/Rust runtime, 0additional Node tests. Prior independent144/144Node evidence remains separate.",
+  "remaining_holds": [
+    "Root supervised recovery18 final frozen evidence and applicable full gates.",
+    "Auth7 composed source/probe final freeze and admission; full caller/purge/race/profile/operator acceptance.",
+    "Native end-to-end Account enrollment and first vertical; production/payment/legal authority."
+  ],
+  "supersedes": {
+    "path": "/private/tmp/recovery-test-local-cfg-v2-commit-addendum-fast.json",
+    "sha256": "fe9562dd7ec775a57f6fdddcea580b0abdc61ad0474231f41c1a9ca4e41add97",
+    "reason": "Correct source mechanism: returns null/false, not throw/catch on nonzero write-tree."
+  }
+}

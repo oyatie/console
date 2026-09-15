@@ -1,0 +1,31 @@
+{
+  "owner": "/root",
+  "base_sha": "31f769accc08ac7dcb0d140709021c58d2a86c7e",
+  "immutable_target": "group_of_one_invariant.rs manual_contains diagnostic at line201",
+  "allowed_paths": [
+    "backend/crates/platform/db/tests/group_of_one_invariant.rs",
+    "docs/evidence/console/approvals/2026-09-13-design30/lint-maintenance-entry.json"
+  ],
+  "probe": "RUSTUP_TOOLCHAIN=1.97.1 SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-platform-db --tests -- -D warnings 2> /private/tmp/console-authority30-clean-checks/lint-probe.stderr",
+  "admission": "fanout.py admit returned0; exact compiler diagnostic confirmed; before source edit",
+  "mechanical_guide": [
+    "Replace only !listed.iter().any(|id| *id == group_id) with !listed.contains(&group_id)",
+    "Preserve assertions, queries, messages, test membership and annotations",
+    "Same probe GREEN; independent exact-SHA review; repeat mandatory verify"
+  ],
+  "pre_mortem": "Accidentally weaken tenant membership assertion or conflate lint maintenance with Account implementation",
+  "blast_radius": "One equivalent Vec<Uuid> membership expression in existing test",
+  "detection": "Exact diff, Clippy diagnostic and independent review",
+  "rollback": "Reviewed forward reversal of one line; no data change",
+  "stop_conditions": [
+    "Non-equivalent source delta",
+    "New errors outside bounded scope",
+    "Independent review rejection"
+  ],
+  "reviewer": "/root/fresh29_operations (prospective equivalence accepted; exact final review pending)",
+  "remaining_holds": [
+    "AS1 test approval/implementation",
+    "Three other mandatory verify failures: personal-data parser and two Buck app builds",
+    "Hosted adoption and production authority"
+  ]
+}

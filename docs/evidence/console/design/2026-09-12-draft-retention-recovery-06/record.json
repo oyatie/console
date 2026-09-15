@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T15:30:15.146982+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "5688c8fde92cb78fd57995a168c631041927aa85",
+  "reviewed_contract_sha": "ab7efa258e37871ab75330c8daa9d0d192252cad",
+  "predecessor_record": "../2026-09-12-action-input-drafts-05/record.json",
+  "predecessor_record_sha256": "26b93fa34478a325c68fdd601a646e7b175849f485141a8f7fda92f1b50b42ea",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 7162,
+      "sha256": "f829e09cbc74183f05d9787bcf3e9e2566537adc785d73ea17fb29a237fc1e7e"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2071,
+      "sha256": "c23ee01d6371c93df3fa5e439f79d7d735bba59d8432b5d3d1bec9da90f5bfc5"
+    },
+    {
+      "path": "retention-contract.txt",
+      "bytes": 25657,
+      "sha256": "33c036143089dc54d26c045c34d7f688c41f4224de495a0d7db1bb2411eafc08"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1025,
+      "sha256": "f5a2c4ccc6c0d2db99b66a94cc8246b577c87e1613aab872ba7fff8d37e0d8d4"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1377,
+      "sha256": "bca0ae4992859edf516d6003038ae5670fd5c413dee6b00b8dafa0fb1f4af1a0"
+    },
+    {
+      "path": "review.html",
+      "bytes": 8536,
+      "sha256": "0126562e6177a305d0e095d8c63a37bdab82db10d10ab618bc23a598e2fb5a95"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 945,
+      "sha256": "1936a06d1d570ac4f15818d373c5b6958c610f9a6452b2cf480f1238c18282a0"
+    },
+    {
+      "path": "screen-states.csv",
+      "bytes": 1936,
+      "sha256": "e7fbd45dda489f462a7759df90a44aa2679aa902e480561cbd2240dbe7a61ca4"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 2329,
+      "sha256": "43f95694f3a36d6eaf8a09fa7edd43a66c425063e9839a5114f7d272873dc9b1"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1672,
+      "sha256": "a9d448094396e99ba2713165505498a4779f198b7bd1642f4261744c78cf738b"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 3351,
+      "sha256": "3ff46ad068cc0c51a8ea879a81613d32193a65ed48d406a9682b68a7b4f68829"
+    }
+  ],
+  "remaining_holds": [
+    "Exact restricted SQL/ACL migration and runtime proof",
+    "Independent journal provider/credentials/custody/fencing conformance",
+    "Qualified retention/hold policy and actual backup inventory/prune/restore evidence",
+    "B03 durable Group operation",
+    "B04 general autonomous assignment",
+    "B07 remaining screen matrix",
+    "B08 monetary publication/disputes",
+    "Whole design consensus and explicit design/test SHA approval",
+    "Current authority amendment and legal/payment/production authority",
+    "Prior repository doc-link failure remains unresolved evidence"
+  ]
+}

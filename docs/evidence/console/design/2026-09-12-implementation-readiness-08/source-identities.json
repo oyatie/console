@@ -1,0 +1,126 @@
+{
+  "sources": [
+    {
+      "path": "README.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "8a50185d68f400007c39ef3f31fe752a50847aed",
+      "sha256": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43"
+    },
+    {
+      "path": "docs/current/PRODUCT.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "sha256": "eccba4cb8f0ea3a684ab125967eddc20c98be5807f24b6905e4bad8599adcc57"
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "91851416714106e4d0bece113baa2627f2b65ae6",
+      "sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a"
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "8de02d08b143ed387e4f7737e2b3066dd4084519",
+      "sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/implementation-gaps.csv",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "429be8c4234c947c05800c4e26623b89c85d9e58",
+      "sha256": "8e8857203fe45ca74ea12db2ce0a0adf2c59240ea0b14c66acbeb2858f270662"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-payroll-group-review-02/gap-register.csv",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "8054e76d78dd25ef6c3b3d4cb8163365b4178927",
+      "sha256": "935b7c32fbbf1f04e37c0547d25e707482d1f2200c7faea297cba18fd7110136"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/review-receipt.json",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "730a7967cd21843b0774490b6268e234d34f4b6d",
+      "sha256": "cee3ea0ef806c55503ba2cd2f365adb5fe281cc89c068c556548368c48660f06"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-partial-review-coverage-04/review-receipt.json",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "fb2ea3244d52bf7ce87f897f17ef16877eadc507",
+      "sha256": "193384646ae2b9da51ec637779c1129fcfa745b3c6b125ee64848e687e0895b0"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/review-receipt.json",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "c059fa605a48c6d040e1bdff0bc442fe72a69681",
+      "sha256": "a2423570573745a987f66d72cdd1b6033c8d22dc471e4ec7ca2c26deb73ce757"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/review-receipt.json",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "c8f0d3bcc2b145dd9f1043c037f3b777888dc34a",
+      "sha256": "bca0ae4992859edf516d6003038ae5670fd5c413dee6b00b8dafa0fb1f4af1a0"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/review-receipt.json",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "3d0ecd4cdeda662dc584f7f441fb032f9b92f8aa",
+      "sha256": "89bc50accd6a170e596f87e1d8b161f2d8850729c58c28089c9f29e25bd0ad35"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/draft-contract.txt",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "a752a191ae552bc283f541466300b92699112595",
+      "sha256": "24b4d0ba93484f5cc65e362c70fdc7f25db653a4039d4e57ae25baeb791b7bc1"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/group-contract.txt",
+      "commit": "8bd6a37d9d295adaac62a8358a4b18dfcd060ffb",
+      "git_blob": "17cf3fc61958898f579b5b3d6badd2ad52aed7e4",
+      "sha256": "309a96f5f5cc2ed331a83399d8acb70f9ca88727e3c466340c0484101b56c605"
+    }
+  ],
+  "local_read_only_evidence": [
+    {
+      "path": "docs/evidence/console/research/2026-09-11-agent-development-readiness/record.json",
+      "bytes": 19005,
+      "sha256": "dd58fa1242999945b73fdb939fcc4160ee02d850f07865191edb5659f0dbc900",
+      "custody": "Read-only local evidence identity; not imported, Git custody or new web validation"
+    },
+    {
+      "path": "docs/evidence/console/research/2026-09-11-agent-development-readiness/capability-coverage.csv",
+      "bytes": 6606,
+      "sha256": "552e1353400e7f17c7d28ea6b41a05251dff7e16aec462ae82cfdd92f0021f85",
+      "custody": "Read-only local evidence identity; not imported, Git custody or new web validation"
+    },
+    {
+      "path": "docs/evidence/console/research/2026-09-11-agent-development-readiness/operational-baseline.json",
+      "bytes": 7334,
+      "sha256": "ac5acf4297f035d280bded44faf3b00a2696aec45802bf7acdcb85e3ea13b675",
+      "custody": "Read-only local evidence identity; not imported, Git custody or new web validation"
+    },
+    {
+      "path": "docs/evidence/console/research/2026-09-11-agent-development-readiness/agent-instruction-proposal.txt",
+      "bytes": 4213,
+      "sha256": "7146152cf8683c9ca54fdffc5e148bcb9232ecd347796db0123ffe92f305de57",
+      "custody": "Read-only local evidence identity; not imported, Git custody or new web validation"
+    },
+    {
+      "path": "docs/evidence/console/research/2026-09-11-agent-development-readiness/evaluation-plan.json",
+      "bytes": 5736,
+      "sha256": "544f92076865c6e68538e0fa1dc5da5b9e0ac8ca482e425927aece0ded3cd7a9",
+      "custody": "Read-only local evidence identity; not imported, Git custody or new web validation"
+    }
+  ]
+}

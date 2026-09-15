@@ -62,12 +62,24 @@ cat >"${scratch}/buck" <<'BUCK'
 #!/usr/bin/env bash
 { printf 'buck'; printf ' %q' "$@"; printf '\n'; } >>"${HARNESS_LOG}"
 printf 'buck-isolation %s\n' "${BUCK_ISOLATION_DIR-<unset>}" >>"${HARNESS_LOG}"
+case "${1:-}" in
+  build) exit "${FAKE_BUCK_STATUS:-0}" ;;
+  test) ;;
+  *) printf 'credential fixture: unexpected Buck command\n' >&2; exit 64 ;;
+esac
 env_file=""; for arg in "$@"; do case "${arg}" in CONSOLE_BUCK_POSTGRES_ENV_FILE=*) env_file="${arg#*=}";; esac; done
-[[ -f "${env_file}" && "$(stat -f '%Lp' "${env_file}")" == 600 ]]
-grep -Fq 'DATABASE_URL=postgres://console_buck_admin:' "${env_file}"
-grep -Fq 'CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:' "${env_file}"
-grep -Fq 'CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:' "${env_file}"
-grep -Fq 'CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://console_buck_admin:' "${env_file}"
+if [[ ! -f "${env_file}" ]] || [[ "$(stat -c '%a' "${env_file}" 2>/dev/null || stat -f '%Lp' "${env_file}")" != 600 ]]; then
+  printf 'credential fixture: expected mode0600 file\n' >&2; exit 65
+fi
+for required in \
+  'DATABASE_URL=postgres://console_buck_admin:' \
+  'CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:' \
+  'CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:' \
+  'CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://console_buck_admin:'; do
+  if ! grep -q "^${required}" "${env_file}"; then
+    printf 'credential fixture: missing required key %s\n' "${required%%=*}" >&2; exit 66
+  fi
+done
 printf '%s\n' "${env_file}" >>"${HARNESS_LOG}.envfiles"
 if [[ "${FAKE_BUCK_SLEEP:-0}" == 1 ]]; then printf "%s\n" "$$" >"${HARNESS_LOG}.childpid"; exec sleep 30; fi
 exit "${FAKE_BUCK_STATUS:-0}"

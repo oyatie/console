@@ -1,0 +1,19 @@
+{
+  "kind": "group.operation.activate",
+  "body": {
+    "operation": {
+      "group_id": "09ad2e62-9379-53ca-83e1-e8c453553dca",
+      "operation_id": "5913ac29-a994-5e44-b1f8-bd432bb4c44a",
+      "control_epoch": "1",
+      "dispatch_epoch": "1",
+      "manifest_digest": "9d5bc3aa2835bc80d82479f4f233345ee6ee4625b16ebc78a372cc3ff80a3ea8"
+    },
+    "prepared_attempts": [
+      {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "attempt_id": "14062e3e-53c2-5bd8-ba11-c9749c516c27",
+        "command_id": "bb572b67-b525-5646-8b4e-351027ad4452"
+      }
+    ]
+  }
+}

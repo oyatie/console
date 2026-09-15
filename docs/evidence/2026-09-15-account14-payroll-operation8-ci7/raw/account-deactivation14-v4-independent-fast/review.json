@@ -1,0 +1,113 @@
+{
+  "verdict": "APPROVE_EXACT_V4_TEST_SOURCE_FOR_ROOT_UNFILTERED_DISCOVERY_AND_RUNTIME_CLASSIFICATION",
+  "reviewer": "/root/fast_gate_review",
+  "current_candidate_author": "/root/inventory_repair",
+  "sole_integration_runtime_and_final_acceptance_owner": "/root",
+  "review_provenance": "Fast authored the earlier private14 draft. This review is independent of Inventory V2-V4 witness/fixture/profile revisions, but is not a distinct-author review of the original8 draft cases. Preserve root/Capture final acceptance identity; do not erase prior authorship.",
+  "candidate": "/private/tmp/account-deactivation14-928e1e48-v4-inventory",
+  "base_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "immutable_manifest_sha256": "6c7d529c31e5d52da3ce99307d346fe46ebfa5b53f3b54115a5a661c1703c5fd",
+  "source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "patch_sha256": "b8c1845c5bd33ae5952c53165cd910ca7325e4f87ea1b501c1eb1aac60f2a04c",
+  "guide_sha256": "146211e6d23f48d4c7d3a88bec39a781460967d7a9c97e62201909c3a97767d0",
+  "whole14_review": {
+    "path": "/private/tmp/account-deactivation14-v2-whole-independent-fast/review.json",
+    "sha256": "9b6a215946fbf2bb659c47db1da7eb532f304328548394d357a2b9d04fb6a820",
+    "disposition": "V2 findings F1,F2,F3 addressed by this fresh V4; all other static whole14 observations and acceptance HOLDs remain."
+  },
+  "independent_mechanical": {
+    "path": "/private/tmp/account-deactivation14-v4-independent-fast/mechanical.json",
+    "sha256": "27259b88e30df1e7660a5c4e424da98612cf4ba9128b17ada1a2f9256adc0fc3",
+    "manifest_files_checked": 10,
+    "source_preimages_checked": 5,
+    "private_apply_check_apply_inverse_check_inverse": 4,
+    "rustfmt_check": 1,
+    "source_names": [
+      "deactivate_revokes_passkeys_and_sessions_as_runtime_role",
+      "active_account_custody_survives_company_deactivation_and_replay",
+      "nonactive_account_security_is_not_reclassified_by_company_deactivation",
+      "unavailable_account_authority_preserves_fenced_subject_before_company_effect",
+      "unavailable_account_authority_cannot_select_unfenced_legacy_revocation",
+      "unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation",
+      "immediate_security_fk_waits_for_account_root_update_lock",
+      "enrollment_commit_winner_uses_fresh_fenced_snapshot",
+      "enrollment_rollback_winner_selects_exact_legacy_sweep",
+      "company_commit_holds_native_fk_until_legacy_sweep_commits",
+      "business_backend_death_rolls_back_partial_company_and_credential_effects",
+      "repeatable_read_and_serializable_refuse_without_effects",
+      "guard_requires_company_subject_context_and_business_only_execution",
+      "exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift"
+    ],
+    "compiler_discovered": 0,
+    "runtime_executed": 0
+  },
+  "findings": [],
+  "resolved": [
+    {
+      "id": "F1",
+      "evidence": "g- plus full hyphenated UUID yields38 and matches unchanged0026 regex; all guard scope assertion bytes otherwise unchanged."
+    },
+    {
+      "id": "F2",
+      "evidence": "Existing3column-pair assertion retained; exact triples reject grant-option. Effective table privileges and raw account_owner/PUBLIC relation grants refused; every live users column checked for exact SELECT(id,org_id)/UPDATE(id), noINSERT/REFERENCES/grant-option. Owner nonmembership/nonsuper/BYPASS constraints retained. Two distinct transactional tableSELECT/column grant-option corruptions require actualP0001 finalizer refusal and full installed restoration."
+    },
+    {
+      "id": "F3",
+      "evidence": "Positive guard metadata now requires PLpgSQL, prokind=f, exact proconfig search_path=pg_catalog, pg_temp matching current root-profile convention, and exactly1public same-name routine; original definer/volatility/type/ACL assertions remain."
+    }
+  ],
+  "profile_oracle_scope": [
+    "New catalog_connection helper evaluates the unchanged catalog SQL on the transaction connection, enabling observation of uncommitted ACL fixtures. Pool caller acquires1connection and delegates.",
+    "Each drift captures an actual changed catalog before installer invocation, then requiresP0001 after cleanup. Successful self-repair fails required refusal. Savepoint/outer rollback comparisons prove no surviving repair, not absence of intermediate statements.",
+    "Positive installed profile/upgrade/no-backfill/replay and original volatility-drift assertions remain. Exact body, other metadata, startup and direct-operation fault mutations are still separate acceptance obligations."
+  ],
+  "preservation": "Original6 bytes restored by removing appended module/comment at prefix26081. Full V2 source before catalog is byte-identical except reviewed slug correction, including both exactPID/NOWAIT55P03/57P01/history/rollback races and scope controls. V4 keeps exactly14names and introduces no ignores, filters, removed tests or assertion relaxation.",
+  "reachability": {
+    "existing_wrapper": "bash tools/ci/cargo_needs_postgres.sh --only identity-adapter-postgres-deactivate-revokes-credentials-pg --num-threads 1",
+    "underlying_command": "cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test deactivate_revokes_credentials -- --test-threads=1",
+    "target_mapping": "tools/ci/postgres-cargo-map.json:2187 existing whole-file unfiltered target and corresponding Buck target",
+    "static_count": 14,
+    "actual_discovery_and_execution": "Required root run; not supplied by source count, rustfmt or private apply."
+  },
+  "first_failure_expectations": [
+    "Historical original6 remains2legacyPASS/4semanticFAIL at1cef; no current-head runtime conclusion from preservation.",
+    "Current e276/928 source lacks new guard. Corrected scope/profile positive calls should encounter42883 until implemented; classify these as guard prerequisites, not the retained four semantic failures.",
+    "Current no-root-lock implementation is expected to fail enrollment exact-transaction wait and company-first native-FK wait. Actual first failure must be observed before semantic map admission; these are source-based predictions.",
+    "Company-first native wait assertion precedes later credential55P03/death57P01/fullrollback assertions. A kill request does not establish those later oracles were reached.",
+    "Current unsupported-isolation owner success likely fails at RR before Serializable; nonactive original6 loop historically only reached first state. Preserve unreached accounting."
+  ],
+  "remaining_acceptance_holds": [
+    "Actual14 compiler discovery/execution/cleanup and first-failure map at exact admitted clean head.",
+    "New immutable14 semantic adapter; old exact6 adapter cannot be reused unchanged. Preserve historical6 receipts.",
+    "SQL cancellation and unrelated-subject concurrent progress.",
+    "Inactive replay user-lock concurrency.",
+    "Hidden/missing authority/root and operation/startup fail-closed drift beyond unavailable-authority lock tests.",
+    "Broader body/owner/EXEC/profile mutations and startup mandatory profile proof.",
+    "Retained comparisons exclude raw_security revision/context; do not claim all raw security bytes unless full snapshot covers that case.",
+    "Native enrollment/authentication, Auth7 cutover, production/release/legal authority remain outside scope."
+  ],
+  "mechanical_handoff": "Root verifies actual clean head and exact preimage0514aee, imports only candidate.patch to one test target, and runs existing unfiltered target under sole runtime lease. Any baseline6-to14, source records, generated files or CI changes are root-serialized separately. Bind actual14 names/results/first failures into a new reviewed immutable probe; do not reuse exact6 adapter or admit implementation around fanout.py.",
+  "pre_mortem": "Partial profile check accepts privilege widening; fixture or missing-function failure masquerades as semantic RED; later unreachable assertions are claimed as executed proof.",
+  "blast_radius": "One existing test target; private review and isolated apply checks only.",
+  "detection": "Exact source/patch/preimage/14roster, original6 retention, effective privilege checks, representativeP0001 ACL mutations, exactPID/error/history contracts and root runtime classification.",
+  "rollback": "Preserve V2/V3/V4 evidence; root alone serializes any imported inverse. No product/DB rollback performed here.",
+  "stop_conditions": [
+    "Unknown failure/cause or incomplete cleanup",
+    "Preimage/source/manifest drift",
+    "Broader implementation or test weakening",
+    "Missing/green/non-executable admission probe",
+    "Unreviewed independent-author acceptance requirement"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "reviewer_cargo_invocations": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_repository_writes": 0
+}

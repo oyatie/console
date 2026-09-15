@@ -1,0 +1,78 @@
+{
+  "checks": [
+    {
+      "file": "oracle.spec.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/oracle.spec.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "fixture.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/fixture.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "effective-submissions.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/effective-submissions.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "reflow.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/reflow.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "wasm-observer.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/wasm-observer.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "playwright.config.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/playwright.config.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "hydration.spec.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/hydration.spec.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "file": "acceptance.spec.cjs",
+      "argv": [
+        "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/acceptance.spec.cjs"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "count": 8,
+  "application_executed": 0
+}

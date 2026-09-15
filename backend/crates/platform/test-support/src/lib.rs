@@ -266,3 +266,282 @@ pub async fn seed_user(pool: &PgPool, name: &str, role: &str, branch: BranchId) 
         .unwrap();
     id
 }
+
+/// Real database login identities used only by the disposable integration harness.
+/// These are infrastructure principals, not Console user roles or job titles.
+#[derive(Clone, Copy)]
+pub enum TestDatabaseLogin {
+    Business,
+    Auth,
+    LeaveCommand,
+    OntologyCommand,
+    PlatformForceCommand,
+}
+
+impl TestDatabaseLogin {
+    fn binding(self) -> (&'static str, &'static str) {
+        match self {
+            Self::Business => ("CONSOLE_APALIS_RUNTIME_DATABASE_URL", "console_rt"),
+            Self::Auth => ("CONSOLE_TEST_AUTH_DATABASE_URL", "console_auth_rt"),
+            Self::LeaveCommand => (
+                "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL",
+                "console_leave_cmd",
+            ),
+            Self::OntologyCommand => (
+                "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL",
+                "console_ontology_cmd",
+            ),
+            Self::PlatformForceCommand => (
+                "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                "console_platform_force_cmd",
+            ),
+        }
+    }
+}
+
+/// Point a harness-provisioned LOGIN URL at this sqlx test's actual database.
+/// Never derive a runtime connection from the owner URL or assume a role.
+/// Missing external credentials are a harness error, not an authorization result.
+pub fn login_test_database_url(owner_pool: &PgPool, login: TestDatabaseLogin) -> String {
+    let (key, role) = login.binding();
+    let value = std::env::var(key).unwrap_or_else(|_| panic!("missing disposable transport {key}"));
+    let mut url = url::Url::parse(&value).expect("valid disposable PostgreSQL URL");
+    assert!(matches!(url.scheme(), "postgres" | "postgresql"));
+    assert_eq!(
+        url.username(),
+        role,
+        "test transport must name its real login"
+    );
+    assert!(
+        url.password().is_some_and(|value| !value.is_empty()),
+        "test transport requires a password"
+    );
+    assert!(
+        url.query().is_none(),
+        "test transport cannot contain identity/role overrides"
+    );
+    let options = owner_pool.connect_options();
+    let database = options.get_database().expect("sqlx test database name");
+    url.set_path(database);
+    url.to_string()
+}
+
+/// Authenticate as the actual restricted login, checking both session and current
+/// user. A migration-owner session followed by SET ROLE cannot satisfy this.
+pub async fn login_test_pool(owner_pool: &PgPool, login: TestDatabaseLogin) -> PgPool {
+    let (_, role) = login.binding();
+    let pool = PgPoolOptions::new()
+        .max_connections(4)
+        .connect(&login_test_database_url(owner_pool, login))
+        .await
+        .expect(
+            "connect actual restricted test login; missing role/topology is not a crypto failure",
+        );
+    let identity: (String, String, bool, bool, bool, bool, bool) = sqlx::query_as(
+        "SELECT session_user::text, current_user::text, rolsuper, rolbypassrls, rolcreaterole, rolcreatedb, rolreplication FROM pg_catalog.pg_roles WHERE rolname = current_user",
+    )
+    // rls-arming: ok pg_catalog.pg_roles is cluster-global login metadata; this restricted-session identity check reads no Company rows
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(identity.0, role);
+    assert_eq!(identity.1, role);
+    assert!(
+        !identity.2 && !identity.3 && !identity.4 && !identity.5 && !identity.6,
+        "test execution login must not carry administrative capabilities"
+    );
+    pool
+}
+
+/// Read the existing operator finalizer; never emulate its grants or projection.
+pub fn account_custody_finalizer_sql() -> String {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../../ops/postgres-finalize-account-custody.sql");
+    std::fs::read_to_string(path)
+        .expect("ACCOUNT_CUSTODY_FINALIZER_PREREQUISITE: production SQL file missing")
+}
+
+pub async fn finalize_account_custody(pool: &PgPool) {
+    let mut tx = pool.begin().await.expect("begin disposable finalization");
+    sqlx::query("SET LOCAL statement_timeout = '60s'")
+        .execute(tx.as_mut())
+        .await
+        .expect("bound disposable finalization statement");
+    let identity: (String, String, bool) = sqlx::query_as(
+        "SELECT session_user::text,current_user::text,current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_roles WHERE rolname=current_user)",
+    ).fetch_one(tx.as_mut()).await.expect("inspect disposable finalization administrator");
+    assert_eq!(
+        identity,
+        (
+            "console_buck_admin".to_owned(),
+            "console_buck_admin".to_owned(),
+            true
+        )
+    );
+    sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(tx.as_mut())
+        .await
+        .expect("actual production Account custody finalizer");
+    tx.commit().await.expect("commit disposable finalization");
+}
+
+/// Read the fixed production Auth7 SQL; no fixture grants or owner emulation.
+pub fn account_credential_custody_finalizer_sql() -> String {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../../ops/postgres-finalize-account-credentials.sql");
+    std::fs::read_to_string(path)
+        .expect("AUTH7_ARTIFACT_PREREQUISITE: production credential SQL file missing")
+}
+
+/// Actual root+credential SQL in one marked disposable operator transaction.
+pub async fn finalize_serving_account_custody(pool: &PgPool) {
+    // Missing SQL is a prerequisite; never fall back to root-only behavior.
+    let credentials = account_credential_custody_finalizer_sql();
+    let mut tx = pool.begin().await.expect("begin disposable finalization");
+    sqlx::query("SET LOCAL statement_timeout = '60s'")
+        .execute(tx.as_mut())
+        .await
+        .expect("bound disposable finalization statement");
+    sqlx::raw_sql("SET LOCAL lock_timeout='5s'; SET LOCAL search_path=pg_catalog,pg_temp")
+        .execute(tx.as_mut())
+        .await
+        .expect("bound composed operator catalog and lock context");
+    let identity: (String, String, bool) = sqlx::query_as(
+        "SELECT session_user::text,current_user::text,current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_roles WHERE rolname=current_user)",
+    ).fetch_one(tx.as_mut()).await.expect("inspect disposable finalization administrator");
+    assert_eq!(
+        identity,
+        (
+            "console_buck_admin".to_owned(),
+            "console_buck_admin".to_owned(),
+            true
+        )
+    );
+    sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
+        .execute(tx.as_mut())
+        .await
+        .expect("actual production Account custody finalizer");
+    sqlx::raw_sql(sqlx::AssertSqlSafe(credentials))
+        .execute(tx.as_mut())
+        .await
+        .expect("actual production Account credential custody finalizer");
+    tx.commit().await.expect("commit disposable finalization");
+}
+
+/// Reuse the app fixture's exact empty-database and owner-transport admission.
+pub async fn prepare_test_migration_owner_url(pool: &PgPool) -> String {
+    let mut connection = pool.acquire().await.expect("disposable admin connection");
+    let identity: (String, String, String, bool, bool) = sqlx::query_as(
+        r#"
+        SELECT session_user::text, current_user::text, current_database(),
+            current_setting('console.sqlx_test_bootstrap', true) = 'buck-sqlx-superuser-v1'
+            AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname = current_user)
+            AND (SELECT pg_get_userbyid(datdba) = current_user
+                 FROM pg_catalog.pg_database WHERE datname = current_database()),
+            NOT EXISTS (
+                SELECT 1 FROM pg_catalog.pg_class c
+                JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+                WHERE n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+            )
+        "#,
+    )
+    .fetch_one(&mut *connection)
+    .await
+    .expect("inspect empty disposable HTTP test database");
+    assert_eq!(identity.0, "console_buck_admin");
+    assert_eq!(identity.1, "console_buck_admin");
+    assert!(
+        identity.3 && identity.4,
+        "requires marked empty SQLx database"
+    );
+    let suffix = identity
+        .2
+        .strip_prefix("_sqlx_test_")
+        .expect("SQLx database");
+    assert!(
+        suffix.len() == 52
+            && suffix
+                .bytes()
+                .all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    );
+
+    let owner_binding = std::env::var("CONSOLE_APALIS_OWNER_DATABASE_URL")
+        .expect("missing disposable migration-owner transport");
+    let mut owner_url = url::Url::parse(&owner_binding).expect("valid migration-owner URL");
+    assert!(matches!(owner_url.scheme(), "postgres" | "postgresql"));
+    assert_eq!(owner_url.username(), "console_app");
+    assert!(owner_url.password().is_some_and(|p| !p.is_empty()));
+    assert!(owner_url.query().is_none() && owner_url.fragment().is_none());
+    let options = pool.connect_options();
+    assert_eq!(Some(identity.2.as_str()), options.get_database());
+    assert_eq!(owner_url.host_str(), Some(options.get_host()));
+    assert_eq!(owner_url.port().unwrap_or(5432), options.get_port());
+    owner_url.set_path(&identity.2);
+
+    // Provision only the empty database container. Product tables, grants and
+    // queue schema are created by the existing production migration boundary.
+    sqlx::raw_sql(
+        "DO $owner$ BEGIN          EXECUTE format('ALTER DATABASE %I OWNER TO console_app', current_database());          END $owner$;",
+    )
+    .execute(&mut *connection)
+    .await
+    .expect("assign empty test database to its real migration owner");
+    drop(connection);
+    owner_url.to_string()
+}
+
+/// Prepare the real numbered schema and Account projection for standalone tests.
+/// The caller supplies only an empty, marked, exclusively owned SQLx database.
+/// App fixtures retain their production migration/Apalis entry point separately.
+pub async fn prepare_account_test_database(pool: &PgPool) {
+    assert!(
+        std::env::var_os("PGOPTIONS").is_none_or(|options| options.is_empty()),
+        "standalone migration must not inherit PostgreSQL startup options"
+    );
+    let owner_url = prepare_test_migration_owner_url(pool).await;
+    let owner = PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(10))
+        .connect(&owner_url)
+        .await
+        .expect("authenticate disposable migration owner");
+    let mut connection = owner.acquire().await.expect("migration owner connection");
+    let identity: (String, String, String, bool) = sqlx::query_as(
+        "SELECT session_user::text, current_user::text, \
+         (SELECT pg_get_userbyid(datdba) FROM pg_catalog.pg_database WHERE datname=current_database()), \
+         rolcanlogin AND rolinherit AND NOT rolsuper AND rolbypassrls \
+         AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication \
+         FROM pg_catalog.pg_roles WHERE rolname=current_user",
+    )
+    .fetch_one(&mut *connection)
+    .await
+    .expect("verify direct disposable migration-owner identity");
+    assert_eq!(
+        identity,
+        (
+            "console_app".to_owned(),
+            "console_app".to_owned(),
+            "console_app".to_owned(),
+            true
+        )
+    );
+    sqlx::raw_sql("SET SESSION lock_timeout = '5s'; SET SESSION statement_timeout = '60s';")
+        .execute(&mut *connection)
+        .await
+        .expect("bound standalone numbered migrations");
+    sqlx::migrate!("../db/migrations")
+        .run(&mut *connection)
+        .await
+        .expect("apply actual numbered migrations as console_app");
+    drop(connection);
+    owner.close().await;
+    finalize_serving_account_custody(pool).await;
+    let auth = login_test_pool(pool, TestDatabaseLogin::Auth).await;
+    let fenced: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+        .bind(uuid::Uuid::new_v4())
+        .fetch_one(&auth)
+        .await
+        .expect("real finalized projection must be readable by the auth login");
+    assert!(!fenced, "fresh unmigrated fixture subject must be unfenced");
+    auth.close().await;
+}

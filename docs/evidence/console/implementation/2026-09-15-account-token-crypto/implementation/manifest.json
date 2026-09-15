@@ -1,0 +1,46 @@
+{
+  "kind": "FROZEN_PRIVATE_ACCOUNT_TOKEN_CRYPTO_IMPLEMENTATION",
+  "base_sha": "b2c52e27c719237590205d7441ba708a52d66265",
+  "owner": "/root",
+  "author": "/root/fast_gate_review",
+  "allowed_paths": [
+    "backend/crates/platform/auth/src/jwt.rs",
+    "backend/crates/platform/auth/src/lib.rs",
+    "backend/crates/platform/auth/src/jwt/account.rs"
+  ],
+  "files": [
+    {
+      "path": "backend/crates/platform/auth/src/jwt.rs",
+      "preimage_sha256": "732de0b16d4b1f765ebb73137147595b3e5931365ec3c9bef28431ce6ec28c3e",
+      "postimage_sha256": "2062377f372daf61789dd345f7b634d7352bb72293f322078efbe047a2d9a87f",
+      "postimage_bytes": 21413,
+      "postimage": "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/jwt.rs"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/lib.rs",
+      "preimage_sha256": "aa9a5f848d3045bb400591bdc6459ddf0e3752018e592b04a2bbfd9e3c9fa3f6",
+      "postimage_sha256": "523365a70e8fe2a4b1b2228895b9c76f71f78936e058c563d3e3ebd10e7f0d0c",
+      "postimage_bytes": 1405,
+      "postimage": "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/lib.rs"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/jwt/account.rs",
+      "preimage_sha256": null,
+      "postimage_sha256": "55e871a3cd6bab34bdc957f522b5e1d2f58edb09bffb1af0e906f7dcb67aa841",
+      "postimage_bytes": 12568,
+      "postimage": "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/jwt/account.rs"
+    }
+  ],
+  "patch": {
+    "path": "/private/tmp/account-token-crypto-implementation-b2c52e27/implementation.patch",
+    "sha256": "1aaafb255240024ebd172f6c7901f9fa3d0ea0fcda5b58e8cc9d0fe9a59c81b5"
+  },
+  "guide": {
+    "path": "/private/tmp/account-token-crypto-implementation-b2c52e27/guide.json",
+    "sha256": "8bad4b1bfc81af40a6b680ec5c1f96d5115962cd93f41f9d3ad2a5c52452d1b5"
+  },
+  "api_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+  "tests_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+  "legacy_suffix_sha256": "dead958c52883c66447fbdc6cd787d962673043774116dbfe40a0451aafd097f",
+  "static_checks_only": true
+}

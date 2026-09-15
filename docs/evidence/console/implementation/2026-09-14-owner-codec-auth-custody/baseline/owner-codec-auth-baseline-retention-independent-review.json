@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/finish_migration",
+  "decision": "APPROVE historical preservation only",
+  "source_head": "c23e4be0aff7a94d40c11f25f16d97d65c348b8e",
+  "retention_sha256": "439bd094919f5552e2b42303bbf93e97dd1d6d12f84e64cc176b1d955d949be0",
+  "artifact_count": 92,
+  "artifact_regular_file_source_equality_and_hash_checks": "92/92 PASS",
+  "extra_or_missing_files": 0,
+  "recorded_source_git_fingerprints": {
+    "checked": 68,
+    "result": "68/68 PASS across four recorded clean heads"
+  },
+  "driver_internal_hashes_and_before_after": "all four receipts PASS",
+  "observed_counts": {
+    "auth_topology": "21PASS of21 in retained runtime receipt",
+    "ontology_cargo": "31PASS of31",
+    "ontology_buck": "31PASS of31; one Buck test target;520local commands",
+    "generator": "41PASS of41; ResourceWarnings retained",
+    "preflight": "all generated facesPASS",
+    "782a95dd": "E0277 compile prerequisite,0 executed",
+    "3f3216d2": "29reported tests:2PASS,11FK42501+6account_security42501+1ACL assertion+9storage prerequisite failures",
+    "4b3b51f2": "29reported tests:0PASS,17PLPGSQL ambiguity+12storage prerequisite failures",
+    "c23e4be0": "30reported tests:4PASS,21FK42501+5storage prerequisite failures;NOTGREEN"
+  },
+  "failure_classification_artifact": "/private/tmp/owner-codec-auth-retention-failure-classification.json",
+  "failure_classification_sha256": "ac2f939f24d07c01c35263d5822ec3293d4fcfb0cbfe996bac3decffea2f3538",
+  "fk_experiment_review": "Retained probe/result agree: SELECT insufficient, SELECT+REFERENCES insufficient, SELECT+exact owner UPDATE(id) admits FK insertion; networknone and owned cleanup recorded. No rerun by reviewer.",
+  "limitations_review": [
+    "Cargo/Buck31 overlap explicitly retained; not62disjoint tests.",
+    "Storage/setup failures do not establish deeper assertion execution or coverage.",
+    "No successful projection30, Account pool/context/lifecycle completion, production, HA/failover/PITR/no-loss or legal/payable claim.",
+    "Source_head is preservation aggregation head; individual historical runs retain their own source identities.",
+    "Review proves preservation integrity and consistency of supplied records, not independent rerun of runtime tests or off-device durability."
+  ],
+  "changes_by_reviewer": "None to source or retained evidence; scratch receipt/classification only."
+}

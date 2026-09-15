@@ -1,0 +1,33 @@
+[
+  {
+    "lane": "AC04-strict-serving-target-parser",
+    "owner": "/root/finish_migration",
+    "worktree": "/private/tmp/console-auth-target-parser-tests-20260914",
+    "base_sha": "63c1f0993f1498926f2da16fd886dcd3906aafd8",
+    "allow": [
+      "backend/app/src/lib.rs"
+    ],
+    "probe": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_BUILD_JOBS=4 CARGO_TARGET_DIR=/private/tmp/console-auth-parser-cargo SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest auth_target_parser:: -- --test-threads=1",
+    "target": "Strict prevalidated non-disclosing PostgreSQL serving URL grammar at existing config boundary",
+    "guide": "Extend existing validate_database_url_identity owner/parser; preserve role/effective-password/secret Debug tests. Exact reviewed8grammar cases. Validate unknown/query aliases/duplicates/encoding before SQLx so rawparameters neverwarn. Enforce explicitTCPtarget/database and checkedTLS syntax. Reject startupoptions environment as agreed. No pool/currentness/fencing/HA claim, no schema/dependency/generated edits.",
+    "pre_mortem": "Targetoverride or raw DSN value leaks in SQLx diagnostic",
+    "blast_radius": "Existing typed AppConfig servingURL validation, allfivecarriers. Prior5a authconfig remains prerequisite not auth-pool completion.",
+    "detection": "Reviewed8pureconfig/subprocess tests plus seven retained AUTH/siblingconfig tests andclippy",
+    "rollback": "Revert bounded parser diff on isolated branch; do not broaden accepted target grammar without tests",
+    "stop_conditions": [
+      "Testweakening",
+      "Ambientenvmutations",
+      "Publictyped API churn",
+      "Newdependency"
+    ],
+    "reviewers": [
+      "/root/review_completeness",
+      "/root/finish_browser"
+    ],
+    "holds": [
+      "Actual retained connection-options owner/port semantics",
+      "Real authpool/binding/legacyfencing",
+      "ProductionHA"
+    ]
+  }
+]

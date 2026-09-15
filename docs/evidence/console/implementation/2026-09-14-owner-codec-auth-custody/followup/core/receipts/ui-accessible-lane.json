@@ -1,0 +1,30 @@
+[
+  {
+    "lane": "UI01-business-composer-accessible-name",
+    "owner": "/root/finish_browser",
+    "base_sha": "66b3ee87a4db11056d99a956cc7f1ff24dd383b4",
+    "allow": [
+      "backend/crates/payroll/ui/src/common_action_composer.rs"
+    ],
+    "probe": "env CARGO_TARGET_DIR=/private/tmp/console-account30-cargo RUSTUP_TOOLCHAIN=1.98.1 SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-ui --features ssr --test common_action_composer composer_form_has_accessible_business_name > /private/tmp/ui-accessible-probe-current.log 2>&1",
+    "target": "Permitted common business POST form has stable accessible name 업무 입력; read-only remains formless",
+    "guide": "Add aria-label only to existing Leptos form. No routes, tokens, labels or authority changes. Preserve all17tests. Same probe green plus complete17suite.",
+    "pre_mortem": "Unrelated/global form mistaken for object business form, or read-only gains mutation",
+    "blast_radius": "Shared presentation form attribute only",
+    "detection": "Reviewed actual-renderer namedform test and existing16preserved tests",
+    "rollback": "Revert one attribute addition",
+    "stop_conditions": [
+      "Probe not actual reached assertionRED",
+      "Any test or transport modification",
+      "Unexpected source/lockfile drift"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Mounted browserworkflow",
+      "CSRF transport contract alignment",
+      "Production exposure"
+    ]
+  }
+]

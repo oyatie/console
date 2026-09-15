@@ -1,0 +1,72 @@
+[
+  {
+    "path": "artifacts/npm-ci.log.gz",
+    "raw_bytes": 139,
+    "raw_sha256": "595a4f211ce8aadafbcf1c55c64d9c70d43fd6c2ea4a99cf912ce19782442692",
+    "compressed_bytes": 120,
+    "compressed_sha256": "a57c026bc1abfcf718d52ef23dc855d03bca93cb843a13ae4cc205d4fff5673e"
+  },
+  {
+    "path": "artifacts/discovery-r1.log.gz",
+    "raw_bytes": 25694,
+    "raw_sha256": "988d3dfc432874f6dd3665b52e1134b4ccb42420ed150ba6270c56f22e7daadb",
+    "compressed_bytes": 3576,
+    "compressed_sha256": "8ef05f7ab5cbb73d0fb61323adc3299faa03cb5e75447dc897c9d02e0ea4cad3"
+  },
+  {
+    "path": "artifacts/clippy-r1.log.gz",
+    "raw_bytes": 21474,
+    "raw_sha256": "c29b9f352ba6b6559c66a898bd975d5ac4f63d4bfb4d6ae073895fb04cfa0ac1",
+    "compressed_bytes": 2069,
+    "compressed_sha256": "b496a399506c3c5955a667dc49dd60f8b6108087146d55c88baf12cfb7d8ba21"
+  },
+  {
+    "path": "artifacts/credentials.log.gz",
+    "raw_bytes": 233,
+    "raw_sha256": "5d80846b73d3c74cf1c5f164831943a1ccb221797f74bd97c05a64e040192f01",
+    "compressed_bytes": 171,
+    "compressed_sha256": "a4d017a801d8a38780ef252cfde2a3fe454ff3056239736e3cff2c4a5a8a0fcf"
+  },
+  {
+    "path": "artifacts/reachability.log.gz",
+    "raw_bytes": 123,
+    "raw_sha256": "3660e46c58e667a12a790b66bc3c67776e4276ee159eede125348eef27ba0956",
+    "compressed_bytes": 126,
+    "compressed_sha256": "99ff98a50724bfa669b321a7a9961a3ef7f422a3c719b82c09bafb4d34792cce"
+  },
+  {
+    "path": "artifacts/generated-r1.log.gz",
+    "raw_bytes": 1154,
+    "raw_sha256": "e69599c1541b06885b03a35b4333df8c791c8886b5dacd67aced0c3cd6019ae1",
+    "compressed_bytes": 552,
+    "compressed_sha256": "b9f647ddcefbde3f6f31c594f4fe64d05bb4282995193c54027097cad222a701"
+  },
+  {
+    "path": "artifacts/execution-final.log.gz",
+    "raw_bytes": 34349,
+    "raw_sha256": "dae5724e913ba7e4cf286d7fe992f4be57a36149a4e79dd31c74f1de37c06395",
+    "compressed_bytes": 5852,
+    "compressed_sha256": "32c3b6c1332eca5b86990c3a6ccff8d9645189077fa53fef4197ddcd254740f4"
+  },
+  {
+    "path": "artifacts/vm-start.log.gz",
+    "raw_bytes": 3845,
+    "raw_sha256": "7a604bd7018a272612e643dbfeacd67f79104f287ac319bf5ae099cfb6927161",
+    "compressed_bytes": 959,
+    "compressed_sha256": "af9acbc400db20ff62523cd7bb06f2d1cd7611c78b7b4b92bafecca1d23449c2"
+  },
+  {
+    "path": "artifacts/container-readback.log.gz",
+    "raw_bytes": 0,
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "compressed_bytes": 20,
+    "compressed_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+  },
+  {
+    "path": "artifacts/vm-stop.log.gz",
+    "raw_bytes": 1653,
+    "raw_sha256": "4c9e9c4691a709a938c147a73674b4f0c6636b9fcb367991a77db1207be4c104",
+    "compressed_bytes": 438,
+    "compressed_sha256": "2bc0b4861f3039892bf96a6b7f8f0951f5f1265c8ad2843fd8ca0192bd260e9d"
+  }
+]

@@ -1,0 +1,14 @@
+{
+  "kind": "eligibility.revoke",
+  "body": {
+    "head_ref": {
+      "family": "ELIGIBILITY",
+      "ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "assessment_id": "654b664c-9fe9-5df0-b45a-c705fd650028",
+        "revision": "1"
+      }
+    },
+    "evidence_refs": []
+  }
+}

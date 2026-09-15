@@ -1,0 +1,7 @@
+{
+  "checked_candidate_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+  "design30_adoption_commit": "31f769accc08ac7dcb0d140709021c58d2a86c7e",
+  "product_matches_design30_proposal": true,
+  "roadmap_matches_design30_proposal": true,
+  "correction": "Earlier assessment references to pending design30 authority adoption are superseded by exact current-tree comparison and historical adoption receipt. New native refinements and new test approvals remain distinct. No further authority rewrite is needed merely to repeat an already adopted proposal."
+}

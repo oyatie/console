@@ -22,10 +22,11 @@ const AUDIENCE: &str = "console-api";
 const ASN: &str = "/api/v1/logistics/asns";
 const FULFILLMENTS: &str = "/api/v1/logistics/fulfillments";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn authenticated_runtime_role_completes_pilot_lifecycle_without_finance_posting(
     pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch = seed_branch(&pool, OrgId::knl(), "pilot-main").await;
@@ -296,8 +297,9 @@ async fn authenticated_runtime_role_completes_pilot_lifecycle_without_finance_po
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn logistics_capabilities_conceal_other_branches_and_prevent_oversell(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch_a = seed_branch(&pool, OrgId::knl(), "pilot-a").await;
@@ -359,10 +361,11 @@ async fn logistics_capabilities_conceal_other_branches_and_prevent_oversell(pool
     assert_eq!(row.get::<i64, _>("quantity_reserved"), 6);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn branch_b_dispatch_grant_cannot_transition_branch_a_fulfillment_with_a_legacy_hint(
     pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch_a = seed_branch(&pool, OrgId::knl(), "branch-authority-a").await;
@@ -566,10 +569,14 @@ async fn send(
                 .unwrap_or_else(Body::empty),
         )
         .unwrap();
-    let response = build_router(app_state(pool.clone(), keys.public_pem.clone()).unwrap())
-        .oneshot(request)
-        .await
-        .unwrap();
+    let response = build_router(
+        app_state(pool.clone(), keys.public_pem.clone())
+            .await
+            .unwrap(),
+    )
+    .oneshot(request)
+    .await
+    .unwrap();
     let status = response.status();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     (
@@ -581,9 +588,18 @@ async fn send(
         },
     )
 }
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
             ("CONSOLE_JWT_ISSUER", ISSUER.into()),
@@ -592,6 +608,7 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 async fn seed_branch(pool: &PgPool, org: OrgId, name: &str) -> BranchId {
     let region: Uuid =

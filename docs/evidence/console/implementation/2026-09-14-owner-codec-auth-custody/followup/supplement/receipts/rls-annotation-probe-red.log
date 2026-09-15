@@ -1,0 +1,6 @@
+   Compiling console-gate-rls-arming v0.1.0 (/private/tmp/console-rls-catalog-annotation-20260914/backend/ci/gates/rls-arming)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.69s
+     Running `/private/tmp/console-rls-annotation-target/debug/console-gate-rls-arming`
+console-gate-rls-arming: checking workspace at /private/tmp/console-rls-catalog-annotation-20260914/backend
+console-gate-rls-arming: FAILED - 1 violation(s):
+  [BarePoolQuery] /private/tmp/console-rls-catalog-annotation-20260914/backend/crates/platform/test-support/src/lib.rs:343: .fetch_one(&pool) executes on a bare pool with no armed app.current_org GUC — wrap the read in with_org_conn(self.pool(), current_org()?, ..) / with_audit(s), or add `// rls-arming: ok <reason>` if the table is global/non-RLS

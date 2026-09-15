@@ -1,0 +1,248 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_66959" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_66959, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m console-app v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/app)
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 30.39s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+cargo-postgres: === app-auth-rest-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_fence_projection_ -- --test-threads=1
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 2.68s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+
+running 30 tests
+test account_fence_projection::account_fence_projection_dormant_finalized_v1_is_upgradeable_without_data_change ... ok
+test account_fence_projection::account_fence_projection_execute_only_and_no_custody_business_grants ... ok
+test account_fence_projection::account_fence_projection_finalizer_refuses_body_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift ... FAILED
+test account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged ... FAILED
+test account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function ... FAILED
+test account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false ... FAILED
+test account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins ... ok
+test account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change ... FAILED
+test account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads ... FAILED
+test account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence ... FAILED
+test account_fence_projection::account_fence_projection_real_login_is_restricted_and_database_bound ... ok
+test account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed ... FAILED
+test account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read ... FAILED
+test account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read ... FAILED
+test account_fence_projection::account_fence_projection_refuses_owner_grant_option ... FAILED
+test account_fence_projection::account_fence_projection_refuses_owner_write ... FAILED
+test account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor ... FAILED
+test account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted ... FAILED
+test account_fence_projection::account_fence_projection_refuses_security_events_read ... FAILED
+test account_fence_projection::account_fence_projection_refuses_terms_acceptances_read ... FAILED
+test account_fence_projection::account_fence_projection_refuses_terms_head_read ... FAILED
+test account_fence_projection::account_fence_projection_refuses_terms_receipts_read ... FAILED
+
+failures:
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_body_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_body_drift' (27856522) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift' (27856657) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth' (27856886) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift' (27857226) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift' (27857336) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift' (27857447) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift' (27857799) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift' (27857854) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift' (27858049) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged stdout ----
+
+thread 'account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged' (27858511) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function stdout ----
+
+thread 'account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function' (27859525) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false stdout ----
+
+thread 'account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false' (27859587) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change stdout ----
+
+thread 'account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change' (27864796) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads stdout ----
+
+thread 'account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads' (27867851) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence stdout ----
+
+thread 'account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence' (27871030) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed' (27872791) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read' (27872868) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read' (27872930) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_owner_grant_option stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_owner_grant_option' (27873089) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_owner_write stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_owner_write' (27873276) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor' (27873365) panicked at app/tests/auth_rest.rs:3623:67:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42501", message: "permission denied for table accounts", detail: None, hint: None, position: None, where: Some("SQL statement \"SELECT 1 FROM ONLY \"public\".\"accounts\" x WHERE \"id\" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x\""), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("aclchk.c"), line: Some(2793), routine: Some("aclcheck_error") })
+
+---- account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted' (27873712) panicked at app/tests/auth_rest.rs:3341:10:
+complete production schema migration before HTTP fixtures: Internal("migration run failed: while executing migration 56: error returned from database: could not extend file \"base/390959/394341\": No space left on device at line 515")
+
+---- account_fence_projection::account_fence_projection_refuses_security_events_read stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_security_events_read' (27873806) panicked at /Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.9.0/src/testing/mod.rs:227:14:
+failed to connect to setup test database: Database(PgDatabaseError { severity: Error, code: "53100", message: "could not write to file \"base/394342/PG_VERSION\": No space left on device", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("dbcommands.c"), line: Some(505), routine: Some("CreateDirAndVersionFile") })
+
+---- account_fence_projection::account_fence_projection_refuses_terms_acceptances_read stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_terms_acceptances_read' (27873807) panicked at /Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.9.0/src/testing/mod.rs:227:14:
+failed to connect to setup test database: Database(PgDatabaseError { severity: Error, code: "53100", message: "could not write to file \"base/394343/PG_VERSION\": No space left on device", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("dbcommands.c"), line: Some(505), routine: Some("CreateDirAndVersionFile") })
+
+---- account_fence_projection::account_fence_projection_refuses_terms_head_read stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_terms_head_read' (27873808) panicked at /Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.9.0/src/testing/mod.rs:227:14:
+failed to connect to setup test database: Database(PgDatabaseError { severity: Error, code: "53100", message: "could not write to file \"base/394344/PG_VERSION\": No space left on device", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("dbcommands.c"), line: Some(505), routine: Some("CreateDirAndVersionFile") })
+
+---- account_fence_projection::account_fence_projection_refuses_terms_receipts_read stdout ----
+
+thread 'account_fence_projection::account_fence_projection_refuses_terms_receipts_read' (27873809) panicked at /Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.9.0/src/testing/mod.rs:227:14:
+failed to connect to setup test database: Database(PgDatabaseError { severity: Error, code: "53100", message: "could not write to file \"base/394345/PG_VERSION\": No space left on device", detail: None, hint: None, position: None, where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("dbcommands.c"), line: Some(505), routine: Some("CreateDirAndVersionFile") })
+
+
+failures:
+    account_fence_projection::account_fence_projection_finalizer_refuses_body_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_default_argument_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_duplicate_owner_acl_without_auth
+    account_fence_projection::account_fence_projection_finalizer_refuses_invoker_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_overload_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_owner_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_public_execute_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_row_security_drift
+    account_fence_projection::account_fence_projection_finalizer_refuses_search_path_drift
+    account_fence_projection::account_fence_projection_finalizer_replay_is_exactly_unchanged
+    account_fence_projection::account_fence_projection_installation_failure_rolls_back_custody_and_created_function
+    account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false
+    account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change
+    account_fence_projection::account_fence_projection_prepared_profile_has_only_two_exact_owner_reads
+    account_fence_projection::account_fence_projection_presence_is_state_independent_and_not_rls_absence
+    account_fence_projection::account_fence_projection_refuses_function_with_all_owner_reads_removed
+    account_fence_projection::account_fence_projection_refuses_half_profile_without_accounts_read
+    account_fence_projection::account_fence_projection_refuses_half_profile_without_security_read
+    account_fence_projection::account_fence_projection_refuses_owner_grant_option
+    account_fence_projection::account_fence_projection_refuses_owner_write
+    account_fence_projection::account_fence_projection_refuses_owner_wrong_grantor
+    account_fence_projection::account_fence_projection_refuses_prepared_acl_with_function_deleted
+    account_fence_projection::account_fence_projection_refuses_security_events_read
+    account_fence_projection::account_fence_projection_refuses_terms_acceptances_read
+    account_fence_projection::account_fence_projection_refuses_terms_head_read
+    account_fence_projection::account_fence_projection_refuses_terms_receipts_read
+
+test result: FAILED. 4 passed; 26 failed; 0 ignored; 0 measured; 94 filtered out; finished in 97.05s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`
+cargo-postgres-timing: {"name": "app-auth-rest-pg", "package": "console-app", "seconds": 124.166, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-auth-rest-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

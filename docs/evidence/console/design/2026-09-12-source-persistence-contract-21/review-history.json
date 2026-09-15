@@ -1,0 +1,38 @@
+{
+  "initial_candidate_sha": "eadd7f0b3bf26ce68ab76421f4deee824fcd1a9d",
+  "initial_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Domain unit creation after9d contradicts preexisting-unit requirement",
+        "B-dependent I/O cannot be assumed equal or relabeled public"
+      ]
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Domain unit must precede9d locks"
+      ],
+      "advisory": "Synthetic claim successor digest differs from referenced successor; corrected before reuse"
+    }
+  ],
+  "correction_commits": [
+    "afb17c0bcee1959252468257efbf8173c41523d5",
+    "70f6b999ea712da151eff27e4db91b57624367f1"
+  ],
+  "intermediate_review": {
+    "candidate_sha": "afb17c0bcee1959252468257efbf8173c41523d5",
+    "continuity_review": "CHANGES_REQUIRED: preseal preparation cannot depend on command reserved only at seal",
+    "payroll_contract_review": "SCOPED_ACCEPT with advisory witness mismatch"
+  },
+  "corrections": [
+    "Pre-stage actual distinct domain unit; final publication locks existing unit and finalizes copy/adoption",
+    "Only justified public environmental choices coupled; B-dependent adapter values/control flow modeled or refined",
+    "Preseal stage binds existing draft/control/input/schema/custody; seal adds immutable oneattempt/command linkage; reseal needs new unit",
+    "Successor witness and structural reference assertion aligned"
+  ],
+  "final_candidate_sha": "70f6b999ea712da151eff27e4db91b57624367f1",
+  "counts_as_final_integrated_round": false
+}

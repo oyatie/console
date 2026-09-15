@@ -1,0 +1,66 @@
+{
+  "source_guard": "renderer.rs/css/lib.rs and actual rlib unchanged before/after run",
+  "changed_nonproduction_source": {
+    "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/ui/tests/common_action_composer.rs": {
+      "before": "cbd06f37254d0d84488bfc345c23224688ed084ec790b8e1f425112cda764782",
+      "after": "84d77ce1708a17a9d6ec44030c5f6be5b406fc77db1ecafe75a55f85828bb037"
+    }
+  },
+  "sources": {
+    "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/ui/src/common_action_composer.rs": "c72786cea8ffdb6adedc6bc503156bbb04a3e0f601c327d8e60e094a65477499",
+    "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/ui/src/common_action_composer.css": "b5cc332708955d8ac4cabba5254f6f103f41c13c21b541a50ca676ebe8f88a63",
+    "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/ui/src/lib.rs": "c219b7ccfe73aedfd2fcdfeb64d46f79f9c2910377633a50201fc373524b4a29",
+    "/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/ui/tests/common_action_composer.rs": "cbd06f37254d0d84488bfc345c23224688ed084ec790b8e1f425112cda764782",
+    "/private/tmp/console-account30-cargo/debug/deps/libconsole_payroll_ui.rlib": "9f38108d2b0bb0e53d73415bdb24dd7c1d747ff2c1448672fd5c7989eeabe0fa"
+  },
+  "artifacts": {
+    "browser-escalated.log": "9823c8acd10971ff253d69207afad9a35c4d85c4a7f54769286feccb61fa1323",
+    "browser-existing-chromium.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "browser.cjs": "51b2f51e16e4db342dc47b5098cd6b936b1e792e6be1661730624efc16db1fb9",
+    "browser.log": "eee8ef27b76d90bdd8d26cd19ef96eb16d22fa8149e5336e3ae4ceeffbac5cd5",
+    "pages/conflict.html": "4cba6e19cc3ffab2827598716b524cbdbd03a8162d21927837348442bad7f7bb",
+    "pages/optional.html": "6a62e6654d3d3bf3da425e22114ae27f3956bfaa29908f68f21ca44bedf07708",
+    "pages/readonly.html": "aa81e1037cda6751c49f6efe8b446632d590c78aa9e2fedeb8bb87f84fd766f0",
+    "pages/retry.html": "2d2f416618ea0f99d3dea1ca83d7818bda85594d6903766db45f08c299e526f3",
+    "render": "d90799fc269792f546069994c3ae1726fb007f2adffafbc0b48e22869898b5ca",
+    "render.rs": "7f61044ad222e035f183e377cba6bc85ac2b6b6eaf124e0512555dbd4c900b9e",
+    "result.json": "3cd3b9c1391e6f68f09fba3588d8b48a44a4be94a7c93ce13793a5522b0c9139",
+    "screenshots/conflict-1280.png": "82e64f7d8fc4fd33207227b0894911f9a4bd0a36d7887527055c3357a8b2dc8a",
+    "screenshots/conflict-390.png": "9257fcbe36a0e05463f2c473cd4b93233fbbe22535055aa5090a303fb4c9bfac",
+    "screenshots/optional-1280.png": "cc451327a742a6514ac4cd9b2d1be149dbb172870cbcd5283e504050cf568536",
+    "screenshots/optional-390.png": "94495039c9c4f404eee27004abf1fb5006001b3254d0634ce69d2b1e60390c91",
+    "screenshots/readonly-1280.png": "19e0bfe0b4d9854560324bfc13be4cae8d89f0e78bfefca173a6d648f82184d4",
+    "screenshots/readonly-390.png": "d9e9486cdf7577952123305b466a81cad62d59288dedd2a55d9ed5776e54b744",
+    "screenshots/retry-1280.png": "0cef1963524dfb923d56882f41b625af7f1f21d7f5ba8b81276b4c4588111ba9",
+    "screenshots/retry-390.png": "2747ef426478d8a6f8098de01b76c9dc475e56da6ac5d6d3f57526e308f38a1e",
+    "source-hashes.json": "58fa7ad5f3d0c128f45816fe01c749a16113150f5cb154538eebf1c3af317d6c",
+    "/Users/jasonlee/Library/Caches/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-mac-arm64/chrome-headless-shell": "7687bff7cb2db075f250e6d5848bbc8838cac3802ac3952a899c574f8eccab45"
+  },
+  "browser": "151.0.7922.34",
+  "playwright_version": "1.63.0",
+  "node": "v26.7.0",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "commands": [
+    "rustc +1.98.1 --edition 2024 render.rs --extern console_payroll_ui=/private/tmp/console-account30-cargo/debug/deps/libconsole_payroll_ui.rlib -L dependency=/private/tmp/console-account30-cargo/debug/deps -o render",
+    "./render",
+    "node browser.cjs > browser-existing-chromium.log 2>&1"
+  ],
+  "discovered_scenarios": 8,
+  "executed_scenarios": 8,
+  "passed_scenarios": 8,
+  "javascript_enabled": false,
+  "screenshots": 8,
+  "failures_before_success": [
+    "Sandbox loopback listen EPERM; authorized escalation allowed.",
+    "Playwright bundled browser1243 absent; explicit existing cached1234 used. Failed owned harness process terminated before rerun."
+  ],
+  "limits": [
+    "Static pages from actual renderer; no live application route or persistence owner.",
+    "FormData uses browser devtools instrumentation; page JavaScript remains disabled.",
+    "No POST sent. CSRF/session validation, owner validation and business mutation unverified.",
+    "Chromium-only desktop1280/mobile390 light mode; no Safari/Firefox, screenreader, actual user study, dark contrast or broad accessibility certification.",
+    "Error text remains until a server response; screenshot after correction is before POST.",
+    "Bounded common presentation proof, not whole-Console north-star UI completion."
+  ],
+  "changed_nonproduction_source_explanation": "Root confirmed test-only clippy unwrap/expect allow and two needless &id removals; no assertion/fixture/product changes. External harness did not load or compile integration test source. No browser rerun warranted."
+}

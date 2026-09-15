@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import yaml from '/private/tmp/console-production-tdd-preparation-20260913/node_modules/js-yaml/index.js';
+import {evaluateCiPreflight} from '/private/tmp/console-format-followup-20260914/scripts/check-ci-preflight.mjs';
+import {evaluateNightlyWorkflow} from '/private/tmp/console-format-followup-20260914/tools/ci/check-nightly-workflow.mjs';
+const root='/private/tmp/console-format-followup-20260914';
+const ci=fs.readFileSync(`${root}/.github/workflows/ci.yml`,'utf8');
+const nightly=fs.readFileSync(`${root}/.github/workflows/nightly.yml`,'utf8');
+const results=[];
+assert.deepEqual(evaluateCiPreflight(ci).failures,[]);results.push('ci positive');
+assert.deepEqual(evaluateNightlyWorkflow(nightly),[]);results.push('nightly positive');
+for(const [name,change] of [
+ ['omit auth API binding', s=>{s.run=s.run.replace('AUTH_DATABASE_URL="$AUTH_DATABASE_URL" \\\n','');}],
+ ['reuse runtime password',s=>{s.run=s.run.replace('AUTH_PASSWORD="$(openssl rand -hex 32)"','AUTH_PASSWORD="$RT_PASSWORD"');}],
+ ['early successful exit',s=>{s.run='exit 0\n'+s.run;}],
+]){
+ const doc=yaml.load(ci), step=doc.jobs.backend.steps.find(s=>s.name==='Boot smoke — migrate + serve + /readyz');
+ const original=step.run;change(step);assert.notEqual(step.run,original);
+ assert(evaluateCiPreflight(yaml.dump(doc)).failures.some(f=>f.includes('backend proof run step 19')));results.push(name);
+}
+for(const [name,change] of [
+ ['omit new nightly proof',(steps,i)=>steps.splice(i,1)],
+ ['neuter new nightly proof',(steps,i)=>{steps[i].run='true';}],
+ ['soft fail new nightly proof',(steps,i)=>{steps[i]['continue-on-error']=true;}],
+]){
+ const doc=yaml.load(nightly),steps=doc.jobs['dev-up-smoke'].steps;
+ const index=steps.findIndex(s=>s.name==='Restricted auth topology integration regression');assert(index>=0);change(steps,index);
+ assert(evaluateNightlyWorkflow(yaml.dump(doc)).length>0);results.push(name);
+}
+console.log(JSON.stringify({executed:results.length,passed:results.length,controls:results},null,2));

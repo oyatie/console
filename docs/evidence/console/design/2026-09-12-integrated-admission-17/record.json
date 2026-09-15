@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_admission_design_with_open_contracts",
+  "recorded_at": "2026-09-12T22:20:11.231472+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "8cff8c887650f9ad8b876bdb604ee1230cc367a1",
+  "reviewed_contract_sha": "83b07970260587ad3b4ec07893721b299a40d555",
+  "predecessor_record": "../2026-09-12-workflow-group-technical-16/record.json",
+  "predecessor_record_sha256": "0f897966057a9dd334e72048835660ef8f1c24d8082b487ac6f4c2ffbe57b162",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "closure-register.json",
+      "bytes": 6592,
+      "sha256": "89aab9b3678686e2baa484358204649dcedf1c5a3290a28b47bf86c98b07ead1"
+    },
+    {
+      "path": "constraints.csv",
+      "bytes": 6079,
+      "sha256": "c147707df53fde08e54ed2a2b4c3688cd50d823c5d63d3c40ca061c56c312cc3"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2063,
+      "sha256": "7db5c280cdf1dc139db27ea2c22de45d0b218c16403ff50df08144b20c113a5a"
+    },
+    {
+      "path": "integration-contract.txt",
+      "bytes": 5460,
+      "sha256": "1310129b0bbd5bc8455075197d47ce639b33b4420d2c8d6816a089d2cac3716c"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 6588,
+      "sha256": "8b034cddb7d3f46e795bc24dff7518816dc4b053fd96dc9b497e6c1a25b94d24"
+    },
+    {
+      "path": "readiness.txt",
+      "bytes": 2252,
+      "sha256": "25e9ca6af028ac0ebe8d962e415d4e97b6b67cd4156d59e058fcb806fe2170f0"
+    },
+    {
+      "path": "retention-and-recovery.txt",
+      "bytes": 12006,
+      "sha256": "b66bdeac58be1dcca57e74af0b889d1e1c6afe3f0900849bc6e7ec780ece18c3"
+    },
+    {
+      "path": "retention-records.json",
+      "bytes": 6314,
+      "sha256": "e98cf009c8dc8622436b3e23ad9288dd3d1dc9f41927985c3607cd7647131d81"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 969,
+      "sha256": "68170dcf986f3eda15b0cc780da577b61014ac358c060b9d0f4a711e8223c07a"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1627,
+      "sha256": "b05be74acc33ec3e0540ba892af00c372d5a0023ca185ac60ced27a91ff4b5d2"
+    },
+    {
+      "path": "review.html",
+      "bytes": 1788,
+      "sha256": "ee9ad3245b771bb30bb65e3aa83d67c07e9f4dda8ed90d47a4e2ea8cd41b0947"
+    },
+    {
+      "path": "roles-and-migration.txt",
+      "bytes": 7695,
+      "sha256": "03f7632da712e6259d2d0ee884e0d47d2041d9c4db12ec8f82038e53899e85f5"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 950,
+      "sha256": "f1526617771ee98580ec6c3af4926219d0398665dc0c3be427a4dd530839e9ce"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 25862,
+      "sha256": "eb8527a12bdb7e3685d30624ed6469e92c75967358a8fca4029def5031f331e3"
+    },
+    {
+      "path": "storage-catalog.json",
+      "bytes": 55326,
+      "sha256": "74f62dfecba7b378a3ac7ae424558d128bae2c2aeb9523207893fcdd6e931a83"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 2087,
+      "sha256": "94b1034f0a58a8a0a522b85528e0e8bdc00a1352102db20270399e30ba48bc79"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 4387,
+      "sha256": "99e7d88f3ded0915e30bd859bff6e477af23f5e94d91cc8650417e924b87a1fd"
+    },
+    {
+      "path": "workload-and-proof.txt",
+      "bytes": 8153,
+      "sha256": "c31109b284aa1d58207fc2621748798640590e3d313a6645b633be889c90ded6"
+    },
+    {
+      "path": "workloads.json",
+      "bytes": 3768,
+      "sha256": "33a19bd59af309fcf5ec341e180fccbde525a7596182afd9c9736e3c7686310e"
+    }
+  ],
+  "remaining_holds": [
+    "F01-F08 exact mutually consistent design artifacts",
+    "W05 authority alignment and four final independent rounds; explicit design SHA approval",
+    "W06 independently reviewed executable tests and explicit test SHA approval; actual RED admission",
+    "Actual implementation, runtime/recovery/performance proof and separate production/legal authority"
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "kind": "independent_historical225_capture_and_replay_design_review",
+  "status": "APPROVE_EXACT_CAPTURE_SOURCE_ONLY_ADAPTER_AND_RUNTIME_PENDING",
+  "reviewer": "/root/capture_review",
+  "author": "/root/owner_privilege_review",
+  "runtime_operator": "/root",
+  "created_at_utc": "2026-09-15T05:30:37.997839+00:00",
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "scope": "Read-only review of exact historical producer instrumentation and bounded native replay proposal. This is neither implementation admission nor runtime, production, or migration preservation evidence.",
+  "integration_readback": {
+    "path": "/private/tmp/console-production-tdd-preparation-20260913",
+    "head": "73ed8f560999b3bd5838d49fbf49e14366f5becf",
+    "status_porcelain": ""
+  },
+  "producer_base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "historical_git_objects": {
+    "backend/app/tests/account_migration.rs": "4e803be3a85f9a2b8401694f561d0e645d5cd698",
+    "backend/crates/platform/db/migrations": "c94244c4a102cc1192ffa3e548ce65dc16ef0ff0",
+    "backend/crates/platform/auth/src/refresh.rs": "ec753e9681db084b8c220220da64dcbe3541160b",
+    "backend/crates/platform/auth/src/webauthn.rs": "1e4c970a4192d0588ea5ca27a6ad575db818ae18",
+    "backend/crates/platform/test-support/src/lib.rs": "23f7d05f798a099d523227161df9228c538ad3c6",
+    "tools/ci/cargo_needs_postgres.sh": "eb3131148d6a6a2d35de0321991f123fcbf6163b",
+    "tools/ci/postgres-cargo-map.json": "91dc22a6c4a6833efe634fbd9a2fa449a9cc4e7a"
+  },
+  "artifacts": {
+    "/private/tmp/account-legacy225-capture-design.json": {
+      "sha256": "0593201a9dface635764446e9936a3781a214f4a5f4e31e8e57923a72f9b3dcf",
+      "bytes": 14628
+    },
+    "/private/tmp/account-legacy225-capture-candidate.rs": {
+      "sha256": "67e53107cd3a928787200e99caa48f128465a6f6974b190383fb2a0a6d0c6de7",
+      "bytes": 23634
+    },
+    "/private/tmp/account-legacy225-capture.patch": {
+      "sha256": "51735ca2de7663ba2f941a69341287c41bbec09e383c08e704d9c74c6d079ba1",
+      "bytes": 8327
+    },
+    "/private/tmp/account-legacy225-capture-query.sql": {
+      "sha256": "c2aab8c8942525f4d4013dd7f7701130cb23a4c0ebd09ffd68b880f6d72498f2",
+      "bytes": 2685
+    },
+    "/private/tmp/account-legacy225-capture-helper.rs": {
+      "sha256": "1946f5a606b8eca5043c0054ebb5d0d8f4a61efe4183671fd01a52d1d9197446",
+      "bytes": 7357
+    }
+  },
+  "original_test_sha256": "a313e2611cb7aabeaab49029e23bd6dd6ca1e3f30e090bc0749e6334d484186a",
+  "unchanged_migration_oracle_and_two_test_bodies_sha256": "ed0c782c5483743786908f987a8f587367ba901903fec1f2bc1b94cb1cb2f255",
+  "source_findings": [],
+  "facts": [
+    "The three-hunk patch applied to the exact historical Git blob entirely in memory reconstructs the exact candidate bytes and hash.",
+    "The only existing-code edit binds the same LegacyFixture to a local variable, calls the new helper after all existing seed assertions and material snapshot, then returns that fixture.",
+    "From apply_current_and_require_account_catalog through the end of both original tests, bytes are identical to the historical producer. No ignore, skip, assertion deletion, alternate error oracle, Account schema synthesis, or migration substitution is introduced.",
+    "The helper exits immediately if its capture environment variable is absent. When present, added SQL consists of SELECTs. Its only persistent added side effect is exclusive creation of one private JSON file.",
+    "Existing old_migration_login verifies the marked empty SQLx disposable administrator database and actual console_app migration LOGIN; the actual migrator runs through225 and retains checksum values before real SoftPasskey registration, issuance, rotation and logout.",
+    "The helper requires marked console_buck_admin identity, superuser status, a disposable database descriptor, version225, exact known fixed row counts and checksums, unused edges zero, and a raw token hash correlated with both a revoked token and revoked family before writing.",
+    "The output excludes AppConfig and its URL, environment values, and the SoftPasskey authenticator object. The only exported raw token is the already-revoked fixture token; remaining token material is hashed database content. Subjects and display names originate from the immutable synthetic test producer.",
+    "The output directory must be absolute, an existing real directory, and inaccessible to group/other. create_new plus mode0600 prevents overwriting an existing capture file; successful parse, exactly-one-file, hash and producer evidence checks remain operator duties.",
+    "Migration0225 organization INSERT triggers create group_memberships even when an explicit group_id is supplied. The known historical membership row contains group_id, org_id and created_at, so bounded timestamp restoration is necessary for full native row equality.",
+    "Migration0004 auth_refresh_tokens.replaced_by is an immediate self-FK. A single INSERT SELECT containing all four tokens is the correct proposed statement boundary; actual PostgreSQL replay remains unexecuted.",
+    "The historical app already directly depends on hex, sha2, serde_json and sqlx. This capture proposal requires no Cargo or dependency mutation.",
+    "The historical migration tree, seed helper, refresh owner, WebAuthn owner, PostgreSQL harness and map are byte-identical between producer base and inspected integration head."
+  ],
+  "capture_command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "account_migration",
+    "populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits",
+    "--",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "harness_review": {
+    "approved_plan": "Separately owned clean detached capture checkout at exact producer base, only reviewed instrumentation committed, existing app-account-migration-pg entry narrowed to the one exact unchanged test, unchanged migration/bootstrap/finalizer setup, one explicitly labeled owned disposable PostgreSQL container and source-before/source-after evidence.",
+    "reference_adapter": "/private/tmp/account-auth-refresh6-driver.sh",
+    "reference_adapter_sha256": "0855a1ad6861ece2b9c16f5464ebf1878f10dfa1f49634cd0fb07a33f3403711",
+    "exact_capture_adapter": "NOT_PROVIDED_OR_REVIEWED",
+    "adapter_required_changes": [
+      "Snapshot account_migration.rs and bind the exact instrumentation commit and candidate hash.",
+      "Select the existing app-account-migration-pg entry, retaining the whole map for partition validation and asserting its original argv before narrowing.",
+      "Intercept only the exact seven-argument console-app prebuild and append --test account_migration.",
+      "Create one fresh mode0700 directory under /private/tmp and export CONSOLE_TEST_LEGACY225_CAPTURE_DIR into the real Cargo subprocess.",
+      "Preserve the exact Cargo exit, complete log, discovery/executed counts, artifact digest, source-before/source-after equality, and successful owned-container absence readback.",
+      "Do not serialize capture bytes into stdout, receipts or log summaries; independently review them privately before repository import."
+    ],
+    "expected_selected_tests": 1,
+    "unselected_test": "populated_225_to_current_preserves_preexisting_family_and_token_revocations remains unchanged and must execute during subsequent full migration validation.",
+    "failure_classification": "A successful capture followed by original current-migration/catalog/backfill failure is a RED test with successful historical fixture evidence. A pre-capture failure or no output is not successful capture; an unexpectedly green test requires inspection, not an automatic missing-backfill claim."
+  },
+  "replay_design_verdict": "APPROVE_BOUNDED_DIRECTION_ONLY_IMPLEMENTATION_AND_RUNTIME_REVIEW_REQUIRED",
+  "replay_requirements": [
+    "Keep actual fresh run_to225 and immutable checksum comparison; privilege is setup only. Never add synthetic Account rows or projection, optional runtime auth dependencies, runtime missing-schema bypasses, or copied historical owner code.",
+    "Import only the reviewed TEST_ONLY capture with exact file hash and recorded producer/instrumentation custody. Validate identity uniqueness and exact table roster before inserting.",
+    "Use fixed native jsonb_populate_recordset statements in one transaction, maintaining triggers and constraints. Insert groups before organizations, then users, auth rows and audits; all four tokens use one statement. Do not add ON CONFLICT suppression.",
+    "Check exactly the expected generated membership keys/count before restoring only created_at. Require exact native membership readback; never delete or silently retain unexpected rows.",
+    "Require exact affected counts, complete native table equality, checksum equality, unused-edge equality, original material_snapshot equality and original seed invariants before declaring replay valid.",
+    "Execute rollback-only omission, protected-material/correlation tampering and wrong-membership-key controls. Wrong fixture digest must fail before any insert. No test framework expansion or generic row graph copier is needed.",
+    "Preserve original migration and Account mapping/backfill oracles and the exact FamilyRevoked refusal plus after-refusal material equality. Future mandatory auth dependency injection may change only the necessary call plumbing and requires separate source review.",
+    "Old timestamps are intentionally preserved. The exact FamilyRevoked check must stay meaningful after expiration/absolute TTL; do not normalize timestamps to the current clock or weaken the refusal oracle."
+  ],
+  "blockers_before_capture_execution": [
+    {
+      "id": "CAPTURE_ADAPTER_NOT_REVIEWED",
+      "severity": "review prerequisite",
+      "reason": "Only a textual adapter plan and an existing refresh6 reference driver are available. An exact capture-specific adapter digest/diff and instrumentation commit must be independently reviewed before root executes it."
+    }
+  ],
+  "remaining_holds": [
+    "Cargo/type checking of exact instrumented candidate.",
+    "Actual historical capture and private output/custody review.",
+    "Permanent replay implementation and independent source preservation review.",
+    "Actual native replay and tampering controls.",
+    "Full two-test migration validation; existing missing Account conversion/backfill remains separate.",
+    "No runtime authorization, production exposure, durability, compliance, merge or release claim."
+  ],
+  "pre_mortem": [
+    {
+      "failure": "Capture runs from wrong producer or different source.",
+      "detection": "Exact base/blob/candidate/adapter hashes and source snapshots.",
+      "response": "Stop and preserve failed evidence."
+    },
+    {
+      "failure": "Hidden FK or trigger dependency breaks replay.",
+      "detection": "Active constraints, bounded row counts and complete readback.",
+      "response": "Rollback; inspect actual225 edge before revising the fixed roster."
+    },
+    {
+      "failure": "Capture success masks missing migration/backfill.",
+      "detection": "Unchanged post-capture test body and original process exit/log.",
+      "response": "Keep migration RED and report unreached assertions separately."
+    },
+    {
+      "failure": "Private capture is incomplete or exposed.",
+      "detection": "Exclusive0600 file, private directory, exactly-one parseable payload, hash and custody review.",
+      "response": "Do not import; preserve bounded diagnostic evidence."
+    }
+  ],
+  "blast_radius": "Reviewer read Git/source/proposals only and wrote this single private review JSON. Future capture is one owned temporary checkout and labeled disposable database; permanent replay is a fixture transaction.",
+  "rollback": "Abandon only owned temporary capture checkout/output after preserving evidence; no shared reset. A mismatched replay must roll back its transaction.",
+  "stop_conditions": [
+    "Any reviewed hash/head/original suffix differs.",
+    "Exact capture adapter or instrumentation commit is unreviewed.",
+    "Database lacks marked disposable identity.",
+    "Any unowned service or source tree would be modified.",
+    "Capture roster, checksum or revoked-token correlation fails.",
+    "Capture file parse/count/hash or source/cleanup custody cannot be established.",
+    "Native replay constraints or exact readback fail."
+  ],
+  "validation": {
+    "executed": [
+      {
+        "command": "python3 inline standard-library hash, Git blob, and original test-suffix comparison",
+        "result": "PASS; five proposal hashes match; shared oracle and two bodies unchanged"
+      },
+      {
+        "command": "python3 inline standard-library in-memory unified patch application",
+        "result": "PASS; three hunks reconstruct exact candidate"
+      },
+      {
+        "command": "rustup run 1.98.1 rustfmt --edition 2024 --check /private/tmp/account-legacy225-capture-candidate.rs",
+        "exit_code": 0
+      }
+    ],
+    "rust_tests_discovered": 0,
+    "rust_tests_executed": 0,
+    "postgres_operations_executed": 0,
+    "not_executed": [
+      "Cargo",
+      "PostgreSQL",
+      "Docker",
+      "capture helper",
+      "permanent replay",
+      "negative runtime controls"
+    ]
+  }
+}

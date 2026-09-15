@@ -1,0 +1,12 @@
+{
+  "kind": "attempt.cancel",
+  "body": {
+    "attempt": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "attempt_id": "14062e3e-53c2-5bd8-ba11-c9749c516c27",
+      "command_id": "bb572b67-b525-5646-8b4e-351027ad4452"
+    },
+    "expected_state_revision": "1",
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

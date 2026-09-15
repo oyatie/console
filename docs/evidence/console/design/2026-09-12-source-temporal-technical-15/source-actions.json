@@ -1,0 +1,92 @@
+{
+  "status": "PROPOSED_OWNER_ACTION_BOUNDARIES_NOT_EXECUTABLE_ROUTES",
+  "actions": [
+    {
+      "key": "artifact.request_upload",
+      "owner": "Docs/storage",
+      "input": "typed PAYROLL_SOURCE subject, exact MIME/byte cap, command_id",
+      "result": "Server-owned upload ticket; no fake WorkOrder or client bucket",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "artifact.verify_version",
+      "owner": "trusted storage verifier -> Docs",
+      "input": "Exact uploaded provider version, own verification job/command",
+      "result": "Durable byte-readback attestation; no browser READY flag",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "source.propose_qualification",
+      "owner": "payroll source-evidence",
+      "input": "ArtifactRef[], edition, purpose, normalization/locator schema, applicability, review/credential ArtifactRefs; REVIEWER_CREDENTIAL uses ReviewerCredentialPayload instead; required-nullable supersedes_ref:SourceQualificationRef|null naming exact predecessor head",
+      "result": "Immutable proposed source revision and exact review input",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "source.verify_qualification",
+      "owner": "payroll source-evidence",
+      "input": "Exact proposed ref/digest, current independent qualified human evidence; credential branch uses pinned IssuerTrustProfileRef and issuer evidence under independent issuer-authenticity authority, not a recursively required professional credential",
+      "result": "Append verified revision/head; no legal release authority; EA1.6 atomic predecessor successor-claim and active-versus-revoked lineage handling",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "source.revoke_qualification",
+      "owner": "payroll source-evidence",
+      "input": "Exact expected head, reason and evidence refs",
+      "result": "Append revoked revision; old snapshots retained",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "calendar.publish",
+      "owner": "attendance/calendar owner",
+      "input": "Typed finite template/overrides/rule qualification, expected calendar revision",
+      "result": "Exact immutable calendar; unresolved rules block publication",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "calendar.assign",
+      "owner": "attendance/calendar owner",
+      "input": "Employment, exact calendar revision, half-open dates, expected assignment revision",
+      "result": "Current effective assignment with retained previous history",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "attendance.resolve_coverage",
+      "owner": "attendance owner",
+      "input": "Employee/earning interval, expected source witnesses",
+      "result": "Automatically resolved exact day coverage or typed repair blockers",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "attendance.create_close_basis",
+      "owner": "attendance owner",
+      "input": "Exact selected coverage membership, operational close/amendment/lock, explicit attest",
+      "result": "Native close-basis revision; no false Company closure from branch close",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "eligibility.propose",
+      "owner": "payroll input owner",
+      "input": "Exact profile, Employment/wage/coverage and manual typed applicability/basis fields plus source refs; required-nullable supersedes_ref:EligibilityRef|null",
+      "result": "Immutable assessed candidate; no inferred zero/automatic VERIFIED",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "eligibility.verify",
+      "owner": "payroll input owner",
+      "input": "Exact proposed assessment/digest, independent human evidence",
+      "result": "Verified current assessment; no tax or close dependency cycle",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    },
+    {
+      "key": "eligibility.revoke",
+      "owner": "payroll input owner",
+      "input": "Exact expected assessment head/reason",
+      "result": "Append revocation; history preserved",
+      "common_protocol": "CCF1 exact registered Action with current Cedar/SoD, revision CAS and metadata-only receipt; no state-changing GET"
+    }
+  ],
+  "review_batch": "Any later batch uses exact selected per-item digest manifest and own independent review scope; never verify unknown/hidden/changed items. First packet declares single-item owner operations, not a implemented bulk UI.",
+  "input_rules": "All ArtifactRef/source/body values use wire-types closed schemas. Propose/verify/revoke create separate revisions; human decision must see required evidence or an explicitly approved sufficient attestation.",
+  "source_selection": "EA1.6 current exact zero/one/many selector and atomic explicit successor activation apply to qualification/credential/assessment/tax roots."
+}

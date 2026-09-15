@@ -1,0 +1,322 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling libc v0.2.186
+   Compiling typenum v1.20.1
+   Compiling serde_core v1.0.228
+   Compiling stable_deref_trait v1.2.1
+   Compiling serde v1.0.228
+   Compiling syn v2.0.117
+   Compiling cfg-if v1.0.4
+   Compiling shlex v2.0.1
+   Compiling jobserver v0.1.35
+   Compiling version_check v0.9.5
+   Compiling find-msvc-tools v0.1.9
+   Compiling generic-array v0.14.7
+   Compiling cc v1.2.63
+   Compiling fs_extra v1.3.0
+   Compiling dunce v1.0.5
+   Compiling pkg-config v0.3.33
+   Compiling cmake v0.1.58
+   Compiling writeable v0.6.3
+   Compiling litemap v0.8.2
+   Compiling aws-lc-sys v0.45.0
+   Compiling pin-project-lite v0.2.17
+   Compiling icu_normalizer_data v2.2.0
+   Compiling icu_properties_data v2.2.0
+   Compiling utf8_iter v1.0.4
+   Compiling synstructure v0.13.2
+   Compiling zerofrom-derive v0.1.7
+   Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.2
+   Compiling zerovec-derive v0.11.3
+   Compiling serde_derive v1.0.228
+   Compiling displaydoc v0.2.6
+   Compiling hybrid-array v0.4.12
+   Compiling crossbeam-utils v0.8.21
+   Compiling futures-core v0.3.32
+   Compiling zeroize v1.9.0
+   Compiling aws-lc-rs v1.18.1
+   Compiling yoke v0.8.3
+   Compiling block-buffer v0.10.4
+   Compiling socket2 v0.6.4
+   Compiling mio v1.2.1
+   Compiling smallvec v1.15.2
+   Compiling parking_lot_core v0.9.12
+   Compiling cmov v0.5.4
+   Compiling bytes v1.11.1
+   Compiling ctutils v0.4.2
+   Compiling zerovec v0.11.6
+   Compiling zerotrie v0.2.4
+   Compiling rustls-pki-types v1.14.1
+   Compiling block-buffer v0.12.1
+   Compiling crypto-common v0.2.2
+   Compiling tinystr v0.8.3
+   Compiling potential_utf v0.1.5
+   Compiling icu_locale_core v2.2.0
+   Compiling icu_collections v2.2.0
+   Compiling once_cell v1.21.4
+   Compiling scopeguard v1.2.0
+   Compiling equivalent v1.0.2
+   Compiling zmij v1.0.23
+   Compiling lock_api v0.4.14
+   Compiling digest v0.11.3
+   Compiling cpufeatures v0.2.17
+   Compiling icu_provider v2.2.0
+   Compiling allocator-api2 v0.2.21
+   Compiling icu_properties v2.2.0
+   Compiling icu_normalizer v2.2.0
+   Compiling time-core v0.1.8
+   Compiling futures-sink v0.3.32
+   Compiling thiserror v2.0.18
+   Compiling foldhash v0.2.0
+   Compiling autocfg v1.5.1
+   Compiling num-conv v0.2.2
+   Compiling memchr v2.8.2
+   Compiling idna_adapter v1.2.2
+   Compiling rustls v0.23.40
+   Compiling itoa v1.0.18
+   Compiling untrusted v0.9.0
+   Compiling serde_json v1.0.150
+   Compiling percent-encoding v2.3.2
+   Compiling powerfmt v0.2.0
+   Compiling deranged v0.5.8
+   Compiling form_urlencoded v1.2.2
+   Compiling idna v1.1.0
+   Compiling num-traits v0.2.19
+   Compiling time-macros v0.2.27
+   Compiling hashbrown v0.16.1
+   Compiling parking_lot v0.12.5
+   Compiling tracing-core v0.1.36
+   Compiling concurrent-queue v2.5.0
+   Compiling thiserror-impl v2.0.18
+   Compiling tracing-attributes v0.1.31
+   Compiling futures-task v0.3.32
+   Compiling slab v0.4.12
+   Compiling getrandom v0.4.2
+   Compiling tinyvec_macros v0.1.1
+   Compiling hashbrown v0.17.1
+   Compiling subtle v2.6.1
+   Compiling log v0.4.32
+   Compiling rand_core v0.10.1
+   Compiling futures-io v0.3.32
+   Compiling crc-catalog v2.5.0
+   Compiling parking v2.2.1
+   Compiling indexmap v2.14.0
+   Compiling crc v3.4.0
+   Compiling event-listener v5.4.1
+   Compiling futures-util v0.3.32
+   Compiling tracing v0.1.44
+   Compiling tinyvec v1.11.0
+   Compiling time v0.3.47
+   Compiling futures-intrusive v0.5.0
+   Compiling hashlink v0.11.1
+   Compiling url v2.5.8
+   Compiling webpki-roots v1.0.8
+   Compiling crossbeam-queue v0.3.12
+   Compiling either v1.16.0
+   Compiling crypto-common v0.1.7
+   Compiling base64 v0.22.1
+   Compiling uuid v1.23.3
+   Compiling digest v0.10.7
+   Compiling unicode-normalization v0.1.25
+   Compiling chacha20 v0.10.2
+   Compiling hmac v0.13.0
+   Compiling tokio v1.52.3
+   Compiling cpufeatures v0.3.0
+   Compiling unicode-properties v0.1.4
+   Compiling unicode-bidi v0.3.18
+   Compiling sha2 v0.11.0
+   Compiling stringprep v0.1.5
+   Compiling atoi v2.0.0
+   Compiling hkdf v0.13.0
+   Compiling rand v0.10.1
+   Compiling sha2 v0.10.9
+   Compiling futures-channel v0.3.32
+   Compiling md-5 v0.11.0
+   Compiling tokio-macros v2.7.0
+   Compiling hex v0.4.3
+   Compiling byteorder v1.5.0
+   Compiling whoami v2.1.2
+   Compiling dotenvy v0.15.7
+   Compiling bitflags v2.13.0
+   Compiling heck v0.5.0
+   Compiling console-gate-tenant-isolation v0.1.0 (/private/tmp/console-tenant-qualified-tests-20260914/backend/ci/gates/tenant-isolation)
+   Compiling tokio-stream v0.1.18
+   Compiling rustls-webpki v0.103.13
+   Compiling sqlx-core v0.9.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 17s
+     Running tests/qualified_table_identity.rs (/private/tmp/console-tenant-gate-cargo/debug/deps/qualified_table_identity-dd6a802f6a93e521)
+
+running 14 tests
+test quoted_case_or_dot_does_not_alias_existing_global_table ... FAILED
+test same_basename_in_another_schema_cannot_supply_rls_evidence ... FAILED
+test unqualified_tenant_positive_control_remains_clean ... ok
+test qualified_unknown_table_remains_unclassified ... FAILED
+test qualified_create_reuses_existing_unqualified_dynamic_rls_evidence ... FAILED
+test public_global_table_resolves_to_existing_classification ... FAILED
+test mixed_public_create_and_unqualified_rls_share_identity ... FAILED
+test other_schema_does_not_inherit_global_or_nullable_allowlists ... FAILED
+test qualified_nullable_exception_is_same_public_table ... FAILED
+test two_tables_in_one_schema_cannot_share_rls_evidence ... FAILED
+test qualified_add_column_and_set_not_null_update_same_table ... FAILED
+test other_schema_or_column_name_is_not_an_owner_only_grant_target ... FAILED
+test mixed_unqualified_create_and_quoted_public_rls_share_identity ... FAILED
+test qualified_owner_only_grants_are_rejected_for_both_recipients ... ok
+
+failures:
+
+---- quoted_case_or_dot_does_not_alias_existing_global_table stdout ----
+
+thread 'quoted_case_or_dot_does_not_alias_existing_global_table' (29351044) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:37:5:
+expected UnclassifiedTable for accounts, got [
+    Violation {
+        kind: UnclassifiedTable,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-10/migrations/0001_identity.sql",
+        detail: "table 'public' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.",
+    },
+]
+
+---- same_basename_in_another_schema_cannot_supply_rls_evidence stdout ----
+
+thread 'same_basename_in_another_schema_cannot_supply_rls_evidence' (29351045) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:37:5:
+expected OrgColumnWithoutRls for private.widgets, got [
+    Violation {
+        kind: OrgColumnWithoutRls,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-11/migrations/0001_identity.sql",
+        detail: "tenant table 'private' has an org_id column but no ENABLE ROW LEVEL SECURITY (rows are not isolated by tenant)",
+    },
+]
+
+---- qualified_unknown_table_remains_unclassified stdout ----
+
+thread 'qualified_unknown_table_remains_unclassified' (29351043) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:37:5:
+expected UnclassifiedTable for mystery, got [
+    Violation {
+        kind: UnclassifiedTable,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-9/migrations/0001_identity.sql",
+        detail: "table 'public' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.",
+    },
+]
+
+---- qualified_create_reuses_existing_unqualified_dynamic_rls_evidence stdout ----
+
+thread 'qualified_create_reuses_existing_unqualified_dynamic_rls_evidence' (29351040) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: OrgColumnWithoutRls,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-6/migrations/0001_identity.sql",
+        detail: "tenant table 'public' has an org_id column but no ENABLE ROW LEVEL SECURITY (rows are not isolated by tenant)",
+    },
+]
+
+---- public_global_table_resolves_to_existing_classification stdout ----
+
+thread 'public_global_table_resolves_to_existing_classification' (29351038) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: UnclassifiedTable,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-4/migrations/0001_identity.sql",
+        detail: "table 'public' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.",
+    },
+]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- mixed_public_create_and_unqualified_rls_share_identity stdout ----
+
+thread 'mixed_public_create_and_unqualified_rls_share_identity' (29351034) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: OrgColumnWithoutRls,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-0/migrations/0001_identity.sql",
+        detail: "tenant table 'public' has an org_id column but no ENABLE ROW LEVEL SECURITY (rows are not isolated by tenant)",
+    },
+]
+
+---- other_schema_does_not_inherit_global_or_nullable_allowlists stdout ----
+
+thread 'other_schema_does_not_inherit_global_or_nullable_allowlists' (29351036) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:37:5:
+expected UnclassifiedTable for accounts, got [
+    Violation {
+        kind: UnclassifiedTable,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-2/migrations/0001_identity.sql",
+        detail: "table 'private' is unclassified — it has neither an org_id column / RLS nor is it in the global/owner-only allowlist. Add org_id + RLS, or allowlist it with a rationale.",
+    },
+]
+
+---- qualified_nullable_exception_is_same_public_table stdout ----
+
+thread 'qualified_nullable_exception_is_same_public_table' (29351041) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: NullableOrgIdWithoutAllowlist,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-7/migrations/0001_identity.sql",
+        detail: "tenant table 'public' has a nullable org_id column but is not in nullable_org_allowlist(); tenant-scoped org_id columns must be NOT NULL unless explicitly allowlisted with a platform/global rationale",
+    },
+    Violation {
+        kind: OrgColumnWithoutRls,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-7/migrations/0001_identity.sql",
+        detail: "tenant table 'public' has an org_id column but no ENABLE ROW LEVEL SECURITY (rows are not isolated by tenant)",
+    },
+]
+
+---- two_tables_in_one_schema_cannot_share_rls_evidence stdout ----
+
+thread 'two_tables_in_one_schema_cannot_share_rls_evidence' (29351046) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:37:5:
+expected OrgColumnWithoutRls for unprotected, got []
+
+---- qualified_add_column_and_set_not_null_update_same_table stdout ----
+
+thread 'qualified_add_column_and_set_not_null_update_same_table' (29351039) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: OrgColumnWithoutRls,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-5/migrations/0001_identity.sql",
+        detail: "tenant table 'public' has an org_id column but no ENABLE ROW LEVEL SECURITY (rows are not isolated by tenant)",
+    },
+]
+
+---- other_schema_or_column_name_is_not_an_owner_only_grant_target stdout ----
+
+thread 'other_schema_or_column_name_is_not_an_owner_only_grant_target' (29351037) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: OwnerOnlyTableGrant,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-3/migrations/0001_identity.sql",
+        detail: "owner-only table 'group_memberships' must not be granted directly to console_rt/PUBLIC; expose a narrow SECURITY DEFINER resolver instead",
+    },
+]
+
+---- mixed_unqualified_create_and_quoted_public_rls_share_identity stdout ----
+
+thread 'mixed_unqualified_create_and_quoted_public_rls_share_identity' (29351035) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:33:5:
+[
+    Violation {
+        kind: OrgColumnWithoutRls,
+        file: "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-qualified-table-67953-1/migrations/0001_identity.sql",
+        detail: "tenant table 'widgets' has an org_id column but no ENABLE ROW LEVEL SECURITY (rows are not isolated by tenant)",
+    },
+]
+
+
+failures:
+    mixed_public_create_and_unqualified_rls_share_identity
+    mixed_unqualified_create_and_quoted_public_rls_share_identity
+    other_schema_does_not_inherit_global_or_nullable_allowlists
+    other_schema_or_column_name_is_not_an_owner_only_grant_target
+    public_global_table_resolves_to_existing_classification
+    qualified_add_column_and_set_not_null_update_same_table
+    qualified_create_reuses_existing_unqualified_dynamic_rls_evidence
+    qualified_nullable_exception_is_same_public_table
+    qualified_unknown_table_remains_unclassified
+    quoted_case_or_dot_does_not_alias_existing_global_table
+    same_basename_in_another_schema_cannot_supply_rls_evidence
+    two_tables_in_one_schema_cannot_share_rls_evidence
+
+test result: FAILED. 2 passed; 12 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p console-gate-tenant-isolation --test qualified_table_identity`

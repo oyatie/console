@@ -1,0 +1,28 @@
+[
+  {
+    "lane": "VERIFY-preparation-step-mirror",
+    "owner": "/root",
+    "worktree": "/private/tmp/console-production-tdd-preparation-20260913",
+    "base_sha": "2cf397f1115ba3ef3fd455bdcf66807a9bdf09f9",
+    "allow": [
+      "scripts/verify.mjs"
+    ],
+    "probe": "node --test --test-name-pattern='every mirrored CI run-step is classified' scripts/verify.test.mjs",
+    "target": "Existing CI preparation/unit fixture regressions execute in local fast tier",
+    "guide": "Add exact missing existingCIstep name with tierfast to existingPLAN; no commandoverride or exemption.",
+    "pre_mortem": "Missingstep blocks all localverification; wrongtier silently omits unit regressions",
+    "blast_radius": "Local verification command scheduling only",
+    "detection": "Existing realCIcompleteness test RED toGREEN plus fullverifiersuite and actualfastverify",
+    "rollback": "Revert singlePLANentry",
+    "stop_conditions": [
+      "CI-only exemption",
+      "Command suppression"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Production and DB acceptance"
+    ]
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/finish_migration",
+  "browser_r2": {
+    "manifest": "e6882f42276bde84aea14873e77dfe911fda45c3dabd250a4e236271461f5c07",
+    "members_verified": 16,
+    "disposition": "ACCEPT_BOUNDED_PREPARATION_SOURCE",
+    "closed": [
+      "output capture now8MiB+1 maximum per stream with concurrently polled child/host runtime, timeout and kill/reap",
+      "Expires-only past deletion consistent in manual jar/export;positive MaxAge precedence retained"
+    ],
+    "independent_checks": {
+      "command": "cargo +1.98.1 test --locked --offline --manifest-path /private/tmp/console-browser-owner-producer-r2-20260914/helper-smoke/Cargo.toml",
+      "discovered": 10,
+      "executed": 10,
+      "passed": 10,
+      "filtered": 0
+    },
+    "scope": "11 existing actual browser case producers,owner source contract and helper delta; product interface compilation/browser execution remain unclaimed. Source/profile refs and scoped3m evidence carry exact actual owners; read-only and own-history policies narrowed via real revocation/grants."
+  },
+  "security_s5": {
+    "manifest": "f9889e8ccd5a245faef1c03952f95dd1221a25794c4db68e1293fc390b7d2251",
+    "members_verified": 129,
+    "disposition": "ACCEPT_BOUNDED_PROOF_MACHINERY_CORRECTION",
+    "closed": [
+      "fixed actual harness entry digest rejects rehashed toy entry",
+      "all verified owner extraction files must occur in exact executed input closure",
+      "negative input is derived from named reviewed exact byte preimage/mutation/result with diagnostic anchor",
+      "actual emitted compiler dep-info must exactly equal reviewed inputs;external/omitted sources refuse"
+    ],
+    "independent_checks": {
+      "command": "python3 -B -m unittest discover -s /private/tmp/console-security-owner-assertions-s5-20260914/proof-harness -p test_source_binding_gate.py -v",
+      "discovered": 21,
+      "executed": 21,
+      "passed": 21
+    },
+    "evidence_review": "Retained pinned Verus positive,knownfalse,and include-wrapper logs demonstrate dep-info emission. Reviewed logs,not independently rerun,new production information-flow proof not claimed. Telemetry test module placement correction matches actual owner.",
+    "limits": "Manifest custody+proof machinery delta review; not blanket acceptance of all security owner source semantics,AST/trust-site completeness,production adapters or mathematical isolation. Actual future extraction and concrete negative recipes require source-revision independent review as specified."
+  }
+}

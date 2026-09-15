@@ -1,0 +1,74 @@
+{
+  "kind": "FINITE_NPM_FAST_LOG_COMMAND_REVIEW_RETENTION",
+  "version": 1,
+  "preparer": "/root/inventory_repair",
+  "repository_writer": "/root",
+  "head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "candidate_root": "/private/tmp/npm-verify-retention-d66e2112-inventory",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/npm-fast-verification",
+  "record_count": 3,
+  "archive_bytes": 131900,
+  "original_bytes": 669809,
+  "status": "FROZEN_FOR_ROOT_INDEPENDENT_REVIEW_AND_SERIAL_IMPORT",
+  "records": [
+    {
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/console-d66e2112-npm-verify.log"
+      },
+      "original_sha256": "a24eec24f355728be479af17e30918511fec41aa397e0dde851f1035a7ce059f",
+      "original_bytes": 600606,
+      "archive_candidate": "/private/tmp/npm-verify-retention-d66e2112-inventory/npm-verify.log.gz",
+      "archive_relative_path": "npm-verify.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/npm-fast-verification/npm-verify.log.gz",
+      "archive_sha256": "b03489206ffd5ea3aa82daf9d1aeb92a686f542ab8a5ba61568f26d599e914d9",
+      "archive_bytes": 118133,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip": {
+        "mtime": 0,
+        "filename": "",
+        "compresslevel": 9
+      }
+    },
+    {
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/console-d66e2112-npm-verify-command.json"
+      },
+      "original_sha256": "bc4b623ff2b90954e64b850479c83752c1dac98e8bd2eec43621dd2d67a75e70",
+      "original_bytes": 688,
+      "archive_candidate": "/private/tmp/npm-verify-retention-d66e2112-inventory/command.json.gz",
+      "archive_relative_path": "command.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/npm-fast-verification/command.json.gz",
+      "archive_sha256": "c890f67b9630719c1b31be7c861670be282ca5e0cdc662b2170e9fa1647daa12",
+      "archive_bytes": 464,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip": {
+        "mtime": 0,
+        "filename": "",
+        "compresslevel": 9
+      }
+    },
+    {
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/console-d66e2112-npm-verify-independent-review-inventory.json"
+      },
+      "original_sha256": "860b87b38437a7d2a20f50985637859b5696f2752d44f50b1a4fc01c756d2d53",
+      "original_bytes": 68515,
+      "archive_candidate": "/private/tmp/npm-verify-retention-d66e2112-inventory/independent-review-inventory.json.gz",
+      "archive_relative_path": "independent-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/npm-fast-verification/independent-review-inventory.json.gz",
+      "archive_sha256": "bb779ca900fc0ab6a60ddfae6a2560294d54b1ce5ceb6177af3e9ccc8b7a80f9",
+      "archive_bytes": 13303,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip": {
+        "mtime": 0,
+        "filename": "",
+        "compresslevel": 9
+      }
+    }
+  ],
+  "review_verdict": "PASS_FOR_EXACT_NPM_VERIFY_FAST_ENTRYPOINT",
+  "no_execution": "Inert evidence only; no test/source/runtime/production change."
+}

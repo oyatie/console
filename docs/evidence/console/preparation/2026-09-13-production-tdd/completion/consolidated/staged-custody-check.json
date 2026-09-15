@@ -1,0 +1,22 @@
+{
+  "status": "EXACT_FROZEN_ARTIFACT_STYLE_EXCEPTION_INDEPENDENTLY_REVIEWED",
+  "staged_paths": 1117,
+  "allowlist_prefix": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/",
+  "full_diff_check_exit": 2,
+  "full_diff_check_output": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-catalog-producer.rs:17: new blank line at EOF.\n",
+  "source_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "all_changes_within_preparation_evidence": true,
+  "independent_receipt": "../reviews/console-frozen-evidence-whitespace-review-20260914.json",
+  "exception": "Only final empty line at migration-r3/migration-catalog-producer.rs:17, preserve original frozen bytes; full failure retained, no test weakening",
+  "supplemental_command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check",
+    "--",
+    ".",
+    ":(exclude)docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-catalog-producer.rs"
+  ],
+  "supplemental_exit": 0,
+  "supplemental_output": ""
+}

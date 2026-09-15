@@ -1,0 +1,32 @@
+{
+  "initial_candidate_sha": "2fa88b81722998edd62bc5568bab02abd0e1f0eb",
+  "initial_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Receipt reconciliation must precede external source preload, including storage failure/concurrent success",
+        "Close-basis declared guard union omits WAGE SHARE"
+      ]
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Receipt reconciliation must precede external source preload, including storage failure/concurrent success",
+        "Close-basis declared guard union omits WAGE SHARE"
+      ]
+    }
+  ],
+  "correction_commits": [
+    "a498ea95f4bd38647cce4f31aeda75b2fef74af0"
+  ],
+  "corrections": [
+    "P0 bounded auth/transport only; P1a releases probe locks for external reads, then fully re-probes receipt/provenance before new effect or storage blocker",
+    "WAGE SHARE predeclared for close-basis current native input validation",
+    "Two proposed nonexecuted failure oracles added; total34"
+  ],
+  "intermediate_validation_failure": "git diff --check caught CSV CRLF trailing whitespace before correction commit; normalized LF, check passed; no test weakened",
+  "final_candidate_sha": "a498ea95f4bd38647cce4f31aeda75b2fef74af0",
+  "counts_as_final_integrated_round": false
+}

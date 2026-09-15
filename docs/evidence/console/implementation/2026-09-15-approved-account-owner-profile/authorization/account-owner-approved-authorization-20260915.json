@@ -1,0 +1,26 @@
+{
+  "classification": "Current user authorization for exact local implementation and disposable verification",
+  "user_instruction": "승인. 다음",
+  "approved_proposal": "account-owner-update-final-approval-scope.json",
+  "proposal_sha256": "2ad1717fb381e93ad97d35be1223d32777f1cad6312ba6322caf147550be5667",
+  "implementation_base": "5661e3135ec58f566b4a451b9ec7c5242457d29c",
+  "prior_proposal_base": "3f0c4e17b661eedc0bea76e8dda649aef958aa88",
+  "three_source_bindings_unchanged": true,
+  "scope": [
+    "backend/app/src/account_custody_state.sql",
+    "ops/generate-account-custody.py",
+    "ops/postgres-finalize-account-custody.sql"
+  ],
+  "grant": "GRANT UPDATE(id) ON public.accounts TO console_account_owner;",
+  "excludes": [
+    "Live database changes",
+    "Production exposure",
+    "Serving-role privilege grants"
+  ],
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

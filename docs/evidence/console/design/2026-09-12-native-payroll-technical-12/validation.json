@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-12T18:34:49.417848+00:00",
+  "reviewed_sha": "fa3187a0a61cd1cbde5a296a83c426d7dc7946af",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-native-payroll-technical-12/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "fa3187a0a61cd1cbde5a296a83c426d7dc7946af",
+        "core_files_verified": 11,
+        "source_blobs_verified": 30,
+        "owner_mappings": 14,
+        "proposed_mutations": 10,
+        "arithmetic_positive_cases_verified": 2,
+        "refusal_arithmetic_witnesses_verified": 3,
+        "refusal_scenarios_discovered": 5,
+        "reader_links_verified": 8,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --check 2fbeb621e269ed5edef78db5b51dffdbb888724b fa3187a0a61cd1cbde5a296a83c426d7dc7946af -- docs/evidence/console/design/2026-09-12-native-payroll-technical-12",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check 2fbeb621e269ed5edef78db5b51dffdbb888724b f9e97f59bb375c0ba375758523f9bb1126d6bb53 -- docs/evidence/console/design/2026-09-12-native-payroll-technical-12",
+      "exit_code": 2,
+      "classification": "Preserved/reproduced initial formatting failure, corrected before independent review",
+      "diagnostic_count": 24
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Verifier proves evidence byte/source identity, references, HTML local links and independent literal integer arithmetic only",
+    "No product/browser/a11y/database/migration/benchmark execution; non-executable protocol/DTO/proof candidates",
+    "No whole-repository documentation gate rerun; earlier candidate05 diagnostic unresolved",
+    "W04b physical schemas/ports/ACL/DTO/locks/resource envelope remain open; no approved design/test SHA"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "status": "APPROVED_BOUNDED_SAVED_RECOVERY18_AT_EC673",
+  "reviewer": "/root/fast_gate_review",
+  "runtime_owner": "/root",
+  "head_sha": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+  "runner": {
+    "path": "/private/tmp/console-ec673d27-recovery-run.py",
+    "sha256": "63a00437de230781ee5f7875e4cf4a77b24f25ee80dbce5573d3c0ee608a86ef",
+    "predecessor": "/private/tmp/console-23fa2771-recovery-run.py",
+    "predecessor_sha256": "522f1858cc27e63a97ac135ac48463e81a7d90ae0da6d32ed56ebfcb4a4e2a36",
+    "diff": "Only head SHA and output prefix changed; original18CI extractor, per-invocation cleanHEAD checks, exact result classifier and environment preserved.",
+    "environment": {
+      "RUSTUP_TOOLCHAIN": "1.98.1",
+      "CARGO_TARGET_DIR": "/private/tmp/console-account30-cargo",
+      "RUSTC_WRAPPER": "",
+      "SQLX_OFFLINE": "true",
+      "DOCKER_CONTEXT": "colima-console-custody-20260914"
+    },
+    "commands": [
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_wait_release_requires_explicit_remote_confirmation -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery required_remote_unknown_is_bounded_and_never_local_fallback -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_deadline_retains_capacity_until_replay_resumes -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_stage_transport_error_closes_pool_before_reconciliation -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_app_startup_admits_only_the_installed_observer -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture",
+      "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown -- --exact --test-threads=1 --nocapture"
+    ]
+  },
+  "independent_saved_recount": {
+    "raw_log_hashes": 18,
+    "exact_CI_command_strings_in_order": 18,
+    "unique_named_cases": 18,
+    "executed": 18,
+    "passed": 18,
+    "failed": 0,
+    "ignored": 0,
+    "measured": 0,
+    "per_invocation": "Exactly one result summary and one named case; owner9 filtered8, observer1 filtered0, App8 filtered30. No sum of filtered counts claimed.",
+    "scratch_source_sha_exact": 18,
+    "scratch_test_log_embedded_in_outer_log": 18,
+    "all_harness_exit_markers": {
+      "count": 18,
+      "exit_code": 0
+    },
+    "postgres_image": "sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 linux arm64"
+  },
+  "source_custody": {
+    "git_sources": "source-bindings-v2.json",
+    "scratch_records": "recount.json",
+    "binary_provenance": "binary-strings.json",
+    "limits": "Source SHA comes from per-run cleanHEAD checks and all18 saved harness SHA files. Three current saved binary images contain expected current-worktree manifest path strings, corroborating source-relative SQL paths. This is not an independently executed file-open trace or historical binary hash captured at every invocation; no complete dependency closure claimed."
+  },
+  "saved_evidence_sha256": {
+    "/private/tmp/console-ec673d27-recovery/results.json": "2781c0ace020dc0dd17eb47be0dd0b0ec5efa18d45771a937771fabdc4424af5",
+    "/private/tmp/console-ec673d27-recovery/01.log": "1f7ca8062c7332d1b09e936f154ff5b95397e0f280c8f758c91f79586e7a9b20",
+    "/private/tmp/console-ec673d27-recovery/02.log": "7089c771a31ba6a1b2ac2931be6f08a36bc7776a2392c3234fd9d9d01da61584",
+    "/private/tmp/console-ec673d27-recovery/03.log": "7398f6abd2f3990b08e444c87baec09fb643f00d57e3be93dc61e01e2a5ee39a",
+    "/private/tmp/console-ec673d27-recovery/04.log": "8e650333ba51def55fd2c3c92903eb45fd4d90bd30a4a2a1cc2e54194ee4f7e7",
+    "/private/tmp/console-ec673d27-recovery/05.log": "24f463e2c652be8d62fd82d3d2aa28f3e16bd6559ae90c368990135abf700ef7",
+    "/private/tmp/console-ec673d27-recovery/06.log": "5c63bd93569b6b94eac7145ae35c02bf1c1b0802c8818f395c8018a6af102e13",
+    "/private/tmp/console-ec673d27-recovery/07.log": "91d2dd43344984729a4c7ca028506d2f4b32eb4a49ee0e16845938406352661d",
+    "/private/tmp/console-ec673d27-recovery/08.log": "9613c6eca4528cb9925099cc27755a09d22a75e82bda6f55cb84a0373ae77429",
+    "/private/tmp/console-ec673d27-recovery/09.log": "3bc1ea722eb27cfd6afb082cdc8375edf569390ce5bc156d29719cc7d2478ee5",
+    "/private/tmp/console-ec673d27-recovery/10.log": "e19fa98ad2413881d2be9d886394b99f95082b7603d123f6bb71d548164323e8",
+    "/private/tmp/console-ec673d27-recovery/11.log": "c4d5a08cd1746e1734b82e3adea2b117dcf73c34005c9cc6cdb1fb6ac189ad51",
+    "/private/tmp/console-ec673d27-recovery/12.log": "5b233604702e5599bf859defe58d6171adee52a0dd16ddadb070d8e1f3956693",
+    "/private/tmp/console-ec673d27-recovery/13.log": "7b8630adad64cc829a0a771e6dac59386cde6bdc64ce9c2f9ad5966d9a59313e",
+    "/private/tmp/console-ec673d27-recovery/14.log": "9068656de328ef41dd67b5e66bf1298051722520bc54e4f4ddf52f1a6f5ca5b0",
+    "/private/tmp/console-ec673d27-recovery/15.log": "b843b3f210c8fc7e0c8daea5fe477e553032007b5f21573027f958b393ca7f64",
+    "/private/tmp/console-ec673d27-recovery/16.log": "792db476f74618b22c4ea6a8b6f5f0dcd361f242ec7fb2eaeb6e245c677e40d6",
+    "/private/tmp/console-ec673d27-recovery/17.log": "97ac4e56c8c21007a1eadbeb9c4babec24c6dea93c66343561653c03fb3141d7",
+    "/private/tmp/console-ec673d27-recovery/18.log": "475193525004a45bc6602e49d777293282475836e061350907048675563de710"
+  },
+  "review_artifact_sha256": {
+    "source-bindings.json": "facde48a47ff942844e798520a59e3855ed9d59fade7787844b1c97432289b3e",
+    "recount.json": "375f166c4f6e57877c3ecc046a0f308083cdca4eaffcd0a1c5770d0c6ebd83e2",
+    "binary-strings.json": "42213f8794a3b78ced5f6ff64316c21a2198f53efe1009d353e0d07c84af8061",
+    "source-bindings-v2.json": "6c8ba7ea358365ea6a897b3fe11ce2a51f56bbdaf63f8ed5a866d7d3f2f87a63"
+  },
+  "reviewer_new_runtime": {
+    "cargo": 0,
+    "rust_tests": 0,
+    "db": 0,
+    "docker": 0,
+    "node_tests": 0
+  },
+  "remaining_holds": [
+    "Supported npm verify/applicable full gates and committed evidence readback.",
+    "Auth7 fixture/probe final source custody, current admission, complete composed runtime acceptance.",
+    "Native Account end-to-end implementation and first vertical; production/payment/legal authority."
+  ],
+  "supersedes": {
+    "path": "/private/tmp/recovery18-ec673-review-fast-work/review.json",
+    "sha256": "0c66ba2499d82f7b21f3cf9070d12ec1c8982ceb06462a01db42116b0ed48566",
+    "reason": "Add exact recovery_control.sh source binding; all prior result conclusions unchanged."
+  }
+}

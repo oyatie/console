@@ -1,0 +1,32 @@
+{
+  "kind": "attendance.create_close_basis",
+  "body": {
+    "kind": "ATTENDANCE_CLOSE_BASIS",
+    "period": {
+      "start": "2026-09-01",
+      "end": "2026-09-30"
+    },
+    "scope_basis_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "scope_id": "4f75d2b2-e6ce-5f2d-a475-709d67aa279f",
+      "revision": "1"
+    },
+    "operational_close_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "close_id": "1c24c578-cb95-5b5a-8602-29971b29289c",
+      "amendment_ids": [],
+      "amendment_set_digest": "347f6205391a26002a2673038c05c75a53793e15e92f66f2e08c77abe93d7fb2",
+      "period_lock_id": "24167aa1-69a4-5b5c-bb0d-26ec59695cb9"
+    },
+    "member_count": "1",
+    "member_set_digest": "836c4464cfd40e4fe1da824a3377d10bfbff826612bcb0fb1dfb8a2e2feae3dc",
+    "coverage_members_artifact_ref": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+      "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+      "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+      "attestation_revision": "1"
+    },
+    "attestation": true
+  }
+}

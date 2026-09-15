@@ -1,0 +1,13 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_REVIEW",
+  "scope": "W04a native payroll owner, typed normalization, calculation/source protocol, same-transaction composition choice and independent positive arithmetic; W04 not complete",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "2fbeb621e269ed5edef78db5b51dffdbb888724b",
+  "logical_mutations": 10,
+  "numeric_positive_oracles": 2,
+  "numeric_refusal_oracles": 5,
+  "implementation_authorized": false,
+  "whole_design_approved": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0
+}

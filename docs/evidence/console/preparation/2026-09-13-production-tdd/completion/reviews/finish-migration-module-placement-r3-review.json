@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/finish_migration",
+  "manifest_sha256": "19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df",
+  "members_verified": 14,
+  "disposition": "ACCEPT_FINAL_BOUNDED_MECHANICAL_ASSEMBLY",
+  "source_entries": 76,
+  "compile_time_assets": 26,
+  "runtime_assets": 10,
+  "independent_execution": {
+    "command": "python3 -B /private/tmp/console-module-placement-r3-20260914/check.py --root /private/tmp/console-production-tdd-preparation-20260913",
+    "positive": 1,
+    "hostile": 10,
+    "failed": 0
+  },
+  "manual_delta_review": [
+    "S8/native,R4/browser,R4/migration selected exact source overlays",
+    "draft history_oracle.py exact source mounted at runtime CARGO_MANIFEST_DIR-relative path and its independent checker test adjacent",
+    "all8browser JS files selected and every literal sibling require resolves to mapped target",
+    "WASM observer module copied beside hydration/oracle consumers",
+    "all declaration file bytes equal regenerated original-private-parent/root placement",
+    "all selected source paths repository-relative;actual built tools/config remain explicitly supplied runtime environment inputs"
+  ],
+  "mapping_sha256": "3f42fb56a372335f771b6d5d716d6314b7b3a47ac09af2cf04a1f22679667da7",
+  "generator_sha256": "cad2b9bf94876eafc748f66ba00fce7fc9d80441eaecbb90d46583ea692ef5f1",
+  "checker_sha256": "1e986e3230cfbb7a5fa3367e381c7c9595fcef30a4f064fb37cddc61689e8cdf",
+  "limits": "Regeneration verifies exact reviewed declared selection/mount/asset roster. Combined manual runtime path audit covers selected bytes;it is not compiler name resolution,macro expansion,unimplemented owner behavior or universal dynamic dependency closure. Compiler-discovered test leaves and actual boundaryRED remain required before implementation lane admission. No application code changed/executed by review."
+}

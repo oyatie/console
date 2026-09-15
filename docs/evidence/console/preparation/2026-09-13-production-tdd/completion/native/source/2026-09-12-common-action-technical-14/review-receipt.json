@@ -1,0 +1,45 @@
+{
+  "reviewed_candidate_sha": "598710b69bb7207dd4d5b5e0e8fbd60d7701dc45",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a27211a164716abc4473cc1c98b13bf5eaf61fac",
+  "writer": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "SCOPED_ACCEPT",
+      "scope": "Draft/control/attempt lifecycle, command and work fencing, payload custody/adoption and common revision integrity",
+      "resolved": [
+        "PERMITTED alias cannot omit server-owned reserved/terminal attempt provenance",
+        "Seal/cancel/execution share declared ordered command fences; new earlier binding rolls back/replans"
+      ],
+      "static_encoding_witnesses_verified": 10,
+      "product_tests_executed": 0,
+      "edits": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "SCOPED_ACCEPT",
+      "scope": "Registry/action/schema and canonical owner bindings, encoding, same-owner transaction parity and gate identity",
+      "resolved": [
+        "Mandatory command provenance even with optional/null attempt",
+        "Decoded NUL rejected before canonical persistence; literal backslash-u text preserved"
+      ],
+      "product_tests_executed": 0,
+      "edits": 0
+    }
+  ],
+  "w04b_02_status": "BOUNDED_COMMON_CONTROL_AND_ENCODING_PROPOSAL_ACCEPTED_SOURCE_DTO_CLOSURE_PENDING",
+  "w04_complete": false,
+  "whole_design_consensus": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "remaining_gaps": [
+    "W04b-03 actual source/qualification/artifact/temporal codecs and10NP1 nested DTO/digest closure",
+    "W04b-04 workflow/capacity/Group/review/publication physical ports and Account navigation",
+    "W04b-05 applied DDL/ACL/retention/adoption/recovery/migration/harness and measured workloads",
+    "W05 authority alignment and final4integratedreviews/explicit design SHA",
+    "W06 executable tests/review/explicit test SHA and RED admission",
+    "Production/legal/payment and full Console scope remain separate"
+  ]
+}

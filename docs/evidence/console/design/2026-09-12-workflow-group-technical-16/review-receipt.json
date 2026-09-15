@@ -1,0 +1,34 @@
+{
+  "recorded_at": "2026-09-12T21:52:24.216435+00:00",
+  "status": "SCOPED_TECHNICAL_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+  "review_mode": "Independent read-only whole scoped reviews; /root sole writer; exact candidate Git blobs",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Guarded candidate list+generation snapshots and all allow/deny/future temporal boundaries close navigation findings. Single review-request linkage and STAGED successor coherent; no additional scoped conflict with Account continuity.",
+      "product_tests_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "aa2b2a52c2627f2e10a04e666d9d43aa9ecedef7",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "NP1 STAGED successor and sole authoritative basis-to-request link resolved. Governance reuse preserves payroll completeness and same-transaction effects; navigation changes coherent.",
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "W04b-05 consolidated physical DDL/ACL/migration/adoption/retention/recovery/workload/harness candidate",
+    "W05 current-authority scope alignment and four final integrated independent reviews plus explicit design SHA approval",
+    "W06 executable tests / independent review / explicit test SHA approval / actual RED implementation admission",
+    "Actual source/issuer/identity/operational provisioning evidence; production/legal/payment/full-suite delivery remain separate"
+  ]
+}

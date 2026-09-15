@@ -1,0 +1,74 @@
+[
+  {
+    "id": "input-blocked-two",
+    "kind": "input",
+    "input": null,
+    "bytes": 4090,
+    "sha256": "a426f26631b5d388919c3205295253fefc8cc2cde5e5a74fd4bbe98b7efb9b69",
+    "manifest_digest": "d87be74fb748af576671108b06e1bdc1252d0d3e0796c003d087dbfaab173a69"
+  },
+  {
+    "id": "input-resolved-one",
+    "kind": "input",
+    "input": null,
+    "bytes": 4364,
+    "sha256": "4a93f3889dfe4eb2a2617a83452202665a0e6afd9edaf998ea6bf8084cf009c4",
+    "manifest_digest": "9f7b6c4dde388f570f6170d122bd0af48b9cff018af9e4d11598624ca0a9b140"
+  },
+  {
+    "id": "calculation-blocked-one",
+    "kind": "calculation",
+    "input": "input-resolved-one",
+    "bytes": 1431,
+    "sha256": "00438949c40484663b4ffbc74fa529dcc03c708bcbf6f3411eeb5809f9cc0a8f",
+    "manifest_digest": "1512c930e4e88f47d9636e13521e87b9ac7fa5991841836bfc65008861dcbc76"
+  },
+  {
+    "id": "calculation-success-one",
+    "kind": "calculation",
+    "input": "input-resolved-one",
+    "bytes": 1435,
+    "sha256": "33bad30007efe3a43e07cc05ad34d9c19af72092b87b0227009e857ac27ec156",
+    "manifest_digest": "d356b586c87e51ec1c10fe6088cb5a687baaca4d4502073e0d6353f8768aa4a9"
+  },
+  {
+    "id": "owner-direct-wage",
+    "kind": "owner",
+    "bytes": 1872,
+    "sha256": "8d27899205f60348204015c80d3dfa2c09db8caca3241426abc6c2ce0665170b",
+    "command_fingerprint": "27a9fe6ee36df58348552d381dfeadfef06b06c551fe41b062aedc7cdb7fcc09",
+    "classification": "byte fixture; actual owner custody and referenced row realization are separate execution prerequisites"
+  },
+  {
+    "id": "owner-attempt-create-run",
+    "kind": "owner",
+    "bytes": 2360,
+    "sha256": "e962a57c7ed5f5e397fd607390e58561d3b40373e5bb091ab6298f2c967383df",
+    "command_fingerprint": "b2ebcacabd4e8e0c289d9738c7e83ebf74faf10f534c3545111853fe29d51011",
+    "classification": "byte fixture; actual owner custody and referenced row realization are separate execution prerequisites"
+  },
+  {
+    "id": "owner-gated-calculate",
+    "kind": "owner",
+    "bytes": 1948,
+    "sha256": "a08be2ac3ff8f5ad657bbe4a5fb8494956269af5e35949af4ff3ff7e721afcf0",
+    "command_fingerprint": "55ac174164f9e6e4a14b1e482db54f56ef1065eba4307953ee1c46da40fe1a8a",
+    "classification": "byte fixture; actual owner custody and referenced row realization are separate execution prerequisites"
+  },
+  {
+    "id": "owner-publication",
+    "kind": "owner",
+    "bytes": 2857,
+    "sha256": "9489ebfea27dfc175711bb65425dff04628d7a2fdff2296a0084b77aa81ef6ad",
+    "command_fingerprint": "f57c46cc27e9ca2e80469729194fcade41d4de7a04ea47699ef72cef0555eaa7",
+    "classification": "byte fixture; actual owner custody and referenced row realization are separate execution prerequisites"
+  },
+  {
+    "id": "owner-case-response",
+    "kind": "owner",
+    "bytes": 2138,
+    "sha256": "df2fcb0667d45d82075f504c5d36b07cb2be7639dcbf45142fc81e05a44326d5",
+    "command_fingerprint": "9b17c48e47e0ebfb6b06764815ef9badf713bf2e34a9b4b6ff17e8db0c1944ac",
+    "classification": "byte fixture; actual owner custody and referenced row realization are separate execution prerequisites"
+  }
+]

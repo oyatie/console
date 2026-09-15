@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/finish_browser",
+  "refinement_sha256": "a3cdb0b70d52ac70a0a8f016e6b098ed5680eed2119fe4855a823caf50a4d230",
+  "verdict": "APPROVE_DESIGN_ONLY",
+  "blocking_findings": [],
+  "verified": [
+    "Direct superuser privilege and clusterwidecredentialrisk",
+    "Independently supplied targetidentity",
+    "Pinnedoperatorimage and pre-PreSync prerequisites",
+    "Restrictednetworking",
+    "FutureDDLsequencingHOLD",
+    "Startupbeforeconsumers and readinessdetectionlimit"
+  ],
+  "limits": [
+    "No newproductiontests executed in read-onlyreview",
+    "No executableTDD/implementation/provisioning/exposure approval"
+  ],
+  "source": "Native final collaboration message, transcribed by root"
+}

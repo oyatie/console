@@ -1,0 +1,7 @@
+User clarification during candidate07, verbatim
+
+예를 들어서 법인 중 일부는 인사담당자가 없고 전사 인사담당자에 의존할 수도 있어. 명목상 법인인거지. 또는 내부권한이 대표이사보다 더 넓은 (높은) 사원이 있을 수도 있고. 여러가지 시나리오를 다 담을 수 있어야해.
+
+사업장도 현장관리자가 없고 법인 본사(본사도 사업장) 또는 다른 법인의 사업장/부서에 담당자가 있을 수도 있어
+
+Interpretation applied in GO1.3/12: legal ownership, organizational containment, workplace/headquarters designation, work coverage and scoped authority must not collapse into one hierarchy. No local staffing prerequisite or title-derived superuser. Company remains the legal/RLS cell even when shared services performs its work. Provider relationships use typed composite references; policy grants and one accountable task assignee remain explicit. No new hardcoded rank/occupation roles. Full automated routing/continuity remains B04; this candidate must positively cover explicit remote/shared actors in B03.

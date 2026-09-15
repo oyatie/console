@@ -1,0 +1,42 @@
+{
+  "verify_fast_steps": 78,
+  "verify_failures": [
+    "Audit-coverage gate",
+    "RLS-arming gate"
+  ],
+  "unmirrored_hosted_entries": 21,
+  "node_saved_invocations": {
+    "raw/recovery-test-local-cfg-23fa2771/roster.log": {
+      "tests": 114,
+      "pass": 111,
+      "fail": 3,
+      "skipped": 0
+    },
+    "raw/recovery-outer-cfg-tests-23fa2771-v2-inventory/baseline.log": {
+      "tests": 114,
+      "pass": 114,
+      "fail": 0,
+      "skipped": 0
+    },
+    "raw/recovery-outer-cfg-tests-23fa2771-v2-inventory/candidate-red.log": {
+      "tests": 144,
+      "pass": 135,
+      "fail": 9,
+      "skipped": 0
+    },
+    "raw/recovery-test-local-cfg-v2-run-df3388d8aa5a43c395c78cbf12eadd6b/recovery-roster.log": {
+      "tests": 144,
+      "pass": 135,
+      "fail": 9,
+      "skipped": 0
+    },
+    "raw/recovery-test-local-cfg-v2-run-e47ac8997852430ba10bba58cc2a9fa9/recovery-roster.log": {
+      "tests": 144,
+      "pass": 144,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "recovery18_review": "/private/tmp/recovery18-ec673-review-fast-work/review-v2.json",
+  "recovery18_review_sha256": "d6ad932543d16d719ec4557a7cdb177c2c24aa023193367422b94134b981fcb2"
+}

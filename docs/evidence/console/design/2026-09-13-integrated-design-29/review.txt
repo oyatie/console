@@ -1,0 +1,1 @@
+수정 설계29: 추가 독립 반대 검토의 AR28-F01/F02/F03 및 누락 D01을 수정한 후보입니다. 문의/답변 typed 입력의 owner 생성, 단일 FieldAddress, 저장시각 별도 생략, 선택적 수량/금액/단위 주장을 복원했습니다. 연결 총량 제안도60으로 일치시켰습니다. 세부 설계는 design-corrections.txt, 실제 계약은 action-types/control-types.schema.json입니다. 독립 검토와 사용자 SHA 승인은 아직 별도입니다. 이전28과 그 검토 기록은 보존합니다.

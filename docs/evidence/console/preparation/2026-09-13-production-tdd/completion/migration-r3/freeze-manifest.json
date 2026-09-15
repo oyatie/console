@@ -1,0 +1,126 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "supersedes": "e8b6678b3ff853c09938cccab0c809b89819e6bdb0c53d1f330588e8a17f236a",
+  "files": [
+    {
+      "path": "actor-migration.csv",
+      "bytes": 8170,
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392"
+    },
+    {
+      "path": "catalog_snapshot.sql",
+      "bytes": 8678,
+      "sha256": "f7bd241e891298ba21f504593769d8a759d3073b243baba74d86ac1521d3afaf"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 1680,
+      "sha256": "b660a6a3bc435e0e4f61512a0118b33ba81b2d9dd2a5708902f38d8bb0ee737a"
+    },
+    {
+      "path": "machinery/Cargo.lock",
+      "bytes": 37345,
+      "sha256": "ac1963a0c438f514923d22a949f79e9ad145a18ae2dd0cc61bfa753472f981cf"
+    },
+    {
+      "path": "machinery/Cargo.toml",
+      "bytes": 393,
+      "sha256": "abc47d0171b7af982e0452108834840df532899edbd309b34be3e3b4b524d8c8"
+    },
+    {
+      "path": "machinery/main.rs",
+      "bytes": 2069,
+      "sha256": "70176b870557ab7296f3bb0baf1940bf4a0ec3ace6056868f2e10803a065527a"
+    },
+    {
+      "path": "machinery/run.py",
+      "bytes": 2676,
+      "sha256": "342c6b3c0cc75d736195d4042bbb1ce78036e1a83bb1ea0afbf29bac5dcbe5dd"
+    },
+    {
+      "path": "migration-admission-tests.rs",
+      "bytes": 10524,
+      "sha256": "63faa9a23fa4c6cd1c615fb40821b861c106e7a1964f34f639f131eb63a15111"
+    },
+    {
+      "path": "migration-catalog-producer.rs",
+      "bytes": 835,
+      "sha256": "9be995e540a59afbf25dad9255509927ca349730d7038c662c2790ba321c3bdd"
+    },
+    {
+      "path": "migration-machinery-check.log",
+      "bytes": 7314,
+      "sha256": "d690858dbc5e9a79b81ac1b9740300a9f5ad1faf1ba2b26c7cb0c6b68f7704e3"
+    },
+    {
+      "path": "migration-machinery-check2.log",
+      "bytes": 934,
+      "sha256": "793082aa69e6912d2056b209aaa7c47ed6e743848afc160e07b6ee6919cb69a0"
+    },
+    {
+      "path": "migration-machinery-run1.log",
+      "bytes": 4621,
+      "sha256": "e5487b9dfbe849d04f53dd83bfedbb7247f900fa4cba3a38baf0aa731b7f236e"
+    },
+    {
+      "path": "migration-machinery-run2.log",
+      "bytes": 1403,
+      "sha256": "b47c613bd5ac6304aff87b4e3df1b03919a67b07cdebdb44ea0b0a7f876bcbcf"
+    },
+    {
+      "path": "migration-machinery-run3.log",
+      "bytes": 320,
+      "sha256": "5fc6bf871ca81c655544329590a4fbb2a40ef50b56cb4144e5d964c1a188053f"
+    },
+    {
+      "path": "migration-machinery-run4.log",
+      "bytes": 1159,
+      "sha256": "d732c717f515f35ec555e63f25f554edb0b5fb14cb77a3d0c04f3fd65bac967b"
+    },
+    {
+      "path": "migration-r3-machinery-check.log",
+      "bytes": 934,
+      "sha256": "09a2316560e18af7d821748d82a596ea375dbb87489b67c7fdbb33042be0dda6"
+    },
+    {
+      "path": "migration-r3-machinery-run.log",
+      "bytes": 1159,
+      "sha256": "8fe55538eb604b56b21799465943fb9ef4b251589fe43a078fcd163aebbec613"
+    },
+    {
+      "path": "migration-rollback-tests.rs",
+      "bytes": 9309,
+      "sha256": "9c7fddc7b5c44f846898c85b3be4ab56c9d2ebd512270d278f270a6743428c27"
+    },
+    {
+      "path": "owner-interface-contract.txt",
+      "bytes": 6679,
+      "sha256": "a24d5d6be77f41a5ba315eaf5e6cdce15646cc90c77fa17759f823cb817efd30"
+    },
+    {
+      "path": "parent-manifest.json",
+      "bytes": 2781,
+      "sha256": "f3008ce4e8c79c7298c1d203afb8bedca53a39aa0f8bdbef1eff3dc669936420"
+    },
+    {
+      "path": "postgres-snapshot-producer.rs",
+      "bytes": 7274,
+      "sha256": "17ef554655131089e447de49d8e77230fda722ea233a562ec30fcbff90f723e9"
+    },
+    {
+      "path": "r2-execution.json",
+      "bytes": 232,
+      "sha256": "b09d908f89730fd30f9211adf0fd81117c42b424ff1addeae3ba27465f4edffa"
+    },
+    {
+      "path": "r2-parent-manifest.json",
+      "bytes": 3171,
+      "sha256": "e8b6678b3ff853c09938cccab0c809b89819e6bdb0c53d1f330588e8a17f236a"
+    },
+    {
+      "path": "r3-execution.json",
+      "bytes": 266,
+      "sha256": "1b9b6130702bff5af2ab6327fd5efca4dded137895ce31850e09914fa3e19322"
+    }
+  ]
+}

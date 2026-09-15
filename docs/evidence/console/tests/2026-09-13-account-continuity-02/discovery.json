@@ -1,0 +1,126 @@
+{
+  "candidate_sha": "579e742c78e0536b8c76ed37d4ce2bbce6657fd2",
+  "results": [
+    {
+      "id": "app-auth-rest-pg",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth_rest",
+        "--",
+        "--list"
+      ],
+      "exit_code": 0,
+      "discovered": 22,
+      "names": [
+        "account_auth_database_accepts_distinct_narrow_identity",
+        "account_auth_database_rejects_identity_overrides_without_leaking_secrets",
+        "account_auth_database_rejects_other_database_identities",
+        "account_auth_database_requires_explicit_configuration",
+        "account_auth_database_requires_nonempty_distinct_password",
+        "admin_credential_reset_recovers_in_branch_subordinate",
+        "admin_issue_otp_allows_in_branch_subordinate",
+        "admin_issue_otp_rejects_cross_branch_target",
+        "admin_issue_otp_rejects_non_admin",
+        "admin_issue_otp_rejects_privileged_target",
+        "approve_session_rejects_generic_desktop_handoff_without_target",
+        "body_mode_without_header_is_unchanged_and_sets_no_cookie",
+        "cookie_mode_login_then_refresh_reads_and_rotates_cookie",
+        "cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh",
+        "cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id",
+        "financial_purchase_sensitive_actions_require_fresh_passkey_step_up",
+        "first_passkey_enrollment_requires_privacy_terms",
+        "mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote",
+        "otp_first_signin_then_passkey_enrollment_then_usernameless_login",
+        "otp_is_consumed_on_passkey_registration_not_on_redeem",
+        "otp_redeem_rate_limit_wires_up_on_real_clock_path",
+        "refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled"
+      ]
+    },
+    {
+      "id": "platform-auth-refresh-tokens-pg",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth",
+        "--test",
+        "refresh_tokens",
+        "--",
+        "--list"
+      ],
+      "exit_code": 0,
+      "discovered": 3,
+      "names": [
+        "refresh_token_reuse_revokes_the_whole_family",
+        "rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role",
+        "rotation_past_family_absolute_ttl_revokes_the_family"
+      ]
+    },
+    {
+      "id": "platform-db-rls-isolation",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "--test",
+        "rls_isolation",
+        "--",
+        "--list"
+      ],
+      "exit_code": 0,
+      "discovered": 8,
+      "names": [
+        "account_material_is_not_directly_accessible_to_company_runtime",
+        "account_runtime_cannot_read_unrelated_company_business_data",
+        "company_runtime_cannot_assume_account_custody_roles",
+        "cross_org_writes_are_rejected",
+        "non_owner_cannot_disable_the_tenant_boundary",
+        "org_id_is_immutable",
+        "rls_isolates_two_tenants_and_fails_closed",
+        "with_org_conn_sets_the_current_org_guc"
+      ]
+    },
+    {
+      "id": "platform-provisioning-rls-auth-chain",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-provisioning",
+        "--test",
+        "rls_auth_chain_as_runtime_role",
+        "--",
+        "--list"
+      ],
+      "exit_code": 0,
+      "discovered": 8,
+      "names": [
+        "add_passkey_step_up_gate_as_runtime_role",
+        "admin_credential_reset_is_tenant_scoped_as_runtime_role",
+        "admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role",
+        "cross_org_credential_is_isolated_as_runtime_role",
+        "knl_auth_chain_works_as_runtime_role",
+        "non_knl_admin_otp_and_redeem_work_as_runtime_role",
+        "open_signup_creates_member_and_redeems_as_runtime_role",
+        "roster_import_works_as_runtime_role"
+      ]
+    }
+  ]
+}

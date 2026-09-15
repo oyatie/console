@@ -1,0 +1,443 @@
+{
+  "status": "PROPOSED_PHYSICAL_KEYS_NOT_APPLIED_DDL",
+  "tables": [
+    {
+      "name": "source_family_guards",
+      "owner": "platform/db source guard helper",
+      "columns": {
+        "org_id": "UUID",
+        "family": "ClosedSourceFamily",
+        "generation": "BIGINT positive"
+      },
+      "primary_key": [
+        "org_id",
+        "family"
+      ],
+      "constraints": [
+        "Preinitialized before enrollment; missing denied; source writers same-tx EXCLUSIVE+increment",
+        "No permissions/grants implied by possession of generation"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "After period keys, before source/domain heads; sorted Company/family SHARE or EXCLUSIVE"
+    },
+    {
+      "name": "employment_binding_revisions",
+      "owner": "canonical Employment adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "employee_id": "UUID",
+        "employment_id": "UUID",
+        "from_us": "BIGINT",
+        "to_us": "BIGINT nullable",
+        "state": "ACTIVE|ENDED"
+      },
+      "primary_key": [
+        "org_id",
+        "id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany employee/Employment FKs",
+        "Append-ended/superseded relationship; current employment_source_bindings projection same owner tx",
+        "Full historical mapping retained; overlapping effective candidates blocked not arbitrarily selected"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "POPULATION+EMPLOYMENT EXCLUSIVE before relationship write"
+    },
+    {
+      "name": "employee_contract_wage_corrections",
+      "owner": "payroll adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "base_wage_id": "UUID",
+        "predecessor_revision": "BIGINT nonnegative",
+        "amount_won": "BIGINT positive",
+        "wage_kind": "MONTHLY|HOURLY",
+        "monthly_standard_hours": "INTEGER1..400"
+      },
+      "primary_key": [
+        "org_id",
+        "base_wage_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany wage base; base identity/employee/effective date immutable",
+        "revision=predecessor+1; append-only; source refs/reason in typed payload"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "WAGE EXCLUSIVE then sorted base/head"
+    },
+    {
+      "name": "employee_contract_wage_correction_heads",
+      "owner": "payroll adapter",
+      "columns": {
+        "org_id": "UUID",
+        "base_wage_id": "UUID",
+        "current_revision": "BIGINT positive"
+      },
+      "primary_key": [
+        "org_id",
+        "base_wage_id"
+      ],
+      "constraints": [
+        "Exact correction FK; CAS expected; missing means base revision0 only for genuine uncorrected base"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "WAGE EXCLUSIVE before head insert/update"
+    },
+    {
+      "name": "work_calendar_revisions",
+      "owner": "attendance adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "calendar_id": "UUID",
+        "covered_start": "DATE",
+        "covered_end_exclusive": "DATE",
+        "zone": "Asia/Seoul",
+        "rule_qualification_ref": "ExactSourceQualificationRef"
+      },
+      "primary_key": [
+        "org_id",
+        "calendar_id",
+        "revision"
+      ],
+      "constraints": [
+        "Finite date coverage, ordered disjoint duty/break intervals, every covered date classified",
+        "Template and explicit overrides normalized deterministically; source/publisher identity retained"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "CALENDAR EXCLUSIVE before publication; current executable rules checked"
+    },
+    {
+      "name": "work_calendar_assignment_revisions",
+      "owner": "attendance adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "assignment_id": "UUID",
+        "employment_id": "UUID",
+        "calendar_id": "UUID",
+        "calendar_revision": "BIGINT positive",
+        "from_date": "DATE",
+        "to_date_exclusive": "DATE nullable",
+        "state": "ACTIVE|REVOKED"
+      },
+      "primary_key": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany Employment/calendar; no gap/overlap in selected active date interval",
+        "Current assignment projection uses revision/CAS; immutable earlier applicability preserved"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "CALENDAR+POPULATION EXCLUSIVE"
+    },
+    {
+      "name": "attendance_coverage_revisions",
+      "owner": "attendance adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "coverage_id": "UUID",
+        "employee_id": "UUID",
+        "period_start": "DATE",
+        "period_end": "DATE",
+        "semantic_basis_digest": "BYTEA32",
+        "outcome": "COMPLETE|BLOCKED"
+      },
+      "primary_key": [
+        "org_id",
+        "coverage_id",
+        "revision"
+      ],
+      "constraints": [
+        "Exact per-day events/calendar/leave/exception/boundary refs in typed payload; epoch not semantic basis",
+        "Nonempty required duties cannot be covered by empty events unless exact resolved paid absence allows it",
+        "Duplicate/missing/out-of-order source classifications blocked"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "ATTENDANCE+CALENDAR+LEAVE guards up front; coverage writer ATTENDANCE EXCLUSIVE"
+    },
+    {
+      "name": "attendance_native_close_bases",
+      "owner": "attendance adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "close_basis_id": "UUID",
+        "operational_close_id": "UUID",
+        "amendment_revision": "BIGINT nonnegative",
+        "scope_basis_ref": "ExactScopeBasisRef",
+        "period_lock_id": "UUID"
+      },
+      "primary_key": [
+        "org_id",
+        "close_basis_id",
+        "revision"
+      ],
+      "constraints": [
+        "SameCompany exact existing close/lock; complete required coverage membership",
+        "Branch-only close cannot assert Company lock; current amendment/basis exact"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "Existing period lock keys then ATTENDANCE/LEAVE/CALENDAR; closure does not change event facts"
+    },
+    {
+      "name": "docs_evidence_version_attestations",
+      "owner": "Docs adapter + trusted storage verifier",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "copy_id": "UUID",
+        "provider_id": "RegisteredProviderId",
+        "bucket_ref": "ServerBucketRef",
+        "object_key_ref": "ServerObjectRef",
+        "provider_version_id": "OpaqueVersion",
+        "bytes_sha256": "BYTEA32",
+        "byte_count": "BIGINT",
+        "content_type": "RegisteredMIME",
+        "verification_state": "READY|REVOKED|QUARANTINED",
+        "retention_until": "TIMESTAMPTZ nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "id",
+        "revision"
+      ],
+      "constraints": [
+        "Exact original/derivative copy and provider/version/hash/bytes tuple; no latest-key fallback",
+        "Client cannot write READY; durable trusted byte readback before admission",
+        "New revocation event/current projection preserves immutable earlier attestation",
+        "Wire ArtifactRef identifies exact attestation id+revision; latest revocation/quarantine is checked separately under ARTIFACT guard"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "Network verify outside locks; ARTIFACT EXCLUSIVE final attestation/disposal, SHARE pin/use"
+    },
+    {
+      "name": "payroll_source_qualification_revisions",
+      "owner": "payroll source-evidence adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "qualification_id": "UUID",
+        "event_kind": "PROPOSE|VERIFY|REVOKE|SUPERSEDE",
+        "admission_revision": "BIGINT nullable",
+        "source_refs": "Closed purpose-specific immutable refs",
+        "verified_human_ref": "AI1 exact current proof nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "qualification_id",
+        "revision"
+      ],
+      "constraints": [
+        "One immutable admission payload; VERIFY/REVOKE bind original digest and exact reviewed predecessor",
+        "Independent proposer/verifier natural persons; current qualification/evidence required",
+        "Unknown purpose/state/period/subject ref denied; approved bool not source authority",
+        "Retain source/domain pins and old snapshots through required recovery/retention horizon",
+        "EA1.6 exact cross-root selector zero/one/many; no latest-root tie-break",
+        "Successor VERIFY uses EA1.6 sorted head+successor-claim CAS; VERIFIED predecessor appends SUPERSEDE, already REVOKED retains terminal history; no auto-resurrection",
+        "REVIEWER_CREDENTIAL uses closed ReviewerCredentialPayload and pinned issuer profile; no recursive self-qualification; EA1.7 current downstream trust closure"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "QUALIFICATION EXCLUSIVE before revisions/head; other needed source guards declared first"
+    },
+    {
+      "name": "payroll_source_qualification_heads",
+      "owner": "payroll source-evidence adapter",
+      "columns": {
+        "org_id": "UUID",
+        "qualification_id": "UUID",
+        "current_revision": "BIGINT positive",
+        "activated_successor_ref": "SameCompany same-kind exact root/revision nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "qualification_id"
+      ],
+      "constraints": [
+        "Exact same-root revision FK; CAS; revoked source cannot revive under older payload",
+        "Correction new admission with explicit supersedes ref; no mutation of prior admission values",
+        "EA1.6 predecessor exact head revision plus initially null activated_successor_ref CAS, atomic with new successor VERIFY",
+        "VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains terminal revision and only records one successor linkage; no resurrection"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "QUALIFICATION EXCLUSIVE"
+    },
+    {
+      "name": "payroll_eligibility_assessment_revisions",
+      "owner": "payroll inputs/source-evidence adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "assessment_id": "UUID",
+        "event_kind": "PROPOSE|VERIFY|REVOKE|SUPERSEDE",
+        "admission_revision": "BIGINT nullable",
+        "source_refs": "Closed purpose-specific immutable refs",
+        "verified_human_ref": "AI1 exact current proof nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "assessment_id",
+        "revision"
+      ],
+      "constraints": [
+        "One immutable admission payload; VERIFY/REVOKE bind original digest and exact reviewed predecessor",
+        "Independent proposer/verifier natural persons; current qualification/evidence required",
+        "Unknown purpose/state/period/subject ref denied; approved bool not source authority",
+        "Retain source/domain pins and old snapshots through required recovery/retention horizon",
+        "EA1.6 exact cross-root selector zero/one/many; no latest-root tie-break",
+        "Successor VERIFY uses EA1.6 sorted head+successor-claim CAS; VERIFIED predecessor appends SUPERSEDE, already REVOKED retains terminal history; no auto-resurrection"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "ELIGIBILITY EXCLUSIVE before revisions/head; other needed source guards declared first"
+    },
+    {
+      "name": "payroll_eligibility_assessment_heads",
+      "owner": "payroll inputs/source-evidence adapter",
+      "columns": {
+        "org_id": "UUID",
+        "assessment_id": "UUID",
+        "current_revision": "BIGINT positive",
+        "activated_successor_ref": "SameCompany same-kind exact root/revision nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "assessment_id"
+      ],
+      "constraints": [
+        "Exact same-root revision FK; CAS; revoked source cannot revive under older payload",
+        "Correction new admission with explicit supersedes ref; no mutation of prior admission values",
+        "EA1.6 predecessor exact head revision plus initially null activated_successor_ref CAS, atomic with new successor VERIFY",
+        "VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains terminal revision and only records one successor linkage; no resurrection"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "ELIGIBILITY EXCLUSIVE"
+    },
+    {
+      "name": "payroll_tax_evidence_revisions",
+      "owner": "payroll source-evidence adapter",
+      "columns": {
+        "org_id": "UUID",
+        "id": "UUID",
+        "revision": "BIGINT positive",
+        "payload": "Closed registered typed source payload",
+        "actor_account_id": "CompanyActorId",
+        "recorded_at": "TIMESTAMPTZ microseconds",
+        "digest": "BYTEA32 CCF1",
+        "evidence_id": "UUID",
+        "event_kind": "PROPOSE|VERIFY|REVOKE|SUPERSEDE",
+        "admission_revision": "BIGINT nullable",
+        "source_refs": "Closed purpose-specific immutable refs",
+        "verified_human_ref": "AI1 exact current proof nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "evidence_id",
+        "revision"
+      ],
+      "constraints": [
+        "One immutable admission payload; VERIFY/REVOKE bind original digest and exact reviewed predecessor",
+        "Independent proposer/verifier natural persons; current qualification/evidence required",
+        "Unknown purpose/state/period/subject ref denied; approved bool not source authority",
+        "Retain source/domain pins and old snapshots through required recovery/retention horizon",
+        "EA1.6 exact cross-root selector zero/one/many; no latest-root tie-break",
+        "Successor VERIFY uses EA1.6 sorted head+successor-claim CAS; VERIFIED predecessor appends SUPERSEDE, already REVOKED retains terminal history; no auto-resurrection"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "TAX_EVIDENCE EXCLUSIVE before revisions/head; other needed source guards declared first"
+    },
+    {
+      "name": "payroll_tax_evidence_heads",
+      "owner": "payroll source-evidence adapter",
+      "columns": {
+        "org_id": "UUID",
+        "evidence_id": "UUID",
+        "current_revision": "BIGINT positive",
+        "activated_successor_ref": "SameCompany same-kind exact root/revision nullable"
+      },
+      "primary_key": [
+        "org_id",
+        "evidence_id"
+      ],
+      "constraints": [
+        "Exact same-root revision FK; CAS; revoked source cannot revive under older payload",
+        "Correction new admission with explicit supersedes ref; no mutation of prior admission values",
+        "EA1.6 predecessor exact head revision plus initially null activated_successor_ref CAS, atomic with new successor VERIFY",
+        "VERIFIED predecessor appends SUPERSEDE; previously verified REVOKED predecessor retains terminal revision and only records one successor linkage; no resurrection"
+      ],
+      "access": "FORCE Company RLS; applicable actor refs are composite Company/Account; fact revisions append-only, guard/head projections mutable only through owning CAS/fence. No PUBLIC/direct unvalidated runtime DML. Concrete safe owner functions/default ACL closure W04b-05.",
+      "lock": "TAX_EVIDENCE EXCLUSIVE"
+    }
+  ],
+  "existing_transitions": [
+    "Consolidate app/hr clock/material writer into attendance owning adapter, then delegate existing route; keep period/idempotency/state semantics and add guard",
+    "Employment source bindings current projection gets immutable history; record missing legacy history as unknown",
+    "Docs upload/copy/disposal and trusted storage attestation get exact version/pin/current-revocation closure; migration0195 VERIFIED alone insufficient",
+    "Existing attendance closes/amendments and payroll input/slot/batch tables reused; native basis references appended, no rewriting legacy result lineage",
+    "Global statutory register stays migration-only; bundle rollout drain/compatibility proof separate",
+    "RR1 pin/adoption/disposal exact DDL and actual catalog ACL inventory remain W04b-05"
+  ],
+  "source_families": [
+    "POPULATION",
+    "EMPLOYMENT",
+    "WAGE",
+    "ATTENDANCE",
+    "CALENDAR",
+    "LEAVE",
+    "ELIGIBILITY",
+    "TAX_EVIDENCE",
+    "QUALIFICATION",
+    "ARTIFACT"
+  ]
+}

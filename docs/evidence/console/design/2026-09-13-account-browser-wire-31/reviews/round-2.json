@@ -1,0 +1,30 @@
+{
+  "round": 2,
+  "candidate_sha": "c9b538704c933252ec9e86e6a30a1aa50a26ea3d",
+  "record_kind": "Root transcription of independent conclusions",
+  "reviews": [
+    {
+      "reviewer": "/root/fresh29_operations",
+      "verdict": "APPROVE_DESIGN",
+      "findings": [],
+      "closures": "All4 round1 operations findings close at design level; bounded pending-guard admission exhaustion explicit, capacity/readmission remains operating proof"
+    },
+    {
+      "reviewer": "/root/fresh29_security",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 userHandle is unsigned; correlate to verified credential owner under Account guard and add swap negative"
+      ],
+      "closures": "All3 round1 security findings closed; resident adjustment limited guarantee correct"
+    },
+    {
+      "reviewer": "/root/fresh29_workflows",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "P2 Pre-commit finish loss cannot recover via me/login; allow same valid unconsumed retry, distinguish consumed replay"
+      ],
+      "closures": "All4 round1 findings closed; remaining browser serialization/discovery explicitly future tests"
+    }
+  ],
+  "root_disposition": "Both new findings accepted and amended for round3; no runtime proof or user approval inferred"
+}

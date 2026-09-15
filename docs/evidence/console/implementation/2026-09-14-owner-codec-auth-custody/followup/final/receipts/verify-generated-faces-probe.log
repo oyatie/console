@@ -1,0 +1,29 @@
+buck-preflight: pinned release 2026-07-15
+buck2 2026-07-14-1560aca2002865cd73d7cafb22c705cfb640b2bc
+root: /private/tmp/console-production-tdd-preparation-20260913
+prelude: /private/tmp/console-production-tdd-preparation-20260913/prelude
+toolchains: /private/tmp/console-production-tdd-preparation-20260913/toolchains
+none: /private/tmp/console-production-tdd-preparation-20260913/none
+[2026-09-14T23:14:14.064-04:00] Build ID: bbb057ae-53b3-4254-b122-47f877394d3d
+[2026-09-14T23:14:14.064-04:00] File changed (since mergebase): root//backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs
+[2026-09-14T23:14:14.064-04:00] File changed (since mergebase): root//backend/target/debug/.fingerprint/console-gate-tenant-isolation-dd6a802f6a93e521/test-integration-test-qualified_table_identity
+[2026-09-14T23:14:14.064-04:00] File changed (since mergebase): root//backend/target/debug/build/proc-macro2-1c8280da11c9abe8/build-script-build
+[2026-09-14T23:14:14.064-04:00] 567 additional file change events (since mergebase)
+[2026-09-14T23:14:14.064-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-14T23:14:14.077-04:00] Build ID: 8c7828a8-f048-4054-8e56-2ef391480152
+buck-preflight: enumerated 381 Rust test target(s)
+generated-face-registry: PASS
+snapshot-node-deps: linked verified dependencies at /private/tmp/console-production-tdd-preparation-20260913/buck-out/buck-preflight-snapshots/snapshot-xjyg81hp/node_modules
+Traceback (most recent call last):
+  File "/private/tmp/console-production-tdd-preparation-20260913/buck-out/buck-preflight-snapshots/snapshot-xjyg81hp/tools/buck/gen_first_party.py", line 1778, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/private/tmp/console-production-tdd-preparation-20260913/buck-out/buck-preflight-snapshots/snapshot-xjyg81hp/tools/buck/gen_first_party.py", line 1609, in main
+    validate_resource_metadata(discovered)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/private/tmp/console-production-tdd-preparation-20260913/buck-out/buck-preflight-snapshots/snapshot-xjyg81hp/tools/buck/gen_first_party.py", line 1261, in validate_resource_metadata
+    raise ValueError("test resource metadata must match generated targets: " + "; ".join(parts))
+ValueError: test resource metadata must match generated targets: missing [('console-gate-tenant-isolation', 'test.integration', 'tests/qualified_table_identity.rs')]
+generated-face-gate: first-party-buck writer failed
+generated-face-gate: tier=cheap selected=1 deferred=1
+generated-face-gate: reindeer-third-party-rust (expensive) DEFERRED (run --tier all before merge)

@@ -51,3 +51,11 @@ Status: active roadmap authority. Product scope comes from [`PRODUCT.md`](PRODUC
 ## Exit rule
 
 A roadmap item advances only when its exact candidate, independent review, acceptance evidence, post-merge containment, and remaining HOLDs are recorded under [`DELIVERY.md`](DELIVERY.md). Partial completion remains open work.
+
+## Proposed work after first-vertical integration
+
+Preserve payroll as first complete vertical. First-vertical completion includes durable inputs, current policy, source entry/repair, partial-visibility human review, approved-draft supersession, monetary NONPAYABLE_REVIEW publication and historical own correction requests, automatic/manual task transfer, selected-Company Group progress and operational recovery. Native communication rail remains outside this first implementation slice while being an explicit later deliverable.
+
+Then complete the detailed HR/attendance/labor/payroll story inventory and owner acceptance per story; native mail/messenger/calendar with independent communication navigation and policy-bound sharing; enterprise concurrent sheets over native objects/properties/actions with explicit formula/structure/reconnect semantics; and the versioned leaf-level Foundry/Ontology/Actions/Fusion/full-suite capability inventory with owners, dependencies, alternatives and acceptance evidence. These commitments do not postpone the first coherent implementation until the entire suite is built, and do not silently discard the larger target.
+
+Sequence before implementation remains approved integrated design SHA after four independent review rounds, independently reviewed and approved executable test SHA, then a real named RED command admitted through fanout.py. Scope-authority reconciliation is a concrete reviewed change; adoption and hosted readback follow current DELIVERY. Production/payment/legal/provider deployment authority remains separate.

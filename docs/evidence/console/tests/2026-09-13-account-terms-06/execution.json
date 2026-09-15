@@ -1,0 +1,242 @@
+{
+  "candidate_sha": "1e2ea6d2060a3d875e531a9a9e8f749984d0a171",
+  "discovered": 53,
+  "executed": 53,
+  "passed": 25,
+  "failed": 28,
+  "ignored": 0,
+  "filtered": 0,
+  "names_match": true,
+  "inherited50_outcomes_preserved": true,
+  "new3": [
+    {
+      "name": "account_browser::registered_artifact_loss_is_503_and_restore_preserves_same_attempt",
+      "result": "FAILED",
+      "classification": "terms_schema_prerequisite_missing_downstream_assertions_unreached"
+    },
+    {
+      "name": "account_browser::same_digest_new_release_refuses_old_attempt_and_binds_new_receipt",
+      "result": "FAILED",
+      "classification": "terms_schema_prerequisite_missing_downstream_assertions_unreached"
+    },
+    {
+      "name": "account_browser::unsupported_current_terms_preserve_retained_consent_login_and_sessions",
+      "result": "FAILED",
+      "classification": "terms_schema_prerequisite_missing_downstream_assertions_unreached"
+    }
+  ],
+  "cases": [
+    {
+      "name": "account_auth_database_accepts_distinct_narrow_identity",
+      "result": "ok"
+    },
+    {
+      "name": "account_auth_database_rejects_identity_overrides_without_leaking_secrets",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_auth_database_rejects_other_database_identities",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_auth_database_requires_explicit_configuration",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_auth_database_requires_nonempty_distinct_password",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::acknowledgment_errors_leave_valid_attempt_completable",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::binding_errors_do_not_consume_valid_attempt",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::browser_rejects_duplicate_cookie_bearer_and_proof_as_access",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::company_free_registration_me_and_empty_contexts",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::concurrent_same_attempt_commits_once_and_replay_cannot_remint",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::configured_missing_artifact_fails_closed",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::cookie_oracle_rejects_conflicting_security_attributes",
+      "result": "ok"
+    },
+    {
+      "name": "account_browser::csrf_correctly_signed_invalid_claims_do_not_consume_refresh",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::csrf_issued_claims_are_signed_short_lived_and_read_only",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::csrf_refresh_and_logout_preserve_family_then_revoke",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::csrf_refresh_only_is_read_only_and_cross_account_proof_is_denied",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::csrf_same_account_distinct_families_do_not_share_authority",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::csrf_security_generation_change_denies_old_session_and_proof",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::csrf_wrong_key_and_hmac_algorithm_are_rejected",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::fixture_hashes_are_exact_and_test_only",
+      "result": "ok"
+    },
+    {
+      "name": "account_browser::lost_finish_response_recovers_same_account_and_rejects_swapped_handle",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::public_terms_without_authority_returns_503",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::registered_artifact_loss_is_503_and_restore_preserves_same_attempt",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::response_oracle_rejects_literal_secrets_in_messages_and_headers",
+      "result": "ok"
+    },
+    {
+      "name": "account_browser::same_digest_new_release_refuses_old_attempt_and_binds_new_receipt",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_browser::signed_claim_oracle_rejects_other_keys_and_payload_tampering",
+      "result": "ok"
+    },
+    {
+      "name": "account_browser::strict_projection_oracle_refuses_wrong_account_and_hidden_fields",
+      "result": "ok"
+    },
+    {
+      "name": "account_browser::unsupported_current_terms_preserve_retained_consent_login_and_sessions",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_active_rejects_legacy_sessions",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_denial_oracle_rejects_credential_leaks_and_malformed_errors",
+      "result": "ok"
+    },
+    {
+      "name": "account_fence_outstanding_employer_otp_cannot_create_a_session",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_pending_enrollment_rejects_legacy_sessions",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_recovery_required_rejects_legacy_sessions",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_recovery_to_active_does_not_restore_legacy_sessions",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_security_suspended_rejects_legacy_sessions",
+      "result": "FAILED"
+    },
+    {
+      "name": "account_fence_unmigrated_transport_positive_control",
+      "result": "ok"
+    },
+    {
+      "name": "admin_credential_reset_recovers_in_branch_subordinate",
+      "result": "ok"
+    },
+    {
+      "name": "admin_issue_otp_allows_in_branch_subordinate",
+      "result": "ok"
+    },
+    {
+      "name": "admin_issue_otp_rejects_cross_branch_target",
+      "result": "ok"
+    },
+    {
+      "name": "admin_issue_otp_rejects_non_admin",
+      "result": "ok"
+    },
+    {
+      "name": "admin_issue_otp_rejects_privileged_target",
+      "result": "ok"
+    },
+    {
+      "name": "approve_session_rejects_generic_desktop_handoff_without_target",
+      "result": "ok"
+    },
+    {
+      "name": "body_mode_without_header_is_unchanged_and_sets_no_cookie",
+      "result": "ok"
+    },
+    {
+      "name": "cookie_mode_login_then_refresh_reads_and_rotates_cookie",
+      "result": "ok"
+    },
+    {
+      "name": "cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh",
+      "result": "ok"
+    },
+    {
+      "name": "cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id",
+      "result": "ok"
+    },
+    {
+      "name": "financial_purchase_sensitive_actions_require_fresh_passkey_step_up",
+      "result": "ok"
+    },
+    {
+      "name": "first_passkey_enrollment_requires_privacy_terms",
+      "result": "ok"
+    },
+    {
+      "name": "mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote",
+      "result": "ok"
+    },
+    {
+      "name": "otp_first_signin_then_passkey_enrollment_then_usernameless_login",
+      "result": "ok"
+    },
+    {
+      "name": "otp_is_consumed_on_passkey_registration_not_on_redeem",
+      "result": "ok"
+    },
+    {
+      "name": "otp_redeem_rate_limit_wires_up_on_real_clock_path",
+      "result": "ok"
+    },
+    {
+      "name": "refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled",
+      "result": "ok"
+    }
+  ]
+}

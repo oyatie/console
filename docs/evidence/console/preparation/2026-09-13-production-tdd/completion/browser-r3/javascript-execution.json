@@ -1,0 +1,62 @@
+{
+  "parser_checks": [
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/oracle.spec.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/fixture.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/effective-submissions.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/reflow.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/playwright.config.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/hydration.spec.cjs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/playwright/acceptance.spec.cjs"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "count": 7,
+  "application_executed": 0
+}

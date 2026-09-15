@@ -1,0 +1,31 @@
+{
+  "owner": "/root",
+  "base_sha": "c6e19fc06da70752f28150625902a83a570244f2",
+  "allowed_paths": [
+    "backend/crates/identity/rest/src/lib.rs",
+    "backend/crates/orgchange/rest/src/lib.rs",
+    "docs/evidence/console/verification/2026-09-13-repair-01/rest-lint-entry.json"
+  ],
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --locked --manifest-path backend/Cargo.toml -p console-identity-rest -p console-orgchange-rest --lib -- -D warnings > /private/tmp/console-repair30-checks/rest-clippy-probe.log 2>&1",
+  "admission": "fanout.py admit exit0; both exact manual_unwrap_or_default diagnostics confirmed",
+  "mechanical_guide": [
+    "Replace only the2 match expressions with await.unwrap_or_default()",
+    "Preserve same successful Vec and same empty Vec on every error; no new logging or authorization path",
+    "Same probe GREEN and independent exact-SHA review"
+  ],
+  "pre_mortem": "Error behavior or data disclosure changes during cosmetic simplification",
+  "blast_radius": "Two existing SSR adapter convenience methods only",
+  "detection": "Exact expression diff, same probe, independent equivalence review",
+  "rollback": "Forward reviewed reversal; no data mutation",
+  "reviewer": "/root/fresh29_security prospective equivalence ACCEPT",
+  "stop_conditions": [
+    "Any change outside expressions",
+    "New diagnostics",
+    "Review rejection"
+  ],
+  "remaining_holds": [
+    "Parser/Buck repairs",
+    "Authority final validation",
+    "Account test approval/implementation"
+  ]
+}

@@ -1,0 +1,225 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_29887" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_29887, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m console-kernel-core v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/kernel/core)
+[1m[92m   Compiling[0m console-contracts v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/contracts)
+[1m[92m   Compiling[0m quick-xml v0.41.0 (/private/tmp/console-legacy225-capture-20260915/third-party/rust/vendor/quick-xml-0.41.0-compat)
+[1m[92m   Compiling[0m console-attendance-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/attendance/domain)
+[1m[92m   Compiling[0m console-platform-email v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/email)
+[1m[92m   Compiling[0m console-analytics-quant-service v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/analytics-quant/service)
+[1m[92m   Compiling[0m console-payroll-ui v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/payroll/ui)
+[1m[92m   Compiling[0m console-attendance-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/attendance/application)
+[1m[92m   Compiling[0m console-platform-db v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/db)
+[1m[92m   Compiling[0m console-platform-authz v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/authz)
+[1m[92m   Compiling[0m console-workorder-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workorder/domain)
+[1m[92m   Compiling[0m console-notifications-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notifications/domain)
+[1m[92m   Compiling[0m console-governance-domain v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/governance/domain)
+[1m[92m   Compiling[0m console-comms-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/domain)
+[1m[92m   Compiling[0m console-ontology-canonical-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/ontology/canonical-domain)
+[1m[92m   Compiling[0m console-inbox-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inbox/domain)
+[1m[92m   Compiling[0m console-workflow-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workflow/domain)
+[1m[92m   Compiling[0m console-messenger-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/messenger/domain)
+[1m[92m   Compiling[0m console-dispatch-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/dispatch/domain)
+[1m[92m   Compiling[0m console-notices-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notices/domain)
+[1m[92m   Compiling[0m console-registry-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/registry/domain)
+[1m[92m   Compiling[0m console-evaluation-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/evaluation/domain)
+[1m[92m   Compiling[0m umya-spreadsheet v3.0.0 (/private/tmp/console-legacy225-capture-20260915/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)
+[1m[92m   Compiling[0m console-identity-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/identity/domain)
+[1m[92m   Compiling[0m console-financial-domain v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/financial/domain)
+[1m[92m   Compiling[0m console-todos-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/todos/domain)
+[1m[92m   Compiling[0m console-notifications-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notifications/application)
+[1m[92m   Compiling[0m console-comms-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/application)
+[1m[92m   Compiling[0m console-inbox-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inbox/application)
+[1m[92m   Compiling[0m console-messenger-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/messenger/application)
+[1m[92m   Compiling[0m console-docs-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/docs/domain)
+[1m[92m   Compiling[0m console-finance-gl-domain v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/finance-gl/domain)
+[1m[92m   Compiling[0m console-reporting-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/reporting/domain)
+[1m[92m   Compiling[0m console-governance-application v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/governance/application)
+[1m[92m   Compiling[0m console-support-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/support/domain)
+[1m[92m   Compiling[0m console-platform-push v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/push)
+[1m[92m   Compiling[0m console-workorder-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workorder/application)
+[1m[92m   Compiling[0m console-platform-auth v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/auth)
+[1m[92m   Compiling[0m console-platform-group v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/group)
+[1m[92m   Compiling[0m console-dispatch-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/dispatch/application)
+[1m[92m   Compiling[0m console-inventory-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inventory/domain)
+[1m[92m   Compiling[0m console-leave-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/leave/domain)
+[1m[92m   Compiling[0m console-platform-jobs v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/jobs)
+[1m[92m   Compiling[0m console-sales-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/sales/domain)
+[1m[92m   Compiling[0m console-compliance-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/compliance/domain)
+[1m[92m   Compiling[0m console-inspection-domain v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inspection/domain)
+[1m[92m   Compiling[0m console-recruiting-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/recruiting/domain)
+[1m[92m   Compiling[0m console-benefit-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/benefit/domain)
+[1m[92m   Compiling[0m console-ontology-domain v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/ontology/domain)
+[1m[92m   Compiling[0m console-support-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/support/application)
+[1m[92m   Compiling[0m console-docs-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/docs/application)
+[1m[92m   Compiling[0m console-reporting-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/reporting/application)
+[1m[92m   Compiling[0m console-platform-request-context v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/request-context)
+[1m[92m   Compiling[0m console-platform-provisioning v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/provisioning)
+[1m[92m   Compiling[0m console-finance-gl-application v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/finance-gl/application)
+[1m[92m   Compiling[0m console-platform-excel v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/excel)
+[1m[92m   Compiling[0m console-todos-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/todos/application)
+[1m[92m   Compiling[0m console-financial-application v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/financial/application)
+[1m[92m   Compiling[0m console-inventory-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inventory/application)
+[1m[92m   Compiling[0m console-leave-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/leave/application)
+[1m[92m   Compiling[0m console-sales-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/sales/application)
+[1m[92m   Compiling[0m console-inspection-application v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inspection/application)
+[1m[92m   Compiling[0m console-recruiting-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/recruiting/application)
+[1m[92m   Compiling[0m console-benefit-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/benefit/application)
+[1m[92m   Compiling[0m console-compliance-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/compliance/application)
+[1m[92m   Compiling[0m console-identity-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/identity/application)
+[1m[92m   Compiling[0m console-registry-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/registry/application)
+[1m[92m   Compiling[0m console-evaluation-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/evaluation/application)
+[1m[92m   Compiling[0m console-notices-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notices/application)
+[1m[92m   Compiling[0m calamine v0.35.0 (/private/tmp/console-legacy225-capture-20260915/third-party/rust/vendor/calamine-0.35.0-quickxml41)
+[1m[92m   Compiling[0m console-platform-storage v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/storage)
+[1m[92m   Compiling[0m console-governance-adapter-postgres v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/governance/adapter-postgres)
+[1m[92m   Compiling[0m console-dispatch-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/dispatch/adapter-postgres)
+[1m[92m   Compiling[0m console-inbox-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inbox/adapter-postgres)
+[1m[92m   Compiling[0m console-logistics-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/logistics/domain)
+[1m[92m   Compiling[0m console-equipment-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/equipment/application)
+[1m[92m   Compiling[0m console-orgchange-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/orgchange/domain)
+[1m[92m   Compiling[0m console-payroll-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/payroll/domain)
+[1m[92m   Compiling[0m console-equipment-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/equipment/domain)
+[1m[92m   Compiling[0m console-inspection-adapter-postgres v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inspection/adapter-postgres)
+[1m[92m   Compiling[0m console-recruiting-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/recruiting/adapter-postgres)
+[1m[92m   Compiling[0m console-benefit-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/benefit/adapter-postgres)
+[1m[92m   Compiling[0m console-identity-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/identity/adapter-postgres)
+[1m[92m   Compiling[0m console-notices-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notices/adapter-postgres)
+[1m[92m   Compiling[0m console-compliance-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/compliance/adapter-postgres)
+[1m[92m   Compiling[0m console-evaluation-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/evaluation/adapter-postgres)
+[1m[92m   Compiling[0m console-registry-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/registry/adapter-postgres)
+[1m[92m   Compiling[0m console-sales-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/sales/adapter-postgres)
+[1m[92m   Compiling[0m console-logistics-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/logistics/adapter-postgres)
+[1m[92m   Compiling[0m console-leave-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/leave/adapter-postgres)
+[1m[92m   Compiling[0m console-inventory-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inventory/adapter-postgres)
+[1m[92m   Compiling[0m console-financial-adapter-postgres v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/financial/adapter-postgres)
+[1m[92m   Compiling[0m console-orgchange-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/orgchange/adapter-postgres)
+[1m[92m   Compiling[0m console-todos-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/todos/adapter-postgres)
+[1m[92m   Compiling[0m console-reporting-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/reporting/adapter-postgres)
+[1m[92m   Compiling[0m console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/payroll/adapter-postgres)
+[1m[92m   Compiling[0m console-equipment-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/equipment/adapter-postgres)
+[1m[92m   Compiling[0m console-finance-gl-adapter-postgres v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/finance-gl/adapter-postgres)
+[1m[92m   Compiling[0m console-docs-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/docs/adapter-postgres)
+[1m[92m   Compiling[0m console-platform-authz-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/authz-rest)
+[1m[92m   Compiling[0m console-comms-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/adapter-postgres)
+[1m[92m   Compiling[0m console-support-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/support/adapter-postgres)
+[1m[92m   Compiling[0m console-messenger-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/messenger/adapter-postgres)
+[1m[92m   Compiling[0m console-notifications-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notifications/adapter-postgres)
+[1m[92m   Compiling[0m console-workorder-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workorder/adapter-postgres)
+[1m[92m   Compiling[0m console-ontology-adapter-postgres v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/ontology/adapter-postgres)
+[1m[92m   Compiling[0m console-ontology-application v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/ontology/application)
+[1m[92m   Compiling[0m console-comms-credential-cipher v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/credential-cipher)
+[1m[92m   Compiling[0m console-comms-adapter-imap v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/adapter-imap)
+[1m[92m   Compiling[0m console-comms-adapter-smtp v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/adapter-smtp)
+[1m[92m   Compiling[0m console-comms-adapter-mox v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/adapter-mox)
+[1m[92m   Compiling[0m console-workflow-runtime-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workflow/adapter-postgres)
+[1m[92m   Compiling[0m console-workflow-runtime v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workflow/runtime)
+[1m[92m   Compiling[0m console-attendance-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/attendance/adapter-postgres)
+[1m[92m   Compiling[0m console-equipment-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/equipment/rest)
+[1m[92m   Compiling[0m console-finance-gl-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/finance-gl/rest)
+[1m[92m   Compiling[0m console-notifications-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notifications/rest)
+[1m[92m   Compiling[0m console-support-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/support/rest)
+[1m[92m   Compiling[0m console-messenger-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/messenger/rest)
+[1m[92m   Compiling[0m console-docs-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/docs/rest)
+[1m[92m   Compiling[0m console-payroll-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/payroll/rest)
+[1m[92m   Compiling[0m console-reporting-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/reporting/rest)
+[1m[92m   Compiling[0m console-orgchange-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/orgchange/rest)
+[1m[92m   Compiling[0m console-financial-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/financial/rest)
+[1m[92m   Compiling[0m console-registry-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/registry/rest)
+[1m[92m   Compiling[0m console-attendance-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/attendance/rest)
+[1m[92m   Compiling[0m console-ontology-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/ontology/rest)
+[1m[92m   Compiling[0m console-workorder-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/workorder/rest)
+[1m[92m   Compiling[0m console-comms-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/comms/rest)
+[1m[92m   Compiling[0m console-inventory-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inventory/rest)
+[1m[92m   Compiling[0m console-leave-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/leave/rest)
+[1m[92m   Compiling[0m console-todos-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/todos/rest)
+[1m[92m   Compiling[0m console-logistics-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/logistics/rest)
+[1m[92m   Compiling[0m console-sales-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/sales/rest)
+[1m[92m   Compiling[0m console-evaluation-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/evaluation/rest)
+[1m[92m   Compiling[0m console-compliance-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/compliance/rest)
+[1m[92m   Compiling[0m console-identity-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/identity/rest)
+[1m[92m   Compiling[0m console-recruiting-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/recruiting/rest)
+[1m[92m   Compiling[0m console-benefit-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/benefit/rest)
+[1m[92m   Compiling[0m console-notices-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/notices/rest)
+[1m[92m   Compiling[0m console-inspection-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inspection/rest)
+[1m[92m   Compiling[0m console-inbox-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/inbox/rest)
+[1m[92m   Compiling[0m console-dispatch-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/dispatch/rest)
+[1m[92m   Compiling[0m console-dispatch-worker v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/dispatch/worker)
+[1m[92m   Compiling[0m console-governance-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/governance/rest)
+[1m[92m   Compiling[0m console-platform-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/platform-rest)
+[1m[92m   Compiling[0m console-platform-auth-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/auth-rest)
+[1m[92m   Compiling[0m console-platform-realtime v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/realtime)
+[1m[92m   Compiling[0m console-analytics-quant-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/analytics-quant/rest)
+[1m[92m   Compiling[0m console-consulting-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/consulting/rest)
+[1m[92m   Compiling[0m console-integrity v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/compliance/integrity)
+[1m[92m   Compiling[0m console-facilities-rest v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/facilities/rest)
+[1m[92m   Compiling[0m console-production-rest v0.0.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/production/rest)
+[1m[92m   Compiling[0m console-ontology-canonical-adapter-postgres v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/ontology/canonical-adapter-postgres)
+[1m[92m   Compiling[0m console-platform-audit-chain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/audit-chain)
+[1m[92m   Compiling[0m console-action-inbox-application v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/action-inbox/application)
+[1m[92m   Compiling[0m console-erp-domain v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/erp/domain)
+[1m[92m   Compiling[0m console-platform-test-support v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/crates/platform/test-support)
+[1m[92m   Compiling[0m console-app v0.1.0 (/private/tmp/console-legacy225-capture-20260915/backend/app)
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 1m 40s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m tests/account_migration.rs (/private/tmp/console-account30-cargo/debug/deps/account_migration-c5258690296eee20)
+cargo-postgres: === app-account-migration-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test account_migration populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits -- --exact --test-threads=1
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.50s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/account_migration.rs (/private/tmp/console-account30-cargo/debug/deps/account_migration-c5258690296eee20)
+
+running 1 test
+test populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits ... FAILED
+
+failures:
+
+---- populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits stdout ----
+
+thread 'populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits' (32400823) panicked at app/tests/account_migration.rs:297:5:
+ACCOUNT_CATALOG_PREREQUISITE: legacy fixture seeded with2 subjects/2 credentials/7 audit rows and current migrator completed; preservation assertions not reached; missing=["company_actors"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 1.37s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test account_migration`
+cargo-postgres-timing: {"name": "app-account-migration-pg", "package": "console-app", "seconds": 4.059, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-account-migration-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_FIXUPS_AND_GENERATED_INPUT_REVIEW",
+  "base": "de0ad257",
+  "commit": "4b3b51f2f79e6a83646dfd761390a0cc5554ba9f",
+  "files": {
+    "third-party/rust/fixups/ahash/fixups.toml": "5938ec18bd315158d388e07d6353ea430de6e5882f6a90f43fe17ccf207c1ac9",
+    "third-party/rust/fixups/unicode-general-category/fixups.toml": "33ed4a50f3ebf7aa08bade014ca0a42111f87fbb7b5e2581d4477704548c6fdb",
+    "third-party/rust/BUCK": "e710bfb2e27525328c7ebbd01bc1722bfe36f4437508ff80dca4ccee914b8f0a"
+  },
+  "checks": [
+    "Exactly two explicit buildscript run=true fixups; strict unresolved_fixup_error policy unchanged.",
+    "Read cached upstream ahash0.8.12/build.rs: architecture and compiler-feature cfg output using version_check; no downloaded/generated external content. Generated buildscript-build target has version_check dependency and library consumes actual rustc_flags/OUT_DIR.",
+    "Read cached unicode-general-category1.1.0/build.rs: src/tables.rs compiled as path module; archive src input contains the complete crate, buildscript writes category.rs into OUT_DIR; generated library consumes same OUT_DIR.",
+    "Independent comparison: all605 generated http_archive checksums match existing backend/Cargo.lock.",
+    "Generated change includes existing jsonschema dependency closure and prior-lock version catchup for num-bigint/regex-automata/zmij; no new lockfile or dependency-source changes in reviewed commit."
+  ],
+  "limits": [
+    "Read-only source/generated-input review and Python checksum comparison; no buildscript execution or Buck compilation by reviewer.",
+    "Root owns generation command evidence and actual Buck owner compile/tests.",
+    "This is build graph correctness review, not transitive dependency security certification."
+  ],
+  "root_execution_evidence": {
+    "generation_log": "/private/tmp/owner28-root-reindeer-green.log",
+    "full_first_party_41_log": "/private/tmp/br01-root-full41.log",
+    "ownership": "Root execution, independently inspected summaries only"
+  }
+}

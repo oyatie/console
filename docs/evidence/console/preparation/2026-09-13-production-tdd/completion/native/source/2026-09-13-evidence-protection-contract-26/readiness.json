@@ -1,0 +1,23 @@
+{
+  "status": "PENDING_SCOPED_REVIEW",
+  "closed_if_accepted": [
+    "Exact19 schema reference-site census with typed owner classifications",
+    "Action/field mode and server-derived evidence template inventory at contract level",
+    "Finite materialized/covered accounting and complete lifecycle mutation-site contract"
+  ],
+  "remaining": [
+    "F01/F03 actual governed unit/purpose/obligation/inventory/reservation DTOs, storage and exhaustive protection membership guards",
+    "F01/F02 fixed preparation/seal/final owner participant signatures, native caller/source semantics and complete ACL/trigger/alias closure",
+    "F03/F06 provider issuance fencing/drain, independent journal conformance and recovery admission",
+    "F05 migrations/enrollment/backfill/rollback and F08 exact runtime/load/SQL/Verus harness evidence",
+    "W01-W04/F01-F08 integration and current-authority scope alignment, four integrated design reviews and explicit exact design approval",
+    "Executable test/proof candidate review and explicit test approval, actual RED implementation admission; separate production/payment/legal authority"
+  ],
+  "next": "F01/F03 actual governed unit/purpose/obligation/inventory/reservation DTOs, storage and exhaustive protection membership guards together with fixed owner signatures, not another independent engine",
+  "whole_design_approved": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "product_tests_executed": 0,
+  "sql_executed": false,
+  "verus_proofs_executed": 0
+}

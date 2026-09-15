@@ -1,0 +1,35 @@
+{
+  "recorded_at": "2026-09-12T17:30:13.430214+00:00",
+  "reviewed_sha": "61f8ed96f760fed287a52d4f31f0886346db9c06",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-assignment-continuity-09/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "61f8ed96f760fed287a52d4f31f0886346db9c06",
+        "core_files_verified": 7,
+        "source_blobs_verified": 14,
+        "scenarios_discovered": 64,
+        "product_scenarios_executed": 0,
+        "screen_states": 16,
+        "contract_sections": 12,
+        "reader_links_verified": 4,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --cached --check",
+      "stage": "Before initial and delta candidate commits",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "64 CSV review scenarios are non-executable oracles; no product tests or behavior proof",
+    "Local HTML links and evidence identities checked; no browser visual test",
+    "No current whole repository doc-link gate run; prior candidate05 failure remains unresolved",
+    "Current authority/API/SQL/ACL/migration/runtime closure and whole-design/test approvals remain"
+  ]
+}

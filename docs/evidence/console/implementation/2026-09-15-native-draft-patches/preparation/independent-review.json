@@ -1,0 +1,156 @@
+{
+  "artifact_sha256": {
+    "GUIDE.md": "fde5bbeda89ee8b3fb22b6876906d779d5bf24dcc62323b3f44a69e765db3d17",
+    "GUIDE.md.v2-v3.diff": "3bbd02bbdd47aabdb4a0fee6d985007825d372a07ecb2a5630d89309406886a2",
+    "candidate.patch": "d0229793c5f2fdf3727ec3b5852274c203efe75fc9f8b19f1e3defc0bda38b42",
+    "draft_patch_snapshot_tests.rs": "9ee6452a8971a6bd0c7221df983c0c451d3b0f50736c5a74ce158eeef53b50ff",
+    "draft_patch_snapshot_tests.rs.v2-v3.diff": "666421b14bfdedc2940479a5873b4652cc09a9d461772f8467ed5d2302a83b3e",
+    "expected-tests.json": "a42c4fabd1d1d9b2a1a5714537322ce1acdf82ee4375869e5a7990593aa58b4f",
+    "lib.rs.expected": "be2eaf8a26331a8413881f8db1fd2b80371c4ce6cf08c77c2437fb395dea4e52",
+    "source-identities.json": "0cc2b369f85a4b43dd7427ee85622b88c760b3e663ef8a0ee4a4f00a4ae05c8e"
+  },
+  "candidate_author": "/root/fast_gate_review",
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/input-draft-pure-tests-00071325-v3/candidate.patch"
+      ],
+      "cwd": "/private/tmp/draft-pure-v3-review-oew35zrs",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/input-draft-pure-tests-00071325-v3/candidate.patch"
+      ],
+      "cwd": "/private/tmp/draft-pure-v3-review-oew35zrs",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "+1.98.1",
+        "--edition",
+        "2024",
+        "--check",
+        "/private/tmp/input-draft-pure-tests-00071325-v3/draft_patch_snapshot_tests.rs"
+      ],
+      "discovered_files": 1,
+      "evidence": "Independently executed in preceding tool call on frozen source; hash rechecked here.",
+      "executed_files": 1,
+      "exit": 0,
+      "passed_files": 1
+    }
+  ],
+  "created_utc": "2026-09-15T10:58:23.313211+00:00",
+  "exact_later_probe": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-ontology-application",
+    "--lib",
+    "draft_patch_snapshot_tests::",
+    "--",
+    "--test-threads=1"
+  ],
+  "execution_during_review": {
+    "actual_runtime": 0,
+    "cargo": 0,
+    "database": 0,
+    "private_patch_checks": 2,
+    "product_writes": 0,
+    "rustfmt_checks": 1
+  },
+  "findings": [],
+  "findings_resolved": [
+    {
+      "id": "DRAFTV1-F1",
+      "resolution": "Actual calendar.assign.from_date/to_date_exclusive Date/Date|null fixed body schema replaces ambiguous NormalizerRef record; scalar NULL/CLEAR semantics now unambiguous."
+    },
+    {
+      "id": "DRAFTV1-F2",
+      "resolution": "Parsed1.250000 differs from parsed1.25; reordered operations differ, preserving exact scalar spelling and array order."
+    },
+    {
+      "id": "DRAFTV2-F1",
+      "resolution": "Offending invalid kind itself carries input canary; error Debug and Display must not echo it."
+    },
+    {
+      "id": "ROOT_DIAGNOSTIC_BOUNDARY",
+      "resolution": "Custom redacted Debug required; content and distinct valid source-reference row-hash sentinel checked in snapshot diagnostics."
+    }
+  ],
+  "kind": "INDEPENDENT_PURE_DRAFT_TEST_CANDIDATE_REVIEW",
+  "later_acceptance": "Same unmodified12-name probe must execute all12 PASS with zero ignored/failed, then existing application regression; prerequisites are classified separately.",
+  "manifest": "/private/tmp/input-draft-pure-tests-00071325-v3/manifest.json",
+  "manifest_sha256": "9794a11df0874670a0eeedc1efa3d16bfa5a7d4448cf1bffbc19a3d607b13a64",
+  "observed_head": "00199d8b1329792f14eee3d5e178245d4b10b0d4",
+  "proof_limits": [
+    "12 authored test bodies; zero compiled/discovered/executed/reached runtime tests at review.",
+    "Absent crate::draft means expected compilation prerequisite, not12 behavioral test failures; root must record actual diagnostics.",
+    "Canaries test direct literal disclosure only, not complete covert/encoded information-flow proof.",
+    "No current registration/authentication/Cedar/reference permission, durable CAS/receipt/history/SSR or business-effect proof.",
+    "No stub, fake owner, ignored test, schema copy, generated/build/dependency/authority record change."
+  ],
+  "remaining_holds": [
+    "Root integration and actual compile diagnostic",
+    "Real pure owner implementation through admitted lane",
+    "Unchanged12 runtimeGREEN and existing application compatibility",
+    "Durable/authenticated draft flow and production/legal claims remain separate"
+  ],
+  "reviewer": "/root/inventory_repair",
+  "risk_record": {
+    "blast_radius": "Two test-only application paths, no product implementation.",
+    "detection": "Pinned hashes, exact registered fixture references, full literal state assertions, invalid-scope controls, unchanged roster and future runtime causality review.",
+    "pre_mortem": "Bad fixture schema or weak oracle manufactures GREEN; draft path replaces hidden state or conflates plain structural scope with authority.",
+    "review_identities": [
+      "/root/fast_gate_review author",
+      "/root/inventory_repair independent reviewer",
+      "/root/capture_review source tracer",
+      "/root integration/runtime"
+    ],
+    "rollback": "Stop importing candidate on mismatch; retain frozenV1/V2/V3 and reviews. Root alone owns any integration reversal.",
+    "stop_conditions": [
+      "Frozen hash/base mismatch",
+      "New public/storage/schema authority convention",
+      "Fake implementation or authority fixture",
+      "Compilation failure misreported as reached behavior"
+    ]
+  },
+  "root_authorization": "Ordinary internal pure Rust API/non-Serde representation and test-only preparation explicitly authorized; no author/reviewer runtime or product implementation.",
+  "semantic_review": {
+    "destructive_scope": "Parent removal requires supplied edit scope for all affected descendants; MOVE preserves descendants and provenance without requiring edits to unchanged children. Scope is plain structural input, not current policy evidence.",
+    "fixed_schema_reuse": "Existing normalized owner28 Patch/FieldAddress/FieldValue and exact source19 body definitions; no JSON schema copied or new rule DSL. Source19 framing remains separate from generic owner28 execution.",
+    "fixtures": "Actual qualification positive scalar list max99, calendar nested record/list paths, and calendar.assign nullable Date. Sparse editor fixtures are not complete published business inputs.",
+    "identity_and_isolation": "Full before/after snapshots with hidden sibling/source provenance/basis. Ordered same-address operations allowed. Wrong/nonexistent parent/item/anchor and duplicated live identity refuse. CLEAR keeps scalar item identity; REMOVE changes membership.",
+    "mutation_and_errors": "Success/refusal preserve borrowed input snapshot and submitted patches. Negative scenarios include valid comparison/control snapshots. Fixed non-echoing errors and redacted diagnostics required.",
+    "root_internal_decisions": "Source-linked same-value user SET\u2192User/changed=true; repeat equal User SET\u2192no-op. No source refresh; schema and basis remain unchanged. Internal representation not public/storage contract.",
+    "seven_operations": [
+      "SET",
+      "CLEAR",
+      "INSERT_ITEM",
+      "REMOVE_ITEM",
+      "MOVE_ITEM",
+      "SET_INCOMPLETE",
+      "CREATE_CONTAINER"
+    ]
+  },
+  "source_base": "0007132535578f7abdafeb5192cd07c38376f06d",
+  "source_proof": {
+    "all_v1_and_v2_artifacts_preserved": true,
+    "legacy_apply_edits_prepared_and_existing_tests_unchanged": true,
+    "only_test_module_comment_and_cfg_test_declaration_added_to_existing_lib": true,
+    "pinned_base_and_current_unchanged_source_hashes": 17,
+    "private_patch_postimages_match": true,
+    "same_exact_authored_test_names": 12
+  },
+  "verdict": "APPROVED_FOR_ROOT_TEST_ONLY_IMPORT_AND_ACTUAL_COMPILATION_DIAGNOSTIC",
+  "version": 3
+}

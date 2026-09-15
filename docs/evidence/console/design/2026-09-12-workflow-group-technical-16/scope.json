@@ -1,0 +1,24 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_REVIEW",
+  "scope": "W04b-04 reusable work/Group/control/review/publication/Account navigation physical proposal",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "6cec05629a645f32de0efd5bb9875fb8415e04c9",
+  "proposed_tables": 30,
+  "existing_extensions": 5,
+  "participating_ports": 16,
+  "action_bindings": 16,
+  "nonexecutable_proof_cases": 70,
+  "group_encoding_witnesses": 2,
+  "source_blobs": 37,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "remaining": [
+    "W04b-05 consolidated physical DDL/ACL/migration/adoption/retention/recovery/workload/harness candidate",
+    "W05 current-authority scope alignment and four final integrated independent reviews plus explicit design SHA approval",
+    "W06 executable tests / independent review / explicit test SHA approval / actual RED implementation admission",
+    "Actual source/issuer/identity/operational provisioning evidence; production/legal/payment/full-suite delivery remain separate"
+  ]
+}

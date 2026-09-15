@@ -1,0 +1,127 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "scope": "Read-only native S2/S3 source, ordinary fixture composition, custody machinery and 55 registration source map. Not whole candidate approval.",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Systems Thinking",
+    "Operability / Day-2",
+    "Zero-trust / defense-in-depth",
+    "Blast-radius / cell-based"
+  ],
+  "native_s2_manifest": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d",
+  "native_s3_manifest": "7a5a2cbcc447ce271f852c3ff89eefc8cd1fd9262664a48c007c5c474ce73df2",
+  "verdict": "SOURCE_CHANGES_REQUIRED",
+  "findings": [
+    {
+      "id": "NC1",
+      "severity": "required",
+      "file": "native-lock-custody-tests.rs",
+      "issue": "Hostile DML probe arms app.current_org_id instead of actual app.current_org; does not model claimed tenant-armed runtime adversary.",
+      "fix": "Use actual owner GUC and preserve SQLSTATE42501 plus before/after immutable snapshot."
+    },
+    {
+      "id": "NC2",
+      "severity": "required",
+      "file": "native-lock-custody-tests.rs::wait_for_waiters",
+      "issue": "Requiring two direct run-lock blockers assumes no legitimate upstream period serialization and counts arbitrary worker PIDs. Account SHARE guards alone do not imply serialization.",
+      "fix": "Observe exact two issued owner request backends and transitive pg_blocking_pids chain reaching held run transaction, or use explicitly reviewed owner boundary; preserve serialization order."
+    },
+    {
+      "id": "NC3",
+      "severity": "required",
+      "file": "nativeS2/negative-assertions.rs",
+      "issue": "Any DefinitiveNoEffect satisfies same-Human/stale-source negative; unrelated semantic refusal can make named invariant test pass.",
+      "fix": "Match expected scenario reason sets across sealing and owner refusal, or provide equivalent controlled positive setup isolating changed dimension."
+    },
+    {
+      "id": "NC4",
+      "severity": "closed_in_root_revision",
+      "file": "consolidated/verify-custody.py",
+      "issue": "Discovery-only packet loop could pass empty/omitted packet sets.",
+      "fix": "Root added fixed required packet roster, exact manifest identities and three omission controls; independently rerun17PASS,24packets860members."
+    },
+    {
+      "id": "NC5",
+      "severity": "needs_concrete_resolution",
+      "file": "binder-sequence.rs / source-owner-tests.rs",
+      "issue": "Source19 state-contract requires common top-level nonblank revoke reason, while RevokePayload only carries head_ref/evidence_refs and inspected binder compiles only payload fields. No authored common reason found in inspected source path.",
+      "fix": "Confirm inherited common-field ownership; if no existing reason composer, accept caller-authored common reason and save using normal common draft field patches. Do not silently invent default reason in production codec."
+    }
+  ],
+  "evidence": {
+    "native_s2_verified_members": 64,
+    "native_s3_verified_members": 7,
+    "custody_tests": {
+      "discovered": 17,
+      "executed": 17,
+      "passed": 17,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/test_verify_custody.py"
+    },
+    "custody_run": {
+      "packets": 24,
+      "members": 860,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/verify-custody.py"
+    },
+    "registration_map": {
+      "entries": 55,
+      "unique": 55,
+      "missing_mapped_function_identifiers": 0,
+      "limit": "Identifier presence does not prove macro expansion, executable discovery, structural registration, or owner behavior."
+    },
+    "rust_compiled": 0,
+    "rust_executed": 0
+  },
+  "conclusions": [
+    "Traced passkey/operator/signed identity bootstrap, actual owner-issued Company grants/workload context, workforce/source/Docs upload composition; no fabricated verified-row shortcut found in inspected path.",
+    "New deployment/readback/bootstrap owner interfaces are explicitly proposals requiring consolidated design adoption; source parser results cannot admit those implementation boundaries.",
+    "Native late-hold case begins already protected by domain pin; it proves current native protection and hold attribution, not eligible-to-ineligible disposal race. S3 supplement states shared eligible-retirement proof boundary, retain this limit.",
+    "No invented per-registration six-dimensional duplicate test matrix is required. Unique native source/refusal/locking oracles must still be correct."
+  ],
+  "remaining_holds": [
+    "Source corrections NC1/2/3 and independently reviewed successor",
+    "Actual Rust compilation and meaningful owner-boundary RED admission",
+    "Separate production/payment/legal authority"
+  ],
+  "reviewed_consolidated_hashes": {
+    "consolidated/verify-custody.py": "c3fdc902eada8518b6692f97c366e5e7e69c14c319aecea1d4e76bd2fa8838bb",
+    "consolidated/test_verify_custody.py": "c54ab19b1951e97e7367898ef14c2ad7893220080b4f7a3d85bac57d2fd1a468",
+    "consolidated/required-packets.json": "4df82e7eb859d193c9e1e23fd13bfd528bffdf659847cff01ca361be19574d8d",
+    "consolidated/registration-coverage.json": "89438adb4e1ce033ae9c77a7a1b58965580fa1848ee094028ce1104b6db2b1c4"
+  },
+  "negative_macro_inventory": [
+    {
+      "file": "source-owner-tests.rs",
+      "lines": [
+        42,
+        63,
+        67,
+        96
+      ],
+      "expansion": "Three source families",
+      "scenarios": [
+        "invalid predecessor",
+        "same Human",
+        "stale verification head",
+        "stale revocation head"
+      ]
+    },
+    {
+      "file": "native-owner-tests.rs",
+      "lines": [
+        129
+      ],
+      "expansion": "Seven expected-field mutations"
+    },
+    {
+      "file": "native-lifecycle-tests.rs",
+      "lines": [
+        198,
+        220
+      ],
+      "expansion": "Four nullable expectation mutations and wrong decision author withdraw"
+    }
+  ],
+  "negative_oracle_resolution": "No approved closed reason code enum found in reviewed contracts. Controlled positive preflight may substitute: same alias verifies independently proposed same-family source with otherwise equivalent current grants/credentials before rejection of original Human source. Changed-field tests may prove same-actor valid input before mutation. Shared helper should enforce positive control usage."
+}

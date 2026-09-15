@@ -1,0 +1,26 @@
+[
+  {
+    "lane": "payroll-typed-unknown-1",
+    "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/1.log 2>&1",
+    "exit": 0,
+    "seconds": 105.36,
+    "log_sha256": "a12bf12ce35884fe30dd51a19a4a76878815ca01f3e5a6387b35f9e48cfa7fc8"
+  },
+  {
+    "lane": "payroll-typed-unknown-2",
+    "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/2.log 2>&1",
+    "exit": 0,
+    "seconds": 21.38,
+    "log_sha256": "84a2c7148246e00332318da530294bb704cf073b3fa5599dd4092c6abf217ed6"
+  },
+  {
+    "lane": "payroll-typed-unknown-4",
+    "sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+    "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"/private/tmp/console-production-tdd-preparation-20260913\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events -- --exact --test-threads=1 --nocapture > /private/tmp/payroll-typed-c1301628-admission/4.log 2>&1",
+    "exit": 0,
+    "seconds": 28.96,
+    "log_sha256": "a7490c38d1dc70c5db2dec7cc7ec075f9dc0b7e4780129acec745ebc1f0bbe81"
+  }
+]

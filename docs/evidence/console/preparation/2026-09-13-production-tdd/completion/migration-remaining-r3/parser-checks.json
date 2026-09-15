@@ -1,0 +1,87 @@
+[
+  {
+    "source": "bounded-process-output.rs",
+    "command": [
+      "rustup",
+      "run",
+      "1.98.1",
+      "rustfmt",
+      "--edition",
+      "2024",
+      "--config",
+      "skip_children=true",
+      "--emit",
+      "stdout"
+    ],
+    "stdin": "bounded-process-output.rs",
+    "exit": 0
+  },
+  {
+    "source": "migration-batch-process.rs",
+    "command": [
+      "rustup",
+      "run",
+      "1.98.1",
+      "rustfmt",
+      "--edition",
+      "2024",
+      "--config",
+      "skip_children=true",
+      "--emit",
+      "stdout"
+    ],
+    "stdin": "migration-batch-process.rs",
+    "exit": 0
+  },
+  {
+    "source": "migrated-primary-producer.rs",
+    "command": [
+      "rustup",
+      "run",
+      "1.98.1",
+      "rustfmt",
+      "--edition",
+      "2024",
+      "--config",
+      "skip_children=true",
+      "--emit",
+      "stdout"
+    ],
+    "stdin": "migrated-primary-producer.rs",
+    "exit": 0
+  },
+  {
+    "source": "migration-remaining-tests.rs",
+    "command": [
+      "rustup",
+      "run",
+      "1.98.1",
+      "rustfmt",
+      "--edition",
+      "2024",
+      "--config",
+      "skip_children=true",
+      "--emit",
+      "stdout"
+    ],
+    "stdin": "migration-remaining-tests.rs",
+    "exit": 0
+  },
+  {
+    "source": "legacy-transport-producer.rs",
+    "command": [
+      "rustup",
+      "run",
+      "1.98.1",
+      "rustfmt",
+      "--edition",
+      "2024",
+      "--config",
+      "skip_children=true",
+      "--emit",
+      "stdout"
+    ],
+    "stdin": "legacy-transport-producer.rs",
+    "exit": 0
+  }
+]

@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_input_and_retained_submission",
+  "recorded_at": "2026-09-13T05:22:59.204262+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "f26819bf2002c29379ea12d17eb92b00ec8784ce",
+  "reviewed_contract_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+  "predecessor_record": "../2026-09-13-source-reference-contract-23/record.json",
+  "predecessor_record_sha256": "4f4f1f6fda359ce9d3dbea234805fa7281a952e717f5cb72fa383dc8dd33eba8",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "contract.txt",
+      "bytes": 12361,
+      "sha256": "cf7c1eeba17475722d7d93e76e5b144805dadca39502c4a824998e986d81c3c2"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1674,
+      "sha256": "6a00357db5cc53412c5f6ba464a09fc2f53bc1dfb6aa113eef5213c13a881b6c"
+    },
+    {
+      "path": "framing-vectors.json",
+      "bytes": 39385,
+      "sha256": "4d4cb9ab6a81f909a9073e41782729c02c6da8a1a10ccdea2586e93742b7d17f"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 2564,
+      "sha256": "81046f60f50a6e050ffa2af1bba4e51055fd07e301e622b2361619599a25cd36"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 1337,
+      "sha256": "5739f29f59a6ca09ca4e9011ae1da066c62dbf210d3fe778aa9b3e21f188f3a7"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 592,
+      "sha256": "6d4ce8c6091d68d4091da0ab7bec8407945d0af8951d96305a8c2a63f0b77bfe"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2445,
+      "sha256": "525ae49b5215d69a92008dfdf7cf1981ea6e2cf1066a54cec5f752796b4140c3"
+    },
+    {
+      "path": "review.html",
+      "bytes": 1697,
+      "sha256": "368625d059293cd5bc696f8670a6d62e23b09073383bf297cac1115e14192254"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 475,
+      "sha256": "05d765b560d92cdb668de38613369973b3d0a711971306da98d9ecfaa941621f"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 5083,
+      "sha256": "897ce26dc4addc255f31eee4c5ff209dd8b6c6f13ba61e73c9c0042609b4b5ea"
+    },
+    {
+      "path": "storage.sql.txt",
+      "bytes": 4583,
+      "sha256": "d5deaeb0f39f3b93dbf2424566c86bc4df770bd36a0d7f0f7bee52e9a19193f0"
+    },
+    {
+      "path": "submission-types.schema.json",
+      "bytes": 5070,
+      "sha256": "21f89a8849abd39dd1edee2d7eba71dfb24cb4d543bc4f8c54b93f7598088a65"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1671,
+      "sha256": "2c0ef612154a7795ca9a7c648a32595d6d274db036fc9ab873606f2205dc3157"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 5935,
+      "sha256": "54c98b1eee372a0610729ca454bae18f9143f3298f4c784d6ed01491b23e4f96"
+    }
+  ],
+  "remaining_holds": [
+    "Full source bodies/projection/head and current semantic validation",
+    "Sealed unit/linkage/state/retained-location and reverse result/purpose adoption physical constraints",
+    "Complete required-evidence inventory/cardinality/lock plan",
+    "Fixed owner SQL signatures/bodies/canonical decoder correspondence/ACL/downgrade enforcement",
+    "F05-F08 migration/provider/journal/recovery/harness final contracts",
+    "W01-W04 integration, current-authority alignment,4 integrated design reviews/exact approval then executable tests/exact approval/RED admission",
+    "Actual SQL/full schema/product/runtime/load/Verus verification not performed; release/production/legal/payment authority separate"
+  ]
+}

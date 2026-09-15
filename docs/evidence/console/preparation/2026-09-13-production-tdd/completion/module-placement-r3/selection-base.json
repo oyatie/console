@@ -1,0 +1,679 @@
+{
+  "status": "CANDIDATE_RECONCILIATION_IN_PROGRESS",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "rules": [
+    "Use final reviewed successor overlay before activation; never overwrite frozen evidence",
+    "shared-module contains no test bodies; emit #[path] declarations at each named integration root",
+    "test-module emitted only at listed root; avoids duplicate discovered test counts",
+    "No source/include macro may refer to private scratch at activation",
+    "Append owner-local test modules only once to actual responsible owner; no speculative runtime stubs",
+    "Mounts do not admit implementation; same exact named behavioral RED rule applies"
+  ],
+  "entries": [
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "account-enrollment-producer.rs",
+      "target": "backend/app/tests/support/native/account-enrollment-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "artifact-owner-producer.rs",
+      "target": "backend/app/tests/support/native/artifact-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "binder-sequence.rs",
+      "target": "backend/app/tests/support/native/binder-sequence.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "commit-ack-relay.rs",
+      "target": "backend/app/tests/support/native/commit-ack-relay.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "deployment-root-producer.rs",
+      "target": "backend/app/tests/support/native/deployment-root-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "deployment-runtime-producer.rs",
+      "target": "backend/app/tests/support/native/deployment-runtime-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-fixture.rs",
+      "target": "backend/app/tests/support/native/native-fixture.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-money-assertions.rs",
+      "target": "backend/app/tests/support/native/native-money-assertions.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-owner-producer.rs",
+      "target": "backend/app/tests/support/native/native-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "negative-assertions.rs",
+      "target": "backend/app/tests/support/native/negative-assertions.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "operator-custody-producer.rs",
+      "target": "backend/app/tests/support/native/operator-custody-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "ordinary-issuer-bootstrap.rs",
+      "target": "backend/app/tests/support/native/ordinary-issuer-bootstrap.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "payroll-source-facts-producer.rs",
+      "target": "backend/app/tests/support/native/payroll-source-facts-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "publish-then-root-producer.rs",
+      "target": "backend/app/tests/support/native/publish-then-root-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "review-correction-producer.rs",
+      "target": "backend/app/tests/support/native/review-correction-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "source-foundation-producer.rs",
+      "target": "backend/app/tests/support/native/source-foundation-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "source-owner-producer.rs",
+      "target": "backend/app/tests/support/native/source-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "two-subject-producer.rs",
+      "target": "backend/app/tests/support/native/two-subject-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "workforce-owner-producer.rs",
+      "target": "backend/app/tests/support/native/workforce-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "attendance-r2",
+      "source": "attendance-owner-producer.rs",
+      "target": "backend/app/tests/support/native/attendance-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-owner-tests.rs",
+      "target": "backend/app/tests/support/native/native-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-lifecycle-tests.rs",
+      "target": "backend/app/tests/support/native/native-lifecycle-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "artifact-owner-tests.rs",
+      "target": "backend/app/tests/support/native/artifact-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "source-owner-tests.rs",
+      "target": "backend/app/tests/support/native/source-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "source-preparation-tests.rs",
+      "target": "backend/app/tests/support/native/source-preparation-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s3",
+      "source": "native-lock-custody-tests.rs",
+      "target": "backend/app/tests/support/native/native-lock-custody-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s3",
+      "source": "native-retention-tests.rs",
+      "target": "backend/app/tests/support/native/native-retention-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "draft-r3",
+      "source": "draft-owner-acceptance.rs",
+      "target": "backend/app/tests/support/native/draft-owner-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "attendance-r2",
+      "source": "attendance-owner-tests.rs",
+      "target": "backend/app/tests/support/native/attendance-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "attendance-r2",
+      "source": "leave-owner-tests.rs",
+      "target": "backend/app/tests/support/native/leave-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-owner-tests.rs",
+      "target": "backend/app/tests/support/native/workflow-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-race-projection-tests.rs",
+      "target": "backend/app/tests/support/native/workflow-race-projection-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-obligation-tests.rs",
+      "target": "backend/app/tests/support/native/workflow-obligation-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "migration-admission-tests.rs",
+      "target": "backend/app/tests/support/native/migration-admission-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ]
+    },
+    {
+      "source_packet": "draft-r3",
+      "source": "lifecycle-producer.rs",
+      "target": "backend/app/tests/support/native/lifecycle-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-fixture.rs",
+      "target": "backend/app/tests/support/native/workflow-fixture.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "migration-catalog-producer.rs",
+      "target": "backend/app/tests/support/native/migration-catalog-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "postgres-snapshot-producer.rs",
+      "target": "backend/app/tests/support/native/postgres-snapshot-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "context-discovery-acceptance.rs",
+      "target": "backend/app/tests/support/native/context-discovery-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "context-topology-acceptance.rs",
+      "target": "backend/app/tests/support/native/context-topology-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "current-context-projection-acceptance.rs",
+      "target": "backend/app/tests/support/native/current-context-projection-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "live-context-invalidation-acceptance.rs",
+      "target": "backend/app/tests/support/native/live-context-invalidation-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "native-control-reference-acceptance.rs",
+      "target": "backend/app/tests/support/native/native-control-reference-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "native-projection-alias-acceptance.rs",
+      "target": "backend/app/tests/support/native/native-projection-alias-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "native-replay-disclosure-acceptance.rs",
+      "target": "backend/app/tests/support/native/native-replay-disclosure-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "projector-counterfactual-acceptance.rs",
+      "target": "backend/app/tests/support/native/projector-counterfactual-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "publication-boundary-acceptance.rs",
+      "target": "backend/app/tests/support/native/publication-boundary-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "publication-transition-acceptance.rs",
+      "target": "backend/app/tests/support/native/publication-transition-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "replica-key-acceptance.rs",
+      "target": "backend/app/tests/support/native/replica-key-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "storage-no-redirect-acceptance.rs",
+      "target": "backend/app/tests/support/native/storage-no-redirect-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "terms-publication-acceptance.rs",
+      "target": "backend/app/tests/support/native/terms-publication-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "bound-egress-acceptance.rs",
+      "target": "backend/app/tests/support/native/bound-egress-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "browser-auth-producer.rs",
+      "target": "backend/app/tests/support/native/browser-auth-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "context-owner-fixture.rs",
+      "target": "backend/app/tests/support/native/context-owner-fixture.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "expanded-custody-producer.rs",
+      "target": "backend/app/tests/support/native/expanded-custody-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "local-egress-peer.rs",
+      "target": "backend/app/tests/support/native/local-egress-peer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "logical-http-collector.rs",
+      "target": "backend/app/tests/support/native/logical-http-collector.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "projector-observation-collector.rs",
+      "target": "backend/app/tests/support/native/projector-observation-collector.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "real-process-producer.rs",
+      "target": "backend/app/tests/support/native/real-process-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "security-grant-producer.rs",
+      "target": "backend/app/tests/support/native/security-grant-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "migration-transition-acceptance.rs",
+      "target": "backend/app/tests/support/native/migration-transition-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "migration-rollback-tests.rs",
+      "target": "backend/app/tests/support/native/migration-rollback-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "account_migration"
+      ]
+    },
+    {
+      "source_packet": "publication-r1",
+      "source": "publication-completion-tests.rs",
+      "target": "backend/app/tests/support/native/publication-completion-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ]
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "rust-codec-assertions.rs",
+      "target": "backend/crates/payroll/adapter-postgres/src/native28_codec_tests.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": []
+    },
+    {
+      "source_packet": "native-assertions-s3",
+      "source": "native-stream-budget-tests.rs",
+      "target": "backend/crates/payroll/adapter-postgres/src/native28_stream_budget_tests.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": []
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "authority-vector-acceptance.append.rs",
+      "target": "backend/crates/platform/request-context/src/account.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": [],
+      "note": "Inside responsible account module proposed by approved Account/context design; existing module may stay inline in lib.rs, match actual ownership."
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "public-telemetry-registry-acceptance.append.rs",
+      "target": "backend/app/src/console_telemetry.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": []
+    },
+    {
+      "source_packet": "security-s4",
+      "source": "safe-event-constructor-acceptance.append.rs",
+      "target": "backend/app/src/console_telemetry.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": []
+    }
+  ]
+}

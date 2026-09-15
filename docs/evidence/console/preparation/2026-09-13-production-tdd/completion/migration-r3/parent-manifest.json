@@ -1,0 +1,90 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "files": [
+    {
+      "path": "actor-migration.csv",
+      "bytes": 8170,
+      "sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392"
+    },
+    {
+      "path": "catalog_snapshot.sql",
+      "bytes": 8678,
+      "sha256": "f7bd241e891298ba21f504593769d8a759d3073b243baba74d86ac1521d3afaf"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 1680,
+      "sha256": "b660a6a3bc435e0e4f61512a0118b33ba81b2d9dd2a5708902f38d8bb0ee737a"
+    },
+    {
+      "path": "machinery/Cargo.lock",
+      "bytes": 37345,
+      "sha256": "ac1963a0c438f514923d22a949f79e9ad145a18ae2dd0cc61bfa753472f981cf"
+    },
+    {
+      "path": "machinery/Cargo.toml",
+      "bytes": 393,
+      "sha256": "abc47d0171b7af982e0452108834840df532899edbd309b34be3e3b4b524d8c8"
+    },
+    {
+      "path": "machinery/main.rs",
+      "bytes": 2394,
+      "sha256": "306b20973a235129e4b49a3f5701700fc3ef62751a2f8fdca2c8fd112e00bdd4"
+    },
+    {
+      "path": "machinery/run.py",
+      "bytes": 2676,
+      "sha256": "342c6b3c0cc75d736195d4042bbb1ce78036e1a83bb1ea0afbf29bac5dcbe5dd"
+    },
+    {
+      "path": "migration-admission-tests.rs",
+      "bytes": 11189,
+      "sha256": "27fc2a85c8762dffa35f5c0238539589b5772d23959908e8916bbb97b0085d4e"
+    },
+    {
+      "path": "migration-machinery-check.log",
+      "bytes": 7314,
+      "sha256": "d690858dbc5e9a79b81ac1b9740300a9f5ad1faf1ba2b26c7cb0c6b68f7704e3"
+    },
+    {
+      "path": "migration-machinery-check2.log",
+      "bytes": 934,
+      "sha256": "793082aa69e6912d2056b209aaa7c47ed6e743848afc160e07b6ee6919cb69a0"
+    },
+    {
+      "path": "migration-machinery-run1.log",
+      "bytes": 4621,
+      "sha256": "e5487b9dfbe849d04f53dd83bfedbb7247f900fa4cba3a38baf0aa731b7f236e"
+    },
+    {
+      "path": "migration-machinery-run2.log",
+      "bytes": 1403,
+      "sha256": "b47c613bd5ac6304aff87b4e3df1b03919a67b07cdebdb44ea0b0a7f876bcbcf"
+    },
+    {
+      "path": "migration-machinery-run3.log",
+      "bytes": 320,
+      "sha256": "5fc6bf871ca81c655544329590a4fbb2a40ef50b56cb4144e5d964c1a188053f"
+    },
+    {
+      "path": "migration-machinery-run4.log",
+      "bytes": 1159,
+      "sha256": "d732c717f515f35ec555e63f25f554edb0b5fb14cb77a3d0c04f3fd65bac967b"
+    },
+    {
+      "path": "migration-rollback-tests.rs",
+      "bytes": 9473,
+      "sha256": "bccdfad300390022da88e248eb4eca4680479b3e46f664cb0a610e21c359f4df"
+    },
+    {
+      "path": "owner-interface-contract.txt",
+      "bytes": 5748,
+      "sha256": "a4c2a5f2671670d2478589fd286ba89e1ecf9f74ba4023bd75280dbb39d4ac05"
+    },
+    {
+      "path": "postgres-snapshot-producer.rs",
+      "bytes": 7272,
+      "sha256": "a8366561ee42b6d904ab6c4a2ca142fbe027cf277a1ad8534386c43cc0181125"
+    }
+  ]
+}

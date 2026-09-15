@@ -1,0 +1,29 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "eecff0dc1170978787a7f9702fbeaa00fca0a3fa",
+      "verdict": "CHANGES_REQUIRED",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "findings": [
+        "PERMITTED direct route might omit cancelled/reserved attempt binding when receipt absent",
+        "Decoded NUL accepted by proposed control escaping but cannot persist to PostgreSQL JSONB"
+      ]
+    },
+    {
+      "candidate_sha": "598710b69bb7207dd4d5b5e0e8fbd60d7701dc45",
+      "verdict": "SCOPED_ACCEPT",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "remediation": [
+        "Server-side provenance plus fenced recheck/replan, future command reservation and sorted command locks",
+        "Reject decoded NUL; CA33/CA34 and decoder refusal witness"
+      ]
+    }
+  ],
+  "whole_design_approval": false
+}

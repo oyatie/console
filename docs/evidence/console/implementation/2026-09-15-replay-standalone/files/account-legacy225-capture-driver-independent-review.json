@@ -1,0 +1,113 @@
+{
+  "kind": "independent_historical225_exact_capture_adapter_review",
+  "status": "APPROVE_EXACT_ADAPTER_WITH_REQUIRED_OPERATOR_CAPTURE_ENV",
+  "reviewer": "/root/capture_review",
+  "runtime_operator": "/root",
+  "created_at_utc": "2026-09-15T05:33:01.258354+00:00",
+  "supplements": {
+    "path": "/private/tmp/account-legacy225-capture-independent-review.json",
+    "sha256": "9a1d1fb27573af1c3a9d3a1357f7635b36f36bc14bd8422a7138f7f7cff55b55"
+  },
+  "supersedes_prerequisite": "CAPTURE_ADAPTER_NOT_REVIEWED is cleared for the exact adapter/probe hashes below; source, runtime and replay limitations in the earlier review remain.",
+  "artifacts": {
+    "/private/tmp/account-auth-transport4-driver.sh": {
+      "sha256": "612b5907632d090023dfa5320c59fbbbcb2709579f0d05f6c409e5c47805beb2",
+      "bytes": 8454
+    },
+    "/private/tmp/account-auth-transport4-probe.py": {
+      "sha256": "b207a90053d3b227345df8a7e7d9d7569744b8baa1e877600d9c5bd1f02f4875",
+      "bytes": 393
+    },
+    "/private/tmp/account-legacy225-capture-driver.sh": {
+      "sha256": "e716b6ae2a8a8f060eca4464c81144546341c8127736f83dd4713b32856fdcc0",
+      "bytes": 8726
+    },
+    "/private/tmp/account-legacy225-capture-probe.py": {
+      "sha256": "defd5576f40a74eefb256ea5b3227d00a0474be160a4f92be3fd69200a1102b4",
+      "bytes": 397
+    }
+  },
+  "producer_base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "producer_worktree": "/private/tmp/console-legacy225-capture-20260915",
+  "candidate_test_sha256": "67e53107cd3a928787200e99caa48f128465a6f6974b190383fb2a0a6d0c6de7",
+  "findings": [],
+  "exact_diff": [
+    "Change label prefix transport4 to legacy225-capture.",
+    "Add account_migration.rs and refresh.rs to the source-before/source-after snapshot; all22 paths resolve to regular tracked blobs at the producer base.",
+    "Select existing app-account-migration-pg entry, assert its original exact package/test/argv, insert one full test name plus --exact, retain --test-threads=1 and full map.",
+    "Change the exact seven-argument console-app prebuild interception to append --test account_migration.",
+    "Change --only to app-account-migration-pg.",
+    "Probe changes only evidence prefix and driver path."
+  ],
+  "preserved": "Pinned PostgreSQL image, owned container name/label, tmpfs capacity, migration/bootstrap/finalizer logic, shared Cargo location/toolchain, failure propagation, source custody, bounded fallback cleanup and independent absence readback are unchanged from reference transport4.",
+  "validation": {
+    "executed": [
+      {
+        "command": "bash -n /private/tmp/account-legacy225-capture-driver.sh",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 inline ast.parse for probe plus all five embedded Python blocks",
+        "result": "PASS"
+      },
+      {
+        "command": "python3 inline execution of exact map transformation after removing only terminal write_text AST expression",
+        "result": "PASS; exactly one changed map entry; exact expected argv; all other map fields unchanged"
+      },
+      {
+        "command": "git ls-tree HEAD for each source snapshot file",
+        "result": "22 regular Git blobs confirmed at historical base"
+      }
+    ],
+    "exact_cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "account_migration",
+      "populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "static_test_names_found": 2,
+    "statically_selected_tests": 1,
+    "runtime_tests_discovered": 0,
+    "runtime_tests_executed": 0,
+    "not_executed": [
+      "Cargo",
+      "Docker",
+      "PostgreSQL",
+      "capture helper",
+      "replay"
+    ]
+  },
+  "operator_requirements": [
+    "Install only the reviewed candidate test into the separately owned capture checkout, commit it, verify sole parent is producer base and sole changed path is account_migration.rs; bind explicit expected instrumentation SHA in driver invocation.",
+    "Create a fresh real mode0700 absolute capture directory under /private/tmp, then export CONSOLE_TEST_LEGACY225_CAPTURE_DIR for the actual driver/probe process. Neither reviewed script creates or exports this setting. Missing setting yields no capture, which cannot be accepted.",
+    "Pass a fresh evidence directory under /private/tmp; serialize shared Cargo/DB use as root planned.",
+    "After execution require exactly one nonempty parseable mode0600 JSON capture, record its digest and private custody, source equality and successful container-absence proof.",
+    "Keep exact process exit and complete test log. Confirm one test actually executed; classify capture versus post-capture migration failures separately. No code execution here proves current migration correctness."
+  ],
+  "blockers": [],
+  "remaining_holds": [
+    "Concrete instrumentation commit and pre-execution root custody readback.",
+    "Actual capture plus private payload review.",
+    "Permanent replay implementation and native runtime controls.",
+    "Both migration tests and deeper original oracles still require execution."
+  ],
+  "pre_mortem": "Missing capture env produces no file despite test execution; wrong HEAD or source drift invalidates producer; cleanup failure invalidates absence claim. Existing checks plus operator one-file/hash/source/absence checks detect these cases.",
+  "blast_radius": "Static review and this private JSON only; root alone may execute one owned labeled disposable container.",
+  "rollback": "Abandon only owned temporary capture checkout/output after preserving evidence; no shared Git reset.",
+  "stop_conditions": [
+    "Reviewed script/candidate hash differs.",
+    "Capture directory env missing or unsafe.",
+    "Instrumentation parent/changed-path/clean-tree mismatch.",
+    "Another shared Cargo/DB owner active.",
+    "Capture bytes or cleanup/source custody cannot be proven."
+  ]
+}

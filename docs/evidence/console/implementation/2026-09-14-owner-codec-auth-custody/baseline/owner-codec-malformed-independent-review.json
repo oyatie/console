@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate": "/private/tmp/owner-codec-malformed-tests.rs",
+  "candidate_sha256": "db23610873b3a9887ee57a2a52caa2353d7faac7886a76d85245ca70804d5d2e",
+  "verdict": "APPROVED_FOUR_ADDITIVE_TESTS",
+  "verified": [
+    "Complete frame positive precedes exhaustive truncation and trailing-byte rejection.",
+    "Header tag, u32::MAX body length, noncanonical padding and invalid UTF8 refusal use actual owning decoder.",
+    "Unknown-body-field mutation now carries independently recomputed valid registered-input digest; Python stdlib canonical tagged SHA256 independently matched literal.",
+    "Changed valid command UUID positive and changed fingerprint guard against fixture allowlist implementations.",
+    "Actual private BoundedValue parser boundary positives8depth/128map/2000array with refused successors; no fake parser.",
+    "Nested duplicate mutation verifies changed bytes before rejection."
+  ],
+  "limits": [
+    "No Cargo/PostgreSQL execution by reviewer; owner implementation reviewed separately.",
+    "Remaining malformed envelope cases prove whole-input refusal; not each internal validation branch in isolation.",
+    "Tests do not themselves measure memory allocation/latency under oversize adversarial input.",
+    "Must mount under actual owner28 test module to access actual private parser; preserve original six golden tests unchanged."
+  ]
+}

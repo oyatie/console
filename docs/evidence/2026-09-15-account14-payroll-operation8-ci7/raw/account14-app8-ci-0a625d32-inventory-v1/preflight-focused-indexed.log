@@ -1,0 +1,12 @@
+▶ CI preflight contract
+  ✔ accepts the workflow's cheap preflight and protected expensive jobs (157.564083ms)
+  ✔ rejects every run-step condition, soft-failure, and retained-text early-exit bypass (9996.533958ms)
+✔ CI preflight contract (10155.455917ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10225.615583

@@ -1,0 +1,44 @@
+{
+  "author": "/root",
+  "architectural_advice": {
+    "agent": "/root/actor_model_advice",
+    "status": "source-cited advisory; not counted as independent approval of its own recommendation",
+    "accepted_direction": "Separate existing account UUID, Company acting-capacity anchor, verified Group human identity; preserve personal login after departure.",
+    "author_source_correction": "0065 actual tables are user_role_assignments and policy_assignment_preview_receipts; advisory names were corrected against SQL before drafting."
+  },
+  "scoped_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "reviewed_sha": "e34596a4c2c284e558719212787eedf05f9eb079",
+      "scope": [
+        "B01",
+        "B09",
+        "account continuity and historical certificate journey"
+      ],
+      "verdict": "ACCEPT_SCOPED_DESIGN_DECISION",
+      "blocking_findings": [],
+      "summary": "Explicit account/Company/Employment distinction, verified Group identity owner, principal separation, post-exit login/reset/purge handling are coherent. Actual enrollment inputs, complete rollout and certificate delivery remain separate proof.",
+      "product_tests_executed": 0,
+      "current_applicability": "SUPERSEDED for current model: reviewed pre-AM1 SHA only; Account-root, unified pipeline and customer-defined operating model require renewed review."
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "reviewed_sha": "e34596a4c2c284e558719212787eedf05f9eb079",
+      "scope": [
+        "B02",
+        "B05"
+      ],
+      "verdict": "CHANGES_REQUIRED",
+      "blocking_findings": [
+        "Existing stage_draft_run_inner replays call materialise_roster_for even created=false and can rewrite a SUPERSEDED predecessor. Fence all restage paths; separate successor allocation from materialization."
+      ],
+      "draft_remediation": "AC1.5 amended; N33 added. Pending exact-SHA readback.",
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_approved": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "renewed_review_receipt": "review-receipt.json",
+  "current_scoped_review_sha": "f8f504c1bc20f5bf7934bf09f2775198a329ea50"
+}

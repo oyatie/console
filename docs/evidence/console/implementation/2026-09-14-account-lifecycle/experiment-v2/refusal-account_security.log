@@ -1,0 +1,2 @@
+ERROR:  42501: permission denied for table account_security
+LOCATION:  aclcheck_error, aclchk.c:2793

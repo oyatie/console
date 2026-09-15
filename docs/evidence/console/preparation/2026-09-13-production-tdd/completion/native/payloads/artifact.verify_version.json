@@ -1,0 +1,13 @@
+{
+  "kind": "artifact.verify_version",
+  "body": {
+    "ticket_id": "75694f10-fb07-5f2f-aae9-535268da5d75",
+    "unit": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "unit_id": "17b6fd79-d3a6-5829-a8c2-e5ccb3dfb590",
+      "identity_digest": "030d0d3f6ffb94f3221a3521f2a3c3f480d3cbe5add2c04d5ac448c7112e204e"
+    },
+    "location_revision": "1",
+    "verification_job_id": "af276719-32b4-5215-a315-f3236ddd6bda"
+  }
+}

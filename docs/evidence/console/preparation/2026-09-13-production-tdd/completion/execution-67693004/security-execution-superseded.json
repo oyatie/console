@@ -1,0 +1,48 @@
+{
+  "base_sha": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "kind": "ACTUAL_EXISTING_OWNER_RED",
+  "owner": "/root",
+  "author": "/root/fresh29_security",
+  "independent_review": "pending /root/preparation_recovery",
+  "product_changes": 0,
+  "new_tests": 9,
+  "executed": 9,
+  "passed": 2,
+  "failed": 7,
+  "scope_limits": [
+    "Cedar runtime errors compile under actual schema and reach evaluation; no full policy administration claim",
+    "Realtime actual shared dispatch used by for_tests skips PostgreSQL membership loading; company-filter result is proven at supplied dispatch boundary only",
+    "Telemetry real error conversions emit private synthetic diagnostic into captured tracing; no complete egress/caller-path claim"
+  ],
+  "results": {
+    "cedar": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml --locked -p console-platform-authz --test cedar_diagnostic_fail_closed -- --nocapture",
+      "executed": 5,
+      "passed": 2,
+      "failed": 3,
+      "failure": "Actual Allow with runtime diagnostic; ordinary clean permit and matching forbid controls pass"
+    },
+    "realtime": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml --locked -p console-platform-realtime --test hub same_account_ -- --nocapture",
+      "executed": 2,
+      "passed": 0,
+      "failed": 2,
+      "filtered": 3,
+      "failure": "B receives B and A events; independent same-account active Company contexts both connected"
+    },
+    "telemetry": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml --locked -p console-app --lib security_diagnostic_sink_tests -- --nocapture",
+      "executed": 2,
+      "passed": 0,
+      "failed": 2,
+      "filtered": 164,
+      "failure": "Protected synthetic diagnostic in real tracing output; capture positive event witnessed; paired equality assertions later are unreached"
+    }
+  },
+  "source_sha256": {
+    "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs": "da03a477434578aefb256f1eaad1db7b77569b67eb8a78775cb6619d611d7cc0",
+    "backend/crates/platform/realtime/tests/hub.rs": "da5ac3ba2abe2dff69f16c0a1c8cd3cebc93de5cfe92c99b3d385ab6e4d8de20",
+    "backend/app/src/console_telemetry.rs": "56ed0b9db69b5d7bb0309a174f969e0563dc7e3f128851f3c44385937be984d0"
+  },
+  "approval": "UNAPPROVED_TEST_CANDIDATE; no implementation admission"
+}

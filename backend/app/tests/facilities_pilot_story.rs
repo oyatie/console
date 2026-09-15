@@ -20,8 +20,9 @@ use uuid::Uuid;
 const ISSUER: &str = "console-platform-auth";
 const AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn scheduled_hvac_story_materializes_and_closes_with_persisted_photo(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = Fixture::new(&pool).await;
     let obligation = fixture
         .obligation(OffsetDateTime::now_utc() - Duration::minutes(5))
@@ -51,7 +52,7 @@ async fn scheduled_hvac_story_materializes_and_closes_with_persisted_photo(pool:
         "SLA deadline must be derived from the occurrence due time"
     );
 
-    let service = fixture.router();
+    let service = fixture.router().await;
     assert_eq!(
         post(
             service.clone(),
@@ -191,13 +192,14 @@ async fn scheduler_is_idempotent_and_preserves_overdue_sla_truth(pool: PgPool) {
     assert_eq!(status, "DUE");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_replay_is_idempotent_and_changed_payload_conflicts(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = Fixture::new(&pool).await;
     let obligation = fixture
         .obligation(OffsetDateTime::now_utc() + Duration::days(1))
         .await;
-    let service = fixture.router();
+    let service = fixture.router().await;
     let body = json!({"obligationId": obligation, "idempotencyKey":"facilities-replay-key-0001"});
     let first = post(
         service.clone(),
@@ -242,13 +244,14 @@ async fn create_replay_is_idempotent_and_changed_payload_conflicts(pool: PgPool)
 /// and `FacilitiesObserve` is `[D,A,A,A,A,A]`; routing create/read through
 /// `authorize_org_wide` collapsed both to SUPER_ADMIN and locked out every
 /// branch-scoped ADMIN, even though the branch check that follows admits them.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn branch_scoped_admin_can_create_and_read_a_facilities_case(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = Fixture::new(&pool).await;
     let obligation = fixture
         .obligation(OffsetDateTime::now_utc() + Duration::days(1))
         .await;
-    let service = fixture.router();
+    let service = fixture.router().await;
 
     let created = post(
         service.clone(),
@@ -293,10 +296,11 @@ async fn branch_scoped_admin_can_create_and_read_a_facilities_case(pool: PgPool)
 /// The list route reads every row through the per-row `FacilitiesObserve` branch gate,
 /// which errors rather than skips, so an org-wide select would make one foreign-branch
 /// case 403 the entire list for a branch-scoped caller.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn list_cases_is_confined_to_the_callers_branch_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = Fixture::new(&pool).await;
-    let service = fixture.router();
+    let service = fixture.router().await;
     let mine = post(
         service.clone(),
         "/api/v1/facilities/cases",
@@ -337,8 +341,9 @@ async fn list_cases_is_confined_to_the_callers_branch_scope(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = Fixture::new(&pool).await;
     fixture
         .obligation(OffsetDateTime::now_utc() - Duration::minutes(1))
@@ -347,7 +352,7 @@ async fn rls_pbac_and_terminal_case_protect_facilities_mutations(pool: PgPool) {
         .await
         .unwrap();
     let case_id = fixture.only_case().await;
-    let service = fixture.router();
+    let service = fixture.router().await;
 
     let before_start_observation = post(
         service.clone(),
@@ -592,8 +597,17 @@ impl Fixture {
         seed_user(&self.pool, id, roles[0], branches[0]).await;
         self.token(id, roles.into_iter().map(str::to_owned).collect(), branches)
     }
-    fn router(&self) -> axum::Router {
+    async fn router(&self) -> axum::Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let config = AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             ("CONSOLE_JWT_ISSUER", ISSUER.to_owned()),
@@ -602,7 +616,9 @@ impl Fixture {
         ])
         .unwrap();
         build_router(
-            AppState::new(config, DatabaseDependency::Postgres(self.pool.clone())).unwrap(),
+            AppState::new(config, DatabaseDependency::Postgres(self.pool.clone()))
+                .map(|state| state.with_auth_database(auth_database))
+                .unwrap(),
         )
     }
     async fn other_branch(&self) -> BranchId {

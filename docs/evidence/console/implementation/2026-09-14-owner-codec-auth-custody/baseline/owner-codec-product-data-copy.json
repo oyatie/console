@@ -1,0 +1,42 @@
+[
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+    "sha256": "7570bf1a63047ba88a0a4484011eec64434ef35bcacbb4b2f56a28a93b041366"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-12-source-payload-contract-19/source-types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-12-source-payload-contract-19/source-types.schema.json",
+    "sha256": "c572905e8fee5d2d289f1040bcac5694ca00803589819df9c985a150b07f8a37"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-13-integrated-design-30/action-types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-13-integrated-design-30/action-types.schema.json",
+    "sha256": "bb932aa6bfd387d981024b660d7643a2ea7e28a665bac5371350c0d2620f01e6"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-13-integrated-design-30/control-types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-13-integrated-design-30/control-types.schema.json",
+    "sha256": "db77b03b5876e901e223672178e60a140c97cac7794e839e5cd890be0f9cebe8"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-13-integrated-design-30/journal-types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-13-integrated-design-30/journal-types.schema.json",
+    "sha256": "75c962f2614797edbbb335a713b03bf98cc6056e6b3a95ea6aa615d5a9ee6447"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-13-integrated-design-30/types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-13-integrated-design-30/types.schema.json",
+    "sha256": "d44e09b1f94d3addb797f4978f576749f1c4da24dfbc3207724b846f821e8375"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/normalized-source/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+    "sha256": "21f89a8849abd39dd1edee2d7eba71dfb24cb4d543bc4f8c54b93f7598088a65"
+  },
+  {
+    "source": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-r2/source/2026-09-13-integrated-design-30/owner-bindings.json",
+    "target": "backend/crates/ontology/application/src/owner28_schemas/owner-bindings.json",
+    "sha256": "181e55b7313c2ce4c3996b345ec0d4a2d6aeb99fe5a3f3383354e0e9459ed23e"
+  }
+]

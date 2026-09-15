@@ -1,0 +1,230 @@
+{
+  "reviewer": "/root/owner_privilege_review",
+  "status": "BOUNDED_OWNER_PROFILE_COMPLETE_LEGACY_CUSTODY_HOLDS_RETAINED",
+  "candidate_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+  "scope": "Completion evidence for explicitly approved local owner-only accounts.id UPDATE profile. No runtime rerun or source writes by reviewer.",
+  "authorization": {
+    "record": "/private/tmp/account-owner-approved-authorization-20260915.json",
+    "sha256": "30ee8b429a466c9ac546f94dacf9e92c1e182933b77cd5d08e2bb8a049750e11",
+    "bytes": 969,
+    "user_instruction": "\uc2b9\uc778. \ub2e4\uc74c",
+    "proposal_sha256_verified": true,
+    "scope": [
+      "backend/app/src/account_custody_state.sql",
+      "ops/generate-account-custody.py",
+      "ops/postgres-finalize-account-custody.sql"
+    ],
+    "production_or_live_changes_authorized": false
+  },
+  "probe": {
+    "named_command": "DOCKER_CONTEXT=colima-console-custody-20260914 python3 /private/tmp/account-fence37-probe.py",
+    "driver": {
+      "sha256": "dbc79064b0ef3628bb919f3d8db623f4ee63befe84213e9280b817bd2c54f146",
+      "bytes": 8339
+    },
+    "underlying_cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "account_fence_projection_",
+      "--",
+      "--test-threads=1"
+    ],
+    "same_driver_and_exact_filter_all_three_runs": true,
+    "static_source_roster_matches_every_unique_executed_case": true
+  },
+  "runs": [
+    {
+      "phase": "clean_authorized_base_red",
+      "head": "5661e3135ec58f566b4a451b9ec7c5242457d29c",
+      "evidence_root": "/private/tmp/account-fence37-f0954069f2a94bd39a76afd78b821e78",
+      "receipt": {
+        "sha256": "39afc0a8485423f56dbcefd55daccba592b7f76d9c8cac274fc6677f2a326694",
+        "bytes": 1609
+      },
+      "probe_log": {
+        "sha256": "d01e9a1ed0c6f13ce5861a4bf5a463f0ab20d9df097fdc23bec1898bab16017a",
+        "bytes": 39235
+      },
+      "indexed_artifact_hashes_checked": 13,
+      "git_bound_source_files_checked": 18,
+      "source_pre_post_equal": true,
+      "exact_unique_case_roster": true,
+      "counts": {
+        "executed": 37,
+        "passed": 4,
+        "failed": 33,
+        "ignored": 0,
+        "filtered": 109
+      },
+      "probe_exit": 1,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    },
+    {
+      "phase": "first_source_runtime_regression",
+      "head": "773bac705a25e8e6903e0a3c41752080915d6946",
+      "evidence_root": "/private/tmp/account-fence37-309f261a06124a55b5f910d951f856e6",
+      "receipt": {
+        "sha256": "0ffba1c27de6e9b5d0941dee60b1580263872cecc7c9e9b172ead53315fe34c8",
+        "bytes": 1609
+      },
+      "probe_log": {
+        "sha256": "1563b392b11acaa641502f1a5df468c318310996e7e4ee89b46236c1f8d251e6",
+        "bytes": 289975
+      },
+      "indexed_artifact_hashes_checked": 13,
+      "git_bound_source_files_checked": 18,
+      "source_pre_post_equal": true,
+      "exact_unique_case_roster": true,
+      "counts": {
+        "executed": 37,
+        "passed": 0,
+        "failed": 37,
+        "ignored": 0,
+        "filtered": 109
+      },
+      "probe_exit": 1,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    },
+    {
+      "phase": "qualified_source_green",
+      "head": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+      "evidence_root": "/private/tmp/account-fence37-2cbea627abaa498bbed308e538c41a87",
+      "receipt": {
+        "sha256": "43cbead23904d36a2195d51288635037b52161fb9683f23baa88e8a4eac9ec09",
+        "bytes": 1609
+      },
+      "probe_log": {
+        "sha256": "37a10f85c8f077d0a0a7c5b8c4026186f96a63aa7802dbed16601fa9c46c1a25",
+        "bytes": 8752
+      },
+      "indexed_artifact_hashes_checked": 13,
+      "git_bound_source_files_checked": 18,
+      "source_pre_post_equal": true,
+      "exact_unique_case_roster": true,
+      "counts": {
+        "executed": 37,
+        "passed": 37,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 109
+      },
+      "probe_exit": 0,
+      "cleanup": "confirmed owned container absent via successful bounded docker ps -a"
+    }
+  ],
+  "runtime_findings": [
+    "Clean authorized base reached exact missing column-ACL census and real FK key-share42501 failures:4PASS33FAIL. This admitted the specific owner profile implementation boundary, with deeper cases correctly recorded blocked before their assertions.",
+    "First implementation773bac70 regressed to0PASS37FAIL because unqualified dormant in the shared query collided with the enclosing PL/pgSQL variable. My earlier static review missed this execution context; both source review and runtime failure remain retained.",
+    "Correction0d6fa316 qualifies the two column profile references and only their three generated copies. Same retained executable probe now runs all37 unique cases successfully with0ignored and unchanged test bytes.",
+    "Passing retained cases exercise real FK insertion, restricted auth LOGIN, exact table/column privilege census, read-only function behavior, active presence in every state, denied raw serving access, metadata replay, historical dormant upgrade, wrong/extra/missing/broad/grantable ACL rejection and reached atomic failure oracles.",
+    "All39 indexed artifact hashes across three runs were independently checked;54 source file bindings were checked against their recorded immutable Git commits. Source-before/after snapshots and clean candidate status agree."
+  ],
+  "machinery_review": [
+    "Evidence map differs from exact tracked map only by one reviewed projection name filter. Actual logged roster matches all37 statically authored tests exactly, with no duplicates or omitted cases.",
+    "Bash cargo adapter narrows only the exact seven-argument no-run package prebuild to --test auth_rest; actual cargo test execution remains the tracked Python-driven command.",
+    "Docker adapter modifies only the exact scoped pinnedPG18.6 test launch to use4GiBtmpfs and an ownership label. Cleanup requires successful bounded Docker name listing; recorded absence is not inferred from a failed inventory.",
+    "These checks validate this retained run history, not a formal proof that the driver handles every interruption, malicious concurrent mutation or host fault."
+  ],
+  "retained_prior_review_bindings": {
+    "/private/tmp/account-owner-approved-independent-review.json": {
+      "sha256": "22ebae0563de01911de666ba90dafe930f09d0bf277ded19624b5bb1f12d64b9",
+      "bytes": 9867
+    },
+    "/private/tmp/account-owner-approved-independent-review-773bac70.json": {
+      "sha256": "22ebae0563de01911de666ba90dafe930f09d0bf277ded19624b5bb1f12d64b9",
+      "bytes": 9867
+    },
+    "/private/tmp/account-owner-qualified-independent-review.json": {
+      "sha256": "b1b253f8f8d8e6378e6212a578fe62ab8696da98c7e3d6704712834970cb086c",
+      "bytes": 4390
+    }
+  },
+  "regressions": {
+    "status": "OBSERVED_33PASS_3FAIL_CLASSIFIED",
+    "candidate_sha": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+    "root": "/private/tmp/account-custody-approved-regression-a101721957964924877bb3e1429b269b",
+    "driver_receipt": {
+      "sha256": "7606661f7966aa6151c18380e4b7c29c9405540d4297523ba4964e05bf979877",
+      "bytes": 1609
+    },
+    "probe_log": {
+      "sha256": "9a0ebd4bf3f80707316afc820083eaba4a52628fe4e3ebd12a452662443ee701",
+      "bytes": 10274
+    },
+    "driver_probe_exit": 1,
+    "indexed_artifacts_verified": 13,
+    "git_source_bindings_verified": 19,
+    "source_pre_post_equal_and_clean": true,
+    "complete_unique_logged_roster": 36,
+    "cases": {
+      "account_custody_lifecycle": {
+        "passed": 22,
+        "failed": 0
+      },
+      "account_custody_startup": {
+        "passed": 11,
+        "failed": 0
+      },
+      "account_storage": {
+        "passed": 0,
+        "failed": 3
+      }
+    },
+    "ignored": 0,
+    "filtered_out": 110,
+    "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+    "root_classification_receipt": {
+      "path": "/private/tmp/account-owner-approved-regression-receipt.json",
+      "sha256": "744da2c1bf9d73fd1b9141773e8d4c3ed1277a9da1545ebe9bde997c4fc2debc",
+      "bytes": 1650,
+      "claims_match_actual_log": true
+    },
+    "historical_comparison": {
+      "path": "docs/evidence/console/implementation/2026-09-14-owner-codec-auth-custody/followup/core/account-custody36-after-order-fix/probe.log",
+      "sha256": "f311de836cf0e2809be71572161447f527ffb9a37ed6645a6c6c08676c4da1fc",
+      "bytes": 10273,
+      "committed_bytes_verified": true,
+      "all36_case_outcomes_unchanged": true,
+      "three_failure_messages_and_owner_roster_match": true
+    },
+    "remaining_failures": [
+      {
+        "test": "account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys",
+        "reason": "Legacy auth_refresh_token_families still requires Company provenance; failure occurs before remainingFK assertions.",
+        "classification": "Existing unfinished legacy credential conversion requirement, retainedHOLD"
+      },
+      {
+        "test": "account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business",
+        "reason": "Seven existing legacy auth relations retain console_app LOGIN ownership; six newer Account relations have expectedNOLOGIN owners. Failure precedes effective-grant assertions.",
+        "classification": "Existing unfinished legacy credential custody requirement, retainedHOLD"
+      },
+      {
+        "test": "account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context",
+        "reason": "A real Company LOGIN accepted a direct custody SQL operation after valid Company readpositive. Exact relation is not included in failure message; no claim all loop cases ran.",
+        "classification": "Existing unfinished legacy custody-serving access restriction, retainedHOLD"
+      }
+    ],
+    "limits": "This regression command remains exit1.33 passing cases and unchanged three failures do not make the whole suite green. No test was omitted, ignored or weakened."
+  },
+  "proof_limits": [
+    "Owner holds ordinary UPDATE(id) authority and inherent ownership powers. NOLOGIN plus zero memberships and the exact read-only definer function constrain serving access; owner itself is not read-only.",
+    "Simultaneous privileged removal of the prepared ACL profile and function cannot be distinguished from genuine historical dormant-v1 state.",
+    "Test execution used a disposable4GiBtmpfs PostgreSQL fixture; no crash durability, HA, backup restore, RPO/RTO or no-loss claim.",
+    "No actual Auth pool wiring/request fence, Account lifecycle activation/full credential conversion, current-context or wholeConsole completion claim.",
+    "No production exposure, external publication, payment/legal/compliance conclusion or Verus information-flow proof."
+  ],
+  "previous_completion_review": {
+    "path": "/private/tmp/account-owner-approved-completion-review.json",
+    "sha256": "df9690b4efa010e03303082ba5edb8cc92db661f3134c763856a04a23af8ae11",
+    "bytes": 7879,
+    "preserved_unchanged": true
+  },
+  "completion_conclusion": "The exact approved ownerUPDATE(id) profile source change and disposable37-case verification are complete, and all retained lifecycle/startup/storage36 outcomes have been independently reviewed and classified. WholeAccount/Console, legacy conversion and production remain incomplete."
+}

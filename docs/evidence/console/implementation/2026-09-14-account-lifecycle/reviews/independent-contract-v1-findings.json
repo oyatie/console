@@ -1,0 +1,11 @@
+{
+  "reviewer": "/root/lifecycle_contract_review",
+  "refinement_sha256": "77571442e927d63939b2f8164f25ad650b9f52a8f4e2337d05442f05341c693f",
+  "verdict": "REVISE",
+  "findings": [
+    "Zero-membership transfer requires explicit directlyauthenticatedsuperuser and independently supplied targetbinding; expectedtargetcannot derivefromDSN",
+    "Argo application image lackspsql/finalizer artifacts and networkpolicyomitsmigrationlabel; pinoperatortransportandpre-PreSyncprerequisites",
+    "FutureAccountDDLorderingmustprecede ordinaryMIGRATOR additions;readyzdoesnotstopworkers"
+  ],
+  "disposition": "Resolved in a3cdb0b7 revision; original two initial approval reviews retained, not rewritten"
+}

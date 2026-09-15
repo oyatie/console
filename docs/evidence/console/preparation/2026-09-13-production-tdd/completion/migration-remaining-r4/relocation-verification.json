@@ -1,0 +1,95 @@
+{
+  "manifest_sha256": "e8c0a5547c11b57525197d532d0854f5cd02dd4861013c67036dfc14074138e7",
+  "files": [
+    {
+      "original": "bounded-process-output.rs",
+      "retained": "bounded-process-output.rs",
+      "original_sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62",
+      "retained_sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62"
+    },
+    {
+      "original": "execution.json",
+      "retained": "execution.json",
+      "original_sha256": "a7d3dba29e901d167521330f0a2420fcca9f870bf7657a5d82439106bf450df1",
+      "retained_sha256": "a7d3dba29e901d167521330f0a2420fcca9f870bf7657a5d82439106bf450df1"
+    },
+    {
+      "original": "legacy-transport-producer.rs",
+      "retained": "legacy-transport-producer.rs",
+      "original_sha256": "643bbcf97c16734f03f2562a75c04552d760c7daca585cd9b2e2a9e6f14637ff",
+      "retained_sha256": "643bbcf97c16734f03f2562a75c04552d760c7daca585cd9b2e2a9e6f14637ff"
+    },
+    {
+      "original": "machinery/Cargo.lock",
+      "retained": "machinery/Cargo.lock",
+      "original_sha256": "bc30a425e7582eb1cbf3f2f117f3683ae1194dbbadb13103b9cfb06411d776ed",
+      "retained_sha256": "bc30a425e7582eb1cbf3f2f117f3683ae1194dbbadb13103b9cfb06411d776ed"
+    },
+    {
+      "original": "machinery/Cargo.toml",
+      "retained": "machinery/Cargo.toml",
+      "original_sha256": "380f6b7dc3cd1b8b2cc8dba1103b7ede955613274cb9ab1f367fbd842c6886e7",
+      "retained_sha256": "380f6b7dc3cd1b8b2cc8dba1103b7ede955613274cb9ab1f367fbd842c6886e7"
+    },
+    {
+      "original": "machinery-execution.log",
+      "retained": "machinery-execution.log",
+      "original_sha256": "7041dc0fff6ede2b7d686399bdfa1dcb662b7b01b9996f151a536fea3d0e3d03",
+      "retained_sha256": "7041dc0fff6ede2b7d686399bdfa1dcb662b7b01b9996f151a536fea3d0e3d03"
+    },
+    {
+      "original": "migrated-primary-producer.rs",
+      "retained": "migrated-primary-producer.rs",
+      "original_sha256": "2c0d5ed21675b5426dadb5857e96c4e8eb67e87d8cfb7191cd4ef0d7cb6abd9d",
+      "retained_sha256": "2c0d5ed21675b5426dadb5857e96c4e8eb67e87d8cfb7191cd4ef0d7cb6abd9d"
+    },
+    {
+      "original": "migration-batch-process.rs",
+      "retained": "migration-batch-process.rs",
+      "original_sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345",
+      "retained_sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345"
+    },
+    {
+      "original": "migration-remaining-tests.rs",
+      "retained": "migration-remaining-tests.rs",
+      "original_sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a",
+      "retained_sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a"
+    },
+    {
+      "original": "owner-interface-contract.txt",
+      "retained": "owner-interface-contract.txt",
+      "original_sha256": "2dbfd2a49aa6cf69a120cffcc2df64ae9a8410d05ab2bb220da363eb7132f744",
+      "retained_sha256": "2dbfd2a49aa6cf69a120cffcc2df64ae9a8410d05ab2bb220da363eb7132f744"
+    },
+    {
+      "original": "parent-manifest.json",
+      "retained": "parent-manifest.json",
+      "original_sha256": "114999efbeced6c1b1ffa4aa5625106bac2aa35d86edd091ae8f45132b0a8da6",
+      "retained_sha256": "114999efbeced6c1b1ffa4aa5625106bac2aa35d86edd091ae8f45132b0a8da6"
+    },
+    {
+      "original": "parser-checks.json",
+      "retained": "parser-checks.json",
+      "original_sha256": "bb0260515001fa7273618f0bc621f0d57e917b9275080473643cf1347aaa4039",
+      "retained_sha256": "bb0260515001fa7273618f0bc621f0d57e917b9275080473643cf1347aaa4039"
+    },
+    {
+      "original": "r2-parent-manifest.json",
+      "retained": "r2-parent-manifest.json",
+      "original_sha256": "d4342b0bcf0d543bccfc6f62b866b71cbf508186445ceeacd50186233ece918a",
+      "retained_sha256": "d4342b0bcf0d543bccfc6f62b866b71cbf508186445ceeacd50186233ece918a"
+    },
+    {
+      "original": "r3-correction-evidence.json",
+      "retained": "r3-correction-evidence.json",
+      "original_sha256": "eae20e414dccc72f2c8b97e0595bb05251ee4ebbe72971260516ea7e99bd7da8",
+      "retained_sha256": "eae20e414dccc72f2c8b97e0595bb05251ee4ebbe72971260516ea7e99bd7da8"
+    },
+    {
+      "original": "r3-parent-manifest.json",
+      "retained": "r3-parent-manifest.json",
+      "original_sha256": "44495caa2de5dfaabd5761cd2eb0336e5e25f63661b1a6d45d165d843f2ce414",
+      "retained_sha256": "44495caa2de5dfaabd5761cd2eb0336e5e25f63661b1a6d45d165d843f2ce414"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "status": "Bounded B06/B07 independently reviewed RED test candidate; 5 new DB tests stop at missing terms prerequisite",
+  "new_tests": 6,
+  "postgres_tests": 5,
+  "pure_crypto_and_generation_oracle_tests": 1,
+  "covers": [
+    "Real issuer-signed proof, exact closed claims, current Account/family/generation, <=300 second issuance TTL and response expiry agreement; read-only access and refresh-only issuance",
+    "Correctly signed claim value and missing-field rejection, separately malformed generation type/canonicality/range; valid re-signed refresh control",
+    "Wrong ES256 key and HS256 using public PEM refused without consuming refresh; valid re-signed control",
+    "Same Account signed independent login creates distinct families; reciprocal proof refusal and mixed-family cookies; own logout preserves other family and refresh",
+    "Fixture generation advance invalidates old access/refresh; fresh primary login gets stored current generation; current-family lower-generation proof refused"
+  ],
+  "limits": [
+    "Five database cases remain dependent on real unimplemented terms schema; downstream assertions cannot be claimed executed until prerequisites exist",
+    "TTL test exercises ordinary family lifetime, not near-absolute-deadline clamp",
+    "No exhaustive sub-second/leeway boundary or server clock injection; future vectors +120 seconds and coherent expiry now-1",
+    "Only CSRF parser covered here, not complete Account/legacy access issuer/algorithm matrix",
+    "No real browser, distributed key replacement/readiness, capture/tracing, publisher/migration authority, or load experiment proof",
+    "Fixture generation UPDATE is test data mutation, not proof of authorized security command",
+    "Inherited SoftPasskey synthetic UV and client-only nonresident/allow-list/userHandle accommodations remain"
+  ],
+  "inherited_remaining_families": "../2026-09-13-account-browser-04/coverage.json",
+  "implementation_admission": false,
+  "new_test_sha_approval": false
+}

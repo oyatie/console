@@ -27,6 +27,9 @@ path = "src/lib.rs"
 # Enables the inline PostgreSQL integration suite. This is intentionally inert
 # by default so normal unit tests need no database topology.
 test-postgres = []
+# Recovery cases require a fresh owned two-node supervisor per exact test.
+# Kept separate from the ordinary single-node inline PostgreSQL suite.
+test-recovery = ["test-postgres"]
 # Local role-switch dev-auth endpoint. NOT in `default` (there is no `default`
 # key here, so cargo's implicit default feature set is empty) and MUST NEVER be
 # added to one — `console-gate-dev-auth-absence` asserts this via `cargo metadata`
@@ -172,6 +175,7 @@ url = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
+console-platform-test-support = { workspace = true }
 console-financial-application = { workspace = true }
 console-financial-domain = { workspace = true }
 console-governance-application = { workspace = true }

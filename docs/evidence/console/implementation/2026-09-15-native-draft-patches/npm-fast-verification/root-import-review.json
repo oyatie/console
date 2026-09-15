@@ -1,0 +1,11 @@
+{
+  "reviewer": "/root",
+  "tested_head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "manifest_sha256": "9bd55072df15052ed220ff5ecce9f248c59410854f515e1bc426744a18320c3d",
+  "archives_read_back": 3,
+  "source_bindings_verified": 6,
+  "fast_sections": 78,
+  "rust_rollups": 332,
+  "scope": "Exact completed fast sweep only; five existing ignored doctests and DB/hosted/exposure limitations retained.",
+  "verdict": "PASS"
+}

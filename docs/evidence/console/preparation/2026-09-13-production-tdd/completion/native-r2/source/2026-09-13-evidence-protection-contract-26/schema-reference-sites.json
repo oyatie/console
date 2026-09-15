@@ -1,0 +1,2767 @@
+{
+  "schema_path": "../2026-09-12-source-payload-contract-19/source-types.schema.json",
+  "definition_count": 89,
+  "site_count": 345,
+  "sites": [
+    {
+      "pointer": "/$defs/PositiveWon/$ref",
+      "enclosing_definition": "PositiveWon",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/NonnegativeWon/$ref",
+      "enclosing_definition": "NonnegativeWon",
+      "target_definition": "RevisionOrZero",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/InclusivePeriod/properties/start/$ref",
+      "enclosing_definition": "InclusivePeriod",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/InclusivePeriod/properties/end/$ref",
+      "enclosing_definition": "InclusivePeriod",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBundleRef/properties/bundle_id/$ref",
+      "enclosing_definition": "RuleBundleRef",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBundleRef/properties/kernel_build_sha256/$ref",
+      "enclosing_definition": "RuleBundleRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBundleRef/properties/citation_set_sha256/$ref",
+      "enclosing_definition": "RuleBundleRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ProfileRef/properties/org_id/$ref",
+      "enclosing_definition": "ProfileRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ProfileRef/properties/profile_id/$ref",
+      "enclosing_definition": "ProfileRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ProfileRef/properties/revision/$ref",
+      "enclosing_definition": "ProfileRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ProfileRef/properties/rule_bundle/$ref",
+      "enclosing_definition": "ProfileRef",
+      "target_definition": "RuleBundleRef",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "rule registry",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ScopeBasisRef/properties/org_id/$ref",
+      "enclosing_definition": "ScopeBasisRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ScopeBasisRef/properties/scope_id/$ref",
+      "enclosing_definition": "ScopeBasisRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ScopeBasisRef/properties/revision/$ref",
+      "enclosing_definition": "ScopeBasisRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityRef/properties/org_id/$ref",
+      "enclosing_definition": "EligibilityRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityRef/properties/assessment_id/$ref",
+      "enclosing_definition": "EligibilityRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityRef/properties/revision/$ref",
+      "enclosing_definition": "EligibilityRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxEvidenceRef/properties/org_id/$ref",
+      "enclosing_definition": "TaxEvidenceRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxEvidenceRef/properties/evidence_id/$ref",
+      "enclosing_definition": "TaxEvidenceRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxEvidenceRef/properties/revision/$ref",
+      "enclosing_definition": "TaxEvidenceRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AttendanceCoverageRef/properties/org_id/$ref",
+      "enclosing_definition": "AttendanceCoverageRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AttendanceCoverageRef/properties/coverage_id/$ref",
+      "enclosing_definition": "AttendanceCoverageRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AttendanceCoverageRef/properties/revision/$ref",
+      "enclosing_definition": "AttendanceCoverageRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WageFactRef/properties/org_id/$ref",
+      "enclosing_definition": "WageFactRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WageFactRef/properties/base_wage_id/$ref",
+      "enclosing_definition": "WageFactRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WageFactRef/properties/correction_revision/$ref",
+      "enclosing_definition": "WageFactRef",
+      "target_definition": "RevisionOrZero",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentSegmentRef/properties/org_id/$ref",
+      "enclosing_definition": "EmploymentSegmentRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentSegmentRef/properties/employment_id/$ref",
+      "enclosing_definition": "EmploymentSegmentRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentSegmentRef/properties/revision_id/$ref",
+      "enclosing_definition": "EmploymentSegmentRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentSegmentRef/properties/revision/$ref",
+      "enclosing_definition": "EmploymentSegmentRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentSegmentRef/properties/from_us/$ref",
+      "enclosing_definition": "EmploymentSegmentRef",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentSegmentRef/properties/to_us/$ref",
+      "enclosing_definition": "EmploymentSegmentRef",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ArtifactRef/properties/org_id/$ref",
+      "enclosing_definition": "ArtifactRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ArtifactRef/properties/evidence_object_id/$ref",
+      "enclosing_definition": "ArtifactRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ArtifactRef/properties/copy_id/$ref",
+      "enclosing_definition": "ArtifactRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ArtifactRef/properties/attestation_id/$ref",
+      "enclosing_definition": "ArtifactRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ArtifactRef/properties/attestation_revision/$ref",
+      "enclosing_definition": "ArtifactRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/Blocker/properties/family/anyOf/0/$ref",
+      "enclosing_definition": "Blocker",
+      "target_definition": "SourceFamily",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/Blocker/properties/source_refs/items/$ref",
+      "enclosing_definition": "Blocker",
+      "target_definition": "SourceRepairRef",
+      "classification": "TAGGED_DIAGNOSTIC_REFERENCE",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DateInterval/properties/from/$ref",
+      "enclosing_definition": "DateInterval",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DateInterval/properties/to_exclusive/$ref",
+      "enclosing_definition": "DateInterval",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationRef/properties/org_id/$ref",
+      "enclosing_definition": "QualificationRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationRef/properties/qualification_id/$ref",
+      "enclosing_definition": "QualificationRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationRef/properties/revision/$ref",
+      "enclosing_definition": "QualificationRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarRef/properties/org_id/$ref",
+      "enclosing_definition": "CalendarRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarRef/properties/calendar_id/$ref",
+      "enclosing_definition": "CalendarRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarRef/properties/revision/$ref",
+      "enclosing_definition": "CalendarRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentRef/properties/org_id/$ref",
+      "enclosing_definition": "CalendarAssignmentRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentRef/properties/assignment_id/$ref",
+      "enclosing_definition": "CalendarAssignmentRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentRef/properties/revision/$ref",
+      "enclosing_definition": "CalendarAssignmentRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DispositionRef/properties/org_id/$ref",
+      "enclosing_definition": "DispositionRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DispositionRef/properties/disposition_id/$ref",
+      "enclosing_definition": "DispositionRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DispositionRef/properties/revision/$ref",
+      "enclosing_definition": "DispositionRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/IssuerProfileRef/properties/profile_id/$ref",
+      "enclosing_definition": "IssuerProfileRef",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/IssuerProfileRef/properties/revision/$ref",
+      "enclosing_definition": "IssuerProfileRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/IssuerProfileRef/properties/content_sha256/$ref",
+      "enclosing_definition": "IssuerProfileRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/NormalizerRef/properties/normalizer_id/$ref",
+      "enclosing_definition": "NormalizerRef",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/NormalizerRef/properties/version/$ref",
+      "enclosing_definition": "NormalizerRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/NormalizerRef/properties/build_sha256/$ref",
+      "enclosing_definition": "NormalizerRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CommonSourceCitation/properties/instrument/$ref",
+      "enclosing_definition": "CommonSourceCitation",
+      "target_definition": "ShortText",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CommonSourceCitation/properties/edition/$ref",
+      "enclosing_definition": "CommonSourceCitation",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CommonSourceCitation/properties/artifact_refs/items/$ref",
+      "enclosing_definition": "CommonSourceCitation",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CommonSourceCitation/properties/qualified_review_refs/items/$ref",
+      "enclosing_definition": "CommonSourceCitation",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CommonSourceCitation/properties/applicability/$ref",
+      "enclosing_definition": "CommonSourceCitation",
+      "target_definition": "DateInterval",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBinding/properties/purpose/$ref",
+      "enclosing_definition": "RuleBinding",
+      "target_definition": "RulePurpose",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBinding/properties/compiled_rule_id/$ref",
+      "enclosing_definition": "RuleBinding",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBinding/properties/compiled_rule_version/$ref",
+      "enclosing_definition": "RuleBinding",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RuleBinding/properties/rule_body_sha256/$ref",
+      "enclosing_definition": "RuleBinding",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CsvColumn/properties/alias/$ref",
+      "enclosing_definition": "CsvColumn",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CsvColumn/properties/header_text/$ref",
+      "enclosing_definition": "CsvColumn",
+      "target_definition": "ShortText",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CsvLayout/properties/columns/items/$ref",
+      "enclosing_definition": "CsvLayout",
+      "target_definition": "CsvColumn",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/PdfLayout/properties/map_artifact_ref/$ref",
+      "enclosing_definition": "PdfLayout",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LocatorLayout/oneOf/0/$ref",
+      "enclosing_definition": "LocatorLayout",
+      "target_definition": "CsvLayout",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LocatorLayout/oneOf/1/$ref",
+      "enclosing_definition": "LocatorLayout",
+      "target_definition": "PdfLayout",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSupport/properties/dependent_counts/items/$ref",
+      "enclosing_definition": "TaxSupport",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSupport/properties/eligible_child_counts/items/$ref",
+      "enclosing_definition": "TaxSupport",
+      "target_definition": "RevisionOrZero",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSupport/properties/combination_rule/$ref",
+      "enclosing_definition": "TaxSupport",
+      "target_definition": "RuleBinding",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "compiled rule registry",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSupport/properties/note_map_artifact_ref/$ref",
+      "enclosing_definition": "TaxSupport",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSupport/properties/normalizer_ref/anyOf/0/$ref",
+      "enclosing_definition": "TaxSupport",
+      "target_definition": "NormalizerRef",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "normalizer admission owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxQualification/properties/citation/$ref",
+      "enclosing_definition": "TaxQualification",
+      "target_definition": "CommonSourceCitation",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxQualification/properties/layout/$ref",
+      "enclosing_definition": "TaxQualification",
+      "target_definition": "LocatorLayout",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxQualification/properties/support/$ref",
+      "enclosing_definition": "TaxQualification",
+      "target_definition": "TaxSupport",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxQualification/properties/selection_rule/$ref",
+      "enclosing_definition": "TaxQualification",
+      "target_definition": "RuleBinding",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "compiled rule registry",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ApplicabilityQualification/properties/citation/$ref",
+      "enclosing_definition": "ApplicabilityQualification",
+      "target_definition": "CommonSourceCitation",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ApplicabilityQualification/properties/bindings/items/$ref",
+      "enclosing_definition": "ApplicabilityQualification",
+      "target_definition": "RuleBinding",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "compiled rule registry",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarQualification/properties/citation/$ref",
+      "enclosing_definition": "CalendarQualification",
+      "target_definition": "CommonSourceCitation",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarQualification/properties/time_rules/items/$ref",
+      "enclosing_definition": "CalendarQualification",
+      "target_definition": "RuleBinding",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "compiled rule registry",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/BundleQualification/properties/citation/$ref",
+      "enclosing_definition": "BundleQualification",
+      "target_definition": "CommonSourceCitation",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/BundleQualification/properties/bundle_ref/$ref",
+      "enclosing_definition": "BundleQualification",
+      "target_definition": "RuleBundleRef",
+      "classification": "DEPLOYMENT_BUILD",
+      "owner_or_handler": "rule registry",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/BundleQualification/properties/source_qualification_refs/items/$ref",
+      "enclosing_definition": "BundleQualification",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/subject_person_id/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "UUID",
+      "classification": "IDENTITY_PROOF",
+      "owner_or_handler": "identity/AI1",
+      "raw_identity_rule": "CredentialPayload.subject_person_id"
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/issuer_id/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/issuer_credential_id/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "ShortText",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/profession_id/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/jurisdiction_id/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/purpose_ids/items/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/scope_basis_ref/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "ScopeBasisRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "scope/population owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/valid_from_us/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/valid_to_us/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/issuer_trust_profile_ref/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "IssuerProfileRef",
+      "classification": "DEPLOYMENT_TRUST",
+      "owner_or_handler": "issuer admission owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CredentialPayload/properties/issuer_evidence_refs/items/$ref",
+      "enclosing_definition": "CredentialPayload",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationPayload/oneOf/0/$ref",
+      "enclosing_definition": "QualificationPayload",
+      "target_definition": "TaxQualification",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationPayload/oneOf/1/$ref",
+      "enclosing_definition": "QualificationPayload",
+      "target_definition": "ApplicabilityQualification",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationPayload/oneOf/2/$ref",
+      "enclosing_definition": "QualificationPayload",
+      "target_definition": "CalendarQualification",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationPayload/oneOf/3/$ref",
+      "enclosing_definition": "QualificationPayload",
+      "target_definition": "BundleQualification",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/QualificationPayload/oneOf/4/$ref",
+      "enclosing_definition": "QualificationPayload",
+      "target_definition": "CredentialPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/BreakPlan/properties/start_minute/$ref",
+      "enclosing_definition": "BreakPlan",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/BreakPlan/properties/end_minute/$ref",
+      "enclosing_definition": "BreakPlan",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DutyPlan/properties/start_minute/$ref",
+      "enclosing_definition": "DutyPlan",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DutyPlan/properties/end_minute/$ref",
+      "enclosing_definition": "DutyPlan",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/DutyPlan/properties/breaks/items/$ref",
+      "enclosing_definition": "DutyPlan",
+      "target_definition": "BreakPlan",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WeeklyDay/properties/duties/items/$ref",
+      "enclosing_definition": "WeeklyDay",
+      "target_definition": "DutyPlan",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WeeklyDay/properties/expected_work_minutes/$ref",
+      "enclosing_definition": "WeeklyDay",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WeeklyDay/properties/expected_paid_minutes/$ref",
+      "enclosing_definition": "WeeklyDay",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/WeeklyDay/properties/rule_ref/$ref",
+      "enclosing_definition": "WeeklyDay",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarOverride/properties/date/$ref",
+      "enclosing_definition": "CalendarOverride",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarOverride/properties/duties/items/$ref",
+      "enclosing_definition": "CalendarOverride",
+      "target_definition": "DutyPlan",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarOverride/properties/expected_work_minutes/$ref",
+      "enclosing_definition": "CalendarOverride",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarOverride/properties/expected_paid_minutes/$ref",
+      "enclosing_definition": "CalendarOverride",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarOverride/properties/rule_ref/$ref",
+      "enclosing_definition": "CalendarOverride",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarPayload/properties/covered_dates/$ref",
+      "enclosing_definition": "CalendarPayload",
+      "target_definition": "DateInterval",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarPayload/properties/weekly/items/$ref",
+      "enclosing_definition": "CalendarPayload",
+      "target_definition": "WeeklyDay",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarPayload/properties/overrides/items/$ref",
+      "enclosing_definition": "CalendarPayload",
+      "target_definition": "CalendarOverride",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarPayload/properties/rule_qualification_ref/$ref",
+      "enclosing_definition": "CalendarPayload",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentPayload/properties/employment_id/$ref",
+      "enclosing_definition": "CalendarAssignmentPayload",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "Employment",
+      "raw_identity_rule": "CalendarAssignmentPayload.employment_id"
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentPayload/properties/calendar_ref/$ref",
+      "enclosing_definition": "CalendarAssignmentPayload",
+      "target_definition": "CalendarRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance calendar",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentPayload/properties/from_date/$ref",
+      "enclosing_definition": "CalendarAssignmentPayload",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CalendarAssignmentPayload/properties/to_date_exclusive/anyOf/0/$ref",
+      "enclosing_definition": "CalendarAssignmentPayload",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventRef/properties/org_id/$ref",
+      "enclosing_definition": "EventRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventRef/properties/attendance_record_id/$ref",
+      "enclosing_definition": "EventRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveChargeRef/properties/org_id/$ref",
+      "enclosing_definition": "LeaveChargeRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveChargeRef/properties/request_id/$ref",
+      "enclosing_definition": "LeaveChargeRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveChargeRef/properties/resolution_id/$ref",
+      "enclosing_definition": "LeaveChargeRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveChargeRef/properties/charge_version/$ref",
+      "enclosing_definition": "LeaveChargeRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveChargeRef/properties/server_digest/$ref",
+      "enclosing_definition": "LeaveChargeRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/employee_id/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "people",
+      "raw_identity_rule": "LeaveDispositionPayload.employee_id"
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/employment_id/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "Employment",
+      "raw_identity_rule": "LeaveDispositionPayload.employment_id"
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/request_id/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "UUID",
+      "classification": "OWNER_RECORD",
+      "owner_or_handler": "leave",
+      "raw_identity_rule": "LeaveDispositionPayload.request_id"
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/request_version/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/charge_ref/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "LeaveChargeRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "leave charge owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/interval/properties/from_us/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/interval/properties/to_us/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/qualification_ref/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/evidence_refs/items/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/decision_audit_ref/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "AuditEventRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "owning audit owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/LeaveDispositionPayload/properties/request_snapshot_sha256/$ref",
+      "enclosing_definition": "LeaveDispositionPayload",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventWitness/properties/ref/$ref",
+      "enclosing_definition": "EventWitness",
+      "target_definition": "EventRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "attendance event owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventWitness/properties/employee_id/$ref",
+      "enclosing_definition": "EventWitness",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "attendance",
+      "raw_identity_rule": "EventWitness.employee_id"
+    },
+    {
+      "pointer": "/$defs/EventWitness/properties/occurred_at_us/$ref",
+      "enclosing_definition": "EventWitness",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventWitness/properties/work_date/$ref",
+      "enclosing_definition": "EventWitness",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventWitness/properties/note/anyOf/0/$ref",
+      "enclosing_definition": "EventWitness",
+      "target_definition": "Note",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventWitness/properties/actor/$ref",
+      "enclosing_definition": "EventWitness",
+      "target_definition": "ActorAttribution",
+      "classification": "ATTRIBUTION_IDENTITY",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourcePackageRef/properties/artifact_ref/$ref",
+      "enclosing_definition": "SourcePackageRef",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourcePackageRef/properties/event_count/$ref",
+      "enclosing_definition": "SourcePackageRef",
+      "target_definition": "BoundedCount",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourcePackageRef/properties/event_set_digest/$ref",
+      "enclosing_definition": "SourcePackageRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageInterval/properties/from_us/$ref",
+      "enclosing_definition": "CoverageInterval",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageInterval/properties/to_us/$ref",
+      "enclosing_definition": "CoverageInterval",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageInterval/properties/event_refs/items/$ref",
+      "enclosing_definition": "CoverageInterval",
+      "target_definition": "EventRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "attendance event owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageInterval/properties/leave_disposition_ref/anyOf/0/$ref",
+      "enclosing_definition": "CoverageInterval",
+      "target_definition": "DispositionRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "leave owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageInterval/properties/rule_ref/$ref",
+      "enclosing_definition": "CoverageInterval",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageInterval/properties/plan_anchor_date/anyOf/0/$ref",
+      "enclosing_definition": "CoverageInterval",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/date/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/intervals/items/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "CoverageInterval",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/expected_work_minutes/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/covered_work_minutes/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/expected_paid_minutes/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/covered_paid_minutes/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/blockers/items/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "Blocker",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDay/properties/plan_contributions/items/$ref",
+      "enclosing_definition": "CoverageDay",
+      "target_definition": "CoveragePlanContribution",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageBoundary/properties/prior_anchor_ref/anyOf/0/$ref",
+      "enclosing_definition": "CoverageBoundary",
+      "target_definition": "EventRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "attendance event owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageBoundary/properties/query_from_us/$ref",
+      "enclosing_definition": "CoverageBoundary",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageBoundary/properties/query_to_us/$ref",
+      "enclosing_definition": "CoverageBoundary",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageBoundary/properties/basis_rule_ref/$ref",
+      "enclosing_definition": "CoverageBoundary",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/org_id/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "UUID",
+      "classification": "CONTEXT",
+      "owner_or_handler": "Company",
+      "raw_identity_rule": "EmploymentCoverage.org_id"
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/employee_id/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "people",
+      "raw_identity_rule": "EmploymentCoverage.employee_id"
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/employment_id/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "Employment",
+      "raw_identity_rule": "EmploymentCoverage.employment_id"
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/binding_id/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "UUID",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "Employment binding",
+      "raw_identity_rule": "EmploymentCoverage.binding_id"
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/binding_revision/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/earning_start_us/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/earning_end_us/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EmploymentCoverage/properties/segments/items/$ref",
+      "enclosing_definition": "EmploymentCoverage",
+      "target_definition": "EmploymentSegmentRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "Employment owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/employee_id/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "people",
+      "raw_identity_rule": "CoveragePayload.employee_id"
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/employment_id/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "Employment",
+      "raw_identity_rule": "CoveragePayload.employment_id"
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/period/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/source_package_ref/anyOf/0/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "SourcePackageRef",
+      "classification": "PACKAGE_REFERENCE",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/boundary/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "CoverageBoundary",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/blockers/items/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "Blocker",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/exception_resolution_refs/items/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "ExceptionResolutionRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "attendance exception owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePayload/properties/coverage_days_ref/anyOf/0/$ref",
+      "enclosing_definition": "CoveragePayload",
+      "target_definition": "CoverageDaysRef",
+      "classification": "PACKAGE_REFERENCE",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/OperationalCloseRef/properties/org_id/$ref",
+      "enclosing_definition": "OperationalCloseRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/OperationalCloseRef/properties/close_id/$ref",
+      "enclosing_definition": "OperationalCloseRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/OperationalCloseRef/properties/amendment_ids/items/$ref",
+      "enclosing_definition": "OperationalCloseRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/OperationalCloseRef/properties/amendment_set_digest/$ref",
+      "enclosing_definition": "OperationalCloseRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/OperationalCloseRef/properties/period_lock_id/$ref",
+      "enclosing_definition": "OperationalCloseRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CloseMember/properties/employee_id/$ref",
+      "enclosing_definition": "CloseMember",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "people",
+      "raw_identity_rule": "CloseMember.employee_id"
+    },
+    {
+      "pointer": "/$defs/CloseMember/properties/coverage_ref/$ref",
+      "enclosing_definition": "CloseMember",
+      "target_definition": "AttendanceCoverageRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance coverage",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CloseMember/properties/coverage_semantic_digest/$ref",
+      "enclosing_definition": "CloseMember",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ClosePayload/properties/period/$ref",
+      "enclosing_definition": "ClosePayload",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ClosePayload/properties/scope_basis_ref/$ref",
+      "enclosing_definition": "ClosePayload",
+      "target_definition": "ScopeBasisRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "scope/population owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ClosePayload/properties/operational_close_ref/$ref",
+      "enclosing_definition": "ClosePayload",
+      "target_definition": "OperationalCloseRef",
+      "classification": "NATIVE_RECORD_SET",
+      "owner_or_handler": "attendance close owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ClosePayload/properties/member_count/$ref",
+      "enclosing_definition": "ClosePayload",
+      "target_definition": "Count",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ClosePayload/properties/member_set_digest/$ref",
+      "enclosing_definition": "ClosePayload",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ClosePayload/properties/coverage_members_artifact_ref/$ref",
+      "enclosing_definition": "ClosePayload",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/InsuranceFact/properties/qualification_ref/$ref",
+      "enclosing_definition": "InsuranceFact",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/InsuranceFact/properties/evidence_refs/items/$ref",
+      "enclosing_definition": "InsuranceFact",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AssessedAmount/properties/amount_won/anyOf/0/$ref",
+      "enclosing_definition": "AssessedAmount",
+      "target_definition": "NonnegativeWon",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AssessedAmount/properties/definition_ref/$ref",
+      "enclosing_definition": "AssessedAmount",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AssessedAmount/properties/evidence_refs/items/$ref",
+      "enclosing_definition": "AssessedAmount",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ObligationFact/properties/qualification_ref/$ref",
+      "enclosing_definition": "ObligationFact",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ObligationFact/properties/coverage_ref/$ref",
+      "enclosing_definition": "ObligationFact",
+      "target_definition": "AttendanceCoverageRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance coverage",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ObligationFact/properties/evidence_refs/items/$ref",
+      "enclosing_definition": "ObligationFact",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSelection/properties/taxable_monthly_won/$ref",
+      "enclosing_definition": "TaxSelection",
+      "target_definition": "NonnegativeWon",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSelection/properties/dependent_count_including_self/$ref",
+      "enclosing_definition": "TaxSelection",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSelection/properties/eligible_child_count/$ref",
+      "enclosing_definition": "TaxSelection",
+      "target_definition": "RevisionOrZero",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSelection/properties/selection_fact_refs/items/$ref",
+      "enclosing_definition": "TaxSelection",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxSelection/properties/income_definition_ref/$ref",
+      "enclosing_definition": "TaxSelection",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/employee_id/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "people",
+      "raw_identity_rule": "EligibilityPayload.employee_id"
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/employment_coverage/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "EmploymentCoverage",
+      "classification": "EMPLOYMENT_CONTEXT",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/period/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/pay_date/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/profile_ref/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "ProfileRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll profile owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/wage_ref/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "WageFactRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll wage",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/coverage_ref/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "AttendanceCoverageRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance coverage",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/insurance/items/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "InsuranceFact",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/pension_basis/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "AssessedAmount",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/remuneration_basis/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "AssessedAmount",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/taxable_basis/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "AssessedAmount",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/obligations/items/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "ObligationFact",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/selection/anyOf/0/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "TaxSelection",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EligibilityPayload/properties/blockers/items/$ref",
+      "enclosing_definition": "EligibilityPayload",
+      "target_definition": "Blocker",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/0/properties/page/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/0/properties/table/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/0/properties/row/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/0/properties/column/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/0/properties/locator_schema_ref/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/1/properties/record_ordinal/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/1/properties/column_name/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxLocator/oneOf/1/properties/locator_schema_ref/$ref",
+      "enclosing_definition": "TaxLocator",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxAmounts/properties/income_tax_won/$ref",
+      "enclosing_definition": "TaxAmounts",
+      "target_definition": "NonnegativeWon",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxAmounts/properties/local_tax_won/$ref",
+      "enclosing_definition": "TaxAmounts",
+      "target_definition": "NonnegativeWon",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxAmounts/properties/income_locator/$ref",
+      "enclosing_definition": "TaxAmounts",
+      "target_definition": "TaxLocator",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxAmounts/properties/local_locator/$ref",
+      "enclosing_definition": "TaxAmounts",
+      "target_definition": "TaxLocator",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxAmounts/properties/rule_note_locators/items/$ref",
+      "enclosing_definition": "TaxAmounts",
+      "target_definition": "TaxLocator",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/source_qualification_ref/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/artifact_ref/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/table_edition/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "RegisteredAsciiId",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/assessment_ref/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "EligibilityRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll eligibility",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/employment_coverage/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "EmploymentCoverage",
+      "classification": "EMPLOYMENT_CONTEXT",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/period/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/pay_date/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/income_band/properties/lower_inclusive_won/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "NonnegativeWon",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/income_band/properties/upper_exclusive_won/anyOf/0/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "PositiveWon",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/selection/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "TaxSelection",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/TaxPayload/properties/amounts/$ref",
+      "enclosing_definition": "TaxPayload",
+      "target_definition": "TaxAmounts",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionRef/oneOf/0/properties/ref/$ref",
+      "enclosing_definition": "AdmissionRef",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionRef/oneOf/1/properties/ref/$ref",
+      "enclosing_definition": "AdmissionRef",
+      "target_definition": "EligibilityRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll eligibility",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionRef/oneOf/2/properties/ref/$ref",
+      "enclosing_definition": "AdmissionRef",
+      "target_definition": "TaxEvidenceRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll tax evidence",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionPayload/oneOf/0/properties/payload/$ref",
+      "enclosing_definition": "AdmissionPayload",
+      "target_definition": "QualificationPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionPayload/oneOf/0/properties/supersedes_ref/anyOf/0/$ref",
+      "enclosing_definition": "AdmissionPayload",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionPayload/oneOf/1/properties/payload/$ref",
+      "enclosing_definition": "AdmissionPayload",
+      "target_definition": "EligibilityPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionPayload/oneOf/1/properties/supersedes_ref/anyOf/0/$ref",
+      "enclosing_definition": "AdmissionPayload",
+      "target_definition": "EligibilityRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll eligibility",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionPayload/oneOf/2/properties/payload/$ref",
+      "enclosing_definition": "AdmissionPayload",
+      "target_definition": "TaxPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AdmissionPayload/oneOf/2/properties/supersedes_ref/anyOf/0/$ref",
+      "enclosing_definition": "AdmissionPayload",
+      "target_definition": "TaxEvidenceRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "payroll tax evidence",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/VerifyPayload/properties/admission_ref/$ref",
+      "enclosing_definition": "VerifyPayload",
+      "target_definition": "AdmissionRef",
+      "classification": "TAGGED_OWNER_REFERENCE",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/VerifyPayload/properties/admission_digest/$ref",
+      "enclosing_definition": "VerifyPayload",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/VerifyPayload/properties/expected_head_revision/$ref",
+      "enclosing_definition": "VerifyPayload",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/VerifyPayload/properties/reviewer_credential_ref/anyOf/0/$ref",
+      "enclosing_definition": "VerifyPayload",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RevokePayload/properties/head_ref/$ref",
+      "enclosing_definition": "RevokePayload",
+      "target_definition": "AdmissionRef",
+      "classification": "TAGGED_OWNER_REFERENCE",
+      "owner_or_handler": "registered tagged/carrier extractor",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/RevokePayload/properties/evidence_refs/items/$ref",
+      "enclosing_definition": "RevokePayload",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ActorAttribution/oneOf/0/properties/user_id/$ref",
+      "enclosing_definition": "ActorAttribution",
+      "target_definition": "UUID",
+      "classification": "HISTORICAL_ATTRIBUTION",
+      "owner_or_handler": "identity legacy",
+      "raw_identity_rule": "ActorAttribution.user_id"
+    },
+    {
+      "pointer": "/$defs/ActorAttribution/oneOf/1/properties/account_id/$ref",
+      "enclosing_definition": "ActorAttribution",
+      "target_definition": "UUID",
+      "classification": "HISTORICAL_ATTRIBUTION",
+      "owner_or_handler": "identity",
+      "raw_identity_rule": "ActorAttribution.account_id"
+    },
+    {
+      "pointer": "/$defs/AuditEventRef/properties/org_id/$ref",
+      "enclosing_definition": "AuditEventRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/AuditEventRef/properties/audit_event_id/$ref",
+      "enclosing_definition": "AuditEventRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/org_id/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "UUID",
+      "classification": "CONTEXT",
+      "owner_or_handler": "Company",
+      "raw_identity_rule": "EventPackageHeader.org_id"
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/employee_id/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "attendance",
+      "raw_identity_rule": "EventPackageHeader.employee_id"
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/period/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/query_from_us/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/query_to_us/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "UnixMicroseconds",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/prior_anchor_ref/anyOf/0/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "EventRef",
+      "classification": "NATIVE_RECORD",
+      "owner_or_handler": "attendance event owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EventPackageHeader/properties/event_count/$ref",
+      "enclosing_definition": "EventPackageHeader",
+      "target_definition": "BoundedCount",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ExceptionResolutionRef/properties/org_id/$ref",
+      "enclosing_definition": "ExceptionResolutionRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ExceptionResolutionRef/properties/resolution_id/$ref",
+      "enclosing_definition": "ExceptionResolutionRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/0/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/0/properties/attendance_record_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/1/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/1/properties/request_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/1/properties/request_version/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/2/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/2/properties/qualification_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/2/properties/revision/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/3/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/3/properties/assignment_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/3/properties/revision/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/4/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/4/properties/disposition_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/4/properties/revision/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/5/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/5/properties/evidence_object_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/5/properties/copy_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/5/properties/attestation_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/5/properties/attestation_revision/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "PositiveRevision",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/6/properties/org_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/SourceRepairRef/oneOf/6/properties/resolution_id/$ref",
+      "enclosing_definition": "SourceRepairRef",
+      "target_definition": "UUID",
+      "classification": "REFERENCE_COMPONENT",
+      "owner_or_handler": "enclosing typed reference, never bare UUID fetch",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CloseMemberPackageHeader/properties/org_id/$ref",
+      "enclosing_definition": "CloseMemberPackageHeader",
+      "target_definition": "UUID",
+      "classification": "CONTEXT",
+      "owner_or_handler": "Company",
+      "raw_identity_rule": "CloseMemberPackageHeader.org_id"
+    },
+    {
+      "pointer": "/$defs/CloseMemberPackageHeader/properties/period/$ref",
+      "enclosing_definition": "CloseMemberPackageHeader",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CloseMemberPackageHeader/properties/scope_basis_ref/$ref",
+      "enclosing_definition": "CloseMemberPackageHeader",
+      "target_definition": "ScopeBasisRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "scope/population owner",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CloseMemberPackageHeader/properties/member_count/$ref",
+      "enclosing_definition": "CloseMemberPackageHeader",
+      "target_definition": "Count",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ResolvedDayPlan/properties/duties/items/$ref",
+      "enclosing_definition": "ResolvedDayPlan",
+      "target_definition": "DutyPlan",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ResolvedDayPlan/properties/expected_work_minutes/$ref",
+      "enclosing_definition": "ResolvedDayPlan",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ResolvedDayPlan/properties/expected_paid_minutes/$ref",
+      "enclosing_definition": "ResolvedDayPlan",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/ResolvedDayPlan/properties/rule_ref/$ref",
+      "enclosing_definition": "ResolvedDayPlan",
+      "target_definition": "QualificationRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "source qualification",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EffectiveDayPlan/properties/org_id/$ref",
+      "enclosing_definition": "EffectiveDayPlan",
+      "target_definition": "UUID",
+      "classification": "CONTEXT",
+      "owner_or_handler": "Company",
+      "raw_identity_rule": "EffectiveDayPlan.org_id"
+    },
+    {
+      "pointer": "/$defs/EffectiveDayPlan/properties/anchor_date/$ref",
+      "enclosing_definition": "EffectiveDayPlan",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EffectiveDayPlan/properties/calendar_assignment_ref/$ref",
+      "enclosing_definition": "EffectiveDayPlan",
+      "target_definition": "CalendarAssignmentRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance assignment",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EffectiveDayPlan/properties/calendar_ref/$ref",
+      "enclosing_definition": "EffectiveDayPlan",
+      "target_definition": "CalendarRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance calendar",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/EffectiveDayPlan/properties/plan/$ref",
+      "enclosing_definition": "EffectiveDayPlan",
+      "target_definition": "ResolvedDayPlan",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePlanContribution/properties/anchor_date/$ref",
+      "enclosing_definition": "CoveragePlanContribution",
+      "target_definition": "Date",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePlanContribution/properties/calendar_assignment_ref/$ref",
+      "enclosing_definition": "CoveragePlanContribution",
+      "target_definition": "CalendarAssignmentRef",
+      "classification": "OWNER_VERSION",
+      "owner_or_handler": "attendance assignment",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePlanContribution/properties/plan_digest/$ref",
+      "enclosing_definition": "CoveragePlanContribution",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePlanContribution/properties/expected_work_minutes/$ref",
+      "enclosing_definition": "CoveragePlanContribution",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoveragePlanContribution/properties/expected_paid_minutes/$ref",
+      "enclosing_definition": "CoveragePlanContribution",
+      "target_definition": "Minute",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDaysRef/properties/artifact_ref/$ref",
+      "enclosing_definition": "CoverageDaysRef",
+      "target_definition": "ArtifactRef",
+      "classification": "ARTIFACT_VERSION",
+      "owner_or_handler": "Docs/custody",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDaysRef/properties/day_count/$ref",
+      "enclosing_definition": "CoverageDaysRef",
+      "target_definition": "Count",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDaysRef/properties/day_set_digest/$ref",
+      "enclosing_definition": "CoverageDaysRef",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDayPackageHeader/properties/org_id/$ref",
+      "enclosing_definition": "CoverageDayPackageHeader",
+      "target_definition": "UUID",
+      "classification": "CONTEXT",
+      "owner_or_handler": "Company",
+      "raw_identity_rule": "CoverageDayPackageHeader.org_id"
+    },
+    {
+      "pointer": "/$defs/CoverageDayPackageHeader/properties/employee_id/$ref",
+      "enclosing_definition": "CoverageDayPackageHeader",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "attendance",
+      "raw_identity_rule": "CoverageDayPackageHeader.employee_id"
+    },
+    {
+      "pointer": "/$defs/CoverageDayPackageHeader/properties/employment_id/$ref",
+      "enclosing_definition": "CoverageDayPackageHeader",
+      "target_definition": "UUID",
+      "classification": "SUBJECT",
+      "owner_or_handler": "Employment",
+      "raw_identity_rule": "CoverageDayPackageHeader.employment_id"
+    },
+    {
+      "pointer": "/$defs/CoverageDayPackageHeader/properties/period/$ref",
+      "enclosing_definition": "CoverageDayPackageHeader",
+      "target_definition": "InclusivePeriod",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDayPackageHeader/properties/day_count/$ref",
+      "enclosing_definition": "CoverageDayPackageHeader",
+      "target_definition": "Count",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/$defs/CoverageDayPackageHeader/properties/event_set_digest/$ref",
+      "enclosing_definition": "CoverageDayPackageHeader",
+      "target_definition": "Sha256",
+      "classification": "VALUE",
+      "owner_or_handler": "typed scalar decoder; no autonomous resource lookup",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/0/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "AdmissionPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/1/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "VerifyPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/2/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "RevokePayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/3/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CalendarPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/4/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CalendarAssignmentPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/5/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CoveragePayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/6/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "LeaveDispositionPayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/7/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "ClosePayload",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/8/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "EventWitness",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/9/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CloseMember",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/10/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "EventPackageHeader",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/11/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CloseMemberPackageHeader",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/12/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CoverageDay",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/13/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "CoverageDayPackageHeader",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    },
+    {
+      "pointer": "/oneOf/14/$ref",
+      "enclosing_definition": "ROOT",
+      "target_definition": "EffectiveDayPlan",
+      "classification": "DESCEND_TYPED_SCHEMA",
+      "owner_or_handler": "registered schema decoder",
+      "raw_identity_rule": null
+    }
+  ]
+}

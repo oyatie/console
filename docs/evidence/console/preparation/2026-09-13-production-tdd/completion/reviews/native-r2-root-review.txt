@@ -1,0 +1,12 @@
+Native R2 source/interface review
+Reviewer /root; author /root/fresh29_workflows. Native source not edited by reviewer.
+Frozen manifest764e3e4454a0e059337a9d6faa7ae0c861f586ca2762f27a6a484b404582649e.
+Scope: proposed owner boundaries, sequential binder, decoder/normalizer and contract/implementation distinction. Read source directly, not only other reviewers conclusions. Cartesian doubt, systems, security boundary and operability lenses.
+
+Accept the semantic distinction of an authenticated ephemeral context from retained intent, Company/Group/worker separation, fixed existing owner placement, complete six-field RunExpected load, and BUILDING/PENDING/terminal distinction. These close specific R1 flaws. No context wrapper alone proves current authorization; final transaction reload/revalidation remains required. Shared scope between two Companies never implies cross-tenant equivalence.
+
+The byte reference independently validates closed body schemas and checked scalar/canonical sequences; it does not implement owner target-mode/target-body binding, actual registration lookup, source truth, protection retention or output projection. Correct UUID syntax or digest match never grants authority. Preserve this limit when translating reference tests into implementation lanes. A target of the right object_kind still needs action-specific create/existing and exact body/allocated-target checks in the owner acceptance suite. No claim of runtime complexity measurement or whole-flow proof follows from96reference passes.
+
+Confirmed native producer defect: review.decide currently selects a governance request as target while registration requires review_basis. Supplement must replace the target with the real basis and retain real request in the input. Four RunExpected fields are nullable, despite the R2 holds prose saying two; cover all four null/current/old cases. Actual terminal completion must be bound to original attempt/command, not merely any Completed result.
+
+Verdict: bounded byte/interface candidate acceptable as proposal; owner producer remains HOLD until exact corrective supplement and concrete assertion bodies independently reviewed. Compilation, live bootstrap,55owner execution and product acceptance are not established. No need to repeat design30 authority adoption already completed31f769a; native refinements still require revision-bound design/test approval.

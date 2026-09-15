@@ -1,0 +1,41 @@
+{
+  "kind": "INDEPENDENT_READ_ONLY_NATIVE_FIRST_BOUNDARY_TRACE_ADDENDUM",
+  "runtime_owner": "/root",
+  "review_author": "/root/capture_review",
+  "source_base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "log": "/private/tmp/native-browser-wire-23fa2771-admission/probe-red.log",
+  "log_sha256": "eea0804f982f6456fff1da3b7a258cf77b510199608ae7a7c8e52468a7258a23",
+  "source_path": "backend/app/tests/auth_rest.rs",
+  "source_sha256": "38bff0cf3a7dbcea4ffe57642df389f54929d39754f290060c4689c828afb102",
+  "observed_log_facts": {
+    "counts": {
+      "executed": 1,
+      "passed": 0,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 215
+    },
+    "response_assertion_line": 4034,
+    "actual_http_status": 404,
+    "expected_http_status": 200,
+    "observed_source_frame_lines": [
+      4034,
+      4528,
+      4654,
+      4818
+    ]
+  },
+  "source_trace_conclusions": [
+    "Shared response assertion4034 was called from start4528, enrolled4654 and the retained case4818. Source start posts exactly /api/v2/auth/registration/start. The source and runtime backtrace jointly support the registration-start failure boundary.",
+    "The case reached enrolled4818 after its sequential terms/manifest/content status, exact-byte/hash and header assertions. This establishes those prior assertions completed in this execution; it does not establish real release-publication authority, since terms state/artifacts are admitted data fixtures."
+  ],
+  "unreached": [
+    "registration challenge/body/cookie/pending Account checks after4528",
+    "finish and real Account family/session creation",
+    "accounts/me live projection",
+    "contexts result and no Company identity postconditions"
+  ],
+  "changes_prior_calibration": "V1 stale log allowed only shared-helper404 with route/terms source inference; V2 preserved that qualification. This later root backtrace now supplies the missing runtime call-location evidence, without modifying either frozen packet.",
+  "runtime_invocations_by_this_reviewer": 0,
+  "shared_writes": 0
+}

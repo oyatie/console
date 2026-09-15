@@ -1,0 +1,74 @@
+diff --git a/backend/crates/platform/authz/src/cedar_pbac/authoring.rs b/backend/crates/platform/authz/src/cedar_pbac/authoring.rs
+index 9b1db3a0..e3c80577 100644
+--- a/backend/crates/platform/authz/src/cedar_pbac/authoring.rs
++++ b/backend/crates/platform/authz/src/cedar_pbac/authoring.rs
+@@ -659,7 +659,7 @@ pub struct SimulationOutcome {
+     /// deny-by-omission, since no policy matched).
+     pub determining_policies: Vec<String>,
+     /// Cedar evaluation-error strings; a non-empty list is itself a fail-closed
+-    /// signal (the decision is reported as it was computed, never widened).
++    /// signal: the effective decision is Deny even if a permit matched.
+     pub errors: Vec<String>,
+     pub reason: String,
+ }
+@@ -770,6 +770,14 @@ fn simulate_inner(policies: &[AuthoredPolicy], request: &SimRequest) -> Simulati
+         .errors()
+         .map(ToString::to_string)
+         .collect::<Vec<_>>();
++    if !errors.is_empty() {
++        return SimulationOutcome {
++            effect: SimEffect::Deny,
++            reason: "deny: Cedar evaluation errors".to_owned(),
++            determining_policies,
++            errors,
++        };
++    }
+     match response.decision() {
+         Decision::Allow => SimulationOutcome {
+             effect: SimEffect::Allow,
+diff --git a/backend/crates/platform/authz/src/cedar_pbac/engine.rs b/backend/crates/platform/authz/src/cedar_pbac/engine.rs
+index 71d79d70..9944b341 100644
+--- a/backend/crates/platform/authz/src/cedar_pbac/engine.rs
++++ b/backend/crates/platform/authz/src/cedar_pbac/engine.rs
+@@ -458,26 +458,25 @@ fn evaluate_inner(
+     .map_err(|err| format!("cedar request failed: {err}"))?;
+ 
+     let response = Authorizer::new().is_authorized(&cedar_request, &bundle.policies, &entities);
++    let errors = response
++        .diagnostics()
++        .errors()
++        .map(ToString::to_string)
++        .collect::<Vec<_>>();
++    if !errors.is_empty() {
++        return Ok(CedarEvaluation::Deny {
++            bundle_key: bundle.key.clone(),
++            reason: format!("cedar denied with evaluation errors: {}", errors.join("; ")),
++        });
++    }
+     match response.decision() {
+         Decision::Allow => Ok(CedarEvaluation::Allow {
+             bundle_key: bundle.key.clone(),
+         }),
+-        Decision::Deny => {
+-            let errors = response
+-                .diagnostics()
+-                .errors()
+-                .map(ToString::to_string)
+-                .collect::<Vec<_>>();
+-            let reason = if errors.is_empty() {
+-                "cedar denied: no matching permit".to_owned()
+-            } else {
+-                format!("cedar denied with evaluation errors: {}", errors.join("; "))
+-            };
+-            Ok(CedarEvaluation::Deny {
+-                bundle_key: bundle.key.clone(),
+-                reason,
+-            })
+-        }
++        Decision::Deny => Ok(CedarEvaluation::Deny {
++            bundle_key: bundle.key.clone(),
++            reason: "cedar denied: no matching permit".to_owned(),
++        }),
+     }
+ }
+ 

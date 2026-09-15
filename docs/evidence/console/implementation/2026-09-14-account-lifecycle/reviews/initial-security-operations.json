@@ -1,0 +1,94 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "scope": "Read-only Account catalog migration lifecycle conflict; draft source mutable under sole implementation author",
+  "verdict": "BLOCK_CURRENT_GLOBAL_OWNER_MEMBERSHIP_DRAFT_RECOMMEND_DATABASE_LOCAL_ADMIN_FINALIZATION",
+  "lenses": [
+    "Cartesian doubt",
+    "Systems Thinking",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "facts": [
+    {
+      "path": "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql:67",
+      "finding": "Immutable migration forbids every console_app membership except original two; superuser applier does not bypass this membership check."
+    },
+    {
+      "path": "backend/app/src/lib.rs:2160",
+      "finding": "prepare_migration_database_connection checks actual pg_auth_members and transitive memberships, allowing only original two writers plus implicit pg_database_owner."
+    },
+    {
+      "path": "backend/app/src/lib.rs:4457",
+      "finding": "run_migrations uses direct console_app physical connection, calls full embedded SQLx migrator and Apalis, then reasserts same identity. Extra owner memberships before or after migrations violate actual production boundary."
+    },
+    {
+      "path": "backend/app/tests/auth_rest.rs:3301",
+      "finding": "prepare_http_database verifies empty marked disposable admin-owned database, transfers database ownership to console_app and calls production run_migrations with actual owner LOGIN. It does not apply schemas as fake/admin fixture."
+    },
+    {
+      "path": "ops/compose.yml:95",
+      "finding": "Existing deployment orders admin topology -> migrate -> API/worker. No post-migration custody finalization currently exists."
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql",
+      "finding": "Draft requires new NOLOGIN owners and attempts ALTER TABLE OWNER under console_app; removing membership grants alone makes transfer unavailable."
+    }
+  ],
+  "recommendation": {
+    "approach": "Keep new custody owners NOLOGIN with zero membership edges; retain original exact two console_app memberships. Separate database-local catalog creation and explicit administrator ownership finalization, using existing topology admin transport and a named production finalization stage.",
+    "ordered_contract": [
+      "Pre-migration topology provisions/validates two restrictive NOLOGIN owner roles with no inbound/outbound memberships; no temporary role reachability granted to migration/runtime logins.",
+      "0226 creates exactly six empty dormant relations as console_app and revokes PUBLIC/runtime/table/column/default-derived exposure in the same transaction. It does not attempt privileged ownership transfer or fabricate finalization success.",
+      "After canonical run_migrations succeeds, existing authorized cluster-admin transport performs explicit per-database finalization in one transaction: verify intended database and migration/checksum state, exact relation kind/schema and expected source/target ownership; transfer only six named objects, enforce exact ACL/role invariants and atomically verify final state.",
+      "Production orchestration treats schema applied and custody finalized as distinct states. Startup/readiness for the new Account feature must verify final actual custody before serving; deployment must not report complete after migrations alone. Old runtime cannot access pending dormant relations.",
+      "Repeat finalization idempotently on exact already-finalized state; fail closed on partial/unexpected relation shape/owner/ACL, with transaction rollback. Concurrent finalizers use database-local coordination; no cluster-global grant window.",
+      "SQLx preparation calls the same production finalizer through its already-proven disposable admin identity after run_migrations; it must not reproduce ownership/DDL inline. General fixtures follow actual lifecycle and assertions remain unchanged."
+    ],
+    "implementation_surfaces": [
+      "ops/postgres-reconcile-topology.sh: owner provisioning and explicit finalization mode or narrowly separate reused production entrypoint",
+      "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql: creation/ACL stage only",
+      "ops/compose.yml: post-migrate finalizer dependency and readiness ordering",
+      "backend/app/src/lib.rs: appropriate pending-custody readiness assertion without granting admin credentials to serving process",
+      "backend/app/tests/auth_rest.rs: use shared production finalization path, reviewed fixture lifecycle amendment",
+      "Equivalent current Kubernetes/one-shot migration orchestration and canonical SQLx runner path must use same stage; locate before implementation"
+    ],
+    "authority_boundary": "This changes deployment completion and fixture lifecycle contracts and needs a revision-bound material design/test amendment. It is not authorized by the earlier exact4membership test delta. Production finalizer must exist before changing fixture to invoke it."
+  },
+  "alternatives": [
+    {
+      "option": "Temporary cluster-global grants around0226",
+      "verdict": "Reject",
+      "reason": "Shared role membership affects every database and concurrent migration/API connection. Grants may survive interruption or existing SET ROLE sessions; cleanup is not revocation proof. Transactional membership visibility also fails to deliver a usable grant across separate migrator connections, while a committed window interferes with another database executing0165."
+    },
+    {
+      "option": "Split historical migrator and change current authority to allow four owner memberships",
+      "verdict": "Not smallest safe fix",
+      "reason": "Every fresh database still replays immutable0165; final shared topology cannot remain four while another database bootstraps. Requires cluster-wide serialized phase coordinator and fences, not simple per-database migration batching."
+    },
+    {
+      "option": "Run entire migrator as admin or test-only owner reassignment",
+      "verdict": "Reject",
+      "reason": "Violates actual direct console_app production identity boundary; fixture-only fallback hides readiness failure."
+    },
+    {
+      "option": "Admin-installed database-local SECURITY DEFINER ownership helper",
+      "verdict": "Possible separately reviewed alternative, not free fix",
+      "reason": "Could keep creation+transfer atomic under owner migrator without global grants, but introduces privileged callable DDL authority, installation lifecycle and trusted search_path/object validation/replacement/replay constraints. Fixed allowlist alone is insufficient against hostile object definitions or ownership. More enduring attack surface than one-shot existing admin finalization for six dormant relations."
+    }
+  ],
+  "required_meaningful_tests": [
+    "Fresh real database: original two memberships -> all immutable migrations including0165 -> real direct console_app run_migrations -> actual admin finalizer -> exact six owner/ACL assertions.",
+    "Existing migrated database upgrade, idempotent finalizer/reconciliation restart, and exact original historical checksums retained.",
+    "Pending finalization cannot serve new Account functionality; no runtime/table/column/SET reachability before or after finalization.",
+    "Unexpected/partial catalog, wrong database/owner/migration identity, and unauthorized finalizer caller refuse without partial ownership/ACL mutation.",
+    "Failure after migration and before/during finalization resumes deterministically; successful post-state readback distinguishes commit ambiguity from no effect.",
+    "Two databases sharing cluster: one replays0165 while another finalizes six relations; console_app memberships stay exact two throughout and neither job weakens the other database.",
+    "SQLx fixtures invoke same production lifecycle without inline role/schema repair; selected catalog tests reach actual assertions."
+  ],
+  "prior_test_delta_disposition": "Earlier topology-test-independent-review accepted the exact membership4 extension conditional on approved ownership needs. New actual migration evidence disproves that lifecycle compatibility premise; retain prior receipt historically, do not apply that patch as resolution. Under recommended no-membership design original2edge expectations stay and only strict new-role/zero-edge assertions extend them.",
+  "executions": "Read-only source/evidence review, no new product tests or database changes.",
+  "worktree_changes": 0
+}

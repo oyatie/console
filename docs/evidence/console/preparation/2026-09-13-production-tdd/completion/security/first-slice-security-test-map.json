@@ -1,0 +1,277 @@
+{
+  "base_sha": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "author": "/root/fresh29_security",
+  "sole_repository_writer": "/root",
+  "scope": "Security/Account-context/operator-custody/populated-migration/projection/event/egress/Verus portion of first-slice test preparation; not a complete whole-product inventory",
+  "candidate_sources": [
+    {
+      "artifact": "cedar_diagnostic_fail_closed.rs",
+      "target": "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs",
+      "insertion": "NEW_FILE; no production source edits",
+      "command": "cargo test --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_diagnostic_fail_closed",
+      "case_ids": [
+        "SEC-CEDAR-01",
+        "SEC-CEDAR-02"
+      ],
+      "sha256": "583d1310bd2cb2b6b82885ecba036f7d8e27f82ba6ea39ce84be67f6e75b278b",
+      "test_functions": [
+        "clean_compiled_permit_with_nonoverflowing_forbid_allows",
+        "compiled_allow_with_runtime_overflow_diagnostic_fails_closed",
+        "valid_field_policy_controls_show_clean_allow_and_matching_forbid",
+        "field_visibility_fails_closed_when_allow_has_diagnostics",
+        "row_visibility_fails_closed_when_allow_has_diagnostics"
+      ],
+      "authored_functions": 5,
+      "discovery_command": "cargo test --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_diagnostic_fail_closed -- --list",
+      "status": "AUTHORED_NOT_COMPILED_NOT_DISCOVERED_NOT_EXECUTED",
+      "allowed_red": "Only exact intended assertion after positive/diagnostic fixture prerequisites; compile/setup failure is not behavioral RED"
+    },
+    {
+      "artifact": "realtime-company-fanout.append.rs",
+      "target": "backend/crates/platform/realtime/tests/hub.rs",
+      "insertion": "APPEND_EOF; preserve every existing byte; uses existing message_event helper",
+      "command": "cargo test --manifest-path backend/Cargo.toml -p console-platform-realtime --test hub same_account_",
+      "case_ids": [
+        "SEC-LIVE-01"
+      ],
+      "sha256": "20f02e3ed6764e05fc0c78542efffbdae5d2ac6a419c662a6fc3bb541b9f5f49",
+      "test_functions": [
+        "same_account_message_fanout_respects_active_company",
+        "same_account_ack_fanout_respects_active_company"
+      ],
+      "authored_functions": 2,
+      "discovery_command": "cargo test --manifest-path backend/Cargo.toml -p console-platform-realtime --test hub same_account_ -- --list",
+      "status": "AUTHORED_NOT_COMPILED_NOT_DISCOVERED_NOT_EXECUTED",
+      "allowed_red": "Only exact intended assertion after positive/diagnostic fixture prerequisites; compile/setup failure is not behavioral RED"
+    },
+    {
+      "artifact": "telemetry-diagnostic-sink.append.rs",
+      "target": "backend/app/src/console_telemetry.rs",
+      "insertion": "APPEND_EOF_CFG_TEST_MODULE; preserve every existing byte; no runtime source changes",
+      "command": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib security_diagnostic_sink_tests",
+      "case_ids": [
+        "SEC-EVENT-02"
+      ],
+      "sha256": "f7d781c72c1277ea8316f04db793744c3365c91fc2e4a39c52774a225f10d804",
+      "test_functions": [
+        "database_error_conversion_keeps_private_protocol_diagnostics_out_of_public_trace",
+        "request_context_error_conversion_keeps_private_policy_diagnostics_out_of_public_trace"
+      ],
+      "authored_functions": 2,
+      "discovery_command": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib security_diagnostic_sink_tests -- --list",
+      "status": "AUTHORED_NOT_COMPILED_NOT_DISCOVERED_NOT_EXECUTED",
+      "allowed_red": "Only exact intended assertion after positive/diagnostic fixture prerequisites; compile/setup failure is not behavioral RED"
+    }
+  ],
+  "detailed_assertion_map": [
+    {
+      "case_id": "SEC-CEDAR-01",
+      "assertion_reference": "first-slice-security-test-design.txt:35",
+      "summary": "SEC-CEDAR-01 \u2014 Allow plus runtime diagnostic must fail closed at compiled engine.",
+      "status": "AUTHORED_RUST_NOT_RUN"
+    },
+    {
+      "case_id": "SEC-CEDAR-02",
+      "assertion_reference": "first-slice-security-test-design.txt:41",
+      "summary": "SEC-CEDAR-02 \u2014 Field and row helper must not discard evaluation errors.",
+      "status": "AUTHORED_RUST_NOT_RUN"
+    },
+    {
+      "case_id": "SEC-LIVE-01",
+      "assertion_reference": "first-slice-security-test-design.txt:46",
+      "summary": "SEC-LIVE-01 \u2014 Exact Company must participate in actual message fanout.",
+      "status": "AUTHORED_RUST_NOT_RUN"
+    },
+    {
+      "case_id": "SEC-EVENT-01",
+      "assertion_reference": "first-slice-security-test-design.txt:51",
+      "summary": "SEC-EVENT-01 \u2014 Public telemetry input must use registered values, not syntax-only private labels.",
+      "status": "EXISTING_BOUNDARY_CASE_NOT_YET_AUTHORED_AS_RUST"
+    },
+    {
+      "case_id": "SEC-EVENT-02",
+      "assertion_reference": "first-slice-security-test-design.txt:56",
+      "summary": "SEC-EVENT-02 \u2014 Real DbError/request-context conversion cannot log private diagnostics publicly.",
+      "status": "AUTHORED_RUST_NOT_RUN"
+    },
+    {
+      "case_id": "SEC-EGRESS-01",
+      "assertion_reference": "first-slice-security-test-design.txt:61",
+      "summary": "SEC-EGRESS-01 \u2014 Actual configured HTTP client must not follow redirects.",
+      "status": "EXISTING_BOUNDARY_CASE_NOT_YET_AUTHORED_AS_RUST"
+    },
+    {
+      "case_id": "SEC-CONTEXT-01",
+      "assertion_reference": "first-slice-security-test-design.txt:71",
+      "summary": "SEC-CONTEXT-01 \u2014 bind_active_context at existing request-context/auth application boundary.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "SEC-PROJECTION-01",
+      "assertion_reference": "first-slice-security-test-design.txt:76",
+      "summary": "SEC-PROJECTION-01 \u2014 project_authorized_result at owning application projection.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "SEC-PROJECTION-02",
+      "assertion_reference": "first-slice-security-test-design.txt:81",
+      "summary": "SEC-PROJECTION-02: execute once, retain original receipt, then revoke a field/resource grant and replay same command ID. Business effect count remains1; returned outcome is only currently authorized projection, possibly denied/unavailable. No second effect or unconditional historical payload disclosure. Positive unrevoked replay confirms receipt continuity. Optional gate/review routes must not disclose global coverage to a scoped reviewer.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "SEC-PROJECTION-03",
+      "assertion_reference": "first-slice-security-test-design.txt:82",
+      "summary": "SEC-PROJECTION-03: CONTROL_REFERENCE15minute exact typed handle bound to Account/session/context,Company-or-Group/action/field/schema/expiry. Cross-binding replay or expired handle fails before any effect and preserves permissible user input; fresh authorized render succeeds. A raw private reference in public form must not substitute for handle. Do not require global-cycle equality for scoped basis card.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "SEC-EVENT-03",
+      "assertion_reference": "first-slice-security-test-design.txt:84",
+      "summary": "SEC-EVENT-03 \u2014 build_safe_operational_event at existing telemetry/tracing boundary.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "SEC-EGRESS-02",
+      "assertion_reference": "first-slice-security-test-design.txt:88",
+      "summary": "SEC-EGRESS-02 \u2014 admit_bound_egress at storage/notification transport boundary.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "MIG-01",
+      "assertion_reference": "first-slice-security-test-design.txt:97",
+      "summary": "MIG-01 M0 snapshot closure.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "MIG-02",
+      "assertion_reference": "first-slice-security-test-design.txt:100",
+      "summary": "MIG-02 M1 identity and credential continuity with irreversible auth fence.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "MIG-03",
+      "assertion_reference": "first-slice-security-test-design.txt:105",
+      "summary": "MIG-03 M5 restartable bounded mapping.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "MIG-04",
+      "assertion_reference": "first-slice-security-test-design.txt:110",
+      "summary": "MIG-04 M2-M4 dormant coupling.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "MIG-05",
+      "assertion_reference": "first-slice-security-test-design.txt:113",
+      "summary": "MIG-05 M6 mixed binary and manifest enrollment.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "MIG-06",
+      "assertion_reference": "first-slice-security-test-design.txt:116",
+      "summary": "MIG-06 rollback before/after new writes.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "VERUS-01",
+      "assertion_reference": "first-slice-security-test-design.txt:122",
+      "summary": "VERUS-01 source binding: preserve original supplied-value proof. For each actual new function bind source Git blob, exact executable body/struct-field identity, feature/toolchain/compiler/Verus/Z3 pins. Ghost views may describe source data but cannot replace projection body with a toy model. Any rename needs mechanical mapping to OR28D four functions and all callers. List actual assume/external_body/unsafe/FFI and refine each external loading/output relation; no assumption that allowed=true or adapter outputs match across private worlds.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "VERUS-02",
+      "assertion_reference": "first-slice-security-test-design.txt:123",
+      "summary": "VERUS-02 relational predicates: define low_equivalent(context,policy,public_environment,state_left,state_right,allowed_releases). Cross-Group private-state variation and separately same-Company hidden-field variation. Logical observe includes status/headers/body/length, SSR/hydration, cache-visible output, stream count/order/topic/content, public event schedule and egress destination/projected payload. Integrity property compares untouched B-owned state after an A command. Couple public randomness/clock where specified; exclude real timing/traffic/shared-resource and ciphertext equality explicitly. Current ActiveContext exact equality is distinct from minimum freshness predicate.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "VERUS-03",
+      "assertion_reference": "first-slice-security-test-design.txt:124",
+      "summary": "VERUS-03 nonvacuity/mutations: valid A value actually emitted, valid B operation actually changes B, hidden value omitted; independently mutate wrong Company acceptance, missing field redaction, extra secret-dependent safe log event, and unbound egress. Each breaks the designated source-bound proof or actual boundary test. Import/parse/toolchain failure is not proof rejection. Report verified units/failed obligations separately from runtime tests and source-discovered fixtures.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "VERUS-04",
+      "assertion_reference": "first-slice-security-test-design.txt:125",
+      "summary": "VERUS-04 actual sink enrollment: for each source-sink-map row record route/job caller, owner loader, projector/error policy, concrete serializer/emitter/client, current-context recheck, actual test and remaining external assumption. ADAPT requires working binding; UNAVAILABLE_FIRST_SLICE/ADAPT_OR_DISABLE requires exercised fail-closed route or non-enrollment. Grep and compile-private types help locate bypasses but cannot close SQL operand loading, dynamic route alias, external logging or process credential boundaries.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "CTX-01",
+      "assertion_reference": "first-slice-security-test-design.txt:136",
+      "summary": "CTX-01 authorized populated pagination: seed32Group/256Company bounded maximum via actual topology, Account grant and context-source owners. Distinct permitted labels, one permitted context identity with denied label, and one undiscoverable context; query GET /api/v2/accounts/me/contexts?page_size=1. Exact collected context_ref set equals independently authorized fixture set once each; no hidden item/count/label or denied-derived sort key. Omitted label still has entry_ref:{kind:WORKSPACE}; no CompanyActor rows created by reads. Positive membership/grant source rows must be read back before query. This is not achievable by inserting fabricated candidates alone.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "CTX-02",
+      "assertion_reference": "first-slice-security-test-design.txt:137",
+      "summary": "CTX-02 current authority and temporal cursor: after page1, revoke a previously allowed context or make a previously denied candidate allowed through actual policy owner; increment proper source/context generations in same transaction. Old cursor409 stale_cursor, no hidden ownership distinction; fresh whole scan reflects authorized change. Use a fixed clock/boundary around earliest whole-scan temporal transition to catch denied->allowed candidates not in page1. Expired cursor at5minutes, foreign Account cursor, changed query and unexpected-future generation all refuse. unavailable authority503 navigation_unavailable; empty successful scope200 contexts:[] without next_cursor. These precise cases remain catalog/owner-prerequisite blocked until populated discovery exists.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "CTX-03",
+      "assertion_reference": "first-slice-security-test-design.txt:138",
+      "summary": "CTX-03 keys across replicas: BW31 single-key issuer/public fingerprint exact at startup. Two app replicas with distinct fixture keys and same DB cannot both report admitted Account service; mixed-key readiness fails. Stop/drain/revoke Account families, replace all keys and restart; old access/refresh/CSRF invalid, fresh primary login works, original identity and historical terms remain. The existing csrf_wrong_key test validates request signatures only; it does not witness startup homogeneity, drain or rollback. No key-rollover implementation is assumed.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-01",
+      "assertion_reference": "first-slice-security-test-design.txt:140",
+      "summary": "PUB-01 external operator custody: BW31 contract12 publication, not user endpoint. Proposed actual publisher call/CLI must resolve a local immutable TermsPublicationApproval in admitted deployment custody, authenticate approved_by and independently qualified content_authority_refs, validate exact manifest/artifact digests, then mutate. Supply identical JSON/hash via an untrusted app request/path; refuse before any receipt/head change. Missing/unreadable custody artifact, unknown operator or missing qualified content reference also refuse; snapshot head+receipts exact. Trusted TEST_ONLY fixture may be used only with explicit test environment; production mode rejects TEST_ONLY. A syntactically correct approval hash alone is never the positive control.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-02",
+      "assertion_reference": "first-slice-security-test-design.txt:141",
+      "summary": "PUB-02 tuple/CAS: with head revision7, valid actual custody approval expected7/next8 and exact digest M yields one immutable receipt(id,previous_revision7,revision8,manifestM,exact approval bytes) and head(8,M,same receipt). Two concurrent publishers with expected7: exactly one succeeds, loser reports current conflict without second receipt or head mutation. Same manifest bytes republished get a new revision/receipt; A->B->A cannot revive old registration. Genesis1 from absent head is separately admitted; max signed bigint fails closed without wrap.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-03",
+      "assertion_reference": "first-slice-security-test-design.txt:142",
+      "summary": "PUB-03 atomicity: trigger a real insert/commit failure in disposable DB after approval validation but before publication transaction commits; both receipt and head remain old. Exact response loss/retry behavior must be specified by actual publisher registration before choosing idempotency oracle; do not invent replay semantics absent approval. Independent receipt/head readback after success required.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-04",
+      "assertion_reference": "first-slice-security-test-design.txt:143",
+      "summary": "PUB-04 custody integrity: immutable manifest1..8 required distinct kinds, each digest resolves exact registered UTF-8 content <=64KiB and wrapper<=16KiB. Alter one content byte, alias digest/path, duplicate kind, unknown kind, unsupported locale/title shape, symlink/path escape or unavailable registered content; actual publisher refuses without mutation. Existing HTTP artifact reads prove serving behavior, not custody publication approval.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-05",
+      "assertion_reference": "first-slice-security-test-design.txt:144",
+      "summary": "PUB-05 publication vs finish locks: actual registration holds account_security then head FOR SHARE while successful finish commits. Pause through a witnessed lock; publisher head update waits until consent commits with exact old tuple, or publisher wins and finish rejects terms_changed with no partial activation. Assert pg_locks/blocker identity and correlated receipt/head/acceptance/security event after release. FOR KEY SHARE is a targeted negative mutation because a non-key digest/revision UPDATE could pass. Do not count a timeout as contention evidence or directly update head in place of actual publisher.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-06",
+      "assertion_reference": "first-slice-security-test-design.txt:145",
+      "summary": "PUB-06 privileges: console_rt and company command LOGIN cannot modify head/receipt via table/column grants, default grants, role membership, PUBLIC or callable SECURITY DEFINER bypass. Authorized Account publisher role can perform only admitted operation; auth readers can load current/retained authority but not publish. Inspect effective privileges plus actual denied statements and successful publisher positive. Role name/ACL existence alone insufficient. Head lock must not take locks on all Accounts.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    },
+    {
+      "case_id": "PUB-07",
+      "assertion_reference": "first-slice-security-test-design.txt:146",
+      "summary": "PUB-07 rollback/mixed release: restore old artifact configuration while DB head newer; enrollment503 authority_unavailable, existing independently eligible Account operations remain safe; no stale acceptance/default head. New binary missing a retained accepted digest must not delete historical acceptance or invent a release receipt. Production publisher/qualified content custody remains separate authority HOLD even when these synthetic operator tests pass.",
+      "status": "OWNER_INTERFACE_OR_CALL_PATH_PREREQUISITE_BLOCKED"
+    }
+  ],
+  "status_rules": "See handoff text section1; absent owner/interface never becomes a green model-only result",
+  "execution": {
+    "authored_rust_test_functions": 9,
+    "compiler_discovered": null,
+    "executed": 0,
+    "passed": 0,
+    "review_status": "INDEPENDENT_ROOT_REVIEW_REQUIRED_BEFORE_INTEGRATION_AND_LANE_ADMISSION"
+  },
+  "holds": [
+    "Known blocked ephemeral FK correction unchanged; no substitute weakening",
+    "Production qualified terms authority and exposure remain separate",
+    "Cedar source tests do not prove current SQL loading or actual projection callers",
+    "Realtime in-process dispatch seam does not prove real DB membership or post-upgrade freshness",
+    "Trace tests use synthetic diagnostics, not real DB-origin faults",
+    "Four design30 functions and M1/M5/M6/publisher startup-owner interfaces absent at base; exact bindings still required",
+    "Verus supplied-value proof unchanged; source-bound actual projection/event/egress proof and call-path closure outstanding"
+  ]
+}

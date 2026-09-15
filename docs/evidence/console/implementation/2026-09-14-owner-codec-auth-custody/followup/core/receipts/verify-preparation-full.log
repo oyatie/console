@@ -1,0 +1,24 @@
+✔ every mirrored CI run-step is classified (7.915708ms)
+✔ hosted hardening dependency bootstrap is explicit and lifecycle-script free (0.755625ms)
+✔ local verification mirrors release content proofs without deriving an authority train (0.438708ms)
+✔ a new CI step that nobody classified fails the guard (5.205583ms)
+✔ every CI job is declared mirrored or explicitly not mirrored (6.644292ms)
+✔ Required / CI is orchestration-only while every leaf proof remains classified (1.706458ms)
+✔ a whole new CI job that nobody declared fails the guard (1.466958ms)
+✔ a declared job that CI no longer runs fails the guard (1.3365ms)
+✔ a plan entry whose CI step disappeared fails the guard (1.3985ms)
+✔ domain-unit is part of the local mirror (2.386291ms)
+✔ the reasoning-lens manifest check is a fast-tier local gate (0.294ms)
+✔ PostgreSQL provisioning keeps generated credentials out of Docker argv (0.592792ms)
+✔ secret-bearing temporary files are private at creation (0.996875ms)
+✔ topology env assembly requires pairwise-distinct role credentials (0.214417ms)
+✔ the topology script rejects duplicate role passwords before DB access (43.710333ms)
+✔ app Cargo runner preserves all four test selections (1.963542ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 139.059291

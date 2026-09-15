@@ -1,0 +1,119 @@
+{
+  "base_sha": "ffabd26ba2043abeaae9493fd7568fac5399f8ce",
+  "candidate_sha": "579e742c78e0536b8c76ed37d4ce2bbce6657fd2",
+  "source_paths": [
+    "backend/Cargo.lock",
+    "backend/app/BUCK",
+    "backend/app/Cargo.toml",
+    "backend/app/tests/auth_rest.rs",
+    "backend/crates/platform/auth/BUCK",
+    "backend/crates/platform/auth/Cargo.toml",
+    "backend/crates/platform/auth/tests/refresh_tokens.rs",
+    "backend/crates/platform/db/tests/rls_isolation.rs",
+    "backend/crates/platform/provisioning/BUCK",
+    "backend/crates/platform/provisioning/Cargo.toml",
+    "backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+    "backend/crates/platform/test-support/BUCK",
+    "backend/crates/platform/test-support/Cargo.toml",
+    "backend/crates/platform/test-support/src/lib.rs",
+    "tools/ci/cargo_needs_postgres.sh"
+  ],
+  "source_blobs": [
+    {
+      "path": "backend/Cargo.lock",
+      "git_blob": "8ea53dda14d5eeedf97c372950d91f08e61be712",
+      "sha256": "15d42e20a6dc7d781480edbf0eac176e50b4dfc6d1ce5fe46b874368d0dc5826"
+    },
+    {
+      "path": "backend/app/BUCK",
+      "git_blob": "bd87ddccafc455e2a000d2b6ac2104acbcdc7b49",
+      "sha256": "50e5e76dd943473ea0f56082a58749e54264e2de1f3a5074c39ce13a9ba66d26"
+    },
+    {
+      "path": "backend/app/Cargo.toml",
+      "git_blob": "efdb14ee61cd1915b7a823c1c281bb3d932d7272",
+      "sha256": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5"
+    },
+    {
+      "path": "backend/app/tests/auth_rest.rs",
+      "git_blob": "5179e36cf04134e73dc4d4502ef99a545e2f7bb1",
+      "sha256": "e2a7063f9833723cd084134f4d9ac4730bc2cd1ebb784c7a12f05ba0789a57f5"
+    },
+    {
+      "path": "backend/crates/platform/auth/BUCK",
+      "git_blob": "13909426dfbed7a1ae27a985abc513930d2cc5d5",
+      "sha256": "1748e74f1ced7da7446531468e650c9ee8ca84b89eaf117448323ba5bc3bd0bb"
+    },
+    {
+      "path": "backend/crates/platform/auth/Cargo.toml",
+      "git_blob": "312591cf686c21e0888ea23da26fc27cc012f476",
+      "sha256": "b9e5e73eec7a921157a591f78596a42d1bfd74315b24a852c60742c429ce59f5"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "git_blob": "e301a1f1e76ce04b4ee199c802bd41dd2999b991",
+      "sha256": "9e5b1357d63b3ab1da5e6dd11066d12a42cbf931f5ce5800f84d0cce1cfeb9b5"
+    },
+    {
+      "path": "backend/crates/platform/db/tests/rls_isolation.rs",
+      "git_blob": "66692d9cc74c6d2cb68cc2a5310440a86e235a60",
+      "sha256": "38317206850159fee5670e3c0b4b6819a3cd1918ddafb543b1d3658b1325da2d"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/BUCK",
+      "git_blob": "0cf5006de0d4a2a5366607ebeeb8de9c9cb8f33e",
+      "sha256": "3bfdbc017619bd07fd80a3f36c797b0b8a6b50212850d11fb7b1f5f0145c110d"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/Cargo.toml",
+      "git_blob": "e518a109abf903c6e2040da55215305db73a8366",
+      "sha256": "1715ac28a0c61f9590f3ded717eea889209cfc9f125962dd130739099bf8491c"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+      "git_blob": "5890a029a9f5faf78280dfacb1b936e492285207",
+      "sha256": "ac1060f3e9207b875041dc3a8a17e95591beeeb1e7c11067fd4a764c4d552d09"
+    },
+    {
+      "path": "backend/crates/platform/test-support/BUCK",
+      "git_blob": "be22b31bdb1c0d0ab8a205e92016640737deaa13",
+      "sha256": "3b970c9941f291fd0b93d03e2d5e626b21a5fc93f7bdfe223a339b0df72230a9"
+    },
+    {
+      "path": "backend/crates/platform/test-support/Cargo.toml",
+      "git_blob": "3361f3d797d5c7f156c5acf4596647c70e5f7a60",
+      "sha256": "927ad4f1bfa07994157ad32f07cbab4d383b9b710bf53383eadceb4edcdab594"
+    },
+    {
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "git_blob": "3eb5f0f2eb508e98fb011ddcda908ba4340d85fe",
+      "sha256": "5d07b15b18bff35c8830ece0a53f45fd2f5506f6ea4c31f6dc023b980c3e0b52"
+    },
+    {
+      "path": "tools/ci/cargo_needs_postgres.sh",
+      "git_blob": "5adc16f8ecec0a2c6b719b196cde68b95be2f78e",
+      "sha256": "903732790585dc270dad6f696f511d1b29d352b07ed88a5161f97c70a78be792"
+    }
+  ],
+  "lock_package_records_unchanged": true,
+  "lock_added_edges": [
+    {
+      "package": "console-app",
+      "dependency": "console-platform-test-support"
+    },
+    {
+      "package": "console-platform-auth",
+      "dependency": "console-platform-test-support"
+    },
+    {
+      "package": "console-platform-provisioning",
+      "dependency": "console-platform-test-support"
+    },
+    {
+      "package": "console-platform-test-support",
+      "dependency": "url"
+    }
+  ],
+  "generated_regeneration_changed_files": 0,
+  "diff_check_exit": 0
+}

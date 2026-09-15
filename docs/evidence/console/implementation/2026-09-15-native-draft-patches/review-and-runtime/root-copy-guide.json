@@ -1,0 +1,24 @@
+{
+  "kind": "ROOT_ONLY_FINITE_DRAFT_RETENTION_COPY_GUIDE",
+  "candidate_root": "/private/tmp/native-draft-retention-d66e2112-inventory",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime",
+  "source_head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "manifest": "/private/tmp/native-draft-retention-d66e2112-inventory/retention-allowlist.json",
+  "manifest_sha256": "968f7ecb46591c7ec0c2766b80cd3bdeb611ffa0d6a0036071f5be8c8d22903c",
+  "copy_records": 34,
+  "steps": [
+    "Independently verify manifest hash, classifications, finite original paths and immutable Git bindings.",
+    "For each enumerated record verify regular candidate/original file, SHA/size, deterministic gzip and exact decompression. Check root-prepared21byte equality and no duplicate preparation/test payloads.",
+    "Root alone copies only archive_candidate to archive_destination. Refuse any existing unequal destination; do not overwrite historical evidence.",
+    "Copy only retention-allowlist.json and this root-copy-guide.json after byte verification; retain independent import review separately.",
+    "Read back all destination archives and compare archive and decompressed hashes/sizes. Do not import preparer scripts or unlisted neighbors.",
+    "Keep original compileRED0, V1original12/full43GREEN plus56Clippy failures, hardening48RED43/5, and final48+ClippyGREEN as separate facts. Original12probe differs from full48+Clippyprobe."
+  ],
+  "no_execution": "All imported payloads are inert gzip evidence; no source/Cargo/DB/Docker/script execution authorized by this guide.",
+  "remaining_holds": [
+    "Root independent finite import/readback",
+    "Separate completed finalnpmreview/retention",
+    "Durable caller/current-authority/CAS/history/SSR and broaderAccount/Console",
+    "Production/payment/legal authority"
+  ]
+}

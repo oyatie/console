@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root",
+  "candidate_sha": "df069154999e5c085037b15cc5a5726fe5276ae2",
+  "test_sha256": "3b1881bc158f24dac1d9cee5fef0601feeb5885c04276550c99a4c945491d0b0",
+  "verdict": "ACCEPT_BOUNDED_SSR_PRESENTATION_TESTS",
+  "author": "/root/finish_migration",
+  "red": "E0432 common_action_composer API absent;14 authored,0 behavioral cases executed",
+  "checks": [
+    "Separate authorized projection and server authority",
+    "Explicit POST intents and exact tokens",
+    "Incomplete editor preserved and submit unavailable",
+    "Stable nested FieldAddress names independent of row order",
+    "Error links, read-only omission, escaping and URL safety",
+    "Existing library7/7passed per author logs"
+  ],
+  "limits": [
+    "No mounted endpoint/persistence/CSRF/owner enforcement claim",
+    "Native browser success/keyboard/focus and submission require browser execution",
+    "This presentation subset does not yet render complete nested business schemas"
+  ]
+}

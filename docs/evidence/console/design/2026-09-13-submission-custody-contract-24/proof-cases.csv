@@ -1,0 +1,19 @@
+id,setup,oracle,status
+C01,equal input bytes but changed Company/schema/action/target,preparation/command identity differs; no cross-context reuse,PROPOSED_NOT_EXECUTED
+C02,source event digest supplied as input-only digest,newref/protocol/decoder refuses; never reinterpret19 hash,PROPOSED_NOT_EXECUTED
+C03,future command/attempt/output/approval inserted into preparation,closed schema/cycle contract refuses,PROPOSED_NOT_EXECUTED
+C04,command references snapshot digest that contains command,reject cycle; command binds preparation only,PROPOSED_NOT_EXECUTED
+C05,metadata/command/input exact same bytes and identities,valid framed retention candidate; owner semantic/authority checks still required,PROPOSED_NOT_EXECUTED
+C06,missing/extra/reordered/truncated section or over-cap length,reject before allocation; exact EOF and component bounds,PROPOSED_NOT_EXECUTED
+C07,Korean/newline reason altered or normalized,command/snapshot identity changes; original readable bytes retained,PROPOSED_NOT_EXECUTED
+C08,last editor/preparer differs from submitting Account,allow if current valid handover; snapshot binds original attempt actor not old editor,PROPOSED_NOT_EXECUTED
+C09,snapshot actor not attempt.original_account_id,composite FK and decoded command binding refuse,PROPOSED_NOT_EXECUTED
+C10,Account exits Employment before historical read,anchor/history persists; current own-resource policy controls disclosure,PROPOSED_NOT_EXECUTED
+C11,domain evidence only has private pins,refuse release until independent domain pin/adoption proven,PROPOSED_NOT_EXECUTED
+C12,future gate decision appended to sealed snapshot,refuse mutation; separately retain actual execution evidence,PROPOSED_NOT_EXECUTED
+C13,many source results with compatible obligation,one snapshot with per-result/purpose adoptions; no per-result byte duplication,PROPOSED_NOT_EXECUTED
+C14,new seal reuses old attempt snapshot unit,refuse retargeting; new preparedunit for new attempt,PROPOSED_NOT_EXECUTED
+C15,commit acknowledgment lost or bytes unavailable on replay,same receipt/provenance reconciliation; no new upload/unit/effect,PROPOSED_NOT_EXECUTED
+C16,partial field rights request raw snapshot,deny raw; return authorized owner projection; logs/errors no raw bytes,PROPOSED_NOT_EXECUTED
+C17,snapshot inserted without reverse source/adoption obligations,full finalizer integration refuses;24 SQL fragment alone insufficient,PROPOSED_NOT_EXECUTED
+C18,disposal requested while no confined F03 transition exists,refuse cleanup; no bypass of immutability/pins/legal authority,PROPOSED_NOT_EXECUTED

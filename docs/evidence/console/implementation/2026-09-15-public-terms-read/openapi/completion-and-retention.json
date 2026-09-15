@@ -1,0 +1,259 @@
+{
+  "kind": "PUBLIC_TERMS_OPENAPI_COMPLETION",
+  "source_candidate": "eef737cf0739784795a718e99e5d72bc85999c3f",
+  "admitted_base": "0b8ec4c1b4c767cf607001b811a61bf799a6cf58",
+  "integration_owner": "/root",
+  "author": "/root/capture_review",
+  "independent_reviewer": "/root/inventory_repair",
+  "same_probe": "python3 /private/tmp/public-terms-openapi15-probe.py",
+  "red": {
+    "executed": 15,
+    "passed": 13,
+    "failed": 2,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "green": {
+    "executed": 15,
+    "passed": 15,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "test_changes": 0,
+  "public_route_behavior_changes": 0,
+  "canonical_generation": "Existing Rust projection helpers plus rustfmt and real console-openapi-gen reproduce frozen bytes exactly. OrgChangeDetail was existing source-manifest projection drift.",
+  "openapi_refs": {
+    "references": 5010,
+    "mapping_entries": 27,
+    "findings": 0
+  },
+  "review_hashes": {
+    "source": "87f401e724e8511981c02dfedb588b68d1030e881c7126d32246316927b50516",
+    "runtime": "1dea75f272ea4b5b300f62795d49ff0530c3a9ba2633d3b95778abed6f5d1aed"
+  },
+  "pre_mortem": "Route and composed document diverge or generated edits disappear on regeneration.",
+  "blast_radius": "Three public termsGET descriptions/constants and existing generated contracts; no schema/DB/credentials mutation.",
+  "detection": "Same15test exact RED/GREEN, canonical byte match, refs and independent source/runtime review.",
+  "rollback": "Reviewed source revert or forward correction; no data transition. Preserve evidence.",
+  "stop_conditions": [
+    "Candidate/hash mismatch",
+    "Test weakening",
+    "Behavior or unrelated contract change"
+  ],
+  "remaining_holds": [
+    "Separate full fast verification after in-flight draft compiler boundary resolves",
+    "Whole Console and remaining Account behavior",
+    "Production/publication/payment/legal authority"
+  ],
+  "records": [
+    {
+      "origin": "/private/tmp/public-terms-openapi15-probe.py",
+      "archive": "review-and-admission/public-terms-openapi15-probe.py.gz",
+      "original_sha256": "1d285d5696cb1f38dff28f9a99cd213b226da77d4a24627e2328d9d8137fba51",
+      "archive_sha256": "52c892d48d10e69a736b6fb0f9873df2b73592ee38343432359f6c3c9850615b",
+      "original_bytes": 1527,
+      "archive_bytes": 777
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-lane-00199d8b.json",
+      "archive": "review-and-admission/public-terms-openapi15-lane-00199d8b.json.gz",
+      "original_sha256": "5fac9e7521607c3be94296e85c84ecc1c62697c7fa012048c368565a7041c691",
+      "archive_sha256": "87c9ccc55f8c84e1dd595ba3c4dc1efe1d964590c3f107a65eddfce5739f5814",
+      "original_bytes": 1988,
+      "archive_bytes": 995
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-owner-lane-00199d8b.json",
+      "archive": "review-and-admission/public-terms-openapi15-owner-lane-00199d8b.json.gz",
+      "original_sha256": "bdabe44a94646c811357f9ea3059bf4c2d86753bab721545175793f5c78fc8dd",
+      "archive_sha256": "9b49f903d0b3001e1e5b9bf39e94d6d30b680033c3730cd58167f9377a74a1ee",
+      "original_bytes": 4066,
+      "archive_bytes": 1553
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-corrected-owner-lane-0b8ec4c1.json",
+      "archive": "review-and-admission/public-terms-openapi15-corrected-owner-lane-0b8ec4c1.json.gz",
+      "original_sha256": "0c4ccd60c48ad098bd6dd342c760e76e6cad6ea029b4dd00489adb569b38a7d5",
+      "archive_sha256": "a285fd4b0acca1a7be27f84670f0e2926b0d9a46cba12a04cd2a2ffcafd4f968",
+      "original_bytes": 4370,
+      "archive_bytes": 1683
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-red-admission-receipt.json",
+      "archive": "review-and-admission/public-terms-openapi15-red-admission-receipt.json.gz",
+      "original_sha256": "9aee7cd94579916a45700c5d3e4052ea26f7646c2b338f97811eb4d4c4e654d2",
+      "archive_sha256": "700e503fc230e2f9ac366b43b1321d35668457ec39c2d260ff35a66f376d54d7",
+      "original_bytes": 498,
+      "archive_bytes": 296
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-investigation-capture-00199d8b.json",
+      "archive": "review-and-admission/public-terms-openapi15-investigation-capture-00199d8b.json.gz",
+      "original_sha256": "075fd3c22b0c28419ed0759e2ceabd3bcb985a60255f5d26560fd2975126cbca",
+      "archive_sha256": "5e833a362ac8fb49e786eedc6dd3d213adeef4fa43e98ab3a5ffaf9ad760ae31",
+      "original_bytes": 11270,
+      "archive_bytes": 4443
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-independent-review-inventory.json",
+      "archive": "review-and-admission/public-terms-openapi15-independent-review-inventory.json.gz",
+      "original_sha256": "87f401e724e8511981c02dfedb588b68d1030e881c7126d32246316927b50516",
+      "archive_sha256": "6ec2b9f3b0c89f778dbcb49a6a11f2d496707fdeff71dfc2dcf4522b500f56f9",
+      "original_bytes": 28104,
+      "archive_bytes": 4465
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-red-green-independent-runtime-review-inventory.json",
+      "archive": "review-and-admission/public-terms-openapi15-red-green-independent-runtime-review-inventory.json.gz",
+      "original_sha256": "1dea75f272ea4b5b300f62795d49ff0530c3a9ba2633d3b95778abed6f5d1aed",
+      "archive_sha256": "7dfcb348dd32a0889ea515bd632fbb7566585e85ee061e1183c0e5f6fa12b8a2",
+      "original_bytes": 6954,
+      "archive_bytes": 2691
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-root-import-0b8ec4c1.json",
+      "archive": "review-and-admission/public-terms-openapi15-root-import-0b8ec4c1.json.gz",
+      "original_sha256": "ce183e0db720cdd1102522ebcfcee2053e9ef30d8ce2df7f50fa855a9474f2d8",
+      "archive_sha256": "eed823555b8016f3016d8d688855b768055af769e5dca3e9a1b5792e2abe76ae",
+      "original_bytes": 3782,
+      "archive_bytes": 1308
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-root-composer-0b8ec4c1.json",
+      "archive": "review-and-admission/public-terms-openapi15-root-composer-0b8ec4c1.json.gz",
+      "original_sha256": "2679978bef1922549f3afb0b587f4a2bb633f3314ae7d93dcae423e1b20a69e0",
+      "archive_sha256": "a008856b4dfcc49d9672e42b18706f313fed1aabf57b9c53c1380a79f6500166",
+      "original_bytes": 570,
+      "archive_bytes": 387
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-root-composer-0b8ec4c1.log",
+      "archive": "review-and-admission/public-terms-openapi15-root-composer-0b8ec4c1.log.gz",
+      "original_sha256": "b971d42ec948c394cb0ac45217efa91e71f3763e20e0cf81b3aa4b2515e8c5d0",
+      "archive_sha256": "e9383fc1b600cc3b929e89e4bdd68b8481a3c56afbf312bb45ca9c76c9ec5063",
+      "original_bytes": 380,
+      "archive_bytes": 236
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/candidate-manifest.json",
+      "archive": "candidate/candidate-manifest.json.gz",
+      "original_sha256": "cbd5201a119d20c5959459d804b8e1fcc3a4e175cdd519948ae7c70c95762bc7",
+      "archive_sha256": "05aead79f12aa596225d5433754ded949953e2f4d4b0bd1d9a4811c8831e3653",
+      "original_bytes": 4501,
+      "archive_bytes": 1683
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/candidate.patch",
+      "archive": "candidate/candidate.patch.gz",
+      "original_sha256": "be3882d117b3a7b39cb30ea9a2d7a2fde0591f6a5c3861c80a22c13065168bb1",
+      "archive_sha256": "ac6d5eb40a3c3ed7ecb5d394e56eccedce69dd3c2d7da066f64d150ad5650ae6",
+      "original_bytes": 27137,
+      "archive_bytes": 3763
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/baseline-projection-difference.patch",
+      "archive": "candidate/baseline-projection-difference.patch.gz",
+      "original_sha256": "a9ad1525cc5a46e77933e7a6ba70c2a886acfccaddd4ce8ceb6da964a358d770",
+      "archive_sha256": "28d8ff0d80bc89171d87deca9055e1dc8adfc0113a0307b661b2fc16213953c9",
+      "original_bytes": 307,
+      "archive_bytes": 194
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/canonical-projection-checks.json",
+      "archive": "candidate/canonical-projection-checks.json.gz",
+      "original_sha256": "d8e46ce85aab7b058d6531d1947df637b3cb9a8905556efe52db7de04fbb7457",
+      "archive_sha256": "00bc04639f7e600525a635362fb129ad171ddb43d37df942fa025fba10af99cf",
+      "original_bytes": 1188,
+      "archive_bytes": 584
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/static-contract-checks.json",
+      "archive": "candidate/static-contract-checks.json.gz",
+      "original_sha256": "254c1f22527dd2c06a45dcfd8fbb1272dd80b3e0aa97016d1535ac02a32afa2b",
+      "archive_sha256": "4bf199a3d35b6ce46eb6cdee18bf97f9783775566892e2c6668a15b594387d9e",
+      "original_bytes": 298,
+      "archive_bytes": 204
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/mechanical-checks.json",
+      "archive": "candidate/mechanical-checks.json.gz",
+      "original_sha256": "0fcf0d4ab44ccee48adcf12048f959267a7b1c3e3feaeaeefc7029be62428f57",
+      "archive_sha256": "96d507ac61dd5c26170c2ebede9ded3c63a9d43f1561ded3cd72c45187aad72f",
+      "original_bytes": 1656,
+      "archive_bytes": 530
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-candidate-capture-00199d8b/root-guide.json",
+      "archive": "candidate/root-guide.json.gz",
+      "original_sha256": "9021bc69430f8b7447e73d2c719f1a6753c55f55bc87b3e5f9355b663971c5a7",
+      "archive_sha256": "965481517d3d1abb25f4778dfe36c5f7a2c915171dfa1b53f38c0037a7926bbd",
+      "original_bytes": 2248,
+      "archive_bytes": 1179
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-uy9ggycz/receipt.json",
+      "archive": "runtime/initial-red/receipt.json.gz",
+      "original_sha256": "c413db857bcb89c8e64099170e40599a82af65fdc085b6bf872f1d73f669d808",
+      "archive_sha256": "7a1d84c0c9463b4136c2d0aa3d3a36b42c808a21c8f7571a7f84b77da729ef34",
+      "original_bytes": 1549,
+      "archive_bytes": 641
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-uy9ggycz/probe.log",
+      "archive": "runtime/initial-red/probe.log.gz",
+      "original_sha256": "165af1495b062070761f10ecaab6997ff04af7c45349f20dd55614b578b356c4",
+      "archive_sha256": "fc4b042659ef7d07d6f46409040422bb1397c5822eb2024b77fad8bdf32b4032",
+      "original_bytes": 2937,
+      "archive_bytes": 1245
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-_w_vy0l7/receipt.json",
+      "archive": "runtime/owner-red/receipt.json.gz",
+      "original_sha256": "a6e819ebeef44739e4980be73b262bfe119c7e5212b54551dc5f9c8f4fc4fca2",
+      "archive_sha256": "77fc504b53efd05431d6bf80c4fa068572a0bfcb083fd99de70f5b2141eb6ac9",
+      "original_bytes": 1549,
+      "archive_bytes": 641
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-_w_vy0l7/probe.log",
+      "archive": "runtime/owner-red/probe.log.gz",
+      "original_sha256": "0cd9da5a860b232769cb6bc5994eae3fc28a4460a675b0219731c97e4f91629b",
+      "archive_sha256": "6fc4e207087a651a6537db93e83c75b2c133248edb16bf0f623b100f96273a67",
+      "original_bytes": 2834,
+      "archive_bytes": 1198
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-qeasucza/receipt.json",
+      "archive": "runtime/corrected-admitted-red/receipt.json.gz",
+      "original_sha256": "31cf35fce1fe1c0f82b93cb6bf0373fa6e68b66759bf509088d3c77c1a2f8e44",
+      "archive_sha256": "a1038e91c2b62e2957e6e4e94dd76665e373b3257b072fbd18c0f4a8811af5c9",
+      "original_bytes": 1549,
+      "archive_bytes": 639
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-qeasucza/probe.log",
+      "archive": "runtime/corrected-admitted-red/probe.log.gz",
+      "original_sha256": "6bb9784ff0a588b2b406ddbb1e76dd4a0aeae21682c3d49f19b920aa786c216e",
+      "archive_sha256": "e171428ea8bbebfc0fd3e527b1e34889aed46d2733ffbdf537761f361ad30160",
+      "original_bytes": 3211,
+      "archive_bytes": 1278
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-mt97d7zh/receipt.json",
+      "archive": "runtime/green/receipt.json.gz",
+      "original_sha256": "bce25db872f53cb9a188d605bb2c120b8f4eb2a7fbcd9b734c76c5ad55fc5863",
+      "archive_sha256": "a113310f0bd5c328a10e86ba143363e591775bb12505722e0dc94915a6b510e9",
+      "original_bytes": 1547,
+      "archive_bytes": 642
+    },
+    {
+      "origin": "/private/tmp/public-terms-openapi15-mt97d7zh/probe.log",
+      "archive": "runtime/green/probe.log.gz",
+      "original_sha256": "52d691225dfde426039c17dc85715a4f513d989e52f62a5f6d892b22a07e1cf3",
+      "archive_sha256": "01f93cbcb70ede8d27d95a21042433b2981a9d18bbb2e76dc24b59a45509c05b",
+      "original_bytes": 2292,
+      "archive_bytes": 1019
+    }
+  ]
+}

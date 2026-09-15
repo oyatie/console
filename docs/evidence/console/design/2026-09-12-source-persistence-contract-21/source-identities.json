@@ -1,0 +1,187 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/app/src/console_telemetry.rs",
+      "mode": "100644",
+      "git_blob": "70f908d2dc700047fd44a1f2639d4a3a8d1892e1",
+      "sha256": "dec113765747c03ce896bafafd6920cf92327c899681b2ba73f73e953f2f18a4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/app/src/office.rs",
+      "mode": "100644",
+      "git_blob": "1e965be9cd6830461bf9e79731256177cfa4ea3e",
+      "sha256": "368279ffdb5c66b84c77feab235fb6357421ffb20626a3cf2a9347b647f5587f"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/ci/gates/pii-no-logs/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "838b6e7986406dd1a8c6fd4e4d892238a542f0b2",
+      "sha256": "b31d3ff31084d8f68ec67b8dd69c5684006beccc176ad0dc108fc66f14f16488"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/kernel/core/src/redact.rs",
+      "mode": "100644",
+      "git_blob": "5d3d27803b66132233d174efcf5f1e00da0745a9",
+      "sha256": "dbfeef076dedee0163dbfa5ff5cd021277a10e8733e2fc3eae9736b96e061929"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/rest/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "628995399c59e200620a25a36628b4a916241cc5",
+      "sha256": "b51fb6929cba515d8961f6b6c4479e2c9037502c82276944a613d2e41c87f0a9"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0155_create_ontology_instances.sql",
+      "mode": "100644",
+      "git_blob": "fa789dcba967c1af10cb6076879c30a7bdff770a",
+      "sha256": "bed9b9af5592814d5008cd8e06236b5ee57dfd604a8ed399cc9f0aff0078e1cf"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql",
+      "mode": "100644",
+      "git_blob": "477fbc4fe47c7e9374cffa6fd117e2a98d397c19",
+      "sha256": "c4ef36f24582b1d3034c7212877103bb72724138bef1d66dabbef24410fa40ba"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0188_create_attendance_console.sql",
+      "mode": "100644",
+      "git_blob": "e12c64777868b4366acdc98f6916ff4542d4137d",
+      "sha256": "f1bdf51bd43ac9eb19169a6e56b53397a4cfae5c1b199204c1b539138de973a7"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0214_create_canonical_employment_tables.sql",
+      "mode": "100644",
+      "git_blob": "9ef02f5c24bb936c453f9c593bb4369f0e37a464",
+      "sha256": "0b61c28c004a23c96a53d5a242957458b90ce068dd72bfe4936cbaf2b52b2c42"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0223_ont_action_command_receipts_owner_target.sql",
+      "mode": "100644",
+      "git_blob": "c0298785fcf82cda0bd323074729593e6acf330b",
+      "sha256": "5879bfa87f1b5b14b824a05ba7f69dd77a78e03b218858ec5625bba2521c4e2f"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql",
+      "mode": "100644",
+      "git_blob": "8b11fcb989d474c72822368b0ad7c6b9c2c68a64",
+      "sha256": "90ded6b338aa92907dc98bf74bc1fa563e05a4a8acb5d748aa24a44e237ff720"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/email/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "36bd0ad4c6dd8cd5b78615a3da2ae473a49bd77e",
+      "sha256": "7d63123e4433f32f14689a06163365b95c662ddd78550295cd4e07ee62b8025d"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/group/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "c5058b642b760f3b258a405afa2882ea9bfc3442",
+      "sha256": "260f3f3e1bb5c0837f6d7a7847e13db559fab30bfe2ec7ed623fb9a497aad636"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/storage/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "4bc39e991d67f9e10c8a3d17ccb6b394528fbfe8",
+      "sha256": "4da3d50595afaabcbe2b42bd3118656f1485560d814fee5085de44b80ababf69"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "mode": "100644",
+      "git_blob": "53eae8f5184e890b06ba91d7131c25a2dcd3299f",
+      "sha256": "3198b1380551e1103afb4bcb8c2805b000944ffcc004ffd337fa5b46b03921a7"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "mode": "100644",
+      "git_blob": "5ca655e24b73882cbb14943af37697fa46373150",
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "mode": "100644",
+      "git_blob": "3a1b036ba3975b98550e5adfbd0c77c39374d6d4",
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/integration-contract.txt",
+      "mode": "100644",
+      "git_blob": "74fa75a5d20da640aff982b63f2cbecdd4f86cc1",
+      "sha256": "1310129b0bbd5bc8455075197d47ce639b33b4420d2c8d6816a089d2cac3716c"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-records.json",
+      "mode": "100644",
+      "git_blob": "fe4a6b0781766f15f2d15d68578f0260b891c5e9",
+      "sha256": "e98cf009c8dc8622436b3e23ad9288dd3d1dc9f41927985c3607cd7647131d81"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-native-manifest-contract-18/physical-contract.sql.txt",
+      "mode": "100644",
+      "git_blob": "10e6e02d3e4264b59552555b85da542b479176f8",
+      "sha256": "531c8b6acdb596544f2d1a75d001267fe4255a62a89229eff212af84eb06f1db"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/source-contract.txt",
+      "mode": "100644",
+      "git_blob": "3fdb4732c1a481efe92dda5be49de18754695b16",
+      "sha256": "ecd92c45511c4b72ed044252ab5ba8e5f90d4ac6672d3cb8682cf5126808c695"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/state-contract.json",
+      "mode": "100644",
+      "git_blob": "07436a946949c92c404ccb149f5b8b7320b91a16",
+      "sha256": "1908c1e49f95c94b77ffaf5d30874f1f00c05e8c9639123aa0ba7c9509188329"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-source-payload-contract-19/encoding-and-packages.txt",
+      "mode": "100644",
+      "git_blob": "c5a92c31d4245575861ff01ac09f4c0064140350",
+      "sha256": "6e2a33d756a8b19d5d370d7513bf8d32531ec23ccde35a7ba3821c28e979255f"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/execution-contract.txt",
+      "mode": "100644",
+      "git_blob": "53bd4d767eb554804008bac84e90bc49b59da727",
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/verification-strategy.txt",
+      "mode": "100644",
+      "git_blob": "266fd3eeb7bf59544a130e79d6f731baa8c68e87",
+      "sha256": "30ee407e39d74c8bc6afc5dc4667e07b39185e30ed120280713892a4d872443f"
+    },
+    {
+      "commit": "c9598c5390b9ac362566456c7dda5b2dbcd25f0d",
+      "path": "docs/evidence/console/design/2026-09-12-owner-execution-contract-20/verus-sources.json",
+      "mode": "100644",
+      "git_blob": "dc6c34a0a33d4354a0a9646b66bbd10af4c11cec",
+      "sha256": "734755fb85b12dcc8e9e6a4dd3e03f6014bd36d1273883e3382f6fcdb589b34b"
+    }
+  ],
+  "verus_official_sources": "Exact upstream revision38f659b0e97a003d4fed73e083c71e786c6a3523 citations/excerpts/digests preserved in pinned20/verus-sources.json. No new automatic IFC capability claimed."
+}

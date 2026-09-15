@@ -1,0 +1,27 @@
+{
+  "reviews": [
+    {
+      "candidate_sha": "9b4b7f6f574772e77eb295c877196a2de587c96f",
+      "verdicts": {
+        "/root/continuity_review": "ACCEPT_SCOPED",
+        "/root/payroll_contract_review": "CHANGES_REQUIRED"
+      },
+      "findings": [
+        {
+          "id": "GO-B01",
+          "reviewer": "/root/payroll_contract_review",
+          "finding": "Earlier child unseal/cancel could invalidate a stored preparation ACK before parent activation; concurrent exclusion alone does not protect old ACK validity."
+        }
+      ]
+    },
+    {
+      "candidate_sha": "175813e042c9240b329214046da3bb953a141890",
+      "verdict": "ACCEPT_SCOPED",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "resolution": "Prepared child attempt/input/slot immutable throughout PREPARING from Company commit, before ACK too; stop/cleanup/explicit successor for changes. G49-G50 added."
+    }
+  ]
+}

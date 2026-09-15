@@ -1,0 +1,51 @@
+{
+  "status": "PREPARATION_AND_FOUR_ROUND_INDEPENDENT_REVIEW_COMPLETE_AWAITING_EXPLICIT_APPROVAL",
+  "reviewed_design_test_candidate_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "reviewed_tree": "cc3b3ee7b63c2957861ec17ed7a3a741e3be667b",
+  "handoff": "implementation-handoff.txt",
+  "rounds": "integrated-review-rounds.json",
+  "source_map": "module-placement.json",
+  "gate_map": "gate-assessment.json",
+  "capability_map": "../../readiness-review/final/capability-family-preservation-ledger.json",
+  "research_report": "../../readiness-review/final/report.html",
+  "scope": "Native NONPAYABLE payroll first vertical and its selected platform/Account/policy/draft/source/work/Group/UI dependencies; whole-Console architectural coverage preserved",
+  "approval_requested": [
+    {
+      "item": "Consolidated material design amendments and production-standard TDD source/fixture/oracle package",
+      "candidate_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61"
+    },
+    {
+      "item": "Exact ephemeral FK assertion correction only",
+      "source": "backend/app/tests/auth_rest/account_storage.rs",
+      "original_sha256": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5",
+      "proposed_source_sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+      "patch": "ephemeral-fk-correction.proposed.patch.txt",
+      "patch_sha256": "f450999524242cbe0f036b93e77fe17c2c33fc1351b26f0562a344b305fd44ce",
+      "applied": false,
+      "reason": "Automatic approval review rejected application and requires explicit trusted-user approval; independent proposal review retained."
+    }
+  ],
+  "verification": {
+    "custody_packets": 36,
+    "custody_members": 1160,
+    "custody_checker_controls": 19,
+    "selected_rust_sources_parser_checked": 76,
+    "compile_time_assets": 26,
+    "runtime_assets": 10,
+    "mapping_controls": 11,
+    "browser_rust_helper_passed": 15,
+    "browser_chromium_oracle_passed": 10,
+    "application_browser_discovered": 15,
+    "application_browser_executed": 0,
+    "first_red_executed": 20,
+    "first_red_passed": 16,
+    "first_red_expected_failed": 4
+  },
+  "no_overclaim": [
+    "Deep owner test sources are authored and reviewed; absent owners mean no compilation/runtime claim",
+    "No global information-flow theorem or full Foundry equivalence claim",
+    "No payment, legal/compliance conclusion, production exposure, hosted merge or release approval"
+  ],
+  "next_authorized_boundary": "After revision-bound approval, establish exact approved clean test base and use first-lane.candidate.json through fanout.py admit/run; preserve the same meaningful RED-to-GREEN probe. Dependent test mounting follows actual owner prerequisites, not blanket installation of unresolved modules.",
+  "evidence_container_rule": "This final receipt records reviews of the immutable candidate above. Adding review receipts changes only evidence metadata, not reviewed design/test source bytes."
+}

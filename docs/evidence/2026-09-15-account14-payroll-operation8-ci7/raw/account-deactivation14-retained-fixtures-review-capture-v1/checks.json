@@ -1,0 +1,91 @@
+{
+  "checks": [
+    {
+      "name": "all seven frozen fixture artifacts hash-verified",
+      "pass": true
+    },
+    {
+      "name": "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs exact base/post/current SHA bindings",
+      "pass": true
+    },
+    {
+      "name": "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs exact inverse fixture normalization and original3roster",
+      "pass": true
+    },
+    {
+      "name": "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs stdin Rust parse/format",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs exact base/post/current SHA bindings",
+      "pass": true
+    },
+    {
+      "name": "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs exact inverse fixture normalization and original3roster",
+      "pass": true
+    },
+    {
+      "name": "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs stdin Rust parse/format",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "unchanged established helper hash and dev-dependency verified",
+      "pass": true
+    },
+    {
+      "name": "private git apply --check /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "private git apply /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "private git apply --reverse --check /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "private git apply --reverse /private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/candidate.patch"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "exact applied postimages and inverse originals",
+      "pass": true
+    }
+  ],
+  "scratch": "/private/tmp/account14-fixture-independent-aj451269"
+}

@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_SOURCE_PRESERVING_IMPORTS_WITH_RUNTIME_HOLDS",
+  "commits": {
+    "ui_tests": "02bc898a",
+    "ui_implementation": "58e8799d",
+    "auth_tests": "bf06e84157c75a6273817027bb2494315596fe23",
+    "auth_config_parser": "f1663e38"
+  },
+  "verified_hashes": {
+    "backend/app/src/lib.rs": "e57e5601742b72837fd6bad174e63e396eaa6e6b6ebe0d8b516bc69286a49acd",
+    "backend/app/tests/auth_rest/account_fence_transport.rs": "fa1350493461043a2bf45c5465b9cfdc720495643d040399cd69f7f8f0fdd2ce",
+    "backend/app/tests/auth_rest/auth_target_parser.rs": "71110a504b7c44a46ed5c49d1eca5c1780cebe11777304a2728470ed3326156c",
+    "backend/crates/payroll/ui/src/common_action_composer.rs": "5a141b0075ff6efafd0de4984b90216e5e821f17dc3f91a966f225223681faae",
+    "backend/crates/payroll/ui/tests/common_action_composer.rs": "189a7e99708f0d0e5478ed104c903d55751022ae4c4cedcc0056c688c2a15c8d"
+  },
+  "preservation": [
+    "Allfivefiles exact approvedsourcehashes.",
+    "Authrest existingmain recovered exactbytes after removing4mountlines and2appendedtests; bothnewconfigtestbodies exact match5a599b20.",
+    "UIimports retain exact reviewed17tests and one-literal implementation."
+  ],
+  "limits": [
+    "Source import verification only; rootselectedruntime evidence separate.",
+    "Authfield/validation is configuration only. Realrestrictedauthpool, effectiveoptionscarrier, actualdatabasebinding and HTTPfenceenforcement remain unimplemented.",
+    "Fourlaunchcallers need alignment to newrequiredAUTH config; isolatedtestpass does not establish deploymentboot.",
+    "RejectedownerUPDATE patch remains blocked; no approval bypass."
+  ]
+}

@@ -40,8 +40,9 @@ struct JsonResponse {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mounted_workbench_bounds_native_sources_to_the_selected_branch_and_limit(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let selected_branch = seed_branch(&pool, "Workbench Region", "Workbench Branch").await;
     let other_allowed_branch = seed_branch(&pool, "Other Region", "Other Branch").await;
@@ -89,8 +90,11 @@ async fn mounted_workbench_bounds_native_sources_to_the_selected_branch_and_limi
     let first_event = seed_calendar_event(&pool, user, base).await;
     let _second_event = seed_calendar_event(&pool, user, base + Duration::hours(1)).await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, user, &[selected_branch, other_allowed_branch]);
     let response = get(
         service,
@@ -126,8 +130,9 @@ async fn mounted_workbench_bounds_native_sources_to_the_selected_branch_and_limi
     assert_source(&response.json["calendar"], first_event.to_string(), 2, true);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mounted_workbench_dispatch_respects_selected_branch_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let selected_branch = seed_branch(&pool, "Dispatch Selected Region", "Selected Branch").await;
     let other_allowed_branch = seed_branch(&pool, "Dispatch Other Region", "Other Branch").await;
@@ -196,8 +201,11 @@ async fn mounted_workbench_dispatch_respects_selected_branch_scope(pool: PgPool)
     )
     .await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = get(
         service,
         &format!(
@@ -225,8 +233,9 @@ async fn mounted_workbench_dispatch_respects_selected_branch_scope(pool: PgPool)
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mounted_workbench_marks_todos_unavailable_when_runtime_role_loses_select(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, "Failure Region", "Failure Branch").await;
     let user = UserId::new();
@@ -247,8 +256,11 @@ async fn mounted_workbench_marks_todos_unavailable_when_runtime_role_loses_selec
         .await
         .unwrap();
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = get(
         service,
         &format!(
@@ -273,16 +285,20 @@ async fn mounted_workbench_marks_todos_unavailable_when_runtime_role_loses_selec
     assert_source(&response.json["calendar"], event.to_string(), 1, false);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mounted_workbench_rejects_an_explicit_branch_outside_token_scope(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let allowed_branch = seed_branch(&pool, "Allowed Region", "Allowed Branch").await;
     let excluded_branch = seed_branch(&pool, "Excluded Region", "Excluded Branch").await;
     let user = UserId::new();
     seed_user(&pool, user, &[allowed_branch]).await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = get(
         service,
         &format!(
@@ -305,15 +321,19 @@ async fn mounted_workbench_rejects_an_explicit_branch_outside_token_scope(pool: 
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mounted_workbench_validation_error_uses_the_standard_error_body(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, "Validation Region", "Validation Branch").await;
     let user = UserId::new();
     seed_user(&pool, user, &[branch]).await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = get(
         service,
         &format!("{PATH}?action_limit=0"),
@@ -334,8 +354,9 @@ async fn mounted_workbench_validation_error_uses_the_standard_error_body(pool: P
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mounted_workbench_all_source_failures_use_the_standard_error_body(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool, "Unavailable Region", "Unavailable Branch").await;
     let user = UserId::new();
@@ -351,8 +372,11 @@ async fn mounted_workbench_all_source_failures_use_the_standard_error_body(pool:
     .await
     .unwrap();
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let response = get(
         service,
         &format!("{PATH}?from={RANGE_FROM}&to={RANGE_TO}&branch_id={branch}"),
@@ -672,8 +696,20 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -681,6 +717,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn get(service: axum::Router, uri: &str, token: &str) -> JsonResponse {

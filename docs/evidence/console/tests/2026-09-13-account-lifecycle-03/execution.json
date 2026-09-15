@@ -1,0 +1,165 @@
+{
+  "candidate_sha": "13dda7b08dfc641a1553b3c52a2adc583b16ace0",
+  "discovered": 30,
+  "executed": 30,
+  "passed": 20,
+  "failed": 10,
+  "ignored": 0,
+  "filtered": 0,
+  "new_tests": 8,
+  "new_passed": 2,
+  "new_schema_prerequisite_failures": 6,
+  "existing_behavioral_failures": 4,
+  "cases": [
+    {
+      "name": "account_auth_database_accepts_distinct_narrow_identity",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "account_auth_database_rejects_identity_overrides_without_leaking_secrets",
+      "status": "FAILED",
+      "category": "Existing auth configuration behavior RED"
+    },
+    {
+      "name": "account_auth_database_rejects_other_database_identities",
+      "status": "FAILED",
+      "category": "Existing auth configuration behavior RED"
+    },
+    {
+      "name": "account_auth_database_requires_explicit_configuration",
+      "status": "FAILED",
+      "category": "Existing auth configuration behavior RED"
+    },
+    {
+      "name": "account_auth_database_requires_nonempty_distinct_password",
+      "status": "FAILED",
+      "category": "Existing auth configuration behavior RED"
+    },
+    {
+      "name": "account_fence_active_rejects_legacy_sessions",
+      "status": "FAILED",
+      "category": "Account schema prerequisite; fence assertions not reached"
+    },
+    {
+      "name": "account_fence_denial_oracle_rejects_credential_leaks_and_malformed_errors",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "account_fence_outstanding_employer_otp_cannot_create_a_session",
+      "status": "FAILED",
+      "category": "Account schema prerequisite; fence assertions not reached"
+    },
+    {
+      "name": "account_fence_pending_enrollment_rejects_legacy_sessions",
+      "status": "FAILED",
+      "category": "Account schema prerequisite; fence assertions not reached"
+    },
+    {
+      "name": "account_fence_recovery_required_rejects_legacy_sessions",
+      "status": "FAILED",
+      "category": "Account schema prerequisite; fence assertions not reached"
+    },
+    {
+      "name": "account_fence_recovery_to_active_does_not_restore_legacy_sessions",
+      "status": "FAILED",
+      "category": "Account schema prerequisite; fence assertions not reached"
+    },
+    {
+      "name": "account_fence_security_suspended_rejects_legacy_sessions",
+      "status": "FAILED",
+      "category": "Account schema prerequisite; fence assertions not reached"
+    },
+    {
+      "name": "account_fence_unmigrated_transport_positive_control",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "admin_credential_reset_recovers_in_branch_subordinate",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "admin_issue_otp_allows_in_branch_subordinate",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "admin_issue_otp_rejects_cross_branch_target",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "admin_issue_otp_rejects_non_admin",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "admin_issue_otp_rejects_privileged_target",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "approve_session_rejects_generic_desktop_handoff_without_target",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "body_mode_without_header_is_unchanged_and_sets_no_cookie",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "cookie_mode_login_then_refresh_reads_and_rotates_cookie",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "cookie_mode_redeem_sets_httponly_cookie_and_omits_body_refresh",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "cookie_mode_refresh_allows_rapid_navigation_burst_with_device_id",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "financial_purchase_sensitive_actions_require_fresh_passkey_step_up",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "first_passkey_enrollment_requires_privacy_terms",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "mobile_bound_step_up_start_gates_mobile_approval_and_poll_vote",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "otp_first_signin_then_passkey_enrollment_then_usernameless_login",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "otp_is_consumed_on_passkey_registration_not_on_redeem",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "otp_redeem_rate_limit_wires_up_on_real_clock_path",
+      "status": "ok",
+      "category": "PASS"
+    },
+    {
+      "name": "refresh_keeps_zero_passkey_user_in_setup_mode_until_enrolled",
+      "status": "ok",
+      "category": "PASS"
+    }
+  ]
+}

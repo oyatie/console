@@ -1,0 +1,54 @@
+{
+  "lane": "LC07-account-custody-orchestration",
+  "base": "ebea26a7",
+  "owner": "/root",
+  "target": "migration -> independently targeted custody finalization -> serving; failure prevents seed/launch",
+  "probe": "node --test scripts/account-custody-orchestration.test.mjs",
+  "allowed": [
+    "ops/compose.yml",
+    "ops/account-custody.Dockerfile",
+    "ops/dev/",
+    "scripts/dev-up.mjs",
+    "scripts/lib/",
+    "deploy/apps/console/base/",
+    ".github/workflows/image-release.yml",
+    "ops/README.md",
+    "docs/evidence/console/implementation/2026-09-14-account-lifecycle-execution/"
+  ],
+  "forbidden": [
+    "migrations",
+    "lockfiles",
+    "authority",
+    "main worktree"
+  ],
+  "guide": [
+    "package exactly three reviewed operator artifacts",
+    "bind mandatory independent inventory, readonly secret and CA",
+    "provision local TLS before DB startup and retain independent local container inventory before migration",
+    "invoke finalizer after migration, before seed/serving",
+    "serialize generated documentation; require independent exact-source review"
+  ],
+  "pre_mortem": [
+    "wrong database receives custody",
+    "operator credential inherited by serving",
+    "TLS/prerequisite missing but static tests green"
+  ],
+  "blast_radius": "local deployment wiring only; no live rollout",
+  "detection": "unchanged admitted probe plus actual local PostgreSQL/image exercise; hostile descriptor and env controls",
+  "rollback": "revert isolated source commits; no schema changes or deployed mutations",
+  "stop": [
+    "unexpected shared changes",
+    "failed identity/custody validation",
+    "unreviewed test weakening"
+  ],
+  "reviewers": [
+    "/root/review_completeness",
+    "/root/finish_migration"
+  ],
+  "holds": [
+    "production exposure",
+    "published operator digest and signing",
+    "real enforcing-CNI qualification",
+    "global account fence"
+  ]
+}

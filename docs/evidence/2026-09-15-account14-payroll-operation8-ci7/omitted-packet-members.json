@@ -1,0 +1,851 @@
+{
+  "status": "Explicit omissions; no permission to recursively collect or import",
+  "members": [
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/base/backend/app/src/account_custody_state.sql",
+      "recorded_sha256": "e735fb392dceeea589faed80bff7e8c9a02e12ed25cd5df9f855cfee23188fbc",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/base/backend/crates/identity/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/base/ops/generate-account-custody.py",
+      "recorded_sha256": "1bee882acf5d709f51ed89c3f098b3b6fd8255965af9e4090c24d0e6b484b274",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/base/ops/postgres-finalize-account-custody.sql",
+      "recorded_sha256": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/post/backend/app/src/account_custody_state.sql",
+      "recorded_sha256": "d4b9a13d2340c40b6a87174933c099011b2b26873a3efbb420c234622dd1fc5b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/post/backend/crates/identity/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "c826372974692ca5a939d3a817b8067c4bf174fb682a92e25d4002c148a9a42f",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/post/ops/generate-account-custody.py",
+      "recorded_sha256": "3c01562c78c8bcd6441cd331231f500930380998c301c6b84a7410bfd92b8208",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-implementation-inventory-v1/post/ops/postgres-finalize-account-custody.sql",
+      "recorded_sha256": "f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-red-v1/container-name.txt",
+      "recorded_sha256": "d5f9693d7fb4b16247a34dfa130571ea0ad24dae78b7837c6de8638a134210c7",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-red-v1/ownership-label.txt",
+      "recorded_sha256": "228788a7626e85bb6bf51e4b28c5336725d1c9341fd99122f34db8b30186a6a9",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-796173fc-red-v1/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-796173fc-red-v1/postgres-map.json",
+      "recorded_sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/base.rs",
+      "recorded_sha256": "0514aeecc993a126f98be1b24ab9a5d6d8052c373a1abcfc9cf28e59a3e34684",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/deactivate_revokes_credentials.rs",
+      "recorded_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-928e1e48-v4-inventory/profile-only.diff",
+      "recorded_sha256": "367bec8f70a481fee55ced254b595007e936859b5a7dfdfafc0bdefcb9485190",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/container-name.txt",
+      "recorded_sha256": "d16aaf30174763405717eb6359b8ea948e3b6e3089767d6ccaa88910e5643b16",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/ownership-label.txt",
+      "recorded_sha256": "441d21e2a1fee4ef2d536451c0186e9d0ee3d4b20b5df5c597841a9504a93ffa",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd/postgres-map.json",
+      "recorded_sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/container-name.txt",
+      "recorded_sha256": "17c2a783bb1ace9d9bc5281222112f24fe79e05dbc778dcc8abdddabb6a23fe6",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/ownership-label.txt",
+      "recorded_sha256": "15d9404683524ae6fef947b9d380463b0f38e1702f32d0e3937a89ea1ae7750d",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/postgres-map.json",
+      "recorded_sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/container-name.txt",
+      "recorded_sha256": "4c8508d43de59648c906920d4b2c295466c7f945d1f2468b4a0fe608dd6a7a71",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/ownership-label.txt",
+      "recorded_sha256": "e7732adab0f8acc2536142dfea04b463c164e36ff0c3f42d6655aac7632ac9cd",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/driver-receipt.json",
+      "unselected_member": "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a/postgres-map.json",
+      "recorded_sha256": "06c1726d5a6d6db2d4d9e0d6c31da51ec0b377c5450e310b3d3c02a9cd49cd79",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/base/backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs",
+      "recorded_sha256": "22f3d294be85c1a5f3f4e25d6003f4516af5ac05d7d387e97acbce6c3b15f25d",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/base/backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs",
+      "recorded_sha256": "e1c05e3116de8f4f2f0906b044b09c912fa108d06ba6062b176b894d66dda714",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/post/backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs",
+      "recorded_sha256": "29bb7caf7e0f7fbe9a7d0145656a9cf4dedfdfe94b48fa3bfb7ad594bcc0cdeb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/manifest.json",
+      "unselected_member": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory/post/backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs",
+      "recorded_sha256": "e9da06dd4940c3d1307d15d0f0d0e193b2f9b3b57c152153e67f56947bd7c394",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/cleanup.txt",
+      "recorded_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/containers-after.txt",
+      "recorded_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/source-before.json",
+      "recorded_sha256": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/source-after.json",
+      "recorded_sha256": "2b8d4f87cca553a90ddee0944101335d943b5a827cfaf1ab534a06d93796f194",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/driver.sh",
+      "recorded_sha256": "908e195cc928a4de846fdd68092f49f5201eeac6bd6618f0ac491285308ba51a",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/probe.log",
+      "recorded_sha256": "39906632340a84a0a716c2bdf10311ce686f69540da8eaebf12d12f38576825a",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/prebuild-dispatch.txt",
+      "recorded_sha256": "f122c9a7b6f01997bd1d882f72e4631468e99205f0a0a3587c6eaf4e9e12a9d0",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/deactivate_revokes_credentials.rs",
+      "recorded_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/probe.py",
+      "recorded_sha256": "b45d1aa74eb2a980e6103682d17b1381a50d72a416d892f397f8c818af172e71",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/probe-exit.txt",
+      "recorded_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/driver-receipt.json",
+      "recorded_sha256": "b35f6dc92cfdddb2094013ec86a3f34ef3fb8d4dd0724ec6ed2aa75db6e12617",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-0a625d32-green-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-0a625d32-green-independent-fast/contract.json",
+      "recorded_sha256": "28329ea489e991ae32dc8b84ac33e8f0f500ce0d5fb64d2d207fa7d15fa1b478",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/.github/workflows/ci.yml",
+      "recorded_sha256": "3ac68326e809780332a35a2e90043e8409ce69fcef1b75595dbb8ee22f7a070d",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/docs/program/executed-tests-baseline.json",
+      "recorded_sha256": "166ed21d79532582dc59a90cbd73f6a415d8409a6ecf58864d4f5b05d8ffea99",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/scripts/check-ci-preflight.mjs",
+      "recorded_sha256": "8ff3871b60b343bbc80c6028bad3fb42e85694bf836c7f43fe4bd398d5a0fd60",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/scripts/check-ci-preflight.test.mjs",
+      "recorded_sha256": "94a13437619d7f19c78668b517e06ba2a89dfb8a1c3aabed238463c578be8a70",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/scripts/lib/recovery-test-invocations.mjs",
+      "recorded_sha256": "498ac4f0cd4e3f0c465257ab8f1de0311b9b24098aa160f541d16099e71f20da",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/scripts/lib/recovery-test-invocations.test.mjs",
+      "recorded_sha256": "2a71ce282b6373a3d533597121f23bdd9f76a4f1ddd8cf0e3435c91d3e448260",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/base/tools/buck/test_preparation_wiring.py",
+      "recorded_sha256": "73c75ae43fcc996ab2830b6c83eaf5b5da0064d6b7a66057523035e1e7814dd0",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/.github/workflows/ci.yml",
+      "recorded_sha256": "b4bfe6d6674cacfcf8f0e4444af7cf541b9a135cc81ab84fd8cfdf790a070e7b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/docs/program/executed-tests-baseline.json",
+      "recorded_sha256": "160ec28aa3a11fd1aef7ee8caeab1312d4ac0cc6462926805a3c9ad90d49b6eb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/scripts/check-ci-preflight.mjs",
+      "recorded_sha256": "b23a42033dfba33e40c203aa1daff3ccac30d3e947fe410901a203adf80132f9",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/scripts/check-ci-preflight.test.mjs",
+      "recorded_sha256": "8285554e9e32e721d34552c8245ae6feed63631713c2d2ad96be9d6d71a11379",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/scripts/lib/recovery-test-invocations.mjs",
+      "recorded_sha256": "46dc5f8d8c5bb6a14114a7ea7efec0fa7f61c406f188adfe3b4ffe8771d39521",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/scripts/lib/recovery-test-invocations.test.mjs",
+      "recorded_sha256": "fe8d1266f937c3de191e7fddb1f2ce0ccd17b4f5fc66e42c6c0f06cb7f367a45",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/post/tools/buck/test_preparation_wiring.py",
+      "recorded_sha256": "9dbf6eac92ba52951ecda37423031d94124c2550234b39e3a66034a4e4a4cc4d",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/account14-app8-ci-v1-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/account14-app8-ci-v1-independent-fast/candidate.patch",
+      "recorded_sha256": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/base.rs",
+      "recorded_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/durability_composition_tests.rs",
+      "recorded_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/durability_composition_tests.rs",
+      "recorded_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/lib.rs",
+      "recorded_sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/workflow_drain.rs",
+      "recorded_sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/kernel/core/src/error.rs",
+      "recorded_sha256": "e0697960d1cba3beb35ccd0cf10b1ae94c5d208e2d6c80264928faf9c4062932",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "recorded_sha256": "c24816b44ae5af9f2d33d48d3d6e93059732bb88b171cdb9470bde79aff8b197",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/platform/db/src/durability.rs",
+      "recorded_sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/platform/test-support/src/lib.rs",
+      "recorded_sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/workflow/domain/src/lib.rs",
+      "recorded_sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-operation-control-c1301628-v1-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-operation-control-c1301628-v1-fast/sources/c13016282540c49546af1c0c75db45faef7fc466/tools/lanes/recovery/supervise_recovery.py",
+      "recorded_sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/denied/1.log",
+      "recorded_sha256": "d9737ba57d043b8f3038be4aabf62f71a85c6d6dc73b069c16cd9240caf6854f",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/denied/probe-results.json",
+      "recorded_sha256": "e25288fb7929d30368ce31b28e16974894875af69e624bd39e261b07d99b14a4",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/openapi-correction.log",
+      "recorded_sha256": "bc7ce6c387ae7f1868627c48199353c428ff4ae5b202244ea652c9766ca6de31",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/runtime/1.log",
+      "recorded_sha256": "a12bf12ce35884fe30dd51a19a4a76878815ca01f3e5a6387b35f9e48cfa7fc8",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/runtime/2.log",
+      "recorded_sha256": "84a2c7148246e00332318da530294bb704cf073b3fa5599dd4092c6abf217ed6",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/runtime/4.log",
+      "recorded_sha256": "a7490c38d1dc70c5db2dec7cc7ec075f9dc0b7e4780129acec745ebc1f0bbe81",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/runtime/probe-results.json",
+      "recorded_sha256": "3a9857c287a12e33cb2b357e3fc41b62de47acba280d3527abb72add06585972",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/sources/backend/app/src/durability_composition_tests.rs",
+      "recorded_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/sources/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "recorded_sha256": "120070f0c3487edcbfa2b771b81ae4f9ec9d624f60b0fa2ab77cbe15c08bf82c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/sources/backend/openapi/openapi.yaml",
+      "recorded_sha256": "508a6f0d519ca5e1f0410aab1790d0464fa8cd1533663458d6a4940e87b6e176",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/units/ontology-rest.log",
+      "recorded_sha256": "cb068a3436cfb3593e98c2a73a1d48d3a77e460302330b6e5a7532039fcb68d0",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-0578134a-runtime-independent-fast/units/workflow-domain.log",
+      "recorded_sha256": "f69345fa5343fa10e67df7db5a6c6c4349ebd114dfc512d3e76489df93c13b94",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/app/src/durability_composition_tests.rs",
+      "recorded_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/app/src/lib.rs",
+      "recorded_sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/app/src/workflow_drain.rs",
+      "recorded_sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/ontology/canonical-domain/src/lib.rs",
+      "recorded_sha256": "39e099b0b0a941eecba0af50892df28611a81aedd79f4695f28c07b4f7108892",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "recorded_sha256": "0ca1c472cdf3711981d28155b7b7611dbb2040661d8de7b76ed484f0cfe3924c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/ontology/rest/src/lib.rs",
+      "recorded_sha256": "5a4177be846b37c5b1720ad1bf7ab968fd81aaa48c5c6e9f0bc2dd2e966e26e0",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "recorded_sha256": "0e436f1ec3936c67ad423e2b61c7199dfebdb4c87c16a4657d592611adb0169c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "recorded_sha256": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "recorded_sha256": "a5365bf77e1b1c12dac8f33575e464e8b13b64c4295eb685d9f056dbb6652e8c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/platform/db/src/durability.rs",
+      "recorded_sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "recorded_sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/crates/workflow/domain/src/lib.rs",
+      "recorded_sha256": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/sources/backend/openapi/openapi.yaml",
+      "recorded_sha256": "47f6985551d34feb9b470af109d179cf6a37b365a707b524702e25cf4f85b185",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-59c38d60-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-59c38d60-independent-fast/write_review.py",
+      "recorded_sha256": "22db34a6076941b5e7e5ce4875472c01b65fce68403049eba1e580bf00460201",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-runtime-custody-addendum-fast/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-runtime-custody-addendum-fast/59c38-finalizer.sql",
+      "recorded_sha256": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/app-append.rs",
+      "recorded_sha256": "b0a10c4bd0f097532c3b9ab15a89a7100a700d914a359641bcadd4824e9c80ab",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/base/backend/app/src/durability_composition_tests.rs",
+      "recorded_sha256": "a7a4cbd3d56c5321500964027571837223a3f9bb3720fa8b60e5fa3ef06bf1aa",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/base/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "recorded_sha256": "71379230d443c8f049045b6b6a226318e3e4d5381227e134f054e25575881142",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/base/backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "recorded_sha256": "4440c53f96708c965c6ae15ded946b6b815dead05637e6472bc991fb08222e36",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/base/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "recorded_sha256": "2ccced8a2b4431fb00257de2554a3002f4c56e3f26ce3df8b47cf9b4d593e0cb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-append.rs",
+      "recorded_sha256": "77516086db0f4e860005da751da4ee9ba5b6be516df2ba3b984accb695e71199",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "recorded_sha256": "91a9eb54ea3628e4a7370d7e09fea445da13ba574a174fffb520527568afbed4",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "recorded_sha256": "a36ed33caf2e95274c4e7f0fb00720d9e0cce920646710c5c3fc74f2ef13103f",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "recorded_sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/post/backend/app/src/durability_composition_tests.rs",
+      "recorded_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "recorded_sha256": "5fb47e80467e54dd243d2db788333ecdcdb6c450a4e003b7c70d676908fb3329",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/post/backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "recorded_sha256": "4440c53f96708c965c6ae15ded946b6b815dead05637e6472bc991fb08222e36",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/post/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "recorded_sha256": "2ccced8a2b4431fb00257de2554a3002f4c56e3f26ce3df8b47cf9b4d593e0cb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/rest-append.rs",
+      "recorded_sha256": "a0acaa5c0a076d9d4366824f2d7c1ddb0fdfd4b9bd75360e070bf43c381807fd",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/v1-checks.json",
+      "recorded_sha256": "2c7c468e1220d2fed16400303404da9ef7c710d6e9db0bebfd83aa17f43ff1b0",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/v1-manifest.json",
+      "recorded_sha256": "ba2cbe4af7f4dd5d6575903ba74370194665a2ac754b9a16bf4af1ae78114ba3",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/v2-checks.json",
+      "recorded_sha256": "acc581169c49ac910c05a12f204e2ad828068374f0affa81d6d2e4fb1c36ec64",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/v2-manifest.json",
+      "recorded_sha256": "67d1f79c80cb6e29ee06a041dff9d7abee94823d40b1eac46c0fd29420331c94",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/v3-checks.json",
+      "recorded_sha256": "83d6908086ace069c31673d8897b796160d4dff65b589b7726958d55faf86d73",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/manifest.json",
+      "unselected_member": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/v3-manifest.json",
+      "recorded_sha256": "99466db3713afdf2a148fa5e3990fc97e026d55d5e516a362b1352b845187d7b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/identity-retained.log",
+      "recorded_sha256": "3c3bff2eaa8d2ca36e0c933fc32c26ecdda1dc803b3877f054c6d02f6cee2eb2",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/operation/probe.log",
+      "recorded_sha256": "0d78c2f74d9237288023095e787d2a925e788f244d4978c84ab9598d34592666",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/auth/account_browser-company_free_registration_me_and_empty_contexts.log",
+      "recorded_sha256": "074e1b73b0ac18ab0519ababec3eed5ef56409ac7c5dd01832b968aec3fae4e5",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/auth/results.json",
+      "recorded_sha256": "18bc3d00db41b9ab1dd3d3973dee1c9ec075fe0286b0253308ee4f335a8f125e",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/auth/account_root_transition.log",
+      "recorded_sha256": "cc79c590b89b32f40e21c9686e5fa5132dc4c0892535db3f8a727ed53f04d9ad",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/auth/account_custody_lifecycle.log",
+      "recorded_sha256": "d75146791a6cdc3a125da969e5ab3317aa743582ae3814bdcac1538c8b390b19",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/auth/account_custody_startup.log",
+      "recorded_sha256": "6958e9ad77260a5db6f3dace9ddfd250a4d4016219d17a171d44da72e806db61",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/ops/postgres-finalize-account-custody.sql",
+      "recorded_sha256": "f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/tests/auth_rest.rs",
+      "recorded_sha256": "38bff0cf3a7dbcea4ffe57642df389f54929d39754f290060c4689c828afb102",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/src/durability_composition_tests.rs",
+      "recorded_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/src/account_custody_state.sql",
+      "recorded_sha256": "d4b9a13d2340c40b6a87174933c099011b2b26873a3efbb420c234622dd1fc5b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/src/lib.rs",
+      "recorded_sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/src/workflow_drain.rs",
+      "recorded_sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+      "recorded_sha256": "68347f847e47a2232a8e861aad39419c8d0b1772858be97031f9eda1425020f1",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/tests/auth_rest/account_root_transition.rs",
+      "recorded_sha256": "3689f01d037ec3a2977c21fdab80fa2f50944dff480688835fb291b72cc243d0",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/app/tests/auth_rest/account_custody_startup.rs",
+      "recorded_sha256": "22a569b605008f2da3657b91f07e3775a0be5e9d7bd32905161c7d984f28ac10",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "recorded_sha256": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "recorded_sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/workflow/domain/src/lib.rs",
+      "recorded_sha256": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/platform/test-support/src/lib.rs",
+      "recorded_sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/platform/auth-rest/src/lib.rs",
+      "recorded_sha256": "9b3a006784f9523df608d182e2f1509ac2464a0a295cefaf84ede606df821110",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/platform/auth-rest/src/terms.rs",
+      "recorded_sha256": "b1d7eda634bffd101ed4cf87d798d0649661501cdbe00096a86ecb20844ac013",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs",
+      "recorded_sha256": "29bb7caf7e0f7fbe9a7d0145656a9cf4dedfdfe94b48fa3bfb7ad594bcc0cdeb",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs",
+      "recorded_sha256": "e9da06dd4940c3d1307d15d0f0d0e193b2f9b3b57c152153e67f56947bd7c394",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    },
+    {
+      "manifest": "/private/tmp/retained-0a625d32-independent-fast/manifest.json",
+      "unselected_member": "/private/tmp/retained-0a625d32-independent-fast/sources/backend/crates/identity/adapter-postgres/src/lib.rs",
+      "recorded_sha256": "c826372974692ca5a939d3a817b8067c4bf174fb682a92e25d4002c148a9a42f",
+      "reason": "Curated projection only: full packet source/snapshot/duplicate/support member is not in the import allowlist; existing manifest remains historical and does not claim all its members are imported."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "status": "BOUNDED_SOURCE_EXTRACT_PROOF; NOT_DESIGN30_INFORMATION_FLOW_PROOF",
+  "source_sha": "b9454dabb5a9e9f5eaba1dada24ef9205cbfd507",
+  "source_path": "backend/crates/platform/authz/src/cedar_pbac.rs",
+  "source_git_blob": "9e90a0f138bb171100a08a4cb5a9f31755cbaadb",
+  "method_sha256": "2a212fef0f8931722049c83ac3d8ea3f4ee85bdc8b8c464e528ff029b71912a1",
+  "binding": "Exact struct fields and satisfies body retained byte-for-byte; only return binding/ensures added outside body. source-binding.test.py checks production Git blob, reviewed method hash, exact field/body agreement, all fixture hashes and known-bad changes. This binds one extracted computation, not full application information flow.",
+  "verus": {
+    "version": "0.2026.09.13.671956e",
+    "commit": "671956ec527d3b7164779f767bdbfe769bedce6c",
+    "asset_id": 561633588,
+    "asset_bytes": 449152091,
+    "asset_sha256": "288db7622ff81dbace1defe70fa744292740aa653781e32cccf5b2de7117fa50",
+    "rust": "1.98.1",
+    "z3": "4.16.0",
+    "command": "verus --crate-type=lib -V check-api-safety <source>",
+    "initial_command_correction": "Unsupported check-safe-api replaced with help-confirmed check-api-safety; startup errors not false-obligation evidence.",
+    "verus_binary_sha256": "fc13e79bb3c13d93bc05b37e9b1b6518fde7f4687b3d442ce5c6318c5737c668",
+    "z3_binary_sha256": "edae32f9e37ea4b5bb35310d72f0e352d0dc07626cac4e9e30bc1ea9a5bc8efb",
+    "rust_verify_binary_sha256": "9c435247d151870bf1ae739090a5192c834e99c8f32663f932a0a4b4cfd1b8a2"
+  },
+  "verification": {
+    "positive": {
+      "verified": 4,
+      "errors": 0
+    },
+    "known_false": {
+      "verified": 3,
+      "failed_units": 1,
+      "failure": "assertion(!ok) on equal valid inputs"
+    },
+    "mutant": {
+      "verified": 3,
+      "failed_units": 1,
+      "failed_postconditions": 2,
+      "mutation": "required step-up absent arm false\u2192true"
+    }
+  },
+  "trust_boundaries": [
+    "exact extraction and signature/type binding",
+    "compiler/erasure, solver and vstd",
+    "caller-selected requirements and loaded freshness",
+    "Cedar/DB/OS/network/logging/timing not proven"
+  ],
+  "assume": [],
+  "external_body": [],
+  "unsafe": [],
+  "ffi": [],
+  "remaining_design30": [
+    "actual projection relational noninterference",
+    "safe event payload binding",
+    "sole egress enforcement",
+    "cross-tenant end-to-end SQL/SSR/egress"
+  ],
+  "fixture_sha256": {
+    "source-bound-positive.rs": "861ee4627969cce613a8ce1daacc1284e79e75b85c625c509415ef0e70db33b6",
+    "source-bound-mutant.rs": "63689a79a605629210fee6b14ad8ddf72a0e7341f729edf0fd25fb22ae102cdb",
+    "source-bound-known-false.rs": "04ee961e7b3f96383184ae0c6aa753171c6a92f828b77ec8809373c3a9ea2446",
+    "source-bound-native.rs": "3e966f1c9a036542aa3cb3075b8c9a948b7553d4a08dfa2a10a6bb433b667785"
+  },
+  "native_tests": {
+    "discovered": 6,
+    "executed": 6,
+    "passed": 6,
+    "scope": "extracted production computation under ordinary Rust1.98.1; not additional end-to-end auth tests"
+  }
+}

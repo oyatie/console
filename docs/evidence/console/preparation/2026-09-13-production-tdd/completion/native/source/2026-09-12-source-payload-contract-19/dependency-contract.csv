@@ -1,0 +1,21 @@
+consumer,dependency,invariant
+CalendarPayload,WORK_CALENDAR_RULE,qualified calendar paid-time rules; no calendar self-dependency
+CalendarAssignmentPayload,CalendarPayload,exact revision and Employment interval
+CoveragePayload,CalendarAssignmentPayload,one per earning date; complete assignment history
+CoveragePayload,EventPackageHeader/EventWitness,exact complete event set/boundary
+CoveragePayload,LeaveDispositionPayload,only current effective paid absence intervals
+CoveragePayload,ExceptionResolutionRef,exact diagnostic rows; CONFIRM not a monetary conclusion
+LeaveDispositionPayload,LeaveRequest/LeaveCharge/AuditEvent,"real current request_version, matching immutable charge and decide event"
+LeaveDispositionPayload,APPLICABILITY_RULE,PAID_ABSENCE_TREATMENT
+EligibilityPayload,EmploymentCoverage/WageFactRef/CoveragePayload,complete current exact source basis
+EligibilityPayload,APPLICABILITY_RULE,insurance/taxable/remuneration/no-adjustment purposes; no tax evidence or close
+TaxPayload,EligibilityPayload,exact current VERIFIED SUPPORTED assessment
+TaxPayload,TAX_TABLE,same edition/artifact/layout/selection/notes
+Native18Input,EligibilityPayload/TaxPayload,both exact current verified refs
+ClosePayload,CoveragePayload/Native18Input/OperationalClose,complete coverage/resolved population + real amendment set/lock
+OrdinarySourceVerification,REVIEWER_CREDENTIAL,current actual verifier purpose/scope/date
+CredentialVerification,IssuerProfile,"independently authorized identity operator, no professional credential recursion"
+IssuerProfile,ArtifactRef,pinned independent issuer evidence
+RULE_BUNDLE,TAX_TABLE/APPLICABILITY_RULE/WORK_CALENDAR_RULE,direct only; no bundle recursion
+CoveragePayload,CoverageDayPackageHeader/CoverageDay,exact classified whole-day stream and event-set binding
+CoverageDay,EffectiveDayPlan,previous and current anchor contributions; exact clipped obligations

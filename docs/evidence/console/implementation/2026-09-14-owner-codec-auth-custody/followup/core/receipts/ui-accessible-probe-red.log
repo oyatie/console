@@ -1,0 +1,34 @@
+   Compiling serde_json v1.0.150
+   Compiling gloo-utils v0.3.0
+   Compiling codee v0.3.5
+   Compiling axum v0.8.9
+   Compiling gloo-net v0.7.0
+   Compiling server_fn v0.9.0-beta
+   Compiling leptos_server v0.9.0-beta2
+   Compiling leptos v0.9.0-beta
+   Compiling console-payroll-ui v0.1.0 (/private/tmp/console-ui-accessibility-tests-20260914/backend/crates/payroll/ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 47.48s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/common_action_composer.rs (/private/tmp/console-account30-cargo/debug/deps/common_action_composer-93c2d478a41e1a4e)
+
+running 1 test
+test composer_form_has_accessible_business_name ... FAILED
+
+failures:
+
+---- composer_form_has_accessible_business_name stdout ----
+
+thread 'composer_form_has_accessible_business_name' (28317523) panicked at crates/payroll/ui/tests/common_action_composer.rs:632:5:
+assertion `left == right` failed: the authorized POST form needs its stable business accessible name
+  left: None
+ right: Some("업무 입력")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    composer_form_has_accessible_business_name
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p console-payroll-ui --test common_action_composer`

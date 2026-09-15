@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_owner_execution_design_with_open_integration",
+  "recorded_at": "2026-09-13T02:28:12.207834+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "a4ef7eaa7dd4db3ded386e1854194c0d51e2e57b",
+  "reviewed_contract_sha": "a498ea95f4bd38647cce4f31aeda75b2fef74af0",
+  "predecessor_record": "../2026-09-12-source-payload-contract-19/record.json",
+  "predecessor_record_sha256": "b3cbeeea26bff62d53e3cdc396cb02412401d793813e75ac896ce135053807e0",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "boundary-witnesses.json",
+      "bytes": 8613,
+      "sha256": "78d6dd807067b0c957a58870ae4a320e1fed56b406936265f98d8a335ffca6e3"
+    },
+    {
+      "path": "caller-census.csv",
+      "bytes": 4415,
+      "sha256": "d5839106aa66a4baa2992717f63b03e6c86b3a797a9070e99efeeacb0219b65c"
+    },
+    {
+      "path": "constraint-owner-matrix.csv",
+      "bytes": 3273,
+      "sha256": "80103fae5c9e6669b26ee8b5b0c0bf9d95e05ac57bb86bb6801bf32926ba6778"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2093,
+      "sha256": "1349f1ee6fe2bab7d36861612f131df1dd35921ae3d92052bd57ada0fafcfe57"
+    },
+    {
+      "path": "execution-contract.txt",
+      "bytes": 9214,
+      "sha256": "d71b303bfecc59534e11cfc5850f9e383791c560913cab756ba8a380f5ba6ea0"
+    },
+    {
+      "path": "guard-and-owner-schema.sql.txt",
+      "bytes": 4624,
+      "sha256": "a7e3e1eb9d7be46599af6eb9cc1b3c45dcdaeb6603bb8354aa5b7e714be7f9a8"
+    },
+    {
+      "path": "input-reference.schema.json",
+      "bytes": 3647,
+      "sha256": "056cec98ab410113e361db65bc12596e4552b372a9445d3ba46c9d5f6159c126"
+    },
+    {
+      "path": "locking-and-constraints.txt",
+      "bytes": 5443,
+      "sha256": "4243eeca95676a4fd1709a516ecaa97773a112bb8939a0ae6c1b7b5899c86276"
+    },
+    {
+      "path": "owner-interfaces.json",
+      "bytes": 13735,
+      "sha256": "8048886625e384c8c5a107b5106ec48e3b8f8ac07b6a2b2464fd8732de67be10"
+    },
+    {
+      "path": "payload-and-adoption.txt",
+      "bytes": 6633,
+      "sha256": "14cacc3a7de2e4f3a4fd46a287c22844e9f4c5f75f83edb6cfa694c9d89adbfa"
+    },
+    {
+      "path": "privilege-and-enrollment.txt",
+      "bytes": 5748,
+      "sha256": "6c179ec2c3dfb9278d0e8274646ffcb337ec128ec72539d94741746aeeb02c0e"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 4212,
+      "sha256": "84ed1af7d2a5ab5aac6609166d63d8497a58e2a0df1493ee0ad86a80bb5636cb"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 1952,
+      "sha256": "635dfda50b718475af40ab223afbef50597fe618a71e49daa9a8199c111af1de"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1389,
+      "sha256": "933b3f48d450b060ec54cb2d976041edf8f3958114f38fff5ae3ad5a80ebfeed"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2369,
+      "sha256": "7d309d5375b1b20543167a8b2d54964975c15cc64ec102777ad196fb7486e57b"
+    },
+    {
+      "path": "review.html",
+      "bytes": 3779,
+      "sha256": "a2028d31f7249ecb5a995974946a368622735ddbc4473dd4da03ba90b1c1c157"
+    },
+    {
+      "path": "rust-pin-receipt.json",
+      "bytes": 8020,
+      "sha256": "91b206210db370c4b4e54823619f43b12e9567fab088e301e7c323d73860f201"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 689,
+      "sha256": "8cf16b407cc1d1fc72209557479b5cd87af9ff882f59a0394ddaf64fb23a1cbe"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 16320,
+      "sha256": "f53820c63726a01137095ace189fef80ec0bb22495bc1446e550b3cd13825b02"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1809,
+      "sha256": "49dd96f4cf75b25a14bf766a4307f4e96f89a6b0fbb1bf87e565a760a87a4cfc"
+    },
+    {
+      "path": "verification-strategy.txt",
+      "bytes": 7528,
+      "sha256": "30ee407e39d74c8bc6afc5dc4667e07b39185e30ed120280713892a4d872443f"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 7975,
+      "sha256": "2dc052de6dbcbbd5001022f8f0907bde66c3204bde3134c3781e8d3dc523ad4f"
+    },
+    {
+      "path": "verus-sources.json",
+      "bytes": 3770,
+      "sha256": "734755fb85b12dcc8e9e6a4dd3e03f6014bd36d1273883e3382f6fcdb589b34b"
+    }
+  ],
+  "remaining_holds": [
+    "F01/F02 partial: full source/native/common wire, participant SQL, FK/trigger/ACL/alias and final current-time binding integration",
+    "F03-F08: real retention/provider/credential/process supply, migration/admission, independent journal/current-authority recovery and runtime/load proof",
+    "Real qualified rule/source/normalizer supply and separate legal authority",
+    "Final authority-aligned integrated design four independent review rounds and explicit exact design SHA approval",
+    "Test candidate independent review and exact test SHA approval before named RED implementation admission",
+    "Separate merge/release/production/payment authority; Rust pin reviewed and locally applied but whole-workspace Clippy still red on pre-existing diagnostics"
+  ]
+}

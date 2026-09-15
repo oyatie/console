@@ -1,0 +1,71 @@
+{
+  "kind": "minimal-auth-startup-mechanical-guide",
+  "author": "/root/next_auth_context",
+  "source_root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "base_sha": "5661e3135ec58f566b4a451b9ec7c5242457d29c",
+  "status": "READ_ONLY_RECOMMENDATION_PENDING_INDEPENDENT_REVIEW_AND_REAL_RED",
+  "boundary": "Real AppState startup consumes and retains a separately authenticated console_auth_rt pool, verifies same observed database target, preserves the legacy business pool. Account fence/session activation and production/HA remain outside this transport boundary.",
+  "existing_owners": [
+    {
+      "path": "backend/app/src/lib.rs:2445",
+      "observation": "validate_database_url_identity is the one current strict parser. No parse_auth_database_url or normalized target structure exists. It decodes effective password, rejects ambiguous/override DSN syntax and ambient PGOPTIONS, but returns String credential only. Do not fork parser or expand its query syntax for this lane."
+    },
+    {
+      "path": "backend/app/src/lib.rs:1857",
+      "observation": "connect_command_pool already creates max2/acquire3s pool, validates direct session_user/current_user/NOLOGIN-owner membership exclusions and fixed serving timeouts on connect and after reset/release, then independently validates pooled connection."
+    },
+    {
+      "path": "backend/app/src/lib.rs:1622",
+      "observation": "from_config creates runtime pool/custody verification then command pools before Self::new and later realtime/mail/bridge work. Auth connection and target refusal belong before usable AppState/background work."
+    },
+    {
+      "path": "backend/app/src/lib.rs:1565",
+      "observation": "new currently constructs AuthRestState from business pool; business pool serves Company/RLS legacy lookups and cannot be replaced by restricted auth pool."
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/lib.rs:181",
+      "observation": "AuthRestState currently stores only pool and services. Existing direct constructors also occur in group_admin_tenant_context and dev_auth_session integration tests; additive builder preserves those constructors while making new injected dependency explicit."
+    }
+  ],
+  "mechanical_steps": [
+    "Only open auth transport for API + actual business DB + auth_rest configuration, matching existing requirement. Migrate/worker/no-DB/disabled-auth startup keeps current behavior; never substitute business pool for missing auth pool.",
+    "Call existing connect_command_pool(auth_url, console_auth_rt, AUTH_DATABASE_URL). Keep its existing role, membership, timeout and reset invariants. A private/auth-specific call-site map_err to a fixed AUTH_DATABASE_URL startup error is sufficient for credential redaction; do not stringify arbitrary driver details into errors. Alternatively add fixed env-key wrapping inside responsible shared helper if sibling behavior/tests demand it.",
+    "Bind target via actual public PostgreSQL metadata on both retained business/auth connections. Suggested minimal readback tuple: current_database() text, pg_database.oid bigint, inet_server_addr() text, inet_server_port(). Require equal non-null TCP endpoint and same DB name/OID; query error or missing row refuses. This is same-observed-server/database admission, not immutable physical-cluster authority.",
+    "Retain pool as an AppState auth_database dependency; AuthRestState must also retain the clone installed through a dedicated builder because its router receives a clone and its actual forthcoming legacy-fence readers need restricted access. Do not open/validate then discard pool, store only URL, or wrap the business pool under an auth label.",
+    "Assign dependencies before background consumers start. Keep AuthRestState.pool as legacy business pool. This transport-only change does not swap legacy passkey/refresh stores onto auth credentials (their Company tables still require business privileges).",
+    "When next fence lane is admitted, consume retained auth dependency in the shared request-context resolution and auth-rest prewrite owners; absence must fail closed for activated Account paths. AppState retention supports SSR/domain middleware/WS consumers outside AuthRestState. Do not claim storing a clone already enforces request fencing.",
+    "Run exact appended credential test and existing two transport tests after projection37 prerequisite; require direct correct authentication, direct wrong password28P01 and startup positive before desired runtime refusal. Then preserve config/parser and serving reset/identity regressions."
+  ],
+  "target_binding_tradeoff": {
+    "recommended": "Compare live observed endpoint/database metadata rather than raw host spelling. Existing allowed scheme aliases, percent-encoded database names, application_name and TLS/password query choices remain parser-owned and unchanged.",
+    "accepted_aliases": "Hostnames/IP spellings reaching the same observed server address/port and database satisfy this comparison without a hardcoded host allowlist.",
+    "operating_limit": "IPv4/IPv6 routes, proxies, multi-address listeners or primary/replica paths can report differing server endpoints even for one logical cluster. This minimal admission refuses differing observed endpoints; it does not promise support for every alias/topology.",
+    "not_proven": "Matching local endpoint+database OID/name can coincide across clusters, proxies or restored copies. No physical cluster identity, serving epoch, HA failover, replication freshness or current-session revocation guarantee follows.",
+    "rejected_shortcuts": [
+      "Raw AUTH_DATABASE_URL == DATABASE_URL comparison includes deliberately different credentials",
+      "Raw hostname equality rejects benign aliases while not proving physical destination",
+      "Database name/OID alone can collide across clusters",
+      "Opening wrong database then interpreting missing fence as absent subject",
+      "Granting pg_control_system or owner access merely to manufacture stronger evidence"
+    ],
+    "later_authority": "Immutable operator-provided deployment/serving identity and restore/failover generations remain the separately reviewed current-context/HA contract. Do not generate a startup nonce table or add migration/grants in this bounded transport lane."
+  },
+  "source_paths": [
+    "backend/app/src/lib.rs",
+    "backend/crates/platform/auth-rest/src/lib.rs"
+  ],
+  "test_candidate": "/private/tmp/account-auth-pool-credential-candidate.rs",
+  "test_candidate_sha256": "db2bb8e31db91c1582abb4be781a70c36fbe0ba78bc749080bd6d24bc3b3863c",
+  "no_work_performed": [
+    "No source edits",
+    "No test/service/database runs",
+    "No grants or schema mutation"
+  ],
+  "stop_conditions": [
+    "Direct negative credential lacks SQLSTATE28P01",
+    "Projection/finalizer prerequisite fails",
+    "Implementation requires material new target trust contract or new privileges",
+    "Existing positive no-DB/worker/disabled-auth changes unexpectedly",
+    "Pool is validated but discarded or not retained for the responsible auth consumer"
+  ]
+}

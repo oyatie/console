@@ -1,0 +1,60 @@
+{
+  "owner": "/root",
+  "base_sha": "39ae20863c5f1b599323f2ddcf72e5400311d023",
+  "source_sha256": {
+    "backend/app/src/account_custody_state.sql": "398c2b7c70add2381f6ea9e3cc3f96231aa1c28c9b546966a712c3699c3e5db7",
+    "ops/generate-account-custody.py": "ed73a8e9e298480b7d59999f145272c12728c8979a987d5b0aa1f9b3df23fb96",
+    "ops/postgres-finalize-account-custody.sql": "ada5cde1ca90caed69464c830f09f1ed7839d5eb35cd8f379afb1185e39f3ece",
+    "ops/account-custody-migrations.sha384": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96"
+  },
+  "reviewers": [
+    "/root/review_completeness",
+    "/root/finish_browser"
+  ],
+  "red": "one finalizer invocation fails at missing owner SQL; deeper assertions initially blocked",
+  "intermediate_failure": "Real catalog reached; PostgreSQL empty ACL array dimension comparison incorrectly refused; native diagnostic established empty cardinality, no outside privilege",
+  "green": {
+    "same_named_probe": 1,
+    "broader_lifecycle": 22,
+    "failed": 0,
+    "filtered": 71
+  },
+  "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo DOCKER_CONTEXT=colima-console-design30 SQLX_OFFLINE=true fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-account-lifecycle-execution-20260914/lifecycle-probe-map.json --only app-auth-rest-pg --runner cargo --num-threads 1",
+  "logs": {
+    "finalizer-red.log": {
+      "artifact": "finalizer-red.log.gz",
+      "sha256": "a5633ebe312c15152ca2bf55071c6a5bdca2194706fb3534174974f7a663cc62"
+    },
+    "finalizer-green.log": {
+      "artifact": "finalizer-green.log.gz",
+      "sha256": "36d7e0906cc34fa54c38bff974be4a845b7179ea6a6318d653000b0abdca57a3"
+    },
+    "finalizer-green2.log": {
+      "artifact": "finalizer-green2.log.gz",
+      "sha256": "edb5058d912c43dd4ae11544400709fc761a07ed19b941a8c9047ad68beaa852"
+    },
+    "lifecycle-first.log": {
+      "artifact": "lifecycle-first.log.gz",
+      "sha256": "83336488b892351e4a27339154ab59e1a1421a50932923e67b6eec6904fff65d"
+    }
+  },
+  "premortem": [
+    "Role graph drifts during operator work",
+    "Wrong shape accidentally accepted",
+    "Mid-transfer failure or lost acknowledgement",
+    "Deployment starts before actual target finalization"
+  ],
+  "blast_radius": "Six dormant relations in selected DB; administrative credential itself retains cluster-wide capability",
+  "rollback": "Atomic DO rollback on failure; exact finalized retry is read-only; no ownership reversal or destructive down migration",
+  "stop_conditions": [
+    "Any privilege exposure or source drift",
+    "Any ignored runtime failure or failure to reach named boundary"
+  ],
+  "holds": [
+    "Production wrapper independent target/TLS/ledger admission",
+    "API/worker startup and readiness wiring",
+    "Deployment orchestration",
+    "Account enrollment/credential conversion and full Console workflows",
+    "Production approval"
+  ]
+}

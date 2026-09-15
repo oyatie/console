@@ -1,0 +1,36 @@
+{
+  "initial_candidate_sha": "8c2b22718fa07294d142a24c07688b71c69f123b",
+  "initial_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "EventRef witness field differs from schema",
+        "Cross-month anchored-plan allocation and exact plan digest absent",
+        "Monthly coverage byte limit and day blocker depth conflict"
+      ]
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Concrete day repair blocker exceeds source envelope depth8"
+      ]
+    }
+  ],
+  "correction_commits": [
+    "e491d63e61804e35796429f14ee940952c740375",
+    "dc13f447c9f9e58553457d67d02039939fdd5af5",
+    "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6"
+  ],
+  "corrections": [
+    "Corrected attendance_record_id and regenerated all dependent hashes; limited fixture shape check",
+    "Flat typed repair refs, exact previous/current anchored contributions and plan digest",
+    "Classified-day artifact stream retains whole month through existing Docs adoption; explicit conservative whole-day/root overflow",
+    "13 canonical/6 frame witnesses including actionable BLOCKED coverage and30-day capacity serialization",
+    "Exact pre-query opening state, half-open replay and seed-only prior anchor treatment"
+  ],
+  "intermediate_validation_failure": "e491d63e unused LeaveRequestRef detected by all-definitions-reachable assertion; removed in dc13f447, no test weakened",
+  "final_candidate_sha": "c508eedfbadc5dd3ce38520bd4a3a95b7a4d8be6",
+  "counts_as_final_integrated_round": false
+}

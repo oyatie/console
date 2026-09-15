@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "lane": "integration-test-source-inventory",
+  "owner": "/root/inventory_repair",
+  "base_sha": "8efaf972bacdcb9484a9ca3ae6c01c13e8263bd3",
+  "candidate_sha": "40b1bfa6b705ee1f018e37922978583dc3e7536d",
+  "root": "/private/tmp/console-test-source-inventory-20260915",
+  "owned_paths": [
+    "scripts/check-executed-tests.mjs",
+    "scripts/check-executed-tests-cfg.mjs",
+    "scripts/lib/executed-tests-baseline.mjs"
+  ],
+  "admission": "/private/tmp/account-inventory-admission.log",
+  "test_review": "/private/tmp/account-inventory-tests-independent-review.json",
+  "lenses": [
+    "Cartesian doubt",
+    "Systems Thinking",
+    "Blast-radius / cell-based"
+  ],
+  "verification": [
+    {
+      "command": "node --test scripts/check-executed-tests.test.mjs scripts/lib/executed-tests-baseline.test.mjs",
+      "exit_code": 0,
+      "discovered": 40,
+      "executed": 40,
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "todo": 0,
+      "fixture_rust_discovered": 10,
+      "fixture_rust_executed": 10,
+      "fixture_rust_passed": 10,
+      "log": "/private/tmp/console-test-source-inventory-20260915-green.log"
+    },
+    {
+      "command": "node scripts/check-g005-workflow-lifecycle.mjs",
+      "exit_code": 0,
+      "log": "/private/tmp/console-test-source-inventory-20260915-g005.log"
+    },
+    {
+      "command": "node scripts/check-executed-tests.mjs --json",
+      "exit_code": 1,
+      "reason": "Three upward static source counts require separately serialized baseline update",
+      "defined": 384,
+      "executed": 384,
+      "dark": [
+        "backend/crates/platform/storage/tests/seaweedfs_worm.rs"
+      ],
+      "unresolved": [],
+      "stdout": "/private/tmp/console-test-source-inventory-20260915-repo.json",
+      "stderr": "/private/tmp/console-test-source-inventory-20260915-repo.stderr"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "static_deltas": [
+    {
+      "source": "backend/app/tests/auth_rest.rs",
+      "before": 55,
+      "after": 138
+    },
+    {
+      "source": "backend/app/tests/workbench_api.rs",
+      "before": 7,
+      "after": 12
+    },
+    {
+      "source": "backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+      "before": 6,
+      "after": 8
+    }
+  ],
+  "auth_rest_source_counts": {
+    "auth_rest.rs": 55,
+    "account_custody_lifecycle.rs": 12,
+    "account_custody_startup.rs": 11,
+    "account_fence_projection.rs": 37,
+    "account_fence_transport.rs": 7,
+    "account_storage.rs": 6,
+    "auth_target_parser.rs": 8,
+    "publication_privileges.rs": 2
+  },
+  "static_runtime_explanation": "account_custody_lifecycle.rs:190 hostile macro has one test attribute at192 and eleven invocations at202-252, so runtime has ten more cases than static attributes. No macro expansion or runtime coverage claim is made by this inventory.",
+  "pre_mortem": "Orphan paths inflate counts, prose creates module/test tokens, cycles recurse, missing paths silently disappear.",
+  "blast_radius": "Static test source inventory only; no application, database, authority, generated record or baseline changes.",
+  "detection": "Compiler/list/execution fixtures plus actual CLI reject child loss with orphan replacement; actual repository links all resolve.",
+  "rollback": "Revert bounded source commit, retaining approved red test commit and immutable evidence.",
+  "stop_conditions": [
+    "Baseline weakening required",
+    "Unsupported path silently accepted",
+    "Unrelated scope change required"
+  ],
+  "review_identities": {
+    "test_review": "/root/fast_gate_review",
+    "implementation_review": "pending root assignment"
+  },
+  "remaining_holds": [
+    "Independent source candidate review pending",
+    "Generated baseline update remains parent-owned",
+    "Full cfg/macro-expansion-aware runtime coverage is not claimed"
+  ],
+  "source_sha256": {
+    "scripts/check-executed-tests.mjs": "e8ba074e08aba9a3fb734d0d99deec2b26d09cb6aa695d436dcb2322faa74f01",
+    "scripts/check-executed-tests-cfg.mjs": "bf553ddd461b0bfd2a087b3408f0c65a83d023ef789070cafc19c0c522b196f3",
+    "scripts/lib/executed-tests-baseline.mjs": "2666c2006ba7fc0c383f6b294109455e9153dc41c51acc81b5813ef48c6afb1a"
+  },
+  "log_sha256": {
+    "/private/tmp/console-test-source-inventory-20260915-green.log": "85415c888f1f5c3c39942691db8c92561eafb62aee9a46e3accccc3306c9a6a3",
+    "/private/tmp/console-test-source-inventory-20260915-g005.log": "71e41561d2e5b0959ab5cb37cf5e1869bca50045f941852526b81ec3da65b5ad"
+  }
+}

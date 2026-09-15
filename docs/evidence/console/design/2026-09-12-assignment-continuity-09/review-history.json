@@ -1,0 +1,20 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "46a55f8062bdb93b6ef42211620d9d699d180cbe",
+      "verdict": "Both independent reviewers ACCEPT_SCOPED",
+      "scenarios": 62
+    },
+    {
+      "candidate_sha": "61f8ed96f760fed287a52d4f31f0886346db9c06",
+      "author_finding": "WA-SELF01: current membership validation could strand historical charge after Company removal/remint",
+      "remediation": "Narrow release-only retirement with immutable historical binding and both current recovery authorities; unknown remains charged",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "verdict": "Both reviewers ACCEPT_SCOPED delta",
+      "scenarios": 64
+    }
+  ]
+}

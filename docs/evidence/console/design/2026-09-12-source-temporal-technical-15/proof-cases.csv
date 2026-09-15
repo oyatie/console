@@ -1,0 +1,48 @@
+id,contract,setup_or_race,required_oracle,status
+P01,SG1,Concurrent new Employment absent from selected rows,Resolve entire guarded predicate; required new slot cannot disappear,NONEXECUTABLE_CANDIDATE
+P02,SG1,Unrelated worker clock increments family,Revalidate same semantic basis; retain unaffected review,NONEXECUTABLE_CANDIDATE
+P03,SG1,Missing initialized guard row,Unavailable; no lazy generation0,NONEXECUTABLE_CANDIDATE
+P04,SG1,Legacy direct clock alias on enrolled Company,Delegates single attendance owner with same fences or refuses,NONEXECUTABLE_CANDIDATE
+P05,SG1,Source writer also changes Cedar operand,Earlier Company authority exclusive then period/family/head,NONEXECUTABLE_CANDIDATE
+P06,SG1,Source correction races calculation,Serial outcome under declared guards; no mixed source basis,NONEXECUTABLE_CANDIDATE
+P07,SG1,Guard lock upgrade discovered after read,Rollback and replan; never upgrade in place,NONEXECUTABLE_CANDIDATE
+P08,SG1,New global rules with old kernel,Drain and compatible immutable bundle; no mixed calculation,NONEXECUTABLE_CANDIDATE
+P09,SG1,Family lock exceeds clock-save budget,Enrollment blocked pending measured refinement; never drop event,NONEXECUTABLE_CANDIDATE
+P10,HT1,Employee exits after earning month before pay date,Historical month coverage retained despite closed current head,NONEXECUTABLE_CANDIDATE
+P11,HT1,Two revisions of same Employment cover month,Retain segments; do not demand one unchanged revision,NONEXECUTABLE_CANDIDATE
+P12,HT1,Missing earlier employee Employment association,UNKNOWN_BINDING; do not fabricate current-to-past history,NONEXECUTABLE_CANDIDATE
+P13,HT1,Backdated EXITED segment inside open head,Segment state blocks; current ACTIVE cannot cover gap,NONEXECUTABLE_CANDIDATE
+P14,HT1,Midmonth cross-site transfer intersects selected scope,Include required slot; unsupported allocation blocks,NONEXECUTABLE_CANDIDATE
+P15,HT1,Equal-value new wage effective before pay date,Changed identity blocks narrow profile,NONEXECUTABLE_CANDIDATE
+P16,HT1,Correction overlay concurrent same predecessor,Exactly one CAS successor; all enrolled readers use corrected resolver,NONEXECUTABLE_CANDIDATE
+P17,HT1,Calendar has unclassified holiday or missing day,UNKNOWN_CALENDAR; no weekday counting fallback,NONEXECUTABLE_CANDIDATE
+P18,HT1,Required duties with zero events and attest true,Coverage missing unless exact allowed paid absence covers duties,NONEXECUTABLE_CANDIDATE
+P19,HT1,IN IN OUT OUT has equal counts,Invalid pairing blocks,NONEXECUTABLE_CANDIDATE
+P20,HT1,July overnight pair ends in August,Retain OUT then clip half-open window; premium still assessed,NONEXECUTABLE_CANDIDATE
+P21,HT1,Disjoint boundary pair,No negative paid seconds; filter or corrected pure helper,NONEXECUTABLE_CANDIDATE
+P22,HT1,More than4096 events or unsupported24h shift,Limit+1 refusal; never partial completeness,NONEXECUTABLE_CANDIDATE
+P23,HT1,Pending leave with otherwise ready operational close,Native completeness blocks; legacy ready insufficient,NONEXECUTABLE_CANDIDATE
+P24,HT1,Close metadata appended after coverage assessment,Underlying unchanged coverage not self-invalidated,NONEXECUTABLE_CANDIDATE
+P25,EA1,Upload confirmed without exact provider version,No native source admission,NONEXECUTABLE_CANDIDATE
+P26,EA1,Replica missing checksum or insufficient retention,Reject verification; ETag not SHA256,NONEXECUTABLE_CANDIDATE
+P27,EA1,Storage latest-key points to replacement,Retrieve exact attested version through authorized proxy,NONEXECUTABLE_CANDIDATE
+P28,EA1,Source quarantined or expires after draft seal,Recheck current state before new effect; preserve historical receipts,NONEXECUTABLE_CANDIDATE
+P29,EA1,Same human proposes and verifies using two accounts,Distinct natural person rule refuses,NONEXECUTABLE_CANDIDATE
+P30,EA1,Uploaded verified true or job title claims qualification,Not qualified evidence; current professional source proof required,NONEXECUTABLE_CANDIDATE
+P31,EA1,Foreign Company artifact ID copied into command,Reject unless authorized admission minted local reference,NONEXECUTABLE_CANDIDATE
+P32,EA1,Tax band matches but child adjustment note omitted,Full source locator/rule selection blocks,NONEXECUTABLE_CANDIDATE
+P33,EA1,Tax selection differs from verified taxable assessment,Reject exact binding mismatch,NONEXECUTABLE_CANDIDATE
+P34,EA1,Assessment requires tax evidence which requires assessment,Forbidden dependency cycle; assess non-tax basis first,NONEXECUTABLE_CANDIDATE
+P35,EA1,No qualified automatic tax normalizer,Located-row manual recovery; source-supply prerequisite remains open,NONEXECUTABLE_CANDIDATE
+P36,EA1,Draft pin released after domain adoption,Domain pin survives; disposal aliases enforce independently,NONEXECUTABLE_CANDIDATE
+P37,SI1,Omitted caller population and empty expected source list,Server resolves whole population under guards,NONEXECUTABLE_CANDIDATE
+P38,SI1,Successful command retried after evidence revocation,Reconcile historical result first; current disclosure still authorized,NONEXECUTABLE_CANDIDATE
+P39,SI1,Create command retried after allocated UUID committed,Use receipt original target; no reallocated duplicate,NONEXECUTABLE_CANDIDATE
+P40,SI1,Synthetic tax source presented to production,No production fixture switch; qualified source still required,NONEXECUTABLE_CANDIDATE
+P41,EA1,Two current matching verified roots with equal amounts,AMBIGUOUS_SOURCE; no latest-created tie-break,NONEXECUTABLE_CANDIDATE
+P42,EA1,Pending successor proposes correction to verified predecessor,Predecessor remains candidate until atomic verified successor activation,NONEXECUTABLE_CANDIDATE
+P43,EA1,Two successor verifications race on same predecessor CAS,One activation; loser cannot retire a different head; later successor revocation never resurrects predecessor,NONEXECUTABLE_CANDIDATE
+P44,EA1,Verified tax row depends on revoked professional credential,New use blocked through current bounded trust closure; historical receipt retained,NONEXECUTABLE_CANDIDATE
+P45,EA1,Tenant admin attempts to bootstrap own professional credential,Refuse without pinned issuer profile and independent issuer authenticity evidence,NONEXECUTABLE_CANDIDATE
+P46,EA1,Wage change invalidates old verified tax evidence before correction,New successor checks current new basis; old predecessor needs exact lineage and CAS not continued old-source validity,NONEXECUTABLE_CANDIDATE
+P47,EA1,Two reinstatements target one revoked credential,Terminal REVOKE preserved; one empty-successor CAS activates one new verified admission,NONEXECUTABLE_CANDIDATE

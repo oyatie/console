@@ -123,6 +123,7 @@ gitEnvironment.GIT_NO_REPLACE_OBJECTS = "1";
 function git(args) {
   return execFileSync("git", ["-C", root, ...args], {
     encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024,
     env: gitEnvironment,
     stdio: ["ignore", "pipe", "pipe"],
   });

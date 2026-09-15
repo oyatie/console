@@ -1,0 +1,30 @@
+{
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "owner": "/root",
+  "tests_discovered_and_executed": 14,
+  "passed": 3,
+  "failed": 11,
+  "ignored": 0,
+  "filtered": 0,
+  "semantic_failures": 9,
+  "blocked_at_missing_guard_42883": 2,
+  "semantic_boundaries": [
+    "custody preservation2",
+    "authority unavailable restoration2",
+    "native enrollment lock ordering4",
+    "repeatable-read refusal1"
+  ],
+  "unreached": [
+    "later security-state rows",
+    "serializable row",
+    "backend-death57P01/restoration after earlier native-FK witness failure",
+    "guard scope/profile assertions after missing routine"
+  ],
+  "positive_controls": [
+    "original legacy revocation2",
+    "immediate nativeFK1"
+  ],
+  "cleanup": "verified owned container absent",
+  "probe_log_sha256": "56e8a69ee3960707bd814bb1a77b3de64f6a2179c972bfa7e17eb046a9613fd4",
+  "admission": "Use same unfiltered14 probe for guard+owner scope only; missing routine does not prove deeper scope/profile assertions"
+}

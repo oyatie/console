@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_BOUNDED_DESIGN_PENDING_SOURCE_AND_RUNTIME",
+  "lane": "LC08-locked-finalizer-catalog-observation",
+  "base": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+  "manifest_sha256": "74d5311d40a392dbc352e74785edfdc3b5621c41cbe9f9e70fa58f4a2c77bd80",
+  "observed_fact": "Coordinated concurrent finalizer reproduced P0001 account_custody.unexpected_privilege atinitialpre-lockcatalogrefusal; first finalizer succeeds. Diagnostic1FAIL, not timeout.13artifacthashes and clean source/cleanup verified.",
+  "mechanism_hypothesis": "Pre-lock canonical metadata query combines snapshot reads and catalog helper accesses across blocking/concurrent commit; exactPostgreSQLhelper ordering not instrumented.",
+  "approved_design": [
+    "Operator identity and transaction-local timeouts remain first.",
+    "Cheap pg_class/namespace census verifies exactsixpublicrelationnames; missing names retain catalog_missing. Separate ordinary-table relkind check retains shape_mismatch before locking.",
+    "Acquire ACCESS EXCLUSIVE with ONLY on each fixedsixrelation, preventing unexpected inheritance/view descendants from widening the lock footprint. Parent lock serializes ordinary inheritance changes; unexpectedshape remains rejected.",
+    "After locks, run unchanged authoritative canonical catalog/profile check before any ownership/grant/function mutation. Keep every subsequent prepared/routine/postcondition check.",
+    "Only generator and generatedSQL change; numberedmigrations, canonicalmetadataquery, tests and ACLprofiles/grants untouched."
+  ],
+  "why_not_exception_wrapping": "Broad catch aroundLOCK can misclassify timeouts/permissions; explicit existence/kind preflight retains intended errors without catching unrelated failures.",
+  "required_verification": [
+    "Exacttwofilecandidate independentreview",
+    "SameadmittedconcurrentprobeGREEN",
+    "Retainedlifecycle/startup/hostiletestexecution with knownstorageprerequisites classified separately"
+  ],
+  "holds": [
+    "RejectedownerUPDATE(id) patch remains unapplied; no bypass authorized.",
+    "No runtime success or production/HA claim from this design approval."
+  ]
+}

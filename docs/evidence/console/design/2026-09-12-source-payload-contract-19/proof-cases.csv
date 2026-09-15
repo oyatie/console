@@ -1,0 +1,41 @@
+id,surface,trigger,expected,status
+S19-01,calendar,duplicate weekday,reject publication,PROPOSED_NOT_EXECUTED
+S19-02,calendar,override outside range,reject publication,PROPOSED_NOT_EXECUTED
+S19-03,calendar,break outside duty,reject publication,PROPOSED_NOT_EXECUTED
+S19-04,calendar,adjacent-day overlap,reject publication,PROPOSED_NOT_EXECUTED
+S19-05,calendar,wrong paid total V02,reject despite valid lexical shape,PROPOSED_NOT_EXECUTED
+S19-06,calendar,oversize proposed split fails,old calendar and assignments retained atomically,PROPOSED_NOT_EXECUTED
+S19-07,calendar,assignment gap or two current matches,BLOCKED; no latest match,PROPOSED_NOT_EXECUTED
+S19-08,event,month crossing V04-V06,480 total;360 September from prior anchored plan;840 with current480;September30 night120,PROPOSED_NOT_EXECUTED
+S19-09,event,no prior anchor and no initialization fact,UNKNOWN before query_from; replay through earning start; not COMPLETE,PROPOSED_NOT_EXECUTED
+S19-10,event,4097 in-window events,overlimit sentinel blocks;4096 plus prior anchor is allowed,PROPOSED_NOT_EXECUTED
+S19-11,event,missing trailing record or duplicated anchor,reject package,PROPOSED_NOT_EXECUTED
+S19-12,event,raw-file hash supplied as event-set hash,reject mismatched framing,PROPOSED_NOT_EXECUTED
+S19-13,event,source changes during upload,reacquire guards; no stale current publication,PROPOSED_NOT_EXECUTED
+S19-14,event,subminute or rounded overtime,unsupported; never reconstruct exact time,PROPOSED_NOT_EXECUTED
+S19-15,coverage,missing date or omitted unscheduled event,not COMPLETE,PROPOSED_NOT_EXECUTED
+S19-16,coverage,257 matching exceptions,whole family omitted with BLOCKED; no truncation,PROPOSED_NOT_EXECUTED
+S19-17,leave,time_change_consult clears charge,old charge cannot support current PAID,PROPOSED_NOT_EXECUTED
+S19-18,leave,alternative dates increase request version,old disposition becomes unusable for new use,PROPOSED_NOT_EXECUTED
+S19-19,leave,missing immutable interval witness,common draft plus LEAVE_REQUEST blocker,PROPOSED_NOT_EXECUTED
+S19-20,leave,CONFIRM exception only,does not establish paid minutes or absence penalty,PROPOSED_NOT_EXECUTED
+S19-21,source,right edition wrong rule purpose,reject verification/use,PROPOSED_NOT_EXECUTED
+S19-22,source,self-signed credential or proposer same human,reject verification,PROPOSED_NOT_EXECUTED
+S19-23,source,credential verification asks another professional credential,use pinned issuer identity-operator path; no recursive credential chain,PROPOSED_NOT_EXECUTED
+S19-24,source,revocation after previous success,deny new use; historical receipt retained under current disclosure,PROPOSED_NOT_EXECUTED
+S19-25,source,hidden duplicate source,generic unavailable; no leaked identity/count,PROPOSED_NOT_EXECUTED
+S19-26,source,257 dependency nodes or bundle recursion,reject; never bounded partial success,PROPOSED_NOT_EXECUTED
+S19-27,state,blocked eligibility VERIFY,reject; preserve proposal,PROPOSED_NOT_EXECUTED
+S19-28,state,successor verify conflicts predecessor head,atomic CAS fails; no half supersede,PROPOSED_NOT_EXECUTED
+S19-29,state,successor later revoked,old source never resurrects,PROPOSED_NOT_EXECUTED
+S19-30,insurance,NOT_APPLICABLE or pension null,NP1 blocked; never zero or gross fallback,PROPOSED_NOT_EXECUTED
+S19-31,tax,selection missing taxable/family facts,BLOCKED nullable selection; no fabricated source,PROPOSED_NOT_EXECUTED
+S19-32,tax,P120 final amount already includes factor,do not multiply twice,PROPOSED_NOT_EXECUTED
+S19-33,tax,local tax assumed income divided10,reject unqualified amount,PROPOSED_NOT_EXECUTED
+S19-34,tax,CSV quoted embedded newline,one logical record; header excluded,PROPOSED_NOT_EXECUTED
+S19-35,tax,duplicate headers or formatted amount,reject; no locale guessing,PROPOSED_NOT_EXECUTED
+S19-36,tax,PDF cell omits applicable note,not qualified final withholding,PROPOSED_NOT_EXECUTED
+S19-37,close,new amendment ID same prose,amendment commitment changes,PROPOSED_NOT_EXECUTED
+S19-38,close,valid member file but unresolved native input,cannot close,PROPOSED_NOT_EXECUTED
+S19-39,disclosure,read link grants no package-field authority,filter/refuse before serialization,PROPOSED_NOT_EXECUTED
+S19-40,repair,manual repair attempts owner bypass,same owning action and policy as automation,PROPOSED_NOT_EXECUTED

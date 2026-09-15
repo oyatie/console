@@ -1,0 +1,24 @@
+{
+  "status": "Bounded B04/B05/B12 independently reviewed RED candidate; all3new tests stop at missing terms prerequisite",
+  "covers": [
+    "Same manifest digest with newer receipt/revision invalidates old pending attempt without side effects; fresh attempt persists exact new receipt/revision/digest in acceptance and same-Account events; original receipt unchanged",
+    "Unsupported current release closes terms/start/finish with503 while retained prior bytes and reconstructable consent support established session read/proof/refresh/logout and fresh signed primary login",
+    "Registered content file loss returns503, unchanged pending and established state; existing sessions work; restoring exact bytes/restarting same key restores readiness and original pending attempt completes once; old logged-out family remains revoked in DB"
+  ],
+  "new_tests": 3,
+  "new_postgres_tests": 3,
+  "limits": [
+    "No publisher authorization/custody/CAS/genesis/overflow/tuple-integrity function or database role proof; head/receipt setup is privileged fixture data",
+    "Same-digest revision advance isolates freshness but is not full A-to-B-to-A or concurrent publication-vs-finish experiment",
+    "Unsupported current release is a replica fixture; this does not prove a production release package retains every historical artifact across deployment",
+    "Historically reconstructable consent positive only; unknown/missing historical consent403 and resolver503 cases remain",
+    "Post-restore old-family revocation checked by DB readback; HTTP denial is checked before restore, no separate post-restart old credential request",
+    "Five-minute original ceremony must remain live throughout bounded test; no expiry/clock/crash injection",
+    "Inherited SoftPasskey UV/client-only nonresident/allowlist/userHandle accommodations remain; no real browser assurance",
+    "All three new DB cases depend on unimplemented terms schema; downstream behavior not proven by prerequisite RED"
+  ],
+  "inherited_inventory": "../2026-09-13-account-browser-04/coverage.json",
+  "remaining_session_boundaries": "../2026-09-13-account-session-05/coverage.json",
+  "new_test_sha_approved": false,
+  "implementation_admitted": false
+}
