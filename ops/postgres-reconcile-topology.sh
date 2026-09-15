@@ -399,6 +399,9 @@ SELECT format(
 -- Database-specific settings outrank global role defaults, so remove only the
 -- three managed keys from every database override and preserve all unrelated
 -- role settings.
+ALTER ROLE console_auth_rt SET statement_timeout = '30s';
+ALTER ROLE console_auth_rt SET idle_in_transaction_session_timeout = '30s';
+ALTER ROLE console_auth_rt SET transaction_timeout = '45s';
 ALTER ROLE console_rt SET statement_timeout = '30s';
 ALTER ROLE console_rt SET idle_in_transaction_session_timeout = '30s';
 ALTER ROLE console_rt SET transaction_timeout = '45s';
@@ -415,21 +418,21 @@ SELECT format('ALTER ROLE %I IN DATABASE %I RESET statement_timeout', role.rolna
 FROM pg_db_role_setting settings
 JOIN pg_roles role ON role.oid = settings.setrole
 JOIN pg_database database ON database.oid = settings.setdatabase
-WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+WHERE role.rolname IN ('console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
   AND EXISTS (SELECT 1 FROM unnest(settings.setconfig) setting WHERE setting LIKE 'statement_timeout=%')
 \gexec
 SELECT format('ALTER ROLE %I IN DATABASE %I RESET idle_in_transaction_session_timeout', role.rolname, database.datname)
 FROM pg_db_role_setting settings
 JOIN pg_roles role ON role.oid = settings.setrole
 JOIN pg_database database ON database.oid = settings.setdatabase
-WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+WHERE role.rolname IN ('console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
   AND EXISTS (SELECT 1 FROM unnest(settings.setconfig) setting WHERE setting LIKE 'idle_in_transaction_session_timeout=%')
 \gexec
 SELECT format('ALTER ROLE %I IN DATABASE %I RESET transaction_timeout', role.rolname, database.datname)
 FROM pg_db_role_setting settings
 JOIN pg_roles role ON role.oid = settings.setrole
 JOIN pg_database database ON database.oid = settings.setdatabase
-WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+WHERE role.rolname IN ('console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
   AND EXISTS (SELECT 1 FROM unnest(settings.setconfig) setting WHERE setting LIKE 'transaction_timeout=%')
 \gexec
 
@@ -699,7 +702,7 @@ BEGIN
 
     SELECT count(*) INTO bad_runtime_defaults
     FROM (VALUES
-      ('console_rt'), ('console_leave_cmd'), ('console_ontology_cmd'), ('console_platform_force_cmd')
+      ('console_auth_rt'), ('console_rt'), ('console_leave_cmd'), ('console_ontology_cmd'), ('console_platform_force_cmd')
     ) expected(role_name)
     WHERE NOT EXISTS (
       SELECT 1
@@ -718,7 +721,7 @@ BEGIN
       FROM pg_db_role_setting settings
       JOIN pg_roles role ON role.oid = settings.setrole
       CROSS JOIN LATERAL unnest(settings.setconfig) setting
-      WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+      WHERE role.rolname IN ('console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
         AND settings.setdatabase <> 0
         AND split_part(setting, '=', 1) IN (
           'statement_timeout', 'idle_in_transaction_session_timeout', 'transaction_timeout'
@@ -1182,7 +1185,7 @@ SQL
 # backend after commit, synchronously terminate each one with a positive timeout,
 # and prove that exact captured set is absent before returning.
 serving_backend_pid_output="$(psql "${admin_psql_args[@]}" -Atqc \
-  "SELECT pid FROM pg_stat_activity WHERE usename IN ('console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd') AND pid <> pg_backend_pid() ORDER BY pid")"
+  "SELECT pid FROM pg_stat_activity WHERE usename IN ('console_auth_rt','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd') AND pid <> pg_backend_pid() ORDER BY pid")"
 if [[ -n "${serving_backend_pid_output}" ]]; then
   while IFS= read -r pid; do
     terminated="$(psql "${admin_psql_args[@]}" -Atqc \
@@ -1214,6 +1217,9 @@ verify_serving_login() {
     exit 1
   fi
 }
+if [[ "${CONSOLE_AUTH_PASSWORD_SUPPLIED}" == 1 ]]; then
+  verify_serving_login console_auth_rt "${CONSOLE_AUTH_POSTGRES_PASSWORD}"
+fi
 verify_serving_login console_rt "${CONSOLE_RT_POSTGRES_PASSWORD}"
 verify_serving_login console_leave_cmd "${CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD}"
 verify_serving_login console_ontology_cmd "${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD}"
