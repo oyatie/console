@@ -1,0 +1,40 @@
+{
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "author": "/root/inventory_repair",
+  "source_root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "allowed_paths": [
+    "backend/crates/platform/auth/tests/jwt_verifier.rs"
+  ],
+  "candidate_type": "existing registered test binary only; no assertion removal or production source/manifests",
+  "files": {
+    "backend/crates/platform/auth/tests/jwt_verifier.rs": {
+      "preimage_sha256": "b2ce4e17f2e1768855bcc0b395c4fcdc9b3fd6eaf73cb22da3a0cb430b9661b2",
+      "sha256": "262dc89618f39f4222f376158c89abaa151993266eab058cfca927a5a6ab8def",
+      "bytes": 6983,
+      "lines": 181
+    }
+  },
+  "artifact_sha256": {
+    "candidate.patch": "4b9ceec4299a5572e2d8a3140856bb290279579322c006a2ca2305cebf1bbdea",
+    "guide.json": "5e4cc31a579885fddd94c84351ce3d5fe6f7498e83572a7c8ae3fd4db2c86383"
+  },
+  "source_sha256": {
+    "backend/crates/platform/auth/src/jwt.rs": "a67e2204bdbe8b3dfe1cbf96851e38ce3b331c760939e697136fa97528ed367f",
+    "backend/crates/platform/auth/src/lib.rs": "aa9a5f848d3045bb400591bdc6459ddf0e3752018e592b04a2bbfd9e3c9fa3f6",
+    "backend/crates/platform/auth/Cargo.toml": "b9e5e73eec7a921157a591f78596a42d1bfd74315b24a852c60742c429ce59f5",
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt": "f73a36e813041f7498c90fde5a3fb97cc056a85d823af2ba81c00d53b33b3298"
+  },
+  "tests": [
+    "account_protocol_separation::unmarked_legacy_token_remains_valid_in_both_verifiers",
+    "account_protocol_separation::account_access_marker_cannot_enter_legacy_parser_with_legacy_shaped_claims",
+    "account_protocol_separation::account_csrf_marker_cannot_enter_legacy_parser_with_legacy_shaped_claims"
+  ],
+  "expected_discovered": 3,
+  "binary_total_expected": 4,
+  "preserved_existing_test": "public_key_verifier_accepts_es256_access_token",
+  "superseded_packaging": {
+    "path": "/private/tmp/account-jwt-protocol-separation-candidate-f96eddd3",
+    "reason": "Root requested existing CI/BUCK registered binary instead of new unregistered binary. Prior artifact preserved; do not import it."
+  }
+}
