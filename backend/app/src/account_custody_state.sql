@@ -1,5 +1,7 @@
--- Read-only complete custody verdict: six relations and three routines. Caller must use search_path=pg_catalog,pg_temp.
--- Expected fingerprints are fixed from reviewed0226, never from this target.
+-- Read-only complete custody verdict, including the legacy user root bridge.
+-- Caller must use search_path=pg_catalog,pg_temp. No Account/user rows are read.
+-- Historical shapes are fixed from reviewed0226. The only projected-out root
+-- objects are independently certified below; body hashes derive from source.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
  ('account_security','console_account_owner','6d97077ecd0b70761f3ac9396e862bb3906f0f3f20b9927356f3127da607bd25'),
@@ -20,7 +22,11 @@ SELECT wanted.name, jsonb_build_object(
  'triggers',(SELECT jsonb_agg(item ORDER BY item::text) FROM (
  SELECT jsonb_build_array(CASE WHEN t.tgisinternal THEN NULL ELSE t.tgname END,t.tgisinternal,t.tgenabled,t.tgtype,t.tgnargs,encode(t.tgargs,'hex'),t.tgdeferrable,t.tginitdeferred,pn.nspname,p.proname,fn.nspname,f.relname,pg_get_expr(t.tgqual,t.tgrelid)) AS item
  FROM pg_trigger t JOIN pg_proc p ON p.oid=t.tgfoid JOIN pg_namespace pn ON pn.oid=p.pronamespace
- LEFT JOIN pg_class f ON f.oid=t.tgconstrrelid LEFT JOIN pg_namespace fn ON fn.oid=f.relnamespace WHERE t.tgrelid=c.oid) triggers),
+ LEFT JOIN pg_class f ON f.oid=t.tgconstrrelid LEFT JOIN pg_namespace fn ON fn.oid=f.relnamespace
+ WHERE t.tgrelid=c.oid AND NOT (wanted.name='accounts' AND (
+   t.tgname='account_roots_immutable_v1' OR t.tgconstraint IN (
+     SELECT root_key.oid FROM pg_constraint root_key
+     WHERE root_key.conrelid=to_regclass('public.users') AND root_key.conname='users_account_root_v1')))) triggers),
  'rules',(SELECT jsonb_agg(pg_get_ruledef(r.oid) ORDER BY r.rulename) FROM pg_rewrite r WHERE r.ev_class=c.oid),
  'policies',(SELECT count(*) FROM pg_policy p WHERE p.polrelid=c.oid),
  'inheritance',(SELECT count(*) FROM pg_inherits i WHERE i.inhrelid=c.oid OR i.inhparent=c.oid)
@@ -37,7 +43,130 @@ ORDER BY wanted.name), relations AS (
 ), routine_bodies(name,sha256) AS (VALUES
  ('account_legacy_fenced_v1','0ea5ca5ecadcdef895d525dfc552fd35dfda06add0705b3ef202f4099debd8d9'),
  ('account_terms_receipts_immutable_v1','dac65dd11a1031196794f94f445205aad1ed804c09e0326c896b94af7d991b7c'),
- ('account_terms_current_v1','e39c2c73c35b1be6ca7379b08c684879ab831df369f264ec63552490057563ec')
+ ('account_terms_current_v1','e39c2c73c35b1be6ca7379b08c684879ab831df369f264ec63552490057563ec'),
+ ('account_roots_immutable_v1','0ccca6c1b15d5ad3f95f25b8ef88db47f11622a89699326908a7a957fa5fe7fa'),
+ ('account_legacy_user_root_v1','2d0643734b149d32b7f81ce052746b2c414ab64439161fc3d64214c680299f31'),
+ ('account_legacy_user_id_immutable_v1','77f85eea3c295aae356a4a3aa9925d1e2a2a8d7696cbfeedaa6f706882422b56')
+), root_names(name, relation_name, trigger_name, trigger_type, definer) AS (VALUES
+ ('account_roots_immutable_v1','accounts','account_roots_immutable_v1',58,false),
+ ('account_legacy_user_root_v1','users','00_account_legacy_user_root_v1',5,true),
+ ('account_legacy_user_id_immutable_v1','users','00_account_legacy_user_id_immutable_v1',17,false)
+), root_functions AS (
+ SELECT e.*, p.oid, p.proowner,
+   (SELECT count(*)=1 FROM pg_proc candidate JOIN pg_namespace n ON n.oid=candidate.pronamespace
+     WHERE n.nspname='public' AND candidate.proname=e.name) AND COALESCE(
+     owner_role.rolname='console_account_owner' AND language.lanname='plpgsql'
+     AND p.prokind='f' AND p.prosecdef=e.definer AND NOT p.proisstrict AND NOT p.proretset
+     AND NOT p.proleakproof AND p.provolatile='v' AND p.proparallel='u' AND p.prosupport=0
+     AND p.pronargs=0 AND p.proargtypes=''::oidvector AND p.proargnames IS NULL
+     AND p.proallargtypes IS NULL AND p.proargmodes IS NULL AND p.provariadic=0
+     AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+     AND p.prorettype='pg_catalog.trigger'::regtype AND p.probin IS NULL
+     AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+     AND p.procost=100 AND p.prorows=0
+     AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')=(SELECT sha256 FROM routine_bodies WHERE name=e.name)
+     AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp']::text[]
+     AND p.proacl IS NOT NULL AND cardinality(p.proacl)=0,false) AS valid
+ FROM root_names e
+ LEFT JOIN pg_namespace n ON n.nspname='public'
+ LEFT JOIN pg_proc p ON p.pronamespace=n.oid AND p.proname=e.name
+   AND p.pronargs=0 AND p.proargtypes=''::oidvector
+ LEFT JOIN pg_roles owner_role ON owner_role.oid=p.proowner
+ LEFT JOIN pg_language language ON language.oid=p.prolang
+), root_triggers AS (
+ SELECT f.name, (SELECT count(*)=1 AND bool_and(
+     t.tgname=f.trigger_name AND t.tgrelid=to_regclass('public.'||f.relation_name)
+     AND t.tgfoid=f.oid AND NOT t.tgisinternal AND t.tgenabled='A' AND t.tgtype=f.trigger_type
+     AND t.tgnargs=0 AND octet_length(t.tgargs)=0 AND t.tgattr=''::int2vector
+     AND t.tgqual IS NULL AND t.tgconstraint=0 AND t.tgparentid=0
+     AND t.tgconstrrelid=0 AND t.tgconstrindid=0
+     AND NOT t.tgdeferrable AND NOT t.tginitdeferred
+     AND t.tgoldtable IS NULL AND t.tgnewtable IS NULL)
+   FROM pg_trigger t WHERE t.tgname=f.trigger_name OR t.tgfoid=f.oid) AS valid
+ FROM root_functions f
+), root_user_key AS (
+ -- Certify only the native key boundary, not users' legacy columns, ACLs,
+ -- policies or unrelated triggers. Inheritance would evade this parent FK.
+ SELECT u.oid AS user_oid, a.oid AS account_oid, uk.oid AS user_key_oid,
+   ak.conindid AS account_index_oid, uid.attnum AS user_id_attnum, aid.attnum AS account_id_attnum,
+   COALESCE(u.relkind='r' AND NOT u.relispartition
+     AND NOT EXISTS(SELECT 1 FROM pg_inherits i WHERE i.inhrelid=u.oid OR i.inhparent=u.oid)
+     AND uid.atttypid='pg_catalog.uuid'::regtype AND uid.attnotnull AND NOT uid.attisdropped
+     AND uk.contype='p' AND uk.conkey=ARRAY[uid.attnum]::smallint[]
+     AND uk.convalidated AND NOT uk.condeferrable AND NOT uk.condeferred
+     AND ui.indisprimary AND ui.indisunique AND ui.indisvalid AND ui.indisready
+     AND ui.indislive AND ui.indimmediate AND ui.indexprs IS NULL AND ui.indpred IS NULL
+     AND ak.contype='p' AND ak.conkey=ARRAY[aid.attnum]::smallint[]
+     AND ak.convalidated AND NOT ak.condeferrable AND NOT ak.condeferred,false) AS valid
+ FROM (SELECT to_regclass('public.users') AS user_oid,to_regclass('public.accounts') AS account_oid) names
+ LEFT JOIN pg_class u ON u.oid=names.user_oid
+ LEFT JOIN pg_class a ON a.oid=names.account_oid
+ LEFT JOIN pg_attribute uid ON uid.attrelid=u.oid AND uid.attname='id'
+ LEFT JOIN pg_attribute aid ON aid.attrelid=a.oid AND aid.attname='id'
+ LEFT JOIN pg_constraint uk ON uk.conrelid=u.oid AND uk.contype='p'
+ LEFT JOIN pg_index ui ON ui.indexrelid=uk.conindid
+ LEFT JOIN pg_constraint ak ON ak.conrelid=a.oid AND ak.contype='p'
+), root_fk AS (
+ SELECT k.*, f.oid AS fk_oid,
+   COALESCE(k.valid AND f.contype='f' AND f.connamespace='public'::regnamespace
+     AND f.conrelid=k.user_oid AND f.confrelid=k.account_oid AND f.contypid=0
+     AND f.conkey=ARRAY[k.user_id_attnum]::smallint[] AND f.confkey=ARRAY[k.account_id_attnum]::smallint[]
+     AND f.conindid=k.account_index_oid AND f.convalidated AND f.conenforced
+     AND f.condeferrable AND f.condeferred AND f.connoinherit
+     AND f.conislocal AND f.coninhcount=0 AND f.conparentid=0 AND NOT f.conperiod
+     AND f.confupdtype='r' AND f.confdeltype='r' AND f.confmatchtype='s'
+     AND f.confdelsetcols IS NULL AND f.conbin IS NULL AND f.conexclop IS NULL
+     AND f.conpfeqop=ARRAY['pg_catalog.=(uuid,uuid)'::regoperator::oid]
+     AND f.conppeqop=ARRAY['pg_catalog.=(uuid,uuid)'::regoperator::oid]
+     AND f.conffeqop=ARRAY['pg_catalog.=(uuid,uuid)'::regoperator::oid],false) AS valid_fk
+ FROM root_user_key k LEFT JOIN pg_constraint f
+   ON f.conrelid=k.user_oid AND f.conname='users_account_root_v1'
+), root_ri_expected(function_name, on_users, trigger_type, deferred) AS (VALUES
+ ('RI_FKey_check_ins',true,5,true),('RI_FKey_check_upd',true,17,true),
+ ('RI_FKey_restrict_del',false,9,false),('RI_FKey_restrict_upd',false,17,false)
+), root_ri_triggers AS (
+ -- Every field projected out of the historical accounts fingerprint is
+ -- independently bound here, including native function identity and timing.
+ SELECT e.function_name, (SELECT count(*)=1 AND bool_and(
+     t.tgrelid=CASE WHEN e.on_users THEN f.user_oid ELSE f.account_oid END
+     AND t.tgconstrrelid=CASE WHEN e.on_users THEN f.account_oid ELSE f.user_oid END
+     AND t.tgconstrindid=f.account_index_oid AND t.tgconstraint=f.fk_oid
+     AND t.tgfoid=to_regprocedure('pg_catalog.'||quote_ident(e.function_name)||'()')
+     AND t.tgisinternal AND t.tgenabled='O' AND t.tgtype=e.trigger_type
+     AND t.tgdeferrable=e.deferred AND t.tginitdeferred=e.deferred
+     AND t.tgname::text ~ CASE WHEN e.on_users THEN '^RI_ConstraintTrigger_c_[0-9]+$' ELSE '^RI_ConstraintTrigger_a_[0-9]+$' END
+     AND t.tgname::text COLLATE "C">'00_account_legacy_user_root_v1' COLLATE "C"
+     AND t.tgnargs=0 AND octet_length(t.tgargs)=0 AND t.tgattr=''::int2vector
+     AND t.tgqual IS NULL AND t.tgparentid=0 AND t.tgoldtable IS NULL AND t.tgnewtable IS NULL)
+   FROM pg_trigger t WHERE t.tgconstraint=f.fk_oid
+     AND t.tgfoid=to_regprocedure('pg_catalog.'||quote_ident(e.function_name)||'()')) AS valid
+ FROM root_ri_expected e CROSS JOIN root_fk f
+), root_insert_acl AS (
+ -- INSERT is the only new ordinary right. Old SELECT/UPDATE drift keeps the
+ -- existing custody diagnostics and is checked by the old ACL profile below.
+ SELECT EXISTS(SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
+     CROSS JOIN LATERAL aclexplode(a.attacl) x WHERE c.name='accounts' AND x.privilege_type='INSERT')
+     OR EXISTS(SELECT 1 FROM relations c CROSS JOIN LATERAL aclexplode(c.relacl) x
+       WHERE c.name='accounts' AND x.privilege_type='INSERT') AS present,
+   (SELECT count(*)=2 AND count(DISTINCT a.attname)=2 AND bool_and(
+       a.attname IN ('id','created_at') AND x.grantor=c.relowner AND x.grantee=c.relowner
+       AND NOT x.is_grantable)
+     FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
+     CROSS JOIN LATERAL aclexplode(a.attacl) x WHERE c.name='accounts' AND x.privilege_type='INSERT')
+   AND NOT EXISTS(SELECT 1 FROM relations c CROSS JOIN LATERAL aclexplode(c.relacl) x
+     WHERE c.name='accounts' AND x.privilege_type='INSERT') AS valid
+), root_profile AS (
+ SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+       WHERE n.nspname='public' AND p.proname IN (SELECT name FROM root_names))
+     OR EXISTS(SELECT 1 FROM pg_trigger t WHERE t.tgname IN (SELECT trigger_name FROM root_names))
+     OR EXISTS(SELECT 1 FROM pg_constraint f WHERE f.conrelid=to_regclass('public.users') AND f.conname='users_account_root_v1')
+     OR (SELECT present FROM root_insert_acl) AS present,
+   COALESCE((SELECT count(*)=3 AND bool_and(valid) FROM root_functions)
+     AND (SELECT count(*)=3 AND bool_and(valid) FROM root_triggers)
+     AND (SELECT count(*)=1 AND bool_and(valid_fk) FROM root_fk)
+     AND (SELECT count(*)=4 AND bool_and(valid) FROM root_ri_triggers)
+     AND (SELECT count(*)=4 FROM pg_trigger t JOIN root_fk f ON f.fk_oid=t.tgconstraint),false) AS valid
+
 ), projection AS (
  SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
    WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') AS present,
@@ -130,6 +259,20 @@ ORDER BY wanted.name), relations AS (
 ), ownership AS (
  SELECT bool_and(actual_owner='console_app') AS pending,
         bool_and(actual_owner=owner_name) AS finalized FROM relations
+), custody_columns AS (
+ -- Normalize only the added INSERT bits when checking the retained historical
+ -- SELECT/UPDATE contracts. Their original grantor/grantee/options still fail
+ -- under the original diagnostics, even if a corrupt ACL also loses INSERT.
+ SELECT a.attrelid,a.attname,CASE WHEN c.name='accounts' AND (SELECT present FROM root_profile) THEN
+   (SELECT array_agg(makeaclitem(x.grantee,x.grantor,x.privileges,x.is_grantable)
+       ORDER BY x.grantee,x.grantor,x.is_grantable)
+     FROM (SELECT acl.grantee,acl.grantor,acl.is_grantable,
+       string_agg(acl.privilege_type,',' ORDER BY acl.privilege_type) AS privileges
+       FROM aclexplode(a.attacl) acl WHERE acl.privilege_type<>'INSERT'
+       GROUP BY acl.grantee,acl.grantor,acl.is_grantable) x)
+   ELSE a.attacl END AS attacl
+ FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
+
 ), column_acl_profiles AS (
  SELECT bool_and(COALESCE(cardinality(a.attacl),0)=0) AS dormant,
         bool_and(CASE WHEN c.name='accounts' AND a.attname='id' THEN
@@ -164,7 +307,7 @@ ORDER BY wanted.name), relations AS (
               AND acl.privilege_type='SELECT' AND NOT acl.is_grantable)
               FROM aclexplode(a.attacl) acl)
           ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS head_ready
- FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
+ FROM relations c JOIN custody_columns a ON a.attrelid=c.oid
 ), table_acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
  -- admit a partially installed projection. NULL table ACLs are never empty.
@@ -193,6 +336,8 @@ SELECT CASE
  THEN 'account_custody.owner_topology_mismatch'
  WHEN EXISTS (SELECT 1 FROM relations WHERE oid IS NULL)
  THEN 'account_custody.catalog_missing'
+ WHEN (SELECT present AND NOT valid FROM root_profile)
+ THEN 'account_root_transition.profile_mismatch'
  WHEN EXISTS (SELECT 1 FROM relations WHERE actual_shape IS DISTINCT FROM
    CASE WHEN name='account_terms_release_receipts' AND
      ((SELECT present FROM receipt_guard) OR (SELECT guarded OR ready FROM acl_profiles))
@@ -213,21 +358,31 @@ SELECT CASE
  THEN 'account_terms_receipts.definition_mismatch'
  WHEN (SELECT present AND NOT valid FROM terms_current)
  THEN 'account_terms_current.definition_mismatch'
- WHEN ((SELECT ready FROM acl_profiles) AND NOT (SELECT present FROM terms_current))
+ WHEN (((SELECT ready FROM acl_profiles) OR (SELECT present FROM root_profile)) AND NOT (SELECT present FROM terms_current))
    OR ((SELECT present FROM terms_current) AND (SELECT dormant OR prepared OR guarded FROM acl_profiles))
  THEN 'account_terms_current.profile_mismatch'
  WHEN NOT COALESCE((SELECT dormant OR prepared OR guarded OR ready FROM acl_profiles),false)
+   -- INSERT normalization must not hide duplicate or empty raw ACL items.
+   OR ((SELECT present FROM root_profile) AND EXISTS(
+     SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
+     WHERE c.name='accounts' AND COALESCE(cardinality(a.attacl),0)<>
+       (SELECT count(DISTINCT (x.grantee,x.grantor)) FROM aclexplode(a.attacl) x)))
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
-       OR has_any_column_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,REFERENCES')
+       OR has_any_column_privilege(r.oid,c.oid,
+         CASE WHEN c.name='accounts' AND (SELECT present FROM root_profile)
+           THEN 'SELECT,UPDATE,REFERENCES' ELSE 'SELECT,INSERT,UPDATE,REFERENCES' END)
        OR pg_has_role(r.oid,c.relowner,'MEMBER') OR pg_has_role(r.oid,c.relowner,'SET')))
  THEN 'account_custody.unexpected_privilege'
+ WHEN (SELECT present FROM root_profile) AND NOT (SELECT valid FROM root_insert_acl)
+ THEN 'account_root_transition.profile_mismatch'
  WHEN (SELECT finalized FROM ownership) AND (SELECT ready FROM acl_profiles)
    AND (SELECT valid FROM projection) AND (SELECT valid FROM receipt_guard)
    AND (SELECT valid FROM terms_current)
    AND COALESCE((SELECT valid FROM guard_trigger),false)
- THEN 'account_custody.finalized'
+ THEN CASE WHEN (SELECT valid FROM root_profile) THEN 'account_custody.finalized'
+   ELSE 'account_custody.upgrade_required' END
  -- Historical profiles are complete upgrade inputs, never serving profiles.
  WHEN (SELECT finalized FROM ownership) AND (SELECT guarded FROM acl_profiles)
    AND NOT (SELECT present FROM terms_current)
