@@ -24,7 +24,7 @@ use console_evaluation_application::{
 };
 use console_evaluation_domain::{CycleStage, CycleTransition, Grade, ReviewKind};
 use console_kernel_core::{ErrorKind, KernelError, UserId};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -91,21 +91,24 @@ const MAX_CYCLE_LIMIT: i64 = 100;
 #[derive(Clone)]
 pub struct EvaluationRestState {
     store: PgEvaluationStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl EvaluationRestState {
     #[must_use]
-    pub fn new(store: PgEvaluationStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(
+        store: PgEvaluationStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
 
 pub fn router(state: EvaluationRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let routes = Router::new()
         .route(EVALUATION_CYCLES_PATH, get(list_cycles).post(create_cycle))
@@ -626,7 +629,7 @@ async fn principal_from_headers(
     state: &EvaluationRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "service_unavailable",
@@ -653,6 +656,11 @@ async fn principal_from_headers(
             console_platform_request_context::RequestContextError::AccessScope(error) => {
                 RestError::from_kernel(error)
             }
+            console_platform_request_context::RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "service_unavailable",
+                "session verification unavailable",
+            ),
             console_platform_request_context::RequestContextError::VerifierUnavailable => {
                 RestError::new(
                     StatusCode::SERVICE_UNAVAILABLE,

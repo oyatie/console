@@ -14,7 +14,7 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use console_kernel_core::{ErrorKind, KernelError, TraceContext};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -29,15 +29,15 @@ use crate::store::{PgIntegrityError, PgIntegrityStore};
 #[derive(Clone)]
 pub struct IntegrityRestState {
     store: PgIntegrityStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl IntegrityRestState {
     #[must_use]
-    pub fn new(store: PgIntegrityStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgIntegrityStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
@@ -54,7 +54,7 @@ pub const INTEGRITY_ROUTE_PATHS: &[&str] = &[
 ];
 
 pub fn router(state: IntegrityRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(INTEGRITY_FINDINGS_PATH, get(list_findings))
@@ -166,7 +166,7 @@ async fn principal_from_headers(
     state: &IntegrityRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for integrity API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -178,6 +178,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for integrity API")
         }

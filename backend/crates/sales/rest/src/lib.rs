@@ -28,7 +28,7 @@ use console_kernel_core::{
     CustomerInquiryId, EquipmentId, ErrorKind, KernelError, OrgId, SalesListingId, TraceContext,
     validate_bounded_text,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use console_platform_request_context::TrustedClientIp;
 use console_platform_storage::SeaweedS3Storage;
@@ -115,7 +115,7 @@ const RATE_LIMIT_ENDPOINT: &str = "sales_inquiry";
 #[derive(Clone)]
 pub struct SalesRestState {
     store: PgSalesStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     /// Object store + bucket backing the public storefront media-serve route.
     /// `None` when S3 storage is unconfigured (e.g. a DB-only test app): the
     /// media route then 404s rather than serving, exactly as the listing URL is
@@ -145,10 +145,10 @@ impl SalesRestState {
     /// Construct with the legacy KNL storefront tenant. The app composition root
     /// overrides it for a re-minted storefront organization when configured.
     #[must_use]
-    pub fn new(store: PgSalesStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgSalesStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             media_storage: None,
             storefront_org: OrgId::knl(),
         }
@@ -175,7 +175,7 @@ impl SalesRestState {
 }
 
 pub fn router(state: SalesRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     // Authenticated admin routes — every handler resolves a Principal and gates
     // on the org-level SalesManage feature.
@@ -926,7 +926,7 @@ async fn principal_from_headers(
     state: &SalesRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for sales API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -938,6 +938,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for sales API")
         }

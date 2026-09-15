@@ -63,7 +63,7 @@ use console_ontology_canonical_domain::{
 use console_ontology_domain::{
     FieldKind, InstanceId, InstanceLifecycleState, LinkTypeId, ObjectTypeId, SchemaLifecycleState,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::cedar_pbac::authoring::{
     self, Condition, ConditionOp, ConditionValue, DeclaredAttr, Effect, NoCodeBlocks,
 };
@@ -106,7 +106,7 @@ pub struct OntologyRestState {
     instances: gate::Instances,
     governance: PgGovernanceStore,
     policies: PgCedarPolicyStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     /// Routes a `projected_usecase` action to the OWNING domain crate's use-case.
     /// Empty by default ⇒ every projected dispatch fails closed (`NotWiredYet`),
     /// preserving the pre-wire dark behavior. The App composition root installs
@@ -120,7 +120,7 @@ impl OntologyRestState {
         registry: PgOntologyStore,
         instances: PgInstanceStore,
         governance: PgGovernanceStore,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
     ) -> Self {
         // The attach route reaches `ont_policy_api.attach_object_policy` as
         // `console_ontology_cmd` (migration 0206), so the policy store needs the
@@ -139,7 +139,7 @@ impl OntologyRestState {
             instances: gate::Instances::new(instances),
             policies,
             governance,
-            jwt_verifier,
+            session_verification,
             projected_dispatch: ProjectedDispatchRegistry::new(),
         }
     }
@@ -555,7 +555,7 @@ pub const ONTOLOGY_ROUTE_PATHS: &[&str] = &[
 ];
 
 pub fn router(state: OntologyRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.registry.pool().clone();
     let router = Router::new()
         .route(
@@ -2994,7 +2994,7 @@ async fn principal_from_headers(
     state: &OntologyRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for ontology API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.registry.pool(), headers)
@@ -3218,6 +3218,9 @@ fn rest_error_from_request_context(
 ) -> RestError {
     use console_platform_request_context::RequestContextError as E;
     match err {
+        E::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for ontology API")
         }

@@ -21,8 +21,8 @@ use console_kernel_core::{
     KernelError, OrgId, TraceContext, UserId, WorkOrderId,
 };
 use console_platform_auth::{
-    JwtVerifier, MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope,
-    MobilePasskeyStepUpVerificationError, PasskeyService,
+    MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope, MobilePasskeyStepUpVerificationError,
+    PasskeyService, SessionVerification,
 };
 use console_platform_authz::{
     Action, BranchColumn, Feature, PermissionLevel, Principal, Role, authorize,
@@ -159,7 +159,7 @@ pub const MAX_SYNC_BATCH_OPERATIONS: usize = 200;
 #[derive(Debug, Clone)]
 pub struct WorkOrderRestState {
     store: PgWorkOrderStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     /// M2 workflow-runtime store for the completion strangler (design §Strangler).
     /// `None` disables the runtime path entirely (pure legacy). Even when `Some`,
     /// the per-tenant `workflow_runtime_m2_strangler` flag gates it, and it ships
@@ -169,10 +169,10 @@ pub struct WorkOrderRestState {
 
 impl WorkOrderRestState {
     #[must_use]
-    pub fn new(store: PgWorkOrderStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgWorkOrderStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             workflow_runtime: None,
         }
     }
@@ -192,7 +192,7 @@ impl WorkOrderRestState {
 pub struct MobileRestState<S> {
     pool: PgPool,
     store: PgWorkOrderStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
     workflow_runtime: Option<PgWorkflowRuntimeStore>,
     evidence_service: Option<EvidenceService<S>>,
@@ -207,13 +207,13 @@ impl<S> MobileRestState<S> {
     pub fn new(
         pool: PgPool,
         store: PgWorkOrderStore,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
         evidence_service: Option<EvidenceService<S>>,
     ) -> Self {
         Self {
             pool,
             store,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
             workflow_runtime: None,
             evidence_service,
@@ -245,7 +245,7 @@ impl<S> MobileRestState<S> {
 }
 
 pub fn router(state: WorkOrderRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(APPROVAL_ITEMS_PATH, get(list_approval_items))
@@ -311,7 +311,7 @@ pub fn mobile_router<S>(state: MobileRestState<S>) -> Router
 where
     S: S3ObjectStore + Clone + Send + Sync + 'static,
 {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(SYNC_PATH, post(sync_batch::<S>))
@@ -5191,7 +5191,7 @@ async fn mobile_principal_from_headers<S>(
     state: &MobileRestState<S>,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for mobile API")
     })?;
     console_platform_request_context::resolve_principal(verifier, &state.pool, headers)
@@ -5203,7 +5203,7 @@ async fn principal_from_headers(
     state: &WorkOrderRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for work-order API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -5215,6 +5215,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for this API")
         }

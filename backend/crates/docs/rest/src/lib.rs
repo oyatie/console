@@ -46,7 +46,7 @@ use console_kernel_core::{
     AuditAction, AuditEvent, ErrorKind, EvidenceLegalHoldId, EvidenceObjectId, KernelError,
     TraceContext, UserId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{DbError, with_audits};
 use console_platform_request_context::current_org;
@@ -69,7 +69,7 @@ pub struct DocsRestState {
     storage: Option<Arc<dyn S3ObjectStore>>,
     /// The bucket WORM copies live in (the storage config's `replica_bucket`).
     worm_bucket: String,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl DocsRestState {
@@ -79,14 +79,14 @@ impl DocsRestState {
         governance: PgGovernanceStore,
         storage: Option<Arc<dyn S3ObjectStore>>,
         worm_bucket: String,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
     ) -> Self {
         Self {
             docs,
             governance,
             storage,
             worm_bucket,
-            jwt_verifier,
+            session_verification,
         }
     }
 
@@ -117,7 +117,7 @@ pub const EVIDENCE_ROUTE_PATHS: &[&str] = &[
 ];
 
 pub fn router(state: DocsRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.docs.pool().clone();
     let router = Router::new()
         .route(OBJECTS_PATH, get(list_objects))
@@ -650,7 +650,7 @@ async fn authorize(
     headers: &HeaderMap,
     feature: Feature,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for evidence API")
     })?;
     let principal =
@@ -781,6 +781,9 @@ fn rest_error_from_request_context(
 ) -> RestError {
     use console_platform_request_context::RequestContextError as E;
     match err {
+        E::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for evidence API")
         }

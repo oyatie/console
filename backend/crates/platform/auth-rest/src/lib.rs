@@ -22,7 +22,7 @@ use console_platform_auth::{
     AccessClaims, AccessTokenInput, AuthError, JwtIssuer, JwtSettings, JwtVerifier,
     MobilePasskeyStepUpBinding, PasskeyAuthenticationCredential, PasskeyRegistrationCredential,
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, RefreshTokenUseError,
-    WebauthnSettings,
+    SessionVerification, WebauthnSettings,
 };
 use console_platform_authz::{
     Action, Feature, Principal, Role, authorize, resolve_branch_scope_in_org,
@@ -857,7 +857,7 @@ async fn start_registration(
     Json(body): Json<RegisterStartRequest>,
 ) -> Result<Json<RegisterStartResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     let user = load_user_auth_context_in_org(&state.pool, org_id, user_id).await?;
 
     // Step-up gate: an already-enrolled user MUST assert an existing passkey (UV)
@@ -917,7 +917,7 @@ async fn finish_registration(
     Json(body): Json<RegisterFinishRequest>,
 ) -> Result<(StatusCode, Json<RegisterFinishResponse>), RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     ensure_registration_ceremony_owner(&state.pool, body.ceremony_id, user_id).await?;
     let existing_passkeys = services
         .passkeys
@@ -1008,7 +1008,7 @@ async fn start_mobile_step_up(
     Json(body): Json<MobilePasskeyStepUpStartRequest>,
 ) -> Result<Json<MobilePasskeyStepUpStartResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, _org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, _org_id) = authenticated_user_context(&state, services, &headers).await?;
     body.binding
         .validate()
         .map_err(|err| RestError::validation(err.to_string()))?;
@@ -1281,7 +1281,7 @@ async fn issue_admin_otp(
     Json(body): Json<AdminIssueOtpRequest>,
 ) -> Result<Json<AdminIssueOtpResponse>, RestError> {
     let services = state.services()?;
-    let principal = principal_from_headers(&state.pool, services, &headers).await?;
+    let principal = principal_from_headers(&state, services, &headers).await?;
 
     // Resolve the TARGET's real roles. A missing or inactive target is a 403 here
     // (the caller is authenticated; it is the requested target that is invalid),
@@ -1376,7 +1376,7 @@ async fn admin_credential_reset(
     Json(body): Json<AdminCredentialResetRequest>,
 ) -> Result<Json<AdminCredentialResetResponse>, RestError> {
     let services = state.services()?;
-    let principal = principal_from_headers(&state.pool, services, &headers).await?;
+    let principal = principal_from_headers(&state, services, &headers).await?;
 
     // Resolve the TARGET's real roles inside the CALLER's tenant (IDOR / cross-org
     // guard): a user in another org is not visible under the caller's org GUC and
@@ -1448,7 +1448,7 @@ async fn list_self_passkeys(
     headers: HeaderMap,
 ) -> Result<Json<Vec<PasskeySummary>>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
 
     let summaries =
         with_org_conn::<_, Vec<PasskeySummary>, RestError>(&state.pool, org_id, move |tx| {
@@ -1491,7 +1491,7 @@ async fn delete_self_passkey(
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     let actor = UserId::from_uuid(user_id);
     let now = OffsetDateTime::now_utc();
 
@@ -1590,7 +1590,7 @@ async fn enroll_handoff(
 ) -> Result<Json<EnrollHandoffResponse>, RestError> {
     let services = state.services()?;
     // SELF-ONLY: user + org are taken from the verified token, never the body.
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
 
     // Step-up gate: an already-enrolled user MUST assert an existing passkey (UV)
     // before a fresh enrollment handoff is minted; a user with zero passkeys is
@@ -1945,7 +1945,7 @@ async fn approve_device_login_session(
         now,
     )
     .await?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
 
     let approve_token = normalize_device_login_token(&body.approve_token, "console_dla_")?;
     let approve_hash = hash_device_login_token(&approve_token);
@@ -2019,7 +2019,7 @@ async fn privacy_consent_status(
     headers: HeaderMap,
 ) -> Result<Json<PrivacyConsentStatusResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     let accepted_at = required_privacy_consent_accepted_at(&state.pool, org_id, user_id).await?;
     Ok(Json(PrivacyConsentStatusResponse {
         policy_version: REQUIRED_PRIVACY_TERMS_VERSION,
@@ -2037,7 +2037,7 @@ async fn accept_privacy_consent(
     Json(body): Json<PrivacyConsentAcceptRequest>,
 ) -> Result<Json<PrivacyConsentStatusResponse>, RestError> {
     let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(services, &headers)?;
+    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
     if body.policy_version != REQUIRED_PRIVACY_TERMS_VERSION {
         return Err(RestError::bad_request(
             "unsupported privacy consent version",
@@ -2272,7 +2272,7 @@ async fn list_group_admin_groups(
     headers: HeaderMap,
 ) -> Result<Json<GroupAdminGroupsResponse>, RestError> {
     let services = state.services()?;
-    let actor = authenticated_group_actor(services, &headers)?;
+    let actor = authenticated_group_actor(&state, services, &headers).await?;
     let groups = load_group_admin_groups(&state.pool, actor.id).await?;
     Ok(Json(GroupAdminGroupsResponse { groups }))
 }
@@ -2288,7 +2288,7 @@ async fn start_group_admin_tenant_context(
     Json(body): Json<GroupAdminTenantContextStartRequest>,
 ) -> Result<Json<GroupAdminTenantContextStartResponse>, RestError> {
     let services = state.services()?;
-    let actor = authenticated_group_actor(services, &headers)?;
+    let actor = authenticated_group_actor(&state, services, &headers).await?;
     let (group_id, target) =
         resolve_group_admin_target_org(&state.pool, actor.id, OrgId::from_uuid(body.org_id))
             .await?;
@@ -2365,7 +2365,7 @@ async fn exit_group_admin_tenant_context(
     Json(body): Json<GroupAdminTenantContextExitRequest>,
 ) -> Result<Json<GroupAdminTenantContextExitResponse>, RestError> {
     let services = state.services()?;
-    let actor = authenticated_group_actor(services, &headers)?;
+    let actor = authenticated_group_actor(&state, services, &headers).await?;
     let (group_id, target) =
         resolve_group_admin_target_org(&state.pool, actor.id, OrgId::from_uuid(body.org_id))
             .await?;
@@ -2570,6 +2570,36 @@ async fn dev_auth_session(
 }
 
 impl AuthRestState {
+    fn session_verification(
+        &self,
+        services: &AuthServices,
+    ) -> Result<SessionVerification, RestError> {
+        let auth = self
+            .auth_database
+            .as_ref()
+            .ok_or_else(|| RestError::unavailable("session verification unavailable"))?;
+        Ok(SessionVerification::new(
+            services.jwt_verifier.clone(),
+            auth.clone(),
+        ))
+    }
+
+    async fn ensure_session_subject(
+        &self,
+        services: &AuthServices,
+        subject: Uuid,
+    ) -> Result<(), RestError> {
+        match self
+            .session_verification(services)?
+            .legacy_subject_is_fenced(subject)
+            .await
+        {
+            Ok(false) => Ok(()),
+            Ok(true) => Err(RestError::unauthorized("invalid bearer token")),
+            Err(_) => Err(RestError::unavailable("session verification unavailable")),
+        }
+    }
+
     fn services(&self) -> Result<&AuthServices, RestError> {
         self.services.as_ref().ok_or_else(|| {
             RestError::unavailable("auth REST is mounted but auth services are not configured")
@@ -2967,7 +2997,8 @@ async fn ensure_registration_ceremony_owner(
 /// the verified token carries the tenant. Using the JWT's org — never a `users`
 /// read under RLS — breaks the chicken-and-egg and stamps every passkey write
 /// with the correct tenant.
-fn authenticated_user_context(
+async fn authenticated_user_context(
+    state: &AuthRestState,
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<(Uuid, OrgId), RestError> {
@@ -2979,6 +3010,7 @@ fn authenticated_user_context(
     let org_id = OrgId::from_str(&claims.org)
         .map_err(|_| RestError::unauthorized("token org claim is not a valid uuid"))?;
     let user_id = user_id_from_claims(claims)?;
+    state.ensure_session_subject(services, user_id).await?;
     Ok((user_id, org_id))
 }
 
@@ -3130,11 +3162,12 @@ fn resolve_otp_ttl(ttl_seconds: Option<i64>) -> Result<Duration, RestError> {
 // ---------------------------------------------------------------------------
 
 async fn principal_from_headers(
-    pool: &PgPool,
+    state: &AuthRestState,
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    console_platform_request_context::resolve_principal(&services.jwt_verifier, pool, headers)
+    let verification = state.session_verification(services)?;
+    console_platform_request_context::resolve_principal(&verification, &state.pool, headers)
         .await
         .map_err(rest_error_from_request_context)
 }
@@ -3143,6 +3176,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for auth API")
         }
@@ -3184,7 +3220,8 @@ struct AuthenticatedGroupAdminActor {
     home_org: OrgId,
 }
 
-fn authenticated_group_actor(
+async fn authenticated_group_actor(
+    state: &AuthRestState,
     services: &AuthServices,
     headers: &HeaderMap,
 ) -> Result<AuthenticatedGroupAdminActor, RestError> {
@@ -3214,8 +3251,10 @@ fn authenticated_group_actor(
     let home_org = Uuid::parse_str(&claims.org)
         .map(OrgId::from_uuid)
         .map_err(|_| RestError::unauthorized("invalid bearer token"))?;
+    let subject = user_id_from_claims(claims)?;
+    state.ensure_session_subject(services, subject).await?;
     Ok(AuthenticatedGroupAdminActor {
-        id: UserId::from_uuid(user_id_from_claims(claims)?),
+        id: UserId::from_uuid(subject),
         home_org,
     })
 }

@@ -27,7 +27,7 @@ use console_kernel_core::{
     BranchId, BranchScope, ErrorKind, InventoryItemId, InventoryStockLocationId, KernelError,
     P1DispatchId, SiteId, TraceContext, WorkOrderId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, EffectiveFeatureGrant, Feature, PermissionLevel, Principal, authorize, permission_for,
 };
@@ -74,21 +74,21 @@ pub const INVENTORY_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct InventoryRestState {
     store: PgInventoryStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl InventoryRestState {
     #[must_use]
-    pub fn new(store: PgInventoryStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgInventoryStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
 
 pub fn router(state: InventoryRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(INVENTORY_ITEMS_PATH, get(list_items))
@@ -804,7 +804,7 @@ async fn principal_from_headers(
     state: &InventoryRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -826,6 +826,11 @@ async fn principal_from_headers(
                     "token is not authorized for this inventory route",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

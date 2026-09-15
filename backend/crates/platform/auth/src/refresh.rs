@@ -6,6 +6,7 @@ use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::AuthError;
+use crate::session::legacy_subject_is_fenced;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RefreshToken(String);
@@ -578,14 +579,6 @@ async fn insert_audit_in_tx(
     .await?;
 
     Ok(())
-}
-
-async fn legacy_subject_is_fenced(auth_pool: &PgPool, user_id: Uuid) -> Result<bool, sqlx::Error> {
-    sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
-        .bind(user_id)
-        // rls-arming: ok narrow Account identity projection is global, not Company data
-        .fetch_one(auth_pool)
-        .await
 }
 
 fn generate_refresh_token() -> String {

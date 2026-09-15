@@ -17,7 +17,7 @@ use axum::{
     routing::{get, post},
 };
 use console_kernel_core::{ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_request_context::RequestContextError;
 use console_recruiting_adapter_postgres::{PgRecruitingError, PgRecruitingStore};
@@ -55,18 +55,24 @@ pub const RECRUITING_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct RecruitingRestState {
     store: PgRecruitingStore,
-    jwt: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl RecruitingRestState {
     #[must_use]
-    pub fn new(store: PgRecruitingStore, jwt: Option<JwtVerifier>) -> Self {
-        Self { store, jwt }
+    pub fn new(
+        store: PgRecruitingStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
+        Self {
+            store,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: RecruitingRestState) -> Router {
-    let verifier = state.jwt.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(
@@ -681,7 +687,7 @@ async fn principal(
     state: &RecruitingRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -703,6 +709,11 @@ async fn principal(
                     "token is not authorized for recruiting",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

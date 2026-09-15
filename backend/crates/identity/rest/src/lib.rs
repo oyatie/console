@@ -44,7 +44,7 @@ use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, ErrorKind, KernelError, OrgId, Timestamp,
     TraceContext, UserId,
 };
-use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_auth::{PasskeyAuthenticationCredential, PasskeyService, SessionVerification};
 use console_platform_authz::cedar_pbac::{engine, map::canonical_coexistence_map};
 use console_platform_authz::{
     Action, AuthorizationAuditEvent, AuthorizationRequest, AuthorizationResource,
@@ -183,16 +183,16 @@ pub const IDENTITY_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct IdentityRestState {
     store: PgOrgStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
 }
 
 impl IdentityRestState {
     #[must_use]
-    pub fn new(store: PgOrgStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgOrgStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
         }
     }
@@ -245,7 +245,7 @@ pub struct VisibleDirectoryPerson {
 }
 
 pub fn router(state: IdentityRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool().clone();
     let router = Router::new()
         // `/users/me` MUST be registered before `/users/{id}` so the literal
@@ -4865,7 +4865,7 @@ async fn principal_from_headers(
     state: &IdentityRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for identity API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.pool(), headers)
@@ -4877,6 +4877,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for identity API")
         }

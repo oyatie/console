@@ -24,7 +24,7 @@ use console_kernel_core::{
     BranchScope, ErrorKind, KernelError, P1DispatchAlertId, P1DispatchId, TraceContext, UserId,
     WorkOrderId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, EffectiveFeatureGrant, Feature, PermissionLevel, Principal, authorize, permission_for,
 };
@@ -39,7 +39,7 @@ pub const ME_DISPATCH_OFFERS_PATH: &str = "/api/v1/me/dispatch-offers";
 #[derive(Clone)]
 pub struct DispatchRestState {
     store: PgDispatchStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     timers: DispatchTimerConfig,
     job_queue: Option<Arc<dyn JobQueue>>,
     push_notifier: Option<Arc<dyn PushNotifier>>,
@@ -49,14 +49,14 @@ impl DispatchRestState {
     #[must_use]
     pub fn new(
         store: PgDispatchStore,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
         timers: DispatchTimerConfig,
         job_queue: Option<Arc<dyn JobQueue>>,
         push_notifier: Option<Arc<dyn PushNotifier>>,
     ) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             timers,
             job_queue,
             push_notifier,
@@ -84,7 +84,7 @@ pub const DISPATCH_ROUTE_PATHS: &[&str] = &[
 ];
 
 pub fn router(state: DispatchRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(START_DISPATCH_PATH_TEMPLATE, post(start_dispatch))
@@ -539,7 +539,7 @@ async fn principal_from_headers(
     state: &DispatchRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for dispatch API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -551,6 +551,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for dispatch API")
         }

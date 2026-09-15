@@ -7,6 +7,7 @@
 mod error;
 mod jwt;
 mod refresh;
+mod session;
 mod webauthn;
 mod well_known;
 
@@ -15,6 +16,7 @@ pub use jwt::{
     AccessClaims, AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier, TenantAccessContext,
 };
 pub use refresh::{RefreshToken, RefreshTokenIssue, RefreshTokenStore, RefreshTokenUseError};
+pub use session::SessionVerification;
 pub use webauthn::{
     AuthenticationCeremony, AuthenticationOutcome, MobilePasskeyStepUpAssertion,
     MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope, MobilePasskeyStepUpVerificationError,
