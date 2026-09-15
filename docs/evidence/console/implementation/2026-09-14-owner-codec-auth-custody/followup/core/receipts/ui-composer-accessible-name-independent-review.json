@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_TEST_ONLY_SOURCE",
+  "base": "96537febf2e17467449abc5c7701ed48372cc98e",
+  "commit": "66b3ee87a4db11056d99a956cc7f1ff24dd383b4",
+  "file": "backend/crates/payroll/ui/tests/common_action_composer.rs",
+  "sha256": "189a7e99708f0d0e5478ed104c903d55751022ae4c4cedcc0056c688c2a15c8d",
+  "preservation": "Original16test source is exact byte prefix;25lines append one actual-renderer case,17total.",
+  "checks": [
+    "Actual Leptos render uses existing authorized fixture and real mutation projection; exactly one form and POST method verified before aria-label assertion.",
+    "Exact aria-label \uc5c5\ubb34 \uc785\ub825 follows specified browser-r4 form identification contract; current real renderer form lacks aria-label, providing concrete expected behavior RED once runnable.",
+    "Setting mutation=None rerenders actual read-only projection and requires absence of any form.",
+    "No CSRF, button names, submission/persistence or policy controls changed.",
+    "Existing scoped HTML inspection helpers reused; no substitute fake renderer or manufactured failure."
+  ],
+  "limits": [
+    "Source-only review; no Cargo execution by reviewer. Actual discovered/executed counts and meaningful assertion RED remain runtime requirements.",
+    "Checks Leptos serialized form aria-label attribute, not complete browser accessible-name computation or accessibility tree.",
+    "No mounted-route, browser-workflow, authorization, CSRF, persistence or production exposure claim."
+  ]
+}

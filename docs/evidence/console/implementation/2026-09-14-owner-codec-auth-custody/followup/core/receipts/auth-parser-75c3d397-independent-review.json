@@ -1,0 +1,51 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_BOUNDED_PARSER_SOURCE_WITH_INTEGRATION_HOLDS",
+  "commit": "75c3d397",
+  "base": "63c1f099",
+  "source": "backend/app/src/lib.rs",
+  "sha256": "e57e5601742b72837fd6bad174e63e396eaa6e6b6ebe0d8b516bc69286a49acd",
+  "changes": "Only lib.rs parser validation; tests unchanged.",
+  "checks": [
+    "Reject ambient nonempty PGOPTIONS before downstream SQLx parser; no process-global mutation.",
+    "Reuse strict percent/UTF8 decoder before SQLx, implement plus-as-space form query decoding exactly once, reject duplicate decoded keys and all unallowlisted keys.",
+    "Required explicit TCP hostname and database, no control/slash/fragment targets; roles/effective query passwords retain prior compatibility and distinctness.",
+    "Whitelist validates TLS enum and bounded nonempty application_name/nonempty certificate path before SQLx can log supplied invalid values.",
+    "Config errors expose fixed env/component/reason strings only, never untrusted key/value/URL. Existing role-option diagnostic preserved without accepting other startup settings.",
+    "Read prerequisite5a599b20 patch: field carrier+API auth requirement+distinct credentials+redacted Debug are config only, not real auth-pool wiring."
+  ],
+  "root_or_author_runtime_logs": {
+    "auth-parser-first-green.log": {
+      "sha256": "26eeed296daa16edcf10f4403f89b41044c99a70244b2114fea60f2f70aa3977",
+      "results": [
+        "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.63s"
+      ]
+    },
+    "auth-parser-auth7.log": {
+      "sha256": "777ee4d2603d72a231acf25e1fb182ae77364c4156a27ca2c8bb96486c0d5da4",
+      "results": [
+        "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 97 filtered out; finished in 0.07s"
+      ]
+    },
+    "auth-parser-sibling-config.log": {
+      "sha256": "3471fd2c835c2ce8edd80f7aace22c3ad03e3bbd4d8823fc1fcd51568c2ce911",
+      "results": [
+        "test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 146 filtered out; finished in 0.01s"
+      ]
+    },
+    "auth-parser-exact-red.log": {
+      "sha256": "9e637f18c8c32c1026a33e61400ccaf14bbff17f22beaa715fb79396401828ac",
+      "results": [
+        "test result: FAILED. 2 passed; 6 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.14s"
+      ]
+    }
+  },
+  "integration_holds": [
+    "New required AUTH_DATABASE_URL absent from dev-up buildAppEnv, composeAPI, ci boot-smoke, image-release boot; align all actual callers before claiming package complete.",
+    "Shared validator also handles Worker and Migrate DATABASE_URL, not just5serving URLs. Tracked migration URLs inspected are compatible plain TCP. Standalone operator libpq path unchanged; do not infer arbitrary deployed maintenance URL compatibility.",
+    "No retained typed PgConnectOptions/defaultport/ambientrouting immunity proof; actual pool construction and crossdatabase/cluster/epoch admission remain separate.",
+    "Pure validation may reread environment later at connection time; this patch does not freeze actual connection options.",
+    "No owner grant, Account lifecycle/HA/production approval."
+  ],
+  "reviewer_runtime_execution": false
+}

@@ -1,0 +1,1001 @@
+{
+  "classification": "Historical local implementation evidence; not release authority",
+  "records": [
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/cleanup-final-list-error.txt",
+      "retained": "account-projection37/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/cleanup-list-error.txt",
+      "retained": "account-projection37/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/cleanup.txt",
+      "retained": "account-projection37/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/container-name.txt",
+      "retained": "account-projection37/container-name.txt",
+      "sha256": "17fbeb82d32ed6e705b793f743f08260592cbc7165791fd11ddcaefa7a4e5306",
+      "bytes": 38
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/containers-after.txt",
+      "retained": "account-projection37/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/containers-before-cleanup.txt",
+      "retained": "account-projection37/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/driver-receipt.json",
+      "retained": "account-projection37/driver-receipt.json",
+      "sha256": "272dfba25017accce13081be9b28a85a995bb14e2770ca8a000acbe152e518b0",
+      "bytes": 1609
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/ownership-label.txt",
+      "retained": "account-projection37/ownership-label.txt",
+      "sha256": "b4d880804b4004d2087cc1e5c8fb769c5abcfd7907bec5b4cd55ac491c04c468",
+      "bytes": 49
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/postgres-map.json",
+      "retained": "account-projection37/postgres-map.json",
+      "sha256": "28f7f200f883f9a7f55d317e35114cafcb023313812c2edd3644d8c0ec709ec4",
+      "bytes": 184155
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/prebuild-dispatch.txt",
+      "retained": "account-projection37/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "bytes": 65
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/probe-exit.txt",
+      "retained": "account-projection37/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/probe.log",
+      "retained": "account-projection37/probe.log",
+      "sha256": "b43902c3275dc9d9954a5a6be93713f1324476acb0806435f0c292a037e7ec0f",
+      "bytes": 36371
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/source-after.json",
+      "retained": "account-projection37/source-after.json",
+      "sha256": "f24bc3a567f3b5c676e1462c0ec3408599a868a9b5603318d4013d50af2bff15",
+      "bytes": 2084
+    },
+    {
+      "source": "/private/tmp/account-fence37-ee27c24a885e4eb2991601a80af99a70/source-before.json",
+      "retained": "account-projection37/source-before.json",
+      "sha256": "f24bc3a567f3b5c676e1462c0ec3408599a868a9b5603318d4013d50af2bff15",
+      "bytes": 2084
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/cleanup-final-list-error.txt",
+      "retained": "account-custody36/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/cleanup-list-error.txt",
+      "retained": "account-custody36/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/cleanup.txt",
+      "retained": "account-custody36/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/container-name.txt",
+      "retained": "account-custody36/container-name.txt",
+      "sha256": "0bae8dd37297e71f608135541d54161769dc2aa55787c5ef5ed09b59e34a17a7",
+      "bytes": 38
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/containers-after.txt",
+      "retained": "account-custody36/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/containers-before-cleanup.txt",
+      "retained": "account-custody36/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/driver-receipt.json",
+      "retained": "account-custody36/driver-receipt.json",
+      "sha256": "40c67da8295f17e042b9d2cee9da6159eff3be922e88a5ab2c5fd5c8a035fc55",
+      "bytes": 1609
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/ownership-label.txt",
+      "retained": "account-custody36/ownership-label.txt",
+      "sha256": "14a586bc0263214ba7ce5ccb755effcca5edc977b397e971590662fe45ae040f",
+      "bytes": 60
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/postgres-map.json",
+      "retained": "account-custody36/postgres-map.json",
+      "sha256": "5681833d72a94b44b48b05d59c28d39c7ffabbe775ed17a0e4b79e26ea1e4907",
+      "bytes": 184146
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/prebuild-dispatch.txt",
+      "retained": "account-custody36/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "bytes": 65
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/probe-exit.txt",
+      "retained": "account-custody36/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/probe.log",
+      "retained": "account-custody36/probe.log",
+      "sha256": "db7c96173bdba05b8fc878667589963bfb0d697cc75529722438a4b7bbe36cfb",
+      "bytes": 10768
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/source-after.json",
+      "retained": "account-custody36/source-after.json",
+      "sha256": "1844844646a5ea2af895bc3a8763526c0ff4d6e163f5d509b89ce3c3fa8c67d1",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-96537feb/source-before.json",
+      "retained": "account-custody36/source-before.json",
+      "sha256": "1844844646a5ea2af895bc3a8763526c0ff4d6e163f5d509b89ce3c3fa8c67d1",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/cleanup-final-list-error.txt",
+      "retained": "finalizer-diagnostic/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/cleanup-list-error.txt",
+      "retained": "finalizer-diagnostic/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/cleanup.txt",
+      "retained": "finalizer-diagnostic/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/container-name.txt",
+      "retained": "finalizer-diagnostic/container-name.txt",
+      "sha256": "028ce7555af8269ec10ca75b857fd79441f4bc1cea20745a348b1ae6d9f808f8",
+      "bytes": 38
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/containers-after.txt",
+      "retained": "finalizer-diagnostic/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/containers-before-cleanup.txt",
+      "retained": "finalizer-diagnostic/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/driver-receipt.json",
+      "retained": "finalizer-diagnostic/driver-receipt.json",
+      "sha256": "4a6fc851fcee6224df6428dd4e6a28de59667be1d9847880364b9882e3671d34",
+      "bytes": 1609
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/ownership-label.txt",
+      "retained": "finalizer-diagnostic/ownership-label.txt",
+      "sha256": "94b8b1fd69cecea1db651dcd5e7585ced34bad409a33089d9b52abbba59488b8",
+      "bytes": 62
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/postgres-map.json",
+      "retained": "finalizer-diagnostic/postgres-map.json",
+      "sha256": "128e542ef85d4d50b714e8afc2cfea33975844d883662877500dbcd1e6f4ae75",
+      "bytes": 184229
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/prebuild-dispatch.txt",
+      "retained": "finalizer-diagnostic/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "bytes": 65
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/probe-exit.txt",
+      "retained": "finalizer-diagnostic/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/probe.log",
+      "retained": "finalizer-diagnostic/probe.log",
+      "sha256": "cc1c2ef8f677f8625fa01c451d5f4c4a74bd37b09d59558fd054b01e93eb040e",
+      "bytes": 6347
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/source-after.json",
+      "retained": "finalizer-diagnostic/source-after.json",
+      "sha256": "2328aee75c95524375e7911fa674383c47d71893390d92d91792ece74680f454",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-e1f184fa/source-before.json",
+      "retained": "finalizer-diagnostic/source-before.json",
+      "sha256": "2328aee75c95524375e7911fa674383c47d71893390d92d91792ece74680f454",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/cleanup-final-list-error.txt",
+      "retained": "account-custody36-after-order-fix/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/cleanup-list-error.txt",
+      "retained": "account-custody36-after-order-fix/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/cleanup.txt",
+      "retained": "account-custody36-after-order-fix/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/container-name.txt",
+      "retained": "account-custody36-after-order-fix/container-name.txt",
+      "sha256": "d1c093c3e76be5900f8f04d864aeb5bac7a09e4ffa354ff4e5056042e70e086d",
+      "bytes": 38
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/containers-after.txt",
+      "retained": "account-custody36-after-order-fix/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/containers-before-cleanup.txt",
+      "retained": "account-custody36-after-order-fix/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/driver-receipt.json",
+      "retained": "account-custody36-after-order-fix/driver-receipt.json",
+      "sha256": "d52c4ba554d131fecdc00a67cda644586d85f87ef6ab05751bf43df4ca4c809f",
+      "bytes": 1609
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/ownership-label.txt",
+      "retained": "account-custody36-after-order-fix/ownership-label.txt",
+      "sha256": "337eb44044276ba98831f16d7835f0f58d50100a060d19501717387ced976b3e",
+      "bytes": 60
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/postgres-map.json",
+      "retained": "account-custody36-after-order-fix/postgres-map.json",
+      "sha256": "5681833d72a94b44b48b05d59c28d39c7ffabbe775ed17a0e4b79e26ea1e4907",
+      "bytes": 184146
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/prebuild-dispatch.txt",
+      "retained": "account-custody36-after-order-fix/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "bytes": 65
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/probe-exit.txt",
+      "retained": "account-custody36-after-order-fix/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/probe.log",
+      "retained": "account-custody36-after-order-fix/probe.log",
+      "sha256": "f311de836cf0e2809be71572161447f527ffb9a37ed6645a6c6c08676c4da1fc",
+      "bytes": 10273
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/source-after.json",
+      "retained": "account-custody36-after-order-fix/source-after.json",
+      "sha256": "c438ce39f33ad0cb5a530ada64aaf06e299ed80904fbff0d99fcf30124f5163f",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-783b5cac/source-before.json",
+      "retained": "account-custody36-after-order-fix/source-before.json",
+      "sha256": "c438ce39f33ad0cb5a530ada64aaf06e299ed80904fbff0d99fcf30124f5163f",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/cleanup-final-list-error.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/cleanup-list-error.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/cleanup.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/container-name.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/container-name.txt",
+      "sha256": "d49dd79ef2a84c02cc3d24ddbf37d2786f03b27f79454a477d8a127878e97619",
+      "bytes": 38
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/containers-after.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/containers-before-cleanup.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/driver-receipt.json",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/driver-receipt.json",
+      "sha256": "14bbfa14adf36948acca0b0041867fed199b140c9b29a31d8921cd674cc8ee5c",
+      "bytes": 1609
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/ownership-label.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/ownership-label.txt",
+      "sha256": "707ed0ebb4df20469dd42f2dcea80b1a3be76c8920ef31bd4da5c276e44b1eff",
+      "bytes": 62
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/postgres-map.json",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/postgres-map.json",
+      "sha256": "128e542ef85d4d50b714e8afc2cfea33975844d883662877500dbcd1e6f4ae75",
+      "bytes": 184229
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/prebuild-dispatch.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "bytes": 65
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/probe-exit.txt",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/probe-exit.txt",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/probe.log",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/probe.log",
+      "sha256": "c3af72241c0a1bfc94c581225f929fd1e83c0b37b55ef1e7f665dcd9d6673145",
+      "bytes": 5062
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/source-after.json",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/source-after.json",
+      "sha256": "c438ce39f33ad0cb5a530ada64aaf06e299ed80904fbff0d99fcf30124f5163f",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/source-before.json",
+      "retained": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1/source-before.json",
+      "sha256": "c438ce39f33ad0cb5a530ada64aaf06e299ed80904fbff0d99fcf30124f5163f",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/cleanup-final-list-error.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/cleanup-final-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/cleanup-list-error.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/cleanup-list-error.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/cleanup.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/cleanup.txt",
+      "sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "bytes": 69
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/container-name.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/container-name.txt",
+      "sha256": "eb256fb4bcc52e15566dde5d63f55935a856069591587567eb021d7f02e962c2",
+      "bytes": 38
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/containers-after.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/containers-after.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/containers-before-cleanup.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/containers-before-cleanup.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/driver-receipt.json",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/driver-receipt.json",
+      "sha256": "63ba17319627b1d7ea1b4e4b9f907480fecab6ededc0dd2fe9d809193614f3a5",
+      "bytes": 1609
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/ownership-label.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/ownership-label.txt",
+      "sha256": "d9987d63f2b37f6c1456bbfc5800174c67eb3d8a204029455f0e901b4d37b41e",
+      "bytes": 62
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/postgres-map.json",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/postgres-map.json",
+      "sha256": "128e542ef85d4d50b714e8afc2cfea33975844d883662877500dbcd1e6f4ae75",
+      "bytes": 184229
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/prebuild-dispatch.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/prebuild-dispatch.txt",
+      "sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "bytes": 65
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/probe-exit.txt",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/probe-exit.txt",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/probe.log",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/probe.log",
+      "sha256": "4ada9585d15058a10cb92d5f505636204d27ea9beefb2f9eef9d2e49214a8439",
+      "bytes": 6092
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/source-after.json",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/source-after.json",
+      "sha256": "2328aee75c95524375e7911fa674383c47d71893390d92d91792ece74680f454",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-598c285c3c944404a448695992a71180/source-before.json",
+      "retained": "account-finalizer-order-598c285c3c944404a448695992a71180/source-before.json",
+      "sha256": "2328aee75c95524375e7911fa674383c47d71893390d92d91792ece74680f454",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/auth-parser-exact-red.log",
+      "retained": "receipts/auth-parser-exact-red.log",
+      "sha256": "9e637f18c8c32c1026a33e61400ccaf14bbff17f22beaa715fb79396401828ac",
+      "bytes": 4478
+    },
+    {
+      "source": "/private/tmp/auth-parser-first-green.log",
+      "retained": "receipts/auth-parser-first-green.log",
+      "sha256": "26eeed296daa16edcf10f4403f89b41044c99a70244b2114fea60f2f70aa3977",
+      "bytes": 1803
+    },
+    {
+      "source": "/private/tmp/auth-parser-auth7.log",
+      "retained": "receipts/auth-parser-auth7.log",
+      "sha256": "777ee4d2603d72a231acf25e1fb182ae77364c4156a27ca2c8bb96486c0d5da4",
+      "bytes": 1432
+    },
+    {
+      "source": "/private/tmp/auth-parser-sibling-config.log",
+      "retained": "receipts/auth-parser-sibling-config.log",
+      "sha256": "3471fd2c835c2ce8edd80f7aace22c3ad03e3bbd4d8823fc1fcd51568c2ce911",
+      "bytes": 2725
+    },
+    {
+      "source": "/private/tmp/auth-parser-clippy.log",
+      "retained": "receipts/auth-parser-clippy.log",
+      "sha256": "f05ef1a1d4cc577dd9bd2b5395768eef752372f3473babbe5c5dbd3a67ec8aff",
+      "bytes": 39550
+    },
+    {
+      "source": "/private/tmp/auth-parser-75c3d397-implementation.json",
+      "retained": "receipts/auth-parser-75c3d397-implementation.json",
+      "sha256": "5939e1fa3df816f9e22c34b6be1927d75b431a5584b15dc6201fbfa7e4af5525",
+      "bytes": 3179
+    },
+    {
+      "source": "/private/tmp/auth-parser-75c3d397-independent-review.json",
+      "retained": "receipts/auth-parser-75c3d397-independent-review.json",
+      "sha256": "33200e6c48feeb190794eeb1baade14065a20efbe5843a70a866fc3642aac787",
+      "bytes": 3221
+    },
+    {
+      "source": "/private/tmp/auth-parser-lane.json",
+      "retained": "receipts/auth-parser-lane.json",
+      "sha256": "3e7a761ffc682d47565a085bcaf963d91d2bebd0a222f9225eea366abc0f27e7",
+      "bytes": 1968
+    },
+    {
+      "source": "/private/tmp/auth-parser-lane-admit.log",
+      "retained": "receipts/auth-parser-lane-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/ui-accessible-admit.log",
+      "retained": "receipts/ui-accessible-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/ui-accessible-probe-red.log",
+      "retained": "receipts/ui-accessible-probe-red.log",
+      "sha256": "dc3abe7bba67714c18181148b6ee2fd6a120dcf4c67a466b311fc84562ddd1e9",
+      "bytes": 1585
+    },
+    {
+      "source": "/private/tmp/ui-accessible-probe-green.log",
+      "retained": "receipts/ui-accessible-probe-green.log",
+      "sha256": "a37238e00492bfe92e861998f359127b06174d78e704db243050d8de24388ea6",
+      "bytes": 751
+    },
+    {
+      "source": "/private/tmp/ui-accessible-full17.log",
+      "retained": "receipts/ui-accessible-full17.log",
+      "sha256": "d83daa40619afa74adb251bed881b3110ca29411c09a5f45105c1b75bc9810b1",
+      "bytes": 1805
+    },
+    {
+      "source": "/private/tmp/ui-accessible-implementation-receipt.json",
+      "retained": "receipts/ui-accessible-implementation-receipt.json",
+      "sha256": "c040bb34972200a090a62ca5e78cbed5042f4a2a7cfefc3d8c51f669a9b2dcee",
+      "bytes": 2014
+    },
+    {
+      "source": "/private/tmp/ui01-accessible-name-implementation-independent-review.json",
+      "retained": "receipts/ui01-accessible-name-implementation-independent-review.json",
+      "sha256": "7a3922b64f1a2ece8e8794d3f5d5c47f8c7c8a4d464d8c3256156222fd25375d",
+      "bytes": 1052
+    },
+    {
+      "source": "/private/tmp/ui-accessible-lane.json",
+      "retained": "receipts/ui-accessible-lane.json",
+      "sha256": "02223ae580b7a03acd3ac838b0a701d4214aff6a27e7fa3ab0f6b5aa1461226c",
+      "bytes": 1530
+    },
+    {
+      "source": "/private/tmp/ui-composer-accessible-name-independent-review.json",
+      "retained": "receipts/ui-composer-accessible-name-independent-review.json",
+      "sha256": "1113f6d1049be1d7fa5c192360b6b215889abb5ddac121c4fa46375c365c40f5",
+      "bytes": 1548
+    },
+    {
+      "source": "/private/tmp/account-custody-36-regression-independent-review.json",
+      "retained": "receipts/account-custody-36-regression-independent-review.json",
+      "sha256": "e72537113ffddd229d0e356139dc152e57d9b6f71b162a72e956119a8e4c38ef",
+      "bytes": 2095
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-independent-review.json",
+      "retained": "receipts/account-finalizer-diagnostic-independent-review.json",
+      "sha256": "fa491f9121a6972934fe66e9b962270b5575d46d8a5610c9283247e9c54d0430",
+      "bytes": 1314
+    },
+    {
+      "source": "/private/tmp/account-finalizer-diagnostic-driver.sh",
+      "retained": "receipts/account-finalizer-diagnostic-driver.sh",
+      "sha256": "890b91fb1e22d7e9357ed5b7f0d92555e073f9f319b07b1d7e0d5f335ec58028",
+      "bytes": 8465
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-driver.sh",
+      "retained": "receipts/account-custody-regression-driver.sh",
+      "sha256": "ce4dc9671c85147ac75439f46ab81fa45eba62cc99cfd6af04c51ed95b423a4b",
+      "bytes": 8380
+    },
+    {
+      "source": "/private/tmp/account-custody-regression-driver-independent-review.json",
+      "retained": "receipts/account-custody-regression-driver-independent-review.json",
+      "sha256": "862cf9f0a9e29c6ec0f69dcd994f4325bbcb9577ee76e369464799a2529535a6",
+      "bytes": 894
+    },
+    {
+      "source": "/private/tmp/fp03-three-part-profile-independent-design-review.json",
+      "retained": "receipts/fp03-three-part-profile-independent-design-review.json",
+      "sha256": "15563fd55deb24ea98dfa621c376ce1495d414c5d99a93d8a3acbaff495e1c35",
+      "bytes": 1975
+    },
+    {
+      "source": "/private/tmp/fp03-37-test-and-driver-independent-review.json",
+      "retained": "receipts/fp03-37-test-and-driver-independent-review.json",
+      "sha256": "c0053874adfa7ca5e114292792404c66408feb374601a5b00488fba8306a19f1",
+      "bytes": 2089
+    },
+    {
+      "source": "/private/tmp/account-projection37-candidate-receipt.json",
+      "retained": "receipts/account-projection37-candidate-receipt.json",
+      "sha256": "202fac6e558632586996b15ec5aa3e0404050171488ed79116d350f944935d51",
+      "bytes": 1804
+    },
+    {
+      "source": "/private/tmp/account-fence37-driver.sh",
+      "retained": "receipts/account-fence37-driver.sh",
+      "sha256": "dbc79064b0ef3628bb919f3d8db623f4ee63befe84213e9280b817bd2c54f146",
+      "bytes": 8339
+    },
+    {
+      "source": "/private/tmp/account-fence37-lane.json",
+      "retained": "receipts/account-fence37-lane.json",
+      "sha256": "2f5d2320bbd6e7c0b3a401bcf3e9fd4d8cb75f09c36111bbf6d803b9064fdbb0",
+      "bytes": 2076
+    },
+    {
+      "source": "/private/tmp/account-fence37-admit.log",
+      "retained": "receipts/account-fence37-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/fk-owner-permissions-probe.py",
+      "retained": "receipts/fk-owner-permissions-probe.py",
+      "sha256": "2f2db66f1d2b85a13aa1f0f02084324fd7d6f34226787d90b22d392794a5b18d",
+      "bytes": 3117
+    },
+    {
+      "source": "/private/tmp/fk-owner-permissions-probe-result.json",
+      "retained": "receipts/fk-owner-permissions-probe-result.json",
+      "sha256": "e3658964280b9f60d4e6bda221408638d14875bc70d19d4856a0004186f3f402",
+      "bytes": 1321
+    },
+    {
+      "source": "/private/tmp/fk-owner-selfgrant-probe.py",
+      "retained": "receipts/fk-owner-selfgrant-probe.py",
+      "sha256": "6c5636d7e300fda0b22788fe646c5301c514f1eb03b7b3d851d6e23b74067adb",
+      "bytes": 3161
+    },
+    {
+      "source": "/private/tmp/fk-owner-selfgrant-probe-result.json",
+      "retained": "receipts/fk-owner-selfgrant-probe-result.json",
+      "sha256": "0d56fb51d9502ac20b5835d21a25193b30324c0275c4c0955bccfe8e603328ed",
+      "bytes": 1331
+    },
+    {
+      "source": "/private/tmp/verify-hardening-command-lane.json",
+      "retained": "receipts/verify-hardening-command-lane.json",
+      "sha256": "9c27f8761613254ebbe0a83b193e34e0257841c6f40370ad188f5dc1e7b674ac",
+      "bytes": 1505
+    },
+    {
+      "source": "/private/tmp/verify-hardening-command-admit.log",
+      "retained": "receipts/verify-hardening-command-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-hardening-command-implementation-receipt.json",
+      "retained": "receipts/verify-hardening-command-implementation-receipt.json",
+      "sha256": "c2156155a849cbb7b7cfdf699af80ba8cbe5650383bcc289cbb4847bca18e21b",
+      "bytes": 2247
+    },
+    {
+      "source": "/private/tmp/verify-hardening-535ac65c-independent-review.json",
+      "retained": "receipts/verify-hardening-535ac65c-independent-review.json",
+      "sha256": "5c4ab9947900822e51afc1405f6b58c1c9b72a263ce89a15c056b56f3f9aa181",
+      "bytes": 1228
+    },
+    {
+      "source": "/private/tmp/verify-hardening-command-original-red.log",
+      "retained": "receipts/verify-hardening-command-original-red.log",
+      "sha256": "5f2e4e4ff342103687ca04d83e2fa5dacbcc09c4c503e1f334d4801c9524dc61",
+      "bytes": 25900
+    },
+    {
+      "source": "/private/tmp/auth-caller-production-hardening.log",
+      "retained": "receipts/auth-caller-production-hardening.log",
+      "sha256": "5f2e4e4ff342103687ca04d83e2fa5dacbcc09c4c503e1f334d4801c9524dc61",
+      "bytes": 25900
+    },
+    {
+      "source": "/private/tmp/auth-parser-root-auth7.log",
+      "retained": "receipts/auth-parser-root-auth7.log",
+      "sha256": "1da46b26aeb3f4f8da30a77cc2874367668fb8698bf8f1f85e6b9da1497f9aab",
+      "bytes": 1433
+    },
+    {
+      "source": "/private/tmp/auth-parser-root-siblings20.log",
+      "retained": "receipts/auth-parser-root-siblings20.log",
+      "sha256": "758b4e39a3711f96540b09257f20b5b4b760068f992e272914f4175c02e59c35",
+      "bytes": 2727
+    },
+    {
+      "source": "/private/tmp/auth-root-clippy.log",
+      "retained": "receipts/auth-root-clippy.log",
+      "sha256": "12a386953b7d9db4b96146f1a22037b0f5edfa3963db4ae0135c12f479fe9c3d",
+      "bytes": 26168
+    },
+    {
+      "source": "/private/tmp/auth-root-clippy-green.log",
+      "retained": "receipts/auth-root-clippy-green.log",
+      "sha256": "f90e09c8a02b8c15d628c043c043973bcc1955faf7a3f0a4ef4beb5a24369592",
+      "bytes": 430
+    },
+    {
+      "source": "/private/tmp/auth-fixture-style-lane.json",
+      "retained": "receipts/auth-fixture-style-lane.json",
+      "sha256": "d19bfcb17033c3bbd53339f50ac0fa19b377a0a1993cde4997db9f7abcdc5638",
+      "bytes": 1253
+    },
+    {
+      "source": "/private/tmp/auth-fixture-style-admit.log",
+      "retained": "receipts/auth-fixture-style-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/auth-fixture-65160143-style-independent-review.json",
+      "retained": "receipts/auth-fixture-65160143-style-independent-review.json",
+      "sha256": "2fb9e5ab2fb9359ce8a5faa08f8fb66f92d076efb9d442bc42d05a91824db862",
+      "bytes": 752
+    },
+    {
+      "source": "/private/tmp/auth-ui-root-import-independent-review.json",
+      "retained": "receipts/auth-ui-root-import-independent-review.json",
+      "sha256": "f36509c6c6fa8fcdbf018db633dc022ed9b2db0b8f1b9a48f950f0f0431dd5d0",
+      "bytes": 1689
+    },
+    {
+      "source": "/private/tmp/auth-callers-fb0d50d2-test-candidate.json",
+      "retained": "receipts/auth-callers-fb0d50d2-test-candidate.json",
+      "sha256": "c48561423c786e292dfa048e29d8b599d49cd3da3eec815b3846dd3647081863",
+      "bytes": 3190
+    },
+    {
+      "source": "/private/tmp/auth-callers-fb0d50d2-independent-review.json",
+      "retained": "receipts/auth-callers-fb0d50d2-independent-review.json",
+      "sha256": "d582bc92f06a840f322605d55950dad11a6004a74e16f947ed18aa4b0c02721a",
+      "bytes": 3461
+    },
+    {
+      "source": "/private/tmp/auth-launch-caller-lane.json",
+      "retained": "receipts/auth-launch-caller-lane.json",
+      "sha256": "e04cb4fd64a4ad2bf06ee31670b6db0dfb5bae4b6e41a83bdee502554ab32c86",
+      "bytes": 2113
+    },
+    {
+      "source": "/private/tmp/auth-launch-caller-admit.log",
+      "retained": "receipts/auth-launch-caller-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/auth-launch-callers-green14.log",
+      "retained": "receipts/auth-launch-callers-green14.log",
+      "sha256": "9ab30960feb183536626b0601b09511bfccbdc2bd7ca7dd6fc797ffad5526bad",
+      "bytes": 1611
+    },
+    {
+      "source": "/private/tmp/auth-launch-callers-final14.log",
+      "retained": "receipts/auth-launch-callers-final14.log",
+      "sha256": "8692d215e15c537f883b700a26eca82d34b78eedd9b87059f7605cfde45847b2",
+      "bytes": 1612
+    },
+    {
+      "source": "/private/tmp/auth-launch-callers-regressions.log",
+      "retained": "receipts/auth-launch-callers-regressions.log",
+      "sha256": "e5b4ea33c8945efe72bcc3bfadbcb78cb7be8fec871e9ff505095fbbf702e56e",
+      "bytes": 5312
+    },
+    {
+      "source": "/private/tmp/auth-launch-callers-reachability.log",
+      "retained": "receipts/auth-launch-callers-reachability.log",
+      "sha256": "f98671657b9b84a47130c9801caddf6f1c91eb4381c28fee1fc7de08bda299cb",
+      "bytes": 118
+    },
+    {
+      "source": "/private/tmp/auth-caller-gate-regressions.log",
+      "retained": "receipts/auth-caller-gate-regressions.log",
+      "sha256": "08b191a0013d314b7186cc13a51313c02d02f3d2e59268ed037eb670e6a8278c",
+      "bytes": 4451
+    },
+    {
+      "source": "/private/tmp/ac05-2cf397f1-independent-review.json",
+      "retained": "receipts/ac05-2cf397f1-independent-review.json",
+      "sha256": "8e53a81faff1226e89e6a70c0e9777500b4d2ad131e4ff4d145b35a7ffb9922e",
+      "bytes": 2516
+    },
+    {
+      "source": "/private/tmp/verify-preparation-plan-independent-review.json",
+      "retained": "receipts/verify-preparation-plan-independent-review.json",
+      "sha256": "0352defb460508a15275eeee7ab2c66b36dde2991c1908c45ae43efb1def679f",
+      "bytes": 854
+    },
+    {
+      "source": "/private/tmp/verify-preparation-lane.json",
+      "retained": "receipts/verify-preparation-lane.json",
+      "sha256": "1201873ecd1b4ada215d6033840ac7cd3b8182192ee0008719a8d26e43796db1",
+      "bytes": 1118
+    },
+    {
+      "source": "/private/tmp/verify-preparation-admit.log",
+      "retained": "receipts/verify-preparation-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-preparation-mirror-red.log",
+      "retained": "receipts/verify-preparation-mirror-red.log",
+      "sha256": "04a41850983323e7d716bb87a23c970dfb716a008a55966ced98109f150127d5",
+      "bytes": 945
+    },
+    {
+      "source": "/private/tmp/verify-preparation-mirror-green.log",
+      "retained": "receipts/verify-preparation-mirror-green.log",
+      "sha256": "8640dda927af9cf3c9cf8bc0ae393ee2b8c9125b53c86c5deb1408d8a5a4a4ae",
+      "bytes": 172
+    },
+    {
+      "source": "/private/tmp/verify-preparation-full.log",
+      "retained": "receipts/verify-preparation-full.log",
+      "sha256": "566a5efde953a48883ae8beb778eeb507d9e72d12e905bc5e34baa2dc2a2aa42",
+      "bytes": 1357
+    },
+    {
+      "source": "/private/tmp/console-followup-final-verify.log",
+      "retained": "receipts/console-followup-final-verify.log",
+      "sha256": "70ef3612a02938c5d49bdbd09cc2c61732e2f7dc76511d90f9222899d2dcdc55",
+      "bytes": 208
+    },
+    {
+      "source": "/private/tmp/lc08-orchestration-tests.log",
+      "retained": "receipts/lc08-orchestration-tests.log",
+      "sha256": "6417ff89e24cfc8feab3e06b1aaa6afb0286ce95bec57ee0694d27fe9db890e8",
+      "bytes": 4165
+    },
+    {
+      "source": "/private/tmp/lc08-fixture-selftests.log",
+      "retained": "receipts/lc08-fixture-selftests.log",
+      "sha256": "0e1ed6af1291dc8e647656febf1dcc82edbed18b8cda7a003666cf97790a106d",
+      "bytes": 2209
+    },
+    {
+      "source": "/private/tmp/lc08-783b5cac-source-independent-review.json",
+      "retained": "receipts/lc08-783b5cac-source-independent-review.json",
+      "sha256": "f395ca287bdb803d279152324e696c03b2c26f65764f214bde3891c6858a84b1",
+      "bytes": 1711
+    },
+    {
+      "source": "/private/tmp/lc08-concurrent-green-independent-evidence-review.json",
+      "retained": "receipts/lc08-concurrent-green-independent-evidence-review.json",
+      "sha256": "0499f5ecb276675e2407ef78b7337a2839eeb3d8d81c97a37b7532f37d38d8e0",
+      "bytes": 1148
+    },
+    {
+      "source": "/private/tmp/lc08-full36-regression-independent-review.json",
+      "retained": "receipts/lc08-full36-regression-independent-review.json",
+      "sha256": "7041cc05ac90a670212bbb044edb72a4d120665978090ea1a57d386237e559cf",
+      "bytes": 3073
+    },
+    {
+      "source": "/private/tmp/ui-accessible-root17.log",
+      "retained": "receipts/ui-accessible-root17.log",
+      "sha256": "85bf95af9107ada59ddab60e4c2e0de37fb7b9cafc3fc5cc981983eec52471fc",
+      "bytes": 1930
+    },
+    {
+      "source": "/private/tmp/auth-parser-root8.log",
+      "retained": "receipts/auth-parser-root8.log",
+      "sha256": "2d5516e912bbc2db393bec937ec82b6f973793edfbbbf70994de9b908f70d7b1",
+      "bytes": 26868
+    },
+    {
+      "source": "/private/tmp/account-owner-update-approval-scope.json",
+      "retained": "receipts/account-owner-update-approval-scope.json",
+      "sha256": "98c26aac104b437d50b0454345b5bf5fe03cfe6ea0406a608cdbd802980bb9e7",
+      "bytes": 1881
+    },
+    {
+      "source": "/private/tmp/account-finalizer-race-diagnostic-evidence-review.json",
+      "retained": "receipts/account-finalizer-race-diagnostic-evidence-review.json",
+      "sha256": "80095975bf566fde1f2b3fe8459072be4c12fa061de57dcd5af1a9b4c20c1946",
+      "bytes": 1537
+    },
+    {
+      "source": "/private/tmp/lc08-ordering-design-independent-review.json",
+      "retained": "receipts/lc08-ordering-design-independent-review.json",
+      "sha256": "673113ede0bbfdf298b7db689aba5ad0733a1cace0728be08af3a70891f60b87",
+      "bytes": 2194
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-lane.json",
+      "retained": "receipts/account-finalizer-order-lane.json",
+      "sha256": "74d5311d40a392dbc352e74785edfdc3b5621c41cbe9f9e70fa58f4a2c77bd80",
+      "bytes": 1739
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-probe.py",
+      "retained": "receipts/account-finalizer-order-probe.py",
+      "sha256": "694d5e23aeb6e2092515dcc28a2432b975fbaa6843c3d31be6cfea9b78b23d69",
+      "bytes": 433
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-admit.log",
+      "retained": "receipts/account-finalizer-order-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/account-finalizer-order-green.log",
+      "retained": "receipts/account-finalizer-order-green.log",
+      "sha256": "0c7515b60663a34bcf5d8bf5f8649ca253f4116672016ae97bf9a442f62e2b64",
+      "bytes": 70
+    },
+    {
+      "source": "/private/tmp/auth-launch-caller-alignment-20260914.md",
+      "retained": "receipts/auth-launch-caller-alignment-20260914.md.txt",
+      "sha256": "4c430be2c2767723f733520cf069ba25d4df6d618ede8b6a84a3c740ecd52177",
+      "bytes": 9005
+    },
+    {
+      "git_source": "75c3d3979012ec8e1b6019d0f0305d51a67edb91:backend/app/src/lib.rs",
+      "retained": "candidates/75c3d3979012ec8e1b6019d0f0305d51a67edb91/backend/app/src/lib.rs.txt",
+      "sha256": "e57e5601742b72837fd6bad174e63e396eaa6e6b6ebe0d8b516bc69286a49acd",
+      "bytes": 284638
+    },
+    {
+      "git_source": "75c3d3979012ec8e1b6019d0f0305d51a67edb91:backend/app/tests/auth_rest/auth_target_parser.rs",
+      "retained": "candidates/75c3d3979012ec8e1b6019d0f0305d51a67edb91/backend/app/tests/auth_rest/auth_target_parser.rs.txt",
+      "sha256": "71110a504b7c44a46ed5c49d1eca5c1780cebe11777304a2728470ed3326156c",
+      "bytes": 13203
+    },
+    {
+      "git_source": "07fa1ab8e2703e2582966ca110f02ad52104b54c:backend/crates/payroll/ui/src/common_action_composer.rs",
+      "retained": "candidates/07fa1ab8e2703e2582966ca110f02ad52104b54c/backend/crates/payroll/ui/src/common_action_composer.rs.txt",
+      "sha256": "5a141b0075ff6efafd0de4984b90216e5e821f17dc3f91a966f225223681faae",
+      "bytes": 9916
+    },
+    {
+      "git_source": "07fa1ab8e2703e2582966ca110f02ad52104b54c:backend/crates/payroll/ui/tests/common_action_composer.rs",
+      "retained": "candidates/07fa1ab8e2703e2582966ca110f02ad52104b54c/backend/crates/payroll/ui/tests/common_action_composer.rs.txt",
+      "sha256": "189a7e99708f0d0e5478ed104c903d55751022ae4c4cedcc0056c688c2a15c8d",
+      "bytes": 22262
+    }
+  ]
+}

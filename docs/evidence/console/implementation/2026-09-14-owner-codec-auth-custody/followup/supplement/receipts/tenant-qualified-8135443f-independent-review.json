@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "11699e63dbc6d0d15f6fdd7f5deecd76ae119048",
+  "head_sha": "8135443f96ae3cad921d39394e8b1dd61d93714b",
+  "source_sha256": {
+    "backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs": "48608ad13127d00a5c85b208959504912a03434a7203b2cb8ac593eb52e357e1"
+  },
+  "verdict": "APPROVE additive test candidate before clean17probe readmission",
+  "supersedes_candidate": "11699e63",
+  "evidence": [
+    "Exact diff adds two actual public scanner negative cases for dynamic %I dotted and uppercase single identifiers",
+    "All corrected15 tests retained",
+    "Existing dynamic lowercase positive retained; new negatives constrain changed dynamic normalization boundary"
+  ],
+  "limits": [
+    "17test candidate not yet claimed executed; author must readmit on clean tree before source replay",
+    "Accountcatalog classification still separate; no allowlist changes",
+    "Static scanner only, not PostgreSQL execution or complete dynamic SQL proof"
+  ]
+}

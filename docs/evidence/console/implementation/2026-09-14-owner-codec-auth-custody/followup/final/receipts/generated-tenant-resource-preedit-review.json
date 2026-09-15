@@ -1,0 +1,13 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE explicit generated-face lane refinement before metadata edit",
+  "observed_base": "ad490bbf6acaf704cbe47c92ad6cbeb1adfe724f",
+  "scope": "One TEST_RESOURCE_REQUIREMENTS metadata entry console-gate-tenant-isolation integration tests/qualified_table_identity.rs=none; existing generator emits app and tenant BUCK only",
+  "rationale": "Reviewed19integration tests execute public static scanner over temporary files; no PostgreSQL or external resource use",
+  "evidence": "/private/tmp/verify-generated-faces-probe.log actual generator failure names exact missing tuple",
+  "lane_refinement": "Replace broad no-generator-change stop with exception for this exact metadata entry; retain no generator algorithm, lockfile, dependency or unrelated face changes",
+  "holds": [
+    "Same preflight probeGREEN and exact generated-output review",
+    "Thirdparty expensive face comparison before merge remains separate"
+  ]
+}

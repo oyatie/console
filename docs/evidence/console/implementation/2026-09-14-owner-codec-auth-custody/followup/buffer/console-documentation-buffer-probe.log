@@ -1,0 +1,10 @@
+✔ large Git index: generator preserves complete custody beyond 1 MiB (382.603625ms)
+✔ large Git index: checker preserves complete custody beyond 1 MiB (360.643292ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 784.561209

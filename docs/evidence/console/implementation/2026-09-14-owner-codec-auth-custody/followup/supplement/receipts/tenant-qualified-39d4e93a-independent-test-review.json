@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE bounded test candidate and qualification-identity repair contract",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "head_sha": "39d4e93ab7547b3887670e092b561034dd738a28",
+  "test_file": "backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+  "test_sha256": "29ce1f1dbfafd0dca0951a6af679e34d10fee523068de9950770da463c293b50",
+  "observed_red": {
+    "log": "/private/tmp/tenant-qualified-test-red.log",
+    "executed": 14,
+    "passed": 2,
+    "failed": 12,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "review": [
+    "Actual public check_migrations_root reads isolated real migration files; no fake scanner implementation",
+    "Positive unqualified control plus schema/case/dot/sibling negative controls prevent basename flattening from being sufficient",
+    "GRANT relation target checked independently from matching column name; public qualified owner-only denial preserved",
+    "Existing unqualified dynamic rollout must retain same defaultpublic identity",
+    "No existing tests changed; one additive integration test file",
+    "Assertions inspect violation kind and affected identity and reject ScanError as a substitute"
+  ],
+  "design_limits": [
+    "Static supported SQL scanner contract only, not executed PostgreSQL policy proof or arbitrary SQL completeness",
+    "Defaultpublic is repository contract; not a general search_path resolver",
+    "Baseline12 failing test functions can stop early inside loops; no claim all deeper loop cases executed",
+    "Source implementation requires lane admission; same14 and existing tests plus repository gate must verify repair",
+    "No allowlist expansion, grants, migration or dependency changes approved"
+  ]
+}

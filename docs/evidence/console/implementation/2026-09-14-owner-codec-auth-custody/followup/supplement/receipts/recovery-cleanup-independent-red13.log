@@ -1,0 +1,81 @@
+test_failed_container_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_container_inventory_is_not_successful_absence) ... FAIL
+test_failed_container_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_container_inventory_partial_output_is_still_unavailable) ... FAIL
+test_failed_network_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_network_inventory_is_not_successful_absence) ... FAIL
+test_failed_network_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_network_inventory_partial_output_is_still_unavailable) ... FAIL
+test_failed_volume_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_volume_inventory_is_not_successful_absence) ... FAIL
+test_failed_volume_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_volume_inventory_partial_output_is_still_unavailable) ... FAIL
+test_remaining_container_refuses_success (__main__.RecoveryCleanupTests.test_remaining_container_refuses_success) ... ok
+test_remaining_network_refuses_success (__main__.RecoveryCleanupTests.test_remaining_network_refuses_success) ... ok
+test_remaining_volume_refuses_success (__main__.RecoveryCleanupTests.test_remaining_volume_refuses_success) ... ok
+test_removal_error_can_reconcile_to_verified_absence (__main__.RecoveryCleanupTests.test_removal_error_can_reconcile_to_verified_absence) ... ok
+test_successful_absence_preserves_original_failure (__main__.RecoveryCleanupTests.test_successful_absence_preserves_original_failure) ... ok
+test_successful_absence_preserves_timeout_classification (__main__.RecoveryCleanupTests.test_successful_absence_preserves_timeout_classification) ... ok
+test_successful_empty_inventory_preserves_success (__main__.RecoveryCleanupTests.test_successful_empty_inventory_preserves_success) ... ok
+
+======================================================================
+FAIL: test_failed_container_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_container_inventory_is_not_successful_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 113, in test_failed_container_inventory_is_not_successful_absence
+    self.assertNotEqual(self.run_cleanup(inventory_failure="container").returncode, 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_failed_container_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_container_inventory_partial_output_is_still_unavailable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 128, in test_failed_container_inventory_partial_output_is_still_unavailable
+    self.failed_inventory_with_partial_output("container")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 124, in failed_inventory_with_partial_output
+    self.assertNotEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_failed_network_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_network_inventory_is_not_successful_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 119, in test_failed_network_inventory_is_not_successful_absence
+    self.assertNotEqual(self.run_cleanup(inventory_failure="network").returncode, 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_failed_network_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_network_inventory_partial_output_is_still_unavailable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 134, in test_failed_network_inventory_partial_output_is_still_unavailable
+    self.failed_inventory_with_partial_output("network")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 124, in failed_inventory_with_partial_output
+    self.assertNotEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_failed_volume_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_volume_inventory_is_not_successful_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 116, in test_failed_volume_inventory_is_not_successful_absence
+    self.assertNotEqual(self.run_cleanup(inventory_failure="volume").returncode, 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_failed_volume_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_volume_inventory_partial_output_is_still_unavailable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 131, in test_failed_volume_inventory_partial_output_is_still_unavailable
+    self.failed_inventory_with_partial_output("volume")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 124, in failed_inventory_with_partial_output
+    self.assertNotEqual(result.returncode, 0)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+----------------------------------------------------------------------
+Ran 13 tests in 7.283s
+
+FAILED (failures=6)

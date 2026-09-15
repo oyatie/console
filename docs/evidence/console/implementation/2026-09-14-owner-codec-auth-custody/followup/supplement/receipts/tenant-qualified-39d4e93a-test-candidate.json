@@ -1,0 +1,52 @@
+{
+  "kind": "tenant-qualified-table-test-candidate",
+  "base": "9c846602511043014a039b77335e762e37032bea",
+  "head": "39d4e93ab7547b3887670e092b561034dd738a28",
+  "author": "/root/finish_migration",
+  "review": "pending /root/review_completeness",
+  "files": {
+    "backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs": "29ce1f1dbfafd0dca0951a6af679e34d10fee523068de9950770da463c293b50"
+  },
+  "evidence": {
+    "/private/tmp/tenant-qualified-test-red.log": "4822f5be80885abc6643d88918abd7693e72a6bae1814baec2236c31eee0ae96",
+    "/private/tmp/tenant-qualified-old-lib.log": "edc0cf73c89cf16d7b27e0fac037d0471aaa88289bfffae2f312d39df007bd66",
+    "/private/tmp/tenant-qualified-consumer-trace-20260914.md": "81bfda2e3b2e669a0b6f0686a4b200d51eaa18b521a4adc99b66935fc0b18a6d"
+  },
+  "commands": [
+    {
+      "cwd": "backend",
+      "command": "CARGO_TARGET_DIR=/private/tmp/console-tenant-gate-cargo CARGO_BUILD_JOBS=4 cargo test --locked -p console-gate-tenant-isolation --test qualified_table_identity",
+      "discovered": 14,
+      "executed": 14,
+      "pass": 2,
+      "fail": 12,
+      "ignored": 0
+    },
+    {
+      "cwd": "backend",
+      "command": "CARGO_TARGET_DIR=/private/tmp/console-tenant-gate-cargo CARGO_BUILD_JOBS=4 cargo test --locked -p console-gate-tenant-isolation --lib",
+      "discovered": 19,
+      "executed": 19,
+      "pass": 19,
+      "fail": 0,
+      "ignored": 0
+    }
+  ],
+  "blocked_assertions": [
+    "Grouped variants stop at first failed assertion on baseline; later quoted/whitespace/nullable/grantcolumn variants await source repair.",
+    "Static token gate regressions do not prove PostgreSQL runtime RLS or general SQL parsing."
+  ],
+  "premortem": "Dot-only repair aliases nonpublic or case-sensitive table identities and conceals missing RLS; anytoken GRANT checker confuses columns and targets.",
+  "blast_radius": "One new integration test file only; no dependency/generated/source/SQL/authority edits.",
+  "detection": "Exact14 probe plus existing19lib tests and root fullrepository gate.",
+  "rollback": "Revert candidate if rejected, preserve historical review/logs.",
+  "stop_conditions": [
+    "Independent oracle finding",
+    "Scope requires allowlist/schema/grant changes",
+    "Source repair before root lane admission"
+  ],
+  "remaining_holds": [
+    "Root source implementation/admission",
+    "Final runtime gate verification"
+  ]
+}

@@ -1,0 +1,841 @@
+{
+  "classification": "Historical completed local development evidence supplement candidate; not implementation readiness, release authority, or production acceptance",
+  "core_reference": {
+    "path": "/private/tmp/console-followup-evidence-candidate",
+    "retention_sha256": "18a1791a9527b8f76e488c5ca889f4bdeebead0a7c9eaae0b0338538b452bf62",
+    "records": 166,
+    "unchanged_by_supplement_builder": true
+  },
+  "records": [
+    {
+      "source": "/private/tmp/buck-pg-harness-environment-investigation.json",
+      "retained": "receipts/buck-pg-harness-environment-investigation.json",
+      "sha256": "10426a95c3811afa2911045c3eaa4dec3086c22b7766350bd3c4411f5663f9aa",
+      "bytes": 2332
+    },
+    {
+      "source": "/private/tmp/buck-pg-harness-inherited-isolation.log",
+      "retained": "receipts/buck-pg-harness-inherited-isolation.log",
+      "sha256": "97b3d11db9e38b451f7513415cd77fdff8df3e7ca8d63f27b3195ef14f0656c2",
+      "bytes": 228
+    },
+    {
+      "source": "/private/tmp/buck-pg-harness-no-isolation.log",
+      "retained": "receipts/buck-pg-harness-no-isolation.log",
+      "sha256": "a153bafd48cf18b551a568ae5bdcb195b7afafe88db5dc1431f44533fb42e1b1",
+      "bytes": 548
+    },
+    {
+      "source": "/private/tmp/console-followup-core166-independent-retention-review.json",
+      "retained": "receipts/console-followup-core166-independent-retention-review.json",
+      "sha256": "de47e0a4db34f85a916f2e53beabc1b93ce25dc68099dd477f0a9fe8a632a154",
+      "bytes": 4781
+    },
+    {
+      "source": "/private/tmp/console-followup-verify-after-mirror.log",
+      "retained": "receipts/console-followup-verify-after-mirror.log",
+      "sha256": "be607dfd3dd6760a1e65fb2952790ab8484ac6de0b06b3483cb5056ab4428ce0",
+      "bytes": 778748
+    },
+    {
+      "source": "/private/tmp/format-e809f5d5-independent-green.log",
+      "retained": "receipts/format-e809f5d5-independent-green.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/format-e809f5d5-independent-review.json",
+      "retained": "receipts/format-e809f5d5-independent-review.json",
+      "sha256": "165abdb4b44c782eadf703268c65aa012d75df15279f634c18aab6e928ace4d6",
+      "bytes": 1286
+    },
+    {
+      "source": "/private/tmp/preparation-oracle-94fdccf9-implementation.json",
+      "retained": "receipts/preparation-oracle-94fdccf9-implementation.json",
+      "sha256": "8ad42fb08a58028d2fdc3b2c5d4787f9437b4b41fa45a5e5b7f8c24fecd7e8a7",
+      "bytes": 2846
+    },
+    {
+      "source": "/private/tmp/preparation-oracle-94fdccf9-independent-source-review.json",
+      "retained": "receipts/preparation-oracle-94fdccf9-independent-source-review.json",
+      "sha256": "e9e545e3b92dc44e77106e2a4c25a3f8d42973b4ca26a8e097312e1e087fb849",
+      "bytes": 1377
+    },
+    {
+      "source": "/private/tmp/preparation-oracle-refinement-before-edit.json",
+      "retained": "receipts/preparation-oracle-refinement-before-edit.json",
+      "sha256": "36b1bb273598e511f2db81cae4fa2ee1f243f2b1fe5745945a3e4b6a7d9cf784",
+      "bytes": 1794
+    },
+    {
+      "source": "/private/tmp/preparation-oracle-refinement-candidate.patch",
+      "retained": "receipts/preparation-oracle-refinement-candidate.patch",
+      "sha256": "c835d2ec54758f3ea1044698e9ec0303c865da5a9067fcdff5eaf31ba49885b3",
+      "bytes": 1621
+    },
+    {
+      "source": "/private/tmp/preparation-oracle-refinement-independent-preedit-review.json",
+      "retained": "receipts/preparation-oracle-refinement-independent-preedit-review.json",
+      "sha256": "8bf4266f621f1bd6243306a200800e8161a27b8f9c6a6a5d82b242cf701bc7dd",
+      "bytes": 1341
+    },
+    {
+      "source": "/private/tmp/preparation-oracle-refinement-lane.json",
+      "retained": "receipts/preparation-oracle-refinement-lane.json",
+      "sha256": "b26373449964ae8f39e54b7fc6c4e7667a3e9600e4c425d06a4ab9c77adb809e",
+      "bytes": 1427
+    },
+    {
+      "source": "/private/tmp/preparation-prototype-register-green.log",
+      "retained": "receipts/preparation-prototype-register-green.log",
+      "sha256": "837aead61077b5e74486c31f0c0ef3a3eacef8d57f26a07d89b96380c9f74430",
+      "bytes": 75
+    },
+    {
+      "source": "/private/tmp/preparation-prototype-register-red.log",
+      "retained": "receipts/preparation-prototype-register-red.log",
+      "sha256": "06e7588165b1e43e55e0c89b42f889efde88582a611f43f8dea9c990309fdab8",
+      "bytes": 950
+    },
+    {
+      "source": "/private/tmp/preparation-prototype-retained-tests.log",
+      "retained": "receipts/preparation-prototype-retained-tests.log",
+      "sha256": "6e69fc9a0659e1fb566e6b8320b8bd3218ca76a7e063aac8ca94e86c535c9b2c",
+      "bytes": 964
+    },
+    {
+      "source": "/private/tmp/preparation-undeclared-oracle-green.log",
+      "retained": "receipts/preparation-undeclared-oracle-green.log",
+      "sha256": "940e7b0620355334adfe954a2e991b4b52b7f32c927ef34872d1c2c85149e3cb",
+      "bytes": 1885
+    },
+    {
+      "source": "/private/tmp/preparation-undeclared-oracle-red.log",
+      "retained": "receipts/preparation-undeclared-oracle-red.log",
+      "sha256": "b3eb44b8a32e8929558c29b07daf58396c5861755e196554f19b7cdaa7f9c1c1",
+      "bytes": 8891
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-6160ffd2-independent-test-review.json",
+      "retained": "receipts/recovery-cleanup-6160ffd2-independent-test-review.json",
+      "sha256": "803a596739d52e0eb0335b3b3ff157f9b0688b5995b309235ffed548925ec241",
+      "bytes": 1680
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-admit.log",
+      "retained": "receipts/recovery-cleanup-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-e1cf1857-independent-source-review.json",
+      "retained": "receipts/recovery-cleanup-e1cf1857-independent-source-review.json",
+      "sha256": "bf300aa6681c4fc781f69a49792ef2cda7755f070ec3088cbe5d2b4c8e7f2904",
+      "bytes": 1538
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-full15-unsandboxed.log",
+      "retained": "receipts/recovery-cleanup-full15-unsandboxed.log",
+      "sha256": "d4e0f07061a9e12e5b31e48e429091a13ef9c476c5a8b3c33197765b13d7b610",
+      "bytes": 200
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-full15.log",
+      "retained": "receipts/recovery-cleanup-full15.log",
+      "sha256": "f9aadb37c6dd56b2dbe0ccc084763fe64148fb10ede104a626c1a408065c4717",
+      "bytes": 2012
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-implementation-receipt.json",
+      "retained": "receipts/recovery-cleanup-implementation-receipt.json",
+      "sha256": "c8b7a324f17a4f68eb0eb2617b21f8cccd837ab182565322665295cefcedc4a8",
+      "bytes": 2470
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-independent-green13.log",
+      "retained": "receipts/recovery-cleanup-independent-green13.log",
+      "sha256": "93a97c61c066344f19f1b5a219c685b11a7721a401c3b412c1038e17b39d73d8",
+      "bytes": 2000
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-independent-red13.log",
+      "retained": "receipts/recovery-cleanup-independent-red13.log",
+      "sha256": "a3535dee05949a61bc11dfb839f69ab27d96d468fee8560ea2c4b1a23f1b19dd",
+      "bytes": 6872
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-lane.json",
+      "retained": "receipts/recovery-cleanup-lane.json",
+      "sha256": "1f2a0f04537cb093f1e7f94c7578364e9ccb7f5c31e30ad2aac8d788edf56589",
+      "bytes": 1520
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-probe-green.log",
+      "retained": "receipts/recovery-cleanup-probe-green.log",
+      "sha256": "327783fb44f1edd350363ae9c59057fb53b2462781451f0a66101d7a55fdd7c0",
+      "bytes": 112
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-probe-red.log",
+      "retained": "receipts/recovery-cleanup-probe-red.log",
+      "sha256": "6ac5aab3a78abe39eab144639401fb0abd20a52fc4efb61d57404b4f3e6b93e0",
+      "bytes": 4972
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-relay.log",
+      "retained": "receipts/recovery-cleanup-relay.log",
+      "sha256": "ba8dd02bb7437942124041e01665b154f224dfbcb0a07cdebc0a6802f7ac9c74",
+      "bytes": 104
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-tests-red.log",
+      "retained": "receipts/recovery-cleanup-tests-red.log",
+      "sha256": "d4cb2396d6c796d76a03cfaf8b80c5a4094659babc231acf7900258d576a9723",
+      "bytes": 16420
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-tests-red2.log",
+      "retained": "receipts/recovery-cleanup-tests-red2.log",
+      "sha256": "6193fb4da8606665334dfbbd650f16b6ffe111ab9a40a4207ea5ba320252b594",
+      "bytes": 4972
+    },
+    {
+      "source": "/private/tmp/recovery-cleanup-tests-red3.log",
+      "retained": "receipts/recovery-cleanup-tests-red3.log",
+      "sha256": "41a7bdbd7601023debf9d1bf09b4f43d8a271b4a3422c6bbfad8662af6070d23",
+      "bytes": 4972
+    },
+    {
+      "source": "/private/tmp/rls-8bb6e24e-independent-review.json",
+      "retained": "receipts/rls-8bb6e24e-independent-review.json",
+      "sha256": "9db3cce8f9646f22e21897cbb2b8d744bb59c591c90b6dfaa26a5329db7d83cd",
+      "bytes": 1167
+    },
+    {
+      "source": "/private/tmp/rls-annotation-admit.log",
+      "retained": "receipts/rls-annotation-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/rls-annotation-gate-tests.log",
+      "retained": "receipts/rls-annotation-gate-tests.log",
+      "sha256": "529332a9ff0e0ef27f793a07197f06aeb20fd8325a8221cec273ebb2569668c6",
+      "bytes": 1319
+    },
+    {
+      "source": "/private/tmp/rls-annotation-implementation-receipt.json",
+      "retained": "receipts/rls-annotation-implementation-receipt.json",
+      "sha256": "99c39681672b7d4cff6504c6da96e7032a2152580cd62c1728d1ccdc64c694d2",
+      "bytes": 1879
+    },
+    {
+      "source": "/private/tmp/rls-annotation-lane.json",
+      "retained": "receipts/rls-annotation-lane.json",
+      "sha256": "11b5ef279bf6934f7427a5e9be2a2916ba83561ea55873850efa4b1446406ecb",
+      "bytes": 1363
+    },
+    {
+      "source": "/private/tmp/rls-annotation-probe-green.log",
+      "retained": "receipts/rls-annotation-probe-green.log",
+      "sha256": "0c35205acec0eba4fe6ca36aec22733726ca6773c79c1df72c3474d0cf5cf489",
+      "bytes": 300
+    },
+    {
+      "source": "/private/tmp/rls-annotation-probe-red.log",
+      "retained": "receipts/rls-annotation-probe-red.log",
+      "sha256": "6e617cf9a0642572ef112e84fa2e65d8905cb54c686e6f206ada1692b115be0c",
+      "bytes": 797
+    },
+    {
+      "source": "/private/tmp/tenant-parser-c55f5d2a-independent-source-review.json",
+      "retained": "receipts/tenant-parser-c55f5d2a-independent-source-review.json",
+      "sha256": "c0850cc3a39204e9a311962888534f07abafdb8e27248f34f3f6a6d3e629881b",
+      "bytes": 2033
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-11699e63-independent-test-review.json",
+      "retained": "receipts/tenant-qualified-11699e63-independent-test-review.json",
+      "sha256": "64964422ead5577c4a129d6a187ded5c9571aeb01962e6d2ffef90666196a90e",
+      "bytes": 1475
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-39d4e93a-independent-test-review.json",
+      "retained": "receipts/tenant-qualified-39d4e93a-independent-test-review.json",
+      "sha256": "acdecf417ba0424e497c4f6946456966a50d5285fbe4fdba5d01455ba0b3218c",
+      "bytes": 1767
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-39d4e93a-oracle-correction-review.json",
+      "retained": "receipts/tenant-qualified-39d4e93a-oracle-correction-review.json",
+      "sha256": "37f3cf91ffad26cc6325f9289dfd75bf632479a4fe3866c9b412a8d3e3a4b889",
+      "bytes": 747
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-39d4e93a-test-candidate.json",
+      "retained": "receipts/tenant-qualified-39d4e93a-test-candidate.json",
+      "sha256": "ff20ae3baa0467d5c9b8f5b8cca4b37090dbb44c2801109181261c4917497ff6",
+      "bytes": 2408
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-8135443f-independent-review.json",
+      "retained": "receipts/tenant-qualified-8135443f-independent-review.json",
+      "sha256": "d40ebc72c8a66a62bdf86b3c09b396325402307274258fe535d4c9f20812c9ae",
+      "bytes": 1021
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-c55f5d2a-implementation.json",
+      "retained": "receipts/tenant-qualified-c55f5d2a-implementation.json",
+      "sha256": "32ba8b124592999824efb0e2a1eb908c7fcde8423448d6d929b1d322aa3da5fb",
+      "bytes": 3122
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-cc9fb615-independent-test-review.json",
+      "retained": "receipts/tenant-qualified-cc9fb615-independent-test-review.json",
+      "sha256": "6211d9d38ba43924417fc34bd91f366eefdf909ce76c517cf4191a35941269b8",
+      "bytes": 1023
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-clippy-final.log",
+      "retained": "receipts/tenant-qualified-clippy-final.log",
+      "sha256": "1e6cea5a6530661d2041ad966caf928a10e3b2635b749cb2f8ee443dde4f8550",
+      "bytes": 5466
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-clippy.log",
+      "retained": "receipts/tenant-qualified-clippy.log",
+      "sha256": "867a82b6ee2594aa17d2878004e134554b51f5ea5294d87ee9ada8d0d23d69da",
+      "bytes": 8595
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-consumer-trace-20260914.md",
+      "retained": "receipts/tenant-qualified-consumer-trace-20260914.md",
+      "sha256": "81bfda2e3b2e669a0b6f0686a4b200d51eaa18b521a4adc99b66935fc0b18a6d",
+      "bytes": 2787
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-corrected-candidate.rs",
+      "retained": "receipts/tenant-qualified-corrected-candidate.rs.txt",
+      "sha256": "aecba2412b31473e1334e0df4f8519825fdc9e5f2c794fc293d76125ca2418f3",
+      "bytes": 6419
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-corrected-green.log",
+      "retained": "receipts/tenant-qualified-corrected-green.log",
+      "sha256": "19a81bc68290299a5e8bec4fdec9f8c13e63e8a99e2cf30629248ab7bd2cb31d",
+      "bytes": 5180
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-corrected-lane.json",
+      "retained": "receipts/tenant-qualified-corrected-lane.json",
+      "sha256": "1b5c1a2c0cb178a30855a748406bf09da14af4d528fa6cfb01c5a0d284a54a7e",
+      "bytes": 1625
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-corrected-red.log",
+      "retained": "receipts/tenant-qualified-corrected-red.log",
+      "sha256": "a6d110c1ab4a5ff1bd86591ec3deb0005fc6776eefc0615d1296c407fff05b2f",
+      "bytes": 14112
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-final-lib.log",
+      "retained": "receipts/tenant-qualified-final-lib.log",
+      "sha256": "caec150b5cc195958f7937a6a09b2e56480cb1b101790af42b58975ce2bbf005",
+      "bytes": 5310
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-final-whole-gate.log",
+      "retained": "receipts/tenant-qualified-final-whole-gate.log",
+      "sha256": "73ac7bb24fa6562b92ad6cfece233a59b923ce2635efd4b87bebac1ed7f0cdd8",
+      "bytes": 2451
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-first-source-attempt.patch",
+      "retained": "receipts/tenant-qualified-first-source-attempt.patch",
+      "sha256": "3029f0759ef668cd75497a8c7f210617265b12de9611dfb85248239a062aa3da",
+      "bytes": 6365
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-green.log",
+      "retained": "receipts/tenant-qualified-green.log",
+      "sha256": "fe76c98e356cb5dbb1cd241aa9eec50fb15bb8288b35e60c6fb8640ce9cd25a6",
+      "bytes": 5975
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-lane.json",
+      "retained": "receipts/tenant-qualified-lane.json",
+      "sha256": "d3a0464784d590cae93778d65a20e334003c1d9a7dc751f260c31a0239c48c2a",
+      "bytes": 1615
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-nineteen-clippy.log",
+      "retained": "receipts/tenant-qualified-nineteen-clippy.log",
+      "sha256": "d89437f0da35fdc9a1327f48d3b54d8b0e23e9103f4acd5fc0ccfc35f4e59dbf",
+      "bytes": 3831
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-nineteen-final-lib.log",
+      "retained": "receipts/tenant-qualified-nineteen-final-lib.log",
+      "sha256": "158dd76ad663133880055c2df79ed24ba65cc35563e330587cb5cd979feae353",
+      "bytes": 5310
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-nineteen-green.log",
+      "retained": "receipts/tenant-qualified-nineteen-green.log",
+      "sha256": "98f0335309f2b9d47def17b83fa2c867f74dc00f59ff73c4960ee8891502d2e3",
+      "bytes": 5461
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-nineteen-lane.json",
+      "retained": "receipts/tenant-qualified-nineteen-lane.json",
+      "sha256": "d388312d3a94299c8a9f76589cd9ae137e679c32bcb33637cf2403bfe6b547d0",
+      "bytes": 1641
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-nineteen-red.log",
+      "retained": "receipts/tenant-qualified-nineteen-red.log",
+      "sha256": "d74c08262d833a617a12f496fd34dcff574444ceba96c897847c9c9a851e1502",
+      "bytes": 15417
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-nineteen-whole-gate.log",
+      "retained": "receipts/tenant-qualified-nineteen-whole-gate.log",
+      "sha256": "3a9d78c82c13ca656917d34a22b9b96dcd8712b05d0153b057c7f5e7345d02b6",
+      "bytes": 2451
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-old-lib.log",
+      "retained": "receipts/tenant-qualified-old-lib.log",
+      "sha256": "edc0cf73c89cf16d7b27e0fac037d0471aaa88289bfffae2f312d39df007bd66",
+      "bytes": 1638
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-oracle-correction.patch",
+      "retained": "receipts/tenant-qualified-oracle-correction.patch",
+      "sha256": "22dee24358e9abf6e3ea62d9f727a50dca2f903e5c9837f9c6a05cfc03b3e7c1",
+      "bytes": 1836
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-quoted-column-reproduced.log",
+      "retained": "receipts/tenant-qualified-quoted-column-reproduced.log",
+      "sha256": "5bedb79fd0c579926a63e785dbf5388f5b700f73573218ee0b5aa6012ae54734",
+      "bytes": 7096
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-second-source-attempt.patch",
+      "retained": "receipts/tenant-qualified-second-source-attempt.patch",
+      "sha256": "8138d64c629d47a420448c787e8ddf91f51b6ce9c90794f525fff7c5e88d265f",
+      "bytes": 6894
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-seventeen-green.log",
+      "retained": "receipts/tenant-qualified-seventeen-green.log",
+      "sha256": "21ccce678179ca1a19e5e0fcdfc4f46271dc7235efbd18e864c42a6462937138",
+      "bytes": 5324
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-seventeen-lane.json",
+      "retained": "receipts/tenant-qualified-seventeen-lane.json",
+      "sha256": "de6c4b931df45d29385b1eff7b61df5eb94397981e92d06528d11974b55b15ff",
+      "bytes": 1625
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-seventeen-red.log",
+      "retained": "receipts/tenant-qualified-seventeen-red.log",
+      "sha256": "108be2239977361a6e30d9578dbba63b84b7418ff921a7191318169e5359d805",
+      "bytes": 15279
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-test-red.log",
+      "retained": "receipts/tenant-qualified-test-red.log",
+      "sha256": "4822f5be80885abc6643d88918abd7693e72a6bae1814baec2236c31eee0ae96",
+      "bytes": 14250
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-third-source-attempt.patch",
+      "retained": "receipts/tenant-qualified-third-source-attempt.patch",
+      "sha256": "f03d16b075e666c461b99f8d726bd14c621360bc56eb18f09a9a37ba83c44144",
+      "bytes": 6839
+    },
+    {
+      "source": "/private/tmp/tenant-qualified-whole-gate-first.log",
+      "retained": "receipts/tenant-qualified-whole-gate-first.log",
+      "sha256": "b8a2edcc5573b627d8838f6fa918ed7da4583c24a11dbbe4fd80b7ceb8048bb4",
+      "bytes": 2451
+    },
+    {
+      "source": "/private/tmp/verify-format-followup-admit.log",
+      "retained": "receipts/verify-format-followup-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-format-followup-green.log",
+      "retained": "receipts/verify-format-followup-green.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "source": "/private/tmp/verify-format-followup-lane.json",
+      "retained": "receipts/verify-format-followup-lane.json",
+      "sha256": "1ff48f41265fbc78b5ae5d485113ca0c29e35e3a106b3a9f78a914dc7ec78c17",
+      "bytes": 1373
+    },
+    {
+      "source": "/private/tmp/verify-format-followup-red.log",
+      "retained": "receipts/verify-format-followup-red.log",
+      "sha256": "5a769e47ba7a7be47f0ca0227bfc094bdf68e6ce7d293fc8a5d4bb539b351fac",
+      "bytes": 5716
+    },
+    {
+      "source": "/private/tmp/verify-hardening-command-green.log",
+      "retained": "receipts/verify-hardening-command-green.log",
+      "sha256": "66ecc0e78a34cd761b528260c82893a1d1846799c19312f4e5c590665a38e6a4",
+      "bytes": 290
+    },
+    {
+      "source": "/private/tmp/verify-hardening-workflow-suite-green.log",
+      "retained": "receipts/verify-hardening-workflow-suite-green.log",
+      "sha256": "477d445bdf31f3aa92439520af4569b8155bc04298f8a1039996346dd27dea1f",
+      "bytes": 2025
+    },
+    {
+      "source": "/private/tmp/verify-nightly-contract-red.log",
+      "retained": "receipts/verify-nightly-contract-red.log",
+      "sha256": "05d30814ccd3cc7b0f889d25d10145141bff91925e4bae32c7f1e7a12e84dcbf",
+      "bytes": 452
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-admit-unsandboxed.log",
+      "retained": "receipts/verify-workflow-contract-admit-unsandboxed.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-admit.log",
+      "retained": "receipts/verify-workflow-contract-admit.log",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-controls.log",
+      "retained": "receipts/verify-workflow-contract-controls.log",
+      "sha256": "c1efd2a8cc0de9aeae7c16f4d98e4b2b32f3a442affd181b1a20603857949692",
+      "bytes": 283
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-controls.mjs",
+      "retained": "receipts/verify-workflow-contract-controls.mjs.txt",
+      "sha256": "c840014391d3f07cc2068069217c370e240377d53bde4f2db49885572053df66",
+      "bytes": 2066
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-green.log",
+      "retained": "receipts/verify-workflow-contract-green.log",
+      "sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "bytes": 30
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-lane.json",
+      "retained": "receipts/verify-workflow-contract-lane.json",
+      "sha256": "3f41dd6cf31b315d0e1af0caa5ac3dce5887ac2a4b7ff275e484e15907c810f8",
+      "bytes": 1559
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-pinned-red.log",
+      "retained": "receipts/verify-workflow-contract-pinned-red.log",
+      "sha256": "944a47068feb3ab0ceb7fe31bcb93718c66d7330a46ce520e197aca8e5f402b7",
+      "bytes": 6100
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-regressions.log",
+      "retained": "receipts/verify-workflow-contract-regressions.log",
+      "sha256": "b1e1b93de30b85ad75dfaf03a42f6e3fac57ce3d424e3fa3dfc444a105d1ea20",
+      "bytes": 6699
+    },
+    {
+      "source": "/private/tmp/workflow-3ac0e50f-independent-review.json",
+      "retained": "receipts/workflow-3ac0e50f-independent-review.json",
+      "sha256": "0c5e76bb8ffd1300c03692010fba7cea1459433eb3a95727d600e02ed671ba66",
+      "bytes": 1188
+    },
+    {
+      "git_source": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e:backend/app/tests/auth_rest.rs",
+      "retained": "candidates/e809f5d5d3926b73bcaba1be6b6d10a3834d173e/backend/app/tests/auth_rest.rs.txt",
+      "sha256": "aa20b4d461097608e0b28e7b991059747fc63c6bfcb70faeda8093a0a5ca3312",
+      "bytes": 223114
+    },
+    {
+      "git_source": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e:backend/app/tests/health_readiness.rs",
+      "retained": "candidates/e809f5d5d3926b73bcaba1be6b6d10a3834d173e/backend/app/tests/health_readiness.rs.txt",
+      "sha256": "ea8dcf388e02887469b8b1e66759d37452982848433be19b6b957ae92a850e45",
+      "bytes": 36345
+    },
+    {
+      "git_source": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e:backend/crates/attendance/adapter-postgres/tests/concurrency.rs",
+      "retained": "candidates/e809f5d5d3926b73bcaba1be6b6d10a3834d173e/backend/crates/attendance/adapter-postgres/tests/concurrency.rs.txt",
+      "sha256": "8a9e9e971cfb634b36d54c077083bf78e219529583feefc0f425f1cd71cabbc9",
+      "bytes": 32237
+    },
+    {
+      "git_source": "e809f5d5d3926b73bcaba1be6b6d10a3834d173e:backend/crates/platform/realtime/tests/hub.rs",
+      "retained": "candidates/e809f5d5d3926b73bcaba1be6b6d10a3834d173e/backend/crates/platform/realtime/tests/hub.rs.txt",
+      "sha256": "292caa83f0f748e7e764833eeafa211e30e399f359db1f66dfcb665a7ca31a72",
+      "bytes": 8249
+    },
+    {
+      "git_source": "3ac0e50f837fa54e0d5efdd93509dbeca90e66e1:scripts/check-ci-preflight.mjs",
+      "retained": "candidates/3ac0e50f837fa54e0d5efdd93509dbeca90e66e1/scripts/check-ci-preflight.mjs.txt",
+      "sha256": "6fb173e11209f3dd77582d35351d75f995faeb45a7e7defdcab886d70843a7fa",
+      "bytes": 171371
+    },
+    {
+      "git_source": "3ac0e50f837fa54e0d5efdd93509dbeca90e66e1:tools/ci/check-nightly-workflow.mjs",
+      "retained": "candidates/3ac0e50f837fa54e0d5efdd93509dbeca90e66e1/tools/ci/check-nightly-workflow.mjs.txt",
+      "sha256": "9d8a008ab92837f71e5bc422f4b3ae994139154a822e0cf0cf04bc9114107d09",
+      "bytes": 5630
+    },
+    {
+      "git_source": "8bb6e24e2dd31f0da5c552cbf7625903d0b794ae:backend/crates/platform/test-support/src/lib.rs",
+      "retained": "candidates/8bb6e24e2dd31f0da5c552cbf7625903d0b794ae/backend/crates/platform/test-support/src/lib.rs.txt",
+      "sha256": "ee5928cf23917ddeb509246bef2fbb71993c144baa6183fd80d4a640a5b22e9c",
+      "bytes": 14990
+    },
+    {
+      "git_source": "e1cf185743637129ca27b686870c85f0e239da21:tools/lanes/recovery/recovery_postgres.sh",
+      "retained": "candidates/e1cf185743637129ca27b686870c85f0e239da21/tools/lanes/recovery/recovery_postgres.sh.txt",
+      "sha256": "5d2917fe1b434419cde030377f1920b4272f4ae4e6234651390c8b6ec647292a",
+      "bytes": 9937
+    },
+    {
+      "git_source": "e1cf185743637129ca27b686870c85f0e239da21:tools/lanes/recovery/test_supervise_recovery.py",
+      "retained": "candidates/e1cf185743637129ca27b686870c85f0e239da21/tools/lanes/recovery/test_supervise_recovery.py.txt",
+      "sha256": "6160ffd2b60fe0a454981d8e55cfca886cf3b5fdc8816f74478189cf1041802c",
+      "bytes": 8104
+    },
+    {
+      "git_source": "c55f5d2a2c332610c43e36ad410fe69296f2550f:backend/ci/gates/tenant-isolation/src/lib.rs",
+      "retained": "candidates/c55f5d2a2c332610c43e36ad410fe69296f2550f/backend/ci/gates/tenant-isolation/src/lib.rs.txt",
+      "sha256": "639b6460dc8e98b79919ea434950ce6577f8ecfde69f535773b16bd6b3e3c61c",
+      "bytes": 65169
+    },
+    {
+      "git_source": "c55f5d2a2c332610c43e36ad410fe69296f2550f:backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+      "retained": "candidates/c55f5d2a2c332610c43e36ad410fe69296f2550f/backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs.txt",
+      "sha256": "bcfd684664a6a3b528b5bda8bdf885a1914b13a2b4381addbed2e7a27dcb9587",
+      "bytes": 8154
+    },
+    {
+      "git_source": "94fdccf97fb86aeb5e52c9202c0835eab5933255:scripts/check-undeclared-imports.test.mjs",
+      "retained": "candidates/94fdccf97fb86aeb5e52c9202c0835eab5933255/scripts/check-undeclared-imports.test.mjs.txt",
+      "sha256": "61e4d071af5111a1458310e306010adee2ea1e458ae56efdae8d18225299eb3f",
+      "bytes": 16586
+    },
+    {
+      "git_source": "94fdccf97fb86aeb5e52c9202c0835eab5933255:scripts/prototype-chain-lookup-baseline.json",
+      "retained": "candidates/94fdccf97fb86aeb5e52c9202c0835eab5933255/scripts/prototype-chain-lookup-baseline.json.txt",
+      "sha256": "8c56de9bc313359587c0736d2486937479657680c0286ecad609881e50a35903",
+      "bytes": 2005
+    },
+    {
+      "git_source": "39d4e93ab7547b3887670e092b561034dd738a28:backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+      "retained": "candidates/39d4e93ab7547b3887670e092b561034dd738a28/backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs.txt",
+      "sha256": "29ce1f1dbfafd0dca0951a6af679e34d10fee523068de9950770da463c293b50",
+      "bytes": 6190
+    },
+    {
+      "git_source": "11699e63dbc6d0d15f6fdd7f5deecd76ae119048:backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+      "retained": "candidates/11699e63dbc6d0d15f6fdd7f5deecd76ae119048/backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs.txt",
+      "sha256": "6791f49a6084993178474be56732494d50cf34742ea3cdfed0483dc72773f5a9",
+      "bytes": 6450
+    },
+    {
+      "git_source": "8135443f96ae3cad921d39394e8b1dd61d93714b:backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+      "retained": "candidates/8135443f96ae3cad921d39394e8b1dd61d93714b/backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs.txt",
+      "sha256": "48608ad13127d00a5c85b208959504912a03434a7203b2cb8ac593eb52e357e1",
+      "bytes": 7499
+    },
+    {
+      "git_source": "cc9fb6156900f089371c376892a31990a03d26b0:backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs",
+      "retained": "candidates/cc9fb6156900f089371c376892a31990a03d26b0/backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs.txt",
+      "sha256": "bcfd684664a6a3b528b5bda8bdf885a1914b13a2b4381addbed2e7a27dcb9587",
+      "bytes": 8154
+    }
+  ],
+  "exclusions": [
+    {
+      "source": "/private/tmp/recovery-cleanup-probe-current.log",
+      "reason": "Mutable scratch current log excluded"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-audit.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-leptos17.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-tenant19.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-admit.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-final-regressions.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-green.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-lane.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-probe.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/verify-boundary-wiring-regressions.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-admission-green.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-generator-tests-final.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-generator-tests.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-generator.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-map-tests.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-node-tests-final.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-node-tests.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-preflight-bypass-final.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-preflight-tests-final.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-preflight.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/wiring-recovery-unit-final.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-6e3133ea-independent-source-review.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-a053a44f-independent-test-design-review.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-admit.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-disjoint-green.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-disjoint21.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-full21.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-green.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-lane.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-probe-current.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-red.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-classification-serial-diagnostic.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/account-projection30-failure-classification.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/classification-fixture-and-wiring-count-preedit-review.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/owner-codec-auth-retention-failure-classification.json",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/tenant-classification-integration-red.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/console-preparation-recovery-active-sync.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/console-preparation-recovery-active-transport.log",
+      "reason": "Active or root-owned boundary/classification/final evidence not confirmed closed for this supplement"
+    },
+    {
+      "source": "/private/tmp/console-followup-final-verify.log",
+      "reason": "No new final verification claim; mutable current path or existing core snapshot only"
+    },
+    {
+      "source": "/private/tmp/verify-format-probe-current.log",
+      "reason": "No new final verification claim; mutable current path or existing core snapshot only"
+    },
+    {
+      "source": "/private/tmp/verify-workflow-contract-probe-current.log",
+      "reason": "No new final verification claim; mutable current path or existing core snapshot only"
+    }
+  ],
+  "interpretation": [
+    "The completed full verification at root-attributed 9c846602 reports FAILED (13), not final GREEN; log alone does not independently bind its head.",
+    "Canonical command fix omitted core GREEN logs supplement already retained receipts; they do not certify full verification.",
+    "Tenant parser preserves original invalid oracle approval, explicit withdrawal/corrections, intermediate regressions and final19+19PASS; six Account classification violations remain RED at that historical parser candidate.",
+    "Recovery cleanup proof is private shim machinery; not real service cleanup or production recovery.",
+    "Buck PostgreSQL harness environment diagnosis records isolatedenvPASS and inheritedenvFAIL; no source repair or invented percase count.",
+    "Current, active boundary wiring/classification, and any later full-run logs require root confirmation and separate append.",
+    "Repeated test invocations and historical variants overlap and must not be summed as unique coverage.",
+    "Retaining bytes does not make every source claim true; independent candidate validation is pending."
+  ]
+}

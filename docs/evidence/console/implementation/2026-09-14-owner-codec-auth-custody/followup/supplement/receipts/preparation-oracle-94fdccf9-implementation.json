@@ -1,0 +1,75 @@
+{
+  "kind": "preparation-oracle-refinement-implementation",
+  "base": "b0ac94f9f2f5851a2bbd3ed808c4340249c93029",
+  "head": "94fdccf97fb86aeb5e52c9202c0835eab5933255",
+  "owner": "/root/finish_migration",
+  "admission": "/private/tmp/preparation-oracle-refinement-lane.json",
+  "preedit_review": "/private/tmp/preparation-oracle-refinement-independent-preedit-review.json",
+  "final_review": "pending /root/review_completeness",
+  "sources": {
+    "scripts/check-undeclared-imports.test.mjs": "61e4d071af5111a1458310e306010adee2ea1e458ae56efdae8d18225299eb3f",
+    "scripts/prototype-chain-lookup-baseline.json": "8c56de9bc313359587c0736d2486937479657680c0286ecad609881e50a35903",
+    "docs/evidence/console/wave4/L-F1/browser-window-host.mjs": "d9edad0e33fbef21b57a519bb6f650cdc64e24720962f9f957e89de4b3d1c0bc"
+  },
+  "logs": {
+    "/private/tmp/preparation-undeclared-oracle-red.log": "b3eb44b8a32e8929558c29b07daf58396c5861755e196554f19b7cdaa7f9c1c1",
+    "/private/tmp/preparation-prototype-register-red.log": "06e7588165b1e43e55e0c89b42f889efde88582a611f43f8dea9c990309fdab8",
+    "/private/tmp/preparation-undeclared-oracle-green.log": "940e7b0620355334adfe954a2e991b4b52b7f32c927ef34872d1c2c85149e3cb",
+    "/private/tmp/preparation-prototype-register-green.log": "837aead61077b5e74486c31f0c0ef3a3eacef8d57f26a07d89b96380c9f74430",
+    "/private/tmp/preparation-prototype-retained-tests.log": "6e69fc9a0659e1fb566e6b8320b8bd3218ca76a7e063aac8ca94e86c535c9b2c"
+  },
+  "commands": [
+    {
+      "command": "node --test scripts/check-undeclared-imports.test.mjs",
+      "red": {
+        "discovered": 20,
+        "executed": 20,
+        "pass": 19,
+        "fail": 1
+      },
+      "green": {
+        "discovered": 20,
+        "executed": 20,
+        "pass": 20,
+        "fail": 0,
+        "ignored": 0
+      }
+    },
+    {
+      "command": "node scripts/check-prototype-chain-lookups.mjs",
+      "red": {
+        "scanned": 54,
+        "findings": 3,
+        "unknown": 2,
+        "stale": 2
+      },
+      "green": {
+        "scanned": 54,
+        "residuals": 3,
+        "findings": 3,
+        "unknown": 0,
+        "stale": 0
+      }
+    },
+    {
+      "command": "node --test scripts/check-prototype-chain-lookups.test.mjs",
+      "green": {
+        "discovered": 10,
+        "executed": 10,
+        "pass": 10,
+        "fail": 0,
+        "ignored": 0
+      }
+    }
+  ],
+  "preserved": [
+    "Exacthistoricalartifact bytes/hash",
+    "Exactartifact finding assertion line30/playwright",
+    "Existingwholeliverepo tests and assertions",
+    "All3residual snippets, kinds, keys and reasons",
+    "All20testbodies and10retainedtests"
+  ],
+  "blast_radius": "Only two reviewed test/register files; no dependency scanner application evidence or authority edits.",
+  "rollback": "Revert isolated94fdccf9, preserve evidence.",
+  "holds": []
+}

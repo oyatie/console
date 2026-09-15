@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/review_completeness",
+  "run": "/private/tmp/account-custody-regression-96537feb",
+  "head": "96537febf2e17467449abc5c7701ed48372cc98e",
+  "driver_sha256": "ce4dc9671c85147ac75439f46ab81fa45eba62cc99cfd6af04c51ed95b423a4b",
+  "verdict": "EVIDENCE_VALID_NOT_GREEN",
+  "executed": 36,
+  "passed": 32,
+  "failed": 4,
+  "ignored": 0,
+  "filtered": 95,
+  "artifact_hashes_verified": 13,
+  "source_before_after": "equal and clean",
+  "cleanup": "successful before/after docker lists empty; owned container absent; no unrelated cleanup",
+  "classification": {
+    "known_storage_migration_prerequisites": [
+      "auth_refresh_token_families still requires Company provenance as custody",
+      "seven legacy credential relations still console_app/login owned rather than dedicated nonlogin custody",
+      "company LOGIN retains direct legacy credential table privilege"
+    ],
+    "unresolved_operator_case": "concurrent_finalizers_have_complete_request_outcomes_and_one_final_state failed complete_successful_requests at lifecycle537; first finalizer succeeded, second returned Err but error details discarded."
+  },
+  "causal_limits": [
+    "Artifact cannot distinguish5slocktimeout, concurrent snapshot/catalog race or another second-finalizer error. Competing builds/load make timeout plausible, not established.",
+    "Do not classify unresolved case as nondeterministic or harmless; it remains a failing operator concurrency contract.",
+    "No disk-full error in this run. Original30projection FK/storage failures are separate evidence."
+  ],
+  "approved_diagnostic_refinement": "Keep exact assert predicate and append message finalizer request accounting failed: second={second_outcome:?}; no timeout/cleanup or expectation change. Static operator SQL/synthetic fixture only, no credential interpolation.",
+  "selection_note": "Runtime selection is22lifecycle (including11macro-generated hostile cases),11startup and3account_storage=36. Initial static22prediction missed macro-generated11cases and3name-matching storage tests.",
+  "reviewer_runtime_execution": false
+}

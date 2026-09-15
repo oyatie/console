@@ -1,0 +1,140 @@
+▶ undeclared import gate
+  ✔ reports a bare specifier that the nearest package.json does not declare (24.229875ms)
+  ✔ accepts the same import once the manifest declares it (21.483333ms)
+  ✔ resolves against the nearest package.json, not only the root one (20.409209ms)
+  ✔ does not report node: builtins or relative specifiers (21.370041ms)
+  ✔ covers require() and dynamic import(), not just static import (25.681041ms)
+  ✔ reports a side-effect-only bare import under a comment and after a statement (21.349208ms)
+  ✔ reduces a subpath import to the package name before consulting the manifest (19.812125ms)
+  ✔ reports a scoped package that is absent from the manifest (19.276667ms)
+  ✔ does not mistake prose or SQL inside a string literal for an import specifier (18.974292ms)
+  ✔ excludes docs/evidence/ without swallowing a sibling directory (18.786333ms)
+  ✔ does not resolve a specifier against a package.json above the scan root (20.720166ms)
+  ✔ counts the files it scanned, so an empty scan cannot read as coverage (19.915625ms)
+  ✔ exits 1 and names the offending specifier when run as a CLI (48.786292ms)
+  ✔ exits 1 on the floor alone, with every specifier declared and no findings (52.115ms)
+  ✔ exits 1 rather than passing on a scan that covered nothing (46.506709ms)
+  ✔ exits 0 stating what it scanned, against this repository (59.627958ms)
+  ✔ classifies docs/evidence as archived rather than scanning it (26.002542ms)
+  ✔ excludes only evidence artifacts that no workflow executes (26.724375ms)
+  ✖ goes red on the archived artifact the moment the classification is removed (28.105375ms)
+  ✔ finds no undeclared import anywhere in this repository (23.210916ms)
+✖ undeclared import gate (564.132542ms)
+ℹ tests 20
+ℹ suites 1
+ℹ pass 19
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 643.413958
+
+✖ failing tests:
+
+test at scripts/check-undeclared-imports.test.mjs:330:3
+✖ goes red on the archived artifact the moment the classification is removed (28.105375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/acceptance.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/fixture.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/hydration.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/oracle.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/playwright.config.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/reflow.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/acceptance.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/fixture.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/hydration.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/oracle.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/playwright.config.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/reflow.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/acceptance.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/oracle.spec.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+  +     file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/reflow.cjs',
+  +     line: 1,
+  +     specifier: '@playwright/test'
+  +   },
+  +   {
+        file: 'docs/evidence/console/wave4/L-F1/browser-window-host.mjs',
+        line: 30,
+        specifier: 'playwright'
+      }
+    ]
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-preparation-oracle-refinement-20260914/scripts/check-undeclared-imports.test.mjs:333:12)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/acceptance.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/fixture.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/hydration.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/oracle.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/playwright.config.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r3/playwright/reflow.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/acceptance.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/fixture.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/hydration.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/oracle.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/playwright.config.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/reflow.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/acceptance.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/oracle.spec.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/reflow.cjs', line: 1, specifier: '@playwright/test' }, { file: 'docs/evidence/console/wave4/L-F1/browser-window-host.mjs', line: 30, specifier: 'playwright' } ],
+    expected: [ { file: 'docs/evidence/console/wave4/L-F1/browser-window-host.mjs', line: 30, specifier: 'playwright' } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

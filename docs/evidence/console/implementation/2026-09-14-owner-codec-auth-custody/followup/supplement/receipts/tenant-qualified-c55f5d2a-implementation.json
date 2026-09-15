@@ -1,0 +1,67 @@
+{
+  "kind": "tenant-qualified-parser-implementation",
+  "base": "cc9fb615",
+  "head": "c55f5d2a2c332610c43e36ad410fe69296f2550f",
+  "owner": "/root/finish_migration",
+  "admission": "/private/tmp/tenant-qualified-nineteen-lane.json",
+  "review": "pending /root/review_completeness",
+  "sources": {
+    "backend/ci/gates/tenant-isolation/src/lib.rs": "639b6460dc8e98b79919ea434950ce6577f8ecfde69f535773b16bd6b3e3c61c",
+    "backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs": "bcfd684664a6a3b528b5bda8bdf885a1914b13a2b4381addbed2e7a27dcb9587"
+  },
+  "logs": {
+    "/private/tmp/tenant-qualified-nineteen-red.log": "d74c08262d833a617a12f496fd34dcff574444ceba96c897847c9c9a851e1502",
+    "/private/tmp/tenant-qualified-nineteen-green.log": "98f0335309f2b9d47def17b83fa2c867f74dc00f59ff73c4960ee8891502d2e3",
+    "/private/tmp/tenant-qualified-nineteen-final-lib.log": "158dd76ad663133880055c2df79ed24ba65cc35563e330587cb5cd979feae353",
+    "/private/tmp/tenant-qualified-nineteen-clippy.log": "d89437f0da35fdc9a1327f48d3b54d8b0e23e9103f4acd5fc0ccfc35f4e59dbf",
+    "/private/tmp/tenant-qualified-nineteen-whole-gate.log": "3a9d78c82c13ca656917d34a22b9b96dcd8712b05d0153b057c7f5e7345d02b6",
+    "/private/tmp/tenant-qualified-quoted-column-reproduced.log": "5bedb79fd0c579926a63e785dbf5388f5b700f73573218ee0b5aa6012ae54734"
+  },
+  "results": {
+    "integration_red": {
+      "executed": 19,
+      "pass": 4,
+      "fail": 15,
+      "ignored": 0
+    },
+    "integration_green": {
+      "executed": 19,
+      "pass": 19,
+      "fail": 0,
+      "ignored": 0
+    },
+    "retained_lib": {
+      "executed": 19,
+      "pass": 19,
+      "fail": 0,
+      "ignored": 0
+    },
+    "quoted_column_regression": {
+      "executed": 19,
+      "pass": 17,
+      "fail": 2
+    },
+    "clippy": "PASS --lib --test qualified_table_identity -- -D warnings",
+    "format": "PASS rustfmt --edition 2024 --check owned source and test file; git diff --check",
+    "whole_gate": "RED six Account catalog unclassified tables; no allowlist modifications"
+  },
+  "premortem": "Schema/case alias can merge unrelated facts and erase isolation violations; quoted org column tokens can lose nullability evidence.",
+  "blast_radius": "Only shared tenantgate scanner source. No schema ACL dependency generated or authority changes.",
+  "rollback": "Revert isolated sourcecommit while keeping test review evidence.",
+  "stop_conditions": [
+    "Independent blocking finding",
+    "Changing allowlists",
+    "Testweakening",
+    "Rootowned wiring edits needed"
+  ],
+  "holds": [
+    "Root explicit newintegrationbinary CI/local reachability",
+    "Six Accountcatalog owner-onlyclassification distinct lane",
+    "General SQL semantic/runtime isolation proof outside staticgate scope"
+  ],
+  "review_history": [
+    "Original accountsglobal positive premise was false; independently approved correction replacesfixture with object_types and retains explicitaccountsnegative.",
+    "Dynamic %I exactidentity negatives added before source replay.",
+    "Quoted org_id positives reproduced regression and forced downstream consumer repair."
+  ]
+}

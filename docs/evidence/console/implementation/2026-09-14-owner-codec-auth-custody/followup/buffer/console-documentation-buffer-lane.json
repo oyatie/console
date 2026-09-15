@@ -1,0 +1,31 @@
+[
+  {
+    "lane": "DOC-complete-large-index-custody",
+    "owner": "/root",
+    "base_sha": "c619ca0579ac0297380d2f55bb1b18a4d9315c09",
+    "worktree": "/private/tmp/console-documentation-buffer-20260914",
+    "allow": [
+      "scripts/check-doc-links.mjs",
+      "scripts/console/generate-documentation-manifest.mjs"
+    ],
+    "probe": "node --test --test-name-pattern='large Git index' scripts/check-doc-links.test.mjs > /private/tmp/console-documentation-buffer-probe.log 2>&1",
+    "target": "Both documentation consumers validate complete exact Git index listings larger than1MiB and still reject unclassified tail records",
+    "guide": "Set maxBuffer32*1024*1024 in both existing git helpers matching archive validator; retain all parsers, custody rules and error paths",
+    "pre_mortem": "A truncated listing could incorrectly certify incomplete custody",
+    "blast_radius": "Two local documentation gate subprocess buffers; no product runtime or permissions",
+    "detection": "Two measured-size positive controls plus tail rejection and full doc-link regressions",
+    "rollback": "Revert two buffer option additions; >1MiB regression returns RED",
+    "stop_conditions": [
+      "Any test removal or weakening",
+      "Filtering or truncating output",
+      "Changing policy or product sources"
+    ],
+    "reviewers": [
+      "/root/followup_custody_review"
+    ],
+    "holds": [
+      "No publication or production authority",
+      "Pending Account owner privilege approval remains separate"
+    ]
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "source_head": "666abb427de929627567ccfc53dec2e694da1d4c",
+  "manifest_check": {
+    "command": "node scripts/console/generate-documentation-manifest.mjs --check",
+    "exit_code": 0,
+    "documents": 458
+  },
+  "doc_links_check": {
+    "command": "node scripts/check-doc-links.mjs",
+    "exit_code": 0,
+    "documents": 458
+  },
+  "diff_check": {
+    "command": "git diff --cached --check",
+    "exit_code": 2,
+    "diagnostics": 98,
+    "log_sha256": "80650e29a5c36af1556d69f7218b4647a154e5e43e93e00d8a650359ec892bf4",
+    "classification": "Historical exact-byte logs and patches contain original whitespace; not normalized because source custody requires byte identity. All diagnostics confined to newly imported frozen evidence.",
+    "source_and_projection_diff_check_exit": 0,
+    "measurement_scope": "Staged evidence snapshot before adding these four validation artifacts. The retained raw diagnostic log also contains original whitespace;98 is not a final-tree aggregate. No full whitespace PASS is claimed."
+  },
+  "full_verification_boundary": "Fast suite PASS remains bound to3f0c4e17; subsequent changes only independently reviewed documentation tool/tests and evidence/projections.",
+  "remaining_holds": [
+    "Account owner UPDATE(id) scope pending explicit approval after automatic review refusal",
+    "Whole-Console and actual auth/current-context/payroll browser workflows remain incomplete",
+    "Actual DB/service/recovery gates and production acceptance outstanding"
+  ]
+}

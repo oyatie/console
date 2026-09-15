@@ -1,0 +1,120 @@
+{
+  "classification": "Local implementation checkpoint; not whole-Console completion, merge, release, legal or production acceptance",
+  "source_candidate": "3f0c4e17b661eedc0bea76e8dda649aef958aa88",
+  "whole_console_target": [
+    "Foundry/Ontology/Actions",
+    "Policy/Auth",
+    "HR/attendance/labor/payroll",
+    "Leptos SSR UX",
+    "Shared approvals, continuity, messenger, mail, calendar, notifications, storage and collaborative sheets"
+  ],
+  "authority": [
+    "README.md",
+    "docs/current/PRODUCT.md",
+    "docs/current/ROADMAP.md",
+    "docs/current/DELIVERY.md"
+  ],
+  "this_followup": [
+    "Fix Account finalizer pre-lock inspection race; preserve authoritative validation under six ONLY locks",
+    "Strict auth URL/config parsing and aligned dev/Compose/CI/release callers",
+    "Accessible name for actual Leptos action form",
+    "Fix qualified/quoted static SQL table identity and classify six existing Account relations as owner-only",
+    "Wire three previously unreachable Rust integration binaries",
+    "Correct workflow mirrors, retain exact negative controls and monotonically increased source inventories",
+    "Require successful recovery fixture inventory before claiming cleanup",
+    "Declare existing GitOps source changes and concrete deployment holds"
+  ],
+  "current_full_verification": {
+    "status": "PASS",
+    "session_id": 48136,
+    "command": "env -u BUCK_ISOLATION_DIR PATH=/private/tmp/console-authority30-dotslash:$PATH RUSTUP_TOOLCHAIN=1.98.1 npm run verify",
+    "log": "/private/tmp/console-followup-verify-3f0c4e17.log",
+    "exit_code": 0,
+    "source_candidate": "3f0c4e17b661eedc0bea76e8dda649aef958aa88",
+    "receipt": "/private/tmp/console-followup-verify-completed-receipt.json",
+    "log_sha256": "a460258f5dd22bff53c382930de9ef6fa87e1bfd3b952c5a3d09475f3b62ee3b",
+    "scope": "fast local tier only"
+  },
+  "confirmed_focused_results": {
+    "qualified_sql_identity": {
+      "executed": 19,
+      "passed": 19
+    },
+    "tenant_gate_lib": {
+      "executed": 21,
+      "passed": 21
+    },
+    "audit_signature_compatibility": {
+      "executed": 13,
+      "passed": 13
+    },
+    "leptos_ssr_composer": {
+      "executed": 17,
+      "passed": 17
+    },
+    "ci_and_local_mirror": {
+      "executed": 82,
+      "passed": 82,
+      "run_steps_under_mutation": 140,
+      "mutations": 420
+    },
+    "recovery_fixture_cleanup": {
+      "executed": 13,
+      "passed": 13
+    },
+    "full_recovery_fixture_suite": {
+      "executed": 15,
+      "passed": 15
+    },
+    "recovery_relay": {
+      "executed": 6,
+      "passed": 6
+    },
+    "buck_generator": {
+      "executed": 41,
+      "passed": 41
+    },
+    "gitops_declaration": {
+      "executed": 10,
+      "passed": 10
+    }
+  },
+  "historical_db_results": {
+    "account_lifecycle_and_startup_plus_storage": {
+      "executed": 36,
+      "passed": 33,
+      "failed": 3,
+      "scope": "22 lifecycle and11 startup passed;3 legacy Account storage requirements remain failing on their recorded historical source"
+    },
+    "account_projection": {
+      "executed": 37,
+      "passed": 4,
+      "failed": 33,
+      "scope": "Historical recorded run; not rerun on final source candidate"
+    }
+  },
+  "immediate_required_user_input": {
+    "status": "PENDING",
+    "scope": "/private/tmp/account-owner-update-final-approval-scope.json",
+    "reason": "Automatic approval review twice refused the persistent accounts.id owner UPDATE privilege source change without explicit exact-target authorization; no retry or implementation applied"
+  },
+  "remaining_work": [
+    "Complete Account projection and dedicated auth pool/current-context implementation after authorized owner privilege design",
+    "Complete actual draft/action/current-policy/SSR browser workflow and nonpayable payroll first vertical",
+    "Continue later HR lifecycle and shared modules under product/roadmap authority",
+    "Fix receipt replay success admission before remote apply; current known defect is not HA/no-loss certified",
+    "Establish DB-peer and CNPG-controller ingress connectivity, admitted immutable custody image and independent PreSync prerequisites before any deployment",
+    "Execute required database/service/recovery/production gates at their actual boundaries; fast local verification does not substitute for them",
+    "Expensive third-party generated-face comparison remains required before merge"
+  ],
+  "evidence_roots": {
+    "core": "/private/tmp/console-followup-evidence-candidate",
+    "supplement": "/private/tmp/console-followup-evidence-supplement",
+    "final_open": "/private/tmp/console-followup-final-evidence-candidate"
+  },
+  "original_worktree_preservation": {
+    "path": "/Users/jasonlee/Developer/console",
+    "head": "05200e43af13b527ce031b04369e05852862f1d6",
+    "staged_diff_sha256": "2a4a15c33cb1db7f512654f42c26d494843c6a45e997740594de43601d6d69c3"
+  }
+}

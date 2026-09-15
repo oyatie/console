@@ -1,0 +1,33 @@
+commit 5746830175803f10fbc5867278da84f0a3377728
+Author:     Jason Lee <56489493+jason931225@users.noreply.github.com>
+AuthorDate: Mon Sep 14 23:51:02 2026 -0400
+Commit:     Jason Lee <56489493+jason931225@users.noreply.github.com>
+CommitDate: Mon Sep 14 23:51:02 2026 -0400
+
+    fix(docs): bound complete Git custody output at 32 MiB
+
+diff --git a/scripts/check-doc-links.mjs b/scripts/check-doc-links.mjs
+index 5d9c4940..d5cbcd99 100644
+--- a/scripts/check-doc-links.mjs
++++ b/scripts/check-doc-links.mjs
+@@ -109,7 +109,7 @@ function git(args) {
+   return execFileSync(
+     "git",
+     ["-C", root, ...args],
+-    { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], env: gitEnvironment },
++    { encoding: "utf8", maxBuffer: 32 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"], env: gitEnvironment },
+   );
+ }
+ 
+diff --git a/scripts/console/generate-documentation-manifest.mjs b/scripts/console/generate-documentation-manifest.mjs
+index cace31c0..4f6a6570 100644
+--- a/scripts/console/generate-documentation-manifest.mjs
++++ b/scripts/console/generate-documentation-manifest.mjs
+@@ -123,6 +123,7 @@ gitEnvironment.GIT_NO_REPLACE_OBJECTS = "1";
+ function git(args) {
+   return execFileSync("git", ["-C", root, ...args], {
+     encoding: "utf8",
++    maxBuffer: 32 * 1024 * 1024,
+     env: gitEnvironment,
+     stdio: ["ignore", "pipe", "pipe"],
+   });

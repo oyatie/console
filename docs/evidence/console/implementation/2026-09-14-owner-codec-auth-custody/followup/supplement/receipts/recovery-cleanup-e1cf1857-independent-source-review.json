@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE bounded recovery cleanup implementation",
+  "base_sha": "c7aeb32d3b4326aff8bf03b0831b1bec34479247",
+  "head_sha": "e1cf185743637129ca27b686870c85f0e239da21",
+  "source_sha256": "5d2917fe1b434419cde030377f1920b4272f4ae4e6234651390c8b6ec647292a",
+  "test_sha256": "6160ffd2b60fe0a454981d8e55cfca886cf3b5fdc8816f74478189cf1041802c",
+  "review": [
+    "Exact change adds localinventory variable and3status-checked command substitutions",
+    "Successful empty stdout alone can prove absence; inventory error including partialstdout refuses success",
+    "All3inventories attempted despite earlier failure; fixed unavailable diagnostics",
+    "Original status, removals, credential cleanup, resource names/labels and supervisor untouched",
+    "Tests byte-exact6160ffd2 approved candidate"
+  ],
+  "independent_evidence": {
+    "/private/tmp/recovery-cleanup-independent-red13.log": "13executed7PASS6FAIL0errors on base",
+    "/private/tmp/recovery-cleanup-independent-green13.log": "Same13executed13PASS0errors; exit0"
+  },
+  "observed_evidence": {
+    "/private/tmp/recovery-cleanup-full15-unsandboxed.log": "15executed15PASS; prior sandboxpsfailure separately retained",
+    "/private/tmp/recovery-cleanup-relay.log": "6executed6PASS"
+  },
+  "limits": [
+    "Synthetic shell/shim orchestration only; no actual Docker workload, durability or HA claim",
+    "No privileges/services changed",
+    "Existing Docker command wall-clock bounding is not expanded by this fix"
+  ]
+}

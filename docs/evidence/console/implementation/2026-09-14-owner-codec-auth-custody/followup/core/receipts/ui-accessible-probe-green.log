@@ -1,0 +1,11 @@
+   Compiling console-payroll-ui v0.1.0 (/private/tmp/console-ui-accessibility-tests-20260914/backend/crates/payroll/ui)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.12s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/common_action_composer.rs (/private/tmp/console-account30-cargo/debug/deps/common_action_composer-93c2d478a41e1a4e)
+
+running 1 test
+test composer_form_has_accessible_business_name ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+

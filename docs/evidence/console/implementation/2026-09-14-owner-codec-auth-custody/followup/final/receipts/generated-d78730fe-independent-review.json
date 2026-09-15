@@ -1,0 +1,58 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE exact generated-face and monotone static baseline update",
+  "base_sha": "11f9342e0ce120a43a5f00d9da8dcfdce383c0e3",
+  "head_sha": "d78730fe222c40d625af1608ed8c4f5d797563ea",
+  "source_sha256": {
+    "backend/app/BUCK": "73ee62edecfeaa92a47d73e12052b36f8b86f1a34a4f0aec7e47d17c1120f0c0",
+    "backend/ci/gates/tenant-isolation/BUCK": "ad8732aa6e8941a8cee3c00a9bcc03664a269ea5967734cea2b37ab8419d90f0",
+    "docs/program/executed-tests-baseline.json": "e21d8116318293ed19ef68be0970cfaf93cdd18b4f0681d4c01d13dba2b4d128",
+    "tools/buck/gen_first_party.py": "d37964871781c58c07ab1dc8f8de365b6fdb60f53fbb7a9ffe2ed5fc4bdc9b35"
+  },
+  "review": [
+    "Generator change exactly one metadata resource.none entry; algorithm untouched",
+    "AppBUCK exactly two existing auth helper mapped source additions in67lists each; stripping those additions restores exact priorbytes",
+    "TenantBUCK adds one qualified_table_identity integration target resource.none",
+    "Static baseline7entries gain only; no removal/decrease or any othermetadata change"
+  ],
+  "attribute_changes": {
+    "backend/app/tests/auth_rest.rs": [
+      53,
+      55
+    ],
+    "backend/ci/gates/tenant-isolation/src/lib.rs": [
+      19,
+      21
+    ],
+    "backend/ci/gates/tenant-isolation/tests/qualified_table_identity.rs": [
+      null,
+      19
+    ],
+    "backend/crates/ontology/application/src/lib.rs": [
+      17,
+      31
+    ],
+    "backend/crates/payroll/ui/tests/common_action_composer.rs": [
+      null,
+      17
+    ],
+    "backend/crates/platform/audit-chain/tests/ed25519_compatibility.rs": [
+      null,
+      13
+    ],
+    "backend/crates/platform/request-context/src/lib.rs": [
+      20,
+      23
+    ]
+  },
+  "observed_evidence": {
+    "/private/tmp/verify-generated-faces-green.log": "Same cheappreflight PASS;382Rusttargets enumerated, firstparty generated face matches",
+    "/private/tmp/verify-generated-faces-unit.log": "41testsPASS; existingResourceWarnings retained",
+    "/private/tmp/verify-boundary-wiring-final-gate.log": "Static reachability only knownstorage exception;2953declaredattributes"
+  },
+  "limits": [
+    "Static attributes and enumerated targets are not executed testcounts",
+    "Expensive thirdparty facecomparison deferred beforemerge",
+    "No production/authpool/storage proof implied"
+  ]
+}

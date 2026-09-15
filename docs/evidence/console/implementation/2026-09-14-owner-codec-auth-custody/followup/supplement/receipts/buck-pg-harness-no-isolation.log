@@ -1,0 +1,8 @@
+buck-postgres: raw backend test targets bypass the credential loader; use a //tools/buck PostgreSQL wrapper
+buck-postgres: disposable PostgreSQL did not become healthy
+buck-postgres: disposable PostgreSQL did not become healthy
+buck-postgres: isolation name must contain only letters, digits, dot, underscore, or dash
+buck-postgres: exact Rust test name contains unsupported characters
+buck-postgres: pulling the pinned PostgreSQL image failed; retrying
+buck-postgres: pulling the pinned PostgreSQL image failed; retrying
+test_needs_postgres: PASS
