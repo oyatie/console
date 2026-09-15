@@ -1,4 +1,4 @@
--- Read-only six-table v1 metadata verdict. Caller must use search_path=pg_catalog,pg_temp.
+-- Read-only six-table custody verdict. Caller must use search_path=pg_catalog,pg_temp.
 -- Expected fingerprints are fixed from reviewed0226, never from this target.
 WITH expected(name, owner_name, shape_sha256) AS (VALUES
  ('accounts','console_account_owner','bf8b3a765aca8473b0bdcb977a3c2adbb2c1fe0dd775cc151faae1271427d3f9'),
@@ -37,6 +37,18 @@ ORDER BY wanted.name), relations AS (
 ), ownership AS (
  SELECT bool_and(actual_owner='console_app') AS pending,
         bool_and(actual_owner=owner_name) AS finalized FROM relations
+), acl_profiles AS (
+ -- Profiles are collective: accepting either ACL independently per table would
+ -- admit a partially installed projection. NULL is never an empty ACL.
+ SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0) AS dormant,
+        bool_and(actual_owner=owner_name AND relacl IS NOT NULL AND
+          CASE WHEN name IN ('accounts','account_security') THEN
+            cardinality(relacl)=1 AND (SELECT count(*)=1 AND bool_and(
+              a.grantor=c.relowner AND a.grantee=c.relowner
+              AND a.privilege_type='SELECT' AND NOT a.is_grantable)
+              FROM aclexplode(c.relacl) a)
+          ELSE cardinality(relacl)=0 END) AS prepared
+ FROM relations c
 )
 SELECT CASE
  WHEN (SELECT count(*) FROM pg_roles WHERE rolname IN ('console_account_owner','console_terms_owner')
@@ -53,7 +65,7 @@ SELECT CASE
  THEN 'account_custody.catalog_shape_mismatch'
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
- WHEN EXISTS (SELECT 1 FROM relations c WHERE c.relacl IS NULL OR cardinality(c.relacl)<>0)
+ WHEN NOT COALESCE((SELECT dormant OR prepared FROM acl_profiles),false)
    OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
      CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
