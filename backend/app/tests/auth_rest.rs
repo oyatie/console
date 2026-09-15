@@ -3403,12 +3403,11 @@ async fn prepare_http_migration_config(pool: &PgPool) -> AppConfig {
     .await
     .expect("assign empty test database to its real migration owner");
     drop(connection);
-    let config = AppConfig::from_pairs([
+    AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Migrate.to_string()),
         ("DATABASE_URL", owner_url.to_string()),
     ])
-    .expect("production migration configuration");
-    config
+    .expect("production migration configuration")
 }
 
 // AS1.3 selected legacy-fence acceptance. These owner fixtures install only
