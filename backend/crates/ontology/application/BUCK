@@ -10,7 +10,7 @@ export_file(
 
 rust_library(
     name = "console-ontology-application",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/application", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/application", glob(["src/**/*.rs", "src/owner28_schemas/**/*.json", "src/codec-goldens/*.bin", "src/codec-goldens/*.json"])),
     crate = "console_ontology_application",
     edition = "2024",
     crate_root = "backend/crates/ontology/application/src/lib.rs",
@@ -20,8 +20,10 @@ rust_library(
         "//backend/crates/governance/domain:console-governance-domain",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/ontology/domain:console-ontology-domain",
+        "//third-party/rust:jsonschema",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
@@ -29,7 +31,7 @@ rust_library(
 
 rust_test(
     name = "console-ontology-application-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/application", glob(["src/**/*.rs"])),
+    mapped_srcs = repo_mapped_srcs("backend/crates/ontology/application", glob(["src/**/*.rs", "src/owner28_schemas/**/*.json", "src/codec-goldens/*.bin", "src/codec-goldens/*.json"])),
     crate = "console_ontology_application",
     edition = "2024",
     crate_root = "backend/crates/ontology/application/src/lib.rs",
@@ -40,8 +42,11 @@ rust_test(
         "//backend/crates/governance/domain:console-governance-domain",
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/ontology/domain:console-ontology-domain",
+        "//third-party/rust:hex",
+        "//third-party/rust:jsonschema",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
         "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
