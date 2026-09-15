@@ -81,17 +81,28 @@ ORDER BY wanted.name), relations AS (
 ), ownership AS (
  SELECT bool_and(actual_owner='console_app') AS pending,
         bool_and(actual_owner=owner_name) AS finalized FROM relations
+), column_acl_profiles AS (
+ SELECT bool_and(COALESCE(cardinality(a.attacl),0)=0) AS dormant,
+        bool_and(CASE WHEN c.name='accounts' AND a.attname='id' THEN
+          COALESCE(cardinality(a.attacl),0)=1 AND (SELECT count(*)=1 AND bool_and(
+            acl.grantor=c.relowner AND acl.grantee=c.relowner
+            AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
+            FROM aclexplode(a.attacl) acl)
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS prepared
+ FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
 ), acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
- -- admit a partially installed projection. NULL is never an empty ACL.
- SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0) AS dormant,
+ -- admit a partially installed projection. NULL table ACLs are never empty.
+ SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0)
+          AND (SELECT dormant FROM column_acl_profiles) AS dormant,
         bool_and(actual_owner=owner_name AND relacl IS NOT NULL AND
           CASE WHEN name IN ('accounts','account_security') THEN
             cardinality(relacl)=1 AND (SELECT count(*)=1 AND bool_and(
               a.grantor=c.relowner AND a.grantee=c.relowner
               AND a.privilege_type='SELECT' AND NOT a.is_grantable)
               FROM aclexplode(c.relacl) a)
-          ELSE cardinality(relacl)=0 END) AS prepared
+          ELSE cardinality(relacl)=0 END)
+          AND (SELECT prepared FROM column_acl_profiles) AS prepared
  FROM relations c
 )
 SELECT CASE
@@ -110,8 +121,6 @@ SELECT CASE
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
  WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
-   OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
-     CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
@@ -188,17 +197,28 @@ ORDER BY wanted.name), relations AS (
 ), ownership AS (
  SELECT bool_and(actual_owner='console_app') AS pending,
         bool_and(actual_owner=owner_name) AS finalized FROM relations
+), column_acl_profiles AS (
+ SELECT bool_and(COALESCE(cardinality(a.attacl),0)=0) AS dormant,
+        bool_and(CASE WHEN c.name='accounts' AND a.attname='id' THEN
+          COALESCE(cardinality(a.attacl),0)=1 AND (SELECT count(*)=1 AND bool_and(
+            acl.grantor=c.relowner AND acl.grantee=c.relowner
+            AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
+            FROM aclexplode(a.attacl) acl)
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS prepared
+ FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
 ), acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
- -- admit a partially installed projection. NULL is never an empty ACL.
- SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0) AS dormant,
+ -- admit a partially installed projection. NULL table ACLs are never empty.
+ SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0)
+          AND (SELECT dormant FROM column_acl_profiles) AS dormant,
         bool_and(actual_owner=owner_name AND relacl IS NOT NULL AND
           CASE WHEN name IN ('accounts','account_security') THEN
             cardinality(relacl)=1 AND (SELECT count(*)=1 AND bool_and(
               a.grantor=c.relowner AND a.grantee=c.relowner
               AND a.privilege_type='SELECT' AND NOT a.is_grantable)
               FROM aclexplode(c.relacl) a)
-          ELSE cardinality(relacl)=0 END) AS prepared
+          ELSE cardinality(relacl)=0 END)
+          AND (SELECT prepared FROM column_acl_profiles) AS prepared
  FROM relations c
 )
 SELECT CASE
@@ -217,8 +237,6 @@ SELECT CASE
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
  WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
-   OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
-     CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
@@ -246,9 +264,11 @@ END
         RAISE EXCEPTION 'account_fence_projection.role_mismatch';
     END IF;
     IF NOT fence_present THEN
-        -- Explicit dormant ACLs revoke even an owner's ordinary SELECT. The
-        -- parent read is also necessary for PostgreSQL's Account FK checks.
+        -- Explicit dormant ACLs revoke even an owner's ordinary SELECT.
+        -- PostgreSQL FK key-share checks also require parent-column UPDATE.
+        -- This is ordinary owner-only UPDATE authority, not a lock-only right.
         GRANT SELECT ON public.accounts, public.account_security TO console_account_owner;
+        GRANT UPDATE(id) ON public.accounts TO console_account_owner;
         EXECUTE pg_catalog.format('CREATE FUNCTION public.account_legacy_fenced_v1(subject_account_id uuid)
             RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
             SET search_path=pg_catalog,pg_temp SET row_security=off AS %L', expected_fence_body);
@@ -325,17 +345,28 @@ ORDER BY wanted.name), relations AS (
 ), ownership AS (
  SELECT bool_and(actual_owner='console_app') AS pending,
         bool_and(actual_owner=owner_name) AS finalized FROM relations
+), column_acl_profiles AS (
+ SELECT bool_and(COALESCE(cardinality(a.attacl),0)=0) AS dormant,
+        bool_and(CASE WHEN c.name='accounts' AND a.attname='id' THEN
+          COALESCE(cardinality(a.attacl),0)=1 AND (SELECT count(*)=1 AND bool_and(
+            acl.grantor=c.relowner AND acl.grantee=c.relowner
+            AND acl.privilege_type='UPDATE' AND NOT acl.is_grantable)
+            FROM aclexplode(a.attacl) acl)
+          ELSE COALESCE(cardinality(a.attacl),0)=0 END) AS prepared
+ FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
 ), acl_profiles AS (
  -- Profiles are collective: accepting either ACL independently per table would
- -- admit a partially installed projection. NULL is never an empty ACL.
- SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0) AS dormant,
+ -- admit a partially installed projection. NULL table ACLs are never empty.
+ SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0)
+          AND (SELECT dormant FROM column_acl_profiles) AS dormant,
         bool_and(actual_owner=owner_name AND relacl IS NOT NULL AND
           CASE WHEN name IN ('accounts','account_security') THEN
             cardinality(relacl)=1 AND (SELECT count(*)=1 AND bool_and(
               a.grantor=c.relowner AND a.grantee=c.relowner
               AND a.privilege_type='SELECT' AND NOT a.is_grantable)
               FROM aclexplode(c.relacl) a)
-          ELSE cardinality(relacl)=0 END) AS prepared
+          ELSE cardinality(relacl)=0 END)
+          AND (SELECT prepared FROM column_acl_profiles) AS prepared
  FROM relations c
 )
 SELECT CASE
@@ -354,8 +385,6 @@ SELECT CASE
  WHEN NOT COALESCE((SELECT pending OR finalized FROM ownership),false)
  THEN 'account_custody.owner_mismatch'
  WHEN NOT COALESCE((SELECT acl_profiles.dormant OR acl_profiles.prepared FROM acl_profiles),false)
-   OR EXISTS (SELECT 1 FROM relations c JOIN pg_attribute a ON a.attrelid=c.oid
-     CROSS JOIN LATERAL aclexplode(a.attacl) acl)
    OR EXISTS (SELECT 1 FROM relations c CROSS JOIN pg_roles r
      WHERE r.rolname NOT LIKE 'pg\_%' ESCAPE '\' AND r.oid<>c.relowner AND NOT r.rolsuper
      AND (has_table_privilege(r.oid,c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER,MAINTAIN')
