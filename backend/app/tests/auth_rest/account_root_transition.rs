@@ -327,7 +327,7 @@ async fn populated_upgrade_preserves_rows_roots_and_legacy_acl(pool: PgPool) {
         assert_eq!(rows(&mut tx).await, stable_rows);
         assert_eq!(metadata(&mut tx, TABLES).await, stable_meta);
     }
-    sqlx::query("UPDATE users SET created_at=created_at+interval '1 day' WHERE id=$1")
+    sqlx::query("UPDATE public.users SET created_at=created_at+interval '1 day' WHERE id=$1")
         .bind(id(1))
         .execute(&mut *tx)
         .await
