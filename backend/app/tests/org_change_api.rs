@@ -536,8 +536,9 @@ async fn assert_legacy_org_setup_mutations_create_governed_drafts_without_direct
 /// Full REORG lifecycle: idempotent create, preflight as a zero-write READ,
 /// ordered SoD chain with self-approval + out-of-order refusals,
 /// effective-date gate, one-transaction apply, and audit readback.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -952,8 +953,9 @@ async fn reorg_lifecycle_runs_draft_to_applied_with_ordered_sod(pool: PgPool) {
 /// DISSOLVE defers its ops to archive: effectuate opens the six settlement
 /// items, archive fails closed while dependents remain, and the deferred
 /// deactivation applies only after settlement genuinely cleared them.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn dissolve_settles_then_archives_with_referential_net(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -1289,8 +1291,9 @@ async fn dissolve_settles_then_archives_with_referential_net(pool: PgPool) {
 /// with the canonical envelope and zero data, REORG blockers refuse submit,
 /// cross-tenant rows are concealed as 404/empty, and the entity read fails
 /// closed to an empty list without group grants.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn authorization_denies_without_leakage_and_conceals_other_tenants(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -1596,8 +1599,9 @@ async fn authorization_denies_without_leakage_and_conceals_other_tenants(pool: P
 /// fail-closed and names the blocking window, the request and the org tree are
 /// untouched, the attempt itself is audited even though its transaction rolled
 /// back, and another tenant's lock over the same window never bites.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn effectuate_is_frozen_inside_a_locked_period_and_records_the_attempt(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -1979,10 +1983,14 @@ async fn send(
                 .unwrap_or_else(Body::empty),
         )
         .unwrap();
-    let response = build_router(app_state(pool.clone(), keys.public_pem.clone()).unwrap())
-        .oneshot(request)
-        .await
-        .unwrap();
+    let response = build_router(
+        app_state(pool.clone(), keys.public_pem.clone())
+            .await
+            .unwrap(),
+    )
+    .oneshot(request)
+    .await
+    .unwrap();
     let status = response.status();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     (
@@ -1998,7 +2006,12 @@ async fn send(
     )
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
@@ -2009,6 +2022,7 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 
 fn parse_rfc3339(value: &Value) -> OffsetDateTime {

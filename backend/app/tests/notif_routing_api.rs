@@ -36,8 +36,9 @@ struct JsonResponse {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn notification_routing_is_isolated_over_http_as_runtime_role(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     seed_other_org(&pool).await;
     let user_a = UserId::new();
@@ -61,8 +62,11 @@ async fn notification_routing_is_isolated_over_http_as_runtime_role(pool: PgPool
     // B: one row on the SAME approval object (must never fold into A's group).
     seed_notification(&pool, user_b, "결재", approval_link).await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token_a = bearer(&keys, user_a, OrgId::knl());
     let token_b = bearer(&keys, user_b, OrgId::knl());
     let token_outsider = bearer(&keys, outsider, OrgId::from_uuid(OTHER_ORG));
@@ -345,7 +349,15 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -354,6 +366,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn get(service: axum::Router, uri: &str, token: &str) -> JsonResponse {

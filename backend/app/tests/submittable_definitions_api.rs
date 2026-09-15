@@ -31,8 +31,9 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const PATH: &str = "/api/v1/workflow-studio/submittable-definitions";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn member_sees_active_self_service_but_not_draft_or_paused(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool).await;
     let member = UserId::new();
@@ -61,8 +62,9 @@ async fn member_sees_active_self_service_but_not_draft_or_paused(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn definition_with_start_policy_is_deny_by_omission(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool).await;
     let member = UserId::new();
@@ -102,8 +104,9 @@ async fn definition_with_start_policy_is_deny_by_omission(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn entry_node_required_policy_and_no_entry_graph_are_deny_by_omission(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool).await;
     let member = UserId::new();
@@ -144,8 +147,9 @@ async fn entry_node_required_policy_and_no_entry_graph_are_deny_by_omission(pool
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn non_member_is_refused(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::new();
     let branch = seed_branch(&pool).await;
     let nobody = UserId::new();
@@ -171,10 +175,8 @@ fn ids(body: &Value) -> Vec<String> {
 }
 
 async fn list(pool: &PgPool, keys: &Keys, token: &str) -> (StatusCode, Value) {
-    let service = build_router(app_state(
-        runtime_role_pool(pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(runtime_role_pool(pool).await, keys.public_pem.clone()).await);
     let response = service
         .oneshot(
             Request::builder()
@@ -367,7 +369,12 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -376,7 +383,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 struct Keys {

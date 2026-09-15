@@ -67,7 +67,12 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -76,7 +81,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 async fn seed_user(pool: &PgPool, user_id: UserId, role: &str) {
@@ -160,17 +167,16 @@ fn exec_definition(object_kinds: Value) -> Value {
     })
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn subject_kind_binding_and_by_object_kind_panel(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let admin = UserId::new();
     seed_user(&pool, admin, "SUPER_ADMIN").await;
     let non_manager = UserId::new();
     seed_user(&pool, non_manager, "MECHANIC").await;
-    let service = build_router(app_state(
-        runtime_role_pool(&pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await);
     let admin_token = bearer(&keys, admin, "SUPER_ADMIN");
     let tech_token = bearer(&keys, non_manager, "MECHANIC");
 
@@ -252,15 +258,14 @@ async fn subject_kind_binding_and_by_object_kind_panel(pool: PgPool) {
     assert_eq!(denied.status, StatusCode::FORBIDDEN, "{:?}", denied.json);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn definition_object_kinds_must_exist_and_drive_the_panel(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let admin = UserId::new();
     seed_user(&pool, admin, "SUPER_ADMIN").await;
-    let service = build_router(app_state(
-        runtime_role_pool(&pool).await,
-        keys.public_pem.clone(),
-    ));
+    let service =
+        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await);
     let token = bearer(&keys, admin, "SUPER_ADMIN");
 
     // An object_kinds chain referencing an unregistered kind is rejected.

@@ -1061,7 +1061,7 @@ async fn controls<D: Driver>(d: &D) {
 // Entry points — one binary, four tests.
 // ===========================================================================
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn control_surfaces_rest(owner_pool: PgPool) {
     let h = Harness::bootstrap(owner_pool).await;
     let d = rest::RestDriver::new(&h);
@@ -1085,7 +1085,7 @@ async fn control_surfaces_rest(owner_pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn control_surfaces_store(owner_pool: PgPool) {
     let h = Harness::bootstrap(owner_pool).await;
     let d = store::StoreDriver::new(&h);
@@ -1106,13 +1106,13 @@ async fn control_surfaces_store(owner_pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn company_scenario_rest(owner_pool: PgPool) {
     let h = Harness::bootstrap(owner_pool).await;
     scenario(&rest::RestDriver::new(&h)).await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn company_scenario_store(owner_pool: PgPool) {
     let h = Harness::bootstrap(owner_pool).await;
     scenario(&store::StoreDriver::new(&h)).await;

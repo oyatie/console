@@ -45,8 +45,9 @@ struct JsonResponse {
 // An ADMIN with no linked employee reads an empty page, not a 403 — even when
 // OTHER employees' attendance records exist in the same org (no leak).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_without_employee_link_reads_empty_self_attendance(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
 
     // A linked MEMBER punches in, so the org has a real attendance record.
@@ -55,8 +56,11 @@ async fn admin_without_employee_link_reads_empty_self_attendance(pool: PgPool) {
     let admin = UserId::new();
     seed_user(&pool, admin, "ADMIN").await; // no employee link
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // Seed the member's record through the real write path (it also writes the
     // payroll material ref the read view joins on).
@@ -90,8 +94,9 @@ async fn admin_without_employee_link_reads_empty_self_attendance(pool: PgPool) {
 // ===========================================================================
 // A linked non-admin reads ONLY their own record (self-scoped, never widened).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn linked_member_reads_only_own_attendance(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
 
     let alice = UserId::new();
@@ -99,8 +104,11 @@ async fn linked_member_reads_only_own_attendance(pool: PgPool) {
     let bob = UserId::new();
     seed_linked_employee(&pool, bob, "MEMBER", "bob").await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // Both punch in.
     for (user, key) in [(alice, "alice-in"), (bob, "bob-in")] {
@@ -125,8 +133,9 @@ async fn linked_member_reads_only_own_attendance(pool: PgPool) {
 
 // The attendance-console self-service surface is a separate, signed-principal
 // read boundary. It deliberately does not require a manager feature grant.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn linked_member_reads_only_own_attendance_console_data(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let alice = UserId::new();
     let alice_employee = seed_linked_employee(&pool, alice, "MEMBER", "alice-console").await;
@@ -137,8 +146,11 @@ async fn linked_member_reads_only_own_attendance_console_data(pool: PgPool) {
     seed_exception(&pool, alice, alice_employee, "alice-console-exception").await;
     seed_exception(&pool, bob, bob_employee, "bob-console-exception").await;
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let alice_token = bearer(&keys, alice, "MEMBER");
     let unlinked_token = bearer(&keys, unlinked, "MEMBER");
 
@@ -387,7 +399,15 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -396,4 +416,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

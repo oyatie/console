@@ -41,8 +41,9 @@ async fn openapi_yaml_is_served() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn workorder_create_is_jwt_authorized_and_branch_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -63,7 +64,7 @@ async fn workorder_create_is_jwt_authorized_and_branch_scoped(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let forbidden = service
         .clone()
@@ -139,8 +140,9 @@ async fn workorder_create_is_jwt_authorized_and_branch_scoped(pool: PgPool) {
     assert_eq!(messenger_thread_count, 1);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn workorder_read_surface_is_branch_scoped_filterable_and_detailed(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -237,7 +239,7 @@ async fn workorder_read_surface_is_branch_scoped_filterable_and_detailed(pool: P
         vec![branch_id, second_visible_branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let first_page = get_json(
         service.clone(),
@@ -433,8 +435,9 @@ async fn workorder_read_surface_is_branch_scoped_filterable_and_detailed(pool: P
     assert_eq!(cross_branch_detail.status, StatusCode::NOT_FOUND);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn approval_items_are_server_federated_and_branch_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -493,7 +496,7 @@ async fn approval_items_are_server_federated_and_branch_scoped(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool, public_key_pem).unwrap());
+    let service = build_router(app_state(pool, public_key_pem).await.unwrap());
 
     let denied = get_json(
         service.clone(),
@@ -593,8 +596,9 @@ async fn approval_items_are_server_federated_and_branch_scoped(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn kpi_endpoint_is_jwt_authorized_and_branch_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -655,7 +659,7 @@ async fn kpi_endpoint_is_jwt_authorized_and_branch_scoped(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool, public_key_pem).unwrap());
+    let service = build_router(app_state(pool, public_key_pem).await.unwrap());
 
     let denied = get_json(
         service.clone(),
@@ -732,8 +736,9 @@ async fn kpi_endpoint_is_jwt_authorized_and_branch_scoped(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn equipment_lookup_and_autocomplete_are_branch_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -755,7 +760,7 @@ async fn equipment_lookup_and_autocomplete_are_branch_scoped(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool, public_key_pem).unwrap());
+    let service = build_router(app_state(pool, public_key_pem).await.unwrap());
 
     let lookup = get_json(
         service.clone(),
@@ -785,8 +790,9 @@ async fn equipment_lookup_and_autocomplete_are_branch_scoped(pool: PgPool) {
     assert_eq!(models, vec!["GTS25DE", "GTS30DE"]);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn reject_with_memo_is_admin_only_and_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -819,7 +825,7 @@ async fn reject_with_memo_is_admin_only_and_audited(pool: PgPool) {
         vec![branch_id],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let denied = post_json(
         service.clone(),
@@ -960,7 +966,15 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -970,6 +984,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn seed_branch(pool: &PgPool, region_name: &str, branch_name: &str) -> BranchId {

@@ -35,8 +35,9 @@ const VOUCHERS_PATH: &str = "/api/v1/finance-gl/vouchers";
 
 /// SoD at the REST surface: the 기표자 cannot approve their own voucher (403); a
 /// distinct approver can, and the recorded approver is surfaced on the response.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn rest_rejects_self_approval_and_accepts_distinct_approver(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
 
@@ -137,8 +138,9 @@ async fn rest_rejects_self_approval_and_accepts_distinct_approver(pool: PgPool) 
 /// mutation is rejected 403 `view_as_read_only` by the blanket method wall before
 /// any handler (and any per-handler authz) runs. No DB rows are needed: the wall
 /// rejects on method + token claim ahead of the tenant middleware.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn view_as_token_cannot_mutate_finance_vouchers(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
 
@@ -247,7 +249,11 @@ async fn send(
     token: &str,
     body: Option<Value>,
 ) -> (StatusCode, Value) {
-    let service = build_router(app_state(pool.clone(), keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let request = Request::builder()
         .method(method)
         .uri(uri)
@@ -307,7 +313,15 @@ async fn seed_user_in_branch(pool: &PgPool, user_id: UserId, role: &str, branch:
         .unwrap();
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -316,4 +330,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

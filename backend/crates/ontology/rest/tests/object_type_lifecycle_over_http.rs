@@ -280,6 +280,11 @@ impl Http {
 }
 
 async fn build(owner_pool: &PgPool) -> Http {
+    let auth_database = console_platform_test_support::login_test_pool(
+        owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::knl();
     let actor = seed_org_and_super_admin(owner_pool, *org.as_uuid(), "lifecycle-actor").await;
     let approver = seed_org_and_super_admin(owner_pool, *org.as_uuid(), "lifecycle-approver").await;
@@ -303,11 +308,17 @@ async fn build(owner_pool: &PgPool) -> Http {
         PgOntologyStore::new(rt.clone()).with_command_pool(cmd),
         PgInstanceStore::new(rt.clone()),
         PgGovernanceStore::new(rt.clone()),
-        Some(verifier.clone()),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier.clone(),
+            auth_database.clone(),
+        )),
     ));
     let governance = console_governance_rest::router(GovernanceRestState::new(
         PgGovernanceStore::new(rt.clone()),
-        Some(verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database.clone(),
+        )),
     ));
 
     Http {
@@ -322,8 +333,9 @@ async fn build(owner_pool: &PgPool) -> Http {
 // The acceptance path: a type authored, published and instantiated over HTTP.
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_type_is_authored_published_and_instantiated_over_http(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
 
     let created = http.author("handover_policy", json!([])).await;
@@ -409,8 +421,9 @@ async fn a_type_is_authored_published_and_instantiated_over_http(owner_pool: PgP
 // Every edge the route claims to support, and every edge it does not.
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn every_legal_edge_is_reachable_over_http(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("edges", json!([])).await;
     let type_id = created.body["id"].as_str().unwrap().to_owned();
@@ -449,8 +462,9 @@ async fn every_legal_edge_is_reachable_over_http(owner_pool: PgPool) {
     assert_eq!(retired.body["lifecycle_state"], json!("retired"));
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn published_to_retired_is_reachable_without_superseding(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("straight_to_retired", json!([])).await;
     let type_id = created.body["id"].as_str().unwrap().to_owned();
@@ -471,8 +485,9 @@ async fn published_to_retired_is_reachable_without_superseding(owner_pool: PgPoo
 
 /// The FSM's one rejected forward edge, plus the edges that skip review entirely.
 /// A 500 here would mean the SQL guard reached the client unmapped.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn illegal_edges_are_mapped_409s_not_500s(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("short_circuit", json!([])).await;
     let etag = created.etag();
@@ -498,8 +513,9 @@ async fn illegal_edges_are_mapped_409s_not_500s(owner_pool: PgPool) {
 // The four-eyes ladder is load-bearing, not ceremony.
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn publishing_without_an_approval_is_403(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("no_approval", json!([])).await;
     let reviewed = http
@@ -519,8 +535,9 @@ async fn publishing_without_an_approval_is_403(owner_pool: PgPool) {
     assert_eq!(published.code(), "forbidden");
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_requester_cannot_approve_its_own_publish(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("self_approve", json!([])).await;
     let type_id = created.body["id"].as_str().unwrap().to_owned();
@@ -583,8 +600,9 @@ async fn the_requester_cannot_approve_its_own_publish(owner_pool: PgPool) {
 // The If-Match CAS.
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn the_write_precondition_is_enforced_on_this_route_too(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("cas", json!([])).await;
     let etag = created.etag();
@@ -654,8 +672,9 @@ async fn the_write_precondition_is_enforced_on_this_route_too(owner_pool: PgPool
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn an_unknown_key_is_404_not_403(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("known", json!([])).await;
     let res = http
@@ -669,8 +688,9 @@ async fn an_unknown_key_is_404_not_403(owner_pool: PgPool) {
 // `?version=`: without it a type freezes at v1 forever.
 // ---------------------------------------------------------------------------
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_revision_staged_behind_a_published_head_needs_the_version_selector(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http.author("versioned", json!([])).await;
     let v1_id = created.body["id"].as_str().unwrap().to_owned();
@@ -751,8 +771,9 @@ async fn a_revision_staged_behind_a_published_head_needs_the_version_selector(ow
 /// NOT suppress the auto-attach (0165:1024-1029 keys on `instance_revision`), so
 /// it collides on `UNIQUE (object_type_id, stable_key)` inside the publish
 /// transaction. That must reach the client as a 409, never a 500.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_client_authored_create_action_collides_as_409(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let http = build(&owner_pool).await;
     let created = http
         .author(

@@ -2063,6 +2063,15 @@ mod session_reader_contract {
         expected: StatusCode,
         tokens: &[&str],
     ) {
+        assert_reader_error_with_code(response, expected, tokens, "unavailable").await;
+    }
+
+    async fn assert_reader_error_with_code(
+        response: http::Response<Body>,
+        expected: StatusCode,
+        tokens: &[&str],
+        unavailable_code: &str,
+    ) {
         assert_eq!(
             response.status(),
             expected,
@@ -2097,7 +2106,7 @@ mod session_reader_contract {
             assert!(json["error"]["message"].is_string());
             assert!(json.get("access_token").is_none() && json.get("refresh_token").is_none());
             if expected == StatusCode::SERVICE_UNAVAILABLE {
-                assert_eq!(json["error"]["code"], "unavailable");
+                assert_eq!(json["error"]["code"], unavailable_code);
                 assert_eq!(json["error"]["message"], "session verification unavailable");
             }
         } else {
@@ -2484,8 +2493,13 @@ mod session_reader_contract {
                 ("/api/v1/auth/passkeys", fixture.platform.as_str()),
                 ("/api/platform/orgs", fixture.platform.as_str()),
             ] {
-                assert_reader_error(get_legacy_raw(&fixture.router, path, token).await,
-                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens()).await;
+                let unavailable_code = if path == "/api/v1/auth/passkeys" {
+                    "service_unavailable"
+                } else {
+                    "unavailable"
+                };
+                assert_reader_error_with_code(get_legacy_raw(&fixture.router, path, token).await,
+                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens(), unavailable_code).await;
             }
             for (authorization, protocol) in [(Some(fixture.tenant.as_str()), None), (None, Some(fixture.tenant.as_str()))] {
                 assert_reader_error(reader_handshake(address, authorization, protocol).await,

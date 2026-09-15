@@ -32,8 +32,9 @@ fn master_list_path() -> PathBuf {
         .join("../../../../docs/reference/master-list_251120.xlsx")
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "SUPER_ADMIN").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
@@ -71,8 +72,9 @@ async fn import_endpoint_loads_reference_master_list(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn branch_scoped_admin_cannot_run_tenant_wide_master_import(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
@@ -103,8 +105,9 @@ async fn branch_scoped_admin_cannot_run_tenant_wide_master_import(pool: PgPool) 
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn import_endpoint_rejects_non_admin(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let bytes = std::fs::read(master_list_path()).unwrap();
@@ -122,8 +125,9 @@ async fn import_endpoint_rejects_non_admin(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn equipment_crud_create_update_soft_delete_is_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
 
@@ -285,8 +289,9 @@ async fn fetch_equipment_view(pool: &PgPool, id: &str) -> EquipmentView {
     row
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn ownership_transfer_requires_ordered_legal_and_accounting_signoff(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
 
@@ -403,8 +408,9 @@ async fn audit_count(pool: &PgPool, action: &str) -> i64 {
         .unwrap()
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_equipment_rejects_non_admin(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let body = json!({
@@ -423,8 +429,9 @@ async fn create_equipment_rejects_non_admin(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn equipment_get_by_id_returns_master_detail_without_page_scan(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "SUPER_ADMIN").await;
         let equipment_id = create_equipment(&harness, "CFO25-7790", "779").await;
@@ -451,8 +458,9 @@ async fn equipment_get_by_id_returns_master_detail_without_page_scan(pool: PgPoo
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn substitute_assign_and_return_are_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let source = create_equipment(&harness, "CFO25-7777", "777").await;
@@ -514,8 +522,9 @@ async fn substitute_assign_and_return_are_audited(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn substitute_assign_rejects_non_admin(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let body = json!({
@@ -535,8 +544,9 @@ async fn substitute_assign_rejects_non_admin(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_customer_and_site_appear_in_location_list_and_are_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
 
@@ -629,8 +639,9 @@ async fn create_customer_and_site_appear_in_location_list_and_are_audited(pool: 
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_customer_rejects_non_admin(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "MECHANIC").await;
         let (status, _) = harness
@@ -645,8 +656,9 @@ async fn create_customer_rejects_non_admin(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_customer_rejects_blank_name(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, _) = harness
@@ -661,8 +673,9 @@ async fn create_customer_rejects_blank_name(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_site_under_unknown_customer_is_not_found(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, _) = harness
@@ -680,8 +693,9 @@ async fn create_site_under_unknown_customer_is_not_found(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_site_under_another_branchs_customer_is_not_found(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_b_admin = Harness::new(&pool, "ADMIN").await;
         let (status, customer) = branch_b_admin
@@ -717,8 +731,9 @@ async fn create_site_under_another_branchs_customer_is_not_found(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_site_rejects_one_sided_coordinate(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, body) = harness
@@ -748,8 +763,9 @@ async fn create_site_rejects_one_sided_coordinate(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn update_site_coordinates_set_clear_read_back_and_validate_pair(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let harness = Harness::new(&pool, "ADMIN").await;
         let (status, body) = harness
@@ -910,8 +926,9 @@ async fn create_equipment(harness: &Harness, equipment_no: &str, management_no: 
 /// admitted to MECHANIC and RECEPTIONIST, and each version row carries the full
 /// equipment master — owner, insurer, policy holder, rental fee, vehicle value,
 /// residual value, notes.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn mechanic_cannot_read_another_branchs_equipment_versions(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let branch_b_admin = Harness::new(&pool, "ADMIN").await;
         let equipment = create_equipment(&branch_b_admin, "CFO25-7801", "801").await;
@@ -970,8 +987,9 @@ async fn mechanic_cannot_read_another_branchs_equipment_versions(pool: PgPool) {
 
 /// Ownership-transfer history and every by-primary-key equipment mutation:
 /// findings 1, 3 and 4 share one fixture because they share one boundary.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn branch_admin_cannot_read_or_write_another_branchs_equipment(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let owner = Harness::new(&pool, "ADMIN").await;
         let equipment = create_equipment(&owner, "CFO25-7802", "802").await;
@@ -1122,8 +1140,9 @@ async fn branch_admin_cannot_read_or_write_another_branchs_equipment(pool: PgPoo
 
 /// Non-regression: `BranchScope::All` (SUPER_ADMIN) reaches every one of the
 /// surfaces the test above closes. The fix narrows branch-scoped callers only.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn org_wide_principal_still_reaches_every_branch(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let owner = Harness::new(&pool, "ADMIN").await;
         let equipment = create_equipment(&owner, "CFO25-7807", "807").await;
@@ -1256,6 +1275,11 @@ impl Harness {
     /// principals whose branch scopes do not overlap. `SUPER_ADMIN` resolves to
     /// `BranchScope::All` regardless of the branch it is seeded into.
     async fn in_branch(pool: &PgPool, role: &str, branch: BranchId) -> Self {
+        let auth_database = console_platform_test_support::login_test_pool(
+            pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
         let public_pem = signing_key
@@ -1282,7 +1306,10 @@ impl Harness {
         .unwrap();
         let service = router(RegistryRestState::new(
             PgRegistryStore::new(runtime_role_pool(pool).await),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ));
         Self {
             service,

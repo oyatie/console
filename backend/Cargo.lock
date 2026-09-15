@@ -3135,6 +3135,7 @@ dependencies = [
  "console-platform-db",
  "console-platform-provisioning",
  "console-platform-request-context",
+ "console-platform-test-support",
  "http",
  "p256",
  "serde",

@@ -43,14 +43,15 @@ struct JsonResponse {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn consulting_engagement_story_is_tenant_scoped_idempotent_and_terminal(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fixture = seed_fixture(&owner_pool).await;
     let keys = keys();
     let requester_token = bearer(&keys, fixture.requester, fixture.org);
     let approver_token = bearer(&keys, fixture.approver, fixture.org);
     let runtime_pool = runtime_role_pool(&owner_pool).await;
-    let service = build_router(app_state(runtime_pool.clone(), &keys));
+    let service = build_router(app_state(runtime_pool.clone(), &keys).await);
 
     let create_body = json!({
         "customerId": fixture.customer,
@@ -436,13 +437,14 @@ async fn consulting_engagement_story_is_tenant_scoped_idempotent_and_terminal(ow
 /// switch keep `time`'s nine-element component array in `idempotency_response`
 /// forever. Replaying one must still return its stored response, and must return
 /// it as RFC 3339 — the array shape stays out of the wire contract.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn legacy_component_array_replay_survives_rfc3339_switch(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fixture = seed_fixture(&owner_pool).await;
     let keys = keys();
     let requester_token = bearer(&keys, fixture.requester, fixture.org);
     let runtime_pool = runtime_role_pool(&owner_pool).await;
-    let service = build_router(app_state(runtime_pool, &keys));
+    let service = build_router(app_state(runtime_pool, &keys).await);
 
     let create_body = json!({
         "customerId": fixture.customer,
@@ -516,15 +518,16 @@ fn legacy_time_components(rfc3339: &str) -> Value {
     ])
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn terminal_transition_winning_after_child_precheck_returns_conflict_without_write(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let fixture = seed_fixture(&owner_pool).await;
     let keys = keys();
     let requester_token = bearer(&keys, fixture.requester, fixture.org);
     let runtime_pool = runtime_role_pool(&owner_pool).await;
-    let service = build_router(app_state(runtime_pool, &keys));
+    let service = build_router(app_state(runtime_pool, &keys).await);
 
     let created = send(
         service.clone(),
@@ -940,7 +943,12 @@ fn bearer(keys: &Keys, user_id: UserId, org: OrgId) -> String {
     .unwrap()
 }
 
-fn app_state(pool: PgPool, keys: &Keys) -> AppState {
+async fn app_state(pool: PgPool, keys: &Keys) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -949,7 +957,9 @@ fn app_state(pool: PgPool, keys: &Keys) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", keys.public_pem.clone()),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {

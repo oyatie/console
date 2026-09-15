@@ -26,8 +26,9 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x0b1e_0b1e_0b1e_0b1e_0b1e_0b1e_0b1e_0b1e);
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_list_delete_roundtrip_and_audit_events(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -221,8 +222,9 @@ async fn rls_cross_org_isolation_as_runtime_role(owner_pool: PgPool) {
 /// UserManage-tier admin — NOT open to every Login member the way create/list
 /// are. A non-creator, non-manager member gets 403; the creator can still
 /// delete (proving the guard denies the outsider, not the owner).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn delete_link_denied_for_non_creator_non_manager(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -305,8 +307,9 @@ async fn delete_link_denied_for_non_creator_non_manager(pool: PgPool) {
 /// absent-vs-invisible oracle); a link between two visible objects is created.
 /// Endpoints of non-resolvable kinds still pass through (no visibility surface)
 /// — proven by the roundtrip test's document->voucher link.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_link_requires_visible_endpoints(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -520,7 +523,11 @@ fn get(uri: &str, token: &str) -> Request<Body> {
 }
 
 async fn request(pool: &PgPool, public_key_pem: &str, req: Request<Body>) -> (StatusCode, Value) {
-    let service = build_router(app_state(pool.clone(), public_key_pem.to_owned()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.to_owned())
+            .await
+            .unwrap(),
+    );
     let response = service.oneshot(req).await.unwrap();
     let status = response.status();
     let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
@@ -636,7 +643,15 @@ fn issue_token_with_roles(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -645,4 +660,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

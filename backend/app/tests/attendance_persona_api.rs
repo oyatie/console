@@ -49,8 +49,9 @@ struct Personas {
     member_token: String,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn executive_cannot_confirm_exception_admin_can(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let personas = seed_personas(&pool, &keys).await;
     let exception_id = seed_open_late_exception(&pool, personas.branch, personas.admin).await;
@@ -63,8 +64,11 @@ async fn executive_cannot_confirm_exception_admin_can(pool: PgPool) {
     let foreign_actor = seed_user_in(&pool, other_org, "ADMIN", Some(foreign_branch)).await;
     let foreign_exception_id =
         seed_open_late_exception_in(&pool, other_org, foreign_branch, foreign_actor).await;
-    let app =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let app = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let resolve = format!("{EXCEPTIONS}/{exception_id}/resolve");
     let other_resolve = format!("{EXCEPTIONS}/{other_exception_id}/resolve");
     let foreign_resolve = format!("{EXCEPTIONS}/{foreign_exception_id}/resolve");
@@ -153,12 +157,16 @@ async fn executive_cannot_confirm_exception_admin_can(pool: PgPool) {
     assert_eq!(open_resolutions(&pool, foreign_exception_id).await, 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn period_lock_month_close_allows_admin_and_executive_forbids_member(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let personas = seed_personas(&pool, &keys).await;
-    let app =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let app = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let month = "2026-08";
     let admin_body = json!({
         "month": month,
@@ -496,7 +504,15 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -505,4 +521,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

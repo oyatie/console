@@ -34,8 +34,9 @@ struct Response {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn manager_attendance_branch_scope_is_explicit_and_nonleaking(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch_a = seed_branch(&pool, "a").await;
     let branch_b = seed_branch(&pool, "b").await;
@@ -47,8 +48,11 @@ async fn manager_attendance_branch_scope_is_explicit_and_nonleaking(pool: PgPool
     let employee_b = seed_employee_attendance(&pool, super_admin, branch_b).await;
     seed_site_attendance(&pool, admin_a, branch_a, "901").await;
     seed_site_attendance(&pool, executive, branch_b, "902").await;
-    let app =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let app = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let admin = bearer(&keys, admin_a, "ADMIN");
     let custom = bearer(&keys, custom_a, "MEMBER");
     let executive = bearer(&keys, executive, "EXECUTIVE");
@@ -96,7 +100,11 @@ async fn manager_attendance_branch_scope_is_explicit_and_nonleaking(pool: PgPool
 
     // The scoped employee lookup must not disclose whether an out-of-branch
     // employee exists: it is byte-for-byte the same empty page as an absent id.
-    let app = build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem).unwrap());
+    let app = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem)
+            .await
+            .unwrap(),
+    );
     let out_of_branch = get(
         app.clone(),
         &format!("{RECORDS}{a}&employee_id={employee_b}"),
@@ -384,7 +392,15 @@ async fn scoped_role_pool(owner_pool: &PgPool, role: &'static str) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -393,4 +409,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

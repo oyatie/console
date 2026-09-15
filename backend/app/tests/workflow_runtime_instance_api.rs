@@ -44,16 +44,20 @@ struct JsonResponse {
 // ===========================================================================
 // 1. Start: parks the first approval task, and replays idempotently.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_run_parks_first_task_and_replays_idempotently(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.start").await;
     let other_definition_id = seed_approval_definition(&pool, "approval.instance.other").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     let object_id = Uuid::new_v4();
@@ -109,15 +113,19 @@ async fn start_run_parks_first_task_and_replays_idempotently(pool: PgPool) {
 // ===========================================================================
 // 2. Decide: reject/return require a non-empty comment (422); reject cancels run.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn decision_reject_requires_comment_and_cancels_run(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.reject").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     let started = post(
@@ -189,15 +197,19 @@ async fn decision_reject_requires_comment_and_cancels_run(pool: PgPool) {
 // ===========================================================================
 // 3. Decide approve advances the approval line to the next human task.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn decision_approve_advances_the_line(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.advance").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     let started = post(
@@ -314,15 +326,19 @@ async fn initiator_cannot_approve_own_run_but_other_approver_can(pool: PgPool) {
 // 3c. SoD exemption: the org 대표 / SUPER_ADMIN MAY self-approve (no higher
 //     approver exists), but the override is recorded as a governance finding.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn super_admin_self_approval_allowed_and_writes_governance_finding(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.sodexempt").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     let started = post(
@@ -383,15 +399,19 @@ async fn super_admin_self_approval_allowed_and_writes_governance_finding(pool: P
 // ===========================================================================
 // 4. Deny-by-omission: a persona without the policy sees an EMPTY list (not 403).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn role_inbox_denies_by_omission(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.inbox").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let starter_token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     // Park a review.hr task (required_policy approval_review → completion_review).
@@ -443,15 +463,19 @@ async fn role_inbox_denies_by_omission(pool: PgPool) {
 // ===========================================================================
 // 5. Claim: OPEN → CLAIMED, same-user replay 200, other-user 409.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn claim_transitions_open_to_claimed_with_replay_and_conflict(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.claim").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let started = post(
         service.clone(),
@@ -513,15 +537,19 @@ async fn claim_transitions_open_to_claimed_with_replay_and_conflict(pool: PgPool
 // ===========================================================================
 // 6. Submission box lists the runs the principal initiated.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn submission_box_lists_initiated_runs(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.mine").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     post(
@@ -563,15 +591,19 @@ async fn submission_box_lists_initiated_runs(pool: PgPool) {
 // ===========================================================================
 // 6b. Engine-Gen follow-up: `?q=` free-text filter narrows the submission box.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn submission_box_free_text_filter_narrows_results(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.instance.qfilter").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     // Two runs with distinguishable human-readable content in input_payload.
@@ -656,8 +688,9 @@ async fn submission_box_free_text_filter_narrows_results(pool: PgPool) {
 // ===========================================================================
 // 7. Security H1(b): deciding a policy-less legacy task fails closed (403).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn decide_on_policy_less_task_is_forbidden(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
@@ -667,8 +700,11 @@ async fn decide_on_policy_less_task_is_forbidden(pool: PgPool) {
     // authorization boundary.
     let (_run_id, task_id) =
         seed_run_with_open_task(&pool, definition_id, initiator, "admin", None).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // Even a SUPER_ADMIN cannot decide a task that carries no policy.
     let actor = UserId::new();
@@ -694,16 +730,20 @@ async fn decide_on_policy_less_task_is_forbidden(pool: PgPool) {
 // ===========================================================================
 // 8. Security M2: per-definition start authority + payload size cap.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_policy_gates_run_initiation_and_caps_payload(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     // Operational pipeline: start_policy = completion_review (NOT self-service).
     let payroll_definition = seed_start_policy_definition(&pool, "ops.completion.start").await;
     // Approval template: no start_policy — self-service 기안/상신 (DESIGN §4.8).
     let approval_definition = seed_approval_definition(&pool, "approval.selfservice").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // A non-privileged persona (MECHANIC lacks completion_review) is DENIED the
     // operational pipeline start.
@@ -786,8 +826,9 @@ async fn start_policy_gates_run_initiation_and_caps_payload(pool: PgPool) {
 // ===========================================================================
 // 9. Security M3: personal inbox OPEN tasks are scoped by role + ownership.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn assignee_me_open_tasks_scoped_by_role_and_ownership(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let definition_id = seed_approval_definition(&pool, "approval.m3").await;
@@ -804,8 +845,11 @@ async fn assignee_me_open_tasks_scoped_by_role_and_ownership(pool: PgPool) {
         Some("approval_finalize"),
     )
     .await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // The owner sees their own initiator task.
     let owner_inbox = get(
@@ -883,8 +927,9 @@ async fn assignee_me_open_tasks_scoped_by_role_and_ownership(pool: PgPool) {
 // ===========================================================================
 // 9b. Bulk approval inbox: authorization filtering happens before page shape.
 // ==========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn bulk_approval_inbox_keysets_past_interspersed_denied_tasks(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let approver = UserId::new();
@@ -922,8 +967,11 @@ async fn bulk_approval_inbox_keysets_past_interspersed_denied_tasks(pool: PgPool
             .unwrap();
     }
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, approver, "SUPER_ADMIN", branch);
     let first = get(
         service.clone(),
@@ -971,14 +1019,18 @@ async fn bulk_approval_inbox_keysets_past_interspersed_denied_tasks(pool: PgPool
 // ===========================================================================
 // 10. Security L5: an over-long decision comment is a 422.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn decide_comment_over_limit_is_rejected(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let actor = UserId::new();
     seed_user(&pool, actor, "SUPER_ADMIN", branch).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     // The comment bound is enforced before any task lookup, so any task id serves.
     let rejected = post(
@@ -1316,7 +1368,15 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -1325,4 +1385,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

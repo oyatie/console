@@ -39,8 +39,9 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const OTHER_ORG: Uuid = Uuid::from_u128(0x0bad_0bad_0bad_0bad_0bad_0bad_0bad_0bad);
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn walks_hops_omits_out_of_scope_nodes_and_ignores_cross_org_links(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -194,8 +195,9 @@ async fn walks_hops_omits_out_of_scope_nodes_and_ignores_cross_org_links(owner_p
 /// cycle-safe Rust-side BFS (never a recursive SQL CTE that would
 /// materialize ~degree^depth before truncating) and that the node cap is
 /// enforced mid-walk with `truncated: true`.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn terminates_on_dense_cyclic_graph_and_respects_node_cap(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -326,8 +328,9 @@ async fn terminates_on_dense_cyclic_graph_and_respects_node_cap(owner_pool: PgPo
 /// work_order node would be the real leak (the one #222 fixed for
 /// resolve_object but which the graph's independent node-discovery path could
 /// have reopened without this composition).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn graph_omits_work_order_node_for_member_without_feature_grant(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -394,8 +397,9 @@ async fn graph_omits_work_order_node_for_member_without_feature_grant(owner_pool
 /// while an ADMIN's same walk includes the account lifecycle head. This keeps
 /// the graph's quiet omission path in lockstep with `resolve_object`'s direct
 /// 403 for account heads without creating an existence oracle mid-walk.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn graph_omits_account_node_for_member_without_user_manage(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -503,8 +507,9 @@ async fn graph_omits_account_node_for_member_without_user_manage(owner_pool: PgP
 /// truncated stays false. Seed > the cap outgoing links from the root and
 /// assert truncated even though the node cap is never hit (dst nodes are
 /// non-resolvable, so no extra nodes are added).
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn link_limit_clip_marks_truncated(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -575,7 +580,11 @@ async fn graph(
     id: &str,
     depth: Option<i64>,
 ) -> (StatusCode, Value) {
-    let service = build_router(app_state(pool.clone(), public_key_pem.to_owned()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_key_pem.to_owned())
+            .await
+            .unwrap(),
+    );
     let uri = match depth {
         Some(d) => format!("/api/objects/{kind}/{id}/graph?depth={d}"),
         None => format!("/api/objects/{kind}/{id}/graph"),
@@ -842,7 +851,15 @@ fn issue_token_with_roles(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
@@ -851,4 +868,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

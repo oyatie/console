@@ -62,7 +62,12 @@ fn settings() -> JwtSettings {
 
 /// Build the auth-rest state from an explicit keypair, so the test can mint an
 /// actor token the built router verifies with the SAME key.
-fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
+async fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AuthRestState::new(
         pool,
         AuthRestConfig {
@@ -80,6 +85,7 @@ fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
         },
     )
     .unwrap()
+    .with_auth_database(auth_database)
 }
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -226,8 +232,9 @@ async fn post_tenant_context(app: axum::Router, token: &str, org_id: Uuid) -> (S
     (status, body)
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handler_mints_token_with_real_subject_freshness(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     // A group with the target subsidiary as member and a CROSS-ORG actor (home in
     // a different org, so no `users` row in the target → absent-0 subject/session).
     let target = seed_org(&owner_pool, "acme").await;
@@ -249,7 +256,7 @@ async fn handler_mints_token_with_real_subject_freshness(owner_pool: PgPool) {
     .unwrap();
     let verifier =
         JwtVerifier::from_es256_public_pem(settings(), keys.public_pem.as_bytes()).unwrap();
-    let app = router(state_with_keys(rt_pool, &keys));
+    let app = router(state_with_keys(rt_pool, &keys).await);
     let actor_token = mint_actor_token(&issuer, actor, OrgId::from_uuid(parent));
 
     // Drive the REAL handler.

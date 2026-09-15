@@ -35,8 +35,9 @@ const ALL_FEATURES: &[&str] = &[
     "equipment_3r_observe",
 ];
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn repair_lifecycle_completes_with_audits_history_and_no_finance_posting(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch = seed_branch(&pool, OrgId::knl(), "equip-main").await;
@@ -395,8 +396,9 @@ async fn repair_lifecycle_completes_with_audits_history_and_no_finance_posting(p
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn capabilities_deny_without_leakage_across_branch_grant_and_org(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch_a = seed_branch(&pool, OrgId::knl(), "equip-a").await;
@@ -585,8 +587,9 @@ async fn capabilities_deny_without_leakage_across_branch_grant_and_org(pool: PgP
     assert_eq!(foreign_branch["error"]["code"], "not_found");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn concurrent_approvals_on_one_unit_have_exactly_one_winner(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch = seed_branch(&pool, OrgId::knl(), "equip-race").await;
@@ -685,8 +688,9 @@ async fn concurrent_approvals_on_one_unit_have_exactly_one_winner(pool: PgPool) 
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn resale_disposition_sells_unit_and_blocks_further_quotes(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch = seed_branch(&pool, OrgId::knl(), "equip-resale").await;
@@ -852,8 +856,9 @@ async fn resale_disposition_sells_unit_and_blocks_further_quotes(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handover_conceals_ineligible_or_foreign_evidence_and_denies_foreign_branch(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let branch = seed_branch(&pool, OrgId::knl(), "equip-evidence").await;
@@ -1046,10 +1051,14 @@ async fn send(
                 .unwrap_or_else(Body::empty),
         )
         .unwrap();
-    let response = build_router(app_state(pool.clone(), keys.public_pem.clone()).unwrap())
-        .oneshot(request)
-        .await
-        .unwrap();
+    let response = build_router(
+        app_state(pool.clone(), keys.public_pem.clone())
+            .await
+            .unwrap(),
+    )
+    .oneshot(request)
+    .await
+    .unwrap();
     let status = response.status();
     let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
     (
@@ -1061,7 +1070,12 @@ async fn send(
         },
     )
 }
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
@@ -1072,6 +1086,7 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }
 async fn seed_eligible_handover_evidence(
     pool: &PgPool,
