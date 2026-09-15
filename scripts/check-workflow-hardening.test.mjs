@@ -331,7 +331,7 @@ test("rejects candidate-controlled setup shims, missing checksums, lifecycle scr
     replaceThroughMarker(
       workflow,
       "      - name: Install checksum-pinned Trivy before candidate checkout\n",
-      "      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7\n",
+      "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n",
       "      - uses: ./.github/actions/setup-trivy\n",
     ),
     "candidate-controlled setup-trivy shim",
@@ -368,7 +368,7 @@ test("rejects candidate-controlled setup shims, missing checksums, lifecycle scr
 
 test("locks proof order, action pins, context names, and duplicate YAML keys", () => {
   const checkout =
-    "      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7\n";
+    "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7\n";
   const regression =
     "      - name: Trivy exception policy regression\n        run: node --test scripts/generate-trivy-dev-codegen-exceptions.test.mjs\n";
   rejected(
@@ -378,7 +378,7 @@ test("locks proof order, action pins, context names, and duplicate YAML keys", (
   rejected(
     replaceOnce(
       workflow,
-      "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0",
+      "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
       "actions/checkout@main",
     ),
     "floating action pin",

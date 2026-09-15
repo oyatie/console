@@ -978,7 +978,7 @@ jobs:
       packages: read
     steps:
       - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: \${{ needs.ci-admission.outputs.release_sha }}
           persist-credentials: false
@@ -1990,7 +1990,7 @@ describe("production hardening workflow gates", () => {
       validWorkflowFiles[".github/workflows/image-release.yml"];
     const result = evaluateWorkflows({
       ".github/workflows/image-release.yml": releaseWorkflow.replaceAll(
-        `actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0`,
+        `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1`,
         "actions/checkout@v7",
       ),
     });
@@ -2113,7 +2113,7 @@ describe("production hardening workflow gates", () => {
         "  production-promotion-preflight:\n",
         `  production-promotion-preflight:
     # These strings must not leak backward into release-probe validation.
-    # contents: read; actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0; persist-credentials: false
+    # contents: read; actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1; persist-credentials: false
     # ops/postgres-reconcile-topology.sh
 `,
       );
