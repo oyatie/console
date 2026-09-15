@@ -13,7 +13,9 @@ mod well_known;
 
 pub use error::AuthError;
 pub use jwt::{
-    AccessClaims, AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier, TenantAccessContext,
+    AccessClaims, AccessTokenInput, AccountAccessClaims, AccountAccessTokenInput,
+    AccountAccessVerification, AccountAssurance, AccountCsrfClaims, AccountCsrfTokenInput,
+    JwtIssuer, JwtSettings, JwtVerifier, SignedAccountToken, TenantAccessContext,
 };
 pub use refresh::{RefreshToken, RefreshTokenIssue, RefreshTokenStore, RefreshTokenUseError};
 pub use session::SessionVerification;
