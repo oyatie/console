@@ -617,3 +617,28 @@ fn optional_selected_enum_can_be_cleared_without_javascript() {
     // Empty option represents editor Unset, not business NULL. Decoding and
     // owner validation require separate actual POST tests.
 }
+
+// Browser-r4 identifies the business composer by its accessible name, so a
+// global account/logout form cannot be mistaken for this object's input form.
+// This checks actual Leptos serialization only, not mounted route availability
+// or a browser accessibility tree. The shared fixture supplies authorized data.
+#[test]
+fn composer_form_has_accessible_business_name() {
+    let mut model = screen();
+    let html = render(&model);
+    let forms = start_tags(&html, "form");
+    assert_eq!(forms.len(), 1, "one authorized business composer: {html}");
+    assert_eq!(attr(forms[0], "method").as_deref(), Some("post"));
+    assert_eq!(
+        attr(forms[0], "aria-label").as_deref(),
+        Some("업무 입력"),
+        "the authorized POST form needs its stable business accessible name"
+    );
+
+    model.mutation = None;
+    let read_only = render(&model);
+    assert!(
+        start_tags(&read_only, "form").is_empty(),
+        "read-only projection must not gain a named mutation form: {read_only}"
+    );
+}
