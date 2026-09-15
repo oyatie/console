@@ -1,0 +1,24 @@
+{
+  "base": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "owner": "/root",
+  "reviewer": "/root/fast_gate_review",
+  "immutable_target": "existing six test-only functions: start,canonical_snapshot,workflow_snapshot,seed_completion,required_api_confirmed_owner_audit_failure_replays_and_repairs,required_workflow_typed_unknown_preserves_pending_and_failed_events",
+  "mechanical_guide": "Prepend #[cfg(test)] immediately before each async fn, before existing sqlx::test attributes where present. Preserve all other bytes.",
+  "premortem": "A production query is accidentally hidden or a real test removed from discovery.",
+  "blast_radius": "One existing test-only source file, no runtime authority/gate-source changes.",
+  "detection": "Same two gate commands; exact unchanged function bodies; all31 discovered same names; supervised App8 and CI inventory.",
+  "rollback": "Revert only added attributes; retain baseline log.",
+  "stop": [
+    "changed assertions",
+    "changed discovery",
+    "production function",
+    "new gate exemption"
+  ],
+  "holds": [
+    "independent exact-diff approval",
+    "same probe GREEN",
+    "runtime18",
+    "full native Account enrollment and first vertical",
+    "production/payment/legal authority"
+  ]
+}

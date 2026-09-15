@@ -1,0 +1,28 @@
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.52s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-22aed68b00ab94a9)
+
+running 1 test
+test account_browser::company_free_registration_me_and_empty_contexts ... 
+thread 'account_browser::company_free_registration_me_and_empty_contexts' (38964031) panicked at app/tests/auth_rest.rs:4034:13:
+assertion `left == right` failed: BW31 HTTP contract not satisfied
+  left: 404
+ right: 200
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    account_browser::company_free_registration_me_and_empty_contexts
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 215 filtered out; finished in 3.39s
+
+error: test failed, to rerun pass `-p console-app --test auth_rest`

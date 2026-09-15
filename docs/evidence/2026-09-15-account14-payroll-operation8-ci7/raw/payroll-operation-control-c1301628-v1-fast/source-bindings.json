@@ -1,0 +1,107 @@
+{
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "observed_shared_head": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "target_preimage_matches": true,
+  "rule": "All 11 authority/source bindings are immutable c130 Git blobs. Root implementation drift outside the unchanged target is expected, not a source-bind failure. Observed working hashes are a point-in-time readback only.",
+  "sources": [
+    {
+      "path": "backend/app/src/durability_composition_tests.rs",
+      "mode": "100644",
+      "git_blob": "f497fb61744f50bb75d65780aaf36257d3e6f5e9",
+      "sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/durability_composition_tests.rs",
+      "observed_working_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "backend/app/src/workflow_drain.rs",
+      "mode": "100644",
+      "git_blob": "ef37b66726c8cb756f5bcdde4efeb16e752fde45",
+      "sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/workflow_drain.rs",
+      "observed_working_sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/lib.rs",
+      "observed_working_sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "mode": "100644",
+      "git_blob": "b54edb2b9982af7fce0c9532a39569cea953bd3e",
+      "sha256": "c24816b44ae5af9f2d33d48d3d6e93059732bb88b171cdb9470bde79aff8b197",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "observed_working_sha256": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+      "observed_working_matches_base": false
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "31577036b6d781676fa119e5786963ce8aad8b74",
+      "sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "observed_working_sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "8de02d08b143ed387e4f7737e2b3066dd4084519",
+      "sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "observed_working_sha256": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+      "observed_working_matches_base": false
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "91851416714106e4d0bece113baa2627f2b65ae6",
+      "sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/workflow/domain/src/lib.rs",
+      "observed_working_sha256": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+      "observed_working_matches_base": false
+    },
+    {
+      "path": "backend/crates/kernel/core/src/error.rs",
+      "mode": "100644",
+      "git_blob": "5a57c7fde06db580c27ddb7fe86a2609d28d454e",
+      "sha256": "e0697960d1cba3beb35ccd0cf10b1ae94c5d208e2d6c80264928faf9c4062932",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/kernel/core/src/error.rs",
+      "observed_working_sha256": "e0697960d1cba3beb35ccd0cf10b1ae94c5d208e2d6c80264928faf9c4062932",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "mode": "100644",
+      "git_blob": "e8a6557c6f37e1639d60be0e1c833cd749fffacd",
+      "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/platform/test-support/src/lib.rs",
+      "observed_working_sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "backend/crates/platform/db/src/durability.rs",
+      "mode": "100644",
+      "git_blob": "2a54acd0c0f865017c917117e81659cf3d4466fa",
+      "sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/platform/db/src/durability.rs",
+      "observed_working_sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "observed_working_matches_base": true
+    },
+    {
+      "path": "tools/lanes/recovery/supervise_recovery.py",
+      "mode": "100755",
+      "git_blob": "5ecc39d44d9bdbb1767b6e2a642088da56a3c0c9",
+      "sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c",
+      "retained_path": "sources/c13016282540c49546af1c0c75db45faef7fc466/tools/lanes/recovery/supervise_recovery.py",
+      "observed_working_sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c",
+      "observed_working_matches_base": true
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "verdict": "APPROVE_IMMUTABLE_ACTUAL14_RED_CLASSIFICATION__WRAPPER_SEMANTIC_CLASSIFIER_HOLD",
+  "reviewer": "/root/fast_gate_review",
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "evidence": "/private/tmp/account-deactivation14-796173fc-red-v1",
+  "driver_receipt_sha256": "559a378f14da23794f90ee552d6d2f484956fa6cd28e13153fec47d0130bf10e",
+  "probe_log_sha256": "56e8a69ee3960707bd814bb1a77b3de64f6a2179c972bfa7e17eb046a9613fd4",
+  "classification_sha256": "09fac48dd0e5149c7a0868beeda3b57eb5c73d63254a2be9458f0bec0a697ce6",
+  "source_prepost_exact_clean": true,
+  "driver_bytes_verified": true,
+  "counts": {
+    "executed": 14,
+    "pass": 3,
+    "fail": 11,
+    "semantic_first_failures": 9,
+    "guard_prerequisite42883": 2,
+    "ignored": 0,
+    "measured": 0,
+    "filtered": 0
+  },
+  "case_results": {
+    "account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay": "FAILED",
+    "account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects": "FAILED",
+    "account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits": "FAILED",
+    "account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot": "FAILED",
+    "account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep": "FAILED",
+    "account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift": "FAILED",
+    "account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution": "FAILED",
+    "account_custody_deactivation::guard_races::immediate_security_fk_waits_for_account_root_update_lock": "ok",
+    "account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects": "FAILED",
+    "account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation": "FAILED",
+    "account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation": "FAILED",
+    "account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect": "FAILED",
+    "account_custody_deactivation::unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation": "ok",
+    "deactivate_revokes_passkeys_and_sessions_as_runtime_role": "ok"
+  },
+  "first_failures": [
+    {
+      "name": "account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 423,
+      "column": 9,
+      "diagnostic": "COMPANY_DEACTIVATION_CHANGED_ACCOUNT_CUSTODY: Account state/generation and key/family/token history must survive",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 943,
+      "column": 13,
+      "diagnostic": "NATIVE_FK_DID_NOT_WAIT_FOR_EXACT_BUSINESS_TRANSACTION",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 943,
+      "column": 13,
+      "diagnostic": "NATIVE_FK_DID_NOT_WAIT_FOR_EXACT_BUSINESS_TRANSACTION",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 834,
+      "column": 13,
+      "diagnostic": "COMPANY_DID_NOT_WAIT_FOR_EXACT_ENROLLMENT_TRANSACTION",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 834,
+      "column": 13,
+      "diagnostic": "COMPANY_DID_NOT_WAIT_FOR_EXACT_ENROLLMENT_TRANSACTION",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 1240,
+      "column": 22,
+      "diagnostic": "called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: \"42883\", message: \"function public.account_company_deactivation_guard_v1(uuid, uuid) does not exist\", detail: None, hint: Some(\"No function matches the given name and argument types. You might need to add explicit type casts.\"), position: Some(Original(8)), where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some(\"parse_func.c\"), line: Some(629), routine: Some(\"ParseFuncOrColumn\") })",
+      "classification": "guard_prerequisite"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 1137,
+      "column": 22,
+      "diagnostic": "called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: \"42883\", message: \"function public.account_company_deactivation_guard_v1(uuid, uuid) does not exist\", detail: None, hint: Some(\"No function matches the given name and argument types. You might need to add explicit type casts.\"), position: Some(Original(8)), where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some(\"parse_func.c\"), line: Some(629), routine: Some(\"ParseFuncOrColumn\") })",
+      "classification": "guard_prerequisite"
+    },
+    {
+      "name": "account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 1050,
+      "column": 17,
+      "diagnostic": "UNSUPPORTED_ISOLATION_MUST_REFUSE_LEGACY_DECISION: repeatable read",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 423,
+      "column": 9,
+      "diagnostic": "COMPANY_DEACTIVATION_CHANGED_ACCOUNT_CUSTODY: Account state/generation and key/family/token history must survive",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 526,
+      "column": 9,
+      "diagnostic": "UNAVAILABLE_ACCOUNT_AUTHORITY_MUTATED_COMPANY_OR_CUSTODY: current classification is mandatory before effects",
+      "classification": "semantic"
+    },
+    {
+      "name": "account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect",
+      "path": "crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "line": 526,
+      "column": 9,
+      "diagnostic": "UNAVAILABLE_ACCOUNT_AUTHORITY_MUTATED_COMPANY_OR_CUSTODY: current classification is mandatory before effects",
+      "classification": "semantic"
+    }
+  ],
+  "cleanup": "All receipt artifact hashes verified; empty successful final listing and owned-container cleanup confirmed.",
+  "first_failure_limits": [
+    "Nonactive later2states not reached",
+    "Serializable not reached after RR failure",
+    "Backend kill request made but exact57P01/fullrollback assertions after943 not reached",
+    "NOWAIT result captured but its assertion after943 not reached",
+    "Scope/profile checks after42883 not reached",
+    "Outage original Auth55P03 observed by earlier passed assertion; later owner result/restoration after526 unreached"
+  ],
+  "wrapper": {
+    "path": "/private/tmp/account-deactivation14-probe.py",
+    "sha256": "084bb619bd5a208353c16ac303a7bba6154d55b43dfb4220e20da5883fa0cf14",
+    "verdict": "HOLD_AS_AUTOMATIC_SEMANTIC_ADAPTER",
+    "finding": "Current wrapper validates only total counts/source digest/receipt claims; returns1 for any14Rust failures, including fixture failures or formerly positive tests. It neither verifies exact names/known first-failure boundaries nor hashes actual invoked driver. Python assert checks also disappear under optimization.",
+    "narrow_resolution": "Bind actual driver bytes and exact14roster; validate failed-case panic location+diagnostic against nine accepted semantic plus two explicitly separate missing42883 prerequisites, require three preservation cases pass and at least one semantic failure for RED; unexpected errors126. Reject optimizedPython. Or use a raw gate with explicit independent manual first-failure review for every admission instead of describing it as a semantic adapter."
+  },
+  "admission_scope": "Actual clean796173fc record supplies meaningful RED for reviewed guard+owner scope. This receipt does not accept broader stage-blocked assertions or bypass root fanout/probe requirements.",
+  "reviewer_runtime_invocations": 0,
+  "reviewer_repository_writes": 0
+}

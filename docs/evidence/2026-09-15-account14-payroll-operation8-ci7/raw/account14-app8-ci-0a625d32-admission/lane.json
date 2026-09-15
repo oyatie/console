@@ -1,0 +1,16 @@
+[
+  {
+    "lane": "account14-app8-ci",
+    "probe": "node --test scripts/lib/recovery-test-invocations.test.mjs > /private/tmp/account14-app8-ci-0a625d32-admission/probe.log 2>&1",
+    "prompt": "Root sole integration writer. Inventory private candidate only. Follow MAP b16b9789 exact seven files and frozen App8 roster. Preserve existing13 commands, dark set and all controls; exact same probe GREEN. No Rust, database, migrations, lockfiles or authority scope.",
+    "allow": [
+      ".github/workflows/ci.yml",
+      "scripts/lib/recovery-test-invocations.mjs",
+      "scripts/lib/recovery-test-invocations.test.mjs",
+      "tools/buck/test_preparation_wiring.py",
+      "scripts/check-ci-preflight.mjs",
+      "scripts/check-ci-preflight.test.mjs",
+      "docs/program/executed-tests-baseline.json"
+    ]
+  }
+]

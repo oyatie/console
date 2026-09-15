@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "status": "frozen_for_independent_source_review",
+  "owner": "/root/fast_gate_review",
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "observed_shared_head": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "target": "backend/app/src/durability_composition_tests.rs",
+  "preimage_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+  "candidate_sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb",
+  "patch_sha256": "0e62463ef150e376bd0216e21128e3f3f3643ea8b299bc68a485e6e30180a12b",
+  "test_name": "required_workflow_provenance_refusal_is_operation_not_unknown",
+  "expected_baseline": "PASS; ordinary control is not a RED implementation lane",
+  "source_case_counts": {
+    "before": 7,
+    "after": 8
+  },
+  "runtime_cases_executed": 0,
+  "files": [
+    {
+      "path": "GUIDE.md",
+      "size_bytes": 6707,
+      "sha256": "c98b008b2bb51694047f15ba7a228c4e6de19b54c1d644369fb5b4970c5e8ba1"
+    },
+    {
+      "path": "base.rs",
+      "size_bytes": 65597,
+      "sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7"
+    },
+    {
+      "path": "candidate.patch",
+      "size_bytes": 7380,
+      "sha256": "0e62463ef150e376bd0216e21128e3f3f3643ea8b299bc68a485e6e30180a12b"
+    },
+    {
+      "path": "durability_composition_tests.rs",
+      "size_bytes": 72362,
+      "sha256": "0f02b3aec6f15449015b22a54b70453b66f2a5d17fb7670f3a241cce53b2a7cb"
+    },
+    {
+      "path": "freeze_packet.py",
+      "size_bytes": 12924,
+      "sha256": "d50427c7414e4b781fd33505a2954f099d212166c34b63f702f84450569954a0"
+    },
+    {
+      "path": "mechanical-verification.json",
+      "size_bytes": 2793,
+      "sha256": "03acd09aa0dbe59ba974bbf7d803432a99ceed9dc96073faf454cc35a9511c9f"
+    },
+    {
+      "path": "source-bindings.json",
+      "size_bytes": 6000,
+      "sha256": "65de96c44298b6c7e74a0c0978e68bcdb62b229869617bd98fca4e82e42c9670"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/durability_composition_tests.rs",
+      "size_bytes": 65597,
+      "sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/lib.rs",
+      "size_bytes": 292931,
+      "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/app/src/workflow_drain.rs",
+      "size_bytes": 8755,
+      "sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/kernel/core/src/error.rs",
+      "size_bytes": 2549,
+      "sha256": "e0697960d1cba3beb35ccd0cf10b1ae94c5d208e2d6c80264928faf9c4062932"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "size_bytes": 23675,
+      "sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "size_bytes": 42559,
+      "sha256": "c24816b44ae5af9f2d33d48d3d6e93059732bb88b171cdb9470bde79aff8b197"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/platform/db/src/durability.rs",
+      "size_bytes": 15322,
+      "sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/platform/test-support/src/lib.rs",
+      "size_bytes": 21727,
+      "sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "size_bytes": 133468,
+      "sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/backend/crates/workflow/domain/src/lib.rs",
+      "size_bytes": 25074,
+      "sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a"
+    },
+    {
+      "path": "sources/c13016282540c49546af1c0c75db45faef7fc466/tools/lanes/recovery/supervise_recovery.py",
+      "size_bytes": 2692,
+      "sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c"
+    }
+  ]
+}

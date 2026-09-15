@@ -1,0 +1,51 @@
+{
+  "status": "FROZEN_TEST_ONLY_V2",
+  "base_sha": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "target": "scripts/lib/recovery-test-invocations.test.mjs",
+  "patch_sha256": "1c0342ab624c0dfb3121d5587c288a08dec3a60aa118f1ac158a500224971f5b",
+  "preimage_sha256": "fe8d1266f937c3de191e7fddb1f2ce0ccd17b4f5fc66e42c6c0f06cb7f367a45",
+  "postimage_sha256": "4d515a562f456bc544c8799166161e0547c83598a0b36d4b69d02b5daf2ce6d6",
+  "insertions": 36,
+  "deletions": 0,
+  "old_bytes_exact_prefix": true,
+  "new_tests": {
+    "positive": 9,
+    "negative": 21
+  },
+  "validation": [
+    {
+      "cwd": "/private/tmp/recovery-outer-cfg-tests-23fa2771-v2-inventory/baseline",
+      "command": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+      "exit": 0,
+      "counts": {
+        "tests": 114,
+        "pass": 114,
+        "fail": 0,
+        "skipped": 0
+      },
+      "log": "/private/tmp/recovery-outer-cfg-tests-23fa2771-v2-inventory/baseline.log",
+      "log_sha256": "c5e01651b06fdfa2e386d318eac9d7bfa66fdae05d1c3649cb91421f9eff5cc5"
+    },
+    {
+      "cwd": "/private/tmp/recovery-outer-cfg-tests-23fa2771-v2-inventory/candidate",
+      "command": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+      "exit": 1,
+      "counts": {
+        "tests": 144,
+        "pass": 135,
+        "fail": 9,
+        "skipped": 0
+      },
+      "log": "/private/tmp/recovery-outer-cfg-tests-23fa2771-v2-inventory/candidate-red.log",
+      "log_sha256": "168709db54abc13eb8e4c664b02ed5009e7d28967dc608ac2af4544fd9c58ccb"
+    }
+  ],
+  "failure_classification": "Exactly9new outer-cfg positive tests fail original cfg/ignore scanner; all114old+21new refusal controls pass.",
+  "private_git_apply_check_forward_inverse_check_inverse": 4,
+  "author": "/root/inventory_repair",
+  "reviewer": "/root/fast_gate_review",
+  "integration_writer": "/root",
+  "source_checker_edits": 0,
+  "shared_writes": 0,
+  "cargo_db_runtime_commands": 0
+}

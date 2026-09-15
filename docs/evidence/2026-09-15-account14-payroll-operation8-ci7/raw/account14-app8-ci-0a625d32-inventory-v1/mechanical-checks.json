@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "count": 10,
+  "checks": [
+    "seven integration preimages unchanged",
+    "exact seven postimage paths",
+    "tested validation files equal frozen postimages",
+    "private indexed9867-file tree differs only at seven allowed paths",
+    "git apply --check /private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch",
+    "git apply /private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch",
+    "git apply --reverse --check /private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch",
+    "git apply --reverse /private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch",
+    "exact postimages apply and inverse restores exact originals",
+    "no patch whitespace errors"
+  ],
+  "private_index_tree": "f25e2dd2341f8427a093c97afd1f8beab481f7aa",
+  "private_tracked_files": 9867,
+  "private_changed_paths": [
+    ".github/workflows/ci.yml",
+    "docs/program/executed-tests-baseline.json",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "scripts/lib/recovery-test-invocations.mjs",
+    "scripts/lib/recovery-test-invocations.test.mjs",
+    "tools/buck/test_preparation_wiring.py"
+  ],
+  "private_patch_check_directory": "/private/tmp/account14-app8-ci-private-apply-qrivwfqn",
+  "cargo_invocations": 0,
+  "database_commands": 0,
+  "integration_writes": 0
+}

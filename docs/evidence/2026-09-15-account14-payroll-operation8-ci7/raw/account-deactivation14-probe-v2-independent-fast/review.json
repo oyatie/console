@@ -1,0 +1,22 @@
+{
+  "verdict": "APPROVE_EXACT_V2_ACCOUNT14_SEMANTIC_PROBE_FOR_ROOT_ADMISSION",
+  "reviewer": "/root/fast_gate_review",
+  "probe_path": "/private/tmp/account-deactivation14-probe-v2/probe.py",
+  "probe_sha256": "b45d1aa74eb2a980e6103682d17b1381a50d72a416d892f397f8c818af172e71",
+  "contract_sha256": "28329ea489e991ae32dc8b84ac33e8f0f500ce0d5fb64d2d207fa7d15fa1b478",
+  "controls_source_sha256": "e48c2529da6b2b5847fc32de4865b121e59aafb5f13c8f2212540f1080ecaa24",
+  "prior_actual14_review_sha256": "019717dd0e07d271e5f993dc70782fa83ae0b17be4ad8d05b665af86c8b3dd4e",
+  "contract_exactly_matches_reviewed14_names_and11_first_boundaries": true,
+  "independent_checks": 14,
+  "check_breakdown": "Original11 controls reexecuted on private copies; optimizedPython refuses126 before main; stage-only2failed refuses; formerly positive test failure refuses. Synthetic logs are parser controls, not Rust GREEN.",
+  "resolves": "Actual driver/test hashes checked before running; exact14 names/counts; failed legacy controls/unknown panic causes/locations refuse126;9known semantic boundaries distinguished from2missing42883 prerequisites; at least1semantic required for RED; all14pass required forGREEN.",
+  "runtime_invocations_by_reviewer": 0,
+  "repository_writes": 0,
+  "limits": [
+    "Root reruns exact probe under current clean head for fanout admission",
+    "New later semantic failures require fresh independent classification, not widened map by convenience",
+    "Stage-blocked scope/profile/backend-death follow-on and other guard coverage HOLDs remain",
+    "Root serializes source/DB/Cargo/CI/generated files"
+  ],
+  "mechanical_handoff": "Bind immutable probe+contract hashes in lane records; root alone runs named python3 probe for admission and same probe forGREEN. Keep V1 rejected wrapper and actual14 logs intact."
+}

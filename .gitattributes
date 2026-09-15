@@ -1,0 +1,4 @@
+# Preserve reviewed raw evidence bytes, including unified-diff context whitespace.
+docs/evidence/2026-09-15-account14-payroll-operation8-ci7/**/*.patch -text -whitespace
+docs/evidence/2026-09-15-account14-payroll-operation8-ci7/**/*.log -text -whitespace
+docs/evidence/2026-09-15-account14-payroll-operation8-ci7/**/*.diff -text -whitespace

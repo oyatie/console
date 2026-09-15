@@ -1,0 +1,29 @@
+recovery-fixture run=console-recovery-191-48085594 evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.FpgGL5
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+   Compiling console-ontology-canonical-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/canonical-adapter-postgres)
+   Compiling console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.95s
+     Running tests/recovery.rs (/private/tmp/console-account30-cargo/debug/deps/recovery-ed6f34010a6cea16)
+
+running 1 test
+test replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply ... topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+recovery-accounting {"offered_intents":1,"attempts":2,"final_success_intents":1,"effects":1,"receipts":1,"premature_replay_success":false}
+primary|0/62DFBE8|1
+standby|console_recovery_s1|sync|0/62DFBE8|0/62DFBE8
+replay|0/62DFBE8|1
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 6.70s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.FpgGL5 exit=0

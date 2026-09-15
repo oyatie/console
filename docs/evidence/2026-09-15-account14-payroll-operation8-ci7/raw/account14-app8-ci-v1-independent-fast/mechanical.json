@@ -1,0 +1,110 @@
+{
+  "candidate_manifest_sha256": "10f02dd6af65419f8cc6a13498c3a692a64173f12ed956a96af94145ed6040f1",
+  "candidate_patch_sha256": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "packet_files_verified": 31,
+  "admission_bindings_verified": 3,
+  "map_verified": true,
+  "preimage_postimage_paths": [
+    ".github/workflows/ci.yml",
+    "scripts/lib/recovery-test-invocations.mjs",
+    "scripts/lib/recovery-test-invocations.test.mjs",
+    "tools/buck/test_preparation_wiring.py",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "docs/program/executed-tests-baseline.json"
+  ],
+  "source_names": [
+    "durability_composition_tests::required_app_startup_admits_only_the_installed_observer",
+    "durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply",
+    "durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+    "durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay",
+    "durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "durability_composition_tests::required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events",
+    "durability_composition_tests::required_workflow_provenance_refusal_is_operation_not_unknown"
+  ],
+  "original13_workflow_commands_conditions_order_preserved": true,
+  "all_original_checker_and_test_bytes_preserved_except_named_growth": true,
+  "baseline_changes_only_three_counts_and_note": true,
+  "private_index_paths": 9867,
+  "private_index_changed_paths": [
+    ".github/workflows/ci.yml",
+    "docs/program/executed-tests-baseline.json",
+    "scripts/check-ci-preflight.mjs",
+    "scripts/check-ci-preflight.test.mjs",
+    "scripts/lib/recovery-test-invocations.mjs",
+    "scripts/lib/recovery-test-invocations.test.mjs",
+    "tools/buck/test_preparation_wiring.py"
+  ],
+  "private_working_matches_index": true,
+  "mechanical_commands": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch"
+      ],
+      "cwd": "/private/tmp/ci7-fast-apply-ta9norsh",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch"
+      ],
+      "cwd": "/private/tmp/ci7-fast-apply-ta9norsh",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch"
+      ],
+      "cwd": "/private/tmp/ci7-fast-apply-ta9norsh",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/candidate.patch"
+      ],
+      "cwd": "/private/tmp/ci7-fast-apply-ta9norsh",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "node",
+        "--test",
+        "scripts/lib/recovery-test-invocations.test.mjs"
+      ],
+      "cwd": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/validation",
+      "exit_code": 0,
+      "log": "independent-probe.log",
+      "log_sha256": "23089851107bc540b039e4b62604ba6978a16e419cce9190949922d48aea1510"
+    }
+  ],
+  "new_node_tests_executed": 114,
+  "new_node_tests_passed": 114,
+  "new_node_tests_skipped": 0,
+  "new_cargo_commands": 0,
+  "new_database_commands": 0,
+  "new_docker_commands": 0,
+  "shared_writes": 0,
+  "frozen_packet_unchanged": true
+}

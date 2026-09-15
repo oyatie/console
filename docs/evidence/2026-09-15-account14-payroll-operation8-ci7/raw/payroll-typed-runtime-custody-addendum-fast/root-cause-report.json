@@ -1,0 +1,14 @@
+{
+  "cause": "reused Cargo test-support artifact embeds other worktree CARGO_MANIFEST_DIR and reads its finalizer at runtime",
+  "binary_sha256": "d357ab9aa5c01e3ebb6907303d451b1bc628603118bebb064077fd93bfd25891",
+  "embedded_manifest_paths": [
+    "/private/tmp/console-payroll-retained-capacity-regression-20260915/backend/crates/platform/test-support"
+  ],
+  "old_finalizer_sha256": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036",
+  "current_finalizer_sha256": "f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3",
+  "old_equals_59c38": true,
+  "old_guard_installs": 0,
+  "current_guard_installs": 1,
+  "raw_result": "1PASS13FAIL; same probe126, not product RED or success",
+  "repair": "invalidate only reusable platform-test-support build artifacts; rerun exact unchanged source/probe"
+}

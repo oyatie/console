@@ -1,0 +1,28 @@
+{
+  "owner": "/root",
+  "sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "decision": "ADMITTED_FOR_EXACT_TYPED_IMPLEMENTATION",
+  "cases": [
+    {
+      "case": 1,
+      "kind": "semantic RED",
+      "first_failure": "thread 'durability_composition_tests::required_api_completion_unknown_reconciles_same_command_after_replay' (38662203) panicked at app/src/durability_composition_tests.rs:1251:5:\nassertion `left == right` failed: typed owner uncertainty must have its public outcome: Object {\"error\": Object {\"code\": String(\"internal\"), \"message\": String(\"database durability UNKNOWN: completion deadline elapsed\")}}\n  left: 500\n right: 503\n",
+      "log_sha256": "5116c9d7b43918ff9a2607e34e0d5cbc2e48a55f97725af19cf5bf089cdc01e1",
+      "unreached": "later reconciliation/second-state assertions retained, not evidenced at RED"
+    },
+    {
+      "case": 2,
+      "kind": "semantic RED",
+      "first_failure": "thread 'durability_composition_tests::required_api_receipt_absent_unknown_renews_approval_with_same_command' (38663879) panicked at app/src/durability_composition_tests.rs:1251:5:\nassertion `left == right` failed: typed owner uncertainty must have its public outcome: Object {\"error\": Object {\"code\": String(\"internal\"), \"message\": String(\"database durability UNKNOWN: database transport or observation failed\")}}\n  left: 500\n right: 503\n",
+      "log_sha256": "56257302546d66b8de1d52f7cdd2d41cc46ef74144cd88f8a971c7f3bc021a99",
+      "unreached": "later reconciliation/second-state assertions retained, not evidenced at RED"
+    },
+    {
+      "case": 4,
+      "kind": "semantic RED",
+      "first_failure": "thread 'durability_composition_tests::required_workflow_typed_unknown_preserves_pending_and_failed_events' (38665509) panicked at app/src/durability_composition_tests.rs:1639:10:\ntyped stage Unknown must be distinguished at the real drainer boundary: Elapsed(())\n",
+      "log_sha256": "163b52766d8c5581f8097876b5454ff841219b3d6b720bf5d4dfe833c52a1452",
+      "unreached": "later reconciliation/second-state assertions retained, not evidenced at RED"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "supplements_review_sha256": "e33c76f8cd84965d63db3fb1ed0726ae5f9339d131f7e58a8b203bb013963bbe",
+  "status": "RUNTIME_PATH_CUSTODY_QUALIFICATION; no F1 reopening or claim that later Account guard passed.",
+  "independently_verified": [
+    "Test-support at59c38 reads account finalizer SQL at runtime using env!(CARGO_MANIFEST_DIR) and a relative operator-file path (backend/crates/platform/test-support/src/lib.rs:358). Reused artifacts can therefore select another worktree SQL file even when the invoked command names the intended worktree.",
+    "Alternate-worktree finalizer SHA256 f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036 exactly equals the59c38 Git blob content. Current0a625 finalizer has different hash f2f6c3c9d048ac518e84196a2fc42624c97cfe1d571122dfa453675d8a359ca3. This explains why old-path contents are consistent with prior typed cases but cannot validate the later Account guard.",
+    "Account first post-integration raw log reports1passed13failed0ignored with missing account_company_deactivation_guard_v1 (42883); wrapper126 marks prerequisite/unreviewed failure. This is not accepted productRED orGREEN.",
+    "At independent binary readback after root began rebuild, the logged Account binary path had SHA042eebb23ccde31b522be6592e76df13c5b41dc2ee10b27f55b7cb35afedfd3f, and current App binary had SHA7b1d9fa95f4ca8298028ecea659c47d6300a87514bbae58c494f46720a794b73. Neither contained the old test-support manifest string. These are different/later artifacts, not proof about the superseded binary."
+  ],
+  "root_reported_prior_binary": {
+    "sha256": "d357ab9aa5c01e3ebb6907303d451b1bc628603118bebb064077fd93bfd25891",
+    "embedded_manifest_path": "/private/tmp/console-payroll-retained-capacity-regression-20260915/backend/crates/platform/test-support",
+    "report_sha256": "2cb4e9c475e69ff79fc043b5d22e264a3ddad8151aae190954dd55539476a9db",
+    "independently_re_read_original_binary": false,
+    "reason": "Original reported binary bytes were already replaced at the logged path; retained original bytes were not supplied."
+  },
+  "conclusion": "Saved typed three-case and unit PASS counts remain readable facts; the typed test source and alternate SQL content match59c38, but the prior runtime receipt is not proof that every fixture was loaded from the intended source path. Keep this qualification with it. Later Account/Operation final-head acceptance must use the repaired artifact binding and fresh exact probes. No new product regression is established by the stale-fixture result.",
+  "counts": {
+    "new_cargo_commands": 0,
+    "new_database_commands": 0,
+    "shared_repository_writes": 0
+  },
+  "evidence_paths": [
+    "/private/tmp/account14-0a625d32-green/stale-build-cause.json",
+    "/private/tmp/account-deactivation14-probe-55613fe4049c41bfa678ef968846f5cc/probe.log"
+  ],
+  "remaining": [
+    "Root exact-probe rerun after scoped test-support artifact invalidation",
+    "Final-head typed/Operation/account/CI evidence as separately scheduled"
+  ]
+}

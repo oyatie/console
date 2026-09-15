@@ -1,0 +1,13 @@
+[
+  {
+    "lane": "account-company-deactivation14",
+    "probe": "python3 /private/tmp/account-deactivation14-probe-v2/probe.py",
+    "prompt": "Root owns integration; private implementer follows exact approved GUIDE19f29899 + supplementfee70922 and V4 tests e06b77f8. Implement only same-Business-transaction scoped guard and conditional legacy sweep, root-preserving narrow installer upgrade and exact profile. Do not alter tests, deps, migrations, original credentials or Auth7. See /private/tmp/account-deactivation14-v4-root-approval.json and /private/tmp/account-deactivation14-796173fc-red-v1/red-classification.json. Same14 probe must pass; broader holds remain explicit.",
+    "allow": [
+      "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "backend/app/src/account_custody_state.sql",
+      "ops/generate-account-custody.py",
+      "ops/postgres-finalize-account-custody.sql"
+    ]
+  }
+]

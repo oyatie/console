@@ -1,0 +1,71 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "review_identity": "Independent runtime/source-custody classification; old draft14 author, not author of Inventory V2\u2013V4 amendments or Account implementation. This is not a new whole-implementation security review.",
+  "verdict": "APPROVE_EXACT_ACCOUNT14_GREEN_AT_0a625d32",
+  "head_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "implementation_commit": "5b85ab7b (ancestor of exact reviewed head)",
+  "evidence": "/private/tmp/account-deactivation14-probe-21367db1cb414e57b6dbf995f0349fcd",
+  "mechanical_sha256": "756be120771afe160dce309e94a48189db7863a43e6097323b26e30982cee332",
+  "driver_receipt_sha256": "b35f6dc92cfdddb2094013ec86a3f34ef3fb8d4dd0724ec6ed2aa75db6e12617",
+  "probe_log_sha256": "39906632340a84a0a716c2bdf10311ce686f69540da8eaebf12d12f38576825a",
+  "test_source_sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471",
+  "probe_sha256": "b45d1aa74eb2a980e6103682d17b1381a50d72a416d892f397f8c818af172e71",
+  "raw_cargo_command": "cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test deactivate_revokes_credentials -- --test-threads=1",
+  "outer_probe_command": "python3 /private/tmp/account-deactivation14-probe-v2/probe.py",
+  "command_note": "Unchanged approved probe/driver readback; raw driver log prints exact Cargo invocation. Driver pins toolchain1.98.1, empty RUSTC_WRAPPER, SQLX_OFFLINE=true, CARGO_INCREMENTAL=1 and /private/tmp/console-account30-cargo.",
+  "counts": {
+    "executed": 14,
+    "passed": 14,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "cargo_invocations_in_saved_run": 1,
+    "new_cargo_invocations_by_reviewer": 0,
+    "new_database_commands_by_reviewer": 0,
+    "shared_writes_by_reviewer": 0
+  },
+  "comparison_to_baseline": {
+    "baseline_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+    "baseline_executed": 14,
+    "baseline_preservation_passes": 3,
+    "baseline_first_semantic_failures": 9,
+    "baseline_guard_prerequisite_failures": 2,
+    "current_passes": 14,
+    "all_exact_source_case_names_preserved": true,
+    "interpretation": "All9 earlier semantic boundaries and both formerly missing-guard prerequisites now pass through their complete tests; all3 existing passing controls remain passing. No test or assertion was changed to obtain this result."
+  },
+  "newly_reached_checks": [
+    "Native Account custody survives Company deactivation and inactive replay for ACTIVE plus all3 PENDING_ENROLLMENT/SECURITY_SUSPENDED/RECOVERY_REQUIRED loop states. Exact credential family/token/security history and audit attribution survive.",
+    "Both fenced and unfenced authority-outage tests now reach bounded owner refusal, no Company/custody mutation, and restored-authority positive deactivation; the actual Auth lock55P03 remains witnessed.",
+    "Both enrollment-first histories now observe the exact Business transaction wait and test fresh fenced classification after commit or exact legacy revocation after rollback.",
+    "Both Company-first histories reach exact native-FK wait, credential NOWAIT55P03, release after commit or actual Business backend death57P01, then exact Company/credential/audit rollback or committed legacy history.",
+    "Both repeatable-read and serializable iterations refuse with no effects, then restore read-committed and permit the expected legacy action. These are2 internal iterations, not2 additional tests.",
+    "Guard scope case reaches actual business positive control,8 invalid context/identity variants,4 unsupported real LOGIN42501 checks, business denial of the original Auth-only fence function, no side effects, and fenced=false guard result.",
+    "Guard profile case reaches exact definer/function/ACL/column-grant checks, no-op installer replay, bounded old-root upgrade without backfill, both widened ACL refusal loops, volatility drift refusal and exact preserved catalog/custody."
+  ],
+  "source_and_runtime_custody": {
+    "all_driver_artifact_hashes_verified": true,
+    "source_closure": "1005 captured paths are regular immutable Git blobs at exact0a625d32; source-before and source-after byte-identical with clean status. Driver actual bytes and source test hash match approved probe contract.",
+    "build_path": "Raw log explicitly recompiles test-support from intended worktree; current logged Account binary SHA042eebb23ccde31b522be6592e76df13c5b41dc2ee10b27f55b7cb35afedfd3f contains intended manifest path and lacks prior alternate path.",
+    "cleanup": "One narrowly intercepted prebuild; original actual test command preserved. Successful bounded Docker listing proves owned container absent. Harness has no durability claim."
+  },
+  "prior_stale_build_attempt": "Retain prior1PASS13FAIL/126 as environment/fixture provenance failure. Same source/probe becomes14GREEN after targeted test-support rebuild; do not relabel the stale attempt as implementation RED, and do not delete it.",
+  "remaining_scope": [
+    "SQL cancellation distinct from backend death",
+    "Unrelated-subject concurrency and progress",
+    "Lock behavior of already-inactive replay (custody/result replay itself passed)",
+    "Additional hidden/missing Account authority variants beyond the exact passed invalid subject/context probes",
+    "Exhaustive catalog drift/startup/profile coverage beyond tested guard attributes",
+    "Final CI enrollment and exact-head aggregate verification",
+    "Native Account enrollment end-to-end, production, legal/compliance and payment authority remain separate"
+  ],
+  "blocking_findings_in_bounded_evidence_review": [],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

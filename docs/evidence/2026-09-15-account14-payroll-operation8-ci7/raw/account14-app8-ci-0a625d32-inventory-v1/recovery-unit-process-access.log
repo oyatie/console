@@ -1,0 +1,27 @@
+test_connection_budget_refuses_without_upstream_access (test_commit_relay.RelayTests.test_connection_budget_refuses_without_upstream_access) ... ok
+test_connection_deadline_is_fixture_error (test_commit_relay.RelayTests.test_connection_deadline_is_fixture_error) ... ok
+test_extended_execute_commit_is_witnessed (test_commit_relay.RelayTests.test_extended_execute_commit_is_witnessed) ... ok
+test_invalid_frame_size_fails (test_commit_relay.RelayTests.test_invalid_frame_size_fails) ... ok
+test_simple_after_response_forwards_once_and_suppresses_success (test_commit_relay.RelayTests.test_simple_after_response_forwards_once_and_suppresses_success) ... ok
+test_simple_before_send_does_not_forward_commit (test_commit_relay.RelayTests.test_simple_before_send_does_not_forward_commit) ... ok
+test_failed_container_inventory_is_not_successful_absence (test_supervise_recovery.RecoveryCleanupTests.test_failed_container_inventory_is_not_successful_absence) ... ok
+test_failed_container_inventory_partial_output_is_still_unavailable (test_supervise_recovery.RecoveryCleanupTests.test_failed_container_inventory_partial_output_is_still_unavailable) ... ok
+test_failed_network_inventory_is_not_successful_absence (test_supervise_recovery.RecoveryCleanupTests.test_failed_network_inventory_is_not_successful_absence) ... ok
+test_failed_network_inventory_partial_output_is_still_unavailable (test_supervise_recovery.RecoveryCleanupTests.test_failed_network_inventory_partial_output_is_still_unavailable) ... ok
+test_failed_volume_inventory_is_not_successful_absence (test_supervise_recovery.RecoveryCleanupTests.test_failed_volume_inventory_is_not_successful_absence) ... ok
+test_failed_volume_inventory_partial_output_is_still_unavailable (test_supervise_recovery.RecoveryCleanupTests.test_failed_volume_inventory_partial_output_is_still_unavailable) ... ok
+test_remaining_container_refuses_success (test_supervise_recovery.RecoveryCleanupTests.test_remaining_container_refuses_success) ... ok
+test_remaining_network_refuses_success (test_supervise_recovery.RecoveryCleanupTests.test_remaining_network_refuses_success) ... ok
+test_remaining_volume_refuses_success (test_supervise_recovery.RecoveryCleanupTests.test_remaining_volume_refuses_success) ... ok
+test_removal_error_can_reconcile_to_verified_absence (test_supervise_recovery.RecoveryCleanupTests.test_removal_error_can_reconcile_to_verified_absence) ... ok
+test_successful_absence_preserves_original_failure (test_supervise_recovery.RecoveryCleanupTests.test_successful_absence_preserves_original_failure) ... ok
+test_successful_absence_preserves_timeout_classification (test_supervise_recovery.RecoveryCleanupTests.test_successful_absence_preserves_timeout_classification) ... ok
+test_successful_empty_inventory_preserves_success (test_supervise_recovery.RecoveryCleanupTests.test_successful_empty_inventory_preserves_success) ... ok
+test_returns_child_nonzero_status (test_supervise_recovery.SupervisorTests.test_returns_child_nonzero_status) ... ok
+test_timeout_kills_term_ignoring_process_group (test_supervise_recovery.SupervisorTests.test_timeout_kills_term_ignoring_process_group) ... {"recovery_supervisor": "wall_clock_timeout", "classification": "FIXTURE_INCOMPLETE"}
+ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 5.334s
+
+OK

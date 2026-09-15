@@ -1,0 +1,49 @@
+{
+  "status": "FROZEN_PRIVATE_FIXTURE_AMENDMENT_REVIEW_PENDING",
+  "author": "/root/inventory_repair",
+  "reviewer": "/root/capture_review",
+  "integration_writer": "/root",
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "preimages_verified_at": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "bindings": {
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": {
+      "preimage": "e1c05e3116de8f4f2f0906b044b09c912fa108d06ba6062b176b894d66dda714",
+      "postimage": "e9da06dd4940c3d1307d15d0f0d0e193b2f9b3b57c152153e67f56947bd7c394"
+    },
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": {
+      "preimage": "22f3d294be85c1a5f3f4e25d6003f4516af5ac05d7d387e97acbce6c3b15f25d",
+      "postimage": "29bb7caf7e0f7fbe9a7d0145656a9cf4dedfdfe94b48fa3bfb7ad594bcc0cdeb"
+    }
+  },
+  "helper_path": "backend/crates/platform/test-support/src/lib.rs",
+  "helper_sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+  "files": {
+    "GUIDE.md": "957c7ef4478918aa2ab2824ecf95f5d2d9c4a5e6dda4be0d603ff623f3123c96",
+    "base/backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": "22f3d294be85c1a5f3f4e25d6003f4516af5ac05d7d387e97acbce6c3b15f25d",
+    "base/backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": "e1c05e3116de8f4f2f0906b044b09c912fa108d06ba6062b176b894d66dda714",
+    "candidate.patch": "0861dbe77c0d527ad0b774c93fe6a13902259265a1b0598a761fe84fb5fbca58",
+    "checks.json": "ed25f48bb9ada3b1a162a7c00868232b3ed201e9af339d19a97354932f34edf0",
+    "post/backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": "29bb7caf7e0f7fbe9a7d0145656a9cf4dedfdfe94b48fa3bfb7ad594bcc0cdeb",
+    "post/backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": "e9da06dd4940c3d1307d15d0f0d0e193b2f9b3b57c152153e67f56947bd7c394"
+  },
+  "test_names": {
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": [
+      "replaying_deactivate_writes_no_second_transition_audit_row",
+      "replaying_deactivate_revokes_a_racing_credential",
+      "replaying_activate_writes_no_second_transition_audit_row"
+    ],
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": [
+      "subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role",
+      "bump_and_get_subject_authz_versions_via_store",
+      "update_user_delta_scopes_the_preview_receipt_gate"
+    ]
+  },
+  "counts": {
+    "source_test_count": 6,
+    "compiler_discovered": 0,
+    "rust_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  }
+}

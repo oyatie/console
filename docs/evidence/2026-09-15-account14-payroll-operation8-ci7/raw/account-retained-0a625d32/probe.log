@@ -1,0 +1,62 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_10885" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_10885, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 2 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m console-identity-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/adapter-postgres)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 5.02s
+[1m[92m  Executable[0m unittests src/lib.rs (/private/tmp/console-account30-cargo/debug/deps/console_identity_adapter_postgres-69aa1e92735017cf)
+[1m[92m  Executable[0m tests/branch_under_deactivated_region.rs (/private/tmp/console-account30-cargo/debug/deps/branch_under_deactivated_region-63e2dd9759ea4f8c)
+[1m[92m  Executable[0m tests/deactivate_revokes_credentials.rs (/private/tmp/console-account30-cargo/debug/deps/deactivate_revokes_credentials-7f1d12c6a5032217)
+[1m[92m  Executable[0m tests/me_workspace_layouts_rls.rs (/private/tmp/console-account30-cargo/debug/deps/me_workspace_layouts_rls-f71f738836949d67)
+[1m[92m  Executable[0m tests/region_branch_crud_rls_surfaces_as_runtime_role.rs (/private/tmp/console-account30-cargo/debug/deps/region_branch_crud_rls_surfaces_as_runtime_role-fdcc5324a08a726b)
+[1m[92m  Executable[0m tests/subject_authz_versions_freshness_rls.rs (/private/tmp/console-account30-cargo/debug/deps/subject_authz_versions_freshness_rls-e324ac5151393a67)
+[1m[92m  Executable[0m tests/user_lifecycle_noop_replay.rs (/private/tmp/console-account30-cargo/debug/deps/user_lifecycle_noop_replay-ceb3cb8d969d81b8)
+cargo-postgres: === identity-adapter-postgres-subject-authz-versions-freshness-rls-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test subject_authz_versions_freshness_rls -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.32s
+[1m[92m     Running[0m tests/subject_authz_versions_freshness_rls.rs (/private/tmp/console-account30-cargo/debug/deps/subject_authz_versions_freshness_rls-e324ac5151393a67)
+
+running 3 tests
+test bump_and_get_subject_authz_versions_via_store ... ok
+test subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role ... ok
+test update_user_delta_scopes_the_preview_receipt_gate ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.82s
+
+cargo-postgres-timing: {"name": "identity-adapter-postgres-subject-authz-versions-freshness-rls-pg", "package": "console-identity-adapter-postgres", "seconds": 8.335, "shard": "", "status": "pass"}
+cargo-postgres: === identity-adapter-postgres-user_lifecycle_noop_replay-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test user_lifecycle_noop_replay -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.30s
+[1m[92m     Running[0m tests/user_lifecycle_noop_replay.rs (/private/tmp/console-account30-cargo/debug/deps/user_lifecycle_noop_replay-ceb3cb8d969d81b8)
+
+running 3 tests
+test replaying_activate_writes_no_second_transition_audit_row ... ok
+test replaying_deactivate_revokes_a_racing_credential ... ok
+test replaying_deactivate_writes_no_second_transition_audit_row ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.76s
+
+cargo-postgres-timing: {"name": "identity-adapter-postgres-user_lifecycle_noop_replay-pg", "package": "console-identity-adapter-postgres", "seconds": 8.23, "shard": "", "status": "pass"}
+
+cargo-postgres: summary
+  PASS  identity-adapter-postgres-subject-authz-versions-freshness-rls-pg
+  PASS  identity-adapter-postgres-user_lifecycle_noop_replay-pg
+cargo-postgres: 2 passed, 0 failed
+cargo-postgres: all 2 invocations passed

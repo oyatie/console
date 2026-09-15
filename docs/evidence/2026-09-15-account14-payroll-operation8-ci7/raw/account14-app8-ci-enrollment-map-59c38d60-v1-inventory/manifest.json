@@ -1,0 +1,21 @@
+{
+  "status": "FROZEN_READ_ONLY_CI_MAP_NOT_ADMISSION",
+  "author": "/root/inventory_repair",
+  "head_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "files": {
+    "MAP.md": "b16b97893e5c0eec40c7743bd620bfd47e78ce42e46ac14232c46f8ba024d6aa",
+    "rosters.json": "aeb5851c6b096515f46d29e57113b13ea52b02a51a9edfa97e9a45ce82a18b00",
+    "source-bindings.json": "e98d48e9470c45aa9c44ffb0d411240f7672433cb19ea745b8125aaa3403ec02"
+  },
+  "counts": {
+    "source_bindings": 21,
+    "current_account_source_cases": 14,
+    "current_app_source_cases": 7,
+    "gate_test_executions": 0,
+    "compiler_discovered": 0,
+    "rust_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  }
+}

@@ -1,0 +1,41 @@
+recovery-fixture run=console-recovery-2572-ed1d7c06 evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.Jni60t
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.38s
+     Running tests/recovery.rs (/private/tmp/console-account30-cargo/debug/deps/recovery-ed6f34010a6cea16)
+
+running 1 test
+test fresh_commit_deadline_retains_capacity_until_replay_resumes ... fresh-cleanup canonical scenario=default policy_ms=700 statement_ms=0 transaction_ms=0
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+fresh-cleanup canonical scenario=equal-positive-timers policy_ms=5000 statement_ms=1200 transaction_ms=1200
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+fresh-cleanup canonical scenario=shorter-transaction-timer policy_ms=5000 statement_ms=5000 transaction_ms=1200
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+fresh-cleanup canonical scenario=shorter-statement-timer policy_ms=5000 statement_ms=400 transaction_ms=0
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+
+
+
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 28.18s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.Jni60t exit=0

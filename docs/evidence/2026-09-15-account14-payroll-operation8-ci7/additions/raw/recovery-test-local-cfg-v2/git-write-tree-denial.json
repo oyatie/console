@@ -1,0 +1,10 @@
+{
+  "command": [
+    "git",
+    "write-tree"
+  ],
+  "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+  "exit": 128,
+  "stdout": "",
+  "stderr": "fatal: Unable to create '/Users/jasonlee/Developer/console/.git/worktrees/console-production-tdd-preparation-20260913/index.lock': Operation not permitted\n"
+}

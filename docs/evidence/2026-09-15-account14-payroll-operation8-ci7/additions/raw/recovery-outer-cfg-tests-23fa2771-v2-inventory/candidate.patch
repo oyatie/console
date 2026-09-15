@@ -1,0 +1,42 @@
+--- a/scripts/lib/recovery-test-invocations.test.mjs
++++ b/scripts/lib/recovery-test-invocations.test.mjs
+@@ -191,3 +191,39 @@
+     assert.throws(() => supervisedSourceCases(changed + `\n// #[sqlx::test]\n// async fn ${expected[0]}() {}\n`, expected));
+   });
+ }
++
++
++for (const [family, original, expected, prefix] of [
++  ["owner", source, [...RECOVERY_CASES.keys()], ""],
++  ["observer", observerSource, [OBSERVER_CASE], ""],
++  ["app", appSource, APP_CASES, "durability_composition_tests::"],
++]) {
++  const guarded = original.replaceAll('#[sqlx::test', '#[cfg(test)]\n#[sqlx::test');
++  for (const [placement, changed] of Object.entries({
++    "before SQLx": guarded,
++    "between SQLx and fn": original.replace(/(#\[sqlx::test[^\]]*\])\s*(async fn)/g, '$1\n#[cfg(test)]\n$2'),
++    "on helper": original + '\n#[cfg(test)]\nasync fn redundant_cfg_test_helper() { let _example = r#"#[cfg(any())] #[ignore]"#; }\n',
++  })) {
++    test(`${family} source accepts exact outer cfg(test) ${placement} under cargo test`, () => {
++      assert.notEqual(changed, original);
++      assert.deepEqual(supervisedSourceCases(changed, expected, prefix), [...expected].sort());
++      const result = recoveryTestInvocations(workflow, family === 'owner' ? changed : source,
++        family === 'observer' ? changed : observerSource, family === 'app' ? changed : appSource, appLibSource);
++      assert.deepEqual(result.failures, []);
++      assert.equal(result.invocations.length, 18);
++    });
++  }
++  for (const [label, alter] of Object.entries({
++    "inner cfg(test)": value => '#![cfg(test)]\n' + value,
++    "not(test)": value => value.replace('#[sqlx::test', '#[cfg(not(test))]\n#[sqlx::test'),
++    "all(test, any())": value => value.replace('#[sqlx::test', '#[cfg(all(test, any()))]\n#[sqlx::test'),
++    "any()": value => value.replace('#[sqlx::test', '#[cfg(any())]\n#[sqlx::test'),
++    "cfg_attr": value => value.replace('#[sqlx::test', '#[cfg_attr(test, ignore)]\n#[sqlx::test'),
++    "ignore": value => value.replace('#[sqlx::test', '#[ignore]\n#[sqlx::test'),
++    "nested module": value => 'mod nested {\n' + value + '\n}',
++  })) {
++    test(`${family} source refuses ${label} mixed with exact outer cfg(test)`, () => {
++      assert.throws(() => supervisedSourceCases(alter(guarded), expected, prefix), /(?:cfg\/ignore enrollment|module topology) changed/);
++    });
++  }
++}

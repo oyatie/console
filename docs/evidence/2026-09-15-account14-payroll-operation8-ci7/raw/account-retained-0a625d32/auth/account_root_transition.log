@@ -1,0 +1,35 @@
+recovery-fixture run=console-recovery-11425-6c7e326b evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.v2Lzb7
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+   Compiling console-app v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/app)
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 31.87s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-22aed68b00ab94a9)
+
+running 10 tests
+test account_root_transition::bridge_collision_and_retained_identity_reinsertion_refuse ... ok
+test account_root_transition::bridge_insert_conflict_noop_and_rollback_are_exact ... ok
+test account_root_transition::concurrent_root_allocators_have_one_winner ... ok
+test account_root_transition::fault_after_backfill_rolls_back_complete_transition ... ok
+test account_root_transition::initial_overlap_refuses_atomically_without_association ... ok
+test account_root_transition::native_fk_enforces_default_and_explicit_constraint_timing ... ok
+test account_root_transition::populated_upgrade_preserves_rows_roots_and_legacy_acl ... ok
+test account_root_transition::profile_drift_refuses_without_repair ... ok
+test account_root_transition::root_guard_preserves_native_keyshare_and_user_identity ... ok
+test account_root_transition::root_roles_and_bridge_privileges_are_exact ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 206 filtered out; finished in 35.48s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.v2Lzb7 exit=0

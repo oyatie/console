@@ -1,0 +1,18 @@
+{
+  "sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "command": [
+    "python3",
+    "tools/lanes/fanout.py",
+    "admit",
+    "--spec",
+    "/private/tmp/account-deactivation14-lane.json"
+  ],
+  "exit": 0,
+  "seconds": 71.19,
+  "run_directories": [
+    "/private/tmp/account-deactivation14-probe-6020c4f0698844678a963f95b6d4ca5a"
+  ],
+  "spec_sha256": "e363602bbe5be5fe01fcc815cd869e65ea67f6e6ac1eac2d252506ee7195adf3",
+  "review_sha256": "3b33b881601abf329f8d243a7861f43d59b3c59146afae066f480fea18c0ee2a",
+  "log_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+}

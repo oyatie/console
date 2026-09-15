@@ -1,0 +1,19 @@
+{
+  "status": "FROZEN_INDEPENDENT_FIXTURE_REVIEW",
+  "files": {
+    "checks.json": "f0613f15bd410cb0c2b2dda62ddad9e6736c1f69a0f010ff3476a4e36b8685a0",
+    "review.json": "217f5263383035ba66fa7ea54a2508af887137ad98ae40cf9294c280b05ac65e"
+  },
+  "candidate_patch_sha256": "0861dbe77c0d527ad0b774c93fe6a13902259265a1b0598a761fe84fb5fbca58",
+  "counts": {
+    "checks": 13,
+    "source_cases": 6,
+    "compiler_discovered": 0,
+    "rust_tests_executed": 0,
+    "rustfmt_invocations": 2,
+    "private_git_apply_invocations": 4,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  }
+}

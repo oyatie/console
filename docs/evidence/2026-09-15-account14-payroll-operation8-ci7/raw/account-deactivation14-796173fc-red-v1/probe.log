@@ -1,0 +1,128 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_5828" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_5828, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m console-identity-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/domain)
+[1m[92m   Compiling[0m console-identity-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/application)
+[1m[92m   Compiling[0m console-identity-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/adapter-postgres)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 23.90s
+[1m[92m  Executable[0m tests/deactivate_revokes_credentials.rs (/private/tmp/console-account30-cargo/debug/deps/deactivate_revokes_credentials-7f1d12c6a5032217)
+cargo-postgres: === identity-adapter-postgres-deactivate-revokes-credentials-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test deactivate_revokes_credentials -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.40s
+[1m[92m     Running[0m tests/deactivate_revokes_credentials.rs (/private/tmp/console-account30-cargo/debug/deps/deactivate_revokes_credentials-7f1d12c6a5032217)
+
+running 14 tests
+test account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay ... FAILED
+test account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects ... FAILED
+test account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits ... FAILED
+test account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot ... FAILED
+test account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep ... FAILED
+test account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift ... FAILED
+test account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution ... FAILED
+test account_custody_deactivation::guard_races::immediate_security_fk_waits_for_account_root_update_lock ... ok
+test account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects ... FAILED
+test account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation ... FAILED
+test account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation ... FAILED
+test account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect ... FAILED
+test account_custody_deactivation::unfenced_legacy_subject_still_loses_keys_families_and_refresh_after_company_deactivation ... ok
+test deactivate_revokes_passkeys_and_sessions_as_runtime_role ... ok
+
+failures:
+
+---- account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay stdout ----
+
+thread 'account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay' (38565302) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:423:9:
+COMPANY_DEACTIVATION_CHANGED_ACCOUNT_CUSTODY: Account state/generation and key/family/token history must survive
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects stdout ----
+
+thread 'account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects' (38565566) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:943:13:
+NATIVE_FK_DID_NOT_WAIT_FOR_EXACT_BUSINESS_TRANSACTION
+
+---- account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits stdout ----
+
+thread 'account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits' (38566074) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:943:13:
+NATIVE_FK_DID_NOT_WAIT_FOR_EXACT_BUSINESS_TRANSACTION
+
+---- account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot stdout ----
+
+thread 'account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot' (38567226) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:834:13:
+COMPANY_DID_NOT_WAIT_FOR_EXACT_ENROLLMENT_TRANSACTION
+
+---- account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep stdout ----
+
+thread 'account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep' (38568815) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:834:13:
+COMPANY_DID_NOT_WAIT_FOR_EXACT_ENROLLMENT_TRANSACTION
+
+---- account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift stdout ----
+
+thread 'account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift' (38569708) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:1240:22:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42883", message: "function public.account_company_deactivation_guard_v1(uuid, uuid) does not exist", detail: None, hint: Some("No function matches the given name and argument types. You might need to add explicit type casts."), position: Some(Original(8)), where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("parse_func.c"), line: Some(629), routine: Some("ParseFuncOrColumn") })
+
+---- account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution stdout ----
+
+thread 'account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution' (38570172) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:1137:22:
+called `Result::unwrap()` on an `Err` value: Database(PgDatabaseError { severity: Error, code: "42883", message: "function public.account_company_deactivation_guard_v1(uuid, uuid) does not exist", detail: None, hint: Some("No function matches the given name and argument types. You might need to add explicit type casts."), position: Some(Original(8)), where: None, schema: None, table: None, column: None, data_type: None, constraint: None, file: Some("parse_func.c"), line: Some(629), routine: Some("ParseFuncOrColumn") })
+
+---- account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects stdout ----
+
+thread 'account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects' (38570762) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:1050:17:
+UNSUPPORTED_ISOLATION_MUST_REFUSE_LEGACY_DECISION: repeatable read
+
+---- account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation stdout ----
+
+thread 'account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation' (38571158) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:423:9:
+COMPANY_DEACTIVATION_CHANGED_ACCOUNT_CUSTODY: Account state/generation and key/family/token history must survive
+
+---- account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation stdout ----
+
+thread 'account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation' (38571535) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:526:9:
+UNAVAILABLE_ACCOUNT_AUTHORITY_MUTATED_COMPANY_OR_CUSTODY: current classification is mandatory before effects
+
+---- account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect stdout ----
+
+thread 'account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect' (38571806) panicked at crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:526:9:
+UNAVAILABLE_ACCOUNT_AUTHORITY_MUTATED_COMPANY_OR_CUSTODY: current classification is mandatory before effects
+
+
+failures:
+    account_custody_deactivation::active_account_custody_survives_company_deactivation_and_replay
+    account_custody_deactivation::guard_races::business_backend_death_rolls_back_partial_company_and_credential_effects
+    account_custody_deactivation::guard_races::company_commit_holds_native_fk_until_legacy_sweep_commits
+    account_custody_deactivation::guard_races::enrollment_commit_winner_uses_fresh_fenced_snapshot
+    account_custody_deactivation::guard_races::enrollment_rollback_winner_selects_exact_legacy_sweep
+    account_custody_deactivation::guard_races::exact_guard_profile_upgrades_finalized_root_replays_and_refuses_drift
+    account_custody_deactivation::guard_races::guard_requires_company_subject_context_and_business_only_execution
+    account_custody_deactivation::guard_races::repeatable_read_and_serializable_refuse_without_effects
+    account_custody_deactivation::nonactive_account_security_is_not_reclassified_by_company_deactivation
+    account_custody_deactivation::unavailable_account_authority_cannot_select_unfenced_legacy_revocation
+    account_custody_deactivation::unavailable_account_authority_preserves_fenced_subject_before_company_effect
+
+test result: FAILED. 3 passed; 11 failed; 0 ignored; 0 measured; 0 filtered out; finished in 58.13s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-identity-adapter-postgres --test deactivate_revokes_credentials`
+cargo-postgres-timing: {"name": "identity-adapter-postgres-deactivate-revokes-credentials-pg", "package": "console-identity-adapter-postgres", "seconds": 60.55, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  identity-adapter-postgres-deactivate-revokes-credentials-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

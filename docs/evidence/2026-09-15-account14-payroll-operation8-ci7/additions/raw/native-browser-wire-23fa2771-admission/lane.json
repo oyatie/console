@@ -1,0 +1,11 @@
+[
+  {
+    "lane": "native-browser-wire",
+    "probe": "CONSOLE_RECOVERY_CUT= RUST_BACKTRACE=1 python3 tools/lanes/recovery/supervise_recovery.py /private/tmp/console-production-tdd-preparation-20260913 -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_browser::company_free_registration_me_and_empty_contexts -- --exact --test-threads=1 --nocapture > /private/tmp/native-browser-wire-23fa2771-admission/probe-red.log 2>&1",
+    "allow": [
+      "backend/crates/platform/auth-rest/src/account_browser.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs"
+    ],
+    "prompt": "Root owns integration and mounting. Native subagent prepares private BW31 browser wire/admission/types/parser candidate only. Existing actual registration HTTP404 is adapter-boundary RED. No new schema/store/sentinel Company or fake session/authority; delegate real owner transactions when available. Same native endpoint probe must green before lane success; all deeper native acceptance remains explicit."
+  }
+]
