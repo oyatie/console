@@ -63,6 +63,9 @@ const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// the refresh/logout endpoints that need it.
 const REFRESH_COOKIE_PATH: &str = "/api/v1/auth";
 
+pub const TERMS_CURRENT_PATH: &str = "/api/v2/auth/terms";
+pub const TERMS_MANIFEST_PATH: &str = "/api/v2/auth/terms/manifests/{sha256}";
+pub const TERMS_CONTENT_PATH: &str = "/api/v2/auth/terms/content/{sha256}";
 pub const SIGNUP_PATH: &str = "/api/v1/auth/signup";
 pub const PASSKEY_REGISTER_START_PATH: &str = "/api/v1/auth/passkey/register/start";
 pub const PASSKEY_REGISTER_FINISH_PATH: &str = "/api/v1/auth/passkey/register/finish";
@@ -91,9 +94,9 @@ pub const GROUP_ADMIN_TENANT_CONTEXT_EXIT_PATH: &str = "/api/v1/group-admin/tena
 #[cfg(feature = "dev-auth")]
 pub const DEV_AUTH_SESSION_PATH: &str = "/api/v1/dev-auth/session";
 pub const AUTH_ROUTE_PATHS: &[&str] = &[
-    terms::CURRENT_PATH,
-    terms::MANIFEST_PATH,
-    terms::CONTENT_PATH,
+    TERMS_CURRENT_PATH,
+    TERMS_MANIFEST_PATH,
+    TERMS_CONTENT_PATH,
     SIGNUP_PATH,
     PASSKEY_REGISTER_START_PATH,
     PASSKEY_REGISTER_FINISH_PATH,
@@ -325,9 +328,9 @@ pub enum AuthRestConfigError {
 
 pub fn router(state: AuthRestState) -> Router {
     let router = Router::new()
-        .route(terms::CURRENT_PATH, get(terms::current))
-        .route(terms::MANIFEST_PATH, get(terms::manifest))
-        .route(terms::CONTENT_PATH, get(terms::content))
+        .route(TERMS_CURRENT_PATH, get(terms::current))
+        .route(TERMS_MANIFEST_PATH, get(terms::manifest))
+        .route(TERMS_CONTENT_PATH, get(terms::content))
         .route(SIGNUP_PATH, post(signup))
         .route(PASSKEY_REGISTER_START_PATH, post(start_registration))
         .route(PASSKEY_REGISTER_FINISH_PATH, post(finish_registration))
