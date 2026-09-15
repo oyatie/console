@@ -1351,4 +1351,328 @@ mod issue_family_fence {
         auth.close().await;
         business.close().await;
     }
+
+    #[sqlx::test(migrations = false)]
+    async fn http_otp_auth_outage_returns_sanitized_storage_without_session_then_recovers(
+        pool: PgPool,
+    ) {
+        async fn upstream_credentials(pool: &PgPool) -> Value {
+            sqlx::query_scalar(
+                "SELECT jsonb_build_object( \
+                 'bootstrap', COALESCE((SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) \
+                    FROM public.auth_bootstrap_credentials c),'[]'::jsonb), \
+                 'passkeys', COALESCE((SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) \
+                    FROM public.auth_webauthn_credentials c),'[]'::jsonb))",
+            )
+            .fetch_one(pool)
+            .await
+            .expect("complete upstream credential snapshot")
+        }
+
+        fn assert_redeem_audit(audit: &Value, subject: UserId, credential_id: Uuid) {
+            assert!(audit["action"] == "auth.otp.redeem");
+            assert!(audit["actor"] == json!(subject));
+            assert!(audit["org_id"] == json!(OrgId::knl()));
+            assert!(audit["target_type"] == "auth_bootstrap_credential");
+            assert!(audit["target_id"] == json!(credential_id));
+            assert!(audit["branch_id"].is_null() && audit["before_snap"].is_null());
+            assert!(
+                audit["after_snap"] == json!({"user_id": subject, "requires_passkey_setup": true})
+            );
+        }
+
+        let fixture = legacy_fence_fixture(&pool).await;
+        let branch = seed_branch(&pool, "HTTP Outage Region", "HTTP Outage Branch").await;
+        let subject = seed_user_with_branch(
+            &pool,
+            "HTTP Outage OTP",
+            "010-8900-0005",
+            "MECHANIC",
+            branch,
+        )
+        .await;
+        assert!(fence_credential_snapshot(&pool, subject).await.is_empty());
+        let otp = BootstrapCredentialStore
+            .issue_for_zero_credential_user(
+                &pool,
+                *subject.as_uuid(),
+                OrgId::knl(),
+                OffsetDateTime::now_utc(),
+                Duration::hours(24),
+            )
+            .await
+            .expect("real zero-passkey OTP prerequisite");
+        assert_projection(&pool, subject, false).await;
+        let live_otp: bool = sqlx::query_scalar(
+            "SELECT user_id=$2 AND org_id=$3 AND token_hash=$4 \
+             AND consumed_at IS NULL AND revoked_at IS NULL AND expires_at>now() \
+             FROM public.auth_bootstrap_credentials WHERE id=$1",
+        )
+        .bind(otp.credential_id)
+        .bind(subject.as_uuid())
+        .bind(OrgId::knl().as_uuid())
+        .bind(Sha256::digest(otp.token.as_str().as_bytes()).to_vec())
+        .fetch_one(&pool)
+        .await
+        .expect("stored OTP must correlate to the live subject and supplied secret");
+        assert!(live_otp);
+        let credentials_before = upstream_credentials(&pool).await;
+        let before = refresh_complete_snapshot(&pool).await;
+        let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+        let auth_password = Url::parse(&auth_url)
+            .unwrap()
+            .password()
+            .unwrap()
+            .to_owned();
+        let original_role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(original_role["rolcanlogin"] == true);
+
+        let outcome = std::panic::AssertUnwindSafe(async {
+            let others: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname<>current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(others, 0, "Auth fault requires exclusive disposable-cluster custody");
+            sqlx::query("ALTER ROLE console_auth_rt NOLOGIN")
+                .execute(&pool)
+                .await
+                .unwrap();
+            let terminated: Vec<(i32, bool)> = sqlx::query_as(
+                "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt' \
+                 AND backend_type='client backend'",
+            )
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+            assert!(
+                !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+                "bounded termination must stop the real router's retained Auth backends"
+            );
+            let remaining: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(remaining, 0, "terminated Auth sessions must be gone");
+            let direct = sqlx::postgres::PgPoolOptions::new()
+                .max_connections(1)
+                .acquire_timeout(std::time::Duration::from_secs(3))
+                .connect(&auth_url)
+                .await;
+            let error = match direct {
+                Err(error) => error,
+                Ok(unexpected) => {
+                    unexpected.close().await;
+                    panic!("HTTP_ISSUE_OUTAGE_FAULT: NOLOGIN Auth unexpectedly authenticated");
+                }
+            };
+            assert!(
+                error.as_database_error().and_then(|error| error.code()).as_deref() == Some("28000"),
+                "fault witness must be actual PostgreSQL NOLOGIN, not generic infrastructure failure"
+            );
+            let business = console_platform_test_support::login_test_pool(
+                &pool,
+                TestDatabaseLogin::Business,
+            )
+            .await;
+            let mut tx = business.begin().await.expect("Business stays available during Auth outage");
+            sqlx::query("SELECT set_config('app.current_org', $1, true)")
+                .bind(OrgId::knl().as_uuid().to_string())
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let visible: bool = sqlx::query_scalar(
+                "SELECT user_id=$2 AND consumed_at IS NULL AND revoked_at IS NULL \
+                 AND expires_at>now() FROM public.auth_bootstrap_credentials WHERE id=$1",
+            )
+            .bind(otp.credential_id)
+            .bind(subject.as_uuid())
+            .fetch_one(&mut *tx)
+            .await
+            .expect("Business must still read the actual live OTP");
+            assert!(visible);
+            tx.rollback().await.unwrap();
+            business.close().await;
+
+            // The real Auth pool waits at most 3s; the router's timeout is 30s.
+            // A timeout response cannot satisfy the exact Storage500 oracle below.
+            let response = tokio::time::timeout(
+                std::time::Duration::from_secs(40),
+                post_cookie_mode(
+                    fixture.router.clone(),
+                    "/api/v1/auth/otp/redeem",
+                    None,
+                    json!({"otp": otp.token.as_str()}),
+                ),
+            )
+            .await
+            .expect("HTTP issuer must finish within the outer request bound");
+            let after = refresh_complete_snapshot(&pool).await;
+            assert!(
+                before["families"] == after["families"] && before["tokens"] == after["tokens"],
+                "HTTP_ISSUE_OUTAGE_PREWRITE: global family/token rosters changed; counts {:?} -> {:?}",
+                roster_counts(&before),
+                roster_counts(&after)
+            );
+            assert!(
+                credentials_before == upstream_credentials(&pool).await,
+                "failed issuance must preserve every existing bootstrap and passkey credential"
+            );
+            // OTP redemption is verify-only and commits this one upstream audit.
+            // No family issuance or HTTP signin audit is allowed on the failed pair.
+            let redeem = one_added_row(&before, &after, "audit");
+            assert_redeem_audit(redeem, subject, otp.credential_id);
+            assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+            assert!(set_cookie_values(&response).is_empty(), "Storage error must not set a cookie");
+            let secrets = [
+                fixture.access.as_str(),
+                fixture.body_refresh.as_str(),
+                fixture.cookie_refresh.as_str(),
+                fixture.control_access.as_str(),
+                otp.token.as_str(),
+                auth_url.as_str(),
+                auth_password.as_str(),
+            ];
+            for value in response.headers().values() {
+                let text = value.to_str().expect("valid response header");
+                assert!(
+                    secrets.iter().all(|secret| !text.contains(secret)),
+                    "Storage failure headers cannot echo known credentials"
+                );
+            }
+            let bytes = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+            let text = std::str::from_utf8(&bytes).unwrap();
+            assert!(
+                secrets.iter().all(|secret| !text.contains(secret)),
+                "Storage failure body cannot echo known credentials"
+            );
+            let body: Value = serde_json::from_slice(&bytes).unwrap();
+            assert!(
+                body == json!({"error":{"code":"internal","message":"refresh token storage error"}}),
+                "constant Storage error only; no token fields or SQL/driver details"
+            );
+            after
+        })
+        .catch_unwind()
+        .await;
+
+        // Restore even on behavioral RED; root owns abort/kill cleanup.
+        let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+            .execute(&pool)
+            .await;
+        let restored: Result<Value, _> = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await;
+        assert!(
+            restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+            "HTTP_ISSUE_OUTAGE_CLEANUP: every public Auth role attribute must be restored"
+        );
+        let after_outage = match outcome {
+            Ok(snapshot) => snapshot,
+            Err(panic) => std::panic::resume_unwind(panic),
+        };
+        let recovered = tokio::time::timeout(
+            std::time::Duration::from_secs(40),
+            post_cookie_mode(
+                fixture.router.clone(),
+                "/api/v1/auth/otp/redeem",
+                None,
+                json!({"otp": otp.token.as_str()}),
+            ),
+        )
+        .await
+        .expect("same router and OTP must recover within the request bound");
+        assert_eq!(recovered.status(), StatusCode::OK);
+        assert_eq!(set_cookie_values(&recovered).len(), 1);
+        let cookie =
+            console_refresh_set_cookie(&recovered).expect("recovery must issue a real cookie");
+        let recovered_token = cookie_token(&cookie);
+        assert!(!recovered_token.is_empty());
+        let body: OtpRedeemResponse = recovered.into_json(StatusCode::OK).await;
+        assert!(!body.access_token.is_empty());
+        assert!(
+            body.refresh_token.is_none(),
+            "cookie transport must not expose the refresh token in JSON"
+        );
+        assert!(body.requires_passkey_setup);
+        let after_recovery = refresh_complete_snapshot(&pool).await;
+        let family = one_added_row(&after_outage, &after_recovery, "families");
+        let token = one_added_row(&after_outage, &after_recovery, "tokens");
+        assert!(family["user_id"] == json!(subject));
+        assert!(family["org_id"] == json!(OrgId::knl()));
+        assert!(family["revoked_at"].is_null() && family["revoked_reason"].is_null());
+        assert!(token["family_id"] == family["id"]);
+        assert!(token["user_id"] == family["user_id"] && token["org_id"] == family["org_id"]);
+        assert!(token["token_hash"] == hex::encode(Sha256::digest(recovered_token.as_bytes())));
+        for key in ["used_at", "replaced_by", "revoked_at", "reuse_detected_at"] {
+            assert!(
+                token[key].is_null(),
+                "new recovery token must be live and unused"
+            );
+        }
+        let old_audit = after_outage["audit"].as_array().unwrap();
+        let new_audit = after_recovery["audit"].as_array().unwrap();
+        assert_eq!(new_audit.len(), old_audit.len() + 3);
+        for old in old_audit {
+            assert!(
+                new_audit.contains(old),
+                "all pre-recovery audit rows must remain exact"
+            );
+        }
+        let added: Vec<_> = new_audit
+            .iter()
+            .filter(|row| !old_audit.iter().any(|old| old["id"] == row["id"]))
+            .collect();
+        assert_eq!(added.len(), 3);
+        for action in ["auth.otp.redeem", "auth.refresh.issue", "auth.otp.signin"] {
+            let matching: Vec<_> = added.iter().filter(|row| row["action"] == action).collect();
+            assert_eq!(
+                matching.len(),
+                1,
+                "exactly one recovery audit for each action"
+            );
+            let audit = matching[0];
+            assert!(audit["actor"] == json!(subject));
+            assert!(audit["org_id"] == json!(OrgId::knl()));
+            match action {
+                "auth.otp.redeem" => assert_redeem_audit(audit, subject, otp.credential_id),
+                "auth.refresh.issue" => {
+                    assert!(audit["target_type"] == "auth_refresh_token_family");
+                    assert!(audit["target_id"] == family["id"]);
+                    assert!(audit["after_snap"]["family_id"] == family["id"]);
+                    assert!(audit["after_snap"]["token_id"] == token["id"]);
+                    assert!(audit["after_snap"]["user_id"] == json!(subject));
+                }
+                "auth.otp.signin" => {
+                    assert!(audit["target_type"] == "users");
+                    assert!(audit["target_id"] == json!(subject));
+                    assert!(
+                        audit["after_snap"]
+                            == json!({
+                                "refresh_family_id": family["id"],
+                                "requires_passkey_setup": true,
+                            })
+                    );
+                }
+                _ => unreachable!(),
+            }
+        }
+        assert!(
+            credentials_before == upstream_credentials(&pool).await,
+            "same-OTP recovery must preserve every bootstrap and passkey credential"
+        );
+    }
 }
