@@ -303,6 +303,7 @@ mod authorized {
         let pay_run = PgPayRunPort::new(
             runtime_role_pool(pool).await,
             tokio::runtime::Handle::current(),
+            console_platform_db::durability::DurabilityPolicy::local_development(),
         );
         let created = {
             let port = pay_run.clone();

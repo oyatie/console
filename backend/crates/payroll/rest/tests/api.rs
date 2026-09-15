@@ -278,7 +278,11 @@ async fn seed_user_linked_to_employee(
 
 async fn seed_run(owner_pool: &PgPool, org: Uuid, actor: UserId) -> Uuid {
     let runtime_pool = runtime_role_pool(owner_pool).await;
-    let pay_run = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let pay_run = PgPayRunPort::new(
+        runtime_pool,
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let created = execute_sync(
         &pay_run,
         PayRunCommand {
@@ -781,7 +785,11 @@ async fn provision_empty_tenant_appointed_run(owner_pool: &PgPool) -> EmptyTenan
     let positions = PgJobPositionPort::new(runtime_pool.clone(), handle.clone());
     let persons = PgPersonPort::new(runtime_pool.clone(), handle.clone());
     let employment = PgEmploymentPort::new(runtime_pool.clone(), handle.clone());
-    let pay_run = PgPayRunPort::new(runtime_pool.clone(), handle);
+    let pay_run = PgPayRunPort::new(
+        runtime_pool.clone(),
+        handle,
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let org = OrgId::from_uuid(ORG);
 
     execute_sync(

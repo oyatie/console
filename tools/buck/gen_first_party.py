@@ -783,6 +783,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-payroll-adapter-postgres': {
         'unit': 'none',
         'integration': {
+            'tests/durability_observer.rs': 'postgres',
             'tests/recovery.rs': 'postgres-recovery',
             'tests/pay_run_port_as_runtime_role.rs': 'postgres',
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',

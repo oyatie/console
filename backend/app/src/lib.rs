@@ -495,6 +495,9 @@ pub struct AppConfig {
     pub service_name: String,
     pub http_addr: SocketAddr,
     pub database_url: Option<String>,
+    /// Explicit completion policy for database-backed serving. Absence never
+    /// selects local durability; migration-only configuration may omit it.
+    pub database_durability: Option<console_platform_db::durability::DurabilityPolicy>,
     /// Dedicated Account custody transport, required for configured API auth.
     /// Configuration only: opening its restricted pool belongs to auth wiring.
     pub auth_database_url: Option<String>,
@@ -624,6 +627,10 @@ impl std::fmt::Debug for AppConfig {
             .field("http_addr", &self.http_addr)
             .field("database_configured", &self.database_url.is_some())
             .field(
+                "database_durability_configured",
+                &self.database_durability.is_some(),
+            )
+            .field(
                 "auth_database_configured",
                 &self.auth_database_url.is_some(),
             )
@@ -709,6 +716,16 @@ fn policy_step_up_from_auth_config(config: &AuthRestConfig) -> Result<PasskeySer
 }
 
 impl AppConfig {
+    fn require_database_durability(
+        &self,
+    ) -> Result<&console_platform_db::durability::DurabilityPolicy, AppError> {
+        self.database_durability.as_ref().ok_or_else(|| {
+            AppError::Config(
+                "CONSOLE_DATABASE_DURABILITY is required for database-backed serving".to_owned(),
+            )
+        })
+    }
+
     pub fn from_env() -> Result<Self, AppError> {
         Self::from_pairs(env::vars())
     }
@@ -1045,11 +1062,23 @@ impl AppConfig {
                 })
                 .transpose()?;
 
+        let database_durability = vars
+            .get("CONSOLE_DATABASE_DURABILITY")
+            .map(|value| console_platform_db::durability::DurabilityPolicy::from_json(value))
+            .transpose()
+            .map_err(|error| AppError::Config(error.to_string()))?;
+        if role != AppRole::Migrate && database_url.is_some() && database_durability.is_none() {
+            return Err(AppError::Config(
+                "CONSOLE_DATABASE_DURABILITY is required for database-backed serving".to_owned(),
+            ));
+        }
+
         Ok(Self {
             role,
             service_name,
             http_addr,
             database_url,
+            database_durability,
             auth_database_url,
             account_terms_artifact_root,
             leave_command_database_url,
@@ -1543,9 +1572,25 @@ pub struct AppState {
 }
 
 impl AppState {
+    /// Both Postgres constructors validate this invariant before exposing state.
+    #[expect(
+        clippy::expect_used,
+        reason = "Postgres AppState construction requires a policy"
+    )]
+    fn postgres_durability(&self) -> console_platform_db::durability::DurabilityPolicy {
+        self.config
+            .database_durability
+            .as_ref()
+            .expect("Postgres AppState has a validated durability policy")
+            .clone()
+    }
+
     /// Compose injected dependencies without connecting or admitting database
     /// transports. Production serving startup uses [`Self::from_config`].
     pub fn new(config: AppConfig, database: DatabaseDependency) -> Result<Self, AppError> {
+        if matches!(&database, DatabaseDependency::Postgres(_)) {
+            config.require_database_durability()?;
+        }
         let jwt_verifier = config
             .jwt
             .as_ref()
@@ -1653,6 +1698,11 @@ impl AppState {
     }
 
     pub async fn from_config(config: AppConfig) -> Result<Self, AppError> {
+        // AppConfig is public and can be changed after parsing. Refuse missing
+        // policy before any transport is opened, including injected role tags.
+        if config.database_url.is_some() {
+            config.require_database_durability()?;
+        }
         let database = match config.database_url.as_deref() {
             Some(url) => {
                 let after_connect_role = "console_rt".to_owned();
@@ -1691,6 +1741,11 @@ impl AppState {
                     .map_err(AppError::Database)?;
                 validate_database_pool_identity(&pool, "DATABASE_URL", "console_rt").await?;
                 account_custody::verify(&pool).await?;
+                config
+                    .require_database_durability()?
+                    .validate(&pool)
+                    .await
+                    .map_err(|error| AppError::Config(error.to_string()))?;
                 DatabaseDependency::Postgres(pool)
             }
             None => DatabaseDependency::NotConfigured,
@@ -2906,7 +2961,10 @@ impl EmploymentTransferPort for PgEmploymentTransferPort {
 ///
 /// `registry.update_equipment` is not a roster member and keeps its hand-written
 /// handler; it is the last of that shape.
-fn projected_dispatch_registry(pool: PgPool) -> ProjectedDispatchRegistry {
+fn projected_dispatch_registry(
+    pool: PgPool,
+    durability: console_platform_db::durability::DurabilityPolicy,
+) -> ProjectedDispatchRegistry {
     // Every port bridges a SYNCHRONOUS `execute` onto async `sqlx` with this
     // handle. `build_router` is only ever called from inside a runtime, and a
     // panic here is the correct failure: a router built without one would fail
@@ -2922,7 +2980,7 @@ fn projected_dispatch_registry(pool: PgPool) -> ProjectedDispatchRegistry {
         .register_port(PgJobPositionPort::new(pool.clone(), runtime.clone()))
         .register_port(PgPersonPort::new(pool.clone(), runtime.clone()))
         .register_port(PgEmploymentPort::new(pool.clone(), runtime.clone()))
-        .register_port(PgPayRunPort::new(pool, runtime))
+        .register_port(PgPayRunPort::new(pool, runtime, durability))
 }
 
 /// The composition root is measured for COVERAGE, not for its shape: whatever
@@ -2941,7 +2999,10 @@ mod projected_dispatch_coverage {
         // property of the wiring, not of the database behind it.
         let pool = sqlx::postgres::PgPool::connect_lazy("postgres://console@127.0.0.1/console")
             .expect("a lazy pool never connects");
-        let registry = super::projected_dispatch_registry(pool);
+        let registry = super::projected_dispatch_registry(
+            pool,
+            console_platform_db::durability::DurabilityPolicy::local_development(),
+        );
 
         let unresolved: Vec<&str> = DispatchTarget::ALL
             .iter()
@@ -3647,7 +3708,10 @@ pub fn build_router(state: AppState) -> Router {
                         governance_store.clone(),
                         session_verification.clone(),
                     )
-                    .with_projected_dispatch(projected_dispatch_registry(pool.clone())),
+                    .with_projected_dispatch(projected_dispatch_registry(
+                        pool.clone(),
+                        state.postgres_durability(),
+                    )),
                 ))
                 .merge(console_governance_rest::router(GovernanceRestState::new(
                     governance_store,
@@ -4891,7 +4955,7 @@ async fn run_dispatch_worker(config: AppConfig, state: AppState) -> Result<(), A
     // the apalis dispatch worker on the same `console_rt` pool, re-arming
     // `app.current_org` per tenant each tick. Lands dark: no tenant is enrolled in
     // a shipped migration/seed, so it finds no work in production.
-    let workflow_drain_handle = workflow_drain::spawn(pool.clone());
+    let workflow_drain_handle = workflow_drain::spawn(pool.clone(), state.postgres_durability());
     // L20 tamper-evident audit-chain seal worker (charter §5.1). Seals batches of
     // audit_events into the append-only audit_chain_seals hash chain on the same
     // `console_rt` pool, re-arming `app.current_org` per tenant each tick.
