@@ -39,6 +39,7 @@ async fn rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role(pool:
     store
         .rotate(
             &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::minutes(1),
             ttl,
@@ -95,6 +96,7 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
     let second = store
         .rotate(
             &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::minutes(1),
             ttl,
@@ -105,6 +107,7 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
 
     let reuse = store
         .rotate(
+            &auth,
             &auth,
             first.token.as_str(),
             now + Duration::minutes(2),
@@ -117,6 +120,7 @@ async fn refresh_token_reuse_revokes_the_whole_family(pool: PgPool) {
 
     let after_reuse = store
         .rotate(
+            &auth,
             &auth,
             second.token.as_str(),
             now + Duration::minutes(3),
@@ -182,6 +186,7 @@ async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
     let second = store
         .rotate(
             &auth,
+            &auth,
             first.token.as_str(),
             now + Duration::hours(1),
             ttl,
@@ -193,6 +198,7 @@ async fn rotation_past_family_absolute_ttl_revokes_the_family(pool: PgPool) {
     // One second past the absolute ceiling: rejected as FamilyRevoked.
     let expired = store
         .rotate(
+            &auth,
             &auth,
             second.token.as_str(),
             now + absolute_ttl + Duration::seconds(1),

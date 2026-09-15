@@ -667,6 +667,7 @@ async fn account_fence_refresh_canonical_writer_refuses_fenced_subject_and_rotat
     let rotated = RefreshTokenStore
         .rotate(
             &business,
+            &auth,
             &control,
             OffsetDateTime::now_utc(),
             Duration::days(30),
@@ -687,6 +688,7 @@ async fn account_fence_refresh_canonical_writer_refuses_fenced_subject_and_rotat
         let denied = RefreshTokenStore
             .rotate(
                 &business,
+                &auth,
                 &fixture.body_refresh,
                 OffsetDateTime::now_utc(),
                 Duration::days(30),

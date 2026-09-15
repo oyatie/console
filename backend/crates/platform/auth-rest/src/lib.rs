@@ -2162,6 +2162,10 @@ async fn refresh_token(
         .refresh_tokens
         .rotate(
             &state.pool,
+            state
+                .auth_database
+                .as_ref()
+                .ok_or_else(|| RestError::from_refresh(RefreshTokenUseError::Storage))?,
             &refresh,
             now,
             services.refresh_token_ttl,

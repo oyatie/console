@@ -132,12 +132,13 @@ impl RefreshTokenStore {
     pub async fn rotate(
         &self,
         pool: &PgPool,
+        auth_pool: &PgPool,
         presented_token: &str,
         now: OffsetDateTime,
         ttl: Duration,
         absolute_ttl: Duration,
     ) -> Result<RefreshTokenIssue, RefreshTokenUseError> {
-        self.rotate_inner(pool, presented_token, now, ttl, absolute_ttl)
+        self.rotate_inner(pool, auth_pool, presented_token, now, ttl, absolute_ttl)
             .await
             .map_err(|err| match err {
                 AuthError::Refresh(refresh) => refresh,
@@ -148,6 +149,7 @@ impl RefreshTokenStore {
     async fn rotate_inner(
         &self,
         pool: &PgPool,
+        auth_pool: &PgPool,
         presented_token: &str,
         now: OffsetDateTime,
         ttl: Duration,
@@ -210,6 +212,22 @@ impl RefreshTokenStore {
         if family_revoked_at.is_some() {
             tx.rollback().await?;
             return Err(RefreshTokenUseError::FamilyRevoked.into());
+        }
+
+        // Resolve the subject from the locked token, never from request input.
+        // The restricted transport owns this global identity read. SQL errors
+        // and NULL fail closed through Storage; no replacement is committed.
+        // This refuses a pre-existing fence. Account activation still requires
+        // admission pause and drain: a separate pool read cannot serialize a
+        // concurrent cutover with this legacy Company transaction.
+        let fenced: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+            .bind(user_id)
+            // rls-arming: ok narrow Account identity projection is global, not Company data
+            .fetch_one(auth_pool)
+            .await?;
+        if fenced {
+            tx.rollback().await?;
+            return Err(RefreshTokenUseError::InvalidToken.into());
         }
 
         // Absolute session-lifetime cap (NIST 800-63B AAL2 reauthentication):
