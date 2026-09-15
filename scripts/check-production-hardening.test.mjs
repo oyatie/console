@@ -899,7 +899,7 @@ const validWorkflowFiles = {
   "package.json": JSON.stringify({
     scripts: {
       "test:production-hardening":
-        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs",
+        "npm run test:pr473-migration-operational && python3 scripts/check-production-promotion-authority.test.py && node --test scripts/check-production-authority-blocked.test.mjs scripts/check-production-hardening.test.mjs scripts/check-image-release-workflow.test.mjs scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs",
       "check:production-authority-blocked":
         "node scripts/check-production-authority-blocked.mjs",
     },
