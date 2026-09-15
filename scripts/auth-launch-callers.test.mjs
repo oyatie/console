@@ -37,15 +37,20 @@ function fixture(ambient = {}) {
     SECRETS_DIR: '/unused/secrets', REPO_ROOT: '/unused', PID_FILE: '/unused/pid',
     DEPS_SERVICES: ['postgres'], OFFICE_ENABLED: false, OFFICE_JWT_SECRET: 'synthetic-office',
     ensureDevKeys: () => ({ privateKeyPem: 'app-private', publicKeyPem: 'app-public' }),
-    log: (message) => logs.push(message), detectCompose: () => ({ selected: true }),
+    log: (message) => logs.push(message),
+    detectCompose: () => ({ bin: 'unexecuted-container-runtime', prefix: ['compose'] }),
+    COMPOSE_FILES: ['ops/compose.yml', 'ops/compose.dev.yml', 'ops/compose.dev-deps.yml'],
+    COMPOSE_PROJECT: 'console-policy-fixture',
     prepareLocalCustody: () => {}, runtimeBin: () => 'unexecuted-container-runtime',
     waitForContainersHealthy: async () => {}, ensureBucket: async () => {},
     readPidState: () => null, existsSync: () => false,
-    runCompose: (...args) => { calls.push(args); return { status: 0 }; },
+    spawnSync: (...args) => { calls.push(args); return { status: 0 }; },
+    readFileSync: () => 'SELECT 1;',
   };
   vm.createContext(context);
   const names = ['databaseUrl', 'runtimeDatabaseUrl', 'commandDatabaseUrl', 'buildAppEnv',
-    'bringUpDeps', 'reconcileDatabaseTopology', 'finalizeDatabaseCustody', 'cmdDown'];
+    'composeArgs', 'runCompose', 'bringUpDeps', 'reconcileDatabaseTopology',
+    'finalizeDatabaseCustody', 'runSeed', 'cmdDown'];
   vm.runInContext(names.map((name) => declaration(dev, name)).join('\n'), context, { timeout: 1000 });
   return { context, calls, logs };
 }
@@ -114,7 +119,7 @@ for (const role of ['api', 'worker', 'migrate']) {
 for (const name of ['bringUpDeps', 'reconcileDatabaseTopology', 'finalizeDatabaseCustody', 'cmdDown']) {
   test(`actual dev ${name} passes same auth credential and container target to Compose model`, async () => {
     const { context, calls, logs } = fixture({ AUTH_DATABASE_URL: 'postgres://wrong@wrong/wrong' });
-    await context[name]({ selected: true });
+    await context[name](context.detectCompose());
     assert.ok(calls.length > 0, 'actual adapter must reach its Compose boundary');
     for (const [, , options] of calls) {
       assert.ok(options.env.CONSOLE_AUTH_POSTGRES_PASSWORD === authPassword, 'topology credential must match host API credential');
@@ -127,6 +132,7 @@ for (const name of ['bringUpDeps', 'reconcileDatabaseTopology', 'finalizeDatabas
 
 function composeEnvironment(directory) {
   const values = {
+    CONSOLE_DATABASE_DURABILITY: '{"mode":"local_development"}',
     ACCOUNT_CUSTODY_TARGET_ENV_FILE: path.join(directory, 'target.env'),
     ACCOUNT_CUSTODY_PASSWORD_FILE: path.join(directory, 'password'),
     ACCOUNT_CUSTODY_CA_FILE: path.join(directory, 'ca.crt'), ACCOUNT_CUSTODY_PG_TLS_DIR: directory,
@@ -223,3 +229,103 @@ test('workflow guard positive controls reject omitted delivery wrong-role reuse 
     assert.throws(() => assertWorkflowAuth(p, b, true), { name: 'AssertionError' });
   }
 });
+
+// Policy propagation evidence uses the actual host and Compose adapters. The
+// only process boundary stub is spawnSync; no container or serving app runs.
+const localDurability = '{"mode":"local_development"}';
+const requiredDurability = JSON.stringify({
+  mode: 'required_remote_apply', primary_system_id: '123456789',
+  primary_started_at: '2026-09-01T00:00:00Z', slot: 'fixture_slot',
+  replication_role_oid: 16384, replication_role_name: 'fixture_replica',
+  application_name: 'fixture_slot',
+  peer: { mode: 'admitted_private_network', client_addr: '127.0.0.2' }, timeout_ms: 5000,
+});
+
+for (const role of ['api', 'worker', 'migrate']) {
+  test(`actual dev ${role} selects local explicitly and preserves supplied policy without fallback`, () => {
+    for (const supplied of [undefined, requiredDurability, '', '{invalid']) {
+      const ambient = supplied === undefined ? {} : { CONSOLE_DATABASE_DURABILITY: supplied };
+      const { context } = fixture(ambient);
+      const before = JSON.stringify(context.process.env);
+      const env = context.buildAppEnv(role);
+      if (role === 'migrate') {
+        assert.equal(Object.hasOwn(env, 'CONSOLE_DATABASE_DURABILITY'), false,
+          'migration child omits runtime durability, including an invalid ambient value');
+      } else if (supplied === undefined) {
+        assert.deepEqual(JSON.parse(env.CONSOLE_DATABASE_DURABILITY), JSON.parse(localDurability),
+          'single-node local launcher makes an explicit local selection');
+      } else {
+        assert.equal(env.CONSOLE_DATABASE_DURABILITY, supplied,
+          'Required, empty and invalid explicit values survive for the real parser to validate');
+      }
+      assert.equal(JSON.stringify(context.process.env), before, 'parent environment stays unchanged');
+    }
+  });
+}
+
+for (const name of ['bringUpDeps', 'reconcileDatabaseTopology', 'finalizeDatabaseCustody', 'runSeed', 'cmdDown']) {
+  test(`actual dev ${name} supplies policy and complete local Compose interpolation inputs`, async () => {
+    for (const supplied of [undefined, requiredDurability, '', '{invalid']) {
+      const ambient = {
+        ACCOUNT_CUSTODY_TARGET_ENV_FILE: '/synthetic/target.env',
+        ACCOUNT_CUSTODY_PASSWORD_FILE: '/synthetic/operator-password',
+        ACCOUNT_CUSTODY_CA_FILE: '/synthetic/ca.crt', ACCOUNT_CUSTODY_PG_TLS_DIR: '/synthetic/tls',
+        ...(supplied === undefined ? {} : { CONSOLE_DATABASE_DURABILITY: supplied }),
+      };
+      const { context, calls, logs } = fixture(ambient);
+      const before = JSON.stringify(context.process.env);
+      if (name === 'runSeed') context.existsSync = () => true;
+      await context[name](context.detectCompose());
+      assert.ok(calls.length > 0, 'actual adapter reaches its process boundary');
+      for (const [, , options] of calls) {
+        const env = options.env;
+        assert.ok(env, 'each Compose process gets explicit parser inputs, including seed');
+        if (supplied === undefined) {
+          assert.deepEqual(JSON.parse(env.CONSOLE_DATABASE_DURABILITY), JSON.parse(localDurability));
+        } else {
+          assert.equal(env.CONSOLE_DATABASE_DURABILITY, supplied, 'explicit invalid/empty input is not repaired');
+        }
+        for (const [key, expected] of Object.entries({
+          CONSOLE_POSTGRES_ADMIN_PASSWORD: context.POSTGRES_ADMIN_PASSWORD,
+          CONSOLE_APP_POSTGRES_PASSWORD: context.APP_POSTGRES_PASSWORD,
+          CONSOLE_RT_POSTGRES_PASSWORD: context.RT_POSTGRES_PASSWORD,
+          CONSOLE_AUTH_POSTGRES_PASSWORD: authPassword,
+          CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD: context.LEAVE_COMMAND_POSTGRES_PASSWORD,
+          CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD: context.ONTOLOGY_COMMAND_POSTGRES_PASSWORD,
+          CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: context.PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD,
+          ACCOUNT_CUSTODY_TARGET_ENV_FILE: ambient.ACCOUNT_CUSTODY_TARGET_ENV_FILE,
+          ACCOUNT_CUSTODY_PASSWORD_FILE: ambient.ACCOUNT_CUSTODY_PASSWORD_FILE,
+          ACCOUNT_CUSTODY_CA_FILE: ambient.ACCOUNT_CUSTODY_CA_FILE,
+          ACCOUNT_CUSTODY_PG_TLS_DIR: ambient.ACCOUNT_CUSTODY_PG_TLS_DIR,
+        })) assert.ok(env[key] === expected, `Compose parser input ${key} must use the selected local fixture`);
+        assertUrl(env.AUTH_DATABASE_URL, 'console_auth_rt', authPassword, 'postgres', 5432);
+      }
+      assert.equal(JSON.stringify(context.process.env), before, 'parent environment stays unchanged');
+      noSecretLogs(logs);
+    }
+  });
+}
+
+for (const [workflow, job, bootId] of [
+  ['.github/workflows/ci.yml', 'backend', 'boot-smoke'],
+  ['.github/workflows/image-release.yml', 'release-probe', null],
+]) {
+  test(`${workflow} scopes explicit local policy to its actual synthetic API boot (source guard)`, () => {
+    const steps = document(workflow).jobs[job].steps;
+    const boot = bootId ? steps.find((step) => step.id === bootId)
+      : steps.find((step) => step.name?.startsWith('Boot the release image'));
+    assert.ok(boot?.run);
+    const commands = executable(boot.run).replace(/\\\r?\n/g, ' ').split('\n');
+    const serving = commands.filter((line) => /CONSOLE_APP_ROLE=api\b/.test(line));
+    assert.equal(serving.length, 1, 'one actual API launch command');
+    const assignments = [...serving[0].matchAll(/\bCONSOLE_DATABASE_DURABILITY='([^']+)'/g)];
+    assert.equal(assignments.length, 1, 'API invocation selects one explicit policy');
+    assert.deepEqual(JSON.parse(assignments[0][1]), JSON.parse(localDurability));
+    for (const step of steps) {
+      const lines = executable(step.run).replace(/\\\r?\n/g, ' ').split('\n');
+      for (const line of lines.filter((value) => /CONSOLE_APP_ROLE=migrate\b/.test(value))) {
+        assert.doesNotMatch(line, /CONSOLE_DATABASE_DURABILITY=/, 'migration invocation omits serving policy');
+      }
+    }
+  });
+}
