@@ -571,7 +571,7 @@ async fn historical225_fixture_corrupt_digest_refuses_before_replay_write(pool: 
     require_legacy225_rows(&after, &before["tables"], &before["migration_checksums"]);
 }
 
-async fn require_replay_tamper_rejected_and_rolled_back(pool: PgPool, mutation: &str) {
+async fn require_replay_tamper_rejected_and_rolled_back(pool: PgPool, mutation: &'static str) {
     let fixture = seed_legacy(&pool).await;
     let before: Value = sqlx::query_scalar(LEGACY225_ROWS)
         .bind(&fixture.subjects)
