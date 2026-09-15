@@ -47,10 +47,13 @@ const recoveryCommands = [
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation -- --exact --test-threads=1 --nocapture",
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery required_remote_unknown_is_bounded_and_never_local_fallback -- --exact --test-threads=1 --nocapture",
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows -- --exact --test-threads=1 --nocapture",
-  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_deadline_reclaims_backend_before_replay_resumes -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_deadline_retains_capacity_until_replay_resumes -- --exact --test-threads=1 --nocapture",
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends -- --exact --test-threads=1 --nocapture",
   "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_stage_transport_error_closes_pool_before_reconciliation -- --exact --test-threads=1 --nocapture",
-  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture"
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_app_startup_admits_only_the_installed_observer -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply -- --exact --test-threads=1 --nocapture",
+  "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture"
 ];
 const skipLivePostgresCondition = "${{ needs.preflight.outputs.run_live_postgres != 'true' }}";
 /** Heavy proofs that are postsubmit-only (push / workflow_dispatch). */
@@ -1042,7 +1045,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "e2fd66bf8cba7f10bf54e6d4c6cf757a17f5762c1be6239261bf1a3b1054925f", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "d81d16654c1a17acc7b764adf4a05dba38dba49a030944167eb8d4ecc9ec13a3", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
@@ -1179,10 +1182,13 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("Recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation", recoveryCommands[3], { if: recoveryRunCondition }),
     proofRun("Recovery required_remote_unknown_is_bounded_and_never_local_fallback", recoveryCommands[4], { if: recoveryRunCondition }),
     proofRun("Recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows", recoveryCommands[5], { if: recoveryRunCondition }),
-    proofRun("Recovery fresh_commit_deadline_reclaims_backend_before_replay_resumes", recoveryCommands[6], { if: recoveryRunCondition }),
+    proofRun("Recovery fresh_commit_deadline_retains_capacity_until_replay_resumes", recoveryCommands[6], { if: recoveryRunCondition }),
     proofRun("Recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends", recoveryCommands[7], { if: recoveryRunCondition }),
     proofRun("Recovery fresh_stage_transport_error_closes_pool_before_reconciliation", recoveryCommands[8], { if: recoveryRunCondition }),
     proofRun("Certify durability observer in a dedicated disposable cluster", recoveryCommands[9], { if: recoveryRunCondition }),
+    proofRun("App recovery required_app_startup_admits_only_the_installed_observer", recoveryCommands[10], { if: recoveryRunCondition }),
+    proofRun("App recovery required_api_projected_payroll_dispatch_waits_for_remote_apply", recoveryCommands[11], { if: recoveryRunCondition }),
+    proofRun("App recovery required_workflow_spawn_keeps_unknown_staging_pending_until_retry", recoveryCommands[12], { if: recoveryRunCondition }),
   ],
   "rust-fmt": [
     proofRun("rustfmt check", "cargo fmt --all -- --check"),

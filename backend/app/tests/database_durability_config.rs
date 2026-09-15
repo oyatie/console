@@ -1,7 +1,5 @@
-// PRIVATE TEST SOURCE CANDIDATE. Not imported, compiled, run, or admitted.
-// Suggested new integration target: backend/app/tests/database_durability_config.rs.
-// Uses the existing public API; missing-policy assertions are expected semantic
-// failures on 1cef89ea, but that expectation is not execution evidence.
+// Explicit durability configuration regressions through the public app API.
+// Unreachable fixture URLs prove configuration rejection precedes transport.
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use console_app::{AppConfig, AppError, AppState, DatabaseDependency};
