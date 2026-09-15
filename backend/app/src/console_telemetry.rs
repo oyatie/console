@@ -281,6 +281,16 @@ impl From<console_platform_request_context::RequestContextError> for TelemetryEr
         tracing::error!("console route telemetry request context error");
         if matches!(
             err,
+            console_platform_request_context::RequestContextError::LegacySessionRejected
+        ) {
+            return Self::new(
+                StatusCode::UNAUTHORIZED,
+                "unauthorized",
+                "invalid bearer token",
+            );
+        }
+        if matches!(
+            err,
             console_platform_request_context::RequestContextError::SessionVerificationUnavailable
         ) {
             return Self::new(

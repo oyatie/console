@@ -478,6 +478,7 @@ async fn principal(s: &EquipmentRestState, h: &HeaderMap) -> Result<Principal, R
         .map_err(|e| match e {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",

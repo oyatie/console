@@ -204,6 +204,7 @@ async fn principal(s: &FacilitiesRestState, h: &HeaderMap) -> Result<Principal, 
         ),
         RequestContextError::MissingBearer
         | RequestContextError::InvalidToken
+        | RequestContextError::LegacySessionRejected
         | RequestContextError::InvalidClaim(_) => RestError::new(
             StatusCode::UNAUTHORIZED,
             "unauthorized",
