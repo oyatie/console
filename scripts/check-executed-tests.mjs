@@ -74,7 +74,7 @@ import {
   evaluateTestAttributeBaseline,
 } from "./lib/executed-tests-baseline.mjs";
 import { directExecutable, executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
-import { unitTestedCrateSrcRoots } from "./check-executed-tests-cfg.mjs";
+import { stripRustCommentsAndStringLiterals, unitTestedCrateSrcRoots } from "./check-executed-tests-cfg.mjs";
 import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
 import { recoveryTestInvocations } from "./lib/recovery-test-invocations.mjs";
 
@@ -426,6 +426,89 @@ const executedBinaries = [...executed.keys()].sort();
 const dark = defined.filter((f) => !executed.has(f));
 const buckOnly = [...executed].filter(([, via]) => via.startsWith("//")).map(([k]) => k).sort();
 
+// Integration binaries own declared modules, not every .rs file beside their root.
+function integrationSources(root) {
+  const files = new Set();
+  const visited = new Set();
+  const active = new Set();
+  const visit = (file, moduleDir) => {
+    const fail = (message) => { throw new Error(`${relative(ROOT, file)}: ${message}`); };
+    if (active.has(file)) fail("cyclic Rust module reference");
+    const identity = `${file}\0${moduleDir}`;
+    if (visited.has(identity)) return;
+    const rel = relative(ROOT, file);
+    if (rel === ".." || rel.startsWith("../") || !file.endsWith(".rs")) fail("module source must be a repository Rust file");
+    if (!existsSync(file) || !statSync(file).isFile()) fail("referenced Rust module source is missing");
+    files.add(file);
+    visited.add(identity);
+    active.add(file);
+    // Strings stay single opaque tokens; only a path attribute may interpret one.
+    const source = stripRustCommentsAndStringLiterals(readFileSync(file, "utf8"), { preserveStrings: true });
+    const tokens = source.match(/(?:br|cr|r)(#*)"[\s\S]*?"\1|"(?:\\[\s\S]|[^"\\])*"|(?:r#)?[A-Za-z_]\w*|[^\s]/g) ?? [];
+    const scopes = [{ moduleDir, pathDir: dirname(file) }];
+    let path = null;
+    for (let index = 0; index < tokens.length; index += 1) {
+      const token = tokens[index];
+      const scope = scopes.at(-1);
+      if (token === "#" && tokens[index + 1] === "[") {
+        const attribute = [];
+        let depth = 1;
+        index += 2;
+        for (; index < tokens.length; index += 1) {
+          if (tokens[index] === "[") depth += 1;
+          if (tokens[index] === "]" && --depth === 0) break;
+          attribute.push(tokens[index]);
+        }
+        if (depth !== 0) fail("unterminated Rust attribute");
+        if (attribute[0] === "path") {
+          if (path !== null || attribute.length !== 3 || attribute[1] !== "=") fail("unsupported Rust path attribute");
+          const literal = attribute[2];
+          const normal = literal.match(/^"([^"\\]*)"$/);
+          const raw = literal.match(/^r(#*)"([\s\S]*)"\1$/);
+          path = normal?.[1] ?? raw?.[2];
+          if (!path || path.includes("\0")) fail("unsupported Rust module path literal");
+        } else if (attribute.includes("path")) {
+          fail("conditional or nested Rust path attribute is unsupported");
+        }
+        continue;
+      }
+      if (token === "include" && tokens[index + 1] === "!") fail("include! module sources are unsupported");
+      if (token === "mod" && /^(?:r#)?[A-Za-z_]\w*$/.test(tokens[index + 1] ?? "")
+        && [";", "{"].includes(tokens[index + 2])) {
+        const name = tokens[index + 1].replace(/^r#/, "");
+        const inline = tokens[index + 2] === "{";
+        index += 2;
+        if (inline) {
+          if (path !== null) fail("path attributes on inline modules are unsupported");
+          const directory = join(scope.moduleDir, name);
+          scopes.push({ moduleDir: directory, pathDir: directory });
+        } else {
+          const candidates = path === null
+            ? [join(scope.moduleDir, `${name}.rs`), join(scope.moduleDir, name, "mod.rs")].filter(existsSync)
+            : [resolve(scope.pathDir, path)];
+          if (candidates.length !== 1) fail(`module ${name} has ${candidates.length} source candidates (expected one)`);
+          visit(candidates[0], path === null ? join(scope.moduleDir, name) : dirname(candidates[0]));
+        }
+        path = null;
+      } else if (token === "mod") {
+        fail("unsupported Rust module declaration");
+      } else if (token === "{") {
+        if (path !== null) fail("path attribute does not name a supported module");
+        scopes.push(scope);
+      } else if (token === "}") {
+        if (scopes.length === 1) fail("unbalanced Rust module scope");
+        scopes.pop();
+      } else if (token === ";") {
+        if (path !== null) fail("path attribute does not name a supported module");
+      }
+    }
+    if (scopes.length !== 1 || path !== null) fail("unfinished Rust module declaration");
+    active.delete(file);
+  };
+  visit(root, dirname(root));
+  return [...files];
+}
+
 // Count declared test attributes once per reachable SOURCE. This is a cheap lexical
 // deletion ratchet, not runtime case evidence: it deliberately does not evaluate cfg,
 // feature selection, macro expansion, or `#[ignore]`. Feature-bearing BINARY reachability
@@ -436,7 +519,7 @@ function countAttributes(rel) {
   if (!existsSync(abs)) return 0;
   const files = rel.endsWith("/src/lib.rs")
     ? walk(dirname(abs), [], (entry) => entry.endsWith(".rs"))
-    : [abs];
+    : integrationSources(abs);
   return files.reduce(
     (count, file) => count + countDeclaredTestAttributes(readFileSync(file, "utf8")),
     0,
@@ -445,7 +528,14 @@ function countAttributes(rel) {
 
 const reachableSources = [...new Set(executedBinaries.map((binary) => binary.split(" --features ")[0]))].sort();
 const testAttributes = Object.fromEntries(
-  reachableSources.map((source) => [source, countAttributes(source)]),
+  reachableSources.map((source) => {
+    try {
+      return [source, countAttributes(source)];
+    } catch (error) {
+      unresolved.push(error instanceof Error ? error.message : String(error));
+      return [source, 0];
+    }
+  }),
 );
 const totalTestAttributes = Object.values(testAttributes).reduce((sum, count) => sum + count, 0);
 

@@ -6,6 +6,8 @@
 // gate green while the repository silently swaps which test cannot fail. Naming them also
 // lets independent lanes append to their own bucket instead of contending on one integer.
 
+import { stripRustCommentsAndStringLiterals } from "../check-executed-tests-cfg.mjs";
+
 /**
  * @param {string[]} dark      test binaries that reach no workflow step, as measured now
  * @param {object}   doc       parsed docs/program/executed-tests-baseline.json
@@ -87,7 +89,7 @@ export function evaluateBaseline(dark, doc, label) {
 const TEST_ATTRIBUTE = /^[ \t]*#\[(?:tokio::|sqlx::)?test(?:\([^\n)]*\))?\]/gm;
 
 export function countDeclaredTestAttributes(source) {
-  return (source.match(TEST_ATTRIBUTE) ?? []).length;
+  return (stripRustCommentsAndStringLiterals(source, { preserveLines: true }).match(TEST_ATTRIBUTE) ?? []).length;
 }
 
 export function evaluateTestAttributeBaseline(current, baseline, label) {
