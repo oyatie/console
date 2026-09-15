@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root",
+  "preparer": "/root/inventory_repair",
+  "head_before": "eef737cf0739784795a718e99e5d72bc85999c3f",
+  "manifest_sha256": "620837e9de8b882a52b29f1e64754c97d442fa7cf377fb779ee8bbd760486af2",
+  "archives_verified_imported_readback": 106,
+  "source_bindings_verified": 2982,
+  "unique_git_blobs_verified": 995,
+  "byte_exact_decompression": true,
+  "deterministic_gzip": true,
+  "no_prior_origin_duplication": true,
+  "classification": "full206 remains183PASS23FAIL; selected1 repairGREEN is independent, not a fresh206result. RejectedV1control evidence retained.",
+  "production_runtime_execution": 0,
+  "verdict": "APPROVED finite inert evidence import"
+}

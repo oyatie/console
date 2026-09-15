@@ -1,0 +1,27 @@
+{
+  "kind": "ROOT_ONLY_FINITE_RETENTION_COPY_GUIDE",
+  "candidate_root": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-public-terms-read/supplement-full206-postgrant",
+  "runtime_source_heads": [
+    "0007132535578f7abdafeb5192cd07c38376f06d",
+    "7b930e0d02a2ce0b925b2ee34ed81bff474f925a",
+    "00199d8b1329792f14eee3d5e178245d4b10b0d4"
+  ],
+  "manifest": "/private/tmp/terms-public-read-retention-full206-postgrant-inventory/retention-allowlist.json",
+  "manifest_sha256": "620837e9de8b882a52b29f1e64754c97d442fa7cf377fb779ee8bbd760486af2",
+  "copy_records": 106,
+  "steps": [
+    "Independently review the exact manifest hash, finite origins and classifications; historical receipts remain immutable.",
+    "Verify each explicit origin or immutable Git binding and each regular candidate archive against SHA/size; decompress and match original SHA/size.",
+    "Root alone copies only enumerated archive_candidate to archive_destination. Refuse an existing unequal file and never overwrite history.",
+    "Copy only this guide and retention-allowlist.json after archive source-to-destination verification. Retain an independent review separately.",
+    "Read back every destination archive, rehash and decompress. Do not import preparer scripts or any unlisted temporary neighbor.",
+    "Retain full206183/23 and selected1RED/GREEN separately; V1control62/62 is a rejected claim corrected by V2. Npm/OpenAPI/draft retention is separate."
+  ],
+  "no_execution": "Imported payloads are inert gzip evidence. No script/Cargo/Docker/SQL/migration execution is authorized by this guide.",
+  "remaining_holds": [
+    "Independent source/archive review and root serial import/readback",
+    "Separate final environment/OpenAPI/npm and draft work",
+    "Broader Account/Console completion and production/publication/legal authority"
+  ]
+}
