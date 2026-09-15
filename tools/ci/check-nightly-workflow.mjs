@@ -15,7 +15,7 @@
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const ACTION_SHA = /^[^@]+@[0-9a-f]{40}$/;
 const LOCAL_ACTION = /^\.\/\.github\/actions\//;

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
 const ACTION = yaml.load(readFileSync(join(ROOT, ".github/actions/setup-rust/action.yml"), "utf8"));

@@ -6,7 +6,7 @@ import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import { KILL_SWITCH_PATH } from "./check-openapi-execute-outcome.mjs";
 import {

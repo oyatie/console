@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, describe, it } from "node:test";
 
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const workflowPath = new URL(
   "../.github/workflows/image-release.yml",
