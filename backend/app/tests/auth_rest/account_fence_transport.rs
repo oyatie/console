@@ -1924,3 +1924,647 @@ async fn verifier_only_api_readiness_tracks_auth_outage_and_no_jwt_stays_ready(p
         std::panic::resume_unwind(panic);
     }
 }
+
+// Additive reader-boundary tests. The real production finalizer, JWT issuer,
+// startup and router supply every positive prerequisite. Faults mutate only
+// disposable database state and never supply a counterfeit successful reader.
+mod session_reader_contract {
+    use super::*;
+    use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+    use std::time::Duration as StdDuration;
+
+    struct ReaderFixture {
+        router: axum::Router,
+        subject: UserId,
+        control: UserId,
+        tenant: String,
+        platform: String,
+        control_tenant: String,
+        control_platform: String,
+    }
+
+    impl ReaderFixture {
+        fn tokens(&self) -> [&str; 4] {
+            [
+                &self.tenant,
+                &self.platform,
+                &self.control_tenant,
+                &self.control_platform,
+            ]
+        }
+    }
+
+    fn reader_token(issuer: &JwtIssuer, subject: UserId, platform: bool) -> String {
+        issuer
+            .issue_access_token(AccessTokenInput {
+                subject,
+                org_id: if platform {
+                    OrgId::platform()
+                } else {
+                    OrgId::knl()
+                },
+                roles: vec!["SUPER_ADMIN".to_owned()],
+                branches: Vec::new(),
+                platform,
+                view_as: false,
+                read_only: false,
+                display_name: None,
+                feature_grants: Vec::new(),
+                authz_subject_version: 0,
+                authz_policy_version: 0,
+                session_generation: 0,
+                issued_at: OffsetDateTime::now_utc(),
+            })
+            .expect("production issuer must mint valid reader-control JWT")
+    }
+
+    async fn reader_fixture(pool: &PgPool) -> ReaderFixture {
+        prepare_http_database(pool).await;
+        let key = SigningKey::random(&mut OsRng);
+        let private = key.to_pkcs8_pem(LineEnding::LF).unwrap().to_string();
+        let public = key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+        let issuer = JwtIssuer::from_es256_pem(
+            JwtSettings {
+                issuer: TEST_ISSUER.to_owned(),
+                audience: TEST_AUDIENCE.to_owned(),
+                access_token_ttl: Duration::minutes(15),
+            },
+            private.as_bytes(),
+            public.as_bytes(),
+        )
+        .unwrap();
+        let branch = seed_branch(pool, "Reader Fence Region", "Reader Fence Branch").await;
+        let subject = seed_user_with_branch(
+            pool,
+            "Reader Fence Subject",
+            "010-8960-0001",
+            "SUPER_ADMIN",
+            branch,
+        )
+        .await;
+        let control = seed_user_with_branch(
+            pool,
+            "Reader Fence Control",
+            "010-8960-0002",
+            "SUPER_ADMIN",
+            branch,
+        )
+        .await;
+        let router = build_router(
+            app_state(pool.clone(), private, public)
+                .await
+                .expect("real restricted startup must precede reader assertions"),
+        );
+        assert_projection(pool, subject, false).await;
+        assert_projection(pool, control, false).await;
+        ReaderFixture {
+            router,
+            subject,
+            control,
+            tenant: reader_token(&issuer, subject, false),
+            platform: reader_token(&issuer, subject, true),
+            control_tenant: reader_token(&issuer, control, false),
+            control_platform: reader_token(&issuer, control, true),
+        }
+    }
+
+    async fn reader_rows(pool: &PgPool) -> Value {
+        sqlx::query_scalar(
+            r#"SELECT jsonb_build_object(
+              'users',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM users x),
+              'memberships',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.user_id,x.branch_id),'[]'::jsonb) FROM user_branches x),
+              'passkeys',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_webauthn_credentials x),
+              'bootstrap',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_bootstrap_credentials x),
+              'families',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_refresh_token_families x),
+              'tokens',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_refresh_tokens x),
+              'accounts',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM accounts x),
+              'security',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.account_id),'[]'::jsonb) FROM account_security x)
+            )"#,
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    async fn reader_audits(pool: &PgPool) -> Value {
+        sqlx::query_scalar(
+            "SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM audit_events x",
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    async fn assert_reader_error(
+        response: http::Response<Body>,
+        expected: StatusCode,
+        tokens: &[&str],
+    ) {
+        assert_eq!(
+            response.status(),
+            expected,
+            "SESSION_READER_HTTP: wrong status"
+        );
+        assert!(
+            response
+                .headers()
+                .get_all(header::SET_COOKIE)
+                .iter()
+                .next()
+                .is_none()
+        );
+        for value in response.headers().values() {
+            if let Ok(value) = value.to_str() {
+                assert!(
+                    tokens.iter().all(|token| !value.contains(token)),
+                    "header token echo"
+                );
+            }
+        }
+        let bytes = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+        let body = std::str::from_utf8(&bytes).expect("fixed public error must be UTF8");
+        assert!(
+            tokens.iter().all(|token| !body.contains(token)),
+            "body token echo"
+        );
+        // Canonical request middleware already uses plain text; local REST
+        // adapters already use JSON. Preserve those transport shapes.
+        if let Ok(json) = serde_json::from_slice::<Value>(&bytes) {
+            assert!(json["error"]["code"].is_string());
+            assert!(json["error"]["message"].is_string());
+            assert!(json.get("access_token").is_none() && json.get("refresh_token").is_none());
+            if expected == StatusCode::SERVICE_UNAVAILABLE {
+                assert_eq!(json["error"]["code"], "unavailable");
+                assert_eq!(json["error"]["message"], "session verification unavailable");
+            }
+        } else {
+            let message = match expected {
+                StatusCode::UNAUTHORIZED => "invalid bearer token",
+                StatusCode::FORBIDDEN => "token tier is not valid for this route",
+                StatusCode::SERVICE_UNAVAILABLE => "session verification unavailable",
+                _ => panic!("unreviewed reader error status"),
+            };
+            assert!(body == message, "fixed sanitized middleware error required");
+        }
+    }
+
+    async fn reader_html(router: &axum::Router, token: &str) -> String {
+        let response = get_legacy_raw(router, "/_ui/organization", token).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        String::from_utf8(
+            to_bytes(response.into_body(), 256 * 1024)
+                .await
+                .unwrap()
+                .to_vec(),
+        )
+        .unwrap()
+    }
+
+    fn assert_reader_shell(html: &str) {
+        assert!(
+            html == console_payroll_ui::render_shell(),
+            "SSR_SESSION_FENCE: denied reader must return the existing omitted shell",
+        );
+    }
+
+    struct ReaderServer(Option<tokio::task::JoinHandle<std::io::Result<()>>>);
+
+    impl Drop for ReaderServer {
+        fn drop(&mut self) {
+            if let Some(server) = self.0.as_ref() {
+                server.abort();
+            }
+        }
+    }
+
+    async fn reader_server(router: axum::Router) -> (SocketAddr, ReaderServer) {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move { axum::serve(listener, router).await });
+        (address, ReaderServer(Some(server)))
+    }
+
+    async fn reader_handshake(
+        address: SocketAddr,
+        authorization: Option<&str>,
+        protocol: Option<&str>,
+    ) -> http::Response<Body> {
+        let client = reqwest::Client::builder()
+            .no_proxy()
+            .timeout(StdDuration::from_secs(40))
+            .build()
+            .unwrap();
+        let mut request = client
+            .get(format!("http://{address}/api/v1/ws"))
+            .header(header::CONNECTION, "Upgrade")
+            .header(header::UPGRADE, "websocket")
+            .header(header::SEC_WEBSOCKET_VERSION, "13")
+            .header(header::SEC_WEBSOCKET_KEY, "dGhlIHNhbXBsZSBub25jZQ==");
+        if let Some(token) = authorization {
+            request = request.header(header::AUTHORIZATION, format!("Bearer {token}"));
+        }
+        if let Some(token) = protocol {
+            request = request.header(header::SEC_WEBSOCKET_PROTOCOL, format!("bearer, {token}"));
+        }
+        let response = request
+            .send()
+            .await
+            .expect("real loopback WebSocket handshake");
+        let status = response.status();
+        let headers = response.headers().clone();
+        // This test proves admission only. Dropping the successful upgrade
+        // closes its client transport; it never claims existing-socket fencing.
+        let bytes = if status == StatusCode::SWITCHING_PROTOCOLS {
+            Vec::new()
+        } else {
+            response.bytes().await.unwrap().to_vec()
+        };
+        assert!(bytes.len() <= 64 * 1024);
+        let mut output = http::Response::new(Body::from(bytes));
+        *output.status_mut() = status;
+        *output.headers_mut() = headers;
+        output
+    }
+
+    async fn stop_reader_server(mut owned: ReaderServer) {
+        let server = owned.0.take().unwrap();
+        server.abort();
+        let _ = tokio::time::timeout(StdDuration::from_secs(5), server)
+            .await
+            .expect("owned loopback server shutdown must remain bounded");
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_rest_passkeys_fences_tenant_and_platform_subjects(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        for token in [&fixture.tenant, &fixture.platform] {
+            let keys: Value = get_legacy_raw(&fixture.router, "/api/v1/auth/passkeys", token)
+                .await
+                .into_json(StatusCode::OK)
+                .await;
+            assert!(
+                keys.is_array(),
+                "both existing token tiers reach real passkey reads"
+            );
+        }
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        assert_projection(&pool, fixture.subject, true).await;
+        let rows = reader_rows(&pool).await;
+        let audits = reader_audits(&pool).await;
+        for token in [&fixture.tenant, &fixture.platform] {
+            assert_reader_error(
+                get_legacy_raw(&fixture.router, "/api/v1/auth/passkeys", token).await,
+                StatusCode::UNAUTHORIZED,
+                &fixture.tokens(),
+            )
+            .await;
+        }
+        assert!(
+            rows == reader_rows(&pool).await,
+            "passkey refusal changes no identity/session rows"
+        );
+        assert!(
+            audits == reader_audits(&pool).await,
+            "passkey refusal performs no audit mutation"
+        );
+        assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_tenant).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn platform_principal_fences_before_audited_tenant_list(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        let orgs: Value = get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform)
+            .await
+            .into_json(StatusCode::OK)
+            .await;
+        assert!(orgs.is_array(), "actual platform route positive control");
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        assert_projection(&pool, fixture.subject, true).await;
+        let rows = reader_rows(&pool).await;
+        let audits = reader_audits(&pool).await;
+        assert_reader_error(
+            get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform).await,
+            StatusCode::UNAUTHORIZED,
+            &fixture.tokens(),
+        )
+        .await;
+        assert!(
+            rows == reader_rows(&pool).await,
+            "platform refusal changes no identity/session rows"
+        );
+        assert!(
+            audits == reader_audits(&pool).await,
+            "fence precedes audited Business handler"
+        );
+        let control: Value = get_legacy_raw(
+            &fixture.router,
+            "/api/platform/orgs",
+            &fixture.control_platform,
+        )
+        .await
+        .into_json(StatusCode::OK)
+        .await;
+        assert!(control.is_array());
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn ssr_fence_omits_previously_authorized_screen_on_same_router(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        let before = reader_html(&fixture.router, &fixture.tenant).await;
+        assert!(
+            before.contains("data-screen=\"organization\""),
+            "real authorized SSR floor prerequisite"
+        );
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        assert_projection(&pool, fixture.subject, true).await;
+        let rows = reader_rows(&pool).await;
+        assert_reader_shell(&reader_html(&fixture.router, &fixture.tenant).await);
+        assert!(rows == reader_rows(&pool).await, "SSR denial is read-only");
+        let control = reader_html(&fixture.router, &fixture.control_tenant).await;
+        assert!(
+            control.contains("data-screen=\"organization\""),
+            "unfenced SSR control remains visible"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn realtime_fences_both_token_transports_before_upgrade(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        let (address, server) = reader_server(fixture.router.clone()).await;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            for (authorization, protocol) in [
+                (Some(fixture.tenant.as_str()), None),
+                (None, Some(fixture.tenant.as_str())),
+            ] {
+                let response = reader_handshake(address, authorization, protocol).await;
+                assert_eq!(
+                    response.status(),
+                    StatusCode::SWITCHING_PROTOCOLS,
+                    "real unfenced handshake prerequisite"
+                );
+                if protocol.is_some() {
+                    assert_eq!(
+                        response
+                            .headers()
+                            .get(header::SEC_WEBSOCKET_PROTOCOL)
+                            .unwrap(),
+                        "bearer"
+                    );
+                }
+            }
+            insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+            assert_projection(&pool, fixture.subject, true).await;
+            let rows = reader_rows(&pool).await;
+            for (authorization, protocol) in [
+                (Some(fixture.tenant.as_str()), None),
+                (None, Some(fixture.tenant.as_str())),
+                (
+                    Some(fixture.tenant.as_str()),
+                    Some(fixture.control_tenant.as_str()),
+                ),
+            ] {
+                assert_reader_error(
+                    reader_handshake(address, authorization, protocol).await,
+                    StatusCode::UNAUTHORIZED,
+                    &fixture.tokens(),
+                )
+                .await;
+            }
+            assert!(
+                rows == reader_rows(&pool).await,
+                "failed handshake changes no identity/session rows"
+            );
+            let control = reader_handshake(
+                address,
+                Some(&fixture.control_tenant),
+                Some(&fixture.tenant),
+            )
+            .await;
+            assert_eq!(
+                control.status(),
+                StatusCode::SWITCHING_PROTOCOLS,
+                "Authorization still precedes protocol fallback"
+            );
+        })
+        .catch_unwind()
+        .await;
+        stop_reader_server(server).await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+    }
+
+    #[derive(Clone, Copy)]
+    enum ProjectionFault {
+        Null,
+        Missing,
+        AuthNoLogin,
+    }
+
+    async fn projection_catalog(pool: &PgPool) -> Value {
+        // All pg_proc fields, including OID, complete body/config and ACL.
+        // Committed fault/restoration changes MVCC xmin; xmin is not metadata
+        // equality and is deliberately not claimed to roll back here.
+        sqlx::query_scalar("SELECT to_jsonb(p) FROM pg_catalog.pg_proc p WHERE p.oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+            .fetch_one(pool).await.unwrap()
+    }
+
+    async fn terminate_reader_auth_backends(pool: &PgPool) {
+        sqlx::query("SELECT pg_catalog.pg_terminate_backend(pid) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt' AND pid<>pg_backend_pid()")
+            .execute(pool).await.unwrap();
+    }
+
+    async fn reader_fault(pool: PgPool, fault: ProjectionFault) {
+        let fixture = reader_fixture(&pool).await;
+        assert_legacy_reads(&fixture.router, fixture.subject, &fixture.tenant).await;
+        let platform: Value =
+            get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform)
+                .await
+                .into_json(StatusCode::OK)
+                .await;
+        assert!(platform.is_array());
+        assert!(
+            reader_html(&fixture.router, &fixture.tenant)
+                .await
+                .contains("data-screen=\"organization\"")
+        );
+        let original = projection_catalog(&pool).await;
+        let role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(role["rolcanlogin"], true);
+        let rows = reader_rows(&pool).await;
+        let audits = reader_audits(&pool).await;
+        let (address, server) = reader_server(fixture.router.clone()).await;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            assert_eq!(reader_handshake(address, None, Some(&fixture.tenant)).await.status(), StatusCode::SWITCHING_PROTOCOLS);
+            match fault {
+                ProjectionFault::Null => {
+                    let changed = sqlx::query("UPDATE pg_catalog.pg_proc SET prosrc='BEGIN RETURN NULL; END;' WHERE oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+                        .execute(&pool).await.unwrap();
+                    assert_eq!(changed.rows_affected(), 1);
+                    let mut expected = original.clone();
+                    expected["prosrc"] = json!("BEGIN RETURN NULL; END;");
+                    assert!(projection_catalog(&pool).await == expected, "NULL fault changes only actual production function body");
+                }
+                ProjectionFault::Missing => {
+                    let absent: bool = sqlx::query_scalar("SELECT pg_catalog.to_regprocedure('public.reader_fixture_projection_renamed(uuid)') IS NULL")
+                        .fetch_one(&pool).await.unwrap();
+                    assert!(absent, "owned temporary function name must be unused");
+                    sqlx::query("ALTER FUNCTION public.account_legacy_fenced_v1(uuid) RENAME TO reader_fixture_projection_renamed")
+                        .execute(&pool).await.unwrap();
+                    let renamed: Value = sqlx::query_scalar("SELECT to_jsonb(p) FROM pg_catalog.pg_proc p WHERE p.oid='public.reader_fixture_projection_renamed(uuid)'::regprocedure")
+                        .fetch_one(&pool).await.unwrap();
+                    let mut expected = original.clone();
+                    expected["proname"] = json!("reader_fixture_projection_renamed");
+                    assert!(renamed == expected, "missing-name fault changes no other function/ACL metadata");
+                }
+                ProjectionFault::AuthNoLogin => {
+                    sqlx::query("ALTER ROLE console_auth_rt NOLOGIN").execute(&pool).await.unwrap();
+                    let stopped: Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'")
+                        .fetch_one(&pool).await.unwrap();
+                    let mut expected = role.clone();
+                    expected["rolcanlogin"] = json!(false);
+                    assert!(stopped == expected, "Auth outage changes only LOGIN availability");
+                }
+            }
+            // Clear cached sessions/plans so the observed fault is actual fresh
+            // Auth transport/query behavior, never an old function OID plan.
+            terminate_reader_auth_backends(&pool).await;
+            if matches!(fault, ProjectionFault::AuthNoLogin) {
+                let direct = sqlx::postgres::PgPoolOptions::new()
+                    .max_connections(1).acquire_timeout(StdDuration::from_secs(3))
+                    .connect(&login_test_database_url(&pool, TestDatabaseLogin::Auth)).await;
+                let error = match direct {
+                    Err(error) => error,
+                    Ok(unexpected) => { unexpected.close().await; panic!("Auth NOLOGIN fault did not refuse LOGIN"); }
+                };
+                assert!(error.as_database_error().and_then(|e| e.code()).as_deref() == Some("28000"), "real Auth-only PostgreSQL LOGIN refusal required");
+            } else {
+                let auth = console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+                let observed = sqlx::query_scalar::<_, Option<bool>>("SELECT public.account_legacy_fenced_v1($1)")
+                    .bind(fixture.subject.as_uuid()).fetch_one(&auth).await;
+                auth.close().await;
+                match fault {
+                    ProjectionFault::Null => assert!(matches!(observed, Ok(None)), "real Auth query must return SQL NULL"),
+                    ProjectionFault::Missing => assert!(observed.err().and_then(|e| e.as_database_error().and_then(|e| e.code()).map(|s| s.into_owned())).as_deref() == Some("42883"), "real Auth query must report missing function"),
+                    ProjectionFault::AuthNoLogin => unreachable!(),
+                }
+            }
+            let business = console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            assert_eq!(sqlx::query_scalar::<_, i32>("SELECT 1").fetch_one(&business).await.unwrap(), 1);
+            let mut tx = business.begin().await.unwrap();
+            sqlx::query("SELECT set_config('app.current_org',$1,true)").bind(OrgId::knl().to_string()).execute(&mut *tx).await.unwrap();
+            let active: bool = sqlx::query_scalar("SELECT is_active FROM users WHERE id=$1").bind(fixture.subject.as_uuid()).fetch_one(&mut *tx).await.unwrap();
+            assert!(active, "healthy active Company row must not substitute for Auth lookup");
+            tx.rollback().await.unwrap();
+            business.close().await;
+
+            // Pure JWT/tier rejection must stay ahead of the unavailable Auth
+            // dependency. The passkey route deliberately supports both tiers.
+            for path in ["/api/v1/users/me", "/api/v1/auth/passkeys", "/api/platform/orgs"] {
+                assert_reader_error(get_legacy_raw(&fixture.router, path, "invalid-reader-token").await,
+                    StatusCode::UNAUTHORIZED, &fixture.tokens()).await;
+            }
+            assert_reader_error(get_legacy_raw(&fixture.router, "/api/v1/users/me", &fixture.platform).await,
+                StatusCode::FORBIDDEN, &fixture.tokens()).await;
+            assert_reader_error(get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.tenant).await,
+                StatusCode::FORBIDDEN, &fixture.tokens()).await;
+            assert_reader_error(reader_handshake(address, Some("invalid-reader-token"), Some(&fixture.tenant)).await,
+                StatusCode::UNAUTHORIZED, &fixture.tokens()).await;
+            for (path, token) in [
+                ("/api/v1/users/me", fixture.tenant.as_str()),
+                ("/api/v1/auth/passkeys", fixture.tenant.as_str()),
+                ("/api/v1/auth/passkeys", fixture.platform.as_str()),
+                ("/api/platform/orgs", fixture.platform.as_str()),
+            ] {
+                assert_reader_error(get_legacy_raw(&fixture.router, path, token).await,
+                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens()).await;
+            }
+            for (authorization, protocol) in [(Some(fixture.tenant.as_str()), None), (None, Some(fixture.tenant.as_str()))] {
+                assert_reader_error(reader_handshake(address, authorization, protocol).await,
+                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens()).await;
+            }
+            assert_reader_shell(&reader_html(&fixture.router, &fixture.tenant).await);
+            assert!(rows == reader_rows(&pool).await, "indeterminate reader changes no identity/session rows");
+            assert!(audits == reader_audits(&pool).await, "indeterminate reader never reaches audited handler");
+        }).catch_unwind().await;
+
+        // Restore real catalog/LOGIN state outside the caught assertion body.
+        // No finalizer or new success function can conceal the fault.
+        match fault {
+            ProjectionFault::Null => {
+                sqlx::query("UPDATE pg_catalog.pg_proc SET prosrc=$1 WHERE oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+                    .bind(original["prosrc"].as_str().unwrap()).execute(&pool).await.unwrap();
+            }
+            ProjectionFault::Missing => {
+                sqlx::query("ALTER FUNCTION public.reader_fixture_projection_renamed(uuid) RENAME TO account_legacy_fenced_v1")
+                    .execute(&pool).await.unwrap();
+            }
+            ProjectionFault::AuthNoLogin => {
+                sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+                    .execute(&pool)
+                    .await
+                    .unwrap();
+            }
+        }
+        let restored_role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(
+            restored_role == role && projection_catalog(&pool).await == original,
+            "every Auth role/function/ACL field must recover exactly"
+        );
+        assert!(
+            rows == reader_rows(&pool).await,
+            "reader fault/restoration preserves all identity/session rows"
+        );
+        assert_projection(&pool, fixture.subject, false).await;
+        assert_legacy_reads(&fixture.router, fixture.subject, &fixture.tenant).await;
+        let recovered: Value =
+            get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform)
+                .await
+                .into_json(StatusCode::OK)
+                .await;
+        assert!(recovered.is_array());
+        assert!(
+            reader_html(&fixture.router, &fixture.tenant)
+                .await
+                .contains("data-screen=\"organization\"")
+        );
+        assert_eq!(
+            reader_handshake(address, None, Some(&fixture.tenant))
+                .await
+                .status(),
+            StatusCode::SWITCHING_PROTOCOLS
+        );
+        stop_reader_server(server).await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn null_projection_refuses_all_reader_boundaries_and_recovers(pool: PgPool) {
+        reader_fault(pool, ProjectionFault::Null).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn missing_projection_refuses_all_reader_boundaries_and_recovers(pool: PgPool) {
+        reader_fault(pool, ProjectionFault::Missing).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_only_outage_preserves_pure_rejections_and_refuses_readers(pool: PgPool) {
+        reader_fault(pool, ProjectionFault::AuthNoLogin).await;
+    }
+}
