@@ -148,7 +148,7 @@ async fn assert_installed(connection: &mut PgConnection) {
     let function_valid: bool = sqlx::query_scalar(
         r#"
         SELECT count(*)=1 AND bool_and(
-          p.proowner='console_durability_observer'::regrole
+          p.proowner=pg_catalog.to_regrole('console_durability_observer')
           AND p.prolang=(SELECT oid FROM pg_catalog.pg_language WHERE lanname='sql')
           AND p.prokind='f' AND p.provolatile='v' AND p.proparallel='u'
           AND p.prosecdef AND NOT p.proleakproof AND NOT p.proisstrict AND p.proretset
@@ -187,7 +187,7 @@ async fn assert_installed(connection: &mut PgConnection) {
         SELECT count(*)=1 AND bool_and(a.privilege_type='EXECUTE' AND NOT a.is_grantable)
         FROM pg_catalog.pg_proc p CROSS JOIN LATERAL pg_catalog.aclexplode(p.proacl) a
         WHERE p.oid='pg_catalog.pg_control_system()'::regprocedure
-          AND a.grantee='console_durability_observer'::regrole
+          AND a.grantee=pg_catalog.to_regrole('console_durability_observer')
         "#,
     )
     .fetch_one(connection)
