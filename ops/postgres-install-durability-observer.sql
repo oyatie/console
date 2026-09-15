@@ -31,6 +31,9 @@ BEGIN
             INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION CONNECTION LIMIT -1;
         GRANT pg_read_all_stats TO console_durability_observer
             WITH ADMIN FALSE, INHERIT TRUE, SET FALSE;
+        -- PostgreSQL18 exposes this native function to PUBLIC by default.
+        -- Close that known initial grant atomically; existing drift is refused.
+        REVOKE EXECUTE ON FUNCTION pg_catalog.pg_control_system() FROM PUBLIC;
         GRANT EXECUTE ON FUNCTION pg_catalog.pg_control_system()
             TO console_durability_observer;
 CREATE FUNCTION public.console_durability_observation_v1(
