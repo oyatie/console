@@ -74,10 +74,11 @@ test('dev-up actual finalizer adapter propagates nonzero compose result', () => 
     process: { env: {} }, REPO_ROOT: '/unused', PORTS: { postgres: 1234 }, POSTGRES_DB: 'selected',
     POSTGRES_ADMIN_USER: 'operator', POSTGRES_ADMIN_PASSWORD: 'synthetic',
     APP_POSTGRES_PASSWORD: 'synthetic-app', RT_POSTGRES_PASSWORD: 'synthetic-rt',
+    AUTH_POSTGRES_PASSWORD: 'synthetic-auth',
     LEAVE_COMMAND_POSTGRES_PASSWORD: 'synthetic-leave', ONTOLOGY_COMMAND_POSTGRES_PASSWORD: 'synthetic-ontology',
     PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: 'synthetic-force' };
   vm.createContext(context);
-  vm.runInContext(`${declaration(read('scripts/dev-up.mjs'), 'finalizeDatabaseCustody')}\nglobalThis.run = finalizeDatabaseCustody;`, context);
+  vm.runInContext(`${declaration(read('scripts/dev-up.mjs'), 'commandDatabaseUrl')}\n${declaration(read('scripts/dev-up.mjs'), 'finalizeDatabaseCustody')}\nglobalThis.run = finalizeDatabaseCustody;`, context);
   assert.throws(() => context.run({ selected: true }), /finaliz|custody/i);
   assert.equal(calls.length, 1, 'must execute adapter, not just throw');
   assert.ok(calls[0][1].includes('account-finalize'));
@@ -431,10 +432,11 @@ for (const status of [0, null]) {
       process: { env: {} }, REPO_ROOT: '/unused', PORTS: { postgres: 1234 }, POSTGRES_DB: 'selected',
       POSTGRES_ADMIN_USER: 'operator', POSTGRES_ADMIN_PASSWORD: 'synthetic',
       APP_POSTGRES_PASSWORD: 'synthetic-app', RT_POSTGRES_PASSWORD: 'synthetic-rt',
+      AUTH_POSTGRES_PASSWORD: 'synthetic-auth',
       LEAVE_COMMAND_POSTGRES_PASSWORD: 'synthetic-leave', ONTOLOGY_COMMAND_POSTGRES_PASSWORD: 'synthetic-ontology',
       PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: 'synthetic-force' };
     vm.createContext(context);
-    vm.runInContext(`${declaration(read('scripts/dev-up.mjs'), 'finalizeDatabaseCustody')}\nglobalThis.run = finalizeDatabaseCustody;`, context);
+    vm.runInContext(`${declaration(read('scripts/dev-up.mjs'), 'commandDatabaseUrl')}\n${declaration(read('scripts/dev-up.mjs'), 'finalizeDatabaseCustody')}\nglobalThis.run = finalizeDatabaseCustody;`, context);
     if (status === 0) assert.doesNotThrow(() => context.run({ selected: true }));
     else assert.throws(() => context.run({ selected: true }), /finaliz|custody/i);
     assert.equal(calls.length, 1);
@@ -509,7 +511,7 @@ for (const role of ['api', 'worker', 'migrate']) {
       runtimeDatabaseUrl: () => 'postgres://runtime/selected',
       commandDatabaseUrl: (name) => `postgres://${name}/selected`,
       LEAVE_COMMAND_POSTGRES_PASSWORD: 'leave-app', ONTOLOGY_COMMAND_POSTGRES_PASSWORD: 'ontology-app',
-      PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: 'force-app',
+      PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD: 'force-app', AUTH_POSTGRES_PASSWORD: 'auth-app',
       PORTS: { backend: 8080, otel: 4317, s3: 8333, moxWebapi: 1080, office: 8090 },
       OFFICE_ENABLED: false,
     };
