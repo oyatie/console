@@ -1,0 +1,7 @@
+{
+  "binary": "/private/tmp/lc07-frozen-console-app-7a0ce898",
+  "sha256": "ee91e9aa0f3f8a6ada2094d4e5dbb14b190256a8935b56fab62210b4fff114bc",
+  "build_head": "7a0ce898eadc507b54f1c4a2f4b10fc307e202f6",
+  "build_command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo build --locked --manifest-path backend/Cargo.toml -p console-app --bin console-app",
+  "build_log": "/private/tmp/lc07-final-build.log"
+}

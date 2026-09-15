@@ -1,0 +1,66 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "d03166244500aed5d3e1d058bef723a0c3d678e4",
+  "test_candidate": "9ca5c14380fc2d1211a82599573cccf334c72529",
+  "test_sha256": "670eddaf17e65824f70fbb5f29b5d8bbb9d30007e273c6f92cd3eb1bf0174b5c",
+  "verdict": "IMPORT_ACCEPTABLE_ADD_RUNNABILITY_AND_ENV_CONTROLS_BEFORE_COMPLETION",
+  "findings": [
+    {
+      "id": "LC07-WRITABLE-TMP",
+      "evidence": [
+        "ops/postgres-finalize-account-custody.sh:34 mktemp /tmp",
+        "candidate tests nominalSmoke --read-only without writable /tmp",
+        "assertSmokeBoundary option whitelist excludes --tmpfs"
+      ],
+      "fix": "Support narrow bounded --tmpfs /tmp option in smoke checker, require writable private temp when read-only, add accepted tmpfs and rejected missing-temp hostile controls. Mount emptyDir /tmp for readOnlyRootFilesystem Argo operator. Do not alter wrapper custody."
+    },
+    {
+      "id": "LC07-HOST-ENV",
+      "evidence": [
+        "scripts/dev-up.mjs:627 buildAppEnv spreads process.env",
+        "candidate validators cover Compose/Kubernetes serving env but not actual host child env"
+      ],
+      "fix": "Sanitize operator credentials, operator descriptor/file paths and ambient libpq authentication variables from buildAppEnv for every app binary role. Add actual-function hostile environment test asserting preserved unrelated app configuration and absent operator material."
+    },
+    {
+      "id": "LC07-TLS-PREREQUISITES",
+      "evidence": [
+        "ops/compose.yml postgres command has no ssl or certificate configuration",
+        "ops/compose.dev.yml only changes published Postgres port",
+        ".github/workflows/image-release.yml postgres service stock image without server TLS provisioning",
+        "wrapper hard-requires verify-full, expected TLS host equality and independent physical cluster/database identity"
+      ],
+      "fix": "Provision server TLS SAN matching selected finalizer host, owned protected key and CA before connection. Capture immutable expected system identifier/database OID from independently owned provisioning channel before finalization; never derive expected fields in finalizer from same target connection. For local fixture, selected owned container/socket is a possible provisioning trust anchor. Persist inventory per DB volume; do not silently regenerate on mismatch. Production inventory remains out-of-band protected input."
+    },
+    {
+      "id": "LC07-NETWORK-PRESYNC",
+      "evidence": [
+        "deploy/apps/console/base/networkpolicy.yaml allow-postgres-from-app permits only console-app,console-worker",
+        "deploy/apps/console/base/migrate-job.yaml actual label console-migrate, PreSync",
+        "candidate finalizer also PreSync"
+      ],
+      "fix": "Narrow DB ingress and DB/DNS egress for both migration/finalizer; install as prior infrastructure or correctly ordered hook prerequisites. Ordinary Sync policies cannot unblock earlier PreSync on first admission. Add parsed policy role/port coverage tests without claiming CNI execution."
+    },
+    {
+      "id": "LC07-OPERATOR-PROVISIONING",
+      "evidence": [
+        "deploy/apps/console/base/database.yaml lacks separately configured superuser access/secret",
+        "wrapper rejects non-superuser and app/serving identities"
+      ],
+      "fix": "Explicit prerequisite operator account and credential provisioning, existing CA trust, protected ConfigMap descriptor and image availability before hooks. Do not synthesize runtime-role or migration-owner admin authority to pass tests."
+    }
+  ],
+  "minimum_complete_sequence": [
+    "Package exact wrapper/SQL/checksum artifacts in fixed pinned client image.",
+    "Provision local fixture TLS and frozen independent inventory before migration/finalization, without exposing operator source files to serving roles.",
+    "Gate Compose serving services after migrate and account-finalize; host dev up/bootstrap finalize before seed or app spawn with --no-deps.",
+    "Provision prerequisite Argo operator identity/inventory/CA/image/network access before -20 migration and -10 finalization hooks.",
+    "Build/load smoke operator image and provision actual console_release_probe TLS plus frozen descriptor; execute fixed finalizer before application boot with writable private tmp and cleanup.",
+    "Run actual local image finalizer success/refusal and cleanup evidence; declaration tests alone do not certify runtime provisioning. Keep remote publication/CNI/production exposure explicitly separate."
+  ],
+  "test_review_limits": [
+    "Approved 44-case package remains useful RED and its32 checker controls must be preserved.",
+    "No new Docker, Cargo or source edits by reviewer.",
+    "This review identifies direct source prerequisite gaps; it does not prove real deployment or legal/production readiness."
+  ]
+}
