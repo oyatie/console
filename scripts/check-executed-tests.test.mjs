@@ -17,7 +17,7 @@ import {
   unitTestedCrateSrcRoots,
 } from "./check-executed-tests-cfg.mjs";
 import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
-import { RECOVERY_CASES } from "./lib/recovery-test-invocations.mjs";
+import { RECOVERY_CASES, APP_CASES } from "./lib/recovery-test-invocations.mjs";
 
 const gateSource = readFileSync(
   fileURLToPath(new URL("./check-executed-tests.mjs", import.meta.url)),
@@ -153,6 +153,7 @@ describe("gate wiring", () => {
 const repository = fileURLToPath(new URL("../", import.meta.url));
 const integrationRoot = "backend/app/tests/auth_rest.rs";
 const recoveryRoot = "backend/crates/payroll/adapter-postgres/tests/recovery.rs";
+const appRecoveryRoot = "backend/app/src/durability_composition_tests.rs";
 const observerRoot = "backend/crates/payroll/adapter-postgres/tests/durability_observer.rs";
 const testSource = "#[test]\nfn reachable() {}\n";
 
@@ -175,15 +176,18 @@ function sourceInventoryFixture(t, files, expectedCount) {
     "backend/app/src/lib.rs",
   ];
   for (const path of anchors) write(path, path.endsWith("/lib.rs") ? LIVE : testSource);
+  write("backend/app/src/lib.rs", LIVE + '\n#[cfg(all(test, feature = "test-recovery"))]\nmod durability_composition_tests;\n');
+  write(appRecoveryRoot, readFileSync(join(repository, appRecoveryRoot), "utf8"));
+  write("backend/app/Cargo.toml", '[package]\nname = "console-app"\nversion = "0.0.0"\nedition = "2021"\n[features]\ntest-postgres = []\ntest-recovery = ["test-postgres"]\n');
   write(observerRoot, readFileSync(join(repository, observerRoot), "utf8"));
   write(recoveryRoot, readFileSync(join(repository, recoveryRoot), "utf8"));
   for (const [path, contents] of Object.entries(files)) write(path, contents);
-  write("backend/Cargo.toml", `[package]
+  write("backend/Cargo.toml", `[workspace]
+members = ["app"]
+[package]
 name = "console-payroll-adapter-postgres"
 version = "0.0.0"
 edition = "2021"
-[lib]
-path = "app/src/lib.rs"
 [[test]]
 name = "recovery"
 path = "crates/payroll/adapter-postgres/tests/recovery.rs"
@@ -205,9 +209,10 @@ path = "crates/payroll/adapter-postgres/tests/durability_observer.rs"
   write(".github/workflows/ci.yml", `jobs:\n${recoveryJob}  fixture:\n    steps:\n      - name: Run fixture\n        run: tools/buck2 test ${targets.map((_, index) => `//backend/app:fixture-${index}`).join(" ")}\n`);
   const baseline = {
     dark_baseline: 0,
+    defined_feature_variants: ["backend/app/src/lib.rs --features test-recovery"],
     deferred_fixture: [],
     test_attribute_baseline: {
-      ...Object.fromEntries(anchors.map((path) => [path, 1])),
+      ...Object.fromEntries(anchors.map((path) => [path, path.endsWith("/lib.rs") ? 1 + APP_CASES.length : 1])),
       [recoveryRoot]: RECOVERY_CASES.size,
       [observerRoot]: 1,
       [integrationRoot]: expectedCount,
@@ -256,6 +261,7 @@ describe("reachable Rust source inventory", () => {
     fixture.compile();
     const result = fixture.run();
     assert.equal(result.report.testAttributes[integrationRoot], 7, result.stderr);
+    assert.equal(result.report.testAttributes["backend/app/src/lib.rs"], 1 + APP_CASES.length);
     assert.equal(result.status, 0, result.stderr);
   });
 
