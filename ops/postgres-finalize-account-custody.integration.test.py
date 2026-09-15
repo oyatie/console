@@ -245,7 +245,17 @@ class Suite:
         for table in TABLES:
             _, count = self.psql(container, database, f'SELECT count(*) FROM public.{table}')
             counts.append(int(count.strip()))
-        assert counts == [0]*6, 'dormant catalog contains rows'
+        assert counts[1:] == [0]*5, 'finalization populated Account security or Terms rows'
+        # Root finalization backfills only accounts(id,created_at) from users.
+        # Preserve every Account/user field in refusal and replay comparisons.
+        _, raw = self.psql(container, database, """SELECT jsonb_build_object(
+            'accounts',(SELECT COALESCE(jsonb_agg(to_jsonb(a) ORDER BY a.id),'[]'::jsonb)
+                        FROM public.accounts a),
+            'users',(SELECT COALESCE(jsonb_agg(to_jsonb(u) ORDER BY u.id),'[]'::jsonb)
+                     FROM public.users u))""")
+        data = json.loads(raw)
+        assert isinstance(data['accounts'], list) and len(data['accounts']) == counts[0]
+        assert isinstance(data['users'], list), 'missing user-row snapshot'
         # Include actual ledger data in equality without ever writing its rows.
         _, exists = self.psql(container, database, "SELECT to_regclass('public._sqlx_migrations') IS NOT NULL")
         ledger = None
@@ -254,7 +264,8 @@ class Suite:
                 "SELECT jsonb_agg(jsonb_build_array(version,success,encode(checksum,'hex')) ORDER BY version) FROM public._sqlx_migrations")
             ledger = json.loads(raw)
             assert ledger, 'empty ledger cannot be a migrated positive'
-        return {'relations': rows, 'counts': counts, 'ledger': ledger}
+        return {'relations': rows, 'counts': counts, 'ledger': ledger,
+                'account_rows': data['accounts'], 'user_rows': data['users']}
 
     def composed_snapshot(self, container, database):
         root = self.snapshot(container, database)
@@ -371,6 +382,7 @@ class Suite:
             assert_executable_unchanged(binary,self.provenance['binary_sha256'])
         state = self.snapshot(container,name)
         assert all(r['owner']=='console_app' for r in state['relations']), 'fixture not staging'
+        assert state['counts'] == [0]*6, 'dormant staging catalog contains rows'
         return state
 
     def descriptor(self, container, database):
@@ -447,11 +459,18 @@ class Suite:
             self.database(container,name,binary,raw=raw)
         expected=self.descriptor(first,'wrapper_subject')
         positive_expected=self.descriptor(first,'wrapper_positive')
+        positive_before=self.snapshot(first,'wrapper_positive')
+        expected_roots=[{'id':row['id'],'created_at':row['created_at']}
+                        for row in positive_before['user_rows']]
+        assert expected_roots, 'actual migrator must supply a nonempty root-backfill control'
         def positive():
             code,text=self.wrapper(first,'wrapper_positive',positive_expected)
             assert code==0 and 'account_custody.finalized' in text, 'normal wrapper did not finalize'
             state=self.snapshot(first,'wrapper_positive')
             assert all(r['owner']==OWNERS[r['name']] for r in state['relations'])
+            assert state['account_rows']==expected_roots, 'finalization did not copy exact user UUIDs and timestamps'
+            assert state['user_rows']==positive_before['user_rows'], 'finalization changed pre-existing users'
+            assert state['ledger']==positive_before['ledger'], 'finalization changed the real SQLx ledger'
         self.case('valid_finalize',positive)
         def repeat():
             before=self.snapshot(first,'wrapper_positive')
