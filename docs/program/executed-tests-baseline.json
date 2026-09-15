@@ -288,7 +288,7 @@
     "backend/crates/platform/auth-rest/tests/group_admin_tenant_context.rs": 1,
     "backend/crates/platform/auth/src/lib.rs": 2,
     "backend/crates/platform/auth/tests/jwt_es256.rs": 14,
-    "backend/crates/platform/auth/tests/jwt_verifier.rs": 1,
+    "backend/crates/platform/auth/tests/jwt_verifier.rs": 7,
     "backend/crates/platform/auth/tests/refresh_tokens.rs": 3,
     "backend/crates/platform/auth/tests/webauthn_ceremony.rs": 2,
     "backend/crates/platform/auth/tests/webauthn_ceremony_replay.rs": 2,

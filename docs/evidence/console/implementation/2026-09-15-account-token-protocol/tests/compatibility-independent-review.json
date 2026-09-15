@@ -1,0 +1,102 @@
+{
+  "kind": "INDEPENDENT_IMMUTABLE_SUPPLEMENTAL_TEST_REVIEW",
+  "reviewer": "/root/capture_review",
+  "author": "/root/fast_gate_review",
+  "root_writer_and_runtime_operator": "/root",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "candidate_directory": "/private/tmp/account-jwt-protocol-compatibility-v2-candidate-f96eddd3",
+  "candidate_manifest_sha256": "c70ee4d322ce9d6e018d7c4ce59e9c3241a1faf3eb8b491bcff2399fe4fd9c1e",
+  "candidate_patch_sha256": "f2b21f24de46a0bb087c0c5f7d2719b98912946ff9879107b5f629cd724e960d",
+  "candidate_file_sha256": "9a68df9056b171aa3efafa7130771b9c48675a74c9f5987c7da9566285c49086",
+  "guide_sha256": "cda7967bc337d93b40110336c8e3e46d438d1807c1f7d34f07cb294b5263bfd0",
+  "verdict": "APPROVE_EXACT_TEST_CANDIDATE_FOR_ROOT_INTEGRATION_AND_RUNTIME_BASELINE",
+  "findings": [],
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/account-jwt-protocol-compatibility-v2-candidate-f96eddd3/compatibility-addendum.patch"
+      ],
+      "exit": 0,
+      "cwd": "private temporary exact-parent copy"
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account-jwt-protocol-compatibility-v2-candidate-f96eddd3/compatibility-addendum.patch"
+      ],
+      "exit": 0,
+      "cwd": "private temporary exact-parent copy"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "/private/tmp/account-jwt-protocol-compatibility-v2-candidate-f96eddd3/backend/crates/platform/auth/tests/jwt_verifier.rs"
+      ],
+      "exit": 0
+    }
+  ],
+  "static_evidence": {
+    "all_manifest_artifact_hashes_verified": true,
+    "parent_manifest_and_review_hashes_verified": true,
+    "entire_approved_parent_postimage_byte_identical_prefix": true,
+    "v1_preserved_and_only_marker_test_function_changed": true,
+    "patch_applies_to_exact_parent_and_recreates_exact_postimage": true,
+    "test_declarations": {
+      "existing_original": 1,
+      "unchanged_account_protocol_separation": 3,
+      "supplemental": 3,
+      "full_binary": 7
+    },
+    "case_matrix": {
+      "identical_known_claim_duplicates": 4,
+      "recognized_marker_duplicates": 10,
+      "unrelated_extensions_plus_null_or_unknown_marker": 2,
+      "total": 16
+    },
+    "marker_matrix": "For each of account_v1/account_csrf_v1: null before/after, unknown before/after, identical recognized repeated once. Identical pairs are order-equivalent.",
+    "raw_duplicate_oracle": "SerializeMap feeds encode directly, preserving duplicate member pairs. Actual verifier receives signed original string; no intermediate Value parse collapses duplicates.",
+    "positive_controls": "Each of 3 supplemental tests first verifies same-key signed scoped legacy control using both existing APIs. Scope level org is the source serde wire value.",
+    "both_apis_evaluated_before_each_case_aggregate_assertion": true,
+    "original_three_test_probe_filter_unchanged": true,
+    "no_ignore_should_panic_or_token_key_claim_dumps": true,
+    "runtime_tests_discovered": "not run",
+    "runtime_tests_executed": 0,
+    "cargo_db_docker_commands": 0,
+    "integration_source_or_evidence_mutations": 0
+  },
+  "inferences": [
+    "Known-field duplicate and unrelated-extension controls are expected PASS on current legacy implementation; marker duplicate group is expected FAIL. These are source-based expectations, not observed runtime results."
+  ],
+  "pre_mortem": "A JSON map roundtrip erases raw duplicates; first/last marker overwrite accepts Account tokens; broad unknown-field refusal breaks legacy compatibility; invalid control causes misleading negatives.",
+  "blast_radius": "Private additive postimage for one existing test file; production/helper edits and runtime operations remain root-owned.",
+  "detection": "Exact hashes/prefix/patch, 7 total declarations and unchanged protocol3 filter; direct signed duplicate pairs and same-signer controls across both APIs.",
+  "rollback": "Preserve v1/v2 and review evidence. Root may make only reviewed forward correction or isolated rollback; no destructive workspace operation.",
+  "stop_conditions": [
+    "Candidate hash mismatch",
+    "Original protocol3/prefix changed",
+    "Compiler or positive control failure",
+    "Discovered/executed roster mismatch",
+    "Unadmitted implementation or test weakening"
+  ],
+  "remaining_holds": [
+    "Root compilation and exact actual baseline/execution counts",
+    "Formal lane admission before production implementation",
+    "Green same named probe and full applicable regression before lane success",
+    "This test review provides no Account crypto completion, live session proof, production or legal conclusion"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

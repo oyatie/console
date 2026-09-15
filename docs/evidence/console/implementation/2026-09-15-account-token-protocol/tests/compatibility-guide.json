@@ -1,0 +1,140 @@
+{
+  "kind": "ADDITIVE_SUPPLEMENTAL_RUNTIME_COMPATIBILITY_TESTS",
+  "root_writer": "/root",
+  "author": "/root/fast_gate_review",
+  "independent_reviewer": "/root/capture_review",
+  "base_head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "preimage": "Exact already-approved Inventory v2 postimage; patch applies after v2 test preparation, not directly to original f96 test file.",
+  "immutable_target": "Preserve legacy typed duplicate-key rejection and unknown/null extension compatibility while preventing recognized Account marker overwrite in both duplicate orders.",
+  "authorization": "Root explicitly requested max3 additive private supplemental tests, preserving the first3 protocol probe, no dependency/CI/generated changes.",
+  "mechanical_guide": [
+    "Append only sibling legacy_protocol_compatibility module to exact reviewed v2 jwt_verifier.rs; original181-line file is byte-for-byte prefix.",
+    "Reuse es256_fixture. Direct custom SerializeMap feeds jsonwebtoken::encode, retaining repeated raw JSON keys through ES256 signing. Never parse signed duplicate payload via serde_json::Value before verification.",
+    "Each test validates a correctly signed scoped legacy control through both existing APIs before hostile/extension cases. All case verdicts are collected before final assertion; no token/key/claim dumps.",
+    "The new module is outside account_protocol_separation::, leaving its exact3-test probe unchanged. Supplemental module has3tests; full binary7.",
+    "Independent Capture review before root integrates. Root owns compile/actual baseline and after-fix execution; static expectations are not actual RED/GREEN."
+  ],
+  "tests": [
+    {
+      "name": "legacy_protocol_compatibility::duplicate_known_claims_remain_refused_in_both_verifiers",
+      "cases": 4,
+      "matrix": [
+        "org",
+        "roles",
+        "scope_level",
+        "scope_node"
+      ],
+      "expected_current": "PASS: direct typed deserialization already rejects repeated recognized fields.",
+      "reason": "Repeating identical valid values isolates duplicate rejection; a whole-payload Value roundtrip would accept these."
+    },
+    {
+      "name": "legacy_protocol_compatibility::duplicate_recognized_protocol_markers_are_refused_in_both_orders",
+      "cases": 10,
+      "matrix": "2recognized markers(account_v1/account_csrf_v1) x[null before/after,unknown string before/after,identical marker repeated]",
+      "expected_current": "FAIL: current legacy serde ignores token_kind; both APIs expected to accept all10 signed hybrids.",
+      "reason": "Either first/last-wins decoding can hide one recognized marker; direct envelope derive must preserve refusal."
+    },
+    {
+      "name": "legacy_protocol_compatibility::unrelated_unknown_fields_and_null_protocol_marker_preserve_legacy_compatibility",
+      "cases": 2,
+      "matrix": [
+        "unknown unrelated_extension object plus token_kind:null",
+        "unknown unrelated_extension object plus token_kind:unrelated_v9"
+      ],
+      "expected_current": "PASS: current legacy unknown fields are ignored.",
+      "reason": "Bounded recognized-marker rejection must not become an unapproved arbitrary unknown-field policy."
+    }
+  ],
+  "counts": {
+    "first_protocol_module_unchanged": 3,
+    "supplemental_tests": 3,
+    "full_binary": 7,
+    "supplemental_case_assertion_matrix": 16,
+    "both_verification_apis_per_case": 2,
+    "same_signer_positive_controls": 3
+  },
+  "commands": {
+    "unchanged_protocol_probe": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-platform-auth",
+      "--test",
+      "jwt_verifier",
+      "account_protocol_separation::",
+      "--",
+      "--test-threads=1"
+    ],
+    "supplemental_probe": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-platform-auth",
+      "--test",
+      "jwt_verifier",
+      "legacy_protocol_compatibility::",
+      "--",
+      "--test-threads=1"
+    ],
+    "full_regression": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-platform-auth",
+      "--test",
+      "jwt_es256",
+      "--test",
+      "jwt_verifier",
+      "--",
+      "--test-threads=1"
+    ],
+    "cwd": "/private/tmp/console-production-tdd-preparation-20260913"
+  },
+  "pre_mortem": "A parser roundtrip collapses duplicate known claims; marker overwrite hides recognized protocol; broad deny_unknown_fields breaks unrelated legacy extensions; invalid signer causes false negative.",
+  "blast_radius": "One existing test file private postimage, one sibling module, no production/public/dependency/build/CI changes.",
+  "detection": "Exact reviewed prefix/hash, explicit full7/unchanged3/supplement3 rosters, direct SerializeMap duplicates, same-key positive control in each test, both API results collected for all16cases.",
+  "rollback": "Before integration discard only new private revision; after integration use reviewed forward correction preserving historical candidate/test evidence.",
+  "stop_conditions": [
+    "Original approved prefix/probe changes.",
+    "New dependency or generated/CI/source path.",
+    "Compiler/control failures or mismatch in actual discovered/executed counts.",
+    "Any proposed weakening or production edit before required admission."
+  ],
+  "remaining_holds": [
+    "Independent Capture review.",
+    "Root runtime baseline/compilation/actual supplement results.",
+    "Raw duplicate controls do not prove full Account/CSRF cryptographic schema, issuance, live session/custody or production behavior."
+  ],
+  "author_validation": {
+    "rustfmt": "rustfmt --edition 2024 private jwt_verifier.rs:PASS",
+    "git_apply_check_against_exact_private_preimage": "PASS",
+    "source_rosters": "static7total,3unchanged protocol,3supplemental; original test remains",
+    "approved_v2_entire_postimage_byte_preserved": true,
+    "runtime_tests_executed": 0,
+    "cargo_docker_db_commands": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "revision_reason": "Root/Capture requested explicit identical recognized marker pairs (account_v1 twice and account_csrf_v1 twice) so this three-test module owns complete legacy compatibility proof without duplicating the separately unapproved crypto test.",
+  "supersedes": {
+    "path": "/private/tmp/account-jwt-protocol-compatibility-candidate-f96eddd3",
+    "manifest_sha256": "119ebc5af2b520e9c71ce660424fcb62af6ed27e816804790b9c0768640de7a8",
+    "status": "preserved immutable; do not import this older8-marker-case candidate"
+  }
+}

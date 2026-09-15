@@ -1,0 +1,42 @@
+{
+  "kind": "IMMUTABLE_PRIVATE_SUPPLEMENTAL_TEST_POSTIMAGE",
+  "author": "/root/fast_gate_review",
+  "base_head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "allowed_paths": [
+    "backend/crates/platform/auth/tests/jwt_verifier.rs"
+  ],
+  "parent_candidate_root": "/private/tmp/account-jwt-protocol-separation-v2-candidate-f96eddd3",
+  "parent_manifest_sha256": "cafb0faf47f2a6bac7c51a7680b9028c32e7e8bb9c84b9913f8a3f0be737dacf",
+  "parent_postimage_sha256": "262dc89618f39f4222f376158c89abaa151993266eab058cfca927a5a6ab8def",
+  "parent_independent_review_path": "/private/tmp/account-jwt-protocol-separation-v2-independent-review-fast.json",
+  "parent_independent_review_sha256": "01208ad1d812f754ad70aef50c4f48082c21e0e35ac96d2cc981844c6b2f6a16",
+  "files": {
+    "backend/crates/platform/auth/tests/jwt_verifier.rs": {
+      "preimage_sha256": "262dc89618f39f4222f376158c89abaa151993266eab058cfca927a5a6ab8def",
+      "postimage_sha256": "9a68df9056b171aa3efafa7130771b9c48675a74c9f5987c7da9566285c49086",
+      "bytes": 12579,
+      "lines": 319
+    }
+  },
+  "artifacts_sha256": {
+    "compatibility-addendum.patch": "f2b21f24de46a0bb087c0c5f7d2719b98912946ff9879107b5f629cd724e960d",
+    "guide.json": "cda7967bc337d93b40110336c8e3e46d438d1807c1f7d34f07cb294b5263bfd0"
+  },
+  "supplemental_test_names": [
+    "legacy_protocol_compatibility::duplicate_known_claims_remain_refused_in_both_verifiers",
+    "legacy_protocol_compatibility::duplicate_recognized_protocol_markers_are_refused_in_both_orders",
+    "legacy_protocol_compatibility::unrelated_unknown_fields_and_null_protocol_marker_preserve_legacy_compatibility"
+  ],
+  "static_test_declarations": 7,
+  "static_supplemental_declarations": 3,
+  "original_protocol_declarations_unchanged": 3,
+  "review_status": "AWAITING_INDEPENDENT_CAPTURE_REVIEW_BEFORE_ROOT_INTEGRATION",
+  "supersedes": {
+    "path": "/private/tmp/account-jwt-protocol-compatibility-candidate-f96eddd3",
+    "manifest_sha256": "119ebc5af2b520e9c71ce660424fcb62af6ed27e816804790b9c0768640de7a8",
+    "status": "preserved immutable; do not import this older8-marker-case candidate"
+  },
+  "supplemental_matrix_cases": 16,
+  "duplicate_protocol_matrix_cases": 10,
+  "revision_diff_from_v1_only_function": "duplicate_recognized_protocol_markers_are_refused_in_both_orders"
+}
