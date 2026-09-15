@@ -4,7 +4,7 @@ set +x
 set -euo pipefail
 umask 077
 
-# Opt-in only: the existing account-only command remains unchanged.
+# Account and credential custody always compose; observer installation is opt-in.
 observer_profile=0
 case "$#:${1:-}" in
   0:) ;;
@@ -55,7 +55,7 @@ SELECT session_user=current_user AND session_user=:'expected_operator'
   AND session_user NOT IN ('console_app','console_rt','console_auth_rt',
     'console_leave_cmd','console_leave_definer','console_ontology_cmd',
     'console_ontology_writer','console_platform_force_cmd',
-    'console_account_owner','console_terms_owner') AS operator_ok \gset
+    'console_account_owner','console_terms_owner','console_credential_owner') AS operator_ok \gset
 \if :operator_ok
 \else
   DO $$ BEGIN RAISE EXCEPTION 'account_custody.operator_identity_mismatch'; END $$;
@@ -101,7 +101,8 @@ SELECT NOT EXISTS (
 \endif
 SQL
 
-installer_files=(--file "${script_dir}/postgres-finalize-account-custody.sql")
+installer_files=(--file "${script_dir}/postgres-finalize-account-custody.sql"
+  --file "${script_dir}/postgres-finalize-account-credentials.sql")
 if [[ "$observer_profile" == 1 ]]; then
   installer_files+=(--file "${script_dir}/postgres-install-durability-observer.sql")
 fi

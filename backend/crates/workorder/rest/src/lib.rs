@@ -3650,7 +3650,11 @@ async fn verify_mobile_approval_step_up<S>(
     })?;
     verifier
         .verify_mobile_step_up_for_user(
-            &state.pool,
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| RestError::unavailable("authentication storage unavailable"))?
+                .auth_pool(),
             step_up,
             *principal.user_id.as_uuid(),
             &expected_binding,

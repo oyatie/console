@@ -434,6 +434,14 @@ sh_test(
 )
 
 sh_test(
+    name = "app-auth7-mobile-purpose-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-auth7_mobile_purpose)"],
+    deps = ["//backend/app:console-app-itest-auth7_mobile_purpose"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
     name = "app-auth-rest-pg",
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/app:console-app-itest-auth_rest)"],
@@ -1326,6 +1334,14 @@ sh_test(
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/platform/auth:console-platform-auth-itest-refresh_tokens)"],
     deps = ["//backend/crates/platform/auth:console-platform-auth-itest-refresh_tokens"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth7-legacy-projection-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth:console-platform-auth-itest-auth7_legacy_projection)"],
+    deps = ["//backend/crates/platform/auth:console-platform-auth-itest-auth7_legacy_projection"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
 

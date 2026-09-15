@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 236,
+    "mapped": 238,
     "unmapped": 3,
-    "workflow_targets": 221,
-    "workflow_mapped": 221,
+    "workflow_targets": 223,
+    "workflow_mapped": 223,
     "workflow_missing": 0
   },
   "entries": [
@@ -103,6 +103,29 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 12.2
+    },
+    {
+      "buck_wrapper": "//tools/buck:app-auth7-mobile-purpose-pg",
+      "name": "app-auth7-mobile-purpose-pg",
+      "buck_inner": "//backend/app:console-app-itest-auth7_mobile_purpose",
+      "package": "console-app",
+      "crate_dir": "backend/app",
+      "kind": "test",
+      "test": "auth7_mobile_purpose",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "auth7_mobile_purpose",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:app-auth-rest-pg",
@@ -3381,6 +3404,29 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 10.7
+    },
+    {
+      "buck_wrapper": "//tools/buck:platform-auth7-legacy-projection-pg",
+      "name": "platform-auth7-legacy-projection-pg",
+      "buck_inner": "//backend/crates/platform/auth:console-platform-auth-itest-auth7_legacy_projection",
+      "package": "console-platform-auth",
+      "crate_dir": "backend/crates/platform/auth",
+      "kind": "test",
+      "test": "auth7_legacy_projection",
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth",
+        "--test",
+        "auth7_legacy_projection",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true
     },
     {
       "buck_wrapper": "//tools/buck:platform-auth-webauthn-ceremony-pg",

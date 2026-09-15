@@ -479,9 +479,8 @@ impl PgOrgStore {
     /// legacy subject permits the existing passkey and refresh-session sweep.
     /// Unavailable authority refuses the entire Company transition.
     ///
-    /// The credential/session tables are FORCE-RLS, so the org GUC is armed for
-    /// this transaction (via `with_audits`) before the
-    /// closure touches them. Each sub-action is independently audited.
+    /// The credential owner receives the same Company-armed transaction via
+    /// its fixed sweep operation. Each sub-action remains independently audited.
     pub async fn deactivate_user(
         &self,
         command: DeactivateUserCommand,
@@ -497,6 +496,10 @@ impl PgOrgStore {
         // sweep before returning Conflict, without another transition row.
         let outcome = with_audits::<_, DeactivateOutcome, PgOrgError>(&self.pool, org, move |tx| {
             Box::pin(async move {
+                sqlx::query("SELECT public.auth_legacy_company_lock_v1($1)")
+                    .bind(*org.as_uuid())
+                    .execute(tx.as_mut())
+                    .await?;
                 let legacy_revocation_allowed: bool = sqlx::query_scalar(
                     "SELECT public.account_company_deactivation_guard_v1($1,$2)",
                 )
@@ -1874,12 +1877,10 @@ async fn user_in_scope(
 }
 
 /// The `users` projection for `get_user` / `list_users` and mutation returns.
-/// The `has_passkey` flag is computed inline via an EXISTS over the FORCE-RLS
-/// `auth_webauthn_credentials` table; those call sites run inside an org-armed
-/// scope (`with_org_conn` or the audited tx), so the subquery only ever sees
-/// THIS tenant's credentials and the account-setup state (활성 vs 설정 대기) is
-/// derived correctly. Directory list uses `USER_SELECT_DIRECTORY` instead so it
-/// never reads `users.phone`.
+/// The fixed credential-owner projection returns the legacy passkey flag for
+/// this Company user in the calling statement snapshot. A fenced Account has
+/// no legacy flag; unavailable authority is an error. Directory list uses
+/// `USER_SELECT_DIRECTORY` instead so it never reads `users.phone`.
 const USER_SELECT_WITH_PASSKEY: &str = r#"
     SELECT
            u.id,
@@ -1897,9 +1898,7 @@ const USER_SELECT_WITH_PASSKEY: &str = r#"
            u.team,
            u.is_active,
            u.created_at,
-           EXISTS (
-               SELECT 1 FROM auth_webauthn_credentials c WHERE c.user_id = u.id
-           ) AS has_passkey
+           public.auth_legacy_user_has_passkey_v1(u.org_id, u.id) AS has_passkey
     FROM users u
     LEFT JOIN employees e
       ON e.id = u.employee_id
@@ -1928,9 +1927,7 @@ const USER_SELECT_DIRECTORY: &str = r#"
            u.team,
            u.is_active,
            u.created_at,
-           EXISTS (
-               SELECT 1 FROM auth_webauthn_credentials c WHERE c.user_id = u.id
-           ) AS has_passkey
+           public.auth_legacy_user_has_passkey_v1(u.org_id, u.id) AS has_passkey
     FROM users u
     LEFT JOIN employees e
       ON e.id = u.employee_id
@@ -2250,12 +2247,18 @@ async fn sweep_user_credentials_tx(
     occurred_at: time::OffsetDateTime,
     org: OrgId,
 ) -> Result<CredentialSweep, PgOrgError> {
-    let revoked_credentials =
-        sqlx::query("DELETE FROM auth_webauthn_credentials WHERE user_id = $1")
-            .bind(*user_id.as_uuid())
-            .execute(tx.as_mut())
-            .await?
-            .rows_affected();
+    let revoked = sqlx::query(
+        "SELECT revoked_credentials, revoked_families FROM public.auth_legacy_deactivate_credentials_v1($1,$2,$3)",
+    )
+    .bind(*org.as_uuid())
+    .bind(*user_id.as_uuid())
+    .bind(occurred_at)
+    .fetch_one(tx.as_mut())
+    .await?;
+    let revoked_credentials = u64::try_from(revoked.try_get::<i64, _>("revoked_credentials")?)
+        .map_err(|_| KernelError::internal("invalid credential revocation count"))?;
+    let revoked_families = u64::try_from(revoked.try_get::<i64, _>("revoked_families")?)
+        .map_err(|_| KernelError::internal("invalid session revocation count"))?;
     let credential_event = user_audit_event(
         "auth.passkey.revoke_all",
         Some(actor),
@@ -2272,29 +2275,6 @@ async fn sweep_user_credentials_tx(
         })),
     );
 
-    let revoked_families = sqlx::query(
-        r#"
-        UPDATE auth_refresh_token_families
-        SET revoked_at = $2, revoked_reason = 'user_deactivated'
-        WHERE user_id = $1 AND revoked_at IS NULL
-        "#,
-    )
-    .bind(*user_id.as_uuid())
-    .bind(occurred_at)
-    .execute(tx.as_mut())
-    .await?
-    .rows_affected();
-    sqlx::query(
-        r#"
-        UPDATE auth_refresh_tokens
-        SET revoked_at = COALESCE(revoked_at, $2)
-        WHERE user_id = $1
-        "#,
-    )
-    .bind(*user_id.as_uuid())
-    .bind(occurred_at)
-    .execute(tx.as_mut())
-    .await?;
     let session_event = user_audit_event(
         "auth.refresh.revoke_all",
         Some(actor),
