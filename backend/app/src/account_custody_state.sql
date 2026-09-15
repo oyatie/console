@@ -50,7 +50,7 @@ ORDER BY wanted.name), relations AS (
  -- Profiles are collective: accepting either ACL independently per table would
  -- admit a partially installed projection. NULL table ACLs are never empty.
  SELECT bool_and(relacl IS NOT NULL AND cardinality(relacl)=0)
-          AND (SELECT dormant FROM column_acl_profiles) AS dormant,
+          AND (SELECT column_acl_profiles.dormant FROM column_acl_profiles) AS dormant,
         bool_and(actual_owner=owner_name AND relacl IS NOT NULL AND
           CASE WHEN name IN ('accounts','account_security') THEN
             cardinality(relacl)=1 AND (SELECT count(*)=1 AND bool_and(
@@ -58,7 +58,7 @@ ORDER BY wanted.name), relations AS (
               AND a.privilege_type='SELECT' AND NOT a.is_grantable)
               FROM aclexplode(c.relacl) a)
           ELSE cardinality(relacl)=0 END)
-          AND (SELECT prepared FROM column_acl_profiles) AS prepared
+          AND (SELECT column_acl_profiles.prepared FROM column_acl_profiles) AS prepared
  FROM relations c
 )
 SELECT CASE
