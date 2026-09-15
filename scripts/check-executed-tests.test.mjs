@@ -152,6 +152,7 @@ describe("gate wiring", () => {
 const repository = fileURLToPath(new URL("../", import.meta.url));
 const integrationRoot = "backend/app/tests/auth_rest.rs";
 const recoveryRoot = "backend/crates/payroll/adapter-postgres/tests/recovery.rs";
+const observerRoot = "backend/crates/payroll/adapter-postgres/tests/durability_observer.rs";
 const testSource = "#[test]\nfn reachable() {}\n";
 
 function sourceInventoryFixture(t, files, expectedCount) {
@@ -173,6 +174,7 @@ function sourceInventoryFixture(t, files, expectedCount) {
     "backend/app/src/lib.rs",
   ];
   for (const path of anchors) write(path, path.endsWith("/lib.rs") ? LIVE : testSource);
+  write(observerRoot, readFileSync(join(repository, observerRoot), "utf8"));
   write(recoveryRoot, readFileSync(join(repository, recoveryRoot), "utf8"));
   for (const [path, contents] of Object.entries(files)) write(path, contents);
   write("backend/Cargo.toml", `[package]
@@ -184,6 +186,9 @@ path = "app/src/lib.rs"
 [[test]]
 name = "recovery"
 path = "crates/payroll/adapter-postgres/tests/recovery.rs"
+[[test]]
+name = "durability_observer"
+path = "crates/payroll/adapter-postgres/tests/durability_observer.rs"
 `);
   const lock = spawnSync("cargo", ["generate-lockfile", "--offline", "--manifest-path", "backend/Cargo.toml"], {
     cwd: root, encoding: "utf8",
@@ -203,6 +208,7 @@ path = "crates/payroll/adapter-postgres/tests/recovery.rs"
     test_attribute_baseline: {
       ...Object.fromEntries(anchors.map((path) => [path, 1])),
       [recoveryRoot]: 2,
+      [observerRoot]: 1,
       [integrationRoot]: expectedCount,
     },
   };

@@ -280,7 +280,7 @@ for (const target of buckInvocations.flatMap(({ executable }) => executable.toke
 }
 
 // Dedicated topology is executable only when both exact supervised cases verify.
-const recovery = recoveryTestInvocations(ci, readFileSync(join(ROOT, "backend/crates/payroll/adapter-postgres/tests/recovery.rs"), "utf8"));
+const recovery = recoveryTestInvocations(ci, readFileSync(join(ROOT, "backend/crates/payroll/adapter-postgres/tests/recovery.rs"), "utf8"), readFileSync(join(ROOT, "backend/crates/payroll/adapter-postgres/tests/durability_observer.rs"), "utf8"));
 unresolved.push(...recovery.failures);
 for (const tokens of recovery.invocations) workflowCommands.push({ executable: { tokens, malformed: false } });
 

@@ -11,14 +11,19 @@ export const RECOVERY_CASES = new Map([
   ["required_remote_unknown_is_bounded_and_never_local_fallback", ""],
   ["finite_remote_bound_and_repeated_replay_preserve_exact_rows", ""],
 ]);
+export const OBSERVER_CASE = "real_observer_installer_is_atomic_replay_exact_and_drift_refusing";
+const supervisedCases = new Map([
+  ...[...RECOVERY_CASES].map(([name, cut]) => [name, { binary: "recovery", cut }]),
+  [OBSERVER_CASE, { binary: "durability_observer", cut: "" }],
+]);
 const live = "${{ needs.preflight.outputs.run_live_postgres == 'true' }}";
 const condition = "${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}";
 const image = "postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280";
-const prefix = ["cargo", "test", "--locked", "--manifest-path", "backend/Cargo.toml", "-p", "console-payroll-adapter-postgres", "--test", "recovery"];
+const prefix = ["cargo", "test", "--locked", "--manifest-path", "backend/Cargo.toml", "-p", "console-payroll-adapter-postgres", "--test"];
 const equal = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Return Cargo invocations only after the entire required scenario union verifies. */
-export function recoveryTestInvocations(workflow, source) {
+export function recoveryTestInvocations(workflow, source, observerSource) {
   const failures = [];
   const refuse = (message) => { throw new Error(`recovery reachability: ${message}`); };
   try {
@@ -42,6 +47,8 @@ export function recoveryTestInvocations(workflow, source) {
     if (ordinary.length !== 1 || !(checkout < toolchain && toolchain < imageIndex && imageIndex < ordinary[0].index)) refuse("setup must precede ordinary tests");
     const discovered = [...source.matchAll(/#\[sqlx::test[^\n]*\]\s*async fn ([A-Za-z0-9_]+)/g)].map((m) => m[1]).sort();
     if (!equal(discovered, [...RECOVERY_CASES.keys()].sort())) refuse("selected cases differ from discovered owner cases");
+    const observerCases = [...observerSource.matchAll(/#\[sqlx::test[^\n]*\]\s*async fn ([A-Za-z0-9_]+)/g)].map((m) => m[1]);
+    if (!equal(observerCases, [OBSERVER_CASE])) refuse("selected observer differs from discovered installer cases");
     const found = new Map();
     const usedSteps = new Set();
     for (const command of executableWorkflowCommands(workflow)) {
@@ -51,9 +58,10 @@ export function recoveryTestInvocations(workflow, source) {
       if (command.job !== "postgres-reachability-domain-b" || tokens[2] !== "$GITHUB_WORKSPACE" || tokens[3] !== "--") refuse("unbound executor or checkout");
       const cargo = tokens.slice(4);
       const name = cargo[9];
-      if (!RECOVERY_CASES.has(name) || !equal(cargo.slice(0, 9), prefix)
+      if (!supervisedCases.has(name) || !equal(cargo.slice(0, 8), prefix)
+        || cargo[8] !== supervisedCases.get(name).binary
         || !equal(cargo.slice(10), ["--", "--exact", "--test-threads=1", "--nocapture"])) refuse("nonexecuting or altered Cargo invocation");
-      if (!equal(command.tokens, [`CONSOLE_RECOVERY_CUT=${RECOVERY_CASES.get(name)}`, ...tokens])) refuse("unbound fault mode or wrapper");
+      if (!equal(command.tokens, [`CONSOLE_RECOVERY_CUT=${supervisedCases.get(name).cut}`, ...tokens])) refuse("unbound fault mode or wrapper");
       const candidates = steps.map((step, index) => ({ step, index })).filter(({ step }) => step.run?.includes(`${RECOVERY_SUPERVISOR} `) && step.run.includes(` ${name} `));
       if (candidates.length !== 1) refuse("scenario must have one distinct step");
       const { step, index } = candidates[0];
@@ -64,7 +72,7 @@ export function recoveryTestInvocations(workflow, source) {
       usedSteps.add(index);
       found.set(name, cargo);
     }
-    if (found.size !== RECOVERY_CASES.size) refuse("all supervised cases must execute");
+    if (found.size !== supervisedCases.size) refuse("all supervised cases must execute");
     return { invocations: [...found.values()], failures };
   } catch (error) {
     failures.push(error.message);
