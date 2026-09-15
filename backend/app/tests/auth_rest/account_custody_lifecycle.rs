@@ -109,6 +109,19 @@ async fn assert_empty(pool: &PgPool) {
     }
 }
 
+async fn assert_backfilled_empty_security(pool: &PgPool, expected_roots: &Value) {
+    super::account_root_transition::assert_exact_roots(pool, expected_roots).await;
+    for table in TABLES.into_iter().filter(|table| *table != "accounts") {
+        let count: i64 = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+            "SELECT count(*) FROM public.{table}"
+        )))
+        .fetch_one(pool)
+        .await
+        .unwrap();
+        assert_eq!(count, 0, "unexpected seeded {table}");
+    }
+}
+
 async fn assert_owners(pool: &PgPool, finalized: bool) {
     let observed = snapshot(pool).await;
     for row in observed.as_array().unwrap() {
@@ -172,9 +185,10 @@ async fn fresh_actual_migration_finalizes_empty_catalog_and_is_idempotent(pool: 
     .unwrap();
     assert_eq!(historical.len(), 225);
     assert!(historical.iter().all(|r| r.2));
+    let expected_roots = super::account_root_transition::expected_roots_after_backfill(&pool).await;
     finalize_account_custody(&pool).await;
     assert_owners(&pool, true).await;
-    assert_empty(&pool).await;
+    assert_backfilled_empty_security(&pool, &expected_roots).await;
     let before = snapshot(&pool).await;
     finalize_account_custody(&pool).await;
     assert_eq!(snapshot(&pool).await, before);
@@ -378,8 +392,9 @@ async fn populated_225_upgrade_preserves_legacy_rows_and_checksums(pool: PgPool)
     drop(owner);
     console_app::run_migrations(&config).await.unwrap();
     assert_owners(&pool, false).await;
+    let expected_roots = super::account_root_transition::expected_roots_after_backfill(&pool).await;
     finalize_account_custody(&pool).await;
-    assert_empty(&pool).await;
+    assert_backfilled_empty_security(&pool, &expected_roots).await;
     let after_row: Value = sqlx::query_scalar("SELECT to_jsonb(b) FROM branches b WHERE id=$1")
         .bind(branch.as_uuid())
         .fetch_one(&pool)
@@ -488,6 +503,7 @@ async fn stop_finalizer<T>(
 #[sqlx::test(migrations = false)]
 async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_state(pool: PgPool) {
     staged(&pool).await;
+    let expected_roots = super::account_root_transition::expected_roots_after_backfill(&pool).await;
     let sql = account_custody_finalizer_sql();
     let mut first = pool.begin().await.unwrap();
     let mut second = PgConnection::connect_with(&pool.connect_options())
@@ -501,7 +517,7 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
         .fetch_one(&mut second)
         .await
         .unwrap();
-    sqlx::raw_sql("LOCK TABLE public.accounts, public.account_security, public.account_security_events, public.account_terms_acceptances, public.account_terms_head, public.account_terms_release_receipts IN ACCESS EXCLUSIVE MODE")
+    sqlx::raw_sql("LOCK TABLE public.users, public.accounts, public.account_security, public.account_security_events, public.account_terms_acceptances, public.account_terms_head, public.account_terms_release_receipts IN ACCESS EXCLUSIVE MODE")
         .execute(&mut *first)
         .await
         .unwrap();
@@ -539,7 +555,7 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
         "finalizer request accounting failed: second={second_outcome:?}"
     );
     assert_owners(&pool, true).await;
-    assert_empty(&pool).await;
+    assert_backfilled_empty_security(&pool, &expected_roots).await;
     let before = snapshot(&pool).await;
     finalize_account_custody(&pool).await;
     assert_eq!(before, snapshot(&pool).await);
@@ -707,6 +723,7 @@ impl Drop for KillChild {
 async fn committed_finalization_survives_unobserved_cli_response_and_retry(pool: PgPool) {
     use std::io::Write;
     staged(&pool).await;
+    let expected_roots = super::account_root_transition::expected_roots_after_backfill(&pool).await;
     let mut url =
         url::Url::parse(&std::env::var("DATABASE_URL").expect("actual disposable admin transport"))
             .unwrap();
@@ -779,5 +796,5 @@ async fn committed_finalization_survives_unobserved_cli_response_and_retry(pool:
     let before = snapshot(&pool).await;
     finalize_account_custody(&pool).await;
     assert_eq!(before, snapshot(&pool).await);
-    assert_empty(&pool).await;
+    assert_backfilled_empty_security(&pool, &expected_roots).await;
 }
