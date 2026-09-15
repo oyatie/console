@@ -1,0 +1,415 @@
+{
+  "project": "console-lc07-1fbc43f65917",
+  "evidence": "/private/tmp/lc07-runtime-evidence-N14tHr",
+  "cases": [
+    {
+      "name": "independent-local-socket-inventory-before-migration",
+      "status": "PASS"
+    },
+    {
+      "name": "actual-migrator-creates-six-dormant-staging-tables",
+      "status": "PASS"
+    },
+    {
+      "name": "wrong-inventory-no-custody-mutation",
+      "status": "PASS"
+    },
+    {
+      "name": "readonly-unprivileged-operator-image-finalizes-over-verified-TLS",
+      "status": "PASS"
+    },
+    {
+      "name": "repeated-finalization-preserves-custody",
+      "status": "PASS"
+    },
+    {
+      "name": "repeat-migration-and-topology-preserve-finalized-custody",
+      "status": "PASS"
+    },
+    {
+      "name": "actual-host-api-readiness-after-finalization",
+      "status": "PASS"
+    }
+  ],
+  "commands": [
+    {
+      "bin": "git",
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "status": 0,
+      "log": "1.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "config",
+        "--quiet"
+      ],
+      "status": 0,
+      "log": "2.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "up",
+        "-d",
+        "--wait",
+        "--wait-timeout",
+        "90",
+        "postgres"
+      ],
+      "status": 0,
+      "log": "3.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "run",
+        "--rm",
+        "postgres-topology"
+      ],
+      "status": 0,
+      "log": "4.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT system_identifier::text || '|' || (SELECT oid FROM pg_catalog.pg_database WHERE datname=current_database()) FROM pg_catalog.pg_control_system()"
+      ],
+      "status": 0,
+      "log": "5.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "port",
+        "postgres",
+        "5432"
+      ],
+      "status": 0,
+      "log": "6.log"
+    },
+    {
+      "bin": "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/console-app",
+      "args": [],
+      "status": 0,
+      "log": "7.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT string_agg(relname || ':' || pg_get_userbyid(relowner), ',' ORDER BY relname) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')"
+      ],
+      "status": 0,
+      "log": "8.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "build",
+        "account-finalize"
+      ],
+      "status": 0,
+      "log": "9.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "run",
+        "--rm",
+        "--no-deps",
+        "account-finalize"
+      ],
+      "status": 3,
+      "log": "10.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT string_agg(relname || ':' || pg_get_userbyid(relowner), ',' ORDER BY relname) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')"
+      ],
+      "status": 0,
+      "log": "11.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "run",
+        "--rm",
+        "--no-deps",
+        "account-finalize"
+      ],
+      "status": 0,
+      "log": "12.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT string_agg(relname || ':' || pg_get_userbyid(relowner), ',' ORDER BY relname) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')"
+      ],
+      "status": 0,
+      "log": "13.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "run",
+        "--rm",
+        "--no-deps",
+        "account-finalize"
+      ],
+      "status": 0,
+      "log": "14.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT string_agg(relname || ':' || pg_get_userbyid(relowner), ',' ORDER BY relname) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')"
+      ],
+      "status": 0,
+      "log": "15.log"
+    },
+    {
+      "bin": "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/console-app",
+      "args": [],
+      "status": 0,
+      "log": "16.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "run",
+        "--rm",
+        "postgres-topology"
+      ],
+      "status": 0,
+      "log": "17.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "exec",
+        "-T",
+        "postgres",
+        "psql",
+        "-X",
+        "-At",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-U",
+        "console_cluster_admin",
+        "-d",
+        "console_lc07",
+        "-c",
+        "SELECT string_agg(relname || ':' || pg_get_userbyid(relowner), ',' ORDER BY relname) FROM pg_class WHERE relnamespace='public'::regnamespace AND relname IN ('accounts','account_security','account_security_events','account_terms_acceptances','account_terms_head','account_terms_release_receipts')"
+      ],
+      "status": 0,
+      "log": "18.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "compose",
+        "-p",
+        "console-lc07-1fbc43f65917",
+        "-f",
+        "/private/tmp/console-production-tdd-preparation-20260913/ops/compose.yml",
+        "-f",
+        "/Users/jasonlee/.cache/console-lc07-stack-KxSoqM/override.yml",
+        "down",
+        "--volumes",
+        "--remove-orphans"
+      ],
+      "status": 0,
+      "log": "19.log"
+    },
+    {
+      "bin": "docker",
+      "args": [
+        "ps",
+        "-aq",
+        "--filter",
+        "label=com.docker.compose.project=console-lc07-1fbc43f65917"
+      ],
+      "status": 0,
+      "log": "20.log"
+    }
+  ],
+  "scope": "Actual local Compose PostgreSQL/topology/operator image and host-built API; not published app image or Kubernetes",
+  "binary_sha256": "7d00251004cb5cd117bd1161808832e78188cc1a2af970c5a31266aa674673ad",
+  "source_head": "96cd8f773ce68d758e928e1ca09d5956c34bf2ae",
+  "status": "PASS",
+  "cleanup": "owned-project-absent"
+}
