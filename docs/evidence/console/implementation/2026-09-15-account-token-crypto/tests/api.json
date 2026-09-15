@@ -1,0 +1,49 @@
+{
+  "kind": "PRIVATE_NEXT_ACCEPTANCE_API_PROPOSAL_V3",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "author": "/root/inventory_repair",
+  "status": "PROPOSAL_FOR_ROOT_REVIEW_NOT_IMPLEMENTATION_OR_ADMISSION",
+  "boundary": "Existing platform/auth::JwtIssuer/JwtVerifier ES256 material; plain verified cryptographic Account/CSRF claims only. No AccountSession/Principal construction or DB reads/permissions.",
+  "placement": "Private nested account module under jwt.rs can access existing keys/settings; root-export only these input/output names through existing lib.rs. Do not duplicate issuer/verifier types or add dependencies.",
+  "types": {
+    "AccountAssurance": "enum { PasskeyPrimary }; wire PASSKEY_PRIMARY. Typed protocol metadata supplied only after actual upstream primary proof; type construction is not evidence of that proof.",
+    "AccountAccessTokenInput": "public account_id:Uuid, session_id:Uuid, security_generation:i64, auth_time:OffsetDateTime, assurance:AccountAssurance, issued_at:OffsetDateTime, family_expires_at:OffsetDateTime",
+    "AccountCsrfTokenInput": "public account_id:Uuid, session_id:Uuid, security_generation:i64, issued_at:OffsetDateTime, family_expires_at:OffsetDateTime",
+    "SignedAccountToken": "private token bytes, explicit as_str()->&str, redacted Debug; no token bytes in Debug/errors and no implicit Serialize/Display. One opaque wrapper can carry either signed protocol; verifier methods remain distinct.",
+    "AccountAccessClaims": "closed required iss:String,aud:String,token_kind:String,sub:Uuid,sid:Uuid,jti:Uuid,iat:i64,nbf:i64,exp:i64,security_generation:i64,auth_time:i64,assurance:AccountAssurance. security_generation wire canonical positive decimal string through i64::MAX. UUID wire canonical lowercase nonnil.; redacted Debug with no claim values. It may implement Serialize only if the owning API needs it; acceptance reads actual signed wire independently.",
+    "AccountCsrfClaims": "closed required iss:String,aud:String,token_kind:String,sub:Uuid,sid:Uuid,iat:i64,nbf:i64,exp:i64,security_generation:i64; same generation and UUID representations; no jti/auth_time/assurance/Company claims.; redacted Debug with no claim values.",
+    "AccountAccessVerification": "enum { Current(AccountAccessClaims), Expired(AccountAccessClaims) }; both plain validated cryptographic claims, never AccountSession/Principal. Redacted Debug. Expired is available only after all non-expiry checks pass."
+  },
+  "methods": [
+    "JwtIssuer::issue_account_access_token(AccountAccessTokenInput) -> Result<SignedAccountToken,AuthError>",
+    "JwtIssuer::issue_account_csrf_token(AccountCsrfTokenInput) -> Result<SignedAccountToken,AuthError>",
+    "JwtVerifier::verify_account_access_token(&str, now:OffsetDateTime) -> Result<AccountAccessVerification,AuthError>",
+    "JwtVerifier::verify_account_csrf_token(&str, now:OffsetDateTime) -> Result<AccountCsrfClaims,AuthError>"
+  ],
+  "rules": [
+    "Existing configured issuer and ES256 keys; fixed access aud console.account.v1/kind account_v1 and proof aud console.account.csrf.v1/kind account_csrf_v1. Legacy settings audience does not override either protocol. Configured issuer must be nonempty; empty issuer fails with a fixed safe configuration error before any new protocol can be used.",
+    "Access lifetime=min(positive configured access TTL,15minutes,remaining absolute family lifetime); proof lifetime=min(5minutes,remaining absolute family lifetime). Expiry arithmetic checked before overflowing OffsetDateTime. Nonpositive or unrepresentable duration/ceiling must fail closed; never wrap or produce a usable unbounded token.",
+    "Verification now is exclusively the trusted server clock, never HTTP input. All signed iat/nbf/exp are nonnegative integers; primary auth_time is nonnegative and <=iat. Positive lifetime: exp>iat and nbf<=exp; signed span exp-iat<=900 access or300 proof seconds using checked arithmetic. All signature/ES256/issuer/fixed audience-kind/closed grammar/UUID/generation and non-expiry time checks, including no future iat/nbf, pass first. Then access exp>now =>Current, exp<=now=>Expired with the verified claims retained. Proof exp<=now=>fixed unit ExpiredSignature. No library60second grace, plain unverified decode, or expired-token acceptance that skips other checks. Issuance sets nbf=iat, access jti freshly generated.",
+    "Required fields and raw duplicate claims rejected, including identical duplicates. Unknown Company/role/profile claims rejected; parser conversion must not collapse duplicates into a generic Value before typed rejection.",
+    "Semantic UUID nonnil/canonical lowercase and generation positive canonical decimal bounded by signed database bigint. Missing/negative/zero/float/array/null or numeric generation rejected. Parsed valid generation is not current generation authority.",
+    "Raw JWT/proof/key bytes and hostile claim values stay out of token/claims/outcome/error Debug and error Display. Reuse AuthError, but new verification methods return only AuthError::Jwt with fixed ErrorKind::InvalidToken for malformed/crypto/issuer/audience/kind/claim/non-expiry-time failures, and fixed ErrorKind::ExpiredSignature for otherwise valid expired proof. Do not propagate serde/jsonwebtoken input-bearing diagnostics through ?. Invalid trusted issuance/configuration/signing failures use fixed static InvalidStoredData messages without raw error/input values. Correctly signed fixtures prove grammar/crypto only."
+  ],
+  "caller_responsibilities": [
+    "Both Current and Expired require the later owner to load ACTIVE Account/current generation/Account-family protocol ownership/revocation/absolute lifetime. Expired alone permits no downgrade: caller must refuse invalid current generation/state/family before any CSRF refresh-only fallback. Non-expiry validation error never triggers fallback. Actual primary WebAuthn, browser nonce/cookie binding and matching proof sub/sid/generation remain separate owners.",
+    "No live production login, credential mint or new transport is authorized by this private test artifact."
+  ],
+  "implementation_ready": false,
+  "next_tests": "Append account_crypto module to already-registered auth/tests/jwt_es256.rs, using existing ephemeral es256_material helper. Import remains blocked until root freezes exact API. Protocol-separation3 current-API tests proceed independently first.",
+  "supersedes": {
+    "path": "/private/tmp/account-token-crypto-api-v2-f96eddd3.json",
+    "sha256": "4386a04d13ae8acc91c6179f226ac3387c31c58f41d2fd4f37fd78b09fbdee1c",
+    "reason": "Keep existing AuthError with only sanitized fixed outcomes; avoid extra public error enum after Capture minimal-API clarification. Preserve exact approved nbf<=exp bound."
+  },
+  "review_identities": {
+    "author": "/root/inventory_repair",
+    "v1_independent": "/root/capture_review",
+    "v2_independent": "/root/capture_review inline coordination",
+    "v3_independent": "pending"
+  },
+  "error_contract": "No new public error type. Access expiry is only AccountAccessVerification::Expired after all other checks; CSRF expiry is fixed ExpiredSignature. Both fixed JWT unit errors and static issuance errors have safe Debug/Display. Exact prose of static errors is an implementation choice; retaining diagnostic sources or caller strings is forbidden."
+}

@@ -1,0 +1,37 @@
+{
+  "admission_limits": [
+    "Root exact API freeze and independent additive acceptance review still precede admission.",
+    "No product/test edits or Cargo/SQL/Docker execution by this reviewer.",
+    "Protocol3 remains a separate current-API workflow; no implementation is authorized before its required admission.",
+    "HTTP cookie/proof binding, primary WebAuthn, live Account/family checks, migration, rollout/readiness and production remain outside crypto API proof."
+  ],
+  "author": "/root/inventory_repair",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "exact_error_interpretation": "The rule6 phrase verification methods return only fixed JWT errors governs token-derived failures; its explicit trusted configuration exception permits a fixed static InvalidStoredData for empty configured issuer. No input-bearing library or serde diagnostics may escape either path.",
+  "implementation_notes": [
+    "Signature and exact issuer/audience validation remain enabled. Because trusted explicit now is authoritative, implementation must avoid jsonwebtoken10.4 internal wall-clock exp/nbf evaluation and perform all mandatory time checks itself without grace. This does not authorize unverified decoding.",
+    "Current means crypto/time-valid, not ACTIVE/current-generation/unrevoked/live-family authorization. Expired is insufficient to permit fallback; both claims require independent owner checks.",
+    "Strict raw string UUID/generation conversion and typed duplicate/unknown-field rejection must precede normalized values. No UUID-version restriction beyond canonical nonnil shape is introduced.",
+    "NoDebug/no-capture assurance remains an implementation/acceptance obligation; this is API approval, not runtime proof."
+  ],
+  "kind": "independent_account_token_crypto_api_v3_delta_review",
+  "prior_v1_review": "/private/tmp/account-token-crypto-api-f96eddd3-independent-review-capture.json",
+  "prior_v1_review_sha256": "8048de225a04b47c00ff21b6cbba421f357f6f613ca899c410c1df4f94486a8b",
+  "proposal": "/private/tmp/account-token-crypto-api-v3-f96eddd3.json",
+  "proposal_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+  "resolved_findings": {
+    "API1": "Access verifier now returns Current/Expired carrying validated AccountAccessClaims. Expired classification follows all other signature/grammar/protocol/UUID/generation/non-expiry-time checks; neither outcome grants current session authority or permission to downgrade. Later live owner receives enough identity/family/generation context to refuse stale or mismatched supplied access before any refresh-only CSRF fallback.",
+    "API2": "Nonempty issuer, all signed time integers nonnegative, no future iat/nbf, auth_time<=iat, positive checked maximum900/300second span, nbf<=exp, minted nbf=iat/freshjti, exact exp>now versus<=now boundary are explicit. Family ceiling remains trusted input and later live owner revalidates actual absolute lifetime.",
+    "API3": "Existing AuthError retained with fixed unit InvalidToken for token failures and fixed unit ExpiredSignature for proof expiry; trusted issuance/configuration/signing errors use static safe InvalidStoredData without inner diagnostics. Redacted Debug now covers token, claims and Current/Expired outcome. No new public error type, issuer/verifier copy, dependency or live owner is added."
+  },
+  "review_identity_clarification": "Reviewer inspected original v1 and exact v3 artifacts. V2 was not independently artifact-reviewed; the v3 review_identities.v2_independent entry denotes inline design coordination only. Superseded v2 is not adopted or approved by this receipt.",
+  "reviewer": "/root/capture_review",
+  "status": "APPROVE_EXACT_V3_API_FOR_ROOT_FREEZE_AND_ACCEPTANCE_AUTHORING",
+  "verification": {
+    "cargo_commands": 0,
+    "database_commands": 0,
+    "docker_commands": 0,
+    "repository_writes": 0,
+    "runtime_tests_executed": 0
+  }
+}
