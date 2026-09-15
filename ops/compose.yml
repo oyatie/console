@@ -7,6 +7,7 @@ x-app-image: &app-image
   image: console-app:local
 
 x-app-env: &app-env
+  CONSOLE_DATABASE_DURABILITY: ${CONSOLE_DATABASE_DURABILITY:?supply an explicit reviewed durability policy}
   DATABASE_URL: postgresql://console_rt:${CONSOLE_RT_POSTGRES_PASSWORD:?set the runtime database password}@postgres:5432/${CONSOLE_POSTGRES_DB:-console_prod}
   CONSOLE_SHUTDOWN_TIMEOUT_SECS: "10"
   OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
