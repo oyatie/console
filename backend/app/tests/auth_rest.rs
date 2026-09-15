@@ -40,6 +40,8 @@ mod account_custody_lifecycle;
 mod account_custody_startup;
 #[path = "auth_rest/account_storage.rs"]
 mod account_storage;
+#[path = "auth_rest/account_fence_projection.rs"]
+mod account_fence_projection;
 #[path = "auth_rest/publication_privileges.rs"]
 mod publication_privileges;
 
