@@ -609,11 +609,11 @@ const expectedReleaseWorkflow = Object.freeze({
       },
       steps: [
         {
-          uses: 'actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0',
+          uses: 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1',
           with: { 'fetch-depth': 0, 'persist-credentials': false },
         },
         {
-          uses: 'actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e',
+          uses: 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020',
           with: { 'node-version': '24.16.0' },
         },
         {
@@ -623,7 +623,7 @@ const expectedReleaseWorkflow = Object.freeze({
           run: 'node scripts/console/release-please-pr-fallback.mjs snapshot',
         },
         {
-          uses: 'googleapis/release-please-action@8b8fd2cc23b2e18957157a9d923d75aa0c6f6ad5',
+          uses: 'googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071',
           id: 'release',
           'continue-on-error': true,
           with: {
