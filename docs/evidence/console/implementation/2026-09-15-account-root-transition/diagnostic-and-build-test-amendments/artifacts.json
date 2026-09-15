@@ -1,0 +1,30 @@
+{
+  "root-approval.json.gz": {
+    "source": "/private/tmp/console-test-amendments-af6edbd8-root-approval.json",
+    "sha256": "e6f52ce44175696eb7936b83e679435e2a4f5d066b9f604b7ed334a14718be76"
+  },
+  "account-test-manifest.json.gz": {
+    "source": "/private/tmp/account-root-transition-error-amendment-af6edbd8-capture-v1/manifest.json",
+    "sha256": "b9cabfe9869346e7082698a8634dfeb5106a84da18f95ea10b5005471285db30"
+  },
+  "account-tests.patch.gz": {
+    "source": "/private/tmp/account-root-transition-error-amendment-af6edbd8-capture-v1/tests.patch",
+    "sha256": "3972e446d55ea0f47695ee48ea19dbc8921b3af8642158d541747e49ab8da5a0"
+  },
+  "account-guide.md.gz": {
+    "source": "/private/tmp/account-root-transition-error-amendment-af6edbd8-capture-v1/GUIDE.md",
+    "sha256": "ef31a39b1ccb8bec8f9a9fa8e65fd4b09354ba27a0547a21539a733c7b0daa27"
+  },
+  "buck-test-manifest.json.gz": {
+    "source": "/private/tmp/account-auth-rest-buck-resource-tests-af6edbd8-v1-inventory/manifest.json",
+    "sha256": "afb2de7156d5c5615797b3cf822ef06f7379da2d66bf398a6bcf933a47f9d415"
+  },
+  "buck-tests.patch.gz": {
+    "source": "/private/tmp/account-auth-rest-buck-resource-tests-af6edbd8-v1-inventory/tests.patch",
+    "sha256": "314fed75dcf65a2c48f15c06437c359a83d9c7c3f1044bec36ade849ef91c8cd"
+  },
+  "buck-independent-review.json.gz": {
+    "source": "/private/tmp/account-auth-rest-buck-resource-tests-v1-independent-review-capture.json",
+    "sha256": "5825f5dd080710d2a6ee778dbdb78d3995504252999b74a953a2f118c500c046"
+  }
+}
