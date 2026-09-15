@@ -1,0 +1,25 @@
+{
+  "base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "owner": "/root",
+  "source_path": "ops/postgres-reconcile-topology.sh",
+  "source_sha256": "4d0e11b02935459a3f79a3bf103bf23f58d98e605541acd3d7f324c26fc178f5",
+  "candidate_sha256": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+  "changes": [
+    "Add auth role to same three global timeout settings",
+    "Clear only same managed database-specific override keys for auth",
+    "Include auth in catalog default/override verification",
+    "Include existing auth backends in established post-change drain",
+    "When auth password already supplied, verify real auth login effective timeouts using existing function"
+  ],
+  "invariants": [
+    "No grants or memberships changes",
+    "No password assignment changes",
+    "Omitted auth credential remains untouched",
+    "Unrelated per-database overrides preserved",
+    "Do not weaken shared pool identity or timeout checks"
+  ],
+  "risk": "Operator run will drain existing auth backends just as other serving roles; app pool reconnects. Local source plus disposable testing only. Production run remains HOLD.",
+  "rollback": "Revert source before exposure; no production operation performed. Existing auth defaults remain safe bounded values; no ACL/data reversal.",
+  "test": "Same four actual auth transport tests include valid startup requiring shared timeout readback; next explicit same4 run records prerequisite failure before applying this candidate",
+  "reviewer": "/root/finish_browser"
+}

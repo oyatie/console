@@ -1,0 +1,34 @@
+{
+  "kind": "auth-pool-retention-design-refinement",
+  "author": "/root/next_auth_context",
+  "status": "TEXTUAL_DESIGN_ONLY_NOT_SOURCE_PATCH_OR_IMPLEMENTATION",
+  "supersedes": "The duplicate AppState.auth_database retention recommendation in /private/tmp/account-auth-pool-mechanical-guide.json; preserve that previous report as history.",
+  "decision": "AuthRestState owns the retained Option<PgPool>. AppState already owns AuthRestState and router clones share PgPool internals; do not store a second parallel auth_database field.",
+  "minimal_two_file_ownership": {
+    "backend/crates/platform/auth-rest/src/lib.rs": [
+      "Add one private auth transport Option<PgPool> beside existing business pool; disabled/new constructors initialize absent.",
+      "Add one named builder for attaching actual from_config-created auth pool; preserve current constructor signatures used by standalone Group/dev-auth tests.",
+      "Only expose a pool accessor if the application composition root has an immediate actual consumer. Current /readyz is a suitable consumer; no placeholder getter without a caller.",
+      "Existing business pool remains every legacy Company/RLS credential user and refresh store until their independent fence/conversion lane is admitted."
+    ],
+    "backend/app/src/lib.rs": [
+      "from_config opens and validates auth through existing connect_command_pool before Self::new/background consumers, then installs retained pool on AuthRestState. Fixed auth-keyed error mapping excludes raw driver credential details.",
+      "Do not change AppState::new into async or make it dial URLs. Document that it composes injected dependencies and is not serving transport admission; from_config owns real connection validation.",
+      "For immediate legitimate retention use, readyz can fetch the retained pool and reuse existing readiness_dependency_status by supplying its existing DatabaseDependency::Postgres view. No new readiness abstraction or separate AppState auth state.",
+      "Auth readiness requirement applies only when API+configured business database+enabled auth services. Missing/unreachable retained auth means503 in that mode. No-DB, worker, migrate and disabled-auth existing conditions remain.",
+      "No new ReadyBody response field is necessary: existing aggregate readiness status can reflect auth as custody already does, while existing helper supplies fixed dependency label telemetry."
+    ]
+  },
+  "why_readyz_is_not_a_workaround": "The app cannot provide enabled authentication when its required restricted authentication transport is unavailable; an aggregate readiness dependency is concrete operability behavior. It proves the retained connection is usable after startup. Adding Debug presence or services().is_closed checks solely to read a field would be a workaround, and neither establishes current authorization.",
+  "test_gate": "This readiness behavior is additional to the3 reviewed startup tests. Before including it in implementation scope, author/review one real positive-to-negative readiness regression with healthy original state, close the exact retained auth pool, assert business transport remains reachable and readyz becomes503. A clone must share that same pool so reusing/reopening the DSN or discarding the startup pool cannot falsely pass. Existing no-DB/worker/disabled controls remain required. No such test authored/executed here.",
+  "if_root_keeps_red3_scope_only": "Transport startup can be verified now and retained as the next fence dependency, but do not add fake reads, request-level fence behavior or claim actual request enforcement from these tests. Defer actual readiness/fence semantics to their separately test-admitted boundary; do not silence dead code with underscore fields or allows.",
+  "next_actual_fence_consumers": [
+    "AuthRestState principal_from_headers and issuance/prewrite paths",
+    "App root SSR/ui_listing_floors, shared domain middleware and WebSocket principal resolution through platform/request-context"
+  ],
+  "same_target_binding": "Use live PostgreSQL current database/name/OID and observed server address/port readback, preserving raw hostname spelling aliases that resolve to same observed endpoint. Differing IPv4/IPv6, proxy or replica endpoints can refuse even for one logical cluster. Matching metadata is not immutable physical cluster/restore/serving-generation or HA proof; no extra grants,nonce tables,advisory handshakes or migrations in this lane.",
+  "performed": [
+    "Read existing AppState::new/from_config, AuthRestState constructors/services and readyz helper/callers",
+    "No source patch, repository changes, test/Cargo/DB/service runs"
+  ]
+}
