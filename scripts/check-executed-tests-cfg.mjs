@@ -11,20 +11,23 @@
  * with a space. Doc comments (`///`, `//!`, `/**`) are ordinary comments here.
  * String bodies are removed (unlike route-harvest strippers) because an attribute
  * inside a string is never a live cfg gate.
+ * Module tokenizers may retain opaque strings; line-based counters may retain newlines.
  *
  * @param {string} source
  * @returns {string}
  */
-export function stripRustCommentsAndStringLiterals(source) {
+export function stripRustCommentsAndStringLiterals(source, { preserveStrings = false, preserveLines = false } = {}) {
   let output = "";
   let index = 0;
+  const blank = (start) => preserveLines ? source.slice(start, index).replace(/[^\r\n]/g, " ") : " ";
   while (index < source.length) {
+    const start = index;
     const char = source[index];
     const next = source[index + 1];
 
     if (char === "/" && next === "/") {
       while (index < source.length && source[index] !== "\n") index += 1;
-      output += " ";
+      output += blank(start);
       continue;
     }
     if (char === "/" && next === "*") {
@@ -41,7 +44,7 @@ export function stripRustCommentsAndStringLiterals(source) {
           index += 1;
         }
       }
-      output += " ";
+      output += blank(start);
       continue;
     }
     if (char === "r" && (next === '"' || next === "#")) {
@@ -50,7 +53,7 @@ export function stripRustCommentsAndStringLiterals(source) {
         const terminator = `"${raw[1]}`;
         const end = source.indexOf(terminator, index + raw[0].length);
         index = end === -1 ? source.length : end + terminator.length;
-        output += " ";
+        output += preserveStrings ? source.slice(start, index) : blank(start);
         continue;
       }
     }
@@ -58,7 +61,7 @@ export function stripRustCommentsAndStringLiterals(source) {
       const literal = source.slice(index).match(/^'(?:\\.|[^\\'])'/);
       if (literal) {
         index += literal[0].length;
-        output += " ";
+        output += blank(start);
         continue;
       }
     }
@@ -73,7 +76,7 @@ export function stripRustCommentsAndStringLiterals(source) {
         }
         if (inner === '"') break;
       }
-      output += " ";
+      output += preserveStrings ? source.slice(start, index) : blank(start);
       continue;
     }
 
