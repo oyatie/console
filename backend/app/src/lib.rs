@@ -162,8 +162,8 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use url::Url;
 
-pub mod action_inbox;
 mod account_custody;
+pub mod action_inbox;
 mod audit_chain_signer;
 pub mod cedar_parity;
 mod collaboration;
@@ -487,12 +487,15 @@ impl std::str::FromStr for AppRole {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct AppConfig {
     pub role: AppRole,
     pub service_name: String,
     pub http_addr: SocketAddr,
     pub database_url: Option<String>,
+    /// Dedicated Account custody transport, required for configured API auth.
+    /// Configuration only: opening its restricted pool belongs to auth wiring.
+    pub auth_database_url: Option<String>,
     /// Dedicated least-privilege connection used only for leave commands
     /// (`LEAVE_COMMAND_DATABASE_URL`). The API requires this whenever its
     /// general runtime `DATABASE_URL` is configured so command execution can
@@ -605,6 +608,24 @@ pub struct AppConfig {
     /// Base64-encoded, exactly 32-byte HMAC key for machine-only production
     /// ingress. Its absence leaves only that ingress route unavailable (503).
     pub production_service_principal_hmac_key: Option<[u8; 32]>,
+}
+
+// Configuration owns credentials and signing keys. Debug exposes only typed
+// operational metadata and presence flags, never raw transport/provider values.
+impl std::fmt::Debug for AppConfig {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("AppConfig")
+            .field("role", &self.role)
+            .field("http_addr", &self.http_addr)
+            .field("database_configured", &self.database_url.is_some())
+            .field(
+                "auth_database_configured",
+                &self.auth_database_url.is_some(),
+            )
+            .field("auth_enabled", &self.auth_rest.is_some())
+            .finish_non_exhaustive()
+    }
 }
 
 /// Native app-link association config for the `/.well-known/*` endpoints.
@@ -861,6 +882,57 @@ impl AppConfig {
             public_key_pem,
         });
         let auth_rest = auth_rest_config_from_vars(&vars, jwt.as_ref())?;
+        let auth_database_url = non_empty(vars.get("AUTH_DATABASE_URL"));
+        if role == AppRole::Api
+            && database_url.is_some()
+            && auth_rest.is_some()
+            && auth_database_url.is_none()
+        {
+            return Err(AppError::Config(
+                "AUTH_DATABASE_URL is required for api authentication when DATABASE_URL is configured"
+                    .to_owned(),
+            ));
+        }
+        if let Some(auth_url) = auth_database_url.as_deref() {
+            let auth_password =
+                validate_database_url_identity("AUTH_DATABASE_URL", auth_url, "console_auth_rt")?;
+            // Reuse exactly the serving URL parser, including percent-decoding
+            // and effective query passwords; spelling differences are not isolation.
+            for (name, url, expected_role) in [
+                (
+                    "DATABASE_URL",
+                    database_url.as_deref(),
+                    if role == AppRole::Migrate {
+                        "console_app"
+                    } else {
+                        "console_rt"
+                    },
+                ),
+                (
+                    "LEAVE_COMMAND_DATABASE_URL",
+                    leave_command_database_url.as_deref(),
+                    "console_leave_cmd",
+                ),
+                (
+                    "ONTOLOGY_COMMAND_DATABASE_URL",
+                    ontology_command_database_url.as_deref(),
+                    "console_ontology_cmd",
+                ),
+                (
+                    "PLATFORM_FORCE_COMMAND_DATABASE_URL",
+                    platform_force_command_database_url.as_deref(),
+                    "console_platform_force_cmd",
+                ),
+            ] {
+                if let Some(url) = url {
+                    let password = validate_database_url_identity(name, url, expected_role)?;
+                    ensure_distinct_database_credentials([
+                        ("AUTH_DATABASE_URL", Some(auth_password.as_str())),
+                        (name, Some(password.as_str())),
+                    ])?;
+                }
+            }
+        }
         let storage = storage_config_from_vars(&vars)?;
         let dispatch_timers = dispatch_timer_config_from_vars(&vars)?;
         let dispatch_jobs_enabled = match vars.get("CONSOLE_DISPATCH_JOBS_ENABLED") {
@@ -968,6 +1040,7 @@ impl AppConfig {
             service_name,
             http_addr,
             database_url,
+            auth_database_url,
             leave_command_database_url,
             ontology_command_database_url,
             platform_force_command_database_url,
@@ -2374,11 +2447,38 @@ fn validate_database_url_identity(
     raw_url: &str,
     expected_role: &str,
 ) -> Result<String, AppError> {
+    // SQLx reads PGOPTIONS even when every URL component is explicit. Reject
+    // ambient startup settings before they can alter a serving connection.
+    if env::var_os("PGOPTIONS").is_some_and(|options| !options.is_empty()) {
+        return Err(AppError::Config(format!(
+            "{env_name} must not inherit PostgreSQL startup options"
+        )));
+    }
     let parsed = Url::parse(raw_url)
         .map_err(|_| AppError::Config(format!("{env_name} must be a valid PostgreSQL URL")))?;
     if !matches!(parsed.scheme(), "postgres" | "postgresql") {
         return Err(AppError::Config(format!(
             "{env_name} must use the postgres or postgresql URL scheme"
+        )));
+    }
+    let host =
+        decode_database_url_component(env_name, "host", parsed.host_str().unwrap_or_default())?;
+    let database = decode_database_url_component(
+        env_name,
+        "database",
+        parsed.path().strip_prefix('/').unwrap_or_default(),
+    )?;
+    if host.is_empty()
+        || host.contains('/')
+        || host.chars().any(char::is_control)
+        || database.is_empty()
+        || database.contains('/')
+        || database.chars().any(char::is_control)
+        || parsed.fragment().is_some()
+        || raw_url.chars().any(char::is_control)
+    {
+        return Err(AppError::Config(format!(
+            "{env_name} must name an explicit TCP host and database without a fragment"
         )));
     }
 
@@ -2388,14 +2488,21 @@ fn validate_database_url_identity(
         .map(|value| decode_database_url_component(env_name, "password", value))
         .transpose()?;
 
-    for (key, value) in parsed.query_pairs() {
-        if key == "user" {
-            return Err(AppError::Config(format!(
-                "{env_name} must not set PostgreSQL role through DSN options; name the login in the URL authority"
-            )));
-        } else if key == "password" {
-            password = Some(value.into_owned());
-        } else if (key == "options" && postgres_options_set_role(&value))
+    // Validate raw query encoding before form decoding: Url::query_pairs uses
+    // replacement characters for invalid UTF-8. Never give unrecognized keys
+    // to SQLx, whose parser logs their raw key/value when ignoring them.
+    let mut seen = BTreeSet::new();
+    for parameter in parsed
+        .query()
+        .into_iter()
+        .flat_map(|query| query.split('&'))
+    {
+        let (key, value) = parameter.split_once('=').unwrap_or((parameter, ""));
+        let key = decode_database_url_component(env_name, "query key", &key.replace('+', " "))?;
+        let value =
+            decode_database_url_component(env_name, "query value", &value.replace('+', " "))?;
+        if key == "user"
+            || (key == "options" && postgres_options_set_role(&value))
             || key
                 .strip_prefix("options[")
                 .and_then(|key| key.strip_suffix(']'))
@@ -2405,6 +2512,37 @@ fn validate_database_url_identity(
                 "{env_name} must not set PostgreSQL role through DSN options"
             )));
         }
+        if !matches!(
+            key.as_str(),
+            "password" | "sslmode" | "sslrootcert" | "application_name"
+        ) {
+            return Err(AppError::Config(format!(
+                "{env_name} contains an unsupported PostgreSQL parameter"
+            )));
+        }
+        if !seen.insert(key.clone()) {
+            return Err(AppError::Config(format!(
+                "{env_name} contains a repeated PostgreSQL parameter"
+            )));
+        }
+        if value.chars().any(char::is_control)
+            || match key.as_str() {
+                "sslmode" => !matches!(
+                    value.to_ascii_lowercase().as_str(),
+                    "disable" | "allow" | "prefer" | "require" | "verify-ca" | "verify-full"
+                ),
+                "sslrootcert" => value.is_empty(),
+                "application_name" => value.is_empty() || value.len() > 63,
+                _ => false,
+            }
+        {
+            return Err(AppError::Config(format!(
+                "{env_name} contains an invalid PostgreSQL parameter value"
+            )));
+        }
+        if key == "password" {
+            password = Some(value);
+        }
     }
 
     if username != expected_role {
@@ -2413,7 +2551,7 @@ fn validate_database_url_identity(
         )));
     }
     password
-        .filter(|password| !password.is_empty())
+        .filter(|password| !password.is_empty() && !password.contains('\0'))
         .ok_or_else(|| {
             AppError::Config(format!(
                 "{env_name} must contain a nonempty password credential"
