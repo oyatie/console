@@ -28,7 +28,7 @@
     "backend/app/tests/action_inbox_api.rs": 10,
     "backend/app/tests/attendance_persona_api.rs": 2,
     "backend/app/tests/audit_api.rs": 5,
-    "backend/app/tests/auth_rest.rs": 141,
+    "backend/app/tests/auth_rest.rs": 144,
     "backend/app/tests/benefit_catalog_api.rs": 1,
     "backend/app/tests/board_ack_api.rs": 1,
     "backend/app/tests/cedar_freshness_mint.rs": 3,

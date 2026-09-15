@@ -985,3 +985,370 @@ async fn account_fence_refresh_effective_cookie_subject_controls_conflicting_bod
     );
     assert_legacy_reads(&fixture.router, fixture.control, &body.access_token).await;
 }
+
+mod issue_family_fence {
+    use super::*;
+    use console_platform_auth::{AuthError, RefreshTokenIssue};
+
+    // Baseline bridge calls the existing canonical owner without deciding access.
+    // The post-signature variant adds only `auth,` after `business,` below.
+    async fn issue(
+        business: &PgPool,
+        auth: &PgPool,
+        subject: UserId,
+        now: OffsetDateTime,
+        ttl: Duration,
+    ) -> Result<RefreshTokenIssue, AuthError> {
+        let _ = auth;
+        RefreshTokenStore
+            .issue_family(business, *subject.as_uuid(), OrgId::knl(), now, ttl)
+            .await
+    }
+
+    fn roster_counts(snapshot: &Value) -> [usize; 3] {
+        ["families", "tokens", "audit"].map(|key| snapshot[key].as_array().unwrap().len())
+    }
+
+    fn one_added_row<'a>(before: &Value, after: &'a Value, key: &str) -> &'a Value {
+        let old_rows = before[key].as_array().unwrap();
+        let new_rows = after[key].as_array().unwrap();
+        assert_eq!(new_rows.len(), old_rows.len() + 1, "one new roster entry");
+        for old in old_rows {
+            assert!(
+                new_rows.contains(old),
+                "every existing row across every subject must remain byte-exact in JSON"
+            );
+        }
+        let added: Vec<_> = new_rows
+            .iter()
+            .filter(|row| !old_rows.iter().any(|old| old["id"] == row["id"]))
+            .collect();
+        assert_eq!(added.len(), 1, "exactly one new identity in each roster");
+        added[0]
+    }
+
+    async fn assert_issue_delta(
+        pool: &PgPool,
+        before: &Value,
+        after: &Value,
+        issued: &RefreshTokenIssue,
+        subject: UserId,
+        now: OffsetDateTime,
+        ttl: Duration,
+    ) {
+        let family = one_added_row(before, after, "families");
+        let token = one_added_row(before, after, "tokens");
+        let audit = one_added_row(before, after, "audit");
+        assert!(
+            !issued.token.as_str().is_empty(),
+            "issued token must be nonempty"
+        );
+        assert!(issued.user_id == *subject.as_uuid());
+        assert!(issued.org_id == OrgId::knl());
+        assert!(issued.expires_at == now + ttl);
+        assert!(family["id"] == json!(issued.family_id));
+        assert!(family["user_id"] == json!(subject));
+        assert!(family["org_id"] == json!(OrgId::knl()));
+        assert!(family["revoked_at"].is_null() && family["revoked_reason"].is_null());
+        assert!(token["id"] == json!(issued.token_id));
+        assert!(token["family_id"] == family["id"]);
+        assert!(token["user_id"] == family["user_id"]);
+        assert!(token["org_id"] == family["org_id"]);
+        assert!(
+            token["token_hash"] == hex::encode(Sha256::digest(issued.token.as_str().as_bytes())),
+            "returned credential must correlate to the new stored token hash"
+        );
+        for key in ["used_at", "replaced_by", "revoked_at", "reuse_detected_at"] {
+            assert!(
+                token[key].is_null(),
+                "new token terminal metadata must be null"
+            );
+        }
+        assert!(audit["action"] == "auth.refresh.issue");
+        assert!(audit["actor"] == json!(subject));
+        assert!(audit["org_id"] == family["org_id"]);
+        assert!(audit["target_type"] == "auth_refresh_token_family");
+        assert!(audit["target_id"] == family["id"]);
+        assert!(audit["branch_id"].is_null() && audit["before_snap"].is_null());
+        assert!(
+            audit["after_snap"]
+                == json!({
+                    "family_id": issued.family_id,
+                    "token_id": issued.token_id,
+                    "user_id": subject,
+                    "expires_at": now + ttl,
+                }),
+            "issuance audit must have exactly the expected four snapshot fields"
+        );
+        let audit_id = Uuid::parse_str(audit["id"].as_str().unwrap()).unwrap();
+        let exact_times: bool = sqlx::query_scalar(
+            "SELECT f.created_at=$4 AND t.issued_at=$4 AND t.expires_at=$5 \
+             AND a.occurred_at=$4 FROM public.auth_refresh_token_families f \
+             JOIN public.auth_refresh_tokens t ON t.family_id=f.id \
+             JOIN public.audit_events a ON a.id=$3 WHERE f.id=$1 AND t.id=$2",
+        )
+        .bind(issued.family_id)
+        .bind(issued.token_id)
+        .bind(audit_id)
+        .bind(now)
+        .bind(now + ttl)
+        .fetch_one(pool)
+        .await
+        .expect("typed issuance time readback");
+        assert!(
+            exact_times,
+            "stored issuance and expiry times must match inputs"
+        );
+    }
+
+    fn assert_no_issue_delta(before: &Value, after: &Value) {
+        // Only counts may be printed: snapshots and returned tokens are sensitive.
+        assert!(
+            before == after,
+            "ISSUE_FENCE_PREWRITE: complete family/token/audit identities changed; counts {:?} -> {:?}",
+            roster_counts(before),
+            roster_counts(after)
+        );
+    }
+
+    async fn bounded_auth_pool(pool: &PgPool) -> PgPool {
+        let admitted =
+            console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Auth).await;
+        let auth = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3))
+            .connect_with(admitted.connect_options().as_ref().clone())
+            .await
+            .expect("real Auth connection with bounded outage wait");
+        admitted.close().await;
+        let identity: (String, String) =
+            sqlx::query_as("SELECT session_user::text,current_user::text")
+                .fetch_one(&auth)
+                .await
+                .unwrap();
+        assert_eq!(
+            identity,
+            ("console_auth_rt".to_owned(), "console_auth_rt".to_owned())
+        );
+        auth
+    }
+
+    async fn projection(auth: &PgPool, subject: UserId, expected: bool) {
+        let actual: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+            .bind(subject.as_uuid())
+            .fetch_one(auth)
+            .await
+            .expect("installed projection through actual retained Auth login");
+        assert_eq!(actual, expected);
+    }
+
+    fn issue_time() -> OffsetDateTime {
+        // PostgreSQL stores microseconds; whole seconds make exact readback portable.
+        OffsetDateTime::now_utc().replace_nanosecond(0).unwrap()
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn unmigrated_issuance_adds_exact_family_token_and_audit(pool: PgPool) {
+        let fixture = legacy_fence_fixture(&pool).await;
+        let business =
+            console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business)
+                .await;
+        let auth = bounded_auth_pool(&pool).await;
+        projection(&auth, fixture.subject, false).await;
+        projection(&auth, fixture.control, false).await;
+        let before = refresh_complete_snapshot(&pool).await;
+        let now = issue_time();
+        let ttl = Duration::days(30);
+        let issued = issue(&business, &auth, fixture.subject, now, ttl)
+            .await
+            .expect("unmigrated subject issuance prerequisite");
+        assert_issue_delta(
+            &pool,
+            &before,
+            &refresh_complete_snapshot(&pool).await,
+            &issued,
+            fixture.subject,
+            now,
+            ttl,
+        )
+        .await;
+        auth.close().await;
+        business.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn fenced_subject_is_refused_before_family_token_or_audit(pool: PgPool) {
+        let fixture = legacy_fence_fixture(&pool).await;
+        let business =
+            console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business)
+                .await;
+        let auth = bounded_auth_pool(&pool).await;
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        projection(&auth, fixture.subject, true).await;
+        projection(&auth, fixture.control, false).await;
+        let now = issue_time();
+        let ttl = Duration::days(30);
+        let before_control = refresh_complete_snapshot(&pool).await;
+        let control = issue(&business, &auth, fixture.control, now, ttl)
+            .await
+            .expect("unrelated unmigrated subject still issues after the target fence");
+        let before = refresh_complete_snapshot(&pool).await;
+        assert_issue_delta(
+            &pool,
+            &before_control,
+            &before,
+            &control,
+            fixture.control,
+            now,
+            ttl,
+        )
+        .await;
+        let result = issue(&business, &auth, fixture.subject, now, ttl).await;
+        let after = refresh_complete_snapshot(&pool).await;
+        // If the old owner succeeds, prove its exact unwanted effects before RED.
+        if let Ok(issued) = &result {
+            assert_issue_delta(&pool, &before, &after, issued, fixture.subject, now, ttl).await;
+        }
+        assert_no_issue_delta(&before, &after);
+        assert!(
+            matches!(
+                result,
+                Err(AuthError::Refresh(RefreshTokenUseError::InvalidToken))
+            ),
+            "committed fence must return the existing typed invalid-token refusal"
+        );
+        auth.close().await;
+        business.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_projection_outage_preserves_all_rows_and_recovers(pool: PgPool) {
+        let fixture = legacy_fence_fixture(&pool).await;
+        let business =
+            console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business)
+                .await;
+        let auth = bounded_auth_pool(&pool).await;
+        projection(&auth, fixture.subject, false).await;
+        let now = issue_time();
+        let ttl = Duration::days(30);
+        let initial = refresh_complete_snapshot(&pool).await;
+        let issued = issue(&business, &auth, fixture.subject, now, ttl)
+            .await
+            .expect("real issuance must work before Auth-only fault");
+        let before = refresh_complete_snapshot(&pool).await;
+        assert_issue_delta(&pool, &initial, &before, &issued, fixture.subject, now, ttl).await;
+        let original_role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(original_role["rolcanlogin"] == true);
+        let outcome = std::panic::AssertUnwindSafe(async {
+            let others: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname<>current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(others, 0, "Auth fault requires exclusive disposable-cluster custody");
+            sqlx::query("ALTER ROLE console_auth_rt NOLOGIN").execute(&pool).await.unwrap();
+            let terminated: Vec<(i32, bool)> = sqlx::query_as(
+                "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt' \
+                 AND backend_type='client backend'",
+            )
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+            assert!(
+                !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+                "bounded termination must stop retained authenticated Auth backends"
+            );
+            let remaining: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(remaining, 0, "all terminated Auth sessions must be gone");
+            let direct = sqlx::postgres::PgPoolOptions::new()
+                .max_connections(1)
+                .acquire_timeout(std::time::Duration::from_secs(3))
+                .connect_with(auth.connect_options().as_ref().clone())
+                .await;
+            let error = match direct {
+                Err(error) => error,
+                Ok(unexpected) => {
+                    unexpected.close().await;
+                    panic!("ISSUE_OUTAGE_FAULT: NOLOGIN Auth unexpectedly authenticated");
+                }
+            };
+            assert!(
+                error.as_database_error().and_then(|error| error.code()).as_deref() == Some("28000"),
+                "fault witness must be actual PostgreSQL NOLOGIN, not generic infrastructure failure"
+            );
+            let projection_failure = sqlx::query_scalar::<_, bool>("SELECT public.account_legacy_fenced_v1($1)")
+                .bind(fixture.subject.as_uuid())
+                .fetch_one(&auth)
+                .await;
+            assert!(projection_failure.is_err(), "the retained Auth pool must really lose its projection");
+            let mut tx = business.begin().await.expect("Business remains available during Auth outage");
+            sqlx::query("SELECT set_config('app.current_org', $1, true)")
+                .bind(OrgId::knl().as_uuid().to_string())
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let visible: i64 = sqlx::query_scalar("SELECT count(*) FROM public.auth_refresh_token_families WHERE user_id=$1")
+                .bind(fixture.subject.as_uuid())
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+            assert!(visible > 0, "Business still reads the actual subject's existing families");
+            tx.rollback().await.unwrap();
+            let result = issue(&business, &auth, fixture.subject, now, ttl).await;
+            let after = refresh_complete_snapshot(&pool).await;
+            if let Ok(issued) = &result {
+                assert_issue_delta(&pool, &before, &after, issued, fixture.subject, now, ttl).await;
+            }
+            assert_no_issue_delta(&before, &after);
+            assert!(matches!(result, Err(AuthError::Sqlx(_))), "indeterminate projection must stay a typed SQL storage error");
+        })
+        .catch_unwind()
+        .await;
+        // Restoration runs even on behavioral RED. Root owns abort/kill cleanup.
+        let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+            .execute(&pool)
+            .await;
+        let restored: Result<Value, _> = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await;
+        assert!(
+            restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+            "ISSUE_OUTAGE_CLEANUP: every public Auth role attribute must be restored"
+        );
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+        projection(&auth, fixture.subject, false).await;
+        let recovered = issue(&business, &auth, fixture.subject, now, ttl)
+            .await
+            .expect("same Auth and Business pools must recover after LOGIN restoration");
+        assert_issue_delta(
+            &pool,
+            &before,
+            &refresh_complete_snapshot(&pool).await,
+            &recovered,
+            fixture.subject,
+            now,
+            ttl,
+        )
+        .await;
+        auth.close().await;
+        business.close().await;
+    }
+}
