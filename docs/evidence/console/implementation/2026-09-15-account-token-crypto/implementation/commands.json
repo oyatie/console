@@ -1,0 +1,87 @@
+{
+  "source_commit": "7c599773ac0e4c7cdec4e4ca3deab9f9258b067b",
+  "runtime_operator": "/root",
+  "commands": [
+    {
+      "argv": [
+        "env",
+        "RUSTUP_TOOLCHAIN=1.98.1",
+        "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+        "SQLX_OFFLINE=true",
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth",
+        "--test",
+        "jwt_es256",
+        "account_crypto::",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+      "exit": 0,
+      "log": "/private/tmp/account-crypto15-b2c52e27-green.log",
+      "sha256": "2858215d1369ded53db34ba7fdbc0e8cc5fcf0a68c23f2f52e6731641d0f829d",
+      "executed": 15,
+      "filtered": 14
+    },
+    {
+      "argv": [
+        "env",
+        "RUSTUP_TOOLCHAIN=1.98.1",
+        "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+        "SQLX_OFFLINE=true",
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth",
+        "--test",
+        "jwt_es256",
+        "--test",
+        "jwt_verifier",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+      "exit": 0,
+      "log": "/private/tmp/account-crypto36-b2c52e27-regression.log",
+      "sha256": "106041aa8188cd811c30e95aff41387381b6397f50c8d9f36f9b939ccac2fa70",
+      "executed": 36,
+      "filtered": 0
+    },
+    {
+      "argv": [
+        "env",
+        "RUSTUP_TOOLCHAIN=1.98.1",
+        "CARGO_TARGET_DIR=/private/tmp/console-account30-cargo",
+        "SQLX_OFFLINE=true",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-auth",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/private/tmp/console-production-tdd-preparation-20260913",
+      "exit": 0,
+      "log": "/private/tmp/account-crypto-b2c52e27-clippy.log",
+      "sha256": "709daf425107ae30e2cec748e54f9a391b7d9230b83db3bc7cf68bdc154ad91a",
+      "executed": null,
+      "filtered": null
+    }
+  ]
+}
