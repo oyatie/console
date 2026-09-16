@@ -2,10 +2,10 @@
   "schema_version": 1,
   "description": "Buck sh_test postgres wrappers → cargo test argv for tools/ci/cargo_needs_postgres.sh",
   "counts": {
-    "mapped": 235,
+    "mapped": 236,
     "unmapped": 3,
-    "workflow_targets": 220,
-    "workflow_mapped": 220,
+    "workflow_targets": 221,
+    "workflow_mapped": 221,
     "workflow_missing": 0
   },
   "entries": [
@@ -3190,6 +3190,29 @@
       ],
       "in_workflow_postgres_job": true,
       "measured_seconds": 5.7
+    },
+    {
+      "buck_wrapper": "//tools/buck:payroll-application-lib-pg",
+      "name": "payroll-application-lib-pg",
+      "buck_inner": "//backend/crates/payroll/application:console-payroll-application-unit",
+      "package": "console-payroll-application",
+      "crate_dir": "backend/crates/payroll/application",
+      "kind": "lib",
+      "test": null,
+      "cargo_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-payroll-application",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "in_workflow_postgres_job": true,
+      "measured_seconds": 1
     },
     {
       "buck_wrapper": "//tools/buck:payroll-rest-api-pg",

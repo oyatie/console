@@ -1,0 +1,15 @@
+[package]
+name = "console-payroll-application"
+version = "0.1.0"
+description = "Payroll use cases. Owns the admitted draft-run calculate path."
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[lints]
+workspace = true
