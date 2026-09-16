@@ -216,7 +216,7 @@
     "status": "frozen",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "bf8fd5d164e453a82099ada9bec609c0382d381e",
+    "blob_sha": "f36c26d4cd412e0a9130728e9ec07c3b07e9f6ab",
     "archive_tag": null
   },
   {
@@ -596,7 +596,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "0bf2fbfd7a10f49eec65504526d69c9d17538c9f",
+    "blob_sha": "d37990f526fe240891c0b06d85ac22e5ec2b1d0a",
     "archive_tag": null
   },
   {
@@ -606,7 +606,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "359394ed608e468e6b0d0c785c309281b261f624",
+    "blob_sha": "c41695b841003a68ae5b24d6644ff09d83bd092f",
     "archive_tag": null
   },
   {
@@ -1270,136 +1270,6 @@
     "archive_tag": null
   },
   {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/PROPOSAL.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "269adcb27d34916858dffe7dc58bb294f658fe6e",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/additions/SUMMARY.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "9864023a0d54821ebf3afd1521e5501072396608",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation14-796173fc-implementation-inventory-v1/GUIDE.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "2ab31fba110c97e8f34c4bf83e8fa6477ae45f1b",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation14-928e1e48-v4-inventory/GUIDE.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "6b662e13da3ebb13c845a1c241981eba2d9b3595",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation14-retained-fixtures-796173fc-v1-inventory/GUIDE.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "7a9bd0a3334ff3d371160a60de1f9e4381a3a58f",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation6-1cef89ea-v1-fast/GUIDE.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "fdb4c32627223c61eade160cf72243a3b19534aa",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account-deactivation6-guard-contract-supplement-1cef89ea-v2-fast.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "5df9b349654b7e97dc6bad88bff9905151773f33",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account14-app8-ci-0a625d32-inventory-v1/GUIDE.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "75b91427c89eddef2103c6c08320bd820bf7bd0f",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/account14-app8-ci-enrollment-map-59c38d60-v1-inventory/MAP.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "581a858ab08090ef1f667a7c03d90260b0eaf5ec",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-operation-control-c1301628-v1-fast/GUIDE.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "5fa3a732867db3e5b8ac58c123197a2c160d3a01",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-typed-unknown-e27623ab-tests-v4-capture/DESIGN.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "fbe6330a2651a58a1f2187ac3d462cfd821df402",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-typed-unknown-e27623ab-tests-v4-capture/README.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "f5eb1ceab2634280f9933b5ac05f85a06cc74091",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/raw/payroll-typed-unknown-e27623ab-tests-v4-capture/REVISION.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "fd87d9a1cc3f6ca640de9abe894c545c187ba649",
-    "archive_tag": null
-  },
-  {
     "path": "docs/evidence/apalis-soak-1781278893.md",
     "class": "evidence",
     "owner": "repository maintainers",
@@ -2010,36 +1880,6 @@
     "archive_tag": null
   },
   {
-    "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/DELIVERY.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "redirect",
-    "replacement": "docs/current/DELIVERY.md",
-    "retention": "retain",
-    "blob_sha": "0360793e6269a045abf609e68c6d05037c0abebd",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/PRODUCT.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "e904705c42f320ede29480371bba78cd8bd8266b",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/ROADMAP.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "d1de9236629ab9e04202d1bb3daaf7e5b3a12364",
-    "archive_tag": null
-  },
-  {
     "path": "docs/evidence/console/hotfix/equipment-custody/report.md",
     "class": "evidence",
     "owner": "repository maintainers",
@@ -2097,16 +1937,6 @@
     "replacement": null,
     "retention": "retain",
     "blob_sha": "1e41df8fd5a758fc1c7b0b762565a9b89ab01bfb",
-    "archive_tag": null
-  },
-  {
-    "path": "docs/evidence/console/implementation/2026-09-14-owner-codec-auth-custody/followup/supplement/receipts/tenant-qualified-consumer-trace-20260914.md",
-    "class": "evidence",
-    "owner": "repository maintainers",
-    "status": "frozen",
-    "replacement": null,
-    "retention": "retain",
-    "blob_sha": "960c453c644d74be21123bd00d61c6cd8a39e38b",
     "archive_tag": null
   },
   {
@@ -4659,7 +4489,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "1c0adb4624028bb6732ffbc5b979b65eb45028fe",
+    "blob_sha": "e925d2a9a5b871f6f5099b567b56e70f08f06916",
     "archive_tag": null
   },
   {
@@ -4699,7 +4529,7 @@
     "status": "active",
     "replacement": null,
     "retention": "retain",
-    "blob_sha": "5a14424250e74bdde395ffddafa7c72be063c516",
+    "blob_sha": "32368ed4f8bf284fe56dbca328a68f49843d88eb",
     "archive_tag": null
   },
   {
