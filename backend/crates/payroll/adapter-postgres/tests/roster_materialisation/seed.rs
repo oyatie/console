@@ -45,7 +45,7 @@ pub(crate) async fn seed_monthly_contract_wage(
     employee_id: Uuid,
     effective_from: time::Date,
     amount_won: i64,
-) {
+) -> Uuid {
     let actor = Uuid::new_v4();
     sqlx::query("INSERT INTO users (id, org_id, display_name) VALUES ($1, $2, 'Wage clerk')")
         .bind(actor)
@@ -67,6 +67,7 @@ pub(crate) async fn seed_monthly_contract_wage(
     .execute(pool)
     .await
     .unwrap();
+    actor
 }
 
 pub(crate) async fn seed_employee(pool: &PgPool, org: Uuid, source_key: &str, name: &str) -> Uuid {

@@ -349,21 +349,34 @@ async fn preflight_for(
     tx: &mut Transaction<'_, Postgres>,
     run: &RunHead,
 ) -> Result<ClosePreflight, LifecycleError> {
-    // 1. Every roster line must carry attendance material (source rows or
-    //    direct events). Lines without any are the blocking refs (fix-links).
+    // 1. Every roster line must carry a source: import attendance rows/events,
+    //    or an in-force native contract wage (first-vertical draft path).
+    //    Import-only lines without attendance still block.
     let missing_total: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM payroll_draft_lines \
-         WHERE run_id = $1 AND attendance_source_row_count = 0 AND attendance_event_count = 0",
+        "SELECT COUNT(*) FROM payroll_draft_lines l \
+         WHERE l.run_id = $1 AND l.attendance_source_row_count = 0 AND l.attendance_event_count = 0 \
+           AND NOT EXISTS ( \
+             SELECT 1 FROM employee_contract_wages w \
+              WHERE w.org_id = l.org_id AND w.employee_id = l.employee_id \
+                AND w.effective_from <= $2 \
+           )",
     )
     .bind(run.id)
+    .bind(run.period_end)
     .fetch_one(tx.as_mut())
     .await?;
     let missing_refs: Vec<Uuid> = sqlx::query_scalar(
-        "SELECT id FROM payroll_draft_lines \
-         WHERE run_id = $1 AND attendance_source_row_count = 0 AND attendance_event_count = 0 \
-         ORDER BY employee_company, employee_display_name LIMIT $2",
+        "SELECT l.id FROM payroll_draft_lines l \
+         WHERE l.run_id = $1 AND l.attendance_source_row_count = 0 AND l.attendance_event_count = 0 \
+           AND NOT EXISTS ( \
+             SELECT 1 FROM employee_contract_wages w \
+              WHERE w.org_id = l.org_id AND w.employee_id = l.employee_id \
+                AND w.effective_from <= $2 \
+           ) \
+         ORDER BY l.employee_company, l.employee_display_name LIMIT $3",
     )
     .bind(run.id)
+    .bind(run.period_end)
     .bind(PREFLIGHT_REF_CAP)
     .fetch_all(tx.as_mut())
     .await?;
