@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.27](https://github.com/oyatie/console/compare/v0.3.26...v0.3.27) (2026-09-16)
+
+
+### Features
+
+* **architecture:** enforce Clean Architecture rings (ADR-0045) ([#1112](https://github.com/oyatie/console/issues/1112)) ([a54b294](https://github.com/oyatie/console/commit/a54b2946738d72f15d6f6790a82ca22c34d11717))
+
 ## [0.3.26](https://github.com/oyatie/console/compare/v0.3.25...v0.3.26) (2026-09-15)
 
 
