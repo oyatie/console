@@ -828,6 +828,9 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/payroll_rls_surfaces_as_runtime_role.rs': 'postgres',
         },
     },
+    'console-payroll-application': {
+        'unit': 'none',
+    },
     'console-payroll-domain': {
         'unit': 'none',
     },

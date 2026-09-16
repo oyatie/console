@@ -157,6 +157,14 @@ export function isLivePostgresPath(path) {
   if (path === "backend/crates/payroll/ui" || path.startsWith("backend/crates/payroll/ui/")) {
     return true;
   }
+  // Draft-run calculate replay is proven on disposable Postgres
+  // (`run_lifecycle_api`). Application-crate PRs must not skip that job.
+  if (
+    path === "backend/crates/payroll/application"
+    || path.startsWith("backend/crates/payroll/application/")
+  ) {
+    return true;
+  }
   if (
     path.startsWith("backend/ci/gates/writer-ownership/")
     || path.startsWith("backend/ci/gates/rls-arming/")
