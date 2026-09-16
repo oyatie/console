@@ -1125,7 +1125,7 @@
     },
     {
       "path": "docs/decisions/ADR-0045-clean-architecture-rings.md",
-      "blob_sha": "436f79a6f044a1ef1024865dbc651ed5f805d537",
+      "blob_sha": "c7c4ce9b1897824d3d168dd7bf405720886cd674",
       "class": "decision",
       "owner": "repository maintainers",
       "status": "active",

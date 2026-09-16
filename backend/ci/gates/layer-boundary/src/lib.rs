@@ -393,6 +393,7 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
     let mut violations = Vec::new();
     let mut observed_skips: HashSet<(String, String)> = HashSet::new();
     let mut observed_missing_application: HashSet<String> = HashSet::new();
+    let mut rest_depends_on_sibling_application: HashSet<String> = HashSet::new();
 
     for pkg in &workspace_pkgs {
         let layer = classify_crate(&pkg.name, &pkg.manifest_path, &metadata.workspace_root);
@@ -464,6 +465,12 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
             //  realistically test harnesses may need it. We'll scope to normal deps only.)
             let is_normal_dep = dep.kind.is_none(); // kind=None means normal dep
 
+            if is_normal_dep
+                && layer == Layer::Rest
+                && sibling_application_name(&pkg.name).as_deref() == Some(dep.name.as_str())
+            {
+                rest_depends_on_sibling_application.insert(pkg.name.clone());
+            }
             if let Some(dep_layer) = name_to_layer.get(dep.name.as_str()) {
                 // Workspace dependency — check layer edge.
                 if is_normal_dep && !allowed.contains(dep_layer) {
@@ -534,12 +541,15 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
         }
     }
     for known in KNOWN_REST_WITHOUT_APPLICATION {
-        if name_to_layer.contains_key(*known) && !observed_missing_application.contains(*known) {
+        if name_to_layer.contains_key(*known)
+            && rest_depends_on_sibling_application.contains(*known)
+            && !observed_missing_application.contains(*known)
+        {
             violations.push(Violation {
                 kind: ViolationKind::StaleLayerRatchet,
                 crate_name: (*known).to_owned(),
                 detail: format!(
-                    "ratchet lists {known} as missing an application crate, but a sibling exists or the crate is gone; delete the entry"
+                    "ratchet lists {known} as missing an application crate, but it now depends on its sibling; delete the entry"
                 ),
             });
         }

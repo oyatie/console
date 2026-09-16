@@ -56,7 +56,10 @@ splitting Entities from Use Cases.
    `KNOWN_REST_OR_WORKER_SKIP_EDGES` and `KNOWN_REST_WITHOUT_APPLICATION` in
    `backend/ci/gates/layer-boundary`. A new skip fails closed. A listed skip
    that disappears without deleting the entry fails as stale. The lists may
-   only shrink.
+   only shrink. Paying off `KNOWN_REST_WITHOUT_APPLICATION` requires a normal
+   Rest → `console-<stem>-application` dependency, not an empty sibling crate.
+   consulting / facilities / production `sqlx` in REST stays on that list until
+   that edge exists.
 4. **Not a vertical rewrite.** This record does not move payroll calculate /
    submit / decide into a new `console-payroll-application` crate. That remains
    a later admitted lane from a red named probe.
