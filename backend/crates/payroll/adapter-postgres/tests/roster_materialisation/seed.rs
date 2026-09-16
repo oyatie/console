@@ -39,6 +39,36 @@ pub(crate) async fn seed_org_and_run(pool: &PgPool) -> Fixture {
     Fixture { org, run }
 }
 
+pub(crate) async fn seed_monthly_contract_wage(
+    pool: &PgPool,
+    org: Uuid,
+    employee_id: Uuid,
+    effective_from: time::Date,
+    amount_won: i64,
+) {
+    let actor = Uuid::new_v4();
+    sqlx::query("INSERT INTO users (id, org_id, display_name) VALUES ($1, $2, 'Wage clerk')")
+        .bind(actor)
+        .bind(org)
+        .execute(pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO employee_contract_wages \
+         (org_id, employee_id, effective_from, wage_kind, amount_won, monthly_standard_hours, \
+          source_note, created_by) \
+         VALUES ($1, $2, $3, 'MONTHLY', $4, 209, 'native wage', $5)",
+    )
+    .bind(org)
+    .bind(employee_id)
+    .bind(effective_from)
+    .bind(amount_won)
+    .bind(actor)
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
 pub(crate) async fn seed_employee(pool: &PgPool, org: Uuid, source_key: &str, name: &str) -> Uuid {
     sqlx::query_scalar(
         "INSERT INTO employees (org_id, company, name, source_filename, source_sheet, source_row, source_key) \

@@ -14,6 +14,7 @@
 #[path = "roster_materialisation/seed.rs"]
 mod seed;
 
+use console_payroll_adapter_postgres::lifecycle::calculate_run_in_tx;
 use seed::{
     PERIOD_END, PERIOD_START, attendance_row, materialise, roster, seed_employee, seed_import,
     seed_org_and_run,
@@ -211,4 +212,108 @@ async fn re_materialising_updates_rather_than_duplicates(pool: PgPool) {
         "the second pass updates the same line"
     );
     assert_eq!(roster(&pool, &f).await.len(), 1, "no duplicate line");
+}
+
+/// Native `employee_contract_wages` in force on the period end admit a roster
+/// line with no import rows. Import-backed materialisation stays the other
+/// admission path; this is not an import-shaped fixture.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn a_native_contract_wage_becomes_a_roster_line_without_import(pool: PgPool) {
+    let f = seed_org_and_run(&pool).await;
+    let employee_id = seed_employee(&pool, f.org, "emp-native", "김임금").await;
+    seed::seed_monthly_contract_wage(&pool, f.org, employee_id, PERIOD_START, 3_000_000).await;
+
+    let import_rows: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM data_import_rows WHERE org_id = $1")
+            .bind(f.org)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(import_rows, 0, "this fixture must not plant import rows");
+    assert_eq!(
+        materialise(&pool, &f).await,
+        1,
+        "native wage must admit exactly one roster line"
+    );
+    let lines = roster(&pool, &f).await;
+    assert_eq!(lines.len(), 1);
+    assert_eq!(lines[0].0, "emp-native");
+}
+
+/// Shipped `calculate_run_in_tx` reads native contract wages (no import rows)
+/// and persists a versioned draft with `payable` false. A second calculate
+/// replays that version without a second persist.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn calculate_uses_native_contract_wage_without_import_rows(pool: PgPool) {
+    let f = seed_org_and_run(&pool).await;
+    let employee_id = seed_employee(&pool, f.org, "emp-native", "김임금").await;
+    seed::seed_monthly_contract_wage(&pool, f.org, employee_id, PERIOD_START, 3_000_000).await;
+    assert_eq!(materialise(&pool, &f).await, 1);
+
+    sqlx::query("UPDATE payroll_draft_runs SET status = 'ATTENDANCE_CLOSED' WHERE id = $1")
+        .bind(f.run)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(f.org.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let first = calculate_run_in_tx(&mut tx, f.run)
+        .await
+        .expect("native calculate");
+    tx.commit().await.unwrap();
+
+    assert_eq!(first.version, 1);
+    assert_eq!(first.calculated_lines, 1, "{first:?}");
+    assert_eq!(first.blocked_lines, 0, "{first:?}");
+
+    let row: (i64, bool, i32, String) = sqlx::query_as(
+        "SELECT gross_won, payable, version, tax_table_version \
+         FROM payroll_line_calculations WHERE run_id = $1",
+    )
+    .bind(f.run)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(row.0, 3_000_000);
+    assert!(!row.1, "native drafts stay payable false");
+    assert_eq!(row.2, 1);
+    assert!(
+        row.3.contains("INCOME_TAX_HOLD"),
+        "must not claim a Korea wage-statement table: {}",
+        row.3
+    );
+
+    let import_rows: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM data_import_rows WHERE org_id = $1")
+            .bind(f.org)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(import_rows, 0);
+
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(f.org.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let replay = calculate_run_in_tx(&mut tx, f.run)
+        .await
+        .expect("second calculate must replay");
+    tx.commit().await.unwrap();
+    assert_eq!(replay.version, first.version);
+    assert_eq!(replay.calculated_lines, first.calculated_lines);
+
+    let persisted: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM payroll_line_calculations WHERE run_id = $1")
+            .bind(f.run)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(persisted, 1, "replay must not insert a second version");
 }

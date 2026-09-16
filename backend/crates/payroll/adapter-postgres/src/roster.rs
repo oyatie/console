@@ -1,4 +1,5 @@
-//! Materialise a payroll run's roster from the governed import ledger.
+//! Materialise a payroll run's roster from the governed import ledger and
+//! from native contract wages already stored on the employee.
 //!
 //! `payroll_draft_lines` had no production writer at all. Its only writer was
 //! `scripts/stage_coss_group_payroll_readiness.sql`, a hand-run operational
@@ -132,7 +133,13 @@ WITH import_rows AS (
         COALESCE(sum(rm.holiday_hours_value), 0) AS holiday_hours,
         COALESCE(max(rm.leave_used_value), eb.leave_used) AS leave_used,
         COALESCE(max(rm.leave_remaining_value), eb.leave_remaining) AS leave_remaining,
-        bool_or(COALESCE(rm.has_gross_pay_source, FALSE)) AS gross_pay_source_present,
+        (bool_or(COALESCE(rm.has_gross_pay_source, FALSE))
+         OR EXISTS (
+            SELECT 1 FROM employee_contract_wages w
+             WHERE w.org_id = eb.org_id
+               AND w.employee_id = eb.employee_id
+               AND w.effective_from <= $4
+         )) AS gross_pay_source_present,
         bool_or(COALESCE(rm.has_net_pay_source, FALSE)) AS net_pay_source_present,
         COALESCE(array_agg(rm.id ORDER BY rm.source_filename, rm.source_sheet, rm.source_row)
                  FILTER (WHERE rm.id IS NOT NULL), ARRAY[]::uuid[]) AS source_data_import_row_ids
@@ -170,11 +177,12 @@ SELECT
     ),
     em.source_data_import_row_ids
 FROM employee_metrics em
--- Admission: imported material only. The script also admitted anyone with
--- `leave_remaining > 0`; such a line carries no evidence and can only ever block
--- the close.
+-- Admission: imported material, or a native contract wage in force on the
+-- period end. The script also admitted anyone with `leave_remaining > 0`;
+-- such a line carries no evidence and can only ever block the close.
 WHERE em.payroll_source_row_count > 0
    OR em.attendance_source_row_count > 0
+   OR em.gross_pay_source_present
 ON CONFLICT (org_id, run_id, employee_source_key) DO UPDATE SET
     employee_id = EXCLUDED.employee_id,
     employee_display_name = EXCLUDED.employee_display_name,
