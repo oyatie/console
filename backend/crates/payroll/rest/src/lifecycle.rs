@@ -30,6 +30,10 @@ use console_payroll_adapter_postgres::lifecycle::{
     self, ClosePreflight, Disbursement, ExceptionPage, PayrollException, PayslipDeliverySummary,
 };
 use console_payroll_adapter_postgres::{PayrollRunDetail, get_run_in_tx};
+use console_payroll_application::{
+    CalculatePayrollRun, CalculatePayrollRunError, CalculatePayrollRunOutcome,
+    PayrollCalculatePort, RunCalculationSnapshot, calculate_payroll_run,
+};
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{with_audit, with_audits, with_org_conn};
 use serde::Deserialize;
@@ -86,6 +90,25 @@ impl RestError {
             }
             E::Db(err) => {
                 tracing::error!(error = %err, "payroll lifecycle db error");
+                Self::new(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "internal",
+                    "internal server error",
+                )
+            }
+        }
+    }
+
+    fn from_calculate(err: CalculatePayrollRunError) -> Self {
+        match err {
+            CalculatePayrollRunError::NotFound => {
+                Self::new(StatusCode::NOT_FOUND, "not_found", "run not found")
+            }
+            CalculatePayrollRunError::InvalidState { message } => {
+                Self::new(StatusCode::CONFLICT, "invalid_state", message)
+            }
+            CalculatePayrollRunError::Internal => {
+                tracing::error!("payroll calculate port failed");
                 Self::new(
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "internal",
@@ -245,10 +268,11 @@ pub(crate) async fn calculate_run(
     let pool = state.store.pool().clone();
     let detail = with_audits::<_, PayrollRunDetail, RestError>(&pool, org, move |tx| {
         Box::pin(async move {
-            let outcome = lifecycle::calculate_run_in_tx(tx, run_id)
+            let mut port = TxCalculatePort { tx };
+            let outcome = calculate_payroll_run(&mut port, CalculatePayrollRun { run_id })
                 .await
-                .map_err(RestError::from_lifecycle)?;
-            let detail = run_detail_in_tx(tx, run_id).await?;
+                .map_err(RestError::from_calculate)?;
+            let detail = run_detail_in_tx(port.tx, run_id).await?;
             let event = audit_event(
                 actor,
                 org,
@@ -260,6 +284,7 @@ pub(crate) async fn calculate_run(
                     "calculated_lines": outcome.calculated_lines,
                     "blocked_lines": outcome.blocked_lines,
                     "exceptions_created": outcome.exceptions_created,
+                    "idempotent": outcome.idempotent,
                 })),
             )?;
             Ok((detail, vec![event]))
@@ -267,6 +292,60 @@ pub(crate) async fn calculate_run(
     })
     .await?;
     Ok(Json(detail).into_response())
+}
+
+struct TxCalculatePort<'a, 'c> {
+    tx: &'a mut sqlx::Transaction<'c, sqlx::Postgres>,
+}
+
+impl PayrollCalculatePort for TxCalculatePort<'_, '_> {
+    fn load_run(
+        &mut self,
+        run_id: Uuid,
+    ) -> console_payroll_application::CalculateFuture<'_, Option<RunCalculationSnapshot>> {
+        Box::pin(async move {
+            let snapshot = lifecycle::calculation_snapshot_in_tx(self.tx, run_id)
+                .await
+                .map_err(map_lifecycle_to_calculate)?;
+            Ok(snapshot.map(|row| RunCalculationSnapshot {
+                status: row.status,
+                current_version: row.current_version,
+                calculated_lines: row.calculated_lines,
+                blocked_lines: row.blocked_lines,
+            }))
+        })
+    }
+
+    fn persist_calculation(
+        &mut self,
+        run_id: Uuid,
+    ) -> console_payroll_application::CalculateFuture<'_, CalculatePayrollRunOutcome> {
+        Box::pin(async move {
+            let outcome = lifecycle::calculate_run_in_tx(self.tx, run_id)
+                .await
+                .map_err(map_lifecycle_to_calculate)?;
+            Ok(CalculatePayrollRunOutcome {
+                version: outcome.version,
+                calculated_lines: outcome.calculated_lines,
+                blocked_lines: outcome.blocked_lines,
+                exceptions_created: outcome.exceptions_created,
+                idempotent: false,
+            })
+        })
+    }
+}
+
+fn map_lifecycle_to_calculate(err: lifecycle::LifecycleError) -> CalculatePayrollRunError {
+    match err {
+        lifecycle::LifecycleError::NotFound => CalculatePayrollRunError::NotFound,
+        lifecycle::LifecycleError::InvalidState(message) => {
+            CalculatePayrollRunError::InvalidState { message }
+        }
+        other => {
+            tracing::error!(error = %other, "payroll calculate port failed");
+            CalculatePayrollRunError::Internal
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -736,5 +815,57 @@ mod tests {
             let p = principal(role, console_kernel_core::BranchScope::All);
             assert!(require_run_manage(&p).is_ok(), "{role:?} must manage runs");
         }
+    }
+
+    #[test]
+    fn calculate_handler_calls_application_use_case_not_adapter_or_domain_math() {
+        let src = include_str!("lifecycle.rs");
+        let handler = function_body(src, "pub(crate) async fn calculate_run");
+        assert!(
+            handler.contains("calculate_payroll_run"),
+            "REST calculate must call the application use case, got: {handler}"
+        );
+        assert!(
+            !handler.contains("calculate_run_in_tx"),
+            "REST calculate must not call adapter calculate inline, got: {handler}"
+        );
+        assert!(
+            !handler.contains("build_line_calculation"),
+            "REST calculate must not inline domain math, got: {handler}"
+        );
+    }
+
+    #[test]
+    fn rest_manifest_depends_on_payroll_application() {
+        let manifest = include_str!("../Cargo.toml");
+        assert!(
+            manifest
+                .lines()
+                .any(|line| line.contains("console-payroll-application")
+                    && !line.trim_start().starts_with('#')),
+            "console-payroll-rest must take a normal Cargo dependency on console-payroll-application"
+        );
+    }
+
+    fn function_body(src: &str, signature: &str) -> String {
+        let start = src
+            .find(signature)
+            .unwrap_or_else(|| panic!("missing {signature}"));
+        let after = &src[start..];
+        let brace = after.find('{').expect("function body");
+        let mut depth = 0usize;
+        for (i, ch) in after[brace..].char_indices() {
+            match ch {
+                '{' => depth += 1,
+                '}' => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return after[brace..=brace + i].to_owned();
+                    }
+                }
+                _ => {}
+            }
+        }
+        panic!("unbalanced braces for {signature}");
     }
 }

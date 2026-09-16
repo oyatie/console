@@ -445,6 +445,7 @@ const domainUnitPackages = [
   "console-support-domain",
   "console-payroll-domain",
   "console-payroll-adapter-postgres",
+  "console-payroll-application",
   "console-attendance-application",
   "console-compliance-domain",
   "console-governance-domain",

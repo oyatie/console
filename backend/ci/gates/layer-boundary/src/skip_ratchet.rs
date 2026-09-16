@@ -310,6 +310,5 @@ pub const KNOWN_REST_WITHOUT_APPLICATION: &[&str] = &[
     "console-consulting-rest",
     "console-facilities-rest",
     "console-orgchange-rest",
-    "console-payroll-rest",
     "console-production-rest",
 ];
