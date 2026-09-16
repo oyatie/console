@@ -1450,22 +1450,22 @@ fn adr0045_ratchet_covers_this_workspace() -> Result<(), Box<dyn std::error::Err
             "console-consulting-rest",
             "console-facilities-rest",
             "console-orgchange-rest",
-            "console-payroll-rest",
             "console-production-rest",
         ]
     );
     Ok(())
 }
 
-fn payroll_rest_fixture(
+fn listed_rest_fixture(
     tag: &str,
+    stem: &str,
     with_application: bool,
     rest_depends_on_application: bool,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let ws = temp_workspace(tag)?;
-    let mut members = vec!["crates/payroll/rest"];
+    let mut members = vec![format!("crates/{stem}/rest")];
     if with_application {
-        members.push("crates/payroll/application");
+        members.push(format!("crates/{stem}/application"));
     }
     write_file(
         &ws.join("Cargo.toml"),
@@ -1489,20 +1489,19 @@ unsafe_code = "forbid"
                 .join(", "),
         ),
     )?;
+    let rest_name = format!("console-{stem}-rest");
+    let application_name = format!("console-{stem}-application");
     let rest_deps = if rest_depends_on_application {
-        r#"
-[dependencies]
-console-payroll-application = { path = "../application" }
-"#
+        format!("\n[dependencies]\n{application_name} = {{ path = \"../application\" }}\n")
     } else {
-        ""
+        String::new()
     };
     write_file(
-        &ws.join("crates/payroll/rest/Cargo.toml"),
+        &ws.join(format!("crates/{stem}/rest/Cargo.toml")),
         &format!(
             r#"
 [package]
-name = "console-payroll-rest"
+name = "{rest_name}"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
@@ -1513,25 +1512,27 @@ workspace = true
         ),
     )?;
     write_file(
-        &ws.join("crates/payroll/rest/src/lib.rs"),
+        &ws.join(format!("crates/{stem}/rest/src/lib.rs")),
         "// listed Rest crate without Domain/Adapter skips\n",
     )?;
     if with_application {
         write_file(
-            &ws.join("crates/payroll/application/Cargo.toml"),
-            r#"
+            &ws.join(format!("crates/{stem}/application/Cargo.toml")),
+            &format!(
+                r#"
 [package]
-name = "console-payroll-application"
+name = "{application_name}"
 version = "0.1.0"
 edition.workspace = true
 publish.workspace = true
 
 [lints]
 workspace = true
-"#,
+"#
+            ),
         )?;
         write_file(
-            &ws.join("crates/payroll/application/src/lib.rs"),
+            &ws.join(format!("crates/{stem}/application/src/lib.rs")),
             "// sibling use-case crate\n",
         )?;
     }
@@ -1540,7 +1541,7 @@ workspace = true
 
 #[test]
 fn gate_stale_skip_when_listed_edge_absent() -> Result<(), Box<dyn std::error::Error>> {
-    let ws = payroll_rest_fixture("stale-skip", false, false)?;
+    let ws = listed_rest_fixture("stale-skip", "payroll", false, false)?;
     let (metadata, edition) = load_metadata(&ws)?;
     let result = check(&metadata, &edition);
     assert!(
@@ -1590,12 +1591,12 @@ unsafe_code = "forbid"
 #[test]
 fn gate_empty_application_sibling_does_not_pay_off_missing_ratchet()
 -> Result<(), Box<dyn std::error::Error>> {
-    let ws = payroll_rest_fixture("empty-sibling", true, false)?;
+    let ws = listed_rest_fixture("empty-sibling", "orgchange", true, false)?;
     let (metadata, edition) = load_metadata(&ws)?;
     let result = check(&metadata, &edition);
     let missing_payoff = result.violations.iter().any(|v| {
         v.kind == ViolationKind::StaleLayerRatchet
-            && v.crate_name == "console-payroll-rest"
+            && v.crate_name == "console-orgchange-rest"
             && v.detail.contains("depends on its sibling")
     });
     assert!(
@@ -1609,13 +1610,13 @@ fn gate_empty_application_sibling_does_not_pay_off_missing_ratchet()
 #[test]
 fn gate_stale_missing_application_when_rest_depends_on_sibling()
 -> Result<(), Box<dyn std::error::Error>> {
-    let ws = payroll_rest_fixture("wired-sibling", true, true)?;
+    let ws = listed_rest_fixture("wired-sibling", "orgchange", true, true)?;
     let (metadata, edition) = load_metadata(&ws)?;
     let result = check(&metadata, &edition);
     assert!(
         result.violations.iter().any(|v| {
             v.kind == ViolationKind::StaleLayerRatchet
-                && v.crate_name == "console-payroll-rest"
+                && v.crate_name == "console-orgchange-rest"
                 && v.detail.contains("depends on its sibling")
         }),
         "Rest → sibling application must stale the missing-application entry, got: {:#?}",
