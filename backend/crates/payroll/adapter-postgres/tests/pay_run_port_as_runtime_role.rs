@@ -52,6 +52,7 @@ use console_ontology_canonical_domain::{
 use console_payroll_adapter_postgres::lifecycle::LifecycleError;
 use console_payroll_adapter_postgres::pay_run::{
     PayRunCommand, PayRunError, PayRunQuery, PgPayRunPort, StageDraftError, stage_draft_run_in_tx,
+    stage_draft_run_returning_id_in_tx,
 };
 use console_platform_test_support::{runtime_role_pool, seed_org_and_super_admin};
 use console_workflow_domain::{PayrollDraftStaging, StagePayrollDraft};
@@ -809,6 +810,94 @@ async fn the_workflow_staging_seam_refuses_a_locked_period(owner_pool: PgPool) {
         "the refusal must name the locked period, got: {error}"
     );
     assert_eq!(count(&owner_pool, COUNT_RUNS, ORG).await, 0);
+}
+
+/// An active payroll freeze window must refuse the CANONICAL `payroll.create_run`
+/// path, not only the import drain seam. `stage_draft_run_returning_id_in_tx` is
+/// the writer `create_run` uses; both must surface [`PayRunError::PeriodLocked`]
+/// / [`StageDraftError::PeriodLocked`]. The drain path stays gated. Nothing here
+/// may flip `payable`.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn canonical_create_run_refuses_a_locked_period(owner_pool: PgPool) {
+    let (org, actor, _, port) = fixture(&owner_pool).await;
+
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, 'payroll', DATE '2026-06-01', DATE '2026-06-30', '6월 급여 마감')",
+    )
+    .bind(ORG)
+    .execute(&owner_pool)
+    .await
+    .unwrap();
+
+    let error = execute(&port, command(org, actor, create(Uuid::new_v4())))
+        .await
+        .expect_err("a locked period must refuse payroll.create_run");
+    assert!(
+        matches!(error, PayRunError::PeriodLocked),
+        "canonical create must surface PeriodLocked, got: {error:?}"
+    );
+
+    let runtime_pool = runtime_role_pool(&owner_pool).await;
+    let mut tx = runtime_pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(ORG.to_string())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let draft = StagePayrollDraft {
+        org,
+        outbox_event_id: Uuid::new_v4(),
+        run_id: Uuid::new_v4(),
+        period_start: Some(date!(2026 - 06 - 01)),
+        period_end: Some(date!(2026 - 06 - 30)),
+        connector: Some("m2".to_owned()),
+        job: Some("payroll_draft".to_owned()),
+    };
+    let staged = stage_draft_run_returning_id_in_tx(&mut tx, *org.as_uuid(), &draft).await;
+    assert!(
+        matches!(staged, Err(StageDraftError::PeriodLocked)),
+        "canonical staging must refuse a locked period: {staged:?}"
+    );
+    tx.rollback().await.unwrap();
+
+    let drain = port
+        .stage(StagePayrollDraft {
+            org,
+            outbox_event_id: Uuid::new_v4(),
+            run_id: Uuid::new_v4(),
+            period_start: Some(date!(2026 - 06 - 01)),
+            period_end: Some(date!(2026 - 06 - 30)),
+            connector: Some("m2".to_owned()),
+            job: Some("payroll_draft".to_owned()),
+        })
+        .await
+        .expect_err("the drain path must remain gated on the freeze window");
+    assert!(
+        drain.to_string().contains("locked"),
+        "drain refusal must name the locked period, got: {drain}"
+    );
+
+    assert_eq!(
+        count(&owner_pool, COUNT_RUNS, ORG).await,
+        0,
+        "a locked period must stage no draft run"
+    );
+    let receipts: i64 = sqlx::query_scalar(
+        "SELECT count(*)::bigint FROM ont_action_command_receipts WHERE org_id = $1",
+    )
+    .bind(ORG)
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    assert_eq!(receipts, 0, "a refused create must mint no receipt");
+
+    let payable: i64 =
+        sqlx::query_scalar("SELECT count(*)::bigint FROM payroll_line_calculations WHERE payable")
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(payable, 0, "a refused create must not flip payable");
 }
 
 /// The staging INSERT itself must re-check the freeze-window gate ATOMICALLY: a
