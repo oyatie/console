@@ -522,6 +522,64 @@ fn select_source_amounts(canonical_rows: &[Value]) -> Result<SourceAmounts, &'st
     Ok(first)
 }
 
+/// Native `employee_contract_wages` in force on the pay date. Income-tax
+/// amounts stay 0: that is HOLD, not an estimated 간이세액표. 4대보험 still
+/// comes from in-crate kernel rates via [`build_line_calculation`].
+const NATIVE_TAX_TABLE_VERSION: &str = "NATIVE_CONTRACT_WAGE/INCOME_TAX_HOLD";
+
+async fn native_contract_wage_amounts(
+    tx: &mut Transaction<'_, Postgres>,
+    employee_id: Uuid,
+    on: Date,
+) -> Result<Option<SourceAmounts>, LifecycleError> {
+    let Some(wage) = crate::payslip_draft::contract_wage_in_force_in_tx(tx, employee_id, on)
+        .await
+        .map_err(|err| match err {
+            crate::PgPayrollError::Db(db) => LifecycleError::Db(db),
+            crate::PgPayrollError::Domain(kernel) => LifecycleError::Validation(kernel.to_string()),
+        })?
+    else {
+        return Ok(None);
+    };
+    if wage.wage_kind != "MONTHLY" || wage.amount_won <= 0 {
+        return Ok(None);
+    }
+    Ok(Some(SourceAmounts {
+        gross_won: wage.amount_won,
+        pension_standard_monthly_income_won: Some(wage.amount_won),
+        tax_row: VerifiedNtsTaxRow {
+            table_version: NATIVE_TAX_TABLE_VERSION.to_owned(),
+            monthly_income_tax_won: 0,
+            local_income_tax_won: 0,
+        },
+    }))
+}
+
+async fn replay_latest_calculation(
+    tx: &mut Transaction<'_, Postgres>,
+    run_id: Uuid,
+) -> Result<CalculationOutcome, LifecycleError> {
+    let row = sqlx::query(
+        "SELECT version, COUNT(*)::BIGINT AS calculated_lines \
+         FROM payroll_line_calculations \
+         WHERE run_id = $1 \
+           AND version = (SELECT MAX(version) FROM payroll_line_calculations WHERE run_id = $1) \
+         GROUP BY version",
+    )
+    .bind(run_id)
+    .fetch_optional(tx.as_mut())
+    .await?;
+    let Some(row) = row else {
+        return Err(invalid_state("calculate", "CALCULATED"));
+    };
+    Ok(CalculationOutcome {
+        version: row.try_get("version")?,
+        calculated_lines: row.try_get("calculated_lines")?,
+        blocked_lines: 0,
+        exceptions_created: 0,
+    })
+}
+
 fn extract_source_amounts(canonical_row: &Value) -> Option<SourceAmounts> {
     let payroll = canonical_row.get("payroll")?;
     let tax = payroll.get("nts_tax_row")?;
@@ -556,6 +614,9 @@ pub async fn calculate_run_in_tx(
     let Some(run) = run_head(tx, run_id, true).await? else {
         return Err(LifecycleError::NotFound);
     };
+    if run.status == "CALCULATED" {
+        return replay_latest_calculation(tx, run_id).await;
+    }
     if run.status != "ATTENDANCE_CLOSED" {
         return Err(invalid_state("calculate", &run.status));
     }
@@ -625,6 +686,17 @@ pub async fn calculate_run_in_tx(
                 Ok(selected) => amounts = Some(selected),
                 Err(blocker) => blockers.push(blocker.to_owned()),
             }
+        }
+        if amounts.is_none()
+            && import_row_ids.is_empty()
+            && let Some(employee_id) = employee_id
+            && let Some(native) =
+                native_contract_wage_amounts(tx, employee_id, run.period_end).await?
+        {
+            amounts = Some(native);
+            blockers.retain(|blocker| {
+                blocker != "GROSS_PAY_SOURCE_MISSING" && blocker != "NTS_TAX_ROW_UNVERIFIED"
+            });
         }
 
         if let Some(amounts) = amounts {

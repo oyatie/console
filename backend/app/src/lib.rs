@@ -3601,10 +3601,41 @@ async fn ui_screens(
     console_payroll_ui::html_shell_with_screens(&compose_ui_screens(&state, &headers).await, focus)
 }
 
+const HTML_SESSION_COOKIE: &str = "console_session";
+
+/// Top-level HTML documents may authenticate from `console_session`. JSON
+/// `/api/v1` routers never call this, so Cookie cannot authorize the API.
+fn html_auth_headers(headers: &HeaderMap) -> HeaderMap {
+    if headers.contains_key(http::header::AUTHORIZATION) {
+        return headers.clone();
+    }
+    let Some(cookie_header) = headers
+        .get(http::header::COOKIE)
+        .and_then(|value| value.to_str().ok())
+    else {
+        return headers.clone();
+    };
+    let Some(token) = cookie_header.split(';').find_map(|pair| {
+        let (name, value) = pair.split_once('=')?;
+        (name.trim() == HTML_SESSION_COOKIE)
+            .then(|| value.trim())
+            .filter(|token| !token.is_empty())
+    }) else {
+        return headers.clone();
+    };
+    let mut out = headers.clone();
+    if let Ok(value) = http::HeaderValue::from_str(&format!("Bearer {token}")) {
+        out.insert(http::header::AUTHORIZATION, value);
+    }
+    out
+}
+
 async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
 ) -> console_payroll_ui::ShippingScreens {
+    let headers = html_auth_headers(headers);
+    let headers = &headers;
     let (companies, org_units, people, employments, runs, floors) =
         match (&state.database, &state.jwt_verifier) {
             (DatabaseDependency::Postgres(pool), Some(verifier)) => {

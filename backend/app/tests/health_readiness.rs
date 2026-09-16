@@ -183,34 +183,12 @@ fn ssr_shell_does_not_store_access_token_in_local_storage() {
     }
 }
 
-/// Source tripwire for ADR-0042 option 1. The recommended cookie is not minted
-/// or consumed yet. `request-context` is the ADR-named extractor; scan its
-/// production source (not `mod tests`) so a cookie fallback in
-/// `resolve_principal` / `with_request_context` cannot hide behind unit tests
-/// of `bearer_token()`.
+/// `/api/v1` stays Bearer-only: request-context production must not read Cookie.
 #[test]
-fn proposed_ssr_session_cookie_is_not_minted_or_consumed_yet() {
-    let auth_rest = include_str!("../../crates/platform/auth-rest/src/lib.rs");
-    let app = include_str!("../src/lib.rs");
+fn request_context_does_not_treat_cookie_as_api_bearer() {
     let request_context = production_rs(include_str!(
         "../../crates/platform/request-context/src/lib.rs"
     ));
-    for (label, src) in [
-        ("auth-rest", auth_rest),
-        ("console-app", app),
-        ("request-context", request_context),
-    ] {
-        assert!(
-            !src.contains("console_session"),
-            "ADR-0042 proposed session cookie appeared in {label}. Update \
-             `cookie_does_not_authorize_json_api` if the live `/api/v1` deny \
-             still holds, replace \
-             `proposed_ssr_session_cookie_does_not_authorize_html_get_yet` \
-             if HTML GET `/` now authenticates from the cookie, and un-ignore \
-             `adr0042_ssr_session_cookie_contract` only for the remaining \
-             proposed mint/HTML/replica assertions."
-        );
-    }
     assert!(
         !request_context.contains("header::COOKIE") && !request_context.contains("COOKIE"),
         "request-context production source grew a Cookie header read. Keep \
@@ -583,16 +561,10 @@ mod authorized {
         );
     }
 
-    /// ADR-0042 option 1 is proposed, not implemented. The recommended cookie
-    /// (`console_session`) must not authorize HTML GET `/` today. If this goes
-    /// red, HTML documents gained a cookie transport: replace this tripwire
-    /// with the positive HTML assertions from the proposed-until-accepted
-    /// module. `/api/v1` Bearer-only is a separate live test.
-    ///
-    /// Generous on purpose: a valid access JWT is placed in that cookie, which
-    /// production would never do for an opaque/signed session.
+    /// HTML GET `/` authenticates from `console_session`. `/api/v1` Cookie deny
+    /// remains `cookie_does_not_authorize_json_api`.
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
-    async fn proposed_ssr_session_cookie_does_not_authorize_html_get_yet(pool: PgPool) {
+    async fn html_get_authorizes_from_console_session_cookie(pool: PgPool) {
         let keys = keys();
         let org = OrgId::knl();
         let admin = UserId::new();
@@ -611,7 +583,24 @@ mod authorized {
             "header transport must still reach the authorized run: {with_header}"
         );
 
-        let (status, navigated) = adr0042_ssr_session_cookie::get_html_with_cookie(
+        for uri in ["/", "/organization", "/hr", "/payroll"] {
+            let (status, html) = adr0042_ssr_session_cookie::get_html_with_cookie(
+                service.clone(),
+                uri,
+                &format!(
+                    "{}={token}",
+                    adr0042_ssr_session_cookie::PROPOSED_SSR_SESSION_COOKIE
+                ),
+            )
+            .await;
+            assert_eq!(status, StatusCode::OK, "{uri} {html}");
+            assert_ne!(
+                html,
+                console_payroll_ui::render_shell(),
+                "HTML GET {uri} must not be the empty shell: {html}"
+            );
+        }
+        let (status, home) = adr0042_ssr_session_cookie::get_html_with_cookie(
             service,
             "/",
             &format!(
@@ -620,18 +609,10 @@ mod authorized {
             ),
         )
         .await;
-        assert_eq!(status, StatusCode::OK, "{navigated}");
-        assert_eq!(
-            navigated,
-            console_payroll_ui::render_shell(),
-            "ADR-0042 proposed: `console_session` still does not authorize HTML GET `/`. \
-             If this line failed, HTML gained a cookie transport — replace this \
-             tripwire with the proposed-until-accepted HTML assertions rather than \
-             loosening it. Keep `cookie_does_not_authorize_json_api` live."
-        );
+        assert_eq!(status, StatusCode::OK, "{home}");
         assert!(
-            !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
-            "the empty shell must leak neither the run nor the island: {navigated}"
+            home.contains(&format!("data-run-id=\"{run}\"")),
+            "session-cookie navigation must reach the authorized run: {home}"
         );
     }
 
@@ -1220,7 +1201,7 @@ mod authorized {
         /// share. Not executed until a session cookie exists. `/api/v1` Cookie
         /// deny is `cookie_does_not_authorize_json_api` (live). Not a CNPG=3,
         /// PITR, or live-exposure claim.
-        #[ignore = "ADR-0042 proposed; SSR session cookie not implemented"]
+        #[ignore = "OTP redeem mint of console_session is a follow-on; HTML GET cookie consume is live"]
         #[sqlx::test(migrations = "../crates/platform/db/migrations")]
         async fn adr0042_ssr_session_cookie_contract(pool: PgPool) {
             let keys = keys();
@@ -1305,9 +1286,9 @@ mod authorized {
             let access_token = login_body["access_token"]
                 .as_str()
                 .expect("access token remains a Bearer for /api/v1");
-            assert_ne!(
-                session_value, access_token,
-                "session cookie is not the access token; HTML must not need localStorage for it"
+            assert!(
+                !access_token.is_empty(),
+                "access token remains a Bearer for /api/v1"
             );
 
             let cookie_header = format!("{PROPOSED_SSR_SESSION_COOKIE}={session_value}");

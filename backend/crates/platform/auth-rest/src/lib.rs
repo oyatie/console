@@ -59,6 +59,12 @@ const REFRESH_COOKIE_NAME: &str = "console_refresh";
 /// the browser never attaches the refresh token to ordinary API calls — only to
 /// the refresh/logout endpoints that need it.
 const REFRESH_COOKIE_PATH: &str = "/api/v1/auth";
+/// Html document session: Path=/ so a top-level navigation to GET `/` carries
+/// it. `/api/v1` still ignores Cookie (request-context stays Bearer-only).
+const SESSION_COOKIE_NAME: &str = "console_session";
+const SESSION_COOKIE_PATH: &str = "/";
+/// Access-token class TTL. Must stay below the 30-day refresh cookie.
+const SESSION_COOKIE_MAX_AGE_SECS: i64 = 60 * 15;
 
 pub const SIGNUP_PATH: &str = "/api/v1/auth/signup";
 pub const PASSKEY_REGISTER_START_PATH: &str = "/api/v1/auth/passkey/register/start";
@@ -2232,9 +2238,11 @@ async fn logout(
     // in the browser after the family is revoked.
     if cookie_mode {
         let response = StatusCode::NO_CONTENT.into_response();
-        Ok(with_refresh_cookie(
+        Ok(with_session_and_refresh_cookies(
             response,
+            "",
             refresh_clear_cookie(services.cookie_secure),
+            services.cookie_secure,
         ))
     } else {
         Ok(StatusCode::NO_CONTENT.into_response())
@@ -3558,6 +3566,7 @@ fn token_pair_response(
 ) -> Response {
     if wants_cookie_transport(headers) {
         let max_age = (tokens.refresh_expires_at - OffsetDateTime::now_utc()).whole_seconds();
+        let access_token = tokens.access_token.clone();
         let body = TokenPairResponse {
             access_token: tokens.access_token,
             refresh_token: None,
@@ -3565,9 +3574,11 @@ fn token_pair_response(
             refresh_expires_at: tokens.refresh_expires_at,
             requires_passkey_setup: false,
         };
-        with_refresh_cookie(
+        with_session_and_refresh_cookies(
             Json(body).into_response(),
+            &access_token,
             refresh_set_cookie(&tokens.refresh_token, max_age, cookie_secure),
+            cookie_secure,
         )
     } else {
         Json(tokens.into_response()).into_response()
@@ -3592,6 +3603,7 @@ fn device_login_token_response(
 ) -> Response {
     if wants_cookie_transport(headers) {
         let max_age = (tokens.refresh_expires_at - OffsetDateTime::now_utc()).whole_seconds();
+        let access_token = tokens.access_token.clone();
         let body = DeviceLoginPollResponse {
             status: "approved",
             access_token: Some(tokens.access_token),
@@ -3600,9 +3612,11 @@ fn device_login_token_response(
             refresh_expires_at: Some(tokens.refresh_expires_at),
             requires_passkey_setup: Some(false),
         };
-        with_refresh_cookie(
+        with_session_and_refresh_cookies(
             Json(body).into_response(),
+            &access_token,
             refresh_set_cookie(&tokens.refresh_token, max_age, cookie_secure),
+            cookie_secure,
         )
     } else {
         let body = DeviceLoginPollResponse {
@@ -3655,6 +3669,33 @@ fn with_refresh_cookie(mut response: Response, cookie: Option<HeaderValue>) -> R
         response.headers_mut().append(header::SET_COOKIE, cookie);
     }
     response
+}
+
+fn session_set_cookie(token: &str, secure: bool) -> Option<HeaderValue> {
+    let max_age = if token.is_empty() {
+        0
+    } else {
+        SESSION_COOKIE_MAX_AGE_SECS
+    };
+    let mut cookie = format!(
+        "{SESSION_COOKIE_NAME}={token}; HttpOnly; SameSite=Lax; Path={SESSION_COOKIE_PATH}; Max-Age={max_age}"
+    );
+    if secure {
+        cookie.push_str("; Secure");
+    }
+    HeaderValue::from_str(&cookie).ok()
+}
+
+fn with_session_and_refresh_cookies(
+    mut response: Response,
+    access_token: &str,
+    refresh: Option<HeaderValue>,
+    secure: bool,
+) -> Response {
+    if let Some(session) = session_set_cookie(access_token, secure) {
+        response.headers_mut().append(header::SET_COOKIE, session);
+    }
+    with_refresh_cookie(response, refresh)
 }
 
 #[cfg(test)]
