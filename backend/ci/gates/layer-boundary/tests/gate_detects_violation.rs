@@ -5,7 +5,8 @@
 //! without triggering the `expect_used` / `unwrap_used` / `panic` lints.
 
 use console_gate_layer_boundary::{
-    Layer, ViolationKind, check, check_ui_surfaces, classify_crate, load_metadata,
+    KNOWN_REST_OR_WORKER_SKIP_EDGES, KNOWN_REST_WITHOUT_APPLICATION, Layer, ViolationKind, check,
+    check_ui_surfaces, classify_crate, load_metadata,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -28,6 +29,25 @@ fn write_file(path: &std::path::Path, content: &str) -> Result<(), Box<dyn std::
         fs::create_dir_all(parent)?;
     }
     fs::write(path, content)?;
+    Ok(())
+}
+
+fn write_demo_application(ws: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    let dir = ws.join("crates/demo/application");
+    write_file(
+        &dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-application"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&dir.join("src/lib.rs"), "// application use cases\n")?;
     Ok(())
 }
 
@@ -462,7 +482,7 @@ fn contracts_workspace(
             r#"
 [workspace]
 resolver = "3"
-members = ["crates/contracts", "{other_dir}"]
+members = ["crates/contracts", "{other_dir}", "crates/demo/application"]
 
 [workspace.package]
 edition = "2024"
@@ -473,6 +493,8 @@ unsafe_code = "forbid"
 "#
         ),
     )?;
+
+    write_demo_application(&ws)?;
 
     let contracts_dir = ws.join("crates/contracts");
     write_file(
@@ -636,7 +658,7 @@ fn gate_detects_html_smuggled_inside_existing_rest_crate() -> Result<(), Box<dyn
         r#"
 [workspace]
 resolver = "3"
-members = ["crates/demo/rest"]
+members = ["crates/demo/rest", "crates/demo/application"]
 
 [workspace.package]
 edition = "2024"
@@ -647,6 +669,7 @@ unsafe_code = "forbid"
 "#,
     )?;
 
+    write_demo_application(&ws)?;
     let rest_dir = ws.join("crates/demo/rest");
     write_file(
         &rest_dir.join("Cargo.toml"),
@@ -1022,7 +1045,7 @@ fn gate_passes_clean_rest_crate_without_ui_markers() -> Result<(), Box<dyn std::
         r#"
 [workspace]
 resolver = "3"
-members = ["crates/demo/rest"]
+members = ["crates/demo/rest", "crates/demo/application"]
 
 [workspace.package]
 edition = "2024"
@@ -1033,6 +1056,7 @@ unsafe_code = "forbid"
 "#,
     )?;
 
+    write_demo_application(&ws)?;
     let rest_dir = ws.join("crates/demo/rest");
     write_file(
         &rest_dir.join("Cargo.toml"),
@@ -1059,6 +1083,543 @@ workspace = true
     assert!(
         ui_violations.is_empty(),
         "clean -rest must not trip ui-surface scan, got: {ui_violations:#?}"
+    );
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// ADR-0045: Rest/Worker may not skip Use Cases to Entities or gateway impls.
+// ---------------------------------------------------------------------------
+
+fn rest_skip_workspace(
+    tag: &str,
+    dep_dir: &str,
+    dep_name: &str,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let ws = temp_workspace(tag)?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        &format!(
+            r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest", "crates/demo/application", "{dep_dir}"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#
+        ),
+    )?;
+    write_demo_application(&ws)?;
+    write_file(
+        &ws.join(dep_dir).join("Cargo.toml"),
+        &format!(
+            r#"
+[package]
+name = "{dep_name}"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#
+        ),
+    )?;
+    write_file(&ws.join(dep_dir).join("src/lib.rs"), "// skip target\n")?;
+    let dep_rel = dep_dir.rsplit('/').next().ok_or("dep_dir")?;
+    write_file(
+        &ws.join("crates/demo/rest").join("Cargo.toml"),
+        &format!(
+            r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+{dep_name} = {{ path = "../{dep_rel}" }}
+
+[lints]
+workspace = true
+"#
+        ),
+    )?;
+    write_file(
+        &ws.join("crates/demo/rest").join("src/lib.rs"),
+        "// rest skip fixture\n",
+    )?;
+    Ok(ws)
+}
+
+#[test]
+fn gate_forbids_rest_depends_on_domain() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = rest_skip_workspace("rest-domain", "crates/demo/domain", "console-demo-domain")?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let detail = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge)
+        .map(|v| v.detail.clone())
+        .unwrap_or_default();
+    assert!(
+        detail.contains("console-demo-rest (rest) → console-demo-domain (domain)"),
+        "Rest → Domain must be forbidden (ADR-0045), got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_forbids_rest_depends_on_adapter() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = rest_skip_workspace(
+        "rest-adapter",
+        "crates/demo/adapter-postgres",
+        "console-demo-adapter-postgres",
+    )?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let detail = result
+        .violations
+        .iter()
+        .find(|v| v.kind == ViolationKind::IllegalLayerEdge)
+        .map(|v| v.detail.clone())
+        .unwrap_or_default();
+    assert!(
+        detail.contains("console-demo-rest (rest) → console-demo-adapter-postgres (adapter)"),
+        "Rest → Adapter must be forbidden (ADR-0045), got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_allows_rest_depends_on_application() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("rest-application")?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest", "crates/demo/application"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+    write_demo_application(&ws)?;
+    let rest_dir = ws.join("crates/demo/rest");
+    write_file(
+        &rest_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+console-demo-application = { path = "../application" }
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&rest_dir.join("src/lib.rs"), "// rest → application\n")?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.passed(),
+        "Rest → Application must be allowed, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_detects_rest_without_application_crate() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("rest-no-app")?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/rest"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+    let rest_dir = ws.join("crates/demo/rest");
+    write_file(
+        &rest_dir.join("Cargo.toml"),
+        r#"
+[package]
+name = "console-demo-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+    )?;
+    write_file(&rest_dir.join("src/lib.rs"), "// rest without use cases\n")?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result
+            .violations
+            .iter()
+            .any(|v| v.kind == ViolationKind::MissingApplicationRing
+                && v.crate_name == "console-demo-rest"),
+        "Rest without a sibling application crate must fail, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn adr0045_ratchet_covers_this_workspace() -> Result<(), Box<dyn std::error::Error>> {
+    let backend = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let (metadata, edition) = load_metadata(&backend)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.passed(),
+        "HEAD must be green under ADR-0045 with the shrink-only ratchet, got: {:#?}",
+        result.violations
+    );
+    let skip_pairs: Vec<(&str, &str)> = KNOWN_REST_OR_WORKER_SKIP_EDGES
+        .iter()
+        .map(|edge| (edge.from, edge.to))
+        .collect();
+    assert_eq!(
+        skip_pairs,
+        vec![
+            (
+                "console-analytics-quant-rest",
+                "console-analytics-quant-service"
+            ),
+            (
+                "console-attendance-rest",
+                "console-attendance-adapter-postgres"
+            ),
+            ("console-attendance-rest", "console-attendance-domain"),
+            ("console-benefit-rest", "console-benefit-adapter-postgres"),
+            ("console-benefit-rest", "console-benefit-domain"),
+            ("console-comms-rest", "console-comms-adapter-imap"),
+            ("console-comms-rest", "console-comms-credential-cipher"),
+            ("console-comms-rest", "console-comms-adapter-mox"),
+            ("console-comms-rest", "console-comms-adapter-postgres"),
+            ("console-comms-rest", "console-comms-adapter-smtp"),
+            ("console-comms-rest", "console-comms-domain"),
+            (
+                "console-compliance-rest",
+                "console-compliance-adapter-postgres"
+            ),
+            ("console-compliance-rest", "console-compliance-domain"),
+            ("console-dispatch-rest", "console-dispatch-adapter-postgres"),
+            ("console-dispatch-rest", "console-dispatch-domain"),
+            (
+                "console-dispatch-worker",
+                "console-dispatch-adapter-postgres"
+            ),
+            ("console-docs-rest", "console-docs-adapter-postgres"),
+            ("console-docs-rest", "console-docs-domain"),
+            ("console-docs-rest", "console-governance-adapter-postgres"),
+            (
+                "console-equipment-rest",
+                "console-equipment-adapter-postgres"
+            ),
+            (
+                "console-evaluation-rest",
+                "console-evaluation-adapter-postgres"
+            ),
+            ("console-evaluation-rest", "console-evaluation-domain"),
+            (
+                "console-finance-gl-rest",
+                "console-finance-gl-adapter-postgres"
+            ),
+            ("console-finance-gl-rest", "console-finance-gl-domain"),
+            (
+                "console-financial-rest",
+                "console-financial-adapter-postgres"
+            ),
+            ("console-financial-rest", "console-financial-domain"),
+            (
+                "console-governance-rest",
+                "console-governance-adapter-postgres"
+            ),
+            ("console-governance-rest", "console-governance-domain"),
+            ("console-identity-rest", "console-identity-adapter-postgres"),
+            ("console-identity-rest", "console-identity-domain"),
+            ("console-inbox-rest", "console-inbox-adapter-postgres"),
+            (
+                "console-inspection-rest",
+                "console-inspection-adapter-postgres"
+            ),
+            ("console-inspection-rest", "console-inspection-domain"),
+            (
+                "console-inventory-rest",
+                "console-inventory-adapter-postgres"
+            ),
+            ("console-inventory-rest", "console-inventory-domain"),
+            ("console-leave-rest", "console-leave-adapter-postgres"),
+            ("console-leave-rest", "console-leave-domain"),
+            (
+                "console-logistics-rest",
+                "console-logistics-adapter-postgres"
+            ),
+            (
+                "console-messenger-rest",
+                "console-messenger-adapter-postgres"
+            ),
+            ("console-messenger-rest", "console-messenger-domain"),
+            ("console-notices-rest", "console-notices-adapter-postgres"),
+            (
+                "console-notifications-rest",
+                "console-notifications-adapter-postgres"
+            ),
+            ("console-notifications-rest", "console-notifications-domain"),
+            ("console-ontology-rest", "console-ontology-adapter-postgres"),
+            ("console-ontology-rest", "console-ontology-canonical-domain"),
+            ("console-ontology-rest", "console-ontology-domain"),
+            (
+                "console-ontology-rest",
+                "console-governance-adapter-postgres"
+            ),
+            ("console-ontology-rest", "console-governance-domain"),
+            (
+                "console-orgchange-rest",
+                "console-orgchange-adapter-postgres"
+            ),
+            ("console-orgchange-rest", "console-orgchange-domain"),
+            ("console-payroll-rest", "console-inbox-adapter-postgres"),
+            ("console-payroll-rest", "console-inbox-domain"),
+            ("console-payroll-rest", "console-payroll-adapter-postgres"),
+            ("console-payroll-rest", "console-payroll-domain"),
+            (
+                "console-recruiting-rest",
+                "console-recruiting-adapter-postgres"
+            ),
+            ("console-recruiting-rest", "console-recruiting-domain"),
+            ("console-registry-rest", "console-registry-adapter-postgres"),
+            ("console-registry-rest", "console-registry-domain"),
+            (
+                "console-reporting-rest",
+                "console-reporting-adapter-postgres"
+            ),
+            ("console-reporting-rest", "console-reporting-domain"),
+            ("console-sales-rest", "console-sales-adapter-postgres"),
+            ("console-sales-rest", "console-sales-domain"),
+            ("console-support-rest", "console-support-adapter-postgres"),
+            ("console-support-rest", "console-support-domain"),
+            ("console-todos-rest", "console-todos-adapter-postgres"),
+            ("console-todos-rest", "console-todos-domain"),
+            ("console-workorder-rest", "console-workflow-domain"),
+            ("console-workorder-rest", "console-workflow-runtime"),
+            (
+                "console-workorder-rest",
+                "console-workflow-runtime-adapter-postgres"
+            ),
+            (
+                "console-workorder-rest",
+                "console-workorder-adapter-postgres"
+            ),
+            ("console-workorder-rest", "console-workorder-domain"),
+        ]
+    );
+    assert_eq!(
+        KNOWN_REST_WITHOUT_APPLICATION,
+        &[
+            "console-analytics-quant-rest",
+            "console-consulting-rest",
+            "console-facilities-rest",
+            "console-orgchange-rest",
+            "console-payroll-rest",
+            "console-production-rest",
+        ]
+    );
+    Ok(())
+}
+
+fn payroll_rest_fixture(
+    tag: &str,
+    with_application: bool,
+    rest_depends_on_application: bool,
+) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let ws = temp_workspace(tag)?;
+    let mut members = vec!["crates/payroll/rest"];
+    if with_application {
+        members.push("crates/payroll/application");
+    }
+    write_file(
+        &ws.join("Cargo.toml"),
+        &format!(
+            r#"
+[workspace]
+resolver = "3"
+members = [{members}]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+            members = members
+                .iter()
+                .map(|m| format!("\"{m}\""))
+                .collect::<Vec<_>>()
+                .join(", "),
+        ),
+    )?;
+    let rest_deps = if rest_depends_on_application {
+        r#"
+[dependencies]
+console-payroll-application = { path = "../application" }
+"#
+    } else {
+        ""
+    };
+    write_file(
+        &ws.join("crates/payroll/rest/Cargo.toml"),
+        &format!(
+            r#"
+[package]
+name = "console-payroll-rest"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+{rest_deps}
+[lints]
+workspace = true
+"#
+        ),
+    )?;
+    write_file(
+        &ws.join("crates/payroll/rest/src/lib.rs"),
+        "// listed Rest crate without Domain/Adapter skips\n",
+    )?;
+    if with_application {
+        write_file(
+            &ws.join("crates/payroll/application/Cargo.toml"),
+            r#"
+[package]
+name = "console-payroll-application"
+version = "0.1.0"
+edition.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+"#,
+        )?;
+        write_file(
+            &ws.join("crates/payroll/application/src/lib.rs"),
+            "// sibling use-case crate\n",
+        )?;
+    }
+    Ok(ws)
+}
+
+#[test]
+fn gate_stale_skip_when_listed_edge_absent() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = payroll_rest_fixture("stale-skip", false, false)?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.violations.iter().any(|v| {
+            v.kind == ViolationKind::StaleLayerRatchet
+                && v.detail
+                    .contains("console-payroll-rest → console-payroll-domain")
+        }),
+        "listed skip must stale when the from-crate exists without that edge, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_no_stale_when_listed_from_crate_absent() -> Result<(), Box<dyn std::error::Error>> {
+    let ws = temp_workspace("no-stale-absent")?;
+    write_file(
+        &ws.join("Cargo.toml"),
+        r#"
+[workspace]
+resolver = "3"
+members = ["crates/demo/application"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+"#,
+    )?;
+    write_demo_application(&ws)?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result
+            .violations
+            .iter()
+            .all(|v| v.kind != ViolationKind::StaleLayerRatchet),
+        "HEAD skip lists must not stale when those crates are absent, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_empty_application_sibling_does_not_pay_off_missing_ratchet()
+-> Result<(), Box<dyn std::error::Error>> {
+    let ws = payroll_rest_fixture("empty-sibling", true, false)?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    let missing_payoff = result.violations.iter().any(|v| {
+        v.kind == ViolationKind::StaleLayerRatchet
+            && v.crate_name == "console-payroll-rest"
+            && v.detail.contains("depends on its sibling")
+    });
+    assert!(
+        !missing_payoff,
+        "an empty sibling must not pay off KNOWN_REST_WITHOUT_APPLICATION, got: {:#?}",
+        result.violations
+    );
+    Ok(())
+}
+
+#[test]
+fn gate_stale_missing_application_when_rest_depends_on_sibling()
+-> Result<(), Box<dyn std::error::Error>> {
+    let ws = payroll_rest_fixture("wired-sibling", true, true)?;
+    let (metadata, edition) = load_metadata(&ws)?;
+    let result = check(&metadata, &edition);
+    assert!(
+        result.violations.iter().any(|v| {
+            v.kind == ViolationKind::StaleLayerRatchet
+                && v.crate_name == "console-payroll-rest"
+                && v.detail.contains("depends on its sibling")
+        }),
+        "Rest → sibling application must stale the missing-application entry, got: {:#?}",
+        result.violations
     );
     Ok(())
 }

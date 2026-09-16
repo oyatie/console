@@ -1,15 +1,19 @@
 //! Layer-boundary gate: enforces clean-architecture dependency direction
 //! and manifest hygiene across the Cargo workspace.
 //!
-//! Allowed dependency direction (workspace crates only):
-//!   kernel → (nothing)
-//!   domain → kernel
-//!   application → domain, kernel
-//!   contracts → kernel
-//!   adapter/platform → application, contracts, domain, kernel
-//!   rest/worker → adapter, contracts, platform, application, domain, kernel
+//! Allowed dependency direction (workspace crates only), ADR-0001 as amended
+//! by ADR-0045 (Clean Architecture rings, dependencies inward):
+//!   kernel → (nothing)                         // shared kernel inside Entities
+//!   domain → kernel                            // Entities
+//!   application → domain, kernel               // Use Cases
+//!   contracts → kernel                         // wire DTOs; not Entities
+//!   adapter/platform → application, contracts, domain, kernel, platform
+//!                                              // Interface Adapters (gateways)
+//!   rest/worker → application, contracts, platform, kernel
+//!                                              // Interface Adapters (controllers)
+//!                                              // Domain/Adapter skips are ratchet-only
 //!   ui → contracts, ui
-//!   app → everything including ui
+//!   app → everything including ui              // Frameworks & Drivers
 //!   gate → (exempt from layer checks)
 //!
 //! Purity rule: domain and application crates may NOT depend on sqlx, axum, or tokio.
@@ -33,7 +37,11 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+pub mod skip_ratchet;
 pub mod ui_surface;
+pub use skip_ratchet::{
+    KNOWN_REST_OR_WORKER_SKIP_EDGES, KNOWN_REST_WITHOUT_APPLICATION, KnownSkipEdge,
+};
 pub use ui_surface::check_ui_surfaces;
 
 // ---------------------------------------------------------------------------
@@ -71,7 +79,7 @@ pub struct Dependency {
 // Layer classification
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Layer {
     Kernel,
     Domain,
@@ -124,12 +132,15 @@ impl Layer {
                 Layer::Kernel,
                 Layer::Platform,
             ],
+            // ADR-0045: controllers talk to use cases, not Entities or gateway
+            // implementations. Kernel IDs and Platform request-context stay
+            // reachable so HTTP extractors are not forced through a DTO yet.
+            // Existing Rest/Worker → Domain/Adapter edges live in
+            // KNOWN_REST_OR_WORKER_SKIP_EDGES and may only shrink.
             Layer::Rest | Layer::Worker => &[
-                Layer::Adapter,
+                Layer::Application,
                 Layer::Contracts,
                 Layer::Platform,
-                Layer::Application,
-                Layer::Domain,
                 Layer::Kernel,
             ],
             Layer::App => &[
@@ -254,6 +265,10 @@ pub enum ViolationKind {
     ConflictMarker,
     /// Rust source in a non-ui crate carries a browser UI surface marker.
     SmuggledUiSurface,
+    /// A listed Rest/Worker skip or missing-application entry is gone.
+    StaleLayerRatchet,
+    /// A Rest crate has no sibling `console-<stem>-application`.
+    MissingApplicationRing,
 }
 
 impl std::fmt::Display for Violation {
@@ -267,6 +282,8 @@ impl std::fmt::Display for Violation {
             ViolationKind::MissingLintsWorkspace => "MISSING_LINTS_WORKSPACE",
             ViolationKind::ConflictMarker => "CONFLICT_MARKER",
             ViolationKind::SmuggledUiSurface => "SMUGGLED_UI_SURFACE",
+            ViolationKind::StaleLayerRatchet => "STALE_LAYER_RATCHET",
+            ViolationKind::MissingApplicationRing => "MISSING_APPLICATION_RING",
         };
         write!(f, "[{}] {}: {}", kind, self.crate_name, self.detail)
     }
@@ -374,6 +391,9 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
         .collect();
 
     let mut violations = Vec::new();
+    let mut observed_skips: HashSet<(String, String)> = HashSet::new();
+    let mut observed_missing_application: HashSet<String> = HashSet::new();
+    let mut rest_depends_on_sibling_application: HashSet<String> = HashSet::new();
 
     for pkg in &workspace_pkgs {
         let layer = classify_crate(&pkg.name, &pkg.manifest_path, &metadata.workspace_root);
@@ -445,20 +465,30 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
             //  realistically test harnesses may need it. We'll scope to normal deps only.)
             let is_normal_dep = dep.kind.is_none(); // kind=None means normal dep
 
+            if is_normal_dep
+                && layer == Layer::Rest
+                && sibling_application_name(&pkg.name).as_deref() == Some(dep.name.as_str())
+            {
+                rest_depends_on_sibling_application.insert(pkg.name.clone());
+            }
             if let Some(dep_layer) = name_to_layer.get(dep.name.as_str()) {
                 // Workspace dependency — check layer edge.
                 if is_normal_dep && !allowed.contains(dep_layer) {
-                    violations.push(Violation {
-                        kind: ViolationKind::IllegalLayerEdge,
-                        crate_name: pkg.name.clone(),
-                        detail: format!(
-                            "{} ({}) → {} ({}) is forbidden",
-                            pkg.name,
-                            layer.name(),
-                            dep.name,
-                            dep_layer.name()
-                        ),
-                    });
+                    if is_ratcheted_skip(layer, *dep_layer, &pkg.name, &dep.name) {
+                        observed_skips.insert((pkg.name.clone(), dep.name.clone()));
+                    } else {
+                        violations.push(Violation {
+                            kind: ViolationKind::IllegalLayerEdge,
+                            crate_name: pkg.name.clone(),
+                            detail: format!(
+                                "{} ({}) → {} ({}) is forbidden",
+                                pkg.name,
+                                layer.name(),
+                                dep.name,
+                                dep_layer.name()
+                            ),
+                        });
+                    }
                 }
             } else {
                 // External dependency — check purity rule.
@@ -476,9 +506,70 @@ pub fn check(metadata: &Metadata, workspace_edition: &str) -> GateResult {
                 }
             }
         }
+
+        if layer == Layer::Rest
+            && let Some(application) = sibling_application_name(&pkg.name)
+            && !name_to_layer.contains_key(application.as_str())
+        {
+            if KNOWN_REST_WITHOUT_APPLICATION.contains(&pkg.name.as_str()) {
+                observed_missing_application.insert(pkg.name.clone());
+            } else {
+                violations.push(Violation {
+                    kind: ViolationKind::MissingApplicationRing,
+                    crate_name: pkg.name.clone(),
+                    detail: format!(
+                        "{} (rest) has no sibling {application}; Use Cases are a required ring (ADR-0045)",
+                        pkg.name
+                    ),
+                });
+            }
+        }
+    }
+
+    for known in KNOWN_REST_OR_WORKER_SKIP_EDGES {
+        if name_to_layer.contains_key(known.from)
+            && !observed_skips.contains(&(known.from.to_owned(), known.to.to_owned()))
+        {
+            violations.push(Violation {
+                kind: ViolationKind::StaleLayerRatchet,
+                crate_name: known.from.to_owned(),
+                detail: format!(
+                    "ratchet lists {} → {} but that Rest/Worker skip is gone; delete the entry",
+                    known.from, known.to
+                ),
+            });
+        }
+    }
+    for known in KNOWN_REST_WITHOUT_APPLICATION {
+        if name_to_layer.contains_key(*known)
+            && rest_depends_on_sibling_application.contains(*known)
+            && !observed_missing_application.contains(*known)
+        {
+            violations.push(Violation {
+                kind: ViolationKind::StaleLayerRatchet,
+                crate_name: (*known).to_owned(),
+                detail: format!(
+                    "ratchet lists {known} as missing an application crate, but it now depends on its sibling; delete the entry"
+                ),
+            });
+        }
     }
 
     GateResult { violations }
+}
+
+fn is_ratcheted_skip(from_layer: Layer, to_layer: Layer, from: &str, to: &str) -> bool {
+    matches!(from_layer, Layer::Rest | Layer::Worker)
+        && matches!(to_layer, Layer::Domain | Layer::Adapter)
+        && KNOWN_REST_OR_WORKER_SKIP_EDGES
+            .iter()
+            .any(|known| known.matches(from, to))
+}
+
+fn sibling_application_name(rest_name: &str) -> Option<String> {
+    rest_name
+        .strip_suffix("-rest")
+        .map(|stem| format!("{stem}-application"))
 }
 
 /// Check whether a Cargo.toml file contains `[lints]\nworkspace = true`.
@@ -784,6 +875,24 @@ mod tests {
     #[test]
     fn allowed_deps_domain_only_kernel() {
         assert_eq!(Layer::Domain.allowed_deps(), &[Layer::Kernel]);
+    }
+
+    #[test]
+    fn allowed_deps_rest_excludes_domain_and_adapter() {
+        let allowed = Layer::Rest.allowed_deps();
+        assert!(
+            allowed.contains(&Layer::Application),
+            "Rest must reach Use Cases"
+        );
+        assert!(
+            !allowed.contains(&Layer::Domain),
+            "Rest must not skip Use Cases to Entities"
+        );
+        assert!(
+            !allowed.contains(&Layer::Adapter),
+            "Rest must not depend on gateway implementations"
+        );
+        assert_eq!(Layer::Worker.allowed_deps(), allowed);
     }
 
     #[test]
