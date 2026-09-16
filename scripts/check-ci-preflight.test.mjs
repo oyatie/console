@@ -490,6 +490,10 @@ describe("CI preflight contract", () => {
       true,
     );
     assert.equal(
+      classifyChangedPaths(["backend/crates/payroll/application/src/lib.rs"]).runLivePostgres,
+      true,
+    );
+    assert.equal(
       classifyChangedPaths([
         "backend/app/src/lib.rs",
         "backend/app/tests/health_readiness.rs",

@@ -361,7 +361,7 @@ jobs:
           }
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml --lib \
             -p console-support-domain -p console-payroll-domain -p console-payroll-adapter-postgres \
-            -p console-payroll-application -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
+            -p console-attendance-application -p console-compliance-domain -p console-governance-domain \
             -p console-platform-audit-chain -p console-platform-authz \
             -p console-policy-application -p console-policy-domain \
             -p console-action-inbox-application -p console-intelligence-application -p console-attendance-domain -p console-benefit-application \
