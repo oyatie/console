@@ -167,6 +167,40 @@ async fn ui_pkg_serves_committed_hydrate_assets() -> Result<(), Box<dyn std::err
     Ok(())
 }
 
+/// ADR-0042 option 1: HTML documents authenticate from a session cookie, not
+/// from an access token in `localStorage`. The committed shell and hydrate
+/// script must not grow a client token store while that option is proposed.
+#[test]
+fn ssr_shell_does_not_store_access_token_in_local_storage() {
+    let shell = console_payroll_ui::render_shell();
+    let js = String::from_utf8_lossy(console_payroll_ui::payroll_ui_js());
+    for (label, text) in [("shell", shell.as_str()), ("hydrate js", js.as_ref())] {
+        let lowered = text.to_ascii_lowercase();
+        assert!(
+            !lowered.contains("localstorage"),
+            "{label} must not persist an access token in localStorage: {text}"
+        );
+    }
+}
+
+/// Source tripwire for ADR-0042 option 1. The recommended cookie is not minted
+/// or consumed yet. If this fails, un-ignore the SSR session contract tests
+/// rather than leaving them describing the unimplemented world.
+#[test]
+fn proposed_ssr_session_cookie_is_not_minted_or_consumed_yet() {
+    let auth_rest = include_str!("../../crates/platform/auth-rest/src/lib.rs");
+    let app = include_str!("../src/lib.rs");
+    for (label, src) in [("auth-rest", auth_rest), ("console-app", app)] {
+        assert!(
+            !src.contains("console_session"),
+            "ADR-0042 proposed session cookie appeared in {label}. Un-ignore \
+             `adr0042_ssr_session_cookie_contract` and replace \
+             `proposed_ssr_session_cookie_does_not_authorize_html_get_yet` \
+             in the same change."
+        );
+    }
+}
+
 fn app_config(role: AppRole) -> Result<AppConfig, console_app::AppError> {
     AppConfig::from_pairs([
         ("CONSOLE_APP_ROLE", role.to_string()),
@@ -520,6 +554,56 @@ mod authorized {
             "ADR-0042: a navigation still renders the empty shell. If this line \
              failed, a cookie transport now exists -- replace this test with \
              the positive one rather than loosening it."
+        );
+        assert!(
+            !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
+            "the empty shell must leak neither the run nor the island: {navigated}"
+        );
+    }
+
+    /// ADR-0042 option 1 is proposed, not implemented. The recommended cookie
+    /// (`console_session`) must not authorize HTML GET `/` until the ignored
+    /// contract tests below are un-ignored in the same change.
+    ///
+    /// Generous on purpose: a valid access JWT is placed in that cookie, which
+    /// production would never do for an opaque/signed session. If this line
+    /// fails, a cookie transport now exists.
+    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    async fn proposed_ssr_session_cookie_does_not_authorize_html_get_yet(pool: PgPool) {
+        let keys = keys();
+        let org = OrgId::knl();
+        let admin = UserId::new();
+        seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+        let run = seed_run(&pool, org, admin).await;
+        let service = build_router(jwt_app_state(
+            runtime_role_pool(&pool).await,
+            keys.public_pem.clone(),
+        ));
+        let token = bearer(&keys, org, admin, "SUPER_ADMIN");
+
+        let (status, with_header) = get_ui(service.clone(), Some(&token)).await;
+        assert_eq!(status, StatusCode::OK, "{with_header}");
+        assert!(
+            with_header.contains(&format!("data-run-id=\"{run}\"")),
+            "header transport must still reach the authorized run: {with_header}"
+        );
+
+        let (status, navigated) = adr0042_ssr_session_cookie::get_html_with_cookie(
+            service,
+            "/",
+            &format!(
+                "{}={token}",
+                adr0042_ssr_session_cookie::PROPOSED_SSR_SESSION_COOKIE
+            ),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{navigated}");
+        assert_eq!(
+            navigated,
+            console_payroll_ui::render_shell(),
+            "ADR-0042 proposed: `console_session` still does not authorize HTML GET `/`. \
+             If this line failed, un-ignore `adr0042_ssr_session_cookie_contract` and \
+             replace this tripwire rather than loosening it."
         );
         assert!(
             !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
@@ -951,5 +1035,259 @@ mod authorized {
             "SUPER_ADMIN must see the same authorized contract rows: {super_html}"
         );
         assert_ui_invariants(&super_html);
+    }
+
+    /// Intended ADR-0042 option 1 contract. The ADR is proposed and decides
+    /// nothing; these tests stay ignored until a session cookie exists.
+    mod adr0042_ssr_session_cookie {
+        use super::*;
+        use console_platform_provisioning::BootstrapCredentialStore;
+        use http::Response;
+        use serde_json::{Value, json};
+        use time::Duration as TimeDuration;
+
+        pub(super) const PROPOSED_SSR_SESSION_COOKIE: &str = "console_session";
+        const PRODUCTION_REFRESH_COOKIE: &str = "console_refresh";
+        const HTML_DOCUMENT_ROUTES: [&str; 4] = ["/", "/organization", "/hr", "/payroll"];
+        const JSON_API_PATH: &str = "/api/v1/payroll/runs";
+        /// Refresh TTL is 30 days. A session cookie is not that refresh token.
+        const REFRESH_TTL_SECS: i64 = 60 * 60 * 24 * 30;
+
+        pub(super) async fn get_html_with_cookie(
+            app: axum::Router,
+            uri: &str,
+            cookie: &str,
+        ) -> (StatusCode, String) {
+            let response = app
+                .oneshot(
+                    Request::builder()
+                        .uri(uri)
+                        .header(
+                            header::USER_AGENT,
+                            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                        )
+                        .header(header::ACCEPT, "text/html,application/xhtml+xml")
+                        .header(header::COOKIE, cookie)
+                        .header("upgrade-insecure-requests", "1")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let status = response.status();
+            let bytes = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+            (status, String::from_utf8(bytes.to_vec()).unwrap())
+        }
+
+        fn jwt_app_state_with_auth(runtime_pool: PgPool, keys: &Keys) -> AppState {
+            let config = AppConfig::from_pairs([
+                ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
+                ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
+                ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
+                ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+                ("CONSOLE_JWT_PRIVATE_KEY_PEM", keys.private_pem.clone()),
+                ("CONSOLE_JWT_PUBLIC_KEY_PEM", keys.public_pem.clone()),
+                ("CONSOLE_WEBAUTHN_RP_ID", "example.com".to_owned()),
+                (
+                    "CONSOLE_WEBAUTHN_RP_ORIGIN",
+                    "https://auth.example.com".to_owned(),
+                ),
+                ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
+                ("CONSOLE_COOKIE_SECURE", "true".to_owned()),
+            ])
+            .unwrap();
+            AppState::new(config, DatabaseDependency::Postgres(runtime_pool)).unwrap()
+        }
+
+        fn set_cookie_named(response: &Response<Body>, name: &str) -> Option<String> {
+            let prefix = format!("{name}=");
+            response
+                .headers()
+                .get_all(header::SET_COOKIE)
+                .iter()
+                .filter_map(|value| value.to_str().ok())
+                .find(|value| value.starts_with(&prefix))
+                .map(ToOwned::to_owned)
+        }
+
+        fn cookie_attr<'a>(set_cookie: &'a str, name: &str) -> Option<&'a str> {
+            set_cookie.split(';').find_map(|part| {
+                let part = part.trim();
+                part.split_once('=')
+                    .and_then(|(key, value)| key.eq_ignore_ascii_case(name).then_some(value))
+            })
+        }
+
+        fn cookie_has_flag(set_cookie: &str, name: &str) -> bool {
+            set_cookie
+                .split(';')
+                .any(|part| part.trim().eq_ignore_ascii_case(name))
+        }
+
+        fn cookie_value<'a>(set_cookie: &'a str, name: &str) -> &'a str {
+            set_cookie
+                .strip_prefix(&format!("{name}="))
+                .and_then(|rest| rest.split(';').next())
+                .map(str::trim)
+                .unwrap()
+        }
+
+        /// Pin the recommended SSR-session-cookie option if ADR-0042 is accepted:
+        /// login mints an HttpOnly; Secure; SameSite=Lax session cookie; HTML GET
+        /// `/` `/organization` `/hr` `/payroll` authenticate from it; `/api/v1/*`
+        /// stays Bearer-only; the cookie is not a refresh token and has a bounded
+        /// TTL; two API replicas sharing one store (or a signed cookie) both
+        /// accept it. Not a CNPG=3, PITR, or live-exposure claim.
+        #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+        #[ignore = "ADR-0042 proposed; SSR session cookie not implemented"]
+        async fn adr0042_ssr_session_cookie_contract(pool: PgPool) {
+            let keys = keys();
+            let org = OrgId::knl();
+            let admin = UserId::new();
+            seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+            seed_heads(&pool, org, admin).await;
+            let run = seed_run(&pool, org, admin).await;
+            let runtime = runtime_role_pool(&pool).await;
+            let replica_a = build_router(jwt_app_state_with_auth(runtime.clone(), &keys));
+            let replica_b = build_router(jwt_app_state_with_auth(runtime, &keys));
+
+            let issued = BootstrapCredentialStore
+                .issue_for_zero_credential_user(
+                    &pool,
+                    *admin.as_uuid(),
+                    org,
+                    OffsetDateTime::now_utc(),
+                    TimeDuration::hours(24),
+                )
+                .await
+                .expect("bootstrap OTP for cookie-mode login");
+            let login = replica_a
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .uri("/api/v1/auth/otp/redeem")
+                        .method("POST")
+                        .header(header::CONTENT_TYPE, "application/json")
+                        .header("x-auth-transport", "cookie")
+                        .body(Body::from(
+                            json!({ "otp": issued.token.as_str() }).to_string(),
+                        ))
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(login.status(), StatusCode::OK, "cookie-mode login");
+
+            let session_set = set_cookie_named(&login, PROPOSED_SSR_SESSION_COOKIE).expect(
+                "ADR-0042 option 1: cookie-mode login must mint console_session beside console_refresh",
+            );
+            assert!(
+                cookie_has_flag(&session_set, "HttpOnly"),
+                "session cookie must be HttpOnly: {session_set}"
+            );
+            assert!(
+                cookie_has_flag(&session_set, "Secure"),
+                "session cookie must be Secure: {session_set}"
+            );
+            assert_eq!(
+                cookie_attr(&session_set, "SameSite"),
+                Some("Lax"),
+                "session cookie must be SameSite=Lax so a top-level navigation to `/` carries it: {session_set}"
+            );
+            assert_eq!(
+                cookie_attr(&session_set, "Path"),
+                Some("/"),
+                "session cookie Path must be `/` so the browser sends it to HTML documents, not Path=/api/v1/auth: {session_set}"
+            );
+            let max_age = cookie_attr(&session_set, "Max-Age")
+                .and_then(|raw| raw.parse::<i64>().ok())
+                .expect("session cookie TTL must be bounded by Max-Age");
+            assert!(
+                max_age > 0 && max_age < REFRESH_TTL_SECS,
+                "session cookie is not a refresh token; Max-Age must be positive and shorter than the 30-day refresh TTL, got {max_age}: {session_set}"
+            );
+
+            let session_value = cookie_value(&session_set, PROPOSED_SSR_SESSION_COOKIE);
+            assert!(!session_value.is_empty(), "{session_set}");
+            if let Some(refresh_set) = set_cookie_named(&login, PRODUCTION_REFRESH_COOKIE) {
+                assert_ne!(
+                    session_value,
+                    cookie_value(&refresh_set, PRODUCTION_REFRESH_COOKIE),
+                    "session cookie must not reuse the refresh token value"
+                );
+            }
+
+            let login_body: Value =
+                serde_json::from_slice(&to_bytes(login.into_body(), usize::MAX).await.unwrap())
+                    .unwrap();
+            let access_token = login_body["access_token"]
+                .as_str()
+                .expect("access token remains a Bearer for /api/v1");
+            assert_ne!(
+                session_value, access_token,
+                "session cookie is not the access token; HTML must not need localStorage for it"
+            );
+
+            let cookie_header = format!("{PROPOSED_SSR_SESSION_COOKIE}={session_value}");
+            for uri in HTML_DOCUMENT_ROUTES {
+                let (status, html) =
+                    get_html_with_cookie(replica_a.clone(), uri, &cookie_header).await;
+                assert_eq!(status, StatusCode::OK, "{uri} {html}");
+                assert_ne!(
+                    html,
+                    console_payroll_ui::render_shell(),
+                    "HTML GET {uri} must authenticate from the session cookie, not render the empty shell: {html}"
+                );
+            }
+            let (status, home) = get_html_with_cookie(replica_a.clone(), "/", &cookie_header).await;
+            assert_eq!(status, StatusCode::OK, "{home}");
+            assert!(
+                home.contains(&format!("data-run-id=\"{run}\"")),
+                "session-cookie navigation must reach the authorized run: {home}"
+            );
+
+            let (status, replica_html) = get_html_with_cookie(replica_b, "/", &cookie_header).await;
+            assert_eq!(status, StatusCode::OK, "{replica_html}");
+            assert!(
+                replica_html.contains(&format!("data-run-id=\"{run}\"")),
+                "two API replicas must share a session store or verify a signed cookie; this is not a CNPG=3 claim: {replica_html}"
+            );
+
+            let api_cookie_only = replica_a
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .uri(JSON_API_PATH)
+                        .header(header::ACCEPT, "application/json")
+                        .header(header::COOKIE, cookie_header)
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(
+                api_cookie_only.status(),
+                StatusCode::UNAUTHORIZED,
+                "/api/v1/* remains Bearer-only; session cookie must not authorize JSON API"
+            );
+
+            let api_bearer = replica_a
+                .oneshot(
+                    Request::builder()
+                        .uri(JSON_API_PATH)
+                        .header(header::ACCEPT, "application/json")
+                        .header(header::AUTHORIZATION, format!("Bearer {access_token}"))
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(
+                api_bearer.status(),
+                StatusCode::OK,
+                "Bearer still authorizes /api/v1: {}",
+                api_bearer.status()
+            );
+        }
     }
 }

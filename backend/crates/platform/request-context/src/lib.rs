@@ -1196,4 +1196,57 @@ mod tests {
             br#"{"error":{"code":"too_many_requests","message":"too many requests; please retry later"}}"#
         );
     }
+
+    /// ADR-0042 option 1 (proposed, not accepted): an SSR session cookie is a
+    /// separate HTML-document transport. `bearer_token()` must keep reading
+    /// `Authorization: Bearer` only so `/api/v1/*` cannot be authorized by a
+    /// cookie. Production today mints `console_refresh`; the recommended option
+    /// would mint a distinct `console_session` beside it.
+    mod adr0042_ssr_session_cookie {
+        use super::*;
+
+        const PRODUCTION_REFRESH_COOKIE: &str = "console_refresh";
+        const PROPOSED_SSR_SESSION_COOKIE: &str = "console_session";
+
+        fn cookie_only(name: &str, value: &str) -> HeaderMap {
+            let mut headers = HeaderMap::new();
+            headers.insert(
+                header::COOKIE,
+                format!("{name}={value}").parse().expect("cookie header"),
+            );
+            headers
+        }
+
+        #[test]
+        fn production_cookie_name_is_not_treated_as_a_bearer() {
+            for (name, value) in [
+                (PRODUCTION_REFRESH_COOKIE, "refresh-token"),
+                (
+                    PRODUCTION_REFRESH_COOKIE,
+                    "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.e30.sig",
+                ),
+                (PROPOSED_SSR_SESSION_COOKIE, "opaque-session"),
+                (
+                    PROPOSED_SSR_SESSION_COOKIE,
+                    "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.e30.sig",
+                ),
+            ] {
+                let err = bearer_token(&cookie_only(name, value)).expect_err(name);
+                assert!(
+                    matches!(err, RequestContextError::MissingBearer),
+                    "{name} cookie must not satisfy bearer_token: {err}"
+                );
+            }
+        }
+
+        #[test]
+        fn cookie_does_not_override_or_supply_a_bearer() {
+            let mut headers = cookie_only(PROPOSED_SSR_SESSION_COOKIE, "not-the-bearer");
+            headers.insert(
+                header::AUTHORIZATION,
+                "Bearer access-token".parse().expect("authorization"),
+            );
+            assert_eq!(bearer_token(&headers).expect("bearer"), "access-token");
+        }
+    }
 }
