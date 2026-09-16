@@ -14,7 +14,7 @@
 #[path = "roster_materialisation/seed.rs"]
 mod seed;
 
-use console_payroll_adapter_postgres::lifecycle::calculate_run_in_tx;
+use console_payroll_adapter_postgres::lifecycle::{calculate_run_in_tx, close_attendance_in_tx};
 use seed::{
     PERIOD_END, PERIOD_START, attendance_row, materialise, roster, seed_employee, seed_import,
     seed_org_and_run,
@@ -240,21 +240,45 @@ async fn a_native_contract_wage_becomes_a_roster_line_without_import(pool: PgPoo
     assert_eq!(lines[0].0, "emp-native");
 }
 
-/// Shipped `calculate_run_in_tx` reads native contract wages (no import rows)
-/// and persists a versioned draft with `payable` false. A second calculate
-/// replays that version without a second persist.
+/// Shipped close then calculate: native contract wage (no import rows) is
+/// enough to close, then `calculate_run_in_tx` persists a versioned draft with
+/// `payable` false. A second calculate replays that version without a second persist.
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn calculate_uses_native_contract_wage_without_import_rows(pool: PgPool) {
     let f = seed_org_and_run(&pool).await;
     let employee_id = seed_employee(&pool, f.org, "emp-native", "김임금").await;
-    seed::seed_monthly_contract_wage(&pool, f.org, employee_id, PERIOD_START, 3_000_000).await;
+    let actor =
+        seed::seed_monthly_contract_wage(&pool, f.org, employee_id, PERIOD_START, 3_000_000).await;
     assert_eq!(materialise(&pool, &f).await, 1);
 
-    sqlx::query("UPDATE payroll_draft_runs SET status = 'ATTENDANCE_CLOSED' WHERE id = $1")
-        .bind(f.run)
-        .execute(&pool)
+    sqlx::query(
+        "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+         VALUES ($1, 'payroll', $2, $3, 'native close')",
+    )
+    .bind(f.org)
+    .bind(PERIOD_START)
+    .bind(PERIOD_END)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("SELECT set_config('app.current_org', $1, true)")
+        .bind(f.org.to_string())
+        .execute(&mut *tx)
         .await
         .unwrap();
+    close_attendance_in_tx(&mut tx, f.run, actor, time::OffsetDateTime::now_utc())
+        .await
+        .expect("native wage line must close without forged ATTENDANCE_CLOSED");
+    tx.commit().await.unwrap();
+
+    let status: String = sqlx::query_scalar("SELECT status FROM payroll_draft_runs WHERE id = $1")
+        .bind(f.run)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(status, "ATTENDANCE_CLOSED");
 
     let mut tx = pool.begin().await.unwrap();
     sqlx::query("SELECT set_config('app.current_org', $1, true)")
