@@ -298,6 +298,7 @@ console-comms-adapter-mox = { path = "crates/comms/adapter-mox" }
 console-comms-mailbox = { path = "crates/comms/mailbox" }
 console-comms-rest = { path = "crates/comms/rest" }
 console-payroll-domain = { path = "crates/payroll/domain" }
+console-payroll-application = { path = "crates/payroll/application" }
 console-payroll-adapter-postgres = { path = "crates/payroll/adapter-postgres" }
 console-payroll-rest = { path = "crates/payroll/rest" }
 console-policy-domain = { path = "crates/policy/domain" }

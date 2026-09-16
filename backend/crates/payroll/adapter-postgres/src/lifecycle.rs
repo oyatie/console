@@ -290,6 +290,43 @@ fn invalid_state(action: &str, status: &str) -> LifecycleError {
     LifecycleError::InvalidState(format!("cannot {action} a run in status {status}"))
 }
 
+/// Locked run head plus the latest stored calculation version, if any.
+/// Used by the calculate use case to replay the same version without writing.
+pub async fn calculation_snapshot_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    run_id: Uuid,
+) -> Result<Option<CalculationSnapshot>, LifecycleError> {
+    let Some(run) = run_head(tx, run_id, true).await? else {
+        return Ok(None);
+    };
+    let lines_total: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM payroll_draft_lines WHERE run_id = $1")
+            .bind(run_id)
+            .fetch_one(tx.as_mut())
+            .await?;
+    let summary = latest_calc_summary_in_tx(tx, run_id, lines_total).await?;
+    Ok(Some(CalculationSnapshot {
+        status: run.status,
+        current_version: summary.as_ref().map(|row| row.version),
+        calculated_lines: summary
+            .as_ref()
+            .map(|row| row.calculated_lines)
+            .unwrap_or(0),
+        blocked_lines: summary
+            .as_ref()
+            .map(|row| row.blocked_lines)
+            .unwrap_or(lines_total),
+    }))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CalculationSnapshot {
+    pub status: String,
+    pub current_version: Option<i32>,
+    pub calculated_lines: i64,
+    pub blocked_lines: i64,
+}
+
 // ---------------------------------------------------------------------------
 // Close preflight + close
 // ---------------------------------------------------------------------------
