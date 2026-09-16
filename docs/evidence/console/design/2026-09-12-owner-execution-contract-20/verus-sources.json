@@ -1,0 +1,65 @@
+{
+  "status": "OFFICIAL_SOURCE_RETRIEVAL_NOT_TOOL_EXECUTION",
+  "repository": "https://github.com/verus-lang/verus",
+  "commit": "38f659b0e97a003d4fed73e083c71e786c6a3523",
+  "retrieved_at": "2026-09-13T02:03:31.719848+00:00",
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/README.md",
+      "upstream_path": "README.md",
+      "sha256": "faa585b7f3463e7a837fbd3364ea3e751b207fa141268d60fa011515d20a99ba",
+      "bytes": 5826,
+      "excerpt": "Verus currently supports a subset of Rust"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/rust-toolchain.toml",
+      "upstream_path": "rust-toolchain.toml",
+      "sha256": "265bc6433d2dc7032bfca31d3d38b9007d04d8076027fe00db7d722e8d72661a",
+      "bytes": 115,
+      "excerpt": "channel = \"1.98.1\""
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/source/docs/guide/src/cargo_verus.md",
+      "upstream_path": "source/docs/guide/src/cargo_verus.md",
+      "sha256": "6e3968faaa117a379c12c4952ff577977d7499fec39359fe51b0850143373a21",
+      "bytes": 7280,
+      "excerpt": "Crates without that setting are\ncompiled normally and are not passed through the Verus prover."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/source/docs/guide/src/calling-unverified-from-verified.md",
+      "upstream_path": "source/docs/guide/src/calling-unverified-from-verified.md",
+      "sha256": "092a7fcf4731e87d1134f68e230667e34b626fc46575242b08100d17c49d0cc7",
+      "bytes": 4665,
+      "excerpt": "This tells Verus to process the _specification_ of a function, without verifying or processing its body."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/source/docs/guide/src/calling-verified-from-unverified.md",
+      "upstream_path": "source/docs/guide/src/calling-verified-from-unverified.md",
+      "sha256": "2e7663ac564e5a12d2cdfcffe25e1f560cb6fc0ccb08d8a36a7ccfe85fa6bb99",
+      "bytes": 2198,
+      "excerpt": "You can check if your verified crate meets these requirements by using the flag `-V check-safe-api`."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/source/docs/guide/src/overflow.md",
+      "upstream_path": "source/docs/guide/src/overflow.md",
+      "sha256": "0b760146defc5d227a9133ba1fe460e32bb274cd5ecb747780d37f7006004306",
+      "bytes": 2907,
+      "excerpt": "Verus includes specifications for these, enabling their direct use."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/source/docs/guide/src/exec_termination.md",
+      "upstream_path": "source/docs/guide/src/exec_termination.md",
+      "sha256": "dfda4d04c4491cf30f9966674c4094d3f4440924032e25a9770e3873accb86d6",
+      "bytes": 735,
+      "excerpt": "it should be treated as a lint, not a complete guarantee of termination."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/verus-lang/verus/38f659b0e97a003d4fed73e083c71e786c6a3523/source/docs/guide/src/erasure.md",
+      "upstream_path": "source/docs/guide/src/erasure.md",
+      "sha256": "e09c47d3f12cac3c71e9f26ba0960e5350dd858ea50edddb5b2b710068d5bf39",
+      "bytes": 2755,
+      "excerpt": "Using this feature flag for conditional compilation of code can introduce **unsoundness**,"
+    }
+  ],
+  "scope": "Pinned official documentation assessment. Not a June-Sept2026 community consensus survey, adoption benchmark, compiled compatibility proof or legal verification."
+}

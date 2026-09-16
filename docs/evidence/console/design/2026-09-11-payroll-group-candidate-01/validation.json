@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "scope": "artifact consistency, source identity, unapplied patch applicability; not product behavior verification",
+  "counts": {
+    "screens": 10,
+    "actions": 9,
+    "source_excerpts": 21,
+    "acceptance_cases": 20,
+    "html_ids": 26,
+    "html_links": 31,
+    "prior_research_files_unchanged": 119
+  },
+  "commands": [
+    {
+      "command": "git apply --check docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority.patch",
+      "exit_code": 0,
+      "effect": "none; patch not applied"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "product_tests_executed_this_turn": 0,
+  "reason": "Design/evidence only. No product code changes; previous passing tests not relabeled as this candidate verification.",
+  "active_authority": "PRODUCT/ROADMAP/DELIVERY match HEAD bytes",
+  "independent_reviews": 0
+}

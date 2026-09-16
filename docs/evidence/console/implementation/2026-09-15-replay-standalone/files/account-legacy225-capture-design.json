@@ -1,0 +1,182 @@
+{
+  "kind": "historical225_fixture_capture_and_minimal_replay_proposal",
+  "status": "PROPOSAL_ONLY_NOT_APPLIED_NOT_EXECUTED",
+  "author": "/root/owner_privilege_review",
+  "producer_base_sha": "1bb508a28e43fef188d52f88e11fcb5b0d0c4dbf",
+  "original_test": {
+    "path": "backend/app/tests/account_migration.rs",
+    "sha256": "a313e2611cb7aabeaab49029e23bd6dd6ca1e3f30e090bc0749e6334d484186a"
+  },
+  "artifacts": {
+    "/private/tmp/account-legacy225-capture-query.sql": {
+      "sha256": "c2aab8c8942525f4d4013dd7f7701130cb23a4c0ebd09ffd68b880f6d72498f2",
+      "bytes": 2685
+    },
+    "/private/tmp/account-legacy225-capture-helper.rs": {
+      "sha256": "1946f5a606b8eca5043c0054ebb5d0d8f4a61efe4183671fd01a52d1d9197446",
+      "bytes": 7357
+    },
+    "/private/tmp/account-legacy225-capture-candidate.rs": {
+      "sha256": "67e53107cd3a928787200e99caa48f128465a6f6974b190383fb2a0a6d0c6de7",
+      "bytes": 23634
+    },
+    "/private/tmp/account-legacy225-capture.patch": {
+      "sha256": "51735ca2de7663ba2f941a69341287c41bbec09e383c08e704d9c74c6d079ba1",
+      "bytes": 8327
+    }
+  },
+  "root_ownership": "Root owns repository changes, capture worktree, Cargo, PostgreSQL harness and execution. Reviewer only wrote private temporary proposals.",
+  "reason": "Mandatory Account projection in canonical RefreshTokenStore::rotate makes current runtime code inappropriate as the producer at historical225, where that dependency deliberately does not exist. Capture genuine historical owner output once; replay native typed rows to retain the populated actual-numbered-migration test.",
+  "forbidden_shortcuts": [
+    "No optional auth dependency or production missing-schema bypass.",
+    "No copied historical rotation implementation.",
+    "No synthetic Accounts/company_actors, altered migration ledger, current-schema fixture substitution, broad ON CONFLICT DO NOTHING, disabled FK/trigger checks, or weakened post-migration oracles."
+  ],
+  "native_alternatives": {
+    "pg_dump": "Considered PostgreSQL pg_dump --data-only --column-inserts --table for the fixed roster. It has no row filter, includes unrelated original migration baseline rows, and cannot safely replay all selected table rows into another real run_to225 without collision. The organizations trigger creates memberships. Per-row token INSERT statements can encounter forward replaced_by FK references. Whole-schema restore changes the original migration setup and increases fixture machinery.",
+    "chosen": "One PostgreSQL to_jsonb capture query and fixed jsonb_populate_recordset INSERT SELECT statements for the known225 table roster. This uses existing sqlx/serde_json/sha2/hex dependencies and PostgreSQL conversions. No generic row graph copier or new dependency."
+  },
+  "capture_instructions": [
+    "Have an independent reviewer approve the exact candidate and patch hashes before execution; root alone owns changes.",
+    "Use a separately owned detached checkout at producer_base_sha, never reset the integration checkout. Verify original_test hash. Apply only capture.patch; verify resulting account_migration.rs hash equals recorded candidate. Commit only this evidence instrumentation in the owned capture checkout so existing clean-tree harness snapshots can bind a concrete head.",
+    "Provision one owned labeled disposable PostgreSQL container through the existing cargo_needs_postgres harness. Use the existing app-account-migration-pg map entry and unchanged role/bootstrap/finalizer setup. Adapt the already reviewed evidence driver only for snapshot target account_migration.rs, package prebuild --test account_migration, map entry and exact test below; independently review adapter diff.",
+    "Create one new mode0700 absolute capture directory under /private/tmp and export CONSOLE_TEST_LEGACY225_CAPTURE_DIR. Do not print its contents. The helper validates marked console_buck_admin, disposable SQLx database name, schema225/checksums, expected rows and an already-revoked token before exclusively writing a mode0600 JSON file.",
+    "Run exactly one historical test with the command below through that owned harness and --test-threads=1. Preserve exit code and complete discovery/execution output. Capture happens after every original seed assertion and before unmodified current-migration assertions.",
+    "Require exactly one nonempty parseable JSON file. Hash it and retain the producer base, instrumentation commit, candidate hash, exact cargo invocation, complete log, source-before/after hashes and owned-container absence proof. Do not claim the test passed if conversion/backfill assertions fail after capture.",
+    "Keep captured bytes private until reviewed as TEST_ONLY. No AppConfig, URL/DSN, environment or authenticator private key is serialized. The one intentionally retained raw token must be correlated to an already-revoked token AND family, needed for exact FamilyRevoked preservation oracle.",
+    "Prepare permanent replay only after actual capture succeeds and is independently reviewed. Remove transient capture instrumentation from final product integration; retain historical producer evidence."
+  ],
+  "exact_capture_cargo_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "account_migration",
+    "populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits",
+    "--",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "capture_roster": {
+    "groups": 2,
+    "organizations": 2,
+    "group_memberships": 2,
+    "users": 2,
+    "auth_webauthn_credentials": 2,
+    "auth_webauthn_ceremonies": "all for two subjects; expected4, actual capture must establish",
+    "auth_webauthn_ceremony_bindings": "all for captured ceremonies; ordinary registration source suggests0, actual capture must establish",
+    "auth_refresh_token_families": 2,
+    "auth_refresh_tokens": 4,
+    "audit_events": "exact original fixture.audit_ids; capture must establish nonzero count"
+  },
+  "permanent_replay": {
+    "boundary": "Keep old_migration_login, actual .run_to(225), marked disposable fixture ownership, max(version)==225 and full historical migration checksum comparison. The fixture is privileged setup, never serving-role or authorization evidence.",
+    "custody": "Embed one reviewed TEST_ONLY capture with include_bytes and a fixed SHA256. Validate format/version/base, exact table roster, subject/audit identity uniqueness and all checksums; avoid printing sensitive row contents on failure.",
+    "fixed_insert_order": [
+      "groups",
+      "organizations",
+      "users",
+      "auth_webauthn_credentials",
+      "auth_webauthn_ceremonies",
+      "auth_webauthn_ceremony_bindings",
+      "auth_refresh_token_families",
+      "auth_refresh_tokens",
+      "audit_events"
+    ],
+    "fixed_insert_statements": {
+      "groups": "INSERT INTO public.groups SELECT * FROM jsonb_populate_recordset(NULL::public.groups, $1::jsonb)",
+      "organizations": "INSERT INTO public.organizations SELECT * FROM jsonb_populate_recordset(NULL::public.organizations, $1::jsonb)",
+      "users": "INSERT INTO public.users SELECT * FROM jsonb_populate_recordset(NULL::public.users, $1::jsonb)",
+      "auth_webauthn_credentials": "INSERT INTO public.auth_webauthn_credentials SELECT * FROM jsonb_populate_recordset(NULL::public.auth_webauthn_credentials, $1::jsonb)",
+      "auth_webauthn_ceremonies": "INSERT INTO public.auth_webauthn_ceremonies SELECT * FROM jsonb_populate_recordset(NULL::public.auth_webauthn_ceremonies, $1::jsonb)",
+      "auth_webauthn_ceremony_bindings": "INSERT INTO public.auth_webauthn_ceremony_bindings SELECT * FROM jsonb_populate_recordset(NULL::public.auth_webauthn_ceremony_bindings, $1::jsonb)",
+      "auth_refresh_token_families": "INSERT INTO public.auth_refresh_token_families SELECT * FROM jsonb_populate_recordset(NULL::public.auth_refresh_token_families, $1::jsonb)",
+      "auth_refresh_tokens": "INSERT INTO public.auth_refresh_tokens SELECT * FROM jsonb_populate_recordset(NULL::public.auth_refresh_tokens, $1::jsonb)",
+      "audit_events": "INSERT INTO public.audit_events SELECT * FROM jsonb_populate_recordset(NULL::public.audit_events, $1::jsonb)"
+    },
+    "atomicity": "Replay in one transaction with FK/trigger checks active. Every INSERT must affect exactly its captured row count. No dynamic table identifiers and no conflict suppression. Roll back on any mismatch.",
+    "membership": "Organization INSERT triggers create group_memberships. Require exact expected group/org keys and exact count, then restore only captured created_at using the fixed statement below; affected count must equal2. Full native-row readback must exactly equal the captured membership rows. Unexpected memberships or keys fail; nothing is deleted or ignored.",
+    "membership_statement": "UPDATE public.group_memberships AS actual SET created_at=captured.created_at FROM jsonb_populate_recordset(NULL::public.group_memberships, $1::jsonb) AS captured WHERE actual.group_id=captured.group_id AND actual.org_id=captured.org_id",
+    "self_fk": "Insert ALL4 auth_refresh_tokens in a single INSERT SELECT statement so their replaced_by self-FK checks can resolve within the statement. This is a design expectation only until actual PostgreSQL replay validates it.",
+    "readback": "Run the same fixed capture query against restored subjects/audit IDs and require exact tables equality, expected unused edges zero and checksums equality. Re-run original material_snapshot before current migration and require exact equality with captured material. Retain all original seed invariants, including2 independently generated credentials,4 tokens,2 used/replaced tokens and1 revoked family.",
+    "result": "Build LegacyFixture using captured subject IDs, audit IDs, raw revoked token and material, plus the actual fresh migration config and checksums. Both test bodies and apply_current_and_require_account_catalog remain semantically unchanged. Only adapt the later canonical rotate call to its mandatory restricted auth dependency; preserve exact FamilyRevoked and before/after equality.",
+    "non_goals": [
+      "No migration implementation or backfill here.",
+      "No authorization proof from administrator fixture setup.",
+      "No HA/durability proof from tmpfs.",
+      "No test rerouting to a prebuilt current schema."
+    ]
+  },
+  "controls_and_evidence": [
+    "Original seed code owns creation and genuine SoftPasskey registration, issue, rotation and logout; capture instrumentation executes only after original credentials/correlation/audit assertions pass.",
+    "Positive capture control: real2 credential rows,4 token rows,2 correlated replacements,1 revoked family, nonempty exact audit IDs and unconsumed real ceremonies.",
+    "Positive replay control: complete table rows and original material_snapshot equal before current migrations; bytea, timestamp, JSON, self-FK and trigger side effects must survive native typed replay.",
+    "Negative replay controls to execute in rollback-only disposable transactions: omit one required row, alter one protected byte/token correlation and supply wrong membership key; controls must reject instead of silently accepting. Corrupt fixture digest must fail before any INSERT.",
+    "Current-migration failure remains genuine: catalog or Account mapping/backfill RED after successful seed/capture/replay is not fixture failure and must remain visible. Preserve both original migration tests and exact revoked refusal.",
+    "No deeper preservation pass is claimed until its assertions actually execute. Capture success alone proves only historical producer output and file custody."
+  ],
+  "pre_mortem": [
+    {
+      "failure": "Uncaptured dependency makes typed replay fail.",
+      "detection": "Constraints remain active, fixed roster/readback and unused-edge checks.",
+      "response": "Stop replay, inspect actual225 dependency; extend only reviewed fixture roster, never disable constraints."
+    },
+    {
+      "failure": "Trigger timestamps or token FK order alter restored state.",
+      "detection": "Complete row equality plus exact affected counts before migration.",
+      "response": "Fix bounded replay statement after independent review; never ignore conflicts."
+    },
+    {
+      "failure": "Missing current backfill is hidden by fixture machinery.",
+      "detection": "Original current-migration and Account mapping oracles retained; preserve complete output.",
+      "response": "Report original migration RED and implement conversion in its separate owner."
+    },
+    {
+      "failure": "Private data enters logs or committed evidence.",
+      "detection": "Payload fixed fields, expressly synthetic producer, revoked-token check, private file, no stdout dump.",
+      "response": "Stop import and review custody; no credentials/environment capture."
+    }
+  ],
+  "blast_radius": "Temporary proposal files only. Future producer/replay execution confined to separately owned checkout and labeled disposable database container. No serving or production state.",
+  "rollback": "Delete only owned temporary output or abandon owned checkout after preserving evidence. No shared Git reset. Replay transaction rolls back on mismatch.",
+  "stop_conditions": [
+    "Base/file hash differs.",
+    "Original suffix/test bodies differ.",
+    "DB is unmarked/non-disposable or role identity differs.",
+    "Capture table/checksum/token correlation differs.",
+    "Any unowned runtime resource would be touched.",
+    "Constraint/readback mismatch or unexpected deeper test result."
+  ],
+  "review": {
+    "author": "/root/owner_privilege_review",
+    "independent_reviewer": "PENDING_ROOT_ASSIGNMENT",
+    "runtime_operator": "/root"
+  },
+  "validation": {
+    "executed": [
+      "rustfmt --edition2024 --check candidate passed previously under Rust1.98.1",
+      "Rechecked four proposal SHA256 hashes",
+      "Rechecked original test suffix and both test bodies byte-for-byte"
+    ],
+    "not_executed": [
+      "Cargo/typecheck",
+      "PostgreSQL capture",
+      "JSON fixture creation",
+      "typed replay",
+      "positive/negative runtime controls",
+      "current migration rerun"
+    ]
+  },
+  "remaining_holds": [
+    "Exact capture adapter and candidate independent review",
+    "Actual historical producer capture",
+    "Captured bytes/custody independent review",
+    "Permanent replay implementation and independent test-preservation review",
+    "Actual replay and negative controls",
+    "Existing missing Account migration/backfill implementation remains separate"
+  ]
+}

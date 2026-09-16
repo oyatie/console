@@ -1,0 +1,18 @@
+{
+  "kind": "ROOT_ADDITIVE_TEST_ACCEPTANCE",
+  "owner": "/root",
+  "integration_base": "b0ffd21283f0bf5e2b513b73f343e8783d0ab5b0",
+  "source_review_base": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "replay": "Only evidence changed between bases; exact reviewed source preimage/postimage verified.",
+  "path": "backend/crates/platform/auth/tests/jwt_verifier.rs",
+  "sha256": "9a68df9056b171aa3efafa7130771b9c48675a74c9f5987c7da9566285c49086",
+  "test_declarations": 7,
+  "selected_probe_declarations": 3,
+  "original_test_assertions": "Preserved byte-for-byte; only existing key fixture extracted.",
+  "reviewers": [
+    "/root/fast_gate_review",
+    "/root/capture_review"
+  ],
+  "runtime_executed_at_acceptance": 0,
+  "next": "Freeze clean test commit, establish actual same-signer behavioral RED, formal admission, shared-helper implementation and same-probe GREEN."
+}

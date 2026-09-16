@@ -57,7 +57,7 @@ esac
 
 [[ -f "${map_path}" ]] || { echo "cargo-postgres: map missing: ${map_path}" >&2; exit 1; }
 
-postgres_image="postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56"
+postgres_image="postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280"
 container_name="console-cargo-postgres-${USER:-user}-$$"
 database="console_cargo_test_$$_contract"
 container_env_file=""
@@ -77,6 +77,7 @@ runtime_password="$(secret)"
 leave_command_password="$(secret)"
 ontology_command_password="$(secret)"
 platform_force_command_password="$(secret)"
+auth_test_password="$(secret)"
 
 umask 077
 container_env_file="$(mktemp "${TMPDIR:-/tmp}/console-cargo-postgres-container.XXXXXX")"
@@ -87,6 +88,7 @@ chmod 600 "${container_env_file}"
   printf 'CONSOLE_APP_POSTGRES_PASSWORD=%s\nCONSOLE_RT_POSTGRES_PASSWORD=%s\n' "${app_password}" "${runtime_password}"
   printf 'CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=%s\n' \
     "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}"
+  printf 'CONSOLE_TEST_AUTH_POSTGRES_PASSWORD=%s\n' "${auth_test_password}"
 } >"${container_env_file}"
 
 if ! docker image inspect "${postgres_image}" >/dev/null 2>&1; then
@@ -131,6 +133,64 @@ docker exec "${container_name}" sh -ceu 'set -a; . /topology.env; exec bash /top
 bash "${repo_root}/backend/ci/gates/writer-ownership/canonical-enforce.sh" \
   "${repo_root}" "${container_name}" "canonical_probe_$$"
 
+# Comparison fixture only: migrations must supply the auth role and its grants.
+# This exclusive disposable container receives one password initialization. Do
+# not create or enable the absent role: custody tests must expose that absence.
+# The secret travels through the existing protected container env file, not argv.
+docker exec -i "${container_name}" sh -s <<'AUTH_TRANSPORT'
+set -eu
+export PGPASSWORD="${POSTGRES_ADMIN_PASSWORD}"
+psql -X -v ON_ERROR_STOP=1 -U "${POSTGRES_ADMIN_USER}" -d "${POSTGRES_DB}" <<'AUTH_SQL'
+\getenv auth_password CONSOLE_TEST_AUTH_POSTGRES_PASSWORD
+CREATE TEMP TABLE auth_transport_roles_before AS SELECT * FROM pg_catalog.pg_roles;
+CREATE TEMP TABLE auth_transport_members_before AS SELECT * FROM pg_catalog.pg_auth_members;
+-- Exclude temporary relations including their separate pg_toast_temp namespace.
+-- The snapshot table itself may allocate TOAST after its SELECT is evaluated.
+CREATE TEMP TABLE auth_transport_relations_before AS
+  SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relpersistence <> 't';
+DO $check$
+DECLARE r record;
+BEGIN
+  SELECT * INTO r FROM pg_catalog.pg_roles WHERE rolname = 'console_auth_rt';
+  IF NOT FOUND THEN
+    RAISE NOTICE 'account-auth-transport: UNPROVISIONED; role absent, no role or grants synthesized';
+    RETURN;
+  END IF;
+  IF NOT r.rolcanlogin OR r.rolsuper OR r.rolbypassrls OR r.rolcreaterole
+     OR r.rolcreatedb OR r.rolreplication THEN
+    RAISE EXCEPTION 'account-auth-transport: existing role does not satisfy restricted LOGIN topology';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles privileged
+    WHERE (privileged.rolsuper OR privileged.rolbypassrls OR privileged.rolcreaterole)
+      AND (pg_has_role(r.oid, privileged.oid, 'SET') OR pg_has_role(r.oid, privileged.oid, 'USAGE'))
+  ) THEN
+    RAISE EXCEPTION 'account-auth-transport: existing role can assume or inherit an administrative role';
+  END IF;
+END
+$check$;
+SELECT format('ALTER ROLE console_auth_rt PASSWORD %L', :'auth_password')
+WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'console_auth_rt')
+\gexec
+DO $check$
+BEGIN
+  -- pg_roles masks password material. All capabilities and memberships must
+  -- remain exact; this fixture is never permission repair.
+  IF EXISTS ((SELECT * FROM pg_catalog.pg_roles EXCEPT SELECT * FROM auth_transport_roles_before)
+    UNION ALL (SELECT * FROM auth_transport_roles_before EXCEPT SELECT * FROM pg_catalog.pg_roles))
+    OR EXISTS ((SELECT * FROM pg_catalog.pg_auth_members EXCEPT SELECT * FROM auth_transport_members_before)
+    UNION ALL (SELECT * FROM auth_transport_members_before EXCEPT SELECT * FROM pg_catalog.pg_auth_members))
+    OR EXISTS ((SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relpersistence <> 't'
+      EXCEPT SELECT * FROM auth_transport_relations_before)
+    UNION ALL (SELECT * FROM auth_transport_relations_before EXCEPT
+      SELECT oid, relowner, relacl FROM pg_catalog.pg_class WHERE relpersistence <> 't')) THEN
+    RAISE EXCEPTION 'account-auth-transport: topology or privileges changed during password-only setup';
+  END IF;
+END
+$check$;
+AUTH_SQL
+AUTH_TRANSPORT
+
 port_mapping="$(docker port "${container_name}" 5432/tcp)"
 port="${port_mapping##*:}"
 case "${port}" in
@@ -146,6 +206,10 @@ chmod 600 "${test_env_file}"
   printf 'CONSOLE_APALIS_OWNER_DATABASE_URL=%s\n' "${apalis_owner_database_url}"
   printf 'CONSOLE_APALIS_RUNTIME_DATABASE_URL=%s\n' "${apalis_runtime_database_url}"
   printf 'CONSOLE_APALIS_ADMIN_DATABASE_URL=%s\n' "${database_url}"
+  printf 'CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:%s@127.0.0.1:%s/%s\n' "${leave_command_password}" "${port}" "${database}"
+  printf 'CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:%s@127.0.0.1:%s/%s\n' "${ontology_command_password}" "${port}" "${database}"
+  printf 'CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:%s@127.0.0.1:%s/%s\n' "${platform_force_command_password}" "${port}" "${database}"
+  printf 'CONSOLE_TEST_AUTH_DATABASE_URL=postgres://console_auth_rt:%s@127.0.0.1:%s/%s\n' "${auth_test_password}" "${port}" "${database}"
 } >"${test_env_file}"
 
 while IFS= read -r line || [[ -n "${line}" ]]; do

@@ -1,0 +1,3035 @@
+{
+  "kind": "FINITE_PUBLIC_TERMS_READ_RETENTION_CANDIDATE",
+  "version": 1,
+  "preparer": "/root/capture_review",
+  "repository_writer": "/root",
+  "source_head": "0007132535578f7abdafeb5192cd07c38376f06d",
+  "candidate_root": "/private/tmp/terms-public-read-retention-00071325",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-public-terms-read",
+  "status": "FROZEN_FOR_INDEPENDENT_ROOT_REVIEW_AND_SERIAL_IMPORT",
+  "record_count": 181,
+  "original_bytes": 7870313,
+  "archive_bytes": 1679118,
+  "manifest_hash_checks": [
+    {
+      "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/manifest.json",
+      "sha256": "56b7c9501cb4abb357ba07c645dacd5d1c98e05eae66818cb562a96e6a33dadb",
+      "artifact_hashes_verified": 5
+    },
+    {
+      "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/manifest.json",
+      "sha256": "5e7d4e53b7fc65820d3009d3428aa7f9292d4fcd0d773564a3b89319eb50b7f8",
+      "artifact_hashes_verified": 6
+    },
+    {
+      "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/manifest.json",
+      "sha256": "8052d6ac2265358beca4a73f381ce0e98042da4c9c868aae744b3bc562f35fb6",
+      "artifact_hashes_verified": 8
+    },
+    {
+      "path": "/private/tmp/account-terms-security-tests-dba42d1a/manifest.json",
+      "sha256": "f01995994d6d40db30e6d10d905c6eb2b09f8cecd52c99921569c1682fca96c0",
+      "artifact_hashes_verified": 3
+    },
+    {
+      "path": "/private/tmp/account-terms-read-driver-v2-inventory/metadata.json",
+      "sha256": "6cc6f9652127268736edf7519de45799393b3c0d852b18b889380fc30d61db85",
+      "artifact_hashes_verified": 3
+    },
+    {
+      "path": "/private/tmp/account-terms-current10-driver-v1-inventory/metadata.json",
+      "sha256": "cfcd265ef3034a9bb9c4578c46042011c39a218f511e4a03abc5495bfd73cc58",
+      "artifact_hashes_verified": 3
+    }
+  ],
+  "records": [
+    {
+      "category": "preparation/http-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/manifest.json"
+      },
+      "original_sha256": "56b7c9501cb4abb357ba07c645dacd5d1c98e05eae66818cb562a96e6a33dadb",
+      "original_bytes": 2953,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v1/manifest.json.gz",
+      "archive_relative_path": "preparation/http-tests-v1/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v1/manifest.json.gz",
+      "archive_sha256": "cba565c4fbaf732e4cf95531235b08d9462f539c6d617e5eed989c378b6ab195",
+      "archive_bytes": 1346,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/base-auth_rest.rs"
+      },
+      "original_sha256": "9e62c1e0c2c4d81cc8c5d6c62210d59851bcdb44a11e26f49c4eab10478d7b25",
+      "original_bytes": 234443,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v1/base-auth_rest.rs.gz",
+      "archive_relative_path": "preparation/http-tests-v1/base-auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v1/base-auth_rest.rs.gz",
+      "archive_sha256": "30dd85d5cdd5bf6a3ca946ef8b7f2c533d12caca40be1ef5e4f2833c7c28fff6",
+      "archive_bytes": 43199,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/terms_read_module.rs"
+      },
+      "original_sha256": "870d3fead7ca7f47f98c28d3a76be361c3ade9133e2c4e4e0785e6318b3ee9cf",
+      "original_bytes": 4212,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v1/terms_read_module.rs.gz",
+      "archive_relative_path": "preparation/http-tests-v1/terms_read_module.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v1/terms_read_module.rs.gz",
+      "archive_sha256": "510310523d034a817243488edd8856927dfa3804c8b8ec7db6434a2dd61afe76",
+      "archive_bytes": 1201,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/backend/app/tests/auth_rest.rs"
+      },
+      "original_sha256": "5af618bba691d3def394acc8a11bc7e511d4f919671c13933d0c33618fdad94c",
+      "original_bytes": 238790,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v1/backend/app/tests/auth_rest.rs.gz",
+      "archive_relative_path": "preparation/http-tests-v1/backend/app/tests/auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v1/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "1ce7d2c98668124a195bd0949d84e1857672ea5d5eaf164b885fc3824e454f1b",
+      "archive_bytes": 43855,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/candidate.patch"
+      },
+      "original_sha256": "50b799bd3c8baf12291ff120854adc4b1d88e9b502da7f6cdb8d0302e530d37a",
+      "original_bytes": 4957,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v1/candidate.patch.gz",
+      "archive_relative_path": "preparation/http-tests-v1/candidate.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v1/candidate.patch.gz",
+      "archive_sha256": "096d4b99b8745970b1d1fbab57f57be98897e1b51657bac4ec655f667052fb9a",
+      "archive_bytes": 1457,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v1-candidate-f96eddd3/guide.json"
+      },
+      "original_sha256": "55fdca13b0df816351658be248a387fc5f39c1eb035fe0b606b3c4d4aa6e14ab",
+      "original_bytes": 15402,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v1/guide.json.gz",
+      "archive_relative_path": "preparation/http-tests-v1/guide.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v1/guide.json.gz",
+      "archive_sha256": "639361c535ed188e963c4ca45352d75c106a30232d28b09aa9dcb91ce46e8f7a",
+      "archive_bytes": 5947,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/manifest.json"
+      },
+      "original_sha256": "5e7d4e53b7fc65820d3009d3428aa7f9292d4fcd0d773564a3b89319eb50b7f8",
+      "original_bytes": 3114,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/manifest.json.gz",
+      "archive_relative_path": "preparation/http-tests-v2/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/manifest.json.gz",
+      "archive_sha256": "15cefcebc343f1a8764fe05193f6e800466f06d869a3f32234e01a30f3acffd5",
+      "archive_bytes": 1454,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/base-auth_rest.rs"
+      },
+      "original_sha256": "9e62c1e0c2c4d81cc8c5d6c62210d59851bcdb44a11e26f49c4eab10478d7b25",
+      "original_bytes": 234443,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/base-auth_rest.rs.gz",
+      "archive_relative_path": "preparation/http-tests-v2/base-auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/base-auth_rest.rs.gz",
+      "archive_sha256": "30dd85d5cdd5bf6a3ca946ef8b7f2c533d12caca40be1ef5e4f2833c7c28fff6",
+      "archive_bytes": 43199,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/terms_read_module.rs"
+      },
+      "original_sha256": "36cc2eb5bba0928c0d5dbb7b38f5159e6e31c9cc75ea91dbe4faed353216b4fc",
+      "original_bytes": 6134,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/terms_read_module.rs.gz",
+      "archive_relative_path": "preparation/http-tests-v2/terms_read_module.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/terms_read_module.rs.gz",
+      "archive_sha256": "f6bef756203d00e6db32cd6654315794d39ebe5de55825a8e2cfa6eb660850ac",
+      "archive_bytes": 1574,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/fixture-extraction.json"
+      },
+      "original_sha256": "2c0a511deb6435000aed5c5d838f9accc792e8051c61d039894ce4838abce93a",
+      "original_bytes": 987,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/fixture-extraction.json.gz",
+      "archive_relative_path": "preparation/http-tests-v2/fixture-extraction.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/fixture-extraction.json.gz",
+      "archive_sha256": "cbbef096dbbddf2525fd71f95fc1f8952fc3e6bf70f71d609d4e36bd54ccb5b1",
+      "archive_bytes": 328,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/backend/app/tests/auth_rest.rs"
+      },
+      "original_sha256": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+      "original_bytes": 240840,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/backend/app/tests/auth_rest.rs.gz",
+      "archive_relative_path": "preparation/http-tests-v2/backend/app/tests/auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "5485504cd8e89c5acd8f898fd59398eac2bb92c08ddf5e63b17231469b8a01f4",
+      "archive_bytes": 44143,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/candidate.patch"
+      },
+      "original_sha256": "104c00f183c4191290af6c877777c2c0c6a4dfb3d8b74cb39e5294677d6d0329",
+      "original_bytes": 7835,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/candidate.patch.gz",
+      "archive_relative_path": "preparation/http-tests-v2/candidate.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/candidate.patch.gz",
+      "archive_sha256": "85a84450b38a31dd26563d5da0cb2f19f9ac6486f73905487be4e7ec4b127d0a",
+      "archive_bytes": 2152,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/http-tests-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-candidate-f96eddd3/guide.json"
+      },
+      "original_sha256": "79d1f21c56db438304039a016f6ec107016f6006a5951856ca0485a9476a0c26",
+      "original_bytes": 17787,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/http-tests-v2/guide.json.gz",
+      "archive_relative_path": "preparation/http-tests-v2/guide.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/http-tests-v2/guide.json.gz",
+      "archive_sha256": "97adc03bfb72ab84e84ac663a116d2bc63c5e111bad63bdb6f86da803a7a57f2",
+      "archive_bytes": 6760,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/manifest.json"
+      },
+      "original_sha256": "8052d6ac2265358beca4a73f381ce0e98042da4c9c868aae744b3bc562f35fb6",
+      "original_bytes": 2153,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/manifest.json.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/manifest.json.gz",
+      "archive_sha256": "c17de8e82bef3efda82cb9a418204e804fb94bfdfee0c9ce872bb0de13ff5c80",
+      "archive_bytes": 1135,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/backend/app/tests/auth_rest.rs"
+      },
+      "original_sha256": "2f26d99fc11c99acbe6fd5c5c7cadffc1ad4fb4e004fbf8cc3cd46dcf4e9093e",
+      "original_bytes": 240862,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/backend/app/tests/auth_rest.rs.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/backend/app/tests/auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "d61b511841ddb4576538b2c286f2fe115ff83b4cf5fce641072d4da9ca1fdf89",
+      "archive_bytes": 44154,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/backend/app/tests/auth_rest/account_fence_projection.rs"
+      },
+      "original_sha256": "74ad1caf266ec088b08c1e447ccb3d1335772e2bc70f6d1e4d807854b7de8d6f",
+      "original_bytes": 78820,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/backend/app/tests/auth_rest/account_fence_projection.rs.gz",
+      "archive_sha256": "6745710724b8f451a92805b676903f42ea45552508e8467c4879e8fb328d3414",
+      "archive_bytes": 13521,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql"
+      },
+      "original_sha256": "eb090fe7a67ba216097a0ec04672030116bf0550ba6772ac17d90e888f94f7ab",
+      "original_bytes": 50537,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql.gz",
+      "archive_sha256": "0134556d55faa78724bbb088a2a792f234e0dea7cc129a73b889114808582ba4",
+      "archive_bytes": 6155,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/base-auth_rest.rs"
+      },
+      "original_sha256": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+      "original_bytes": 240840,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/base-auth_rest.rs.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/base-auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/base-auth_rest.rs.gz",
+      "archive_sha256": "5485504cd8e89c5acd8f898fd59398eac2bb92c08ddf5e63b17231469b8a01f4",
+      "archive_bytes": 44143,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/base-account_fence_projection.rs"
+      },
+      "original_sha256": "ee5ef5a220be6e9914d4196ad3143c828d9d5586632b1895ae8a7e5eefaa515c",
+      "original_bytes": 64147,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/base-account_fence_projection.rs.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/base-account_fence_projection.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/base-account_fence_projection.rs.gz",
+      "archive_sha256": "5f4365776e501f258dd1eea0acd6bb73e1817fb8ffcac2d2b8f02a119182dd31",
+      "archive_bytes": 11155,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/terms_current_module.rs"
+      },
+      "original_sha256": "f9d1250ed52a8dd0a0baeea893448fb2d5a568be0ee1a9bc961a2d04b8b5e96f",
+      "original_bytes": 13649,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/terms_current_module.rs.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/terms_current_module.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/terms_current_module.rs.gz",
+      "archive_sha256": "72c46097c28a54ab84c24bd72f31db047851de7de65709f10f4ead2d6467eb37",
+      "archive_bytes": 3332,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/candidate.patch"
+      },
+      "original_sha256": "bc4fdfa5dc2cfd1de2f05a0976e6dee37301addcba097afe985d7ab22409ae15",
+      "original_bytes": 71207,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/candidate.patch.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/candidate.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/candidate.patch.gz",
+      "archive_sha256": "ad2863d1a79ea9f7be3b86771666f22f2717299b263a392eec0005fc129a8bc7",
+      "archive_bytes": 9669,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/custody-tests-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-candidate-dba42d1a/guide.json"
+      },
+      "original_sha256": "9e133a926888a44503f631c8b62a24b8a4599ec524883a582201e0857f0a03df",
+      "original_bytes": 8920,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/custody-tests-v1/guide.json.gz",
+      "archive_relative_path": "preparation/custody-tests-v1/guide.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/custody-tests-v1/guide.json.gz",
+      "archive_sha256": "c95ad387baba4f2090932393fc14fbfa05fea3414c16b7c985446fda4e8de6d0",
+      "archive_bytes": 3711,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/security-tests",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-security-tests-dba42d1a/manifest.json"
+      },
+      "original_sha256": "f01995994d6d40db30e6d10d905c6eb2b09f8cecd52c99921569c1682fca96c0",
+      "original_bytes": 1746,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/security-tests/manifest.json.gz",
+      "archive_relative_path": "preparation/security-tests/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/security-tests/manifest.json.gz",
+      "archive_sha256": "55421356df505da9418c79fa0a7a41ea404b622e66407bd5f2b1b9830848af62",
+      "archive_bytes": 989,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/security-tests",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-security-tests-dba42d1a/module.rs"
+      },
+      "original_sha256": "4a7626a2107318315af1d61d228bd12b3c950551851f4e90351b1a626e330d75",
+      "original_bytes": 3306,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/security-tests/module.rs.gz",
+      "archive_relative_path": "preparation/security-tests/module.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/security-tests/module.rs.gz",
+      "archive_sha256": "0e4daaef4a07fba4edce6d42d52093b1bf950596fe330384e212d23f614c1ad6",
+      "archive_bytes": 1069,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/security-tests",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-security-tests-dba42d1a/candidate.patch"
+      },
+      "original_sha256": "f8b3980c251fd61842d3414db9bfce9df8b22eeacdf586ebb9830639797074bf",
+      "original_bytes": 3572,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/security-tests/candidate.patch.gz",
+      "archive_relative_path": "preparation/security-tests/candidate.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/security-tests/candidate.patch.gz",
+      "archive_sha256": "832bc1ec78feb4b7019f1bf0846d07882aed1aecace0f6946a770f0c497d4332",
+      "archive_bytes": 1147,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "preparation/security-tests",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-security-tests-dba42d1a/backend/app/tests/auth_rest.rs"
+      },
+      "original_sha256": "d16fef923a33f334b7c8d306d0f4c75fcb9eabda70853b8d2144ee9d367d5ad3",
+      "original_bytes": 244146,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/preparation/security-tests/backend/app/tests/auth_rest.rs.gz",
+      "archive_relative_path": "preparation/security-tests/backend/app/tests/auth_rest.rs.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/preparation/security-tests/backend/app/tests/auth_rest.rs.gz",
+      "archive_sha256": "5a91f37c209ac85b6ac84e01a440afe7ae6ddcebabaa53dbc956759d4b86640f",
+      "archive_bytes": 44600,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/manifest.json"
+      },
+      "original_sha256": "43933f1fe70fa8e00371123df96936c3a43c79caf7a43144a666326690d20077",
+      "original_bytes": 2582,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/manifest.json.gz",
+      "archive_relative_path": "implementation/frozen-http/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/manifest.json.gz",
+      "archive_sha256": "927647ba1afd59c6a5cc4e2daa2bb1a917c313485184a60d396f2fe1468ab40a",
+      "archive_bytes": 1179,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/implementation.patch"
+      },
+      "original_sha256": "02fb5f7fb550b5db25e50ca0f476c573c1986adbb2d1c426b1e7e3c4d9dfc1b6",
+      "original_bytes": 17892,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/implementation.patch.gz",
+      "archive_relative_path": "implementation/frozen-http/implementation.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/implementation.patch.gz",
+      "archive_sha256": "36ab1ed93d3f057fe2c8c6f7d78378c7b457c2a32bfde2d0fe669d4c3aef7eb8",
+      "archive_bytes": 5232,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/guide.json"
+      },
+      "original_sha256": "fe946bb229c0b464e8f93e25b81acbf00f6cb50383ea63125cc9214cc406178a",
+      "original_bytes": 6590,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/guide.json.gz",
+      "archive_relative_path": "implementation/frozen-http/guide.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/guide.json.gz",
+      "archive_sha256": "c7f476d915bd4c358a011e6ff9836ed0c559ca83f7f439379e0ff43bc0bba65e",
+      "archive_bytes": 3116,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/postimages/backend/crates/platform/auth-rest/src/lib.rs"
+      },
+      "original_sha256": "0641fe3794f6e393ba07821628209af8b89137d986cc13ba9e86d52f2454dffa",
+      "original_bytes": 152027,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/postimages/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_relative_path": "implementation/frozen-http/postimages/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/postimages/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_sha256": "ecda16ad2d47c4eb074b4e0b297a2b04e72d3ecfeaa4f0949a6ff1734ff8cef8",
+      "archive_bytes": 36369,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/preimages/backend/crates/platform/auth-rest/src/lib.rs"
+      },
+      "original_sha256": "9faf699f8b0853dbb8bfa0822e2e107ac31d3113dcb1bf7b083299e32ee119de",
+      "original_bytes": 151175,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/preimages/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_relative_path": "implementation/frozen-http/preimages/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/preimages/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_sha256": "f9e839d2e5a82b172f1e05a934039db06239455888e36b80cafd2d030799f684",
+      "archive_bytes": 36107,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/postimages/backend/crates/platform/auth-rest/src/terms.rs"
+      },
+      "original_sha256": "da7957146342442feffdc57660d92a26a23dd20d788aac0673095ee8511b96e2",
+      "original_bytes": 10586,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/postimages/backend/crates/platform/auth-rest/src/terms.rs.txt.gz",
+      "archive_relative_path": "implementation/frozen-http/postimages/backend/crates/platform/auth-rest/src/terms.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/postimages/backend/crates/platform/auth-rest/src/terms.rs.txt.gz",
+      "archive_sha256": "31f9a0e0f29d8d577f47db86e203c865549654acb6ffafa23d610f8ca00daa6f",
+      "archive_bytes": 2994,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/postimages/backend/app/src/lib.rs"
+      },
+      "original_sha256": "fe253cc9f4a7653b345106926bb996ba941f4874d300e209fdcdb9771b518209",
+      "original_bytes": 289689,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/postimages/backend/app/src/lib.rs.txt.gz",
+      "archive_relative_path": "implementation/frozen-http/postimages/backend/app/src/lib.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/postimages/backend/app/src/lib.rs.txt.gz",
+      "archive_sha256": "4966c78e2cc5b6d42c19aae12aefe76c0ebde53de1ca013558ca06b976f49755",
+      "archive_bytes": 65672,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation/frozen-http",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a/preimages/backend/app/src/lib.rs"
+      },
+      "original_sha256": "534ba2bf73699dbe322406ca287828c42f3d62e7a343fdc79638b145f8db3cfa",
+      "original_bytes": 288809,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/frozen-http/preimages/backend/app/src/lib.rs.txt.gz",
+      "archive_relative_path": "implementation/frozen-http/preimages/backend/app/src/lib.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/frozen-http/preimages/backend/app/src/lib.rs.txt.gz",
+      "archive_sha256": "aee7115c9af360df4529ba74aca211eac15a661f31e7cb21347e93e51966fa62",
+      "archive_bytes": 65485,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-review-inventory.json"
+      },
+      "original_sha256": "5b181d9eb34ee2c8c1cd671587eed13eeca48505037e7a36b5bb78abb6f0f89b",
+      "original_bytes": 4464,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-read-driver-v1-independent-review-inventory.json.gz",
+      "archive_relative_path": "reviews/account-terms-read-driver-v1-independent-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-read-driver-v1-independent-review-inventory.json.gz",
+      "archive_sha256": "f9d813fc08fb29a0229240d2f810bea639fd32088105fc440f170e0d187ad9ff",
+      "archive_bytes": 2365,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1/driver.sh"
+      },
+      "original_sha256": "e3a251f1f93cacc216e03cd90e754e26f9eeb072008857b690e7a2116362afae",
+      "original_bytes": 10305,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1/driver.sh.gz",
+      "archive_relative_path": "drivers/http-v1/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1/driver.sh.gz",
+      "archive_sha256": "0e9fd7cc6e71737e0a6e7faacd097df1e2fcf98fe391a66b453abeca902b91f8",
+      "archive_bytes": 3645,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1/probe.py"
+      },
+      "original_sha256": "66b7b0db9b805be86f0e8b62ed1d02de69cbb24e0d0b12c95b716ea28b047811",
+      "original_bytes": 4998,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1/probe.py.gz",
+      "archive_relative_path": "drivers/http-v1/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1/probe.py.gz",
+      "archive_sha256": "e44ac284c05c6650b6b07ed6d6cc23da9aa81f3774d49131e6638fcc3fa521c3",
+      "archive_bytes": 1990,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1/metadata.json"
+      },
+      "original_sha256": "8d83632f8a948b6a294a805b35c48debdef2f0ca8e01dadd028c775b2681e893",
+      "original_bytes": 507,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1/metadata.json.gz",
+      "archive_relative_path": "drivers/http-v1/metadata.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1/metadata.json.gz",
+      "archive_sha256": "c4c4c086ba5a8ec464d01dd7cc4c4489b9cbc7ca8cb8030a9cd54c466bbb35e3",
+      "archive_bytes": 383,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1/parser-checks.json"
+      },
+      "original_sha256": "5b6d6a60b5d6e4f413bfa608d822e992eb01b9b58d7a345db0dd45c1a2cd540e",
+      "original_bytes": 250,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1/parser-checks.json.gz",
+      "archive_relative_path": "drivers/http-v1/parser-checks.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1/parser-checks.json.gz",
+      "archive_sha256": "209faefbfe30c894e7c778e38c3d44e3ff7b54aec4fbc775cf0ad911a06d54df",
+      "archive_bytes": 156,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/collision-name.txt"
+      },
+      "original_sha256": "b8ff95197561cd6f05ef3e62ced7d1eb89e4cc56ddf755cc13c97d82b0778fa1",
+      "original_bytes": 40,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/collision-name.txt.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/collision-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/collision-name.txt.gz",
+      "archive_sha256": "94915aec41fde9540047695dfa20a5fc4828de7c6a087e5a2c9ef8c38acfb2d3",
+      "archive_bytes": 60,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/fake-docker-invocations.jsonl"
+      },
+      "original_sha256": "ec9d2fc4d968c0ff05b87c2cb12944842005d0b615bf622dc314fbf162992f38",
+      "original_bytes": 194,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/fake-docker-invocations.jsonl.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/fake-docker-invocations.jsonl.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/fake-docker-invocations.jsonl.gz",
+      "archive_sha256": "924ca73f117dafdaa0a1daa9f1ef952063625ff452d731dcebcc5fd36b64d485",
+      "archive_bytes": 129,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/ownership-collision-control.sh"
+      },
+      "original_sha256": "ac46b1b06be290556821093bd6f7c5f9fb60888c9de83d7d186852f344e75a3d",
+      "original_bytes": 903,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/ownership-collision-control.sh.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/ownership-collision-control.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/ownership-collision-control.sh.gz",
+      "archive_sha256": "e11595a2d6f6e24090a2970c005da6c0c87aaf0019886bad6f3207b697bbd80d",
+      "archive_bytes": 437,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/ownership-control-result.json"
+      },
+      "original_sha256": "418e7a93fe29c6c463d3a862820f4c7cbad37c2f89cdeff827b2e912b51abaee",
+      "original_bytes": 134,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/ownership-control-result.json.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/ownership-control-result.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/ownership-control-result.json.gz",
+      "archive_sha256": "94cf7bbde11e9420085356f716859b6c7b3470950c93705c1209939cb55808ba",
+      "archive_bytes": 112,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/parser-control-results.json"
+      },
+      "original_sha256": "15c78787c435d8765441fd378af5a0bef6879a0d5bd4d5346a4892b5804101d1",
+      "original_bytes": 3499,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/parser-control-results.json.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/parser-control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/parser-control-results.json.gz",
+      "archive_sha256": "7d621f48a52e38115ef85f018aa56682675e14db69d54f1215f71aeec89462a1",
+      "archive_bytes": 399,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/synthetic-extra-case-record.log"
+      },
+      "original_sha256": "f62790f11d45a89ae996106fb927f77068afea2fdb34721166a68f0d8f71cef9",
+      "original_bytes": 842,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/synthetic-extra-case-record.log.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/synthetic-extra-case-record.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/synthetic-extra-case-record.log.gz",
+      "archive_sha256": "0bab2cb9570b1c02362ec74a491924b3b1b5750bca7f8ac672c717b4de021265",
+      "archive_bytes": 427,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/synthetic-extra-singular-discovery.log"
+      },
+      "original_sha256": "d2b2828ea1c79eda89a70e8c7a5ed92111a276346a643171ca9aeb658829ab45",
+      "original_bytes": 827,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/synthetic-extra-singular-discovery.log.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/synthetic-extra-singular-discovery.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/synthetic-extra-singular-discovery.log.gz",
+      "archive_sha256": "8a2af33dcf9fb8c5f457be0191e2f6e28df44e3bc066218c8d78f9d46e6bf2ab",
+      "archive_bytes": 410,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/synthetic-green.log"
+      },
+      "original_sha256": "92d92cae7173e22f388bbd2665cc82056e13c0b05072aa11e98756393918b2ad",
+      "original_bytes": 812,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/synthetic-green.log.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/synthetic-green.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/synthetic-green.log.gz",
+      "archive_sha256": "b19f7e71f7978bd536e936ff17b28a79de1a21cc03981a70f3217d71c7ca6cbc",
+      "archive_bytes": 404,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v1-failure-controls",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v1-independent-controls-inventory/fake-bin/docker"
+      },
+      "original_sha256": "fbdb2a320fab12d022a17f10b91f0e5aa008e7c521c35aad158d25f1e737d1de",
+      "original_bytes": 293,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v1-failure-controls/fake-bin-docker.txt.gz",
+      "archive_relative_path": "drivers/http-v1-failure-controls/fake-bin-docker.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v1-failure-controls/fake-bin-docker.txt.gz",
+      "archive_sha256": "d0f67c0d8b9b16b47a132dd14b23ec83475bc04b6f788293d648341ca4144a16",
+      "archive_bytes": 235,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/parent",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-auth-rest-full191-driver.sh"
+      },
+      "original_sha256": "ed3d8ea6d7a767c843ca3d86cf80a8340f150601c0d30220f9cf7ff94bef9bfa",
+      "original_bytes": 10257,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/parent/account-auth-rest-full191-driver.sh.gz",
+      "archive_relative_path": "drivers/parent/account-auth-rest-full191-driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/parent/account-auth-rest-full191-driver.sh.gz",
+      "archive_sha256": "9f42d612f3ec11a20a88b4ecf091acd4c1920a3de62994fee12dbe04c7a74e7e",
+      "archive_bytes": 3633,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v2-inventory/metadata.json"
+      },
+      "original_sha256": "6cc6f9652127268736edf7519de45799393b3c0d852b18b889380fc30d61db85",
+      "original_bytes": 3473,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2/metadata.json.gz",
+      "archive_relative_path": "drivers/http-v2/metadata.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2/metadata.json.gz",
+      "archive_sha256": "ede0277a7269cf0da70879cc5a0dbc78e149fd3714dd04a8bdf85a9190911918",
+      "archive_bytes": 1766,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v2-inventory/driver.sh"
+      },
+      "original_sha256": "ce120352a72d611697ac08013f990876076e08f5318edad5d9c0ccc87c12b090",
+      "original_bytes": 11292,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2/driver.sh.gz",
+      "archive_relative_path": "drivers/http-v2/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2/driver.sh.gz",
+      "archive_sha256": "ebc04fe221ad6667946284f6f34e44ca8bfe6d1d953b58ff2ace502120ef8dcb",
+      "archive_bytes": 3856,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v2-inventory/probe.py"
+      },
+      "original_sha256": "241a57af5f4472b28b4bcc6fe5dbdb8780cfaf282514d2cbaf9968455e8121e4",
+      "original_bytes": 5348,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2/probe.py.gz",
+      "archive_relative_path": "drivers/http-v2/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2/probe.py.gz",
+      "archive_sha256": "0124756169b834add7ed2c951c6f3a22061e99fe3f34842321eee17c3f1e72ac",
+      "archive_bytes": 2132,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v2-inventory/controls.py"
+      },
+      "original_sha256": "ac2b4e4fac1f99fd6752c3ba7568a1f689c73322bee1855feffe1747cbb544d9",
+      "original_bytes": 11072,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2/controls.py.gz",
+      "archive_relative_path": "drivers/http-v2/controls.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2/controls.py.gz",
+      "archive_sha256": "24b6d2a056149c1f215a27e7438a303a5a684e3e07d07e0f4c63995a4b3f538f",
+      "archive_bytes": 3747,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-controls-39l78exm/control-results.json"
+      },
+      "original_sha256": "0237e342aedd8b2dc3302f4121ca085ef2447fcf93b2487e562dc6ab5cdcaf48",
+      "original_bytes": 11523,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2/author-final-control-results.json.gz",
+      "archive_relative_path": "drivers/http-v2/author-final-control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2/author-final-control-results.json.gz",
+      "archive_sha256": "4ab080554c371f7b56300d083416bc14ad2f37fe5a993d2ad9ae7411395d14e3",
+      "archive_bytes": 1445,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v2-inventory/parser-checks.json"
+      },
+      "original_sha256": "4d16e9e5dabaead7951bcd3d62208ed37d285a1e9fefff04c18b510f9e28770d",
+      "original_bytes": 329,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2/parser-checks.json.gz",
+      "archive_relative_path": "drivers/http-v2/parser-checks.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2/parser-checks.json.gz",
+      "archive_sha256": "29a09ae751b338051a72e9be94bf2a19250703a81b869423f02088e0e467e955",
+      "archive_bytes": 235,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/custody-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-driver-v1-inventory/metadata.json"
+      },
+      "original_sha256": "cfcd265ef3034a9bb9c4578c46042011c39a218f511e4a03abc5495bfd73cc58",
+      "original_bytes": 5968,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/custody-v1/metadata.json.gz",
+      "archive_relative_path": "drivers/custody-v1/metadata.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/custody-v1/metadata.json.gz",
+      "archive_sha256": "552e1b1ef0b77d063fc6ccfd33adf65197659786149aac12f6cd4cf249da1fba",
+      "archive_bytes": 2446,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/custody-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-driver-v1-inventory/driver.sh"
+      },
+      "original_sha256": "f179a8dce974fb8b1207f4cfdb080a36fbe38d6db185075936b356ad1286f940",
+      "original_bytes": 11391,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/custody-v1/driver.sh.gz",
+      "archive_relative_path": "drivers/custody-v1/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/custody-v1/driver.sh.gz",
+      "archive_sha256": "28a618d4d64a8368d753a546013545e3e71b2106513136aed6fc3131b98da642",
+      "archive_bytes": 3877,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/custody-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-driver-v1-inventory/probe.py"
+      },
+      "original_sha256": "3b05cf29289d0834d1f03f031695b86dcd37aa091bcca77408df1afc7d4c6b0b",
+      "original_bytes": 5996,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/custody-v1/probe.py.gz",
+      "archive_relative_path": "drivers/custody-v1/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/custody-v1/probe.py.gz",
+      "archive_sha256": "eaff0536c873be11f5d8ea928314c42753a81d76ed73ae8750575227544bf3cf",
+      "archive_bytes": 2203,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/custody-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-driver-v1-inventory/controls.py"
+      },
+      "original_sha256": "1dd6621465e7e61dac834a44db7466ac9218968946a452a7b178fbe22ebd0a55",
+      "original_bytes": 11089,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/custody-v1/controls.py.gz",
+      "archive_relative_path": "drivers/custody-v1/controls.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/custody-v1/controls.py.gz",
+      "archive_sha256": "63e17f71a2e5d849d21121e786fb13434d85e077534c173191f94ce489ea82aa",
+      "archive_bytes": 3748,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/custody-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-current10-driver-v1-controls-pxane_v_/control-results.json"
+      },
+      "original_sha256": "0c67456e3f67851d7a48bcdbb356d8aa002d9085146aa8cbef29b23f70177744",
+      "original_bytes": 11567,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/custody-v1/author-final-control-results.json.gz",
+      "archive_relative_path": "drivers/custody-v1/author-final-control-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/custody-v1/author-final-control-results.json.gz",
+      "archive_sha256": "a4d1b0d0a69a2ce2348a93140be5df7501fe561fd19a56a4b28dd8b18e64cee1",
+      "archive_bytes": 1447,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/custody-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-driver-v1-inventory/parser-checks.json"
+      },
+      "original_sha256": "b0e4e11ddf85e75fd02a2b1696771a07ea0af1cab9fc10519bf26f66ffb138c4",
+      "original_bytes": 1026,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/custody-v1/parser-checks.json.gz",
+      "archive_relative_path": "drivers/custody-v1/parser-checks.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/custody-v1/parser-checks.json.gz",
+      "archive_sha256": "96ca1225e0297e992785ac982f8a009e4aa6546cb6b48cc7dc5a9af88475c61b",
+      "archive_bytes": 510,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-controls-gbqvazjk/control-results.json"
+      },
+      "original_sha256": "633b45db1702871ca3fd9365e4bb5e06111bc52991ca46583e74875180a031da",
+      "original_bytes": 11147,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/control-history/http-v2-prior49.json.gz",
+      "archive_relative_path": "drivers/control-history/http-v2-prior49.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/control-history/http-v2-prior49.json.gz",
+      "archive_sha256": "aea15b79f1d8a41247031bdf81aee3a915ed94346241a3f2ecbf29c296c3e9ec",
+      "archive_bytes": 1398,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-controls-594grome/control-results.json"
+      },
+      "original_sha256": "1ab5589c92832f762363da2d083a87dcd7636658026a674a0f86dc5654c0c80b",
+      "original_bytes": 11523,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/control-history/http-v2-independent52.json.gz",
+      "archive_relative_path": "drivers/control-history/http-v2-independent52.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/control-history/http-v2-independent52.json.gz",
+      "archive_sha256": "46ad053511e18dda46a72d1142e3cc03f5c5d85c5028369fcdefb0c4e9c5361f",
+      "archive_bytes": 1442,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/control-results.json"
+      },
+      "original_sha256": "e1e2a41ebfea11f04e9ed15b33c4d5f4473275ac1377f5726eed484d0a16d693",
+      "original_bytes": 2316,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/control-history/http-v2-additional8.json.gz",
+      "archive_relative_path": "drivers/control-history/http-v2-additional8.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/control-history/http-v2-additional8.json.gz",
+      "archive_sha256": "4d4c4f944820a8cdfa63ed39af993e99308a727020d722562e7b6e27881b9d19",
+      "archive_bytes": 653,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-current10-driver-v1-controls-37fx4t5p/control-results.json"
+      },
+      "original_sha256": "1e9f1e96728874554b6e48885b3434996b4b0d5e965b6381fb93954f9f2e30ac",
+      "original_bytes": 11569,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/control-history/custody-v1-historical-failed51of52.json.gz",
+      "archive_relative_path": "drivers/control-history/custody-v1-historical-failed51of52.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/control-history/custody-v1-historical-failed51of52.json.gz",
+      "archive_sha256": "529d351f768e91fb9156b50a470383d6be33e146c57fdc2f7d07fadccf58fe5c",
+      "archive_bytes": 1446,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-current10-driver-v1-controls-d0gn_rc0/control-results.json"
+      },
+      "original_sha256": "05cda3c333c04fb34c5834fccf50fc552f47c0e7cd10e0d49d6884cf617f905a",
+      "original_bytes": 11567,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/control-history/custody-v1-pre-snapshot52.json.gz",
+      "archive_relative_path": "drivers/control-history/custody-v1-pre-snapshot52.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/control-history/custody-v1-pre-snapshot52.json.gz",
+      "archive_sha256": "9357f101c4b446811448aa6be9a5ec4ebf4ee826240c2cf643b5b32e215d0f63",
+      "archive_bytes": 1446,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/control-history",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-current10-driver-v1-controls-91ifvpgr/control-results.json"
+      },
+      "original_sha256": "6e2b4352983df25fc461859e3dd9d428afef31a00fec3287e3143553b02c44a5",
+      "original_bytes": 11567,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/control-history/custody-v1-independent52.json.gz",
+      "archive_relative_path": "drivers/control-history/custody-v1-independent52.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/control-history/custody-v1-independent52.json.gz",
+      "archive_sha256": "723ea4d7521351b9f8606c71d00188c16c1b02cc61d69be87fb9452f86a1966b",
+      "archive_bytes": 1445,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/bin/docker"
+      },
+      "original_sha256": "92c94ee8c70115cd99929f5353da0651a0dadf9801ab65b6b903496f2d121511",
+      "original_bytes": 296,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/fake-bin-docker.txt.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/fake-bin-docker.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/fake-bin-docker.txt.gz",
+      "archive_sha256": "86240edbb4cd45149865c8fd3b5f91bd0af785884e79d7f664e27835a71100a1",
+      "archive_bytes": 223,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_owned/calls.jsonl"
+      },
+      "original_sha256": "e07248c1ea61cbe99070bb0a51b967e63f349b78a01fee7989bd09ba3829ef1d",
+      "original_bytes": 280,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_owned/calls.jsonl.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_owned/calls.jsonl.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_owned/calls.jsonl.gz",
+      "archive_sha256": "5951fe967bee5de32e63e365845924ad366d7b369bd9e9da924050478939fad0",
+      "archive_bytes": 160,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_owned/child.sh"
+      },
+      "original_sha256": "90dbc6c63b4018f3dc5773086aa39134ef860ec558592a84517363593565fcb1",
+      "original_bytes": 100,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_owned/child.sh.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_owned/child.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_owned/child.sh.gz",
+      "archive_sha256": "27b7d3101813ffd0545b07b997e794bf4c16520b27db58486ec913ca5aaf658b",
+      "archive_bytes": 94,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_owned/container.txt"
+      },
+      "original_sha256": "c0b5cccdf7b65600db0a1d06e3d8a1feaf994518652ed320a1bd9dee77377f00",
+      "original_bytes": 31,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_owned/container.txt.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_owned/container.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_owned/container.txt.gz",
+      "archive_sha256": "5b2f53cc29506d17950178466ea4f7824492e0393fef80117768bd8ec37bff41",
+      "archive_bytes": 49,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_owned/parent.sh"
+      },
+      "original_sha256": "fb04905ab0c12a23bd38ceac0e7b473d46cc5156f999c865613d1b2219528245",
+      "original_bytes": 2236,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_owned/parent.sh.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_owned/parent.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_owned/parent.sh.gz",
+      "archive_sha256": "0408de826350f03ef40fcb5c274c02342dcb6a10f6ee18abfdace5ec302c6181",
+      "archive_bytes": 950,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_foreign_collision/calls.jsonl"
+      },
+      "original_sha256": "9d15134d2f8e3926dac6043e6a4de6476284c5e59c1155c99ff95f919bd5a8fe",
+      "original_bytes": 233,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_foreign_collision/calls.jsonl.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_foreign_collision/calls.jsonl.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_foreign_collision/calls.jsonl.gz",
+      "archive_sha256": "4103aa02460bc29f33142caff0b352ac70a1e9ffdf6db391ee7d2cf3ca6de016",
+      "archive_bytes": 154,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_foreign_collision/child.sh"
+      },
+      "original_sha256": "90dbc6c63b4018f3dc5773086aa39134ef860ec558592a84517363593565fcb1",
+      "original_bytes": 100,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_foreign_collision/child.sh.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_foreign_collision/child.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_foreign_collision/child.sh.gz",
+      "archive_sha256": "27b7d3101813ffd0545b07b997e794bf4c16520b27db58486ec913ca5aaf658b",
+      "archive_bytes": 94,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_foreign_collision/container.txt"
+      },
+      "original_sha256": "c0b5cccdf7b65600db0a1d06e3d8a1feaf994518652ed320a1bd9dee77377f00",
+      "original_bytes": 31,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_foreign_collision/container.txt.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_foreign_collision/container.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_foreign_collision/container.txt.gz",
+      "archive_sha256": "5b2f53cc29506d17950178466ea4f7824492e0393fef80117768bd8ec37bff41",
+      "archive_bytes": 49,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "drivers/http-v2-additional8",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/terms-read-driver-v2-capture-_hw7h6o1/exported_trap_foreign_collision/parent.sh"
+      },
+      "original_sha256": "fb04905ab0c12a23bd38ceac0e7b473d46cc5156f999c865613d1b2219528245",
+      "original_bytes": 2236,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/drivers/http-v2-additional8/exported_trap_foreign_collision/parent.sh.gz",
+      "archive_relative_path": "drivers/http-v2-additional8/exported_trap_foreign_collision/parent.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/drivers/http-v2-additional8/exported_trap_foreign_collision/parent.sh.gz",
+      "archive_sha256": "0408de826350f03ef40fcb5c274c02342dcb6a10f6ee18abfdace5ec302c6181",
+      "archive_bytes": 950,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-acceptance-v2-independent-review-capture.json"
+      },
+      "original_sha256": "ef598801048f3297646b1f2254e299c19b0c9d640d6e10e0bf1bd4d3de38e25c",
+      "original_bytes": 10078,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-read-acceptance-v2-independent-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-read-acceptance-v2-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-read-acceptance-v2-independent-review-capture.json.gz",
+      "archive_sha256": "72b8f68b509d222d0952d4e641fe64923e0f5debe9dd0a5fd3aab38f556f36dd",
+      "archive_bytes": 4278,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-v2-capture-static-checks.json"
+      },
+      "original_sha256": "9e24bbf8c5a08ca7bf9cdd93cdaf8054bbf3af9a48b6e93066cf04b041087af5",
+      "original_bytes": 1517,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-read-v2-capture-static-checks.json.gz",
+      "archive_relative_path": "reviews/account-terms-read-v2-capture-static-checks.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-read-v2-capture-static-checks.json.gz",
+      "archive_sha256": "ab9dd1472ef4af2020df0ff91ae76d6ff254577d6fd71cb130e5a57924bc3f97",
+      "archive_bytes": 638,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read-driver-v2-independent-review-capture.json"
+      },
+      "original_sha256": "96a5d113e58b72ffb4e8c4ba0aca35ebc09fbb54dfd4c10741cc6021331040ec",
+      "original_bytes": 7371,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-read-driver-v2-independent-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-read-driver-v2-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-read-driver-v2-independent-review-capture.json.gz",
+      "archive_sha256": "0f02c6c2e9b1fb1cfa3a2903fce372bffa452a166ea0fb808f4873113731e42a",
+      "archive_bytes": 3363,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-dba42d1a-independent-runtime-review-capture.json"
+      },
+      "original_sha256": "e1634bc3692d635402918c0b2346100dfe2c388f26110239a682ccd6d4ce0077",
+      "original_bytes": 7094,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-read3-dba42d1a-independent-runtime-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-read3-dba42d1a-independent-runtime-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-read3-dba42d1a-independent-runtime-review-capture.json.gz",
+      "archive_sha256": "fcaadcf93e1bec60b27ac035c5a18d1ba0e5be77e2301558b19e1b4b9c6504a2",
+      "archive_bytes": 3405,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-dba42d1a-independent-count-clarification-capture.json"
+      },
+      "original_sha256": "f2196121d117d9f8ae3350b4abd4696a386185a9cf7b3b06f285c953bce63590",
+      "original_bytes": 2191,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-read3-dba42d1a-independent-count-clarification-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-read3-dba42d1a-independent-count-clarification-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-read3-dba42d1a-independent-count-clarification-capture.json.gz",
+      "archive_sha256": "5d5c113d753f3505975029717bc4a0284e2cd970b383d185e82404107e8bd790",
+      "archive_bytes": 1151,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-v1-independent-review-capture.json"
+      },
+      "original_sha256": "e69734b0aa5ac357e5a6127ce11f5c4a69aca6bff9a057191df51611565d7fce",
+      "original_bytes": 8376,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-current-custody-v1-independent-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-current-custody-v1-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-current-custody-v1-independent-review-capture.json.gz",
+      "archive_sha256": "f7adaa26cabb734bfea1076ba59ce5ed4cf64538744135ab6edd0d3e04e14e3d",
+      "archive_bytes": 3833,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-driver-v1-independent-review-capture.json"
+      },
+      "original_sha256": "5fcdd061444d65d093ad5cf158e557fdba063f4dfe4bca575deca6a83b490221",
+      "original_bytes": 4336,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-current10-driver-v1-independent-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-current10-driver-v1-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-current10-driver-v1-independent-review-capture.json.gz",
+      "archive_sha256": "4ae0087ccc5c8e91b33be2cf5d02679750431e2a36d79431f41273ee5274f2e3",
+      "archive_bytes": 2038,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-security-tests-independent-review-inventory.json"
+      },
+      "original_sha256": "a9a4c0c76a920cbd6f5bbe637022858713649a7c542336e8e448df54f7675c5e",
+      "original_bytes": 4216,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-security-tests-independent-review-inventory.json.gz",
+      "archive_relative_path": "reviews/account-terms-security-tests-independent-review-inventory.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-security-tests-independent-review-inventory.json.gz",
+      "archive_sha256": "39f477f9f64ca2f5cacb203407ec921213daf776a54bd654858bef0ecaaa601e",
+      "archive_bytes": 2093,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-implementation-dba42d1a-independent-review-capture.json"
+      },
+      "original_sha256": "f113b2acc7d7afec399e834ceef0819ec8046d8c1d5b258b8c6b7c32066736e6",
+      "original_bytes": 8712,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-public-terms-read-implementation-dba42d1a-independent-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-public-terms-read-implementation-dba42d1a-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-public-terms-read-implementation-dba42d1a-independent-review-capture.json.gz",
+      "archive_sha256": "c883f9908cfdd45c8ee72bc40977f42b966bb19ec2fdeb975bdac353f9b984b1",
+      "archive_bytes": 3855,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-9fa5cc7b-independent-red-review-capture.json"
+      },
+      "original_sha256": "43ddeb0a1bdd55ba26c9daa84830e2f0c2396e9c4cd9b5ef8091ab1101792b71",
+      "original_bytes": 6707,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-current10-9fa5cc7b-independent-red-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-current10-9fa5cc7b-independent-red-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-current10-9fa5cc7b-independent-red-review-capture.json.gz",
+      "archive_sha256": "0f380fc33835f637f9a349e3120595f8dfeb60083329fb798387b39a3db311a5",
+      "archive_bytes": 2850,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-integrated-00071325-independent-source-review-capture.json"
+      },
+      "original_sha256": "0856d59e21c294085d869a49053cf3a859e06c441ffc9d8be970acec50dd6ecc",
+      "original_bytes": 9470,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-integrated-00071325-independent-source-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-integrated-00071325-independent-source-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-integrated-00071325-independent-source-review-capture.json.gz",
+      "archive_sha256": "bf9be38ad709e6957e5b5d6c99d29a1bbce656c10399247c0a8b44072b9d0f46",
+      "archive_bytes": 4339,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-independent-green-mechanical-capture.json"
+      },
+      "original_sha256": "8a37430a28540b78d991bbfcc4e9bbf2446d4f78aad07756175b1bec03d5a886",
+      "original_bytes": 9238,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-00071325-independent-green-mechanical-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-00071325-independent-green-mechanical-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-00071325-independent-green-mechanical-capture.json.gz",
+      "archive_sha256": "b763b189c54ea06738112ad7b4f6471a6aee4e2ecdc3027071a0354b494fb181",
+      "archive_bytes": 2881,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-independent-green-runtime-review-capture.json"
+      },
+      "original_sha256": "487aa2f51a05a529443c93fc24494e59f02d201eee03ba57a6874003c6389e51",
+      "original_bytes": 15119,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/account-terms-00071325-independent-green-runtime-review-capture.json.gz",
+      "archive_relative_path": "reviews/account-terms-00071325-independent-green-runtime-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/account-terms-00071325-independent-green-runtime-review-capture.json.gz",
+      "archive_sha256": "7db5bc172694f574c147d5f875bdad4aef09cb3ff5bfca6473b2e96ee415b340",
+      "archive_bytes": 5311,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews/mechanical",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-capture-mechanical-kx4x8rjj/mechanical-checks.json"
+      },
+      "original_sha256": "6a732e10c49c4accba747bb4db65410a8472e34129ad6715e646438a26573a51",
+      "original_bytes": 1776,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/mechanical/custody-test.json.gz",
+      "archive_relative_path": "reviews/mechanical/custody-test.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/mechanical/custody-test.json.gz",
+      "archive_sha256": "a586b3f6b9589390c262f12b77d9d4015942186007b98d6cd24c0650297ca418",
+      "archive_bytes": 688,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews/mechanical",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-security-tests-independent-review-inventory/static-checks.json"
+      },
+      "original_sha256": "dcca0a59af99a15d07d3e92932ec13e2431fea255878a2f1c48c86b2f14701cd",
+      "original_bytes": 602,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/mechanical/security-test.json.gz",
+      "archive_relative_path": "reviews/mechanical/security-test.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/mechanical/security-test.json.gz",
+      "archive_sha256": "0a7e4e96631971b25b4e923de4c66750c0baf30bdc17d0f2ed68bbf2a16c21b0",
+      "archive_bytes": 404,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews/mechanical",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-source-capture-knbu810y/mechanical-checks.json"
+      },
+      "original_sha256": "2621f5ed6129abbfc7551204d6601f0f38ecb2e6527a356e600bf5a2f94cdc73",
+      "original_bytes": 1932,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/mechanical/http-source.json.gz",
+      "archive_relative_path": "reviews/mechanical/http-source.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/mechanical/http-source.json.gz",
+      "archive_sha256": "c8166594af66ddec1b97138f526448f38ac908c7f4a3336e58378a83fc007392",
+      "archive_bytes": 681,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews/mechanical",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-ed21-capture-generated-miupg275/mechanical-checks.json"
+      },
+      "original_sha256": "e25db9b3163e1c17e89afe0136431e98ff223d72e1a2eec6d1fdf348317522ac",
+      "original_bytes": 2240,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/mechanical/ed21-generated.json.gz",
+      "archive_relative_path": "reviews/mechanical/ed21-generated.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/mechanical/ed21-generated.json.gz",
+      "archive_sha256": "874e36cc80ba56e58ed765f22ff5a70e7b3d7a5b955f83b257cc7e5b302e9261",
+      "archive_bytes": 1084,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "reviews/mechanical",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-capture-xlszbzdz/mechanical-checks.json"
+      },
+      "original_sha256": "99888e20c464cc65991213bc99d8244ec60932f8d8fa4da761bce5f3d0af425b",
+      "original_bytes": 2179,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/reviews/mechanical/corrected-integration.json.gz",
+      "archive_relative_path": "reviews/mechanical/corrected-integration.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/reviews/mechanical/corrected-integration.json.gz",
+      "archive_sha256": "42a0cd254fb858904216a0c5735e3b47d3aec5adb869c51801884582ad27fb8d",
+      "archive_bytes": 1116,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "implementation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-capture-xlszbzdz/integrated.patch"
+      },
+      "original_sha256": "ee1895c538fa65f490bdb221205594aa2591b6869036806ecb0a95ded5359548",
+      "original_bytes": 62588,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/implementation/integrated-9fa5cc7b-to-00071325.patch.gz",
+      "archive_relative_path": "implementation/integrated-9fa5cc7b-to-00071325.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/implementation/integrated-9fa5cc7b-to-00071325.patch.gz",
+      "archive_sha256": "df3936f59b4e7c74d6cb70c9eb30e288b57db7f6a8016676ff417a98a69e8b15",
+      "archive_bytes": 11997,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "admission",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-public-terms-read-lane-spec-dba42d1a.json"
+      },
+      "original_sha256": "fd2a78690a01e43866b59de4d9e81ea66728203e0fe4538b2d7c27d9983130cd",
+      "original_bytes": 3502,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/admission/account-public-terms-read-lane-spec-dba42d1a.json.gz",
+      "archive_relative_path": "admission/account-public-terms-read-lane-spec-dba42d1a.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/admission/account-public-terms-read-lane-spec-dba42d1a.json.gz",
+      "archive_sha256": "744654967f9254b1597f65bf0e3d54997a082e016405726c7c808af8c27b346b",
+      "archive_bytes": 1711,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "admission",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current-custody-lane-spec-9fa5cc7b.json"
+      },
+      "original_sha256": "c9d228f21612bf2f67212cb67292056a1d274e267c93fdaa5a7a83f41d23b2fb",
+      "original_bytes": 2656,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/admission/account-terms-current-custody-lane-spec-9fa5cc7b.json.gz",
+      "archive_relative_path": "admission/account-terms-current-custody-lane-spec-9fa5cc7b.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/admission/account-terms-current-custody-lane-spec-9fa5cc7b.json.gz",
+      "archive_sha256": "9338ede35abafc0a67818fbccdd7a1831471183c67fec05e775b6e662e5df29b",
+      "archive_bytes": 1409,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "admission",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms3-dba42d1a-admission.log"
+      },
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/admission/account-terms3-dba42d1a-admission.log.gz",
+      "archive_relative_path": "admission/account-terms3-dba42d1a-admission.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/admission/account-terms3-dba42d1a-admission.log.gz",
+      "archive_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "archive_bytes": 65,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "admission",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-9fa5cc7b-admission.log"
+      },
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/admission/account-terms-current10-9fa5cc7b-admission.log.gz",
+      "archive_relative_path": "admission/account-terms-current10-9fa5cc7b-admission.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/admission/account-terms-current10-9fa5cc7b-admission.log.gz",
+      "archive_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "archive_bytes": 65,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-ed21b43d-alltargets.log"
+      },
+      "original_sha256": "c0907a7dae3905d533676172cf009c2f401771b1dcf64a06fb24368f60cb63e9",
+      "original_bytes": 2572,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-ed21b43d-alltargets.log.gz",
+      "archive_relative_path": "validation/account-terms-ed21b43d-alltargets.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-ed21b43d-alltargets.log.gz",
+      "archive_sha256": "fd7ff0894b21ce65e959596cb436a5014ca3ba4f944e69148bbabe1a1e18fb83",
+      "archive_bytes": 759,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-hex-fix-alltargets.log"
+      },
+      "original_sha256": "bd4551e077ed4f630e2ce5bf807b24802fa6fbddad528eaee8c4376ad2e33936",
+      "original_bytes": 571,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-hex-fix-alltargets.log.gz",
+      "archive_relative_path": "validation/account-terms-hex-fix-alltargets.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-hex-fix-alltargets.log.gz",
+      "archive_sha256": "95514eef07c66983d14f5029ee909af4596672ae54d7b9b5f8ed724eaa34d848",
+      "archive_bytes": 339,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-build-receipt.json"
+      },
+      "original_sha256": "9da68dc30577e8812f9a8209cb600c32c11bc546327db021f8cbfade2d67964e",
+      "original_bytes": 689,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-00071325-build-receipt.json.gz",
+      "archive_relative_path": "validation/account-terms-00071325-build-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-00071325-build-receipt.json.gz",
+      "archive_sha256": "c29aa06772f97a7a3a54744fb903bdc9e7cf9d7a6023e6d671076af4c7cf2a57",
+      "archive_bytes": 423,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-clippy.log"
+      },
+      "original_sha256": "4b67917458d89d89538acf277cb62e7cc194a3ee7e99d21300ef6b313c53747f",
+      "original_bytes": 13269,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-00071325-clippy.log.gz",
+      "archive_relative_path": "validation/account-terms-00071325-clippy.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-00071325-clippy.log.gz",
+      "archive_sha256": "c804fcdb3238d565f265fde3cec0a2e735d231d42c586e1d7c9f7129b0fe0226",
+      "archive_bytes": 1338,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-clippy-receipt.json"
+      },
+      "original_sha256": "358e7a7fec66dd6e2e44d13d5a2cf03a9019d307be119177ea4d5e06e882f430",
+      "original_bytes": 787,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-00071325-clippy-receipt.json.gz",
+      "archive_relative_path": "validation/account-terms-00071325-clippy-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-00071325-clippy-receipt.json.gz",
+      "archive_sha256": "e8a47059184c54c9033d307413251cf097de624c44ce3e703b11e7ab0f09a115",
+      "archive_bytes": 478,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-runtime-commands.json"
+      },
+      "original_sha256": "052fa4cb2cbaf7c330e33cd242114cf2858884784ddb895153ba3862a601760a",
+      "original_bytes": 688,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-00071325-runtime-commands.json.gz",
+      "archive_relative_path": "validation/account-terms-00071325-runtime-commands.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-00071325-runtime-commands.json.gz",
+      "archive_sha256": "08650d07c87da8f3cdf59b5e6d90359ff9cf18f9c506e291767e3046a5dfbccc",
+      "archive_bytes": 274,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-custody10-command.log"
+      },
+      "original_sha256": "4f439b8bd676d639c6863037c96df4f7ee2fe8aa45efa6a3ff905eeefedd5d72",
+      "original_bytes": 70,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-00071325-custody10-command.log.gz",
+      "archive_relative_path": "validation/account-terms-00071325-custody10-command.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-00071325-custody10-command.log.gz",
+      "archive_sha256": "97e3ddcc9c8780bfba729fe7ac77e59a2454e8623f265cd080a51fc7e9903e5f",
+      "archive_bytes": 85,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "validation",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-00071325-http3-command.log"
+      },
+      "original_sha256": "9166c8a35864d0a6b24612ba0055447793f1b0778cdaf75105bbd08a3294dabf",
+      "original_bytes": 66,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/validation/account-terms-00071325-http3-command.log.gz",
+      "archive_relative_path": "validation/account-terms-00071325-http3-command.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/validation/account-terms-00071325-http3-command.log.gz",
+      "archive_sha256": "ff1646e28462a254ccbe47f45f0729b8459968f5420204ac1e3e0a0e0595760b",
+      "archive_bytes": 83,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/cleanup.txt.gz",
+      "archive_relative_path": "runtime/http3-red/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/containers-after.txt.gz",
+      "archive_relative_path": "runtime/http3-red/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/source-before.json"
+      },
+      "original_sha256": "552ad6a64430ed969cb2b5355a5b7926870f739736c655c540b165ba31f86de9",
+      "original_bytes": 123420,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/source-before.json.gz",
+      "archive_relative_path": "runtime/http3-red/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/source-before.json.gz",
+      "archive_sha256": "b90676115fd226bca5d0bc85425a9f6c92ae999b70031748b2436dba87687c45",
+      "archive_bytes": 47373,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/source-after.json"
+      },
+      "original_sha256": "552ad6a64430ed969cb2b5355a5b7926870f739736c655c540b165ba31f86de9",
+      "original_bytes": 123420,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/source-after.json.gz",
+      "archive_relative_path": "runtime/http3-red/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/source-after.json.gz",
+      "archive_sha256": "b90676115fd226bca5d0bc85425a9f6c92ae999b70031748b2436dba87687c45",
+      "archive_bytes": 47373,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/probe.log"
+      },
+      "original_sha256": "1015232ab4981780d3925d5cb9633ea715186330d841bd6689f989396744492c",
+      "original_bytes": 18362,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/probe.log.gz",
+      "archive_relative_path": "runtime/http3-red/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/probe.log.gz",
+      "archive_sha256": "7e09407e09518b32ccc9532e1df38fdf7df97d6a76b134877ba79ea594d64827",
+      "archive_bytes": 2744,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/http3-red/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/http3-red/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/container-name.txt"
+      },
+      "original_sha256": "481554e47a53a44f8b61a2d3f5125a49b9f5a7ffa8649b0d0b4c98edb6812018",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/container-name.txt.gz",
+      "archive_relative_path": "runtime/http3-red/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/container-name.txt.gz",
+      "archive_sha256": "0e6d2bbe4a136204b385a7f37e87c71ed305fcc33b49e648509335c816f547b7",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/probe-exit.txt"
+      },
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/http3-red/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/http3-red/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/http3-red/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/ownership-label.txt"
+      },
+      "original_sha256": "dc24286ea10cc2ea32ef3970a2b8b5cb959d803f3209293c7c88ecebe469ad70",
+      "original_bytes": 53,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/http3-red/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/ownership-label.txt.gz",
+      "archive_sha256": "6ad49d904e4c8dd7c36f579b8281d94cd465437b087ee0c545128166a5b78b4b",
+      "archive_bytes": 73,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/postgres-map.json"
+      },
+      "original_sha256": "5fa7aebd0605b42eca3dc4b1aaf7c9880bea6a2ffa599afc1d9a455c761d93e5",
+      "original_bytes": 184159,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/postgres-map.json.gz",
+      "archive_relative_path": "runtime/http3-red/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/postgres-map.json.gz",
+      "archive_sha256": "94cf5a07f0956c65df141b0cf0a3591f71c9c802b7e86f5fba05e53e5aca74ab",
+      "archive_bytes": 11020,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/driver-receipt.json"
+      },
+      "original_sha256": "73cb23d3df81c53b5086ede78aa175dc0f93d93c395218f9aecb74061e35dcd8",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/http3-red/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/driver-receipt.json.gz",
+      "archive_sha256": "4cf6f1752ddfd13f427ae91469eb5a2e508981bb27b153730035fbe6331ee1c8",
+      "archive_bytes": 788,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-ad64fb1a09404cad87ac33fb411c3d90/selected-test-results.json"
+      },
+      "original_sha256": "23671e6f085130cc67c760fecffb26a2c996e0e252e639dbc9b0e8c6580d6f6a",
+      "original_bytes": 758,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-red/selected-test-results.json.gz",
+      "archive_relative_path": "runtime/http3-red/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-red/selected-test-results.json.gz",
+      "archive_sha256": "138c2a54009837974ba607b229e903e11b97fe04d250ae26811386e61025ee57",
+      "archive_bytes": 452,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/cleanup.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/containers-after.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/source-before.json"
+      },
+      "original_sha256": "10396ed5b7fa42071db45d9639d56b93d9102d1e556f7fdfd9e4015487296223",
+      "original_bytes": 123576,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/source-before.json.gz",
+      "archive_relative_path": "runtime/custody10-red/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/source-before.json.gz",
+      "archive_sha256": "3f2170fdfdd6798946bf007a5f342a25072ba288eb4522c1b22a0968633cd97e",
+      "archive_bytes": 47438,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/source-after.json"
+      },
+      "original_sha256": "10396ed5b7fa42071db45d9639d56b93d9102d1e556f7fdfd9e4015487296223",
+      "original_bytes": 123576,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/source-after.json.gz",
+      "archive_relative_path": "runtime/custody10-red/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/source-after.json.gz",
+      "archive_sha256": "3f2170fdfdd6798946bf007a5f342a25072ba288eb4522c1b22a0968633cd97e",
+      "archive_bytes": 47438,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/probe.log"
+      },
+      "original_sha256": "3770f21add88da57ea0b4a1893e16859d5d536b7353b828e74b736aee21dd74b",
+      "original_bytes": 14848,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/probe.log.gz",
+      "archive_relative_path": "runtime/custody10-red/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/probe.log.gz",
+      "archive_sha256": "fa8ed61c7e33fd1c997acc4f7870cb7220e7a3d6812c01df7d7cd10eafd5e081",
+      "archive_bytes": 2429,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/container-name.txt"
+      },
+      "original_sha256": "6e8420300a2d1ba0b9e6cdc4ff947258ce5ddcc4ea764de2b8295e63268ca00d",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/container-name.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/container-name.txt.gz",
+      "archive_sha256": "03b2bb81f97b516333061bb1822491b8830df76f58caee7b5d02841a67913a9a",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/probe-exit.txt"
+      },
+      "original_sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/probe-exit.txt.gz",
+      "archive_sha256": "c28cc69d141393e44a931229323624ef7b8c5bde3ee047ca9b87332daef23c82",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/ownership-label.txt"
+      },
+      "original_sha256": "ba8bd5f2dbc989bbcc40a39a421164396f670d5b52cd12d61f704509ac975687",
+      "original_bytes": 57,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/custody10-red/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/ownership-label.txt.gz",
+      "archive_sha256": "96959713ba13c12ccb2b1944d71745aa274a1cffe0e9ca92bd0d69cdb0fa91c0",
+      "archive_bytes": 75,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/postgres-map.json"
+      },
+      "original_sha256": "1d50159157c4caeb5a2a089faebd1397137188bd71178276b979c425b6dd00f2",
+      "original_bytes": 184171,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/postgres-map.json.gz",
+      "archive_relative_path": "runtime/custody10-red/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/postgres-map.json.gz",
+      "archive_sha256": "ba17001ac2e21bebcec66def57b7130d3a0177ba9b0d0a2a2f5a286d6d13170b",
+      "archive_bytes": 11026,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/driver-receipt.json"
+      },
+      "original_sha256": "635ca8f2f777c7c139b1b8554438c9c2de151c338486ea9c5428d7c04ecead11",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/custody10-red/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/driver-receipt.json.gz",
+      "archive_sha256": "5a9afbb82c60ff709adb884f14e5eb8927e08f0d3f992583cdcfc83045ea07bc",
+      "archive_bytes": 790,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-dd276678f7554df29419263a505455c9/selected-test-results.json"
+      },
+      "original_sha256": "92c9e3a4ec56fa048aa402466fd2047b7a6bfad315d93b410c36b47012c0b954",
+      "original_bytes": 1460,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-red/selected-test-results.json.gz",
+      "archive_relative_path": "runtime/custody10-red/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-red/selected-test-results.json.gz",
+      "archive_sha256": "10082e2d45f761caabd638f059d16cdeae4a49e5c651b7a3a21e48d863a99257",
+      "archive_bytes": 524,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/cleanup.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/containers-after.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/source-before.json"
+      },
+      "original_sha256": "1fd99ae4720d788da0461593166d89b9c86ada7cfabf54ff2ed1361e97eca232",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/source-before.json.gz",
+      "archive_relative_path": "runtime/custody10-green/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/source-before.json.gz",
+      "archive_sha256": "95ef20489a303bd8c7e5b8c9c34185c505b5a43dfcdbdbb026465c997fe32a66",
+      "archive_bytes": 47480,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/source-after.json"
+      },
+      "original_sha256": "1fd99ae4720d788da0461593166d89b9c86ada7cfabf54ff2ed1361e97eca232",
+      "original_bytes": 123698,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/source-after.json.gz",
+      "archive_relative_path": "runtime/custody10-green/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/source-after.json.gz",
+      "archive_sha256": "95ef20489a303bd8c7e5b8c9c34185c505b5a43dfcdbdbb026465c997fe32a66",
+      "archive_bytes": 47480,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/probe.log"
+      },
+      "original_sha256": "4ccc8dabdf7940056ef35b4c8bc40a265c219202d66c1ad9caf2ebde2e05c2cc",
+      "original_bytes": 6153,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/probe.log.gz",
+      "archive_relative_path": "runtime/custody10-green/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/probe.log.gz",
+      "archive_sha256": "4e28f3495793f48edee306ed93563485feab0bcb41f33518c2fcde9896d5e884",
+      "archive_bytes": 1692,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/container-name.txt"
+      },
+      "original_sha256": "5740d15670a7b408e60eccfa1b03c331c75d766135880820ffacb961c0a9eac6",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/container-name.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/container-name.txt.gz",
+      "archive_sha256": "778def347a9a94ee150f336684b9af67635fac0fb057749d4f0787b436fd84e5",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/probe-exit.txt"
+      },
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/ownership-label.txt"
+      },
+      "original_sha256": "9c18e5f43eed458397dce718fe3c367fd61cd7a4f55b5347b4fa0193f670c06f",
+      "original_bytes": 57,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/custody10-green/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/ownership-label.txt.gz",
+      "archive_sha256": "ec566ddea4f670399693727bd871a38c4e6d4543c144e139be9af72d2013c8fc",
+      "archive_bytes": 76,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/postgres-map.json"
+      },
+      "original_sha256": "1d50159157c4caeb5a2a089faebd1397137188bd71178276b979c425b6dd00f2",
+      "original_bytes": 184171,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/postgres-map.json.gz",
+      "archive_relative_path": "runtime/custody10-green/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/postgres-map.json.gz",
+      "archive_sha256": "ba17001ac2e21bebcec66def57b7130d3a0177ba9b0d0a2a2f5a286d6d13170b",
+      "archive_bytes": 11026,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/driver-receipt.json"
+      },
+      "original_sha256": "d11fdc74d1d9a3c9a23de88e10eae817bdc27cc4983e31fab75c491e59c1b641",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/custody10-green/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/driver-receipt.json.gz",
+      "archive_sha256": "333ad45b4a82e5f0e2b43f09ab4766894da1a41bf2874d0422c7b6f8d91ba9b1",
+      "archive_bytes": 786,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/custody10-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-current10-b51f1f8203434a99884aa878f3476098/selected-test-results.json"
+      },
+      "original_sha256": "cfeeceee2a927c28ccc56caa1a3c7701b9395945e0271528e1f5f21d4c91d707",
+      "original_bytes": 1420,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/custody10-green/selected-test-results.json.gz",
+      "archive_relative_path": "runtime/custody10-green/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/custody10-green/selected-test-results.json.gz",
+      "archive_sha256": "0a592d0a0f1f62de741e3ea0ba152dee045500fbfcb01e6feb9a65a86ceb3039",
+      "archive_bytes": 518,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/cleanup.txt"
+      },
+      "original_sha256": "52850b29de57ddffb39da562824fc7ac8a9d87ab78d952d4a1d2087eabc1b389",
+      "original_bytes": 69,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/cleanup.txt.gz",
+      "archive_relative_path": "runtime/http3-green/cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/cleanup.txt.gz",
+      "archive_sha256": "ffa646e1e8763683432f7bf034901f574735937efdad5b8c7d76753de0c3ce9e",
+      "archive_bytes": 81,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/containers-after.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/containers-after.txt.gz",
+      "archive_relative_path": "runtime/http3-green/containers-after.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/containers-after.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/source-before.json"
+      },
+      "original_sha256": "6674b2cbace241559834746b4c91da0cd2a00b8577806340fa6bc44751b0ba40",
+      "original_bytes": 123542,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/source-before.json.gz",
+      "archive_relative_path": "runtime/http3-green/source-before.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/source-before.json.gz",
+      "archive_sha256": "fb9ee20ac4a72ce7fabf2ac324f5783b7566360bec7987e4b840b3d7c570e032",
+      "archive_bytes": 47411,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/source-after.json"
+      },
+      "original_sha256": "6674b2cbace241559834746b4c91da0cd2a00b8577806340fa6bc44751b0ba40",
+      "original_bytes": 123542,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/source-after.json.gz",
+      "archive_relative_path": "runtime/http3-green/source-after.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/source-after.json.gz",
+      "archive_sha256": "fb9ee20ac4a72ce7fabf2ac324f5783b7566360bec7987e4b840b3d7c570e032",
+      "archive_bytes": 47411,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/probe.log"
+      },
+      "original_sha256": "8f24adea30cbac8ef29da93d4d91843cc4dca1eb8a322a4526eef743d54e59b7",
+      "original_bytes": 5202,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/probe.log.gz",
+      "archive_relative_path": "runtime/http3-green/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/probe.log.gz",
+      "archive_sha256": "f1962b4fcba8332f6d18f3b8eca044efa46ee155dc61f561fa9766c617b4c1f1",
+      "archive_bytes": 1553,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/prebuild-dispatch.txt"
+      },
+      "original_sha256": "451fbb17d2a06b9ecc6e7a070c7c695da7f250605f65dae0d4b7378df4dbf2d4",
+      "original_bytes": 65,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/prebuild-dispatch.txt.gz",
+      "archive_relative_path": "runtime/http3-green/prebuild-dispatch.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/prebuild-dispatch.txt.gz",
+      "archive_sha256": "5506835ac8de8135d1ff54dcd47f3b9e35521e95ba37dc5f514d4e435e4bb96a",
+      "archive_bytes": 82,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/cleanup-final-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/cleanup-final-list-error.txt.gz",
+      "archive_relative_path": "runtime/http3-green/cleanup-final-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/cleanup-final-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/container-name.txt"
+      },
+      "original_sha256": "e617e9f5622ab28cef002893358bda446397de0499187b5fbb97c6ad308c8c65",
+      "original_bytes": 38,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/container-name.txt.gz",
+      "archive_relative_path": "runtime/http3-green/container-name.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/container-name.txt.gz",
+      "archive_sha256": "0e4c667b2f1b3824c025c5ff58c71463e4c5a4040d9f4cc444169f63ae67a8ba",
+      "archive_bytes": 58,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/probe-exit.txt"
+      },
+      "original_sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "original_bytes": 2,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/probe-exit.txt.gz",
+      "archive_relative_path": "runtime/http3-green/probe-exit.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/probe-exit.txt.gz",
+      "archive_sha256": "89ed3b723e0e40d8957a2df55fcb04d57b6d95fa665c5fe67b098df7f29694ae",
+      "archive_bytes": 22,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/containers-before-cleanup.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/containers-before-cleanup.txt.gz",
+      "archive_relative_path": "runtime/http3-green/containers-before-cleanup.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/containers-before-cleanup.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/cleanup-list-error.txt"
+      },
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/cleanup-list-error.txt.gz",
+      "archive_relative_path": "runtime/http3-green/cleanup-list-error.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/cleanup-list-error.txt.gz",
+      "archive_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "archive_bytes": 20,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/ownership-label.txt"
+      },
+      "original_sha256": "0d165c64b2a73470c0d50fc79cc4f1c803190edfad5694f54c9983db816fa5bf",
+      "original_bytes": 53,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/ownership-label.txt.gz",
+      "archive_relative_path": "runtime/http3-green/ownership-label.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/ownership-label.txt.gz",
+      "archive_sha256": "2a5e8d8ac6914161f581db56d9152660c51378710fe34f53f5cab6efa2bf28bf",
+      "archive_bytes": 72,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/postgres-map.json"
+      },
+      "original_sha256": "5fa7aebd0605b42eca3dc4b1aaf7c9880bea6a2ffa599afc1d9a455c761d93e5",
+      "original_bytes": 184159,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/postgres-map.json.gz",
+      "archive_relative_path": "runtime/http3-green/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/postgres-map.json.gz",
+      "archive_sha256": "94cf5a07f0956c65df141b0cf0a3591f71c9c802b7e86f5fba05e53e5aca74ab",
+      "archive_bytes": 11020,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/driver-receipt.json"
+      },
+      "original_sha256": "ab4a49246aa329764cf56d367c59d3552d620b460871968517e5de3c90a3787b",
+      "original_bytes": 1623,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/driver-receipt.json.gz",
+      "archive_relative_path": "runtime/http3-green/driver-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/driver-receipt.json.gz",
+      "archive_sha256": "6072f70ffd1262a2ecea5c7b54bfc996d343c24e2be242a1c174fa99a0e22765",
+      "archive_bytes": 787,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "runtime/http3-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/account-terms-read3-228969ea16574daf91922194cf290a4d/selected-test-results.json"
+      },
+      "original_sha256": "1f81d1a6974ff1e622f389562a26814853305b692c4f16ade5303f20d5a99131",
+      "original_bytes": 746,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/runtime/http3-green/selected-test-results.json.gz",
+      "archive_relative_path": "runtime/http3-green/selected-test-results.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/runtime/http3-green/selected-test-results.json.gz",
+      "archive_sha256": "4e8d8dea70cd66997aa6423f557134471995e12b8e3b79f119b35044450e73f2",
+      "archive_bytes": 447,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "source-index",
+      "origin": {
+        "kind": "DERIVED_INDEX",
+        "method": "Exact source-before JSON allowlists resolved to regular immutable Git blobs and SHA256 verified."
+      },
+      "original_sha256": "1c2140d91a9b1b7426ecee937cbc8c6d4228d9338cabf56de7f8bbbe5ef89f47",
+      "original_bytes": 1770326,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/source-index/source-git-bindings.json.gz",
+      "archive_relative_path": "source-index/source-git-bindings.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/source-index/source-git-bindings.json.gz",
+      "archive_sha256": "145dd34fb00c789b10fddfee5aec3e89ef773df0d488dadeeeea3bf24e33d823",
+      "archive_bytes": 318503,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/app/src/account_custody_state.sql",
+        "git_blob_oid": "584b8c3396582a102da7c96a4ff1cf32007e5f4e",
+        "git_mode": "100644"
+      },
+      "original_sha256": "dbbbf1a624f3947a30bbe183fac4edc7a1915f33a0b535931a534673e0e7d27c",
+      "original_bytes": 17775,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/src/account_custody_state.sql.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/src/account_custody_state.sql.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/src/account_custody_state.sql.txt.gz",
+      "archive_sha256": "aeeb90c0c5e1b797f991d9e906d48cdd3c0a0b9179d5da1cc69b006485fae628",
+      "archive_bytes": 4365,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/app/src/lib.rs",
+        "git_blob_oid": "a84b27ee20ad0066bb4c112a00eb22b58282b7eb",
+        "git_mode": "100644"
+      },
+      "original_sha256": "fe253cc9f4a7653b345106926bb996ba941f4874d300e209fdcdb9771b518209",
+      "original_bytes": 289689,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/src/lib.rs.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/src/lib.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/src/lib.rs.txt.gz",
+      "archive_sha256": "4966c78e2cc5b6d42c19aae12aefe76c0ebde53de1ca013558ca06b976f49755",
+      "archive_bytes": 65672,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/crates/platform/auth-rest/BUCK",
+        "git_blob_oid": "643f2c8f385061f98f8b7a09d699742ee3ddba4e",
+        "git_mode": "100644"
+      },
+      "original_sha256": "e69a89de3e7ba4760653eae228346628d7c413d1d948372afba8ef88cbd4a9e2",
+      "original_bytes": 13015,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/BUCK.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/BUCK.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/BUCK.txt.gz",
+      "archive_sha256": "d98e8986259f61cd93ca352dc5b0b9dd7fb766bf2c248cda151a0d3de0505dd2",
+      "archive_bytes": 958,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/crates/platform/auth-rest/Cargo.toml",
+        "git_blob_oid": "39ef87adc31c039d6d2290b7259cfcfc59f0213d",
+        "git_mode": "100644"
+      },
+      "original_sha256": "af39682b5514edfcb7191d3d1e979299256f3729b744f39c0fa386de62a3e7bf",
+      "original_bytes": 1372,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/Cargo.toml.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/Cargo.toml.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/Cargo.toml.txt.gz",
+      "archive_sha256": "a16097a32b7cd581fce9cccd37b9146323f2fa7eb2719cc5f05b4d3f4e08d429",
+      "archive_bytes": 521,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/crates/platform/auth-rest/src/lib.rs",
+        "git_blob_oid": "6bea43108b248261bdcd2cecc65bcab937d1252d",
+        "git_mode": "100644"
+      },
+      "original_sha256": "0641fe3794f6e393ba07821628209af8b89137d986cc13ba9e86d52f2454dffa",
+      "original_bytes": 152027,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/src/lib.rs.txt.gz",
+      "archive_sha256": "ecda16ad2d47c4eb074b4e0b297a2b04e72d3ecfeaa4f0949a6ff1734ff8cef8",
+      "archive_bytes": 36369,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/crates/platform/auth-rest/src/terms.rs",
+        "git_blob_oid": "7e23f1150a2f34f04f62ec1aae117849f695a990",
+        "git_mode": "100644"
+      },
+      "original_sha256": "b74b7fdc8985fafe8f98e8b0fb0a15becae3dcdd7af7e567cc624999f5172ebb",
+      "original_bytes": 10556,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/src/terms.rs.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/src/terms.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/crates/platform/auth-rest/src/terms.rs.txt.gz",
+      "archive_sha256": "0397632ff33a766f6515592ace83975155ebe633ff68ca42dc0039aa396548ca",
+      "archive_bytes": 2977,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "ops/generate-account-custody.py",
+        "git_blob_oid": "7521942c24c1cba4e4d2d7faf88a089ecefee893",
+        "git_mode": "100644"
+      },
+      "original_sha256": "5d1bb609067d6417cfdcd303373d0c616981ed28d3f1b7991618fc12e636fe11",
+      "original_bytes": 10787,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/generate-account-custody.py.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/generate-account-custody.py.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/generate-account-custody.py.txt.gz",
+      "archive_sha256": "29ccbc443162f5e563c9cdfb4930bbb596ae178be6c2338e8efb7f1c6675934d",
+      "archive_bytes": 3376,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "ops/postgres-finalize-account-custody.sql",
+        "git_blob_oid": "18984854f2f14dd00059eafaf146d511a0164f72",
+        "git_mode": "100644"
+      },
+      "original_sha256": "9726edda826cb2c7496b73744f5189adaf14f0cee2a445e41c7202df09943496",
+      "original_bytes": 62347,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/postgres-finalize-account-custody.sql.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/postgres-finalize-account-custody.sql.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/postgres-finalize-account-custody.sql.txt.gz",
+      "archive_sha256": "858660ec023ab2a56328931f18967081a60eac6bbde2f9ecf1bf274c9d82b7ea",
+      "archive_bytes": 6741,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/app/tests/auth_rest.rs",
+        "git_blob_oid": "798424476fb1de8b013c3409c57bdc3f7e6dd1c1",
+        "git_mode": "100644"
+      },
+      "original_sha256": "dd7c9346c880e2c67940d738f3ba89f2f7dbfe0d30f43b2eec5df700ff7d1df5",
+      "original_bytes": 244168,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest.rs.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest.rs.txt.gz",
+      "archive_sha256": "5f2d07409576606b5985efc1a0e35d40095acba1a4e09ce289d7dce862010ec2",
+      "archive_bytes": 44611,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/app/tests/auth_rest/account_fence_projection.rs",
+        "git_blob_oid": "e50ed46b00e354ecca565bc67db7516384ccf7c4",
+        "git_mode": "100644"
+      },
+      "original_sha256": "74ad1caf266ec088b08c1e447ccb3d1335772e2bc70f6d1e4d807854b7de8d6f",
+      "original_bytes": 78820,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest/account_fence_projection.rs.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest/account_fence_projection.rs.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest/account_fence_projection.rs.txt.gz",
+      "archive_sha256": "6745710724b8f451a92805b676903f42ea45552508e8467c4879e8fb328d3414",
+      "archive_bytes": 13521,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql",
+        "git_blob_oid": "d5732fb72801be5edcd6e1ccd9fcbcee55bbdad1",
+        "git_mode": "100644"
+      },
+      "original_sha256": "eb090fe7a67ba216097a0ec04672030116bf0550ba6772ac17d90e888f94f7ab",
+      "original_bytes": 50537,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql.txt.gz",
+      "archive_sha256": "0134556d55faa78724bbb088a2a792f234e0dea7cc129a73b889114808582ba4",
+      "archive_bytes": 6155,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "ops/account-custody-migrations.sha384",
+        "git_blob_oid": "35ecd1d1f3128d58c6a273bfc5f20422191c4310",
+        "git_mode": "100644"
+      },
+      "original_sha256": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+      "original_bytes": 22718,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/account-custody-migrations.sha384.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/account-custody-migrations.sha384.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/ops/account-custody-migrations.sha384.txt.gz",
+      "archive_sha256": "6fb896132cf8a004de7caac86a8a35cbd08484617e8cb1c75614e2d994a21bb5",
+      "archive_bytes": 13370,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    },
+    {
+      "category": "sources/0007132535578f7abdafeb5192cd07c38376f06d",
+      "origin": {
+        "kind": "IMMUTABLE_GIT_BLOB",
+        "commit": "0007132535578f7abdafeb5192cd07c38376f06d",
+        "path": "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt",
+        "git_blob_oid": "2c8a8197cb847d3992d208150ab39f24d3e08fe2",
+        "git_mode": "100644"
+      },
+      "original_sha256": "f73a36e813041f7498c90fde5a3fb97cc056a85d823af2ba81c00d53b33b3298",
+      "original_bytes": 25196,
+      "archive_candidate": "/private/tmp/terms-public-read-retention-00071325/sources/0007132535578f7abdafeb5192cd07c38376f06d/docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt.txt.gz",
+      "archive_relative_path": "sources/0007132535578f7abdafeb5192cd07c38376f06d/docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-public-terms-read/sources/0007132535578f7abdafeb5192cd07c38376f06d/docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt.txt.gz",
+      "archive_sha256": "55628be8a93bbb7e0238916d51734f3fa88e9e3343635d70fd2f3f5e3351d6bc",
+      "archive_bytes": 10052,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true
+    }
+  ],
+  "source_binding_rows": 3972,
+  "source_binding_unique_git_blobs": 1003,
+  "classifications": {
+    "http_test_candidates": "Preserved V1 proposal and approved V2 three-test candidate; static evidence only until named runtime.",
+    "driver_v1": "Rejected for foreign-name deletion gap and unmatched test/discovery record acceptance; only fake/synthetic demonstrations, no real resource harm inferred.",
+    "driver_v2": "Approved after52controls and8independent controls; earlier49controls preserved. Custody derivative final52 controls passes; earlier51/52 ANSI fixture failure preserved. Synthetic controls are not application execution.",
+    "http_RED": "At dba42d1a3executed0passed3failed191filtered, firstcurrent404 vs200; later assertions unreached.",
+    "custody_RED": "At9fa5cc7b10executed0passed10failed196filtered;9missinghelper42883 and1populated oldprofile finalized instead ofupgrade_required. Later drift/upgrade/replay assertions unreached.",
+    "compile": "ed21E0277unsupported SHA digest LowerHex preserved; corrected00071325 existing hex helper reuse all-workspace all-targets checkPASS, runtime0.",
+    "GREEN": "At00071325 same custody10 andHTTP3 probes total13disjointPASS,0ignored/measured; filtered196and203 separately. Previously unreached assertions now reached. Strict historical catalog equality passed without relaxation.",
+    "static_runtime_count_correction": "Static184 then196 reachable-source attributes remains distinct from runtime194 then206 accounting. Original overbroad wording and immutable clarification both retained.",
+    "Clippy": "Completed root Clippy command/exit/log retained; compile/lint only, no runtime tests.",
+    "full_suite_and_npm": "Pending or separate root supplement; deliberately absent from this frozen package."
+  },
+  "explicit_exclusions": [
+    "All unlisted neighbors and active or forthcoming full206/npm/gate artifacts.",
+    "Environment files, signing keys, credential/connection material, Docker/Colima configuration, runtime database or volume contents, extracted test fixture directories, caches and bytecode.",
+    "Unrelated previous Account source/lifecycle/runtime packages; only explicitly cited parent driver retained.",
+    "Markdown authority/new document registration edits and any production/publication/legal claim."
+  ],
+  "sensitive_material_check": "Explicit path selection plus private-file type checks; non-source payloads checked for actual multiline private-key blocks and credential-bearing URLs, no matches. Repository source/test constants retained as immutable Git/candidate evidence, never live credentials.",
+  "pre_mortem": "A blanket temporary-directory import leaks unrelated custody material; failed evidence is overwritten; runtime/static/filtered counts conflated; source or gzip bytes drift.",
+  "blast_radius": "181 inert gzip payloads plus finite JSON manifest and root-copy guide; no repository mutation.",
+  "detection": "Every enumerated candidate artifact pin, runtime receipt hash, deterministic gzip repeat, exact decompression, regular immutable Git binding and independent root readback.",
+  "rollback": "Before import discard only rejected private candidate; after import preserve evidence and add corrective receipts rather than rewriting history.",
+  "stop_conditions": [
+    "Any original/archive/hash mismatch",
+    "Unexpected or unlisted path",
+    "Live credential/local custody material",
+    "Claims beyond reached tests",
+    "Independent review finding"
+  ],
+  "review_identities": {
+    "preparer": "/root/capture_review",
+    "independent_reviewer": "/root pending",
+    "runtime_owners": "/root",
+    "prior_independent_reviewers": [
+      "/root/capture_review",
+      "/root/inventory_repair"
+    ]
+  },
+  "remaining_holds": [
+    "Independent review and exact root serial import/readback",
+    "Separate full206 runtime and npm/gate retention by root",
+    "Broader Account lifecycle and production/publication/legal authority"
+  ],
+  "execution_by_preparer": {
+    "runtime_tests": 0,
+    "cargo": 0,
+    "docker": 0,
+    "database": 0,
+    "repository_writes": 0
+  }
+}

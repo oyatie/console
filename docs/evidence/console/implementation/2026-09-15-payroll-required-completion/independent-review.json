@@ -1,0 +1,604 @@
+{
+  "verdict": "APPROVE_EXACT_LOCAL_EVIDENCE_CUSTODY_IMPORT_WITH_RETAINED_LIMITS",
+  "reviewer": "/root/fast_gate_review",
+  "sole_integration_and_runtime_owner": "/root",
+  "head_sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+  "runtime_sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+  "candidate": "/private/tmp/payroll-durability-evidence-candidate",
+  "target": "docs/evidence/console/implementation/2026-09-15-payroll-required-completion",
+  "bindings": {
+    "completion.json": "4b11f5241fbd307449dc749aa9a6b8f90dad7ce1da22c44eb0b76e5c990955ef",
+    "artifact-manifest.json": "9acf87a16d27264b478c5c79ec2125e78a263193f06a98d38faff22c4311d9dc",
+    "git-source-manifest.json": "131ce98a5f7de2f2c6ddc4cd796e26d532355346e17fe6d4230c4ca506e328f6"
+  },
+  "copy_guide": {
+    "path": "/private/tmp/payroll-required-completion-copy-guide.json",
+    "sha256": "da2887dd2f1fc0cff9d296cb624c8de236ae935c969e6e9959ff1eb832143e2d",
+    "files": 316,
+    "exact_set_verified": true
+  },
+  "collector_bindings": {
+    "/private/tmp/retain-payroll-durability-evidence-v5.py": "e98e42aff66c1f812cc174e32ee9a35b0f4552505986886ab780a980df7552a5",
+    "/private/tmp/retain-payroll-durability-sources-v1.py": "b4f836cb35c1a06c96e2774bdedcb476b8c252acab0159867583e08d1b50eb3c"
+  },
+  "custody_verification": {
+    "artifacts": 295,
+    "regular_git_sources": 18,
+    "artifact_uncompressed_bytes": 4165045,
+    "all_artifact_hashes_compressed_hashes_gzip_and_private_preimages_match": true,
+    "all_git_mode_blob_content_hashes_and_current_source_bytes_match": true,
+    "all_retained_paths_relative_unique_regular_files": true,
+    "only_between_runtime_and_ci_head_changed": [
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "excluded_extra_private_file": "artifact-manifest-before-v5-e6223b637512.json",
+    "url_review": "All matched DB URL credentials checked in source context: synthetic test literals at db or127.0.0.1:1, or unevaluated shell placeholders. No fixture environment/runtime database is copied. This is a scoped content review, not a broad secret-scanner certification."
+  },
+  "closure_evidence": [
+    {
+      "name": "ci-reachability-same-probe",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "node scripts/check-executed-tests.mjs > /private/tmp/payroll-ci-f0431013-closure/probe.log 2>&1",
+      "exit": 1,
+      "seconds": 1.08,
+      "log_sha256": "0b79827854720f3bde895742ce5875a37f542fea2f9f8a67e38fd80f0450b22a",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/ci-reachability-same-probe.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "preflight66",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "node",
+        "--test",
+        "scripts/check-ci-preflight.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 29.93,
+      "log_sha256": "ec6024c40f133b522cefbb7d2d44b524d60bafffdc3e3636071e6e4bd5d931a7",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/preflight66.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {
+        "tests": 66,
+        "pass": 66,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "preflight-gate",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "node",
+        "scripts/check-ci-preflight.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.22,
+      "log_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/preflight-gate.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "executed-checker15",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "node",
+        "--test",
+        "scripts/check-executed-tests.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 1.59,
+      "log_sha256": "518870a863d1f7b52f54c3e340c93ec65fa6c3ecd9aad4aecfd64936ba309202",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/executed-checker15.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {
+        "tests": 15,
+        "pass": 15,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "recovery-invocations84",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "node",
+        "--test",
+        "scripts/lib/recovery-test-invocations.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 0.95,
+      "log_sha256": "50043648add56294b42311a6543674aed565a434d14261ac710f3bbc9ecbc37e",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/recovery-invocations84.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {
+        "tests": 84,
+        "pass": 84,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "preparation15",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/buck",
+        "-p",
+        "test_preparation_wiring.py",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 9.94,
+      "log_sha256": "9bbcddb57f010b3806541a8b9088379736fb8533a495de7e79d7bec6b29a0872",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/preparation15.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "app-config21",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-app",
+        "--test",
+        "config",
+        "--test",
+        "database_durability_config"
+      ],
+      "exit": 0,
+      "seconds": 39.83,
+      "log_sha256": "7fc4fd523e844ab9ccb53fc0103b0279baf9ae7a1892b5c87ab0c5dd2965b19a",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/app-config21.log",
+      "independent_rust_counts": [
+        [
+          "12",
+          "0",
+          "0",
+          "0",
+          "0"
+        ],
+        [
+          "9",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "strict-clippy",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "-p",
+        "console-platform-db",
+        "-p",
+        "console-payroll-adapter-postgres",
+        "-p",
+        "console-app",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 115.4,
+      "log_sha256": "8b7a6abd1a23f6d31321f77d6ef10e70b4a4f1db9e7482e60d3d91dbcf41a2e4",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/strict-clippy.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-1-Recovery_replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 34.49,
+      "log_sha256": "956e1ae68263da941a0de351eb45d7cc2bc76924f83d43beeb7faa0141c49604",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-1-Recovery_replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-2-Recovery_lost_commit_transport_reply_replays_one_real_payroll_effect",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 30.12,
+      "log_sha256": "37d990003b6741ef82dae72b752ad8de131815c4eb6ac5d74bd2cb6b6ac0be74",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-2-Recovery_lost_commit_transport_reply_replays_one_real_payroll_effect.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-3-Recovery_fresh_commit_wait_release_requires_explicit_remote_confirmation",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_wait_release_requires_explicit_remote_confirmation -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 28.51,
+      "log_sha256": "865cd18d27210abdec3848e70a4f93993f4775033513b894f90c458092885e76",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-3-Recovery_fresh_commit_wait_release_requires_explicit_remote_confirmation.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-4-Recovery_staging_success_and_idempotent_restage_wait_for_remote_confirmation",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery staging_success_and_idempotent_restage_wait_for_remote_confirmation -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 30.94,
+      "log_sha256": "92e6dc3731a254b1ff4ffd3e9a23b66d2e4de57b383c97281829b6d9245a5bdc",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-4-Recovery_staging_success_and_idempotent_restage_wait_for_remote_confirmation.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-5-Recovery_required_remote_unknown_is_bounded_and_never_local_fallback",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery required_remote_unknown_is_bounded_and_never_local_fallback -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 28.74,
+      "log_sha256": "bd4968f6a194ad0dd0b26bb32d07475e579f21a4eaec9474ae64577c2f45de65",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-5-Recovery_required_remote_unknown_is_bounded_and_never_local_fallback.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-6-Recovery_finite_remote_bound_and_repeated_replay_preserve_exact_rows",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery finite_remote_bound_and_repeated_replay_preserve_exact_rows -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 25.69,
+      "log_sha256": "80b0b199c27f634da8dcae17cf958aec948bbcf5c93ce2aa3a269e9a24cadc21",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-6-Recovery_finite_remote_bound_and_repeated_replay_preserve_exact_rows.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-7-Recovery_fresh_commit_deadline_retains_capacity_until_replay_resumes",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_commit_deadline_retains_capacity_until_replay_resumes -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 48.44,
+      "log_sha256": "9b2be8848779246540ce5cea325d88f4fb8c563d783490fb73375f5a5c38724c",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-7-Recovery_fresh_commit_deadline_retains_capacity_until_replay_resumes.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": [
+        "fresh-cleanup canonical scenario=default policy_ms=700 statement_ms=0 transaction_ms=0",
+        "fresh-cleanup canonical scenario=equal-positive-timers policy_ms=5000 statement_ms=1200 transaction_ms=1200",
+        "fresh-cleanup canonical scenario=shorter-transaction-timer policy_ms=5000 statement_ms=5000 transaction_ms=1200",
+        "fresh-cleanup canonical scenario=shorter-statement-timer policy_ms=5000 statement_ms=400 transaction_ms=0"
+      ]
+    },
+    {
+      "name": "runtime-8-Recovery_aborted_fresh_stage_retains_capacity_until_native_wait_ends",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery aborted_fresh_stage_retains_capacity_until_native_wait_ends -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 30.12,
+      "log_sha256": "5c52607059cf9c431f7efcab7aba914483124f3a6c9b761511dfa756239206fd",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-8-Recovery_aborted_fresh_stage_retains_capacity_until_native_wait_ends.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": [
+        "fresh-cleanup stage scenario=default policy_ms=700 statement_ms=0 transaction_ms=0",
+        "fresh-cleanup stage scenario=equal-positive-timers policy_ms=5000 statement_ms=1200 transaction_ms=1200",
+        "fresh-cleanup stage scenario=shorter-transaction-timer policy_ms=5000 statement_ms=5000 transaction_ms=1200",
+        "fresh-cleanup stage scenario=shorter-statement-timer policy_ms=5000 statement_ms=400 transaction_ms=0"
+      ]
+    },
+    {
+      "name": "runtime-9-Recovery_fresh_stage_transport_error_closes_pool_before_reconciliation",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery fresh_stage_transport_error_closes_pool_before_reconciliation -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 25.45,
+      "log_sha256": "01a62e747ac59ca567a3a8fa92fb3974013b7d694534eeb547861fe9410e48fd",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-9-Recovery_fresh_stage_transport_error_closes_pool_before_reconciliation.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "8"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-10-Certify_durability_observer_in_a_dedicated_disposable_cluster",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test durability_observer real_observer_installer_is_atomic_replay_exact_and_drift_refusing -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 39.69,
+      "log_sha256": "60f1e50537d78c1c6cd9b5bcdaf7edcce8654983f2d25670982aaaec3d856c12",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-10-Certify_durability_observer_in_a_dedicated_disposable_cluster.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 49,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-11-App_recovery_required_app_startup_admits_only_the_installed_observer",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_app_startup_admits_only_the_installed_observer -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 30.91,
+      "log_sha256": "d468f27d501fc009cbfcc3e93698eccdd26a8d0ad956f6cfecdc0fdd00822f2d",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-11-App_recovery_required_app_startup_admits_only_the_installed_observer.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "25"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-12-App_recovery_required_api_projected_payroll_dispatch_waits_for_remote_apply",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_api_projected_payroll_dispatch_waits_for_remote_apply -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 29.14,
+      "log_sha256": "cdf653dae15295f2bc7d1b5a95381ae4499ce04b0bcdfe7fc5dd16a8bbb14470",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-12-App_recovery_required_api_projected_payroll_dispatch_waits_for_remote_apply.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "25"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "runtime-13-App_recovery_required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+      "sha": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+      "command": "CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py \"$GITHUB_WORKSPACE\" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib --features test-recovery durability_composition_tests::required_workflow_spawn_keeps_unknown_staging_pending_until_retry -- --exact --test-threads=1 --nocapture",
+      "exit": 0,
+      "seconds": 32.24,
+      "log_sha256": "c18219f22dbc786ef111a755808fcb2e0550f857f66f5cc32f850a9359a9ffa4",
+      "log_path": "/private/tmp/payroll-e27623ab-closure/runtime-13-App_recovery_required_workflow_spawn_keeps_unknown_staging_pending_until_retry.log",
+      "independent_rust_counts": [
+        [
+          "1",
+          "0",
+          "0",
+          "0",
+          "25"
+        ]
+      ],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "same-ci-probe",
+      "sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+      "command": "node scripts/check-executed-tests.mjs > /private/tmp/payroll-ci-f0431013-closure/probe.log 2>&1",
+      "exit": 0,
+      "seconds": 0.85,
+      "log_sha256": "1656e091722fec8f899cc4e36fe0532d6eae9b95da996e4b734116a7e0b09d26",
+      "log_path": "/private/tmp/payroll-928e1e48-ci-closure/same-ci-probe.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "format",
+      "sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--manifest-path",
+        "backend/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 2.59,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_path": "/private/tmp/payroll-928e1e48-ci-closure/format.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    },
+    {
+      "name": "diff-check",
+      "sha": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.02,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_path": "/private/tmp/payroll-928e1e48-ci-closure/diff-check.log",
+      "independent_rust_counts": [],
+      "independent_node_counts": {},
+      "observer_scenarios": 0,
+      "fresh_timer_rows": []
+    }
+  ],
+  "accepted_claims": [
+    "Exactly13 separately supervised runtime commands at e276: owner9 each1PASS/0FAIL/0ignored/8filtered, observer1PASS/0filtered plus49 distinct internal PASS markers, App3 each1PASS/0ignored/25filtered. All13 fixture run identities are distinct and each ends exit0.",
+    "Fresh canonical and abort cases each emit all4 timer rows. Current helper db992203 and recovery tests4440c53f equal previously independently reviewed historical def8-to2f4 RED/GREEN bound bytes.",
+    "App markers confirm startup, projected API dispatch and actual workflow-spawn test paths; source a7a4cbd3 matches the previously reviewed fixed App3 candidate.",
+    "Raw final logs independently show config12+9PASS, preflight66PASS, checker15PASS including3Cargo fixtures, invocation84PASS and Python15PASS. Source-bound preflight loop asserts151 steps and453 bypass mutations. Strict Clippy default-feature all-targets exit0 only.",
+    "At928 the same admitted executed-tests probe exits0 after only independently approved three positive source-count pins. Format and diff-check exit0. Runtime and check-sensitive sources are byte-unchanged from e276.",
+    "Historical f043 npm run verify log reports one failure in executed-tests ratchet and21 explicitly unmirrored hosted steps. Its claim that other gates passed is understood only as the other locally executed gates; final full command has not been rerun.",
+    "Completion text correctly leaves typed public UNKNOWN protocol, Account/Auth/nonpayable business flow, native enrollment and production/legal authority open."
+  ],
+  "claim_limits": [
+    "No full final npm run verify PASS, hosted-CI run, production exposure, payment or legal/compliance completion.",
+    "No global capacity bound across restarts/deployments, partition backend-termination guarantee, or runtime-destruction shutdown progress.",
+    "App3 proves selected actual AppState/router/worker composition; not full binary or every worker path. Feature-enabled App warnings remain and strict Clippy was default-feature only.",
+    "CI fixed lexical case checks and static3178 attrs/387reachable binaries are not those tests executed. Seaweedfs remains the declared dark target.",
+    "Account6 historical2PASS/4FAIL remains separate; Account14 is private review with no runtime acceptance.",
+    "Historical individual reviews remain their original scoped evidence. Hash custody does not turn every archived artifact or abandoned design into current authority."
+  ],
+  "mechanical_import": "Root alone copies only316 files enumerated in hash-bound copy guide to target, retaining compression/bytes. Add this review and copy guide as separately hash-bound receipts. Exclude unlisted private backup. Read back hashes and ensure no source/runtime/generated/authority mutation by this evidence import.",
+  "pre_mortem": "Historical or filtered execution overclaimed as full acceptance; archived superseded design mistaken for authority; raw fixture state copied; source drift breaks evidence binding.",
+  "blast_radius": "One implementation-evidence directory with exact allowlist; no product, CI, schema, runtime or current authority change.",
+  "detection": "316file allowlist,295 original/gzip hashes,18 Git blob identities/current bytes, exact runtime commands/counts and completed fixture markers.",
+  "rollback": "Preserve immutable evidence; root can abandon custody import before commit or add corrective receipt without rewriting prior history.",
+  "stop_conditions": [
+    "Any copy/source/hash drift",
+    "Unexpected file or symlink",
+    "Changed claim beyond these scoped results",
+    "Attempt to infer full verify/production/Account acceptance"
+  ],
+  "reviewer_executed_runtime_commands": 0,
+  "reviewer_cargo_invocations": 0,
+  "reviewer_database_calls": 0,
+  "reviewer_repository_writes": 0,
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

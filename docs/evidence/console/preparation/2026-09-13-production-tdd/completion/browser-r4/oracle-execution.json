@@ -1,0 +1,471 @@
+{
+  "config": {
+    "argv": [
+      "/Users/jasonlee/.local/share/fnm/node-versions/v24.16.0/installation/bin/node",
+      "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+      "test",
+      "--config",
+      "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/playwright.config.cjs",
+      "--project",
+      "oracle",
+      "--reporter=json"
+    ],
+    "configFile": "/private/tmp/console-browser-owner-producer-r4-20260914/playwright/playwright.config.cjs",
+    "rootDir": "/private/tmp/console-browser-owner-producer-r4-20260914/playwright",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/private/tmp/console-browser-owner-producer-r4-20260914/oracle-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "hydrated",
+        "name": "hydrated",
+        "testDir": "/private/tmp/console-browser-owner-producer-r4-20260914/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "hydration.spec.cjs"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/private/tmp/console-browser-owner-producer-r4-20260914/oracle-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "no-js",
+        "name": "no-js",
+        "testDir": "/private/tmp/console-browser-owner-producer-r4-20260914/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "acceptance.spec.cjs"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/private/tmp/console-browser-owner-producer-r4-20260914/oracle-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "oracle",
+        "name": "oracle",
+        "testDir": "/private/tmp/console-browser-owner-producer-r4-20260914/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "oracle.spec.cjs"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/private/tmp/console-browser-owner-producer-r4-20260914/oracle-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "js-enabled-ssr",
+        "name": "js-enabled-ssr",
+        "testDir": "/private/tmp/console-browser-owner-producer-r4-20260914/playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "acceptance.spec.cjs"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "oracle.spec.cjs",
+      "file": "oracle.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ordinary read form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 125,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.338Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-5150fab3be328a59ffa7",
+          "file": "oracle.spec.cjs",
+          "line": 12,
+          "column": 39
+        },
+        {
+          "title": "permitted own logout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.573Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-a5cd5235c05fea881c54",
+          "file": "oracle.spec.cjs",
+          "line": 12,
+          "column": 39
+        },
+        {
+          "title": "renamed business form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 36,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.617Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-077556bafc4f403660e2",
+          "file": "oracle.spec.cjs",
+          "line": 12,
+          "column": 39
+        },
+        {
+          "title": "GET form with POST submit override",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.658Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-c38521c8acfa30af5d5d",
+          "file": "oracle.spec.cjs",
+          "line": 12,
+          "column": 39
+        },
+        {
+          "title": "external associated submit override",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 39,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-b5e34203404f536dd323",
+          "file": "oracle.spec.cjs",
+          "line": 12,
+          "column": 39
+        },
+        {
+          "title": "logout form with hostile submit action",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.744Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-468e375eca8dbd0773ed",
+          "file": "oracle.spec.cjs",
+          "line": 12,
+          "column": 39
+        },
+        {
+          "title": "reflow oracle permits vertical scrolling with reachable controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 161,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.784Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-ff84b442392b1e574174",
+          "file": "oracle.spec.cjs",
+          "line": 18,
+          "column": 1
+        },
+        {
+          "title": "reflow oracle rejects clipped offscreen control despite zero page overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 54,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:55.949Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-c39782d19fd6d9da8e2e",
+          "file": "oracle.spec.cjs",
+          "line": 23,
+          "column": 1
+        },
+        {
+          "title": "WASM observer binds real instantiated bytes and distinguishes another module",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 55,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:56.007Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-c824f2d6b8251e367346",
+          "file": "oracle.spec.cjs",
+          "line": 43,
+          "column": 1
+        },
+        {
+          "title": "WASM observer does not accept failed native instantiation as hydration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "oracle",
+              "projectName": "oracle",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 43,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-14T10:57:56.066Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c765e8ae6525f4505212-5e272709e732a79aa3bb",
+          "file": "oracle.spec.cjs",
+          "line": 54,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-14T10:57:55.164Z",
+    "duration": 979.6179999999999,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

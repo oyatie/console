@@ -1,0 +1,38 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "fae13166a04ce42620f3122bf82c1389469f0b9a",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "verdict": "RETURN_FOR_REVISION",
+      "findings": [
+        "Professional reviewer credential had no typed semantic owner/bootstrap/current revocation contract",
+        "Server-only evidence selection lacked exact cross-root cardinality and atomic explicit supersession"
+      ]
+    },
+    {
+      "candidate_sha": "5188cd075c0d4718770a57b440bbb6ec40f559a7",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "verdict": "RETURN_FOR_REVISION",
+      "findings": [
+        "Closed ADMIT_TAX body could not express required supersedes predecessor",
+        "Current-candidacy requirement blocked changed-source correction and conflicted with terminal revoked-credential reinstatement"
+      ]
+    },
+    {
+      "candidate_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "verdict": "SCOPED_ACCEPT",
+      "findings": []
+    }
+  ],
+  "note": "Scoped source/temporal review cycles, not the required final four integrated whole-design rounds. Prior candidate blobs remain in evidence Git history."
+}

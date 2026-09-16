@@ -1,0 +1,60 @@
+{
+  "base_sha": "0f89f248812cbebd4e9be0997da7ed7812119ab6",
+  "sources": [
+    {
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4",
+      "line_count": 68
+    },
+    {
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "fa5b0cf1963cd92b1d859ff94e05e75d52583da7",
+      "sha256": "95d355c8eba7ce56594db8aaacc213133eb18eae32f9fe79945c940088010c4e",
+      "line_count": 65
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "git_blob": "6eb1b60f2048ab9795b51ba0d4655e0ed563525b",
+      "sha256": "16862f4bb350b74d417cea291396f355680ef1ade0e7fc32bbcd74cc2ca12d37",
+      "line_count": 54
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/journeys.json",
+      "git_blob": "8cd9c64e9f5f63b297713e837e28f09efc28f0ba",
+      "sha256": "ffa56b0db3ec3f6a929548cc1a4fde10c9bdf8e858b9175af37d1374cb7c00a8",
+      "line_count": 444
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-contract.txt",
+      "git_blob": "a852ae945e3be5d9a6e31f479b1810ba4940e716",
+      "sha256": "1e6f33eafe14226a999fab50edd9e9d298a89e3ffcb365af710b7ec723eec7bd",
+      "line_count": 58
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-screen-flow-integration-11/screen-map.json",
+      "git_blob": "0b22680721f006ffa800d1e6cb0ed23ee915640a",
+      "sha256": "309d797c018ac38f1362cf9e789f2b33cf6545050e7da7b28ec44d5c1c657bb5",
+      "line_count": 328
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/follow-up-work-contract.txt",
+      "git_blob": "d8ae5367ceccea146f97e9061b011073e4a4db54",
+      "sha256": "fabf4d8592e7ea897272b040920ff550d79c64dec36bcc65e36c88d8eda626f4",
+      "line_count": 30
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/screen-integration.txt",
+      "git_blob": "d47abdfe20696c51c8229b065122077936f2365e",
+      "sha256": "bf37a4a87eb000bc649e2e513b5ae73339f948deea26618437784719868664f8",
+      "line_count": 21
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-13-integrated-design-30/verification-plan.txt",
+      "git_blob": "01f0dacc56572e68c4fb3565026b6fb324a1abfc",
+      "sha256": "7470ee853b6602e05e40ceb870f4a816dbefbd6fedf9309ce54f02ba89d51b9d",
+      "line_count": 9
+    }
+  ],
+  "note": "Source existence and line bounds checked; this is not semantic or implementation acceptance."
+}

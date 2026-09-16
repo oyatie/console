@@ -1,0 +1,707 @@
+{
+  "manifest_sha256": "a382c1d67c2314fd56e210e013e7052fe9618e5349c08aeb71aa9ed768f024d9",
+  "files": [
+    {
+      "original": "S4-FROZEN.txt",
+      "retained": "S4-FROZEN.txt",
+      "original_sha256": "185e3132ec306fc67bf2bd96a56e6359af611012a61b30dee1f2016a3b865a6f",
+      "retained_sha256": "185e3132ec306fc67bf2bd96a56e6359af611012a61b30dee1f2016a3b865a6f"
+    },
+    {
+      "original": "authority-vector-acceptance.append.rs",
+      "retained": "authority-vector-acceptance.append.rs",
+      "original_sha256": "f22f04ed31d2f9fa31b279f0f0944eb124e7072c6c05db1198a396c46c5183af",
+      "retained_sha256": "f22f04ed31d2f9fa31b279f0f0944eb124e7072c6c05db1198a396c46c5183af"
+    },
+    {
+      "original": "bound-egress-acceptance.rs",
+      "retained": "bound-egress-acceptance.rs",
+      "original_sha256": "fe41a716f706c03fbf4a527f0874a563699b2f7edc5b25e275457c1138823112",
+      "retained_sha256": "fe41a716f706c03fbf4a527f0874a563699b2f7edc5b25e275457c1138823112"
+    },
+    {
+      "original": "browser-auth-producer.rs",
+      "retained": "browser-auth-producer.rs",
+      "original_sha256": "d965309b6cde64356d74cf63bf5022911940e1200e3fac33a17d905a5cd8006a",
+      "retained_sha256": "d965309b6cde64356d74cf63bf5022911940e1200e3fac33a17d905a5cd8006a"
+    },
+    {
+      "original": "checker-execution.log",
+      "retained": "checker-execution.log.gz",
+      "original_sha256": "598dd3d3cf9890fd77a8be9b29b2efd379558c04035d48939742748c4dc16f20",
+      "retained_sha256": "6501af6a5d79df04a4c4c050b293c3d0ccfa24db8f90a26dffcb99fa0a920db3"
+    },
+    {
+      "original": "context-discovery-acceptance.rs",
+      "retained": "context-discovery-acceptance.rs",
+      "original_sha256": "461235bbc37190f059ac0ec355b7d1017c6761b008e00a731c45b44ae0519179",
+      "retained_sha256": "461235bbc37190f059ac0ec355b7d1017c6761b008e00a731c45b44ae0519179"
+    },
+    {
+      "original": "context-owner-fixture.rs",
+      "retained": "context-owner-fixture.rs",
+      "original_sha256": "15e0c1995e4d425b8c9b3001487159c7d0f035101e41172b3e05868c2e9cfe27",
+      "retained_sha256": "15e0c1995e4d425b8c9b3001487159c7d0f035101e41172b3e05868c2e9cfe27"
+    },
+    {
+      "original": "context-topology-acceptance.rs",
+      "retained": "context-topology-acceptance.rs",
+      "original_sha256": "6bc2be8f0b5b04b72c1cee510200e8e80aab183a298c945ceee88b377cd552ee",
+      "retained_sha256": "6bc2be8f0b5b04b72c1cee510200e8e80aab183a298c945ceee88b377cd552ee"
+    },
+    {
+      "original": "current-context-projection-acceptance.rs",
+      "retained": "current-context-projection-acceptance.rs",
+      "original_sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f",
+      "retained_sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/account-enrollment-producer.rs",
+      "retained": "dependencies/bootstrap-b5/account-enrollment-producer.rs",
+      "original_sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500",
+      "retained_sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/bootstrap-contract.md",
+      "retained": "dependencies/bootstrap-b5/bootstrap-contract.txt",
+      "original_sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8",
+      "retained_sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/deployment-root-producer.rs",
+      "retained": "dependencies/bootstrap-b5/deployment-root-producer.rs",
+      "original_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "retained_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/freeze-manifest.json",
+      "retained": "dependencies/bootstrap-b5/freeze-manifest.json",
+      "original_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a",
+      "retained_sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/ordinary-issuer-bootstrap.rs",
+      "retained": "dependencies/bootstrap-b5/ordinary-issuer-bootstrap.rs",
+      "original_sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642",
+      "retained_sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642"
+    },
+    {
+      "original": "dependencies/bootstrap-b5/publish-then-root-producer.rs",
+      "retained": "dependencies/bootstrap-b5/publish-then-root-producer.rs",
+      "original_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "retained_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "original": "dependencies/native-s2/account-enrollment-producer.rs",
+      "retained": "dependencies/native-s2/account-enrollment-producer.rs",
+      "original_sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982",
+      "retained_sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982"
+    },
+    {
+      "original": "dependencies/native-s2/artifact-owner-producer.rs",
+      "retained": "dependencies/native-s2/artifact-owner-producer.rs",
+      "original_sha256": "27e105bc0d7b1274b8f29b3b8fb48e3a3c34757e324a99d9ea234f7bb5797c53",
+      "retained_sha256": "27e105bc0d7b1274b8f29b3b8fb48e3a3c34757e324a99d9ea234f7bb5797c53"
+    },
+    {
+      "original": "dependencies/native-s2/artifact-owner-tests.rs",
+      "retained": "dependencies/native-s2/artifact-owner-tests.rs",
+      "original_sha256": "629e5a37b48b6d059eefacb7ea59757f1015cb7ae70cad24634e72ce5beb043d",
+      "retained_sha256": "629e5a37b48b6d059eefacb7ea59757f1015cb7ae70cad24634e72ce5beb043d"
+    },
+    {
+      "original": "dependencies/native-s2/attendance-owner-producer.rs",
+      "retained": "dependencies/native-s2/attendance-owner-producer.rs",
+      "original_sha256": "08121eb293b6e8c0d08881be2596243af258228bd0c12bb284974474b40fe83a",
+      "retained_sha256": "08121eb293b6e8c0d08881be2596243af258228bd0c12bb284974474b40fe83a"
+    },
+    {
+      "original": "dependencies/native-s2/binder-sequence.rs",
+      "retained": "dependencies/native-s2/binder-sequence.rs",
+      "original_sha256": "ad4a26a2c15f981337a862ab102bf292dc1189d3bf9e97d7803003e2d9dd1742",
+      "retained_sha256": "ad4a26a2c15f981337a862ab102bf292dc1189d3bf9e97d7803003e2d9dd1742"
+    },
+    {
+      "original": "dependencies/native-s2/business-readback.sql",
+      "retained": "dependencies/native-s2/business-readback.sql",
+      "original_sha256": "21cca62c3f79a7c296b8b02864043ca8eb4b38697f9bd2f45e4092276b70dc06",
+      "retained_sha256": "21cca62c3f79a7c296b8b02864043ca8eb4b38697f9bd2f45e4092276b70dc06"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/calculation-blocked-one.bin",
+      "retained": "dependencies/native-s2/codec-goldens/calculation-blocked-one.bin",
+      "original_sha256": "00438949c40484663b4ffbc74fa529dcc03c708bcbf6f3411eeb5809f9cc0a8f",
+      "retained_sha256": "00438949c40484663b4ffbc74fa529dcc03c708bcbf6f3411eeb5809f9cc0a8f"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/calculation-blocked-one.json",
+      "retained": "dependencies/native-s2/codec-goldens/calculation-blocked-one.json",
+      "original_sha256": "f2c93871d4bb37dc806107265bf1d03d0851c9091457660004e52f62059e0f09",
+      "retained_sha256": "f2c93871d4bb37dc806107265bf1d03d0851c9091457660004e52f62059e0f09"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/calculation-success-one.bin",
+      "retained": "dependencies/native-s2/codec-goldens/calculation-success-one.bin",
+      "original_sha256": "33bad30007efe3a43e07cc05ad34d9c19af72092b87b0227009e857ac27ec156",
+      "retained_sha256": "33bad30007efe3a43e07cc05ad34d9c19af72092b87b0227009e857ac27ec156"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/calculation-success-one.json",
+      "retained": "dependencies/native-s2/codec-goldens/calculation-success-one.json",
+      "original_sha256": "e47065698451241bd1e24305754fc1e06e9028e76ecc6552ac55e7a68f59915f",
+      "retained_sha256": "e47065698451241bd1e24305754fc1e06e9028e76ecc6552ac55e7a68f59915f"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/index.json",
+      "retained": "dependencies/native-s2/codec-goldens/index.json",
+      "original_sha256": "d7538317809644c2cb8f009a812756fc6ec9f6b207f24fe2d78711d0b7b80c7d",
+      "retained_sha256": "d7538317809644c2cb8f009a812756fc6ec9f6b207f24fe2d78711d0b7b80c7d"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/input-blocked-two.bin",
+      "retained": "dependencies/native-s2/codec-goldens/input-blocked-two.bin",
+      "original_sha256": "a426f26631b5d388919c3205295253fefc8cc2cde5e5a74fd4bbe98b7efb9b69",
+      "retained_sha256": "a426f26631b5d388919c3205295253fefc8cc2cde5e5a74fd4bbe98b7efb9b69"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/input-blocked-two.json",
+      "retained": "dependencies/native-s2/codec-goldens/input-blocked-two.json",
+      "original_sha256": "5ff094919568924d0179c0c2057edb1cbee4eb7c59fad7a9ff76090e65123d3d",
+      "retained_sha256": "5ff094919568924d0179c0c2057edb1cbee4eb7c59fad7a9ff76090e65123d3d"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/input-resolved-one.bin",
+      "retained": "dependencies/native-s2/codec-goldens/input-resolved-one.bin",
+      "original_sha256": "4a93f3889dfe4eb2a2617a83452202665a0e6afd9edaf998ea6bf8084cf009c4",
+      "retained_sha256": "4a93f3889dfe4eb2a2617a83452202665a0e6afd9edaf998ea6bf8084cf009c4"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/input-resolved-one.json",
+      "retained": "dependencies/native-s2/codec-goldens/input-resolved-one.json",
+      "original_sha256": "bff74725af378893971ab51d597a387315374fd601ac1ac43c18a3f2141d29e6",
+      "retained_sha256": "bff74725af378893971ab51d597a387315374fd601ac1ac43c18a3f2141d29e6"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-attempt-create-run.bin",
+      "retained": "dependencies/native-s2/codec-goldens/owner-attempt-create-run.bin",
+      "original_sha256": "e962a57c7ed5f5e397fd607390e58561d3b40373e5bb091ab6298f2c967383df",
+      "retained_sha256": "e962a57c7ed5f5e397fd607390e58561d3b40373e5bb091ab6298f2c967383df"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-attempt-create-run.json",
+      "retained": "dependencies/native-s2/codec-goldens/owner-attempt-create-run.json",
+      "original_sha256": "148e9c4cda11e1e3db9823a808207e237f22c3bfe69f432ad398996ed9090b8c",
+      "retained_sha256": "148e9c4cda11e1e3db9823a808207e237f22c3bfe69f432ad398996ed9090b8c"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-case-response.bin",
+      "retained": "dependencies/native-s2/codec-goldens/owner-case-response.bin",
+      "original_sha256": "df2fcb0667d45d82075f504c5d36b07cb2be7639dcbf45142fc81e05a44326d5",
+      "retained_sha256": "df2fcb0667d45d82075f504c5d36b07cb2be7639dcbf45142fc81e05a44326d5"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-case-response.json",
+      "retained": "dependencies/native-s2/codec-goldens/owner-case-response.json",
+      "original_sha256": "373b08e46c419e92a606f12684170ae4735100e74a1e9c913fa4cba295bbd0ba",
+      "retained_sha256": "373b08e46c419e92a606f12684170ae4735100e74a1e9c913fa4cba295bbd0ba"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-direct-wage.bin",
+      "retained": "dependencies/native-s2/codec-goldens/owner-direct-wage.bin",
+      "original_sha256": "8d27899205f60348204015c80d3dfa2c09db8caca3241426abc6c2ce0665170b",
+      "retained_sha256": "8d27899205f60348204015c80d3dfa2c09db8caca3241426abc6c2ce0665170b"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-direct-wage.json",
+      "retained": "dependencies/native-s2/codec-goldens/owner-direct-wage.json",
+      "original_sha256": "f0a1f210604c07ed62af39a3cfc8b28db4b02f2769d5bc7cb6d33b1cbd571d09",
+      "retained_sha256": "f0a1f210604c07ed62af39a3cfc8b28db4b02f2769d5bc7cb6d33b1cbd571d09"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-gated-calculate.bin",
+      "retained": "dependencies/native-s2/codec-goldens/owner-gated-calculate.bin",
+      "original_sha256": "a08be2ac3ff8f5ad657bbe4a5fb8494956269af5e35949af4ff3ff7e721afcf0",
+      "retained_sha256": "a08be2ac3ff8f5ad657bbe4a5fb8494956269af5e35949af4ff3ff7e721afcf0"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-gated-calculate.json",
+      "retained": "dependencies/native-s2/codec-goldens/owner-gated-calculate.json",
+      "original_sha256": "9f8a835b3f84fb0f5f3337112d6d238d56415d968665ee6305ce3be1e60a190b",
+      "retained_sha256": "9f8a835b3f84fb0f5f3337112d6d238d56415d968665ee6305ce3be1e60a190b"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-publication.bin",
+      "retained": "dependencies/native-s2/codec-goldens/owner-publication.bin",
+      "original_sha256": "9489ebfea27dfc175711bb65425dff04628d7a2fdff2296a0084b77aa81ef6ad",
+      "retained_sha256": "9489ebfea27dfc175711bb65425dff04628d7a2fdff2296a0084b77aa81ef6ad"
+    },
+    {
+      "original": "dependencies/native-s2/codec-goldens/owner-publication.json",
+      "retained": "dependencies/native-s2/codec-goldens/owner-publication.json",
+      "original_sha256": "777af25e2ae0ca39993cf71df11513c93fd56ab34d8550b80f5b69214ba55a3b",
+      "retained_sha256": "777af25e2ae0ca39993cf71df11513c93fd56ab34d8550b80f5b69214ba55a3b"
+    },
+    {
+      "original": "dependencies/native-s2/commit-ack-relay.rs",
+      "retained": "dependencies/native-s2/commit-ack-relay.rs",
+      "original_sha256": "741f9c478e7315881cfb3c6cdd3c72cf92f5aa157cee4fd8e540f4d16e542733",
+      "retained_sha256": "741f9c478e7315881cfb3c6cdd3c72cf92f5aa157cee4fd8e540f4d16e542733"
+    },
+    {
+      "original": "dependencies/native-s2/dependencies/commit_relay.py",
+      "retained": "dependencies/native-s2/dependencies/commit_relay.py",
+      "original_sha256": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb",
+      "retained_sha256": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb"
+    },
+    {
+      "original": "dependencies/native-s2/deployment-root-producer.rs",
+      "retained": "dependencies/native-s2/deployment-root-producer.rs",
+      "original_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "retained_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "original": "dependencies/native-s2/deployment-runtime-producer.rs",
+      "retained": "dependencies/native-s2/deployment-runtime-producer.rs",
+      "original_sha256": "3a1a67d0fd68e48b6d09c5213725c111eb8d6e0f0d5c06f8a1c6d194d62b96b6",
+      "retained_sha256": "3a1a67d0fd68e48b6d09c5213725c111eb8d6e0f0d5c06f8a1c6d194d62b96b6"
+    },
+    {
+      "original": "dependencies/native-s2/freeze-manifest.json",
+      "retained": "dependencies/native-s2/freeze-manifest.json",
+      "original_sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d",
+      "retained_sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d"
+    },
+    {
+      "original": "dependencies/native-s2/historical-rejected-b1-test-issuer-bootstrap.rs.txt",
+      "retained": "dependencies/native-s2/historical-rejected-b1-test-issuer-bootstrap.rs.txt",
+      "original_sha256": "80e92bb28413f6c4536b70029b6f5df91933a63d47020ca6c7ba51eb3bf842c6",
+      "retained_sha256": "80e92bb28413f6c4536b70029b6f5df91933a63d47020ca6c7ba51eb3bf842c6"
+    },
+    {
+      "original": "dependencies/native-s2/historical-s1-metadata/registration-coverage.json",
+      "retained": "dependencies/native-s2/historical-s1-metadata/registration-coverage.json",
+      "original_sha256": "d0e99cdf16b4f84d2d2fab70da8097d61de732517d86b2c83fcf5fffe2f445cd",
+      "retained_sha256": "d0e99cdf16b4f84d2d2fab70da8097d61de732517d86b2c83fcf5fffe2f445cd"
+    },
+    {
+      "original": "dependencies/native-s2/historical-s1-metadata/source-inventory.json",
+      "retained": "dependencies/native-s2/historical-s1-metadata/source-inventory.json",
+      "original_sha256": "094674d6f367a51cc0a7901cc28baf54779635c11dcc79e84c59a7a782b50d53",
+      "retained_sha256": "094674d6f367a51cc0a7901cc28baf54779635c11dcc79e84c59a7a782b50d53"
+    },
+    {
+      "original": "dependencies/native-s2/historical-s1-metadata/supplement-contract.md",
+      "retained": "dependencies/native-s2/historical-s1-metadata/supplement-contract.txt",
+      "original_sha256": "57a1b47aeefcaa50c03acb0d1044aea155bb3d94ff3e3658bd08d1ea2b483da3",
+      "retained_sha256": "57a1b47aeefcaa50c03acb0d1044aea155bb3d94ff3e3658bd08d1ea2b483da3"
+    },
+    {
+      "original": "dependencies/native-s2/historical-s1-metadata/syntax-execution.json",
+      "retained": "dependencies/native-s2/historical-s1-metadata/syntax-execution.json",
+      "original_sha256": "30f69c54c4560aabe74816b7aa8e92070345c00045f41d87a38e09603b81e40b",
+      "retained_sha256": "30f69c54c4560aabe74816b7aa8e92070345c00045f41d87a38e09603b81e40b"
+    },
+    {
+      "original": "dependencies/native-s2/immutable-payroll-domain.rs",
+      "retained": "dependencies/native-s2/immutable-payroll-domain.rs",
+      "original_sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92",
+      "retained_sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92"
+    },
+    {
+      "original": "dependencies/native-s2/interface-refinements.md",
+      "retained": "dependencies/native-s2/interface-refinements.txt",
+      "original_sha256": "4afb1b73545d6ee61e0475748bd8e8f2a5058e3a3fe0c986c667bf190f29fe3c",
+      "retained_sha256": "4afb1b73545d6ee61e0475748bd8e8f2a5058e3a3fe0c986c667bf190f29fe3c"
+    },
+    {
+      "original": "dependencies/native-s2/mime-contract-delta.json",
+      "retained": "dependencies/native-s2/mime-contract-delta.json",
+      "original_sha256": "811133450252065dc3eb66a13e6c944b33f029470556e42887e482e5adec7970",
+      "retained_sha256": "811133450252065dc3eb66a13e6c944b33f029470556e42887e482e5adec7970"
+    },
+    {
+      "original": "dependencies/native-s2/native-fixture.rs",
+      "retained": "dependencies/native-s2/native-fixture.rs",
+      "original_sha256": "ed0a60d300450a8295bcd814b8e5876ced5ba8746dd6baf79fc8abcc25f21315",
+      "retained_sha256": "ed0a60d300450a8295bcd814b8e5876ced5ba8746dd6baf79fc8abcc25f21315"
+    },
+    {
+      "original": "dependencies/native-s2/native-lifecycle-tests.rs",
+      "retained": "dependencies/native-s2/native-lifecycle-tests.rs",
+      "original_sha256": "c7f8a5e600e2b27d54292a136da881a0e8c802ebd365952b87ed34768e1dc7b6",
+      "retained_sha256": "c7f8a5e600e2b27d54292a136da881a0e8c802ebd365952b87ed34768e1dc7b6"
+    },
+    {
+      "original": "dependencies/native-s2/native-money-assertions.rs",
+      "retained": "dependencies/native-s2/native-money-assertions.rs",
+      "original_sha256": "6e2a48c34b85b8426a594d7b14ff4b94cdcbedf34761cea7a8d0f33b90ebf072",
+      "retained_sha256": "6e2a48c34b85b8426a594d7b14ff4b94cdcbedf34761cea7a8d0f33b90ebf072"
+    },
+    {
+      "original": "dependencies/native-s2/native-money-golden.json",
+      "retained": "dependencies/native-s2/native-money-golden.json",
+      "original_sha256": "8e5411a2a891be250ddfbb16a85930449d68a964d506d3eccbbf79b9d29a53d4",
+      "retained_sha256": "8e5411a2a891be250ddfbb16a85930449d68a964d506d3eccbbf79b9d29a53d4"
+    },
+    {
+      "original": "dependencies/native-s2/native-owner-producer.rs",
+      "retained": "dependencies/native-s2/native-owner-producer.rs",
+      "original_sha256": "9ca5c2d564566837231d4c52162bae2add39116dacbc0eb2bfd188cc25c0177c",
+      "retained_sha256": "9ca5c2d564566837231d4c52162bae2add39116dacbc0eb2bfd188cc25c0177c"
+    },
+    {
+      "original": "dependencies/native-s2/native-owner-tests.rs",
+      "retained": "dependencies/native-s2/native-owner-tests.rs",
+      "original_sha256": "6a937bb758615fbd3630def336ef97c8124bf6da5299df4a6fdaa07454a7d358",
+      "retained_sha256": "6a937bb758615fbd3630def336ef97c8124bf6da5299df4a6fdaa07454a7d358"
+    },
+    {
+      "original": "dependencies/native-s2/negative-assertions.rs",
+      "retained": "dependencies/native-s2/negative-assertions.rs",
+      "original_sha256": "f5734c3af18e571c340939599580ac23d7bc06efff4789cfca9d7b7acbe01037",
+      "retained_sha256": "f5734c3af18e571c340939599580ac23d7bc06efff4789cfca9d7b7acbe01037"
+    },
+    {
+      "original": "dependencies/native-s2/operator-custody-producer.rs",
+      "retained": "dependencies/native-s2/operator-custody-producer.rs",
+      "original_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "retained_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "original": "dependencies/native-s2/ordinary-issuer-bootstrap.rs",
+      "retained": "dependencies/native-s2/ordinary-issuer-bootstrap.rs",
+      "original_sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494",
+      "retained_sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494"
+    },
+    {
+      "original": "dependencies/native-s2/payroll-source-facts-producer.rs",
+      "retained": "dependencies/native-s2/payroll-source-facts-producer.rs",
+      "original_sha256": "f003dd96ad6683bb7fd6151be73bbb120b1d406e96f5d221c0312b281db95d8f",
+      "retained_sha256": "f003dd96ad6683bb7fd6151be73bbb120b1d406e96f5d221c0312b281db95d8f"
+    },
+    {
+      "original": "dependencies/native-s2/publish-then-root-producer.rs",
+      "retained": "dependencies/native-s2/publish-then-root-producer.rs",
+      "original_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "retained_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "original": "dependencies/native-s2/registered-action-keys.json",
+      "retained": "dependencies/native-s2/registered-action-keys.json",
+      "original_sha256": "8f7095958f0b5e4008a0f17ddb7b6b43879f79cc2e84cc3943d8c58e724a0619",
+      "retained_sha256": "8f7095958f0b5e4008a0f17ddb7b6b43879f79cc2e84cc3943d8c58e724a0619"
+    },
+    {
+      "original": "dependencies/native-s2/registration-coverage.json",
+      "retained": "dependencies/native-s2/registration-coverage.json",
+      "original_sha256": "04d9f2b4df19279667f7c0248195247d1d02387381436ad5975fe60c7537c50c",
+      "retained_sha256": "04d9f2b4df19279667f7c0248195247d1d02387381436ad5975fe60c7537c50c"
+    },
+    {
+      "original": "dependencies/native-s2/review-correction-producer.rs",
+      "retained": "dependencies/native-s2/review-correction-producer.rs",
+      "original_sha256": "f0f3fdda6ffb95a5146ba017fdd571649df4e9383bae4ec1b4a15b9d697ec1bc",
+      "retained_sha256": "f0f3fdda6ffb95a5146ba017fdd571649df4e9383bae4ec1b4a15b9d697ec1bc"
+    },
+    {
+      "original": "dependencies/native-s2/rust-codec-assertions.rs",
+      "retained": "dependencies/native-s2/rust-codec-assertions.rs",
+      "original_sha256": "1dc2043400ec7da6e00d6d3269f2b8da2819e77ba43d614310d75867c8ed36ee",
+      "retained_sha256": "1dc2043400ec7da6e00d6d3269f2b8da2819e77ba43d614310d75867c8ed36ee"
+    },
+    {
+      "original": "dependencies/native-s2/s1-parent-manifest.json",
+      "retained": "dependencies/native-s2/s1-parent-manifest.json",
+      "original_sha256": "2fd88d2fcdc3edf2d985a96e8c4ef384ba65569f32aa75012a2b2f96a7a21958",
+      "retained_sha256": "2fd88d2fcdc3edf2d985a96e8c4ef384ba65569f32aa75012a2b2f96a7a21958"
+    },
+    {
+      "original": "dependencies/native-s2/schema-execution.json",
+      "retained": "dependencies/native-s2/schema-execution.json",
+      "original_sha256": "758d3aefe8b0b96f3b134ad82074c66ec182b57b6a71579c4f7d672536ff6a79",
+      "retained_sha256": "758d3aefe8b0b96f3b134ad82074c66ec182b57b6a71579c4f7d672536ff6a79"
+    },
+    {
+      "original": "dependencies/native-s2/source-foundation-producer.rs",
+      "retained": "dependencies/native-s2/source-foundation-producer.rs",
+      "original_sha256": "8ebc38ad1204769e34c8629e026ecb89dc141bc6c0b8522ebb9356d8c05e014a",
+      "retained_sha256": "8ebc38ad1204769e34c8629e026ecb89dc141bc6c0b8522ebb9356d8c05e014a"
+    },
+    {
+      "original": "dependencies/native-s2/source-inventory.json",
+      "retained": "dependencies/native-s2/source-inventory.json",
+      "original_sha256": "b16785fc3a6b031f93e35e562fe92a8f729f252187c03e1a5bdb8e0f23fae0b4",
+      "retained_sha256": "b16785fc3a6b031f93e35e562fe92a8f729f252187c03e1a5bdb8e0f23fae0b4"
+    },
+    {
+      "original": "dependencies/native-s2/source-owner-producer.rs",
+      "retained": "dependencies/native-s2/source-owner-producer.rs",
+      "original_sha256": "d72fe6909ce1d2cb8ad903540b56b013294b59f7a549d6dbe552e306164db98f",
+      "retained_sha256": "d72fe6909ce1d2cb8ad903540b56b013294b59f7a549d6dbe552e306164db98f"
+    },
+    {
+      "original": "dependencies/native-s2/source-owner-tests.rs",
+      "retained": "dependencies/native-s2/source-owner-tests.rs",
+      "original_sha256": "045135f9a953a94aa31cf63b90be565b3138f0958a788f6ade0178faa82d3778",
+      "retained_sha256": "045135f9a953a94aa31cf63b90be565b3138f0958a788f6ade0178faa82d3778"
+    },
+    {
+      "original": "dependencies/native-s2/source-preparation-tests.rs",
+      "retained": "dependencies/native-s2/source-preparation-tests.rs",
+      "original_sha256": "cd63fe12160c74335273b758adfdfde05e7738a3833255eaee3651ccc09e4e8e",
+      "retained_sha256": "cd63fe12160c74335273b758adfdfde05e7738a3833255eaee3651ccc09e4e8e"
+    },
+    {
+      "original": "dependencies/native-s2/supplement-contract.md",
+      "retained": "dependencies/native-s2/supplement-contract.txt",
+      "original_sha256": "7ecbe18ce66a9096f10437898ea0350b8363d474b0b1c6b28c0a78ec4bd0ab21",
+      "retained_sha256": "7ecbe18ce66a9096f10437898ea0350b8363d474b0b1c6b28c0a78ec4bd0ab21"
+    },
+    {
+      "original": "dependencies/native-s2/syntax-execution-s2.json",
+      "retained": "dependencies/native-s2/syntax-execution-s2.json",
+      "original_sha256": "ac46b5207140d32633d01a5cf3c350a3e5948a1f6359dddcd05d74cc3a087bda",
+      "retained_sha256": "ac46b5207140d32633d01a5cf3c350a3e5948a1f6359dddcd05d74cc3a087bda"
+    },
+    {
+      "original": "dependencies/native-s2/test_interface_delta.py",
+      "retained": "dependencies/native-s2/test_interface_delta.py",
+      "original_sha256": "3752de932dc0d4380778babae3ab84a8597461ae5d86ffb8fb47270bfbf033ab",
+      "retained_sha256": "3752de932dc0d4380778babae3ab84a8597461ae5d86ffb8fb47270bfbf033ab"
+    },
+    {
+      "original": "dependencies/native-s2/two-subject-producer.rs",
+      "retained": "dependencies/native-s2/two-subject-producer.rs",
+      "original_sha256": "48bc97b21a5e19aebb728641f26612c8424e3f9594e23b78a0d4740cb78c9e31",
+      "retained_sha256": "48bc97b21a5e19aebb728641f26612c8424e3f9594e23b78a0d4740cb78c9e31"
+    },
+    {
+      "original": "dependencies/native-s2/workforce-owner-producer.rs",
+      "retained": "dependencies/native-s2/workforce-owner-producer.rs",
+      "original_sha256": "cd955704de2f263bac25abf4dbab2fce241283166368f281f585de92011e363f",
+      "retained_sha256": "cd955704de2f263bac25abf4dbab2fce241283166368f281f585de92011e363f"
+    },
+    {
+      "original": "editor-control-envelope.schema.json",
+      "retained": "editor-control-envelope.schema.json",
+      "original_sha256": "c4a9c652d03b9bb8a46f463a1a5fd19e7def7005e786d85e11ba2f641da206de",
+      "retained_sha256": "c4a9c652d03b9bb8a46f463a1a5fd19e7def7005e786d85e11ba2f641da206de"
+    },
+    {
+      "original": "expanded-custody-producer.rs",
+      "retained": "expanded-custody-producer.rs",
+      "original_sha256": "7b45f89271398090947e9ed0f0dc18f739b703eece8d38904c12fe2f997ef4f2",
+      "retained_sha256": "7b45f89271398090947e9ed0f0dc18f739b703eece8d38904c12fe2f997ef4f2"
+    },
+    {
+      "original": "live-context-invalidation-acceptance.rs",
+      "retained": "live-context-invalidation-acceptance.rs",
+      "original_sha256": "b9cbea19b1b87e9ce32dca02729fb2b7f30f1a4e2891dabdf3d5eea86e32f99b",
+      "retained_sha256": "b9cbea19b1b87e9ce32dca02729fb2b7f30f1a4e2891dabdf3d5eea86e32f99b"
+    },
+    {
+      "original": "local-egress-peer.rs",
+      "retained": "local-egress-peer.rs",
+      "original_sha256": "28bfdbaa15cfa1d6e784e6335ba08e3e72041f1e91b62f31157c0099c51d17ce",
+      "retained_sha256": "28bfdbaa15cfa1d6e784e6335ba08e3e72041f1e91b62f31157c0099c51d17ce"
+    },
+    {
+      "original": "logical-http-collector.rs",
+      "retained": "logical-http-collector.rs",
+      "original_sha256": "d28ba7a46510b05cf9f7a3b8d44b56db4f5c241c0d2d30c26820d6260ccfab80",
+      "retained_sha256": "d28ba7a46510b05cf9f7a3b8d44b56db4f5c241c0d2d30c26820d6260ccfab80"
+    },
+    {
+      "original": "logical-observation-oracle.py",
+      "retained": "logical-observation-oracle.py",
+      "original_sha256": "15ee0eb63a7f7ba0b169cadddfb81dada5f13df168f58ef2b87a44ea63e5b2d5",
+      "retained_sha256": "15ee0eb63a7f7ba0b169cadddfb81dada5f13df168f58ef2b87a44ea63e5b2d5"
+    },
+    {
+      "original": "migration-transition-acceptance.rs",
+      "retained": "migration-transition-acceptance.rs",
+      "original_sha256": "69308e55730f526ff243f725d9519b65743e4cac660f1d1369130eb83b9d0bd6",
+      "retained_sha256": "69308e55730f526ff243f725d9519b65743e4cac660f1d1369130eb83b9d0bd6"
+    },
+    {
+      "original": "native-control-reference-acceptance.rs",
+      "retained": "native-control-reference-acceptance.rs",
+      "original_sha256": "1608b02e4935d21fd42ac649e488d8474c1ca73f4207098380ecdfd7bd006587",
+      "retained_sha256": "1608b02e4935d21fd42ac649e488d8474c1ca73f4207098380ecdfd7bd006587"
+    },
+    {
+      "original": "native-projection-alias-acceptance.rs",
+      "retained": "native-projection-alias-acceptance.rs",
+      "original_sha256": "bd77cb8c652f51dbf947a292675fab615488e7edc1ccc20fa07ecf8a4cc62a2f",
+      "retained_sha256": "bd77cb8c652f51dbf947a292675fab615488e7edc1ccc20fa07ecf8a4cc62a2f"
+    },
+    {
+      "original": "native-replay-disclosure-acceptance.rs",
+      "retained": "native-replay-disclosure-acceptance.rs",
+      "original_sha256": "49b31b7017276a3d5b17b235876c9dc08e7da90c982294357317c498ea66ae30",
+      "retained_sha256": "49b31b7017276a3d5b17b235876c9dc08e7da90c982294357317c498ea66ae30"
+    },
+    {
+      "original": "operator-custody-producer.rs",
+      "retained": "operator-custody-producer.rs",
+      "original_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "retained_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "original": "owner-interface-contract.md",
+      "retained": "owner-interface-contract.txt",
+      "original_sha256": "a9db33f424e57252dc994b554bd5b05736916869ac618c0de51ede1ba572ad46",
+      "retained_sha256": "a9db33f424e57252dc994b554bd5b05736916869ac618c0de51ede1ba572ad46"
+    },
+    {
+      "original": "projector-counterfactual-acceptance.rs",
+      "retained": "projector-counterfactual-acceptance.rs",
+      "original_sha256": "4736a440e2eca6192404514b4b90b8cbe415737de6794ae2bb382f1bd491c6cd",
+      "retained_sha256": "4736a440e2eca6192404514b4b90b8cbe415737de6794ae2bb382f1bd491c6cd"
+    },
+    {
+      "original": "projector-observation-collector.rs",
+      "retained": "projector-observation-collector.rs",
+      "original_sha256": "2ef8b084fce62d5291e54b99c2004bafcd8891f4429ccb18e77c31c471473698",
+      "retained_sha256": "2ef8b084fce62d5291e54b99c2004bafcd8891f4429ccb18e77c31c471473698"
+    },
+    {
+      "original": "proof-harness/README.md",
+      "retained": "proof-harness/README.txt",
+      "original_sha256": "62edc13551529c0bad0f5a419e6a48e3902e07a1578452748a45b70dddab74a5",
+      "retained_sha256": "62edc13551529c0bad0f5a419e6a48e3902e07a1578452748a45b70dddab74a5"
+    },
+    {
+      "original": "proof-harness/binding-candidate.json",
+      "retained": "proof-harness/binding-candidate.json",
+      "original_sha256": "40471ddab85e41ac0cfbbd9cf0aadce2d0ee3d72180f954fd50ca788be2049bb",
+      "retained_sha256": "40471ddab85e41ac0cfbbd9cf0aadce2d0ee3d72180f954fd50ca788be2049bb"
+    },
+    {
+      "original": "proof-harness/negative-recipes.json",
+      "retained": "proof-harness/negative-recipes.json",
+      "original_sha256": "97762d764169a65a8deffcb746cee869d6bb1a664b9d337fa462f5ce220e5898",
+      "retained_sha256": "97762d764169a65a8deffcb746cee869d6bb1a664b9d337fa462f5ce220e5898"
+    },
+    {
+      "original": "proof-harness/proof-obligations.rs",
+      "retained": "proof-harness/proof-obligations.rs",
+      "original_sha256": "de8ec059df8c9604aef1063bec8aa648af093d1035bc0c0352e2bc76eb7b5859",
+      "retained_sha256": "de8ec059df8c9604aef1063bec8aa648af093d1035bc0c0352e2bc76eb7b5859"
+    },
+    {
+      "original": "proof-harness/source_binding_gate.py",
+      "retained": "proof-harness/source_binding_gate.py",
+      "original_sha256": "ad52823bf3653c38611b1a4e2dda088b8d9d3b5e3125cc101ca0b340255d2b6a",
+      "retained_sha256": "ad52823bf3653c38611b1a4e2dda088b8d9d3b5e3125cc101ca0b340255d2b6a"
+    },
+    {
+      "original": "proof-harness/test_source_binding_gate.py",
+      "retained": "proof-harness/test_source_binding_gate.py",
+      "original_sha256": "2deb28eb4751f8bf2d5e5b89303e32e4598fa2ff7a077cd34baaa770a80fbc00",
+      "retained_sha256": "2deb28eb4751f8bf2d5e5b89303e32e4598fa2ff7a077cd34baaa770a80fbc00"
+    },
+    {
+      "original": "public-telemetry-registry-acceptance.append.rs",
+      "retained": "public-telemetry-registry-acceptance.append.rs",
+      "original_sha256": "80b9632a0964b7849102bbba25ea751c6690ef7341c479a7a6ca51560dd28b9b",
+      "retained_sha256": "80b9632a0964b7849102bbba25ea751c6690ef7341c479a7a6ca51560dd28b9b"
+    },
+    {
+      "original": "publication-boundary-acceptance.rs",
+      "retained": "publication-boundary-acceptance.rs",
+      "original_sha256": "ad2f40ccccc4eef619bb548fae5aa09a5e608b89dce8d52ba7c432cc5a4d78cc",
+      "retained_sha256": "ad2f40ccccc4eef619bb548fae5aa09a5e608b89dce8d52ba7c432cc5a4d78cc"
+    },
+    {
+      "original": "publication-transition-acceptance.rs",
+      "retained": "publication-transition-acceptance.rs",
+      "original_sha256": "98f850b4c450d0f5a5a7387f16bb5cb0ffef235350820b52ac45924258cd3f34",
+      "retained_sha256": "98f850b4c450d0f5a5a7387f16bb5cb0ffef235350820b52ac45924258cd3f34"
+    },
+    {
+      "original": "real-process-producer.rs",
+      "retained": "real-process-producer.rs",
+      "original_sha256": "89f640d7a5345d0cff4f7ac5471b0304805993a1f89bf268e9dcecba0edf7d9d",
+      "retained_sha256": "89f640d7a5345d0cff4f7ac5471b0304805993a1f89bf268e9dcecba0edf7d9d"
+    },
+    {
+      "original": "replica-key-acceptance.rs",
+      "retained": "replica-key-acceptance.rs",
+      "original_sha256": "fa902b1916b293ab8c6261fd1fb76ee0565f4ec095bed50e988685effc03b93a",
+      "retained_sha256": "fa902b1916b293ab8c6261fd1fb76ee0565f4ec095bed50e988685effc03b93a"
+    },
+    {
+      "original": "s2-parent-manifest.json",
+      "retained": "s2-parent-manifest.json",
+      "original_sha256": "54738bdf0b20ff040b20a1cf773073b1b5f9dd6c5c1672416b0fd00430a6f5e8",
+      "retained_sha256": "54738bdf0b20ff040b20a1cf773073b1b5f9dd6c5c1672416b0fd00430a6f5e8"
+    },
+    {
+      "original": "s3-parent-manifest.json",
+      "retained": "s3-parent-manifest.json",
+      "original_sha256": "8559a2fdb678dcffd881db8435bea0fd94fdab746c548b3a20db9f0f44620fcb",
+      "retained_sha256": "8559a2fdb678dcffd881db8435bea0fd94fdab746c548b3a20db9f0f44620fcb"
+    },
+    {
+      "original": "s4-parser-checks.json",
+      "retained": "s4-parser-checks.json",
+      "original_sha256": "dc827cf4639b6a73694d2c8729bb8885fd0ba4ee883cbc7f5674f431418b90a1",
+      "retained_sha256": "dc827cf4639b6a73694d2c8729bb8885fd0ba4ee883cbc7f5674f431418b90a1"
+    },
+    {
+      "original": "safe-event-constructor-acceptance.append.rs",
+      "retained": "safe-event-constructor-acceptance.append.rs",
+      "original_sha256": "c242f20f6686649e2436ffc7b7ab628aba4b318451199a815cffad3e55b6e209",
+      "retained_sha256": "c242f20f6686649e2436ffc7b7ab628aba4b318451199a815cffad3e55b6e209"
+    },
+    {
+      "original": "security-grant-producer.rs",
+      "retained": "security-grant-producer.rs",
+      "original_sha256": "0b43d28dea65ba15eca4dbe7dcc3a1d330248af3b7d63ae7af28b9d8a6d1e7ed",
+      "retained_sha256": "0b43d28dea65ba15eca4dbe7dcc3a1d330248af3b7d63ae7af28b9d8a6d1e7ed"
+    },
+    {
+      "original": "sink-enrollment-contract.md",
+      "retained": "sink-enrollment-contract.txt",
+      "original_sha256": "9a0408a106961a65a9dbe93428264b67376e15a62de6ae057124d0fcfa861f21",
+      "retained_sha256": "9a0408a106961a65a9dbe93428264b67376e15a62de6ae057124d0fcfa861f21"
+    },
+    {
+      "original": "source-gap-census.json",
+      "retained": "source-gap-census.json",
+      "original_sha256": "73f57675a05d06cd092ef1e3c2be7922b62c579c0a926f0756a90551360b0d67",
+      "retained_sha256": "73f57675a05d06cd092ef1e3c2be7922b62c579c0a926f0756a90551360b0d67"
+    },
+    {
+      "original": "source-sink-requirements.json",
+      "retained": "source-sink-requirements.json",
+      "original_sha256": "7fe872ffbf31767aa9d2ebf78801fc1c8bf7fce94d081306b6c98044465915f7",
+      "retained_sha256": "7fe872ffbf31767aa9d2ebf78801fc1c8bf7fce94d081306b6c98044465915f7"
+    },
+    {
+      "original": "storage-no-redirect-acceptance.rs",
+      "retained": "storage-no-redirect-acceptance.rs",
+      "original_sha256": "7973ce0b2d3db2ece3a151bedfa7c34021c5188fc9c7e5cf639774d6fb630bb2",
+      "retained_sha256": "7973ce0b2d3db2ece3a151bedfa7c34021c5188fc9c7e5cf639774d6fb630bb2"
+    },
+    {
+      "original": "syntax-execution.json",
+      "retained": "syntax-execution.json",
+      "original_sha256": "ff1e072282a3ca947a9790c565949dabb8bcc646453d3980a2a54677e30f0972",
+      "retained_sha256": "ff1e072282a3ca947a9790c565949dabb8bcc646453d3980a2a54677e30f0972"
+    },
+    {
+      "original": "terms-publication-acceptance.rs",
+      "retained": "terms-publication-acceptance.rs",
+      "original_sha256": "0178db0e32ab0d3dc87183328e7a8ec83b4b5f45835b82670506706439042bd4",
+      "retained_sha256": "0178db0e32ab0d3dc87183328e7a8ec83b4b5f45835b82670506706439042bd4"
+    },
+    {
+      "original": "test_logical_observation_oracle.py",
+      "retained": "test_logical_observation_oracle.py",
+      "original_sha256": "0d145769c935c78842e15597992c69fa96a7a7e57bb01f1018244021a02f0441",
+      "retained_sha256": "0d145769c935c78842e15597992c69fa96a7a7e57bb01f1018244021a02f0441"
+    }
+  ]
+}

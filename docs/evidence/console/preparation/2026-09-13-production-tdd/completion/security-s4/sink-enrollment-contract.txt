@@ -1,0 +1,51 @@
+# Finite source/sink enrollment contract
+
+The exact28 rows in source-sink-requirements.json are the inventory; no second
+runtime registry is introduced. Actual configured route surfaces come from
+backend/app/src/lib.rs::CONFIGURED_ROUTE_SURFACES and its referenced ROUTE_PATHS.
+Actual helper signatures/bodies/ACL/default grants/memberships come from root's
+live M0 PostgreSQL inventory. Match by exact registered method/path or SQL identity,
+never substring or a hand-maintained happy-path-only list.
+
+For each existing enabled first-slice row, acceptance receipt must name exact
+source commit/blob, ordinary loader, current binder, policy evaluator, projector,
+error mapper, serializer, transport/emission caller, protected-audit boundary and
+complete test filter/observed discovered set/executed counts. Reuse native28 and
+workflow15 registrations and this security owner source; no duplicate action IDs.
+Test fixture is produced by actual ordinary owners. Missing owner/code is an
+implementation prerequisite; missing fixture/assertion for an enabled adapter is
+an unclosed source task and may not be called runtime-blocked completion.
+
+Each adapter must prove successful permitted A output, same-Account allowed B
+cannot be reached from active A, actual Y A-only permission, same-Company denied
+field/member omission, current field-only replay reduction, exact fresh context,
+full-source low equivalence, current cursor/control/live invalidation where relevant,
+and exact logical output status/headers/bytes/length/count/order. Projection-free
+errors/events require the closed public schema and schedule. Enabled egress adds
+actual binding dimensions and local-wire peer/no-second-endpoint controls. Only
+applicable assertions run per row, with explicit review of inapplicability.
+
+UNAVAILABLE_FIRST_SLICE, ADAPT_OR_DISABLE and DISABLE_PRODUCTION entries may have
+no enabled first-slice adapter. Enrollment must verify the real configured router,
+worker and startup feature state refuses registration/admission before payload or
+remote I/O; path merely absent from this manifest is insufficient. Future CSV,
+payslip issuance, office callbacks and additional egress adapters require their own
+normal owner/registry/fixture/tests BEFORE acceptance. This contract does not invent
+those adapters. Existing generic write/gate/delete/presigned routes marked DENY
+must be rejected by actual route/SQL admission; retaining a public legacy alias is
+not an unavailable future-adapter exception.
+
+SEPARATE_OPERATOR_ONLY remains outside the customer projection surface and needs
+actual authenticated operator privilege closure; no customer scope is inferred
+from possession of a locator. Request traces and client telemetry are independent
+logical sinks even when every event body is individually sanitized. Emit only
+registered public event codes/route templates/result classes; preserve count/order
+in paired observations. Production OTP stub is excluded from process startup.
+
+Source-binding checker hashes this exact inventory and caller files. Independent
+source review establishes complete executable span, external relation and trust-site
+census; the checker does not assert it can infer AST/FFI completeness. A new sink,
+route alias, SQL overload, startup worker or serializer requires updated enrollment
+and focused review/tests before it can enter an accepted process. Until integration,
+all row acceptance states are HOLD; this authored architecture is not a green
+runtime registry, product safety claim, or permission to expand the first slice.

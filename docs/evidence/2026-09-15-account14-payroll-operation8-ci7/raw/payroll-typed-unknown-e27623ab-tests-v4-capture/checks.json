@@ -1,0 +1,246 @@
+{
+  "status": "SOURCE_MECHANICAL_ONLY_PASS",
+  "checks": [
+    {
+      "name": "primary Rust parse backend/app/src/durability_composition_tests.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "primary Rust parse backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "primary Rust parse backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "primary Rust parse backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "compatibility Rust parse backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "compatibility Rust parse backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "compatibility Rust parse backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "name": "primary apply check",
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "primary apply",
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "primary exact postimage equality",
+      "pass": true
+    },
+    {
+      "name": "compatibility apply check",
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "compatibility apply",
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "compatibility exact postimage equality",
+      "pass": true
+    },
+    {
+      "name": "compatibility inverse",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "primary inverse",
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "exact inverse restores all four bases",
+      "pass": true
+    },
+    {
+      "name": "shell syntax only",
+      "argv": [
+        "sh",
+        "-n",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/run-primary.sh"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "primary whitespace",
+      "argv": [
+        "git",
+        "diff",
+        "--no-index",
+        "--check",
+        "base",
+        "post"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "both original primary files preserved as byte-identical prefixes",
+      "pass": true
+    },
+    {
+      "name": "primary seven app cases; no future-interface references",
+      "pass": true
+    },
+    {
+      "name": "all four preimages match exact current head",
+      "head": "796173fc484279dbb9cca103caa57e026719ffaf",
+      "pass": true
+    },
+    {
+      "name": "V4 source changes only distinct workflow organization seed tags",
+      "pass": true
+    },
+    {
+      "name": "fixture helper slug projection yields two distinct valid slugs",
+      "pass": true
+    },
+    {
+      "name": "compatibility patch byte-identical V3",
+      "pass": true
+    },
+    {
+      "name": "controls StatusCode namespace has direct axum dependency",
+      "pass": true
+    }
+  ],
+  "counts": {
+    "mechanical_checks": 25,
+    "primary_source_cases_added": 5,
+    "sqlx_added": 4,
+    "app_source_total": 7,
+    "compiler_discovered": 0,
+    "runtime_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  },
+  "holds": [
+    "independent immutable review",
+    "root compiler and runtime genuine RED",
+    "fanout admission",
+    "same probe GREEN",
+    "workflow ordinary Operation/non-unknown classifier control",
+    "root CI reachability and API contract changes",
+    "exact-head closure",
+    "production authority"
+  ]
+}

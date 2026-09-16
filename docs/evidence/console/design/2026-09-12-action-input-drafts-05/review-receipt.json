@@ -1,0 +1,41 @@
+{
+  "reviewed_candidate_sha": "ff914047e1ff163297f6a6fff30bf1315086241a",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "author": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED",
+      "scope": "Common entity history privacy, custody, schema/restore, continuity",
+      "resolved_findings": [
+        "DR1",
+        "DR2"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED_REMEDIATION",
+      "scope": "Revision owner, editing epoch, save/seal/domain execution, cancellation/restore",
+      "resolved_findings": [
+        "FD-B01"
+      ],
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "remaining_gaps": [
+    "B03 durable Group operation",
+    "B04 general autonomous assignment and unknown distributed actor takeover",
+    "B07 rest of application screen state matrix",
+    "B08 monetary publication/disputes",
+    "Common-owner private draft physical-retention migration/operation",
+    "Independent integrity anchor and repair/backup operational detail"
+  ],
+  "history_limitation": "Whole-chain revision-existence/progress permission is required for timeline listing in this slice. Otherwise uniform nondisclosing unavailable; independently authorized pinned revision read/compare remains available."
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "frozen_scoped_evidence_inventory_and_lifecycle_contract",
+  "recorded_at": "2026-09-13T06:36:26.369446+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "d57f6eea90f628a3a2aabd09cb400744bf530869",
+  "reviewed_contract_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+  "predecessor_record": "../2026-09-13-adoption-lifecycle-contract-25/record.json",
+  "predecessor_record_sha256": "3e0c37da081878ccda5a3741ecbc2ad7ef8ba12f9acff6035897f142984e404e",
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "files": [
+    {
+      "path": "action-inventory.json",
+      "bytes": 8498,
+      "sha256": "9fd07ebe08b7c11f6bdac7b889a64e32eb3817eb3e71fcea26f9e16f54636cb8"
+    },
+    {
+      "path": "budgets.json",
+      "bytes": 3461,
+      "sha256": "cbcbb179fdd8f0d6f87dfb782f364ad6cac4310046ab4ca193bb9c9755a8056a"
+    },
+    {
+      "path": "choices.txt",
+      "bytes": 1287,
+      "sha256": "a9cce388ce092ff852852430fa648dea7df2425861df56b3a5c592b2d6947a6f"
+    },
+    {
+      "path": "contract.txt",
+      "bytes": 14860,
+      "sha256": "8e59a8c76e87f752d70010667b647216f76c3672dd35c6792828fb1c8d575dfc"
+    },
+    {
+      "path": "dependency-templates.json",
+      "bytes": 6370,
+      "sha256": "de6018168902506a031e38b36b2aa6f89c01d59a6f3f98ece48794752318de7c"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 1817,
+      "sha256": "63ff11fcdbe0129e473816ffd9773e41cd7531d1934fe327dec28d0d61468834"
+    },
+    {
+      "path": "lifecycle.csv",
+      "bytes": 3072,
+      "sha256": "935cbd680a96f1126e6d04b9eb8c198e3f67eff2058405f63d1b69afa9b52c70"
+    },
+    {
+      "path": "proof-cases.csv",
+      "bytes": 4922,
+      "sha256": "ce59ddc9017fd4bfd698c17732832762eb9abf23e776aaabf526633723b99c83"
+    },
+    {
+      "path": "readiness.json",
+      "bytes": 1525,
+      "sha256": "e5b8f825cd8cc763e7eceb37fc6d5d09bb304e3ae25d1fd485334b9afc4efb1e"
+    },
+    {
+      "path": "reference-rules.json",
+      "bytes": 9393,
+      "sha256": "cba7d6cc01282ad47144d8fc81d0d0c79c2af051b546a7b326a9e889bcaa7872"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1499,
+      "sha256": "21adf807a6296c478381737281cf7ba1b3654a99dd90b6d830f1419301591315"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 2727,
+      "sha256": "2decf62d16c95389275ac2edb22e46296165994e88e1dae78fd2e85d9ea9e706"
+    },
+    {
+      "path": "review.html",
+      "bytes": 2137,
+      "sha256": "88e8a1a48bb2d16c9dc89bcd46a734ad2109ea505d7ec8372a4922308feeaf8d"
+    },
+    {
+      "path": "schema-reference-sites.json",
+      "bytes": 109183,
+      "sha256": "d9575f91a59aeed54abe359b50397d8882c42c444cf4b5f137fa9288d1cf959a"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 681,
+      "sha256": "e877a32f115b18d53c9e9374efa5f50ef3d6b6c478054680dde329b8875ed891"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 5019,
+      "sha256": "88a351674d1793a744b4dce713bbbd20c9ec69ff9120b150aa8c073c98207c0b"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1779,
+      "sha256": "42e0be7c7870bf28abf38121b3037115541f3d14ee85fbe4d09edfeb3e301f37"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 6234,
+      "sha256": "044b69f95f0d3cf537c6a3b7064ca5b282ce2651f3a1817cdad7946c1bfcb270"
+    }
+  ],
+  "remaining_holds": [
+    "F01/F03 actual governed unit/purpose/obligation/inventory/reservation DTOs, storage and exhaustive protection membership guards",
+    "F01/F02 fixed preparation/seal/final owner participant signatures, native caller/source semantics and complete ACL/trigger/alias closure",
+    "F03/F06 provider issuance fencing/drain, independent journal conformance and recovery admission",
+    "F05 migrations/enrollment/backfill/rollback and F08 exact runtime/load/SQL/Verus harness evidence",
+    "W01-W04/F01-F08 integration and current-authority scope alignment, four integrated design reviews and explicit exact design approval",
+    "Executable test/proof candidate review and explicit test approval, actual RED implementation admission; separate production/payment/legal authority",
+    "No SQL/catalog/runtime/load/Verus execution; scoped review is not final integrated acceptance"
+  ]
+}

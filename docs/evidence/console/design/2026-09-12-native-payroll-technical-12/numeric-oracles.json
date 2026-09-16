@@ -1,0 +1,92 @@
+{
+  "classification": "Non-executable independently hand-derived arithmetic expectations; synthetic tax evidence, not legal qualification",
+  "product_source_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "period_start": "2026-07-01",
+  "period_end": "2026-07-31",
+  "pay_date": "2026-08-10",
+  "timezone": "Asia/Seoul",
+  "monthly_standard_hours": 209,
+  "profile": "KR_MONTHLY_FULL_V1",
+  "formula": {
+    "pension": "trunc10(floor_to_1000(explicit pension basis) * 475 // 10000); within selected band",
+    "health_total": "clamp(trunc10(gross * 719 // 10000), 20160, 9183480)",
+    "health_employee": "Trunc10(total // 2) must equal Round10(total // 2)",
+    "care_total": "trunc10(health_total * 9448 // 71900)",
+    "care_employee": "Trunc10(total // 2) must equal Round10(total // 2)",
+    "employment": "gross * 9 // 1000",
+    "income_tax": "exact independently admitted and verified SYNTHETIC fixture amount",
+    "local_tax": "exact independently admitted and verified SYNTHETIC fixture amount",
+    "net": "gross - sum(employee deductions); must be >=0 for this profile"
+  },
+  "positive_cases": [
+    {
+      "id": "N01",
+      "wage_correction_revision": 0,
+      "gross_won": 3000000,
+      "pension_basis_won": 3000000,
+      "pension_won": 142500,
+      "health_total_won": 215700,
+      "health_employee_won": 107850,
+      "care_total_won": 28340,
+      "care_employee_won": 14170,
+      "employment_won": 27000,
+      "insurance_won": 291520,
+      "income_tax_won": 80000,
+      "local_tax_won": 8000,
+      "total_deductions_won": 379520,
+      "net_won": 2620480,
+      "payable": false
+    },
+    {
+      "id": "N02",
+      "wage_correction_revision": 1,
+      "gross_won": 3400000,
+      "pension_basis_won": 3400000,
+      "pension_won": 161500,
+      "health_total_won": 244460,
+      "health_employee_won": 122230,
+      "care_total_won": 32120,
+      "care_employee_won": 16060,
+      "employment_won": 30600,
+      "insurance_won": 330390,
+      "income_tax_won": 100000,
+      "local_tax_won": 10000,
+      "total_deductions_won": 440390,
+      "net_won": 2959610,
+      "payable": false
+    }
+  ],
+  "refusal_cases": [
+    {
+      "id": "N03",
+      "change": "gross3200000 and matching explicit basis",
+      "expected": "care total30230 -> half15115; Trunc10=15110, Round10=15120; ROUNDING_UNRESOLVED, no invented numeric net"
+    },
+    {
+      "id": "N04",
+      "change": "gross3m with income tax3m/local tax300000",
+      "expected": "UNSUPPORTED_NEGATIVE_NET; no negative or clamped net accepted"
+    },
+    {
+      "id": "N05",
+      "change": "hourly wage, midmonth exit/hire/wage change, multiple Employment or unknown applicability",
+      "expected": "typed unsupported unit retained; no whole-run completion"
+    },
+    {
+      "id": "N06",
+      "change": "N02 reuses N01 income band/verification",
+      "expected": "TAX_SELECTION_MISMATCH until matching new admission+independent verification"
+    },
+    {
+      "id": "N07",
+      "change": "gross3m monthly hours400",
+      "expected": "minimum-wage comparator with explicit hours fails profile; kernel call alone not eligibility proof"
+    }
+  ],
+  "independent_review": {
+    "reviewer": "/root/payroll_contract_review",
+    "method": "Independent standalone integer arithmetic, no product execution",
+    "positive_expected_values_confirmed": true
+  },
+  "product_tests_executed": 0
+}

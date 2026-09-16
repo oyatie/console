@@ -142,12 +142,31 @@ RESOURCE_CONFIG = {
     "console-contracts": {
         "srcs": ["src/**/*.json"],
     },
+    "console-payroll-adapter-postgres": {
+        "itest_external": {
+            "//ops:postgres-install-durability-observer.sql": "ops/postgres-install-durability-observer.sql",
+        },
+    },
     "console-app": {
+        "srcs": ["src/account_custody_state.sql", "src/account_credential_custody_state.sql"],
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
             **MIGRATION_TREE,
         },
         "itests": {
+            "tests/auth_rest.rs": {
+                "srcs": [
+                    "tests/auth_rest/account_storage.rs",
+                    "tests/auth_rest/publication_privileges.rs",
+                    "tests/auth_rest/actor-migration.csv",
+                    "tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+                    "tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql",
+                    "tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql",
+                    "tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql",
+                    "src/account_custody_state.sql",
+                    "src/account_credential_custody_state.sql",
+                ],
+            },
             "tests/openapi_drift.rs": {
                 "srcs": ["src/**/*.rs", "Cargo.toml"],
                 "external": OPENAPI_DRIFT_EXTERNAL,
@@ -171,6 +190,13 @@ RESOURCE_CONFIG = {
         # rather than inferred from the directory so the export and the single
         # consumer are one reviewed pair.
         "exports_openapi_tree": True,
+    },
+    "console-ontology-application": {
+        "srcs": [
+            "src/owner28_schemas/**/*.json",
+            "src/codec-goldens/*.bin",
+            "src/codec-goldens/*.json",
+        ],
     },
     "console-intelligence-application": {
         "srcs": ["Cargo.toml"],
@@ -273,10 +299,15 @@ TEST_RESOURCE_REQUIREMENTS = {
         # which is the point: the rendered keys are checked against the real
         # contract, not against a copy.
         'unit': 'none',
+        'integration': {
+            'tests/common_action_composer.rs': 'none',
+        },
     },
     'console-app': {
         'unit': 'none',
         'integration': {
+            'tests/auth7_mobile_purpose.rs': 'postgres',
+            'tests/account_migration.rs': 'postgres',
             'tests/action_inbox_api.rs': 'postgres',
             'tests/attendance_persona_api.rs': 'postgres',
             'tests/audit_api.rs': 'postgres',
@@ -292,6 +323,7 @@ TEST_RESOURCE_REQUIREMENTS = {
             'tests/console_kill_switch.rs': 'postgres',
             'tests/console_route_telemetry.rs': 'postgres',
             'tests/consulting_engagement_api.rs': 'postgres',
+            'tests/database_durability_config.rs': 'none',
             'tests/dev_auth_persona_guard.rs': 'postgres',
             'tests/dev_auth_persona_guard_feature.rs': 'postgres',
             'tests/dev_seed_notification_links.rs': 'none',
@@ -425,6 +457,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'postgres',
         'integration': {
             'tests/owner_only_acl_postgres18.rs': 'postgres',
+            'tests/qualified_table_identity.rs': 'none',
         },
     },
     'console-gate-vendor-lockin': {
@@ -822,6 +855,8 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-payroll-adapter-postgres': {
         'unit': 'none',
         'integration': {
+            'tests/durability_observer.rs': 'postgres-recovery',
+            'tests/recovery.rs': 'postgres-recovery',
             'tests/pay_run_port_as_runtime_role.rs': 'postgres',
             'tests/payroll_lifecycle_rls_as_runtime_role.rs': 'postgres',
             'tests/roster_materialisation.rs': 'postgres',
@@ -843,11 +878,13 @@ TEST_RESOURCE_REQUIREMENTS = {
         'unit': 'none',
         'integration': {
             'tests/audit_chain_rls.rs': 'postgres',
+            'tests/ed25519_compatibility.rs': 'none',
         },
     },
     'console-platform-auth': {
         'unit': 'none',
         'integration': {
+            'tests/auth7_legacy_projection.rs': 'postgres',
             'tests/jwt_es256.rs': 'none',
             'tests/jwt_verifier.rs': 'none',
             'tests/refresh_tokens.rs': 'postgres',
@@ -868,6 +905,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-authz': {
         'unit': 'none',
         'integration': {
+            'tests/cedar_diagnostic_fail_closed.rs': 'none',
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
             'tests/cedar_pbac_readiness_cases.rs': 'none',
             'tests/policy.rs': 'postgres',
@@ -1115,7 +1153,7 @@ TEST_RESOURCE_REQUIREMENTS = {
 }
 
 TEST_TYPE_LABELS = frozenset({"test.unit", "test.integration"})
-RESOURCE_LABELS = frozenset({"resource.none", "resource.postgres"})
+RESOURCE_LABELS = frozenset({"resource.none", "resource.postgres", "resource.postgres-recovery"})
 
 # Inline database tests remain in their crate source tree, but cannot share the
 # hermetic unit target. Each declared variant is compiled with its inert Cargo
@@ -1238,7 +1276,7 @@ def resource_requirement(package_name, test_type, test_file=None):
                 " " + test_file if test_file else "",
             )
         ) from error
-    if resource not in {"none", "postgres"}:
+    if resource not in {"none", "postgres", "postgres-recovery"}:
         raise ValueError("unknown test resource: {}".format(resource))
     return resource
 
@@ -1247,20 +1285,53 @@ def requires_postgres(package_name, test_type, test_file=None):
     return resource_requirement(package_name, test_type, test_file) == "postgres"
 
 
+def integration_test_sources(d):
+    """Use Cargo automatic crate roots; nested modules stay source inputs.
+
+    A module can contain test attributes without being a standalone test crate.
+    Custom manifest targets are not used by this workspace; refuse them rather
+    than silently guessing their source roots or resource requirements.
+    """
+    manifest_path = os.path.join(d, "Cargo.toml")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path, "rb") as manifest_file:
+            manifest = tomllib.load(manifest_file)
+        if manifest.get("test") or "autotests" in manifest.get("package", {}):
+            raise ValueError("custom Cargo test discovery needs reviewed support: " + d)
+    testsdir = os.path.join(d, "tests")
+    all_rs = []
+    roots = []
+    if os.path.isdir(testsdir):
+        for dp, _, files in os.walk(testsdir):
+            for filename in files:
+                if not filename.endswith(".rs"):
+                    continue
+                source = os.path.relpath(os.path.join(dp, filename), d)
+                all_rs.append(source)
+                relative = os.path.relpath(os.path.join(dp, filename), testsdir).split(os.sep)
+                if len(relative) == 1 or (len(relative) == 2 and filename == "main.rs"):
+                    roots.append(source)
+    names = [integration_test_name(root) for root in roots]
+    if len(names) != len(set(names)):
+        raise ValueError("colliding Cargo integration test names: " + d)
+    return sorted(roots), sorted(set(all_rs) - set(roots))
+
+
+def integration_test_name(source):
+    basename = os.path.basename(source)
+    stem = os.path.basename(os.path.dirname(source)) if basename == "main.rs" and os.path.dirname(source) != "tests" else os.path.splitext(basename)[0]
+    return crate_ident(stem)
+
+
 def discovered_test_resource_keys(d, package_name):
     """Return resource keys for targets this generator will emit."""
     keys = set()
     src = os.path.join(d, "src")
     if tree_has(src, "#[cfg(test)]"):
         keys.add((package_name, "test.unit", None))
-    testsdir = os.path.join(d, "tests")
-    if os.path.isdir(testsdir):
-        for dp, _, files in os.walk(testsdir):
-            for filename in files:
-                if filename.endswith(".rs"):
-                    test_file = os.path.relpath(os.path.join(dp, filename), d)
-                    if file_has(os.path.join(d, test_file), *TEST_MARKERS):
-                        keys.add((package_name, "test.integration", test_file))
+    roots, _ = integration_test_sources(d)
+    for test_file in roots:
+        keys.add((package_name, "test.integration", test_file))
     return keys
 
 
@@ -1321,9 +1392,12 @@ def test_labels(package, test_type, uses_postgres):
     """Return the complete deterministic taxonomy for one generated rust_test."""
     if test_type not in TEST_TYPE_LABELS:
         raise ValueError("unknown test type: {}".format(test_type))
-    resource = "resource.postgres" if uses_postgres else "resource.none"
-    labels = ownership_labels(package) + [test_type, resource]
-    if uses_postgres:
+    # Preserve legacy bool callers; generation passes the full reviewed resource.
+    resource = ("postgres" if uses_postgres else "none") if isinstance(uses_postgres, bool) else uses_postgres
+    if "resource." + resource not in RESOURCE_LABELS:
+        raise ValueError("unknown test resource: {}".format(resource))
+    labels = ownership_labels(package) + [test_type, "resource." + resource]
+    if resource == "postgres":
         # Compatibility during runner migration; resource.postgres is canonical.
         labels.append("needs-postgres")
     return labels
@@ -1919,13 +1993,7 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
     # `mod` declarations resolve (unreferenced ones are ignored by rustc).
     testsdir = os.path.join(d, "tests")
     if os.path.isdir(testsdir):
-        all_rs = []
-        for dp, _, files in os.walk(testsdir):
-            for f in files:
-                if f.endswith(".rs"):
-                    all_rs.append(os.path.relpath(os.path.join(dp, f), d))
-        test_files = sorted(p for p in all_rs if file_has(os.path.join(d, p), *TEST_MARKERS))
-        helpers = sorted(p for p in all_rs if p not in test_files)
+        test_files, helpers = integration_test_sources(d)
         for tf in test_files:
             test_path = os.path.join(d, tf)
             contents = file_text(test_path)
@@ -1933,7 +2001,7 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
             labels = test_labels(
                 package,
                 "test.integration",
-                requires_postgres(name, "test.integration", tf),
+                resource_requirement(name, "test.integration", tf),
             )
             config = integration_resource_config(name, tf)
             srcs_expr = listsrcs(sorted(set([tf] + helpers)))

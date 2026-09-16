@@ -1,0 +1,41 @@
+{
+  "source_base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "owner": "/root",
+  "files": [
+    {
+      "path": "checker-execution.log",
+      "bytes": 2093,
+      "sha256": "29097b33a5ea7221e54d25451784b6d27c2a54a58888f092cf83b6df50701a2f"
+    },
+    {
+      "path": "draft-owner-acceptance.rs",
+      "bytes": 23750,
+      "sha256": "926260e7fdc94e73b87de0e2590abf6ff85293b7bf24f51ef80f7cef682f0cd1"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 381,
+      "sha256": "f09c13b766b44da28cd08bf69add10f219f95cede2046dd3eb31127a63e87cf5"
+    },
+    {
+      "path": "history_oracle.py",
+      "bytes": 4755,
+      "sha256": "f3491b7ba77192734fbde463b6742dce35ec1f9bde0fc3bafc3268b4779d4d24"
+    },
+    {
+      "path": "lifecycle-producer.rs",
+      "bytes": 4945,
+      "sha256": "18987f7de8ae9083e693aae26457e393438216652698a79424ac19804a49d6fd"
+    },
+    {
+      "path": "owner-read-contract.txt",
+      "bytes": 5035,
+      "sha256": "d8ba33068d8a0644b8961d5ee335a1aa50f0569c4ccb88863da8c6459fb66705"
+    },
+    {
+      "path": "test_history_oracle.py",
+      "bytes": 4813,
+      "sha256": "1d876dc7ffeca15a3c857b9db63b558beb1742e4416b5991f9f3194e0d946201"
+    }
+  ]
+}

@@ -1,0 +1,607 @@
+{
+  "source_base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "owner": "/root/readiness_final_verifier",
+  "repository_integrator": "/root",
+  "supersedes_manifest_sha256": "8559a2fdb678dcffd881db8435bea0fd94fdab746c548b3a20db9f0f44620fcb",
+  "disposition": "BOUNDED_S4_ACCEPTANCE_SOURCE_CUSTODY_INDEPENDENT_REVIEW_REQUIRED",
+  "native_dependency": {
+    "path": "dependencies/native-s2/freeze-manifest.json",
+    "sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d",
+    "verified_members": 64
+  },
+  "source_tests": 58,
+  "parser_checks": 27,
+  "python_checker_controls": 22,
+  "rust_compiled": 0,
+  "cargo_discovered": 0,
+  "rust_executed": 0,
+  "behavioral_red": 0,
+  "verus_verified": 0,
+  "files": [
+    {
+      "path": "S4-FROZEN.txt",
+      "bytes": 198,
+      "sha256": "185e3132ec306fc67bf2bd96a56e6359af611012a61b30dee1f2016a3b865a6f"
+    },
+    {
+      "path": "authority-vector-acceptance.append.rs",
+      "bytes": 2539,
+      "sha256": "f22f04ed31d2f9fa31b279f0f0944eb124e7072c6c05db1198a396c46c5183af"
+    },
+    {
+      "path": "bound-egress-acceptance.rs",
+      "bytes": 4363,
+      "sha256": "fe41a716f706c03fbf4a527f0874a563699b2f7edc5b25e275457c1138823112"
+    },
+    {
+      "path": "browser-auth-producer.rs",
+      "bytes": 5360,
+      "sha256": "d965309b6cde64356d74cf63bf5022911940e1200e3fac33a17d905a5cd8006a"
+    },
+    {
+      "path": "checker-execution.log",
+      "bytes": 330,
+      "sha256": "598dd3d3cf9890fd77a8be9b29b2efd379558c04035d48939742748c4dc16f20"
+    },
+    {
+      "path": "context-discovery-acceptance.rs",
+      "bytes": 12762,
+      "sha256": "461235bbc37190f059ac0ec355b7d1017c6761b008e00a731c45b44ae0519179"
+    },
+    {
+      "path": "context-owner-fixture.rs",
+      "bytes": 18564,
+      "sha256": "15e0c1995e4d425b8c9b3001487159c7d0f035101e41172b3e05868c2e9cfe27"
+    },
+    {
+      "path": "context-topology-acceptance.rs",
+      "bytes": 9271,
+      "sha256": "6bc2be8f0b5b04b72c1cee510200e8e80aab183a298c945ceee88b377cd552ee"
+    },
+    {
+      "path": "current-context-projection-acceptance.rs",
+      "bytes": 7142,
+      "sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f"
+    },
+    {
+      "path": "dependencies/bootstrap-b5/account-enrollment-producer.rs",
+      "bytes": 5070,
+      "sha256": "dac836422505ef57b75ddaf1134555716ce0179d56ff4d54a31e42489f8df500"
+    },
+    {
+      "path": "dependencies/bootstrap-b5/bootstrap-contract.md",
+      "bytes": 11679,
+      "sha256": "7f751987aefd4b26b8a174566206f052ae6eaec9fa34864f1c079ddcd87a62f8"
+    },
+    {
+      "path": "dependencies/bootstrap-b5/deployment-root-producer.rs",
+      "bytes": 3498,
+      "sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "path": "dependencies/bootstrap-b5/freeze-manifest.json",
+      "bytes": 1496,
+      "sha256": "ce522b7397419d422eb57fe0b366b37c55c491ee7fee734064957625b359057a"
+    },
+    {
+      "path": "dependencies/bootstrap-b5/ordinary-issuer-bootstrap.rs",
+      "bytes": 5825,
+      "sha256": "bccc71e411213ebcb3f65126c4dcc8cd97b50b9ec39dc968cbaac14952b5b642"
+    },
+    {
+      "path": "dependencies/bootstrap-b5/publish-then-root-producer.rs",
+      "bytes": 1669,
+      "sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "path": "dependencies/native-s2/account-enrollment-producer.rs",
+      "bytes": 5258,
+      "sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982"
+    },
+    {
+      "path": "dependencies/native-s2/artifact-owner-producer.rs",
+      "bytes": 4227,
+      "sha256": "27e105bc0d7b1274b8f29b3b8fb48e3a3c34757e324a99d9ea234f7bb5797c53"
+    },
+    {
+      "path": "dependencies/native-s2/artifact-owner-tests.rs",
+      "bytes": 7845,
+      "sha256": "629e5a37b48b6d059eefacb7ea59757f1015cb7ae70cad24634e72ce5beb043d"
+    },
+    {
+      "path": "dependencies/native-s2/attendance-owner-producer.rs",
+      "bytes": 10573,
+      "sha256": "08121eb293b6e8c0d08881be2596243af258228bd0c12bb284974474b40fe83a"
+    },
+    {
+      "path": "dependencies/native-s2/binder-sequence.rs",
+      "bytes": 5921,
+      "sha256": "ad4a26a2c15f981337a862ab102bf292dc1189d3bf9e97d7803003e2d9dd1742"
+    },
+    {
+      "path": "dependencies/native-s2/business-readback.sql",
+      "bytes": 1530,
+      "sha256": "21cca62c3f79a7c296b8b02864043ca8eb4b38697f9bd2f45e4092276b70dc06"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/calculation-blocked-one.bin",
+      "bytes": 1431,
+      "sha256": "00438949c40484663b4ffbc74fa529dcc03c708bcbf6f3411eeb5809f9cc0a8f"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/calculation-blocked-one.json",
+      "bytes": 1745,
+      "sha256": "f2c93871d4bb37dc806107265bf1d03d0851c9091457660004e52f62059e0f09"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/calculation-success-one.bin",
+      "bytes": 1435,
+      "sha256": "33bad30007efe3a43e07cc05ad34d9c19af72092b87b0227009e857ac27ec156"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/calculation-success-one.json",
+      "bytes": 1709,
+      "sha256": "e47065698451241bd1e24305754fc1e06e9028e76ecc6552ac55e7a68f59915f"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/index.json",
+      "bytes": 3077,
+      "sha256": "d7538317809644c2cb8f009a812756fc6ec9f6b207f24fe2d78711d0b7b80c7d"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/input-blocked-two.bin",
+      "bytes": 4090,
+      "sha256": "a426f26631b5d388919c3205295253fefc8cc2cde5e5a74fd4bbe98b7efb9b69"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/input-blocked-two.json",
+      "bytes": 5844,
+      "sha256": "5ff094919568924d0179c0c2057edb1cbee4eb7c59fad7a9ff76090e65123d3d"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/input-resolved-one.bin",
+      "bytes": 4364,
+      "sha256": "4a93f3889dfe4eb2a2617a83452202665a0e6afd9edaf998ea6bf8084cf009c4"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/input-resolved-one.json",
+      "bytes": 6612,
+      "sha256": "bff74725af378893971ab51d597a387315374fd601ac1ac43c18a3f2141d29e6"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-attempt-create-run.bin",
+      "bytes": 2360,
+      "sha256": "e962a57c7ed5f5e397fd607390e58561d3b40373e5bb091ab6298f2c967383df"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-attempt-create-run.json",
+      "bytes": 2755,
+      "sha256": "148e9c4cda11e1e3db9823a808207e237f22c3bfe69f432ad398996ed9090b8c"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-case-response.bin",
+      "bytes": 2138,
+      "sha256": "df2fcb0667d45d82075f504c5d36b07cb2be7639dcbf45142fc81e05a44326d5"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-case-response.json",
+      "bytes": 2493,
+      "sha256": "373b08e46c419e92a606f12684170ae4735100e74a1e9c913fa4cba295bbd0ba"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-direct-wage.bin",
+      "bytes": 1872,
+      "sha256": "8d27899205f60348204015c80d3dfa2c09db8caca3241426abc6c2ce0665170b"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-direct-wage.json",
+      "bytes": 2134,
+      "sha256": "f0a1f210604c07ed62af39a3cfc8b28db4b02f2769d5bc7cb6d33b1cbd571d09"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-gated-calculate.bin",
+      "bytes": 1948,
+      "sha256": "a08be2ac3ff8f5ad657bbe4a5fb8494956269af5e35949af4ff3ff7e721afcf0"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-gated-calculate.json",
+      "bytes": 2257,
+      "sha256": "9f8a835b3f84fb0f5f3337112d6d238d56415d968665ee6305ce3be1e60a190b"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-publication.bin",
+      "bytes": 2857,
+      "sha256": "9489ebfea27dfc175711bb65425dff04628d7a2fdff2296a0084b77aa81ef6ad"
+    },
+    {
+      "path": "dependencies/native-s2/codec-goldens/owner-publication.json",
+      "bytes": 3427,
+      "sha256": "777af25e2ae0ca39993cf71df11513c93fd56ab34d8550b80f5b69214ba55a3b"
+    },
+    {
+      "path": "dependencies/native-s2/commit-ack-relay.rs",
+      "bytes": 2509,
+      "sha256": "741f9c478e7315881cfb3c6cdd3c72cf92f5aa157cee4fd8e540f4d16e542733"
+    },
+    {
+      "path": "dependencies/native-s2/dependencies/commit_relay.py",
+      "bytes": 7697,
+      "sha256": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb"
+    },
+    {
+      "path": "dependencies/native-s2/deployment-root-producer.rs",
+      "bytes": 3498,
+      "sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3"
+    },
+    {
+      "path": "dependencies/native-s2/deployment-runtime-producer.rs",
+      "bytes": 4834,
+      "sha256": "3a1a67d0fd68e48b6d09c5213725c111eb8d6e0f0d5c06f8a1c6d194d62b96b6"
+    },
+    {
+      "path": "dependencies/native-s2/freeze-manifest.json",
+      "bytes": 11304,
+      "sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d"
+    },
+    {
+      "path": "dependencies/native-s2/historical-rejected-b1-test-issuer-bootstrap.rs.txt",
+      "bytes": 6320,
+      "sha256": "80e92bb28413f6c4536b70029b6f5df91933a63d47020ca6c7ba51eb3bf842c6"
+    },
+    {
+      "path": "dependencies/native-s2/historical-s1-metadata/registration-coverage.json",
+      "bytes": 29333,
+      "sha256": "d0e99cdf16b4f84d2d2fab70da8097d61de732517d86b2c83fcf5fffe2f445cd"
+    },
+    {
+      "path": "dependencies/native-s2/historical-s1-metadata/source-inventory.json",
+      "bytes": 3832,
+      "sha256": "094674d6f367a51cc0a7901cc28baf54779635c11dcc79e84c59a7a782b50d53"
+    },
+    {
+      "path": "dependencies/native-s2/historical-s1-metadata/supplement-contract.md",
+      "bytes": 5514,
+      "sha256": "57a1b47aeefcaa50c03acb0d1044aea155bb3d94ff3e3658bd08d1ea2b483da3"
+    },
+    {
+      "path": "dependencies/native-s2/historical-s1-metadata/syntax-execution.json",
+      "bytes": 1568,
+      "sha256": "30f69c54c4560aabe74816b7aa8e92070345c00045f41d87a38e09603b81e40b"
+    },
+    {
+      "path": "dependencies/native-s2/immutable-payroll-domain.rs",
+      "bytes": 159928,
+      "sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92"
+    },
+    {
+      "path": "dependencies/native-s2/interface-refinements.md",
+      "bytes": 6566,
+      "sha256": "4afb1b73545d6ee61e0475748bd8e8f2a5058e3a3fe0c986c667bf190f29fe3c"
+    },
+    {
+      "path": "dependencies/native-s2/mime-contract-delta.json",
+      "bytes": 738,
+      "sha256": "811133450252065dc3eb66a13e6c944b33f029470556e42887e482e5adec7970"
+    },
+    {
+      "path": "dependencies/native-s2/native-fixture.rs",
+      "bytes": 19690,
+      "sha256": "ed0a60d300450a8295bcd814b8e5876ced5ba8746dd6baf79fc8abcc25f21315"
+    },
+    {
+      "path": "dependencies/native-s2/native-lifecycle-tests.rs",
+      "bytes": 20845,
+      "sha256": "c7f8a5e600e2b27d54292a136da881a0e8c802ebd365952b87ed34768e1dc7b6"
+    },
+    {
+      "path": "dependencies/native-s2/native-money-assertions.rs",
+      "bytes": 2051,
+      "sha256": "6e2a48c34b85b8426a594d7b14ff4b94cdcbedf34761cea7a8d0f33b90ebf072"
+    },
+    {
+      "path": "dependencies/native-s2/native-money-golden.json",
+      "bytes": 1305,
+      "sha256": "8e5411a2a891be250ddfbb16a85930449d68a964d506d3eccbbf79b9d29a53d4"
+    },
+    {
+      "path": "dependencies/native-s2/native-owner-producer.rs",
+      "bytes": 10280,
+      "sha256": "9ca5c2d564566837231d4c52162bae2add39116dacbc0eb2bfd188cc25c0177c"
+    },
+    {
+      "path": "dependencies/native-s2/native-owner-tests.rs",
+      "bytes": 17724,
+      "sha256": "6a937bb758615fbd3630def336ef97c8124bf6da5299df4a6fdaa07454a7d358"
+    },
+    {
+      "path": "dependencies/native-s2/negative-assertions.rs",
+      "bytes": 806,
+      "sha256": "f5734c3af18e571c340939599580ac23d7bc06efff4789cfca9d7b7acbe01037"
+    },
+    {
+      "path": "dependencies/native-s2/operator-custody-producer.rs",
+      "bytes": 7953,
+      "sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "path": "dependencies/native-s2/ordinary-issuer-bootstrap.rs",
+      "bytes": 5994,
+      "sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494"
+    },
+    {
+      "path": "dependencies/native-s2/payroll-source-facts-producer.rs",
+      "bytes": 5731,
+      "sha256": "f003dd96ad6683bb7fd6151be73bbb120b1d406e96f5d221c0312b281db95d8f"
+    },
+    {
+      "path": "dependencies/native-s2/publish-then-root-producer.rs",
+      "bytes": 1669,
+      "sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027"
+    },
+    {
+      "path": "dependencies/native-s2/registered-action-keys.json",
+      "bytes": 1524,
+      "sha256": "8f7095958f0b5e4008a0f17ddb7b6b43879f79cc2e84cc3943d8c58e724a0619"
+    },
+    {
+      "path": "dependencies/native-s2/registration-coverage.json",
+      "bytes": 7989,
+      "sha256": "04d9f2b4df19279667f7c0248195247d1d02387381436ad5975fe60c7537c50c"
+    },
+    {
+      "path": "dependencies/native-s2/review-correction-producer.rs",
+      "bytes": 3347,
+      "sha256": "f0f3fdda6ffb95a5146ba017fdd571649df4e9383bae4ec1b4a15b9d697ec1bc"
+    },
+    {
+      "path": "dependencies/native-s2/rust-codec-assertions.rs",
+      "bytes": 10280,
+      "sha256": "1dc2043400ec7da6e00d6d3269f2b8da2819e77ba43d614310d75867c8ed36ee"
+    },
+    {
+      "path": "dependencies/native-s2/s1-parent-manifest.json",
+      "bytes": 2172,
+      "sha256": "2fd88d2fcdc3edf2d985a96e8c4ef384ba65569f32aa75012a2b2f96a7a21958"
+    },
+    {
+      "path": "dependencies/native-s2/schema-execution.json",
+      "bytes": 1156,
+      "sha256": "758d3aefe8b0b96f3b134ad82074c66ec182b57b6a71579c4f7d672536ff6a79"
+    },
+    {
+      "path": "dependencies/native-s2/source-foundation-producer.rs",
+      "bytes": 13394,
+      "sha256": "8ebc38ad1204769e34c8629e026ecb89dc141bc6c0b8522ebb9356d8c05e014a"
+    },
+    {
+      "path": "dependencies/native-s2/source-inventory.json",
+      "bytes": 5736,
+      "sha256": "b16785fc3a6b031f93e35e562fe92a8f729f252187c03e1a5bdb8e0f23fae0b4"
+    },
+    {
+      "path": "dependencies/native-s2/source-owner-producer.rs",
+      "bytes": 10470,
+      "sha256": "d72fe6909ce1d2cb8ad903540b56b013294b59f7a549d6dbe552e306164db98f"
+    },
+    {
+      "path": "dependencies/native-s2/source-owner-tests.rs",
+      "bytes": 13400,
+      "sha256": "045135f9a953a94aa31cf63b90be565b3138f0958a788f6ade0178faa82d3778"
+    },
+    {
+      "path": "dependencies/native-s2/source-preparation-tests.rs",
+      "bytes": 6569,
+      "sha256": "cd63fe12160c74335273b758adfdfde05e7738a3833255eaee3651ccc09e4e8e"
+    },
+    {
+      "path": "dependencies/native-s2/supplement-contract.md",
+      "bytes": 4202,
+      "sha256": "7ecbe18ce66a9096f10437898ea0350b8363d474b0b1c6b28c0a78ec4bd0ab21"
+    },
+    {
+      "path": "dependencies/native-s2/syntax-execution-s2.json",
+      "bytes": 9854,
+      "sha256": "ac46b5207140d32633d01a5cf3c350a3e5948a1f6359dddcd05d74cc3a087bda"
+    },
+    {
+      "path": "dependencies/native-s2/test_interface_delta.py",
+      "bytes": 1723,
+      "sha256": "3752de932dc0d4380778babae3ab84a8597461ae5d86ffb8fb47270bfbf033ab"
+    },
+    {
+      "path": "dependencies/native-s2/two-subject-producer.rs",
+      "bytes": 7560,
+      "sha256": "48bc97b21a5e19aebb728641f26612c8424e3f9594e23b78a0d4740cb78c9e31"
+    },
+    {
+      "path": "dependencies/native-s2/workforce-owner-producer.rs",
+      "bytes": 3828,
+      "sha256": "cd955704de2f263bac25abf4dbab2fce241283166368f281f585de92011e363f"
+    },
+    {
+      "path": "editor-control-envelope.schema.json",
+      "bytes": 883,
+      "sha256": "c4a9c652d03b9bb8a46f463a1a5fd19e7def7005e786d85e11ba2f641da206de"
+    },
+    {
+      "path": "expanded-custody-producer.rs",
+      "bytes": 8478,
+      "sha256": "7b45f89271398090947e9ed0f0dc18f739b703eece8d38904c12fe2f997ef4f2"
+    },
+    {
+      "path": "live-context-invalidation-acceptance.rs",
+      "bytes": 4277,
+      "sha256": "b9cbea19b1b87e9ce32dca02729fb2b7f30f1a4e2891dabdf3d5eea86e32f99b"
+    },
+    {
+      "path": "local-egress-peer.rs",
+      "bytes": 2171,
+      "sha256": "28bfdbaa15cfa1d6e784e6335ba08e3e72041f1e91b62f31157c0099c51d17ce"
+    },
+    {
+      "path": "logical-http-collector.rs",
+      "bytes": 1064,
+      "sha256": "d28ba7a46510b05cf9f7a3b8d44b56db4f5c241c0d2d30c26820d6260ccfab80"
+    },
+    {
+      "path": "logical-observation-oracle.py",
+      "bytes": 1915,
+      "sha256": "15ee0eb63a7f7ba0b169cadddfb81dada5f13df168f58ef2b87a44ea63e5b2d5"
+    },
+    {
+      "path": "migration-transition-acceptance.rs",
+      "bytes": 23348,
+      "sha256": "69308e55730f526ff243f725d9519b65743e4cac660f1d1369130eb83b9d0bd6"
+    },
+    {
+      "path": "native-control-reference-acceptance.rs",
+      "bytes": 17522,
+      "sha256": "1608b02e4935d21fd42ac649e488d8474c1ca73f4207098380ecdfd7bd006587"
+    },
+    {
+      "path": "native-projection-alias-acceptance.rs",
+      "bytes": 10764,
+      "sha256": "bd77cb8c652f51dbf947a292675fab615488e7edc1ccc20fa07ecf8a4cc62a2f"
+    },
+    {
+      "path": "native-replay-disclosure-acceptance.rs",
+      "bytes": 9722,
+      "sha256": "49b31b7017276a3d5b17b235876c9dc08e7da90c982294357317c498ea66ae30"
+    },
+    {
+      "path": "operator-custody-producer.rs",
+      "bytes": 7953,
+      "sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03"
+    },
+    {
+      "path": "owner-interface-contract.md",
+      "bytes": 33207,
+      "sha256": "a9db33f424e57252dc994b554bd5b05736916869ac618c0de51ede1ba572ad46"
+    },
+    {
+      "path": "projector-counterfactual-acceptance.rs",
+      "bytes": 7285,
+      "sha256": "4736a440e2eca6192404514b4b90b8cbe415737de6794ae2bb382f1bd491c6cd"
+    },
+    {
+      "path": "projector-observation-collector.rs",
+      "bytes": 2898,
+      "sha256": "2ef8b084fce62d5291e54b99c2004bafcd8891f4429ccb18e77c31c471473698"
+    },
+    {
+      "path": "proof-harness/README.md",
+      "bytes": 3293,
+      "sha256": "62edc13551529c0bad0f5a419e6a48e3902e07a1578452748a45b70dddab74a5"
+    },
+    {
+      "path": "proof-harness/binding-candidate.json",
+      "bytes": 970,
+      "sha256": "40471ddab85e41ac0cfbbd9cf0aadce2d0ee3d72180f954fd50ca788be2049bb"
+    },
+    {
+      "path": "proof-harness/negative-recipes.json",
+      "bytes": 2523,
+      "sha256": "97762d764169a65a8deffcb746cee869d6bb1a664b9d337fa462f5ce220e5898"
+    },
+    {
+      "path": "proof-harness/proof-obligations.rs",
+      "bytes": 3793,
+      "sha256": "de8ec059df8c9604aef1063bec8aa648af093d1035bc0c0352e2bc76eb7b5859"
+    },
+    {
+      "path": "proof-harness/source_binding_gate.py",
+      "bytes": 5972,
+      "sha256": "ad52823bf3653c38611b1a4e2dda088b8d9d3b5e3125cc101ca0b340255d2b6a"
+    },
+    {
+      "path": "proof-harness/test_source_binding_gate.py",
+      "bytes": 3353,
+      "sha256": "2deb28eb4751f8bf2d5e5b89303e32e4598fa2ff7a077cd34baaa770a80fbc00"
+    },
+    {
+      "path": "public-telemetry-registry-acceptance.append.rs",
+      "bytes": 3277,
+      "sha256": "80b9632a0964b7849102bbba25ea751c6690ef7341c479a7a6ca51560dd28b9b"
+    },
+    {
+      "path": "publication-boundary-acceptance.rs",
+      "bytes": 8733,
+      "sha256": "ad2f40ccccc4eef619bb548fae5aa09a5e608b89dce8d52ba7c432cc5a4d78cc"
+    },
+    {
+      "path": "publication-transition-acceptance.rs",
+      "bytes": 1432,
+      "sha256": "98f850b4c450d0f5a5a7387f16bb5cb0ffef235350820b52ac45924258cd3f34"
+    },
+    {
+      "path": "real-process-producer.rs",
+      "bytes": 4534,
+      "sha256": "89f640d7a5345d0cff4f7ac5471b0304805993a1f89bf268e9dcecba0edf7d9d"
+    },
+    {
+      "path": "replica-key-acceptance.rs",
+      "bytes": 5311,
+      "sha256": "fa902b1916b293ab8c6261fd1fb76ee0565f4ec095bed50e988685effc03b93a"
+    },
+    {
+      "path": "s2-parent-manifest.json",
+      "bytes": 7416,
+      "sha256": "54738bdf0b20ff040b20a1cf773073b1b5f9dd6c5c1672416b0fd00430a6f5e8"
+    },
+    {
+      "path": "s3-parent-manifest.json",
+      "bytes": 6686,
+      "sha256": "8559a2fdb678dcffd881db8435bea0fd94fdab746c548b3a20db9f0f44620fcb"
+    },
+    {
+      "path": "s4-parser-checks.json",
+      "bytes": 3059,
+      "sha256": "dc827cf4639b6a73694d2c8729bb8885fd0ba4ee883cbc7f5674f431418b90a1"
+    },
+    {
+      "path": "safe-event-constructor-acceptance.append.rs",
+      "bytes": 2095,
+      "sha256": "c242f20f6686649e2436ffc7b7ab628aba4b318451199a815cffad3e55b6e209"
+    },
+    {
+      "path": "security-grant-producer.rs",
+      "bytes": 2816,
+      "sha256": "0b43d28dea65ba15eca4dbe7dcc3a1d330248af3b7d63ae7af28b9d8a6d1e7ed"
+    },
+    {
+      "path": "sink-enrollment-contract.md",
+      "bytes": 3550,
+      "sha256": "9a0408a106961a65a9dbe93428264b67376e15a62de6ae057124d0fcfa861f21"
+    },
+    {
+      "path": "source-gap-census.json",
+      "bytes": 69975,
+      "sha256": "73f57675a05d06cd092ef1e3c2be7922b62c579c0a926f0756a90551360b0d67"
+    },
+    {
+      "path": "source-sink-requirements.json",
+      "bytes": 21414,
+      "sha256": "7fe872ffbf31767aa9d2ebf78801fc1c8bf7fce94d081306b6c98044465915f7"
+    },
+    {
+      "path": "storage-no-redirect-acceptance.rs",
+      "bytes": 4643,
+      "sha256": "7973ce0b2d3db2ece3a151bedfa7c34021c5188fc9c7e5cf639774d6fb630bb2"
+    },
+    {
+      "path": "syntax-execution.json",
+      "bytes": 4220,
+      "sha256": "ff1e072282a3ca947a9790c565949dabb8bcc646453d3980a2a54677e30f0972"
+    },
+    {
+      "path": "terms-publication-acceptance.rs",
+      "bytes": 25720,
+      "sha256": "0178db0e32ab0d3dc87183328e7a8ec83b4b5f45835b82670506706439042bd4"
+    },
+    {
+      "path": "test_logical_observation_oracle.py",
+      "bytes": 1995,
+      "sha256": "0d145769c935c78842e15597992c69fa96a7a7e57bb01f1018244021a02f0441"
+    }
+  ]
+}

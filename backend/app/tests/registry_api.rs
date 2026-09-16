@@ -16,8 +16,9 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn substitutes_endpoint_is_branch_scoped_and_super_admin_can_expand(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -71,7 +72,7 @@ async fn substitutes_endpoint_is_branch_scoped_and_super_admin_can_expand(pool: 
         vec![],
     )
     .unwrap();
-    let service = build_router(app_state(pool, public_key_pem).unwrap());
+    let service = build_router(app_state(pool, public_key_pem).await.unwrap());
 
     let scoped = get_json(
         service.clone(),
@@ -111,8 +112,9 @@ async fn substitutes_endpoint_is_branch_scoped_and_super_admin_can_expand(pool: 
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn equipment_timeline_graph_is_branch_scoped_and_links_work_orders(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -144,7 +146,7 @@ async fn equipment_timeline_graph_is_branch_scoped_and_links_work_orders(pool: P
         vec![branch],
     )
     .unwrap();
-    let service = build_router(app_state(pool, public_key_pem).unwrap());
+    let service = build_router(app_state(pool, public_key_pem).await.unwrap());
 
     let response = get_json(
         service.clone(),
@@ -190,8 +192,9 @@ async fn equipment_timeline_graph_is_branch_scoped_and_links_work_orders(pool: P
     assert_eq!(hidden.status, StatusCode::NOT_FOUND, "{:?}", hidden.json);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn object_action_catalog_and_executor_are_governed(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -215,7 +218,7 @@ async fn object_action_catalog_and_executor_are_governed(pool: PgPool) {
         vec![branch],
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let service = build_router(app_state(pool.clone(), public_key_pem).await.unwrap());
 
     let catalog = get_json(
         service.clone(),
@@ -381,8 +384,20 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -391,6 +406,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 #[derive(Debug, Clone)]

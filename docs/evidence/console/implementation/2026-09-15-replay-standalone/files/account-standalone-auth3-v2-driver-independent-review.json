@@ -1,0 +1,30 @@
+{
+  "kind": "independent-standalone-three-target-driver-review",
+  "reviewer": "/root",
+  "author": "/root/fast_gate_review",
+  "status": "APPROVE_EXACT_RUNTIME_ADAPTER",
+  "artifacts": {
+    "/private/tmp/account-standalone-auth3-v2-driver.sh": "fd686b9907d10663f101828763b1749efa1dd61695da675f1a6fef220170b224",
+    "/private/tmp/account-standalone-auth3-v2-probe.py": "a3c43ef11b04271567409db89e796e95a778dc06c7249d34c8b5c50290e373e5"
+  },
+  "findings": [],
+  "checks": [
+    "Original container ownership, pinned image, tmpfs size and successful cleanup guards unchanged",
+    "Whole map preserved; only exact dev-auth row is opted into private local selection and required feature added",
+    "All three whole targets selected; keep-going retains all executed outcomes",
+    "Exact eleven-argument prebuild narrowed to same three targets; actual Python runner invokes real cargo",
+    "Snapshots expanded from21to36; clean candidate and pre/post equality remain mandatory"
+  ],
+  "expected_discovered": 11,
+  "expected_by_target": {
+    "dev_auth_session": 7,
+    "deactivate_revokes_credentials": 1,
+    "refresh_tokens": 3
+  },
+  "limits": [
+    "No runtime yet",
+    "private local dev-auth selection is not proof of CI wiring",
+    "preexisting restricted-auth legacy DML failures remain test failures",
+    "no durability or production claims"
+  ]
+}

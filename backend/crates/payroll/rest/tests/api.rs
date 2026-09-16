@@ -114,7 +114,12 @@ fn bearer(keys: &Keys, user_id: UserId, org: OrgId, role: &str) -> String {
         .unwrap()
 }
 
-fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+async fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let verifier = JwtVerifier::from_es256_public_pem(
         JwtSettings {
             issuer: TEST_ISSUER.to_owned(),
@@ -125,7 +130,13 @@ fn app(pool: PgPool, keys: &Keys) -> axum::Router {
     )
     .unwrap();
     let store = PgPayrollStore::new(pool);
-    router(PayrollRestState::new(store, Some(verifier)))
+    router(PayrollRestState::new(
+        store,
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database.clone(),
+        )),
+    ))
 }
 
 async fn get(service: axum::Router, uri: &str, token: &str) -> JsonResponse {
@@ -267,7 +278,11 @@ async fn seed_user_linked_to_employee(
 
 async fn seed_run(owner_pool: &PgPool, org: Uuid, actor: UserId) -> Uuid {
     let runtime_pool = runtime_role_pool(owner_pool).await;
-    let pay_run = PgPayRunPort::new(runtime_pool, tokio::runtime::Handle::current());
+    let pay_run = PgPayRunPort::new(
+        runtime_pool,
+        tokio::runtime::Handle::current(),
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let created = execute_sync(
         &pay_run,
         PayRunCommand {
@@ -513,8 +528,9 @@ fn assert_payslips_me_is_own_readiness(body: &Value, expected_run: Uuid, forbidd
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
 
@@ -533,7 +549,7 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
     let admin_no_link = UserId::new();
     seed_user(&pool, admin_no_link, *org.as_uuid(), "ADMIN").await;
 
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let alice_token = bearer(&keys, alice_user, org, "MEMBER");
     let bob_token = bearer(&keys, bob_user, org, "MEMBER");
 
@@ -615,8 +631,9 @@ async fn payslips_me_is_self_scoped_never_a_coworkers(pool: PgPool) {
     }
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn runs_admin_read_is_executive_and_super_admin_only(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let super_admin = UserId::new();
@@ -628,7 +645,7 @@ async fn runs_admin_read_is_executive_and_super_admin_only(pool: PgPool) {
     let admin = UserId::new();
     seed_user(&pool, admin, *org.as_uuid(), "ADMIN").await;
 
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
 
     let member_read = get(
         service.clone(),
@@ -664,8 +681,9 @@ async fn runs_admin_read_is_executive_and_super_admin_only(pool: PgPool) {
     assert_eq!(super_admin_read.json["total"], 1);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn runs_are_org_isolated_over_http(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let other_org = Uuid::from_u128(0x5ea5_5ea5_5ea5_5ea5_5ea5_5ea5_5ea5_5ea5);
@@ -678,7 +696,7 @@ async fn runs_are_org_isolated_over_http(pool: PgPool) {
     seed_user(&pool, other_actor, other_org, "SUPER_ADMIN").await;
     seed_run(&pool, other_org, other_actor).await;
 
-    let service = app(runtime_role_pool(&pool).await, &keys);
+    let service = app(runtime_role_pool(&pool).await, &keys).await;
     let read = get(
         service,
         PAYROLL_RUNS_PATH,
@@ -694,11 +712,12 @@ async fn runs_are_org_isolated_over_http(pool: PgPool) {
 
 /// Admin run listing against a draft minted by `payroll.create_run` after
 /// Company → OrgUnit → JobPosition → Person → hr.appoint. No calculate, no won.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn empty_tenant_runs_list_sits_on_canonical_org_tree(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let tree = provision_empty_tenant_appointed_run(&owner_pool).await;
     let keys = keys();
-    let service = app(runtime_role_pool(&owner_pool).await, &keys);
+    let service = app(runtime_role_pool(&owner_pool).await, &keys).await;
     let token = bearer(&keys, tree.actor, tree.org, "SUPER_ADMIN");
 
     let listed = get(service.clone(), PAYROLL_RUNS_PATH, &token).await;
@@ -766,7 +785,11 @@ async fn provision_empty_tenant_appointed_run(owner_pool: &PgPool) -> EmptyTenan
     let positions = PgJobPositionPort::new(runtime_pool.clone(), handle.clone());
     let persons = PgPersonPort::new(runtime_pool.clone(), handle.clone());
     let employment = PgEmploymentPort::new(runtime_pool.clone(), handle.clone());
-    let pay_run = PgPayRunPort::new(runtime_pool.clone(), handle);
+    let pay_run = PgPayRunPort::new(
+        runtime_pool.clone(),
+        handle,
+        console_platform_db::durability::DurabilityPolicy::local_development(),
+    );
     let org = OrgId::from_uuid(ORG);
 
     execute_sync(

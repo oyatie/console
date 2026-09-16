@@ -150,6 +150,12 @@ function validateRetiredAdrIdentities(root, decisionsDirectory, failures) {
     if (!existsSync(absolutePath) || checkerPaths.has(absolutePath)) {
       continue;
     }
+    // Historical execution logs preserve rejected inputs; they do not assert
+    // ADR authority. Documentation and logs outside evidence remain checked.
+    if (isWithinDirectory(join(root, "docs", "evidence"), absolutePath)
+        && absolutePath.endsWith(".log")) {
+      continue;
+    }
     const display = displayPath(root, absolutePath);
     const contents = readFileSync(absolutePath);
     if (contents.includes(0)) {

@@ -1,0 +1,15 @@
+{
+  "kind": "ROOT_ADDITIVE_TERMS_READ_ACCEPTANCE",
+  "base": "ffabda81729fa22ad5fa581ae18d3417b77c6929",
+  "test_sha256": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+  "test_manifest_sha256": "5e7d4e53b7fc65820d3009d3428aa7f9292d4fcd0d773564a3b89319eb50b7f8",
+  "independent_review_sha256": "ef598801048f3297646b1f2254e299c19b0c9d640d6e10e0bf1bd4d3de38e25c",
+  "scope": "Three public read tests and two additive header assertions; exact existing fixture extraction. No original assertions removed.",
+  "runtime_executed": 0,
+  "authorization": "Existing user instruction to finish preparation, independent review and implementation without routine permission pauses; approved wire31/browser04/terms06.",
+  "remaining_holds": [
+    "Actual focused behavioral RED and lane admission",
+    "Implementation and independent runtime review",
+    "Production and legal content authority"
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "original_receipt": "authored-artifacts-handoff.json",
+  "status": "All nine author artifacts delivered; original receipt describes archived author bytes. Root corrected five delivered text/JSON/CSV artifacts after independent security review; both identities retained.",
+  "paths": [
+    {
+      "original_path": "capability-family-preservation-ledger.json",
+      "delivered_path": "capability-family-preservation-ledger.json",
+      "original_sha256": "131e8cba74fffacbe9625a9afc9cfb00c4cb51e61c6df3e505b5d32f7788a9e5",
+      "delivered_sha256": "db164c28f0650a88a001add8a185250085c7cae31a95b4a420c785a7041dbdb1",
+      "modified": true,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/capability-family-preservation-ledger.json"
+    },
+    {
+      "original_path": "capability-family-preservation-ledger.md",
+      "delivered_path": "capability-family-preservation-ledger.txt",
+      "original_sha256": "17e04dbe054245275b21c7410d642dc3d2e7a1c357a73c1580f8eccdeeab1706",
+      "delivered_sha256": "07da45b7a51ddee3698fe003caa46988ebd062d6fefb03f1921a6002613bfe9c",
+      "modified": true,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/capability-family-preservation-ledger.md"
+    },
+    {
+      "original_path": "capability-family-preservation-ledger.csv",
+      "delivered_path": "capability-family-preservation-ledger.csv",
+      "original_sha256": "7cda634492495c6f0fd7b00ce724fd139f25cf2132b31a08fcbebbd889c59729",
+      "delivered_sha256": "934618dfb5a8a005eb8a7d372d0e13973849eaf65f9dc9d6542aa98f7cfb03c7",
+      "modified": true,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/capability-family-preservation-ledger.csv"
+    },
+    {
+      "original_path": "native-nonpayable-usability-protocol.json",
+      "delivered_path": "native-nonpayable-usability-protocol.json",
+      "original_sha256": "90bb0dbeb46ead7d116a0c44b873451eec6539dce54c4c8d6978bbbde406a640",
+      "delivered_sha256": "521676ae08283d0011d4889927bc882db45524e273a4633c9dc80a4607630856",
+      "modified": true,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/native-nonpayable-usability-protocol.json"
+    },
+    {
+      "original_path": "native-nonpayable-usability-protocol.md",
+      "delivered_path": "native-nonpayable-usability-protocol.txt",
+      "original_sha256": "20fea86c5594665b4521c25751e2bf1ef3e8acffbb57903b0e3b1a52886ff494",
+      "delivered_sha256": "bb3e853d7900c17276207edb160d9056d5584874a28c70a38d9da3a1bb82e279",
+      "modified": true,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/native-nonpayable-usability-protocol.md"
+    },
+    {
+      "original_path": "usability-observation-template.json",
+      "delivered_path": "usability-observation-template.json",
+      "original_sha256": "5cab8ea9e433647e04a58f52e887585429aed8ee736f0be356c12ff9d13797b0",
+      "delivered_sha256": "5cab8ea9e433647e04a58f52e887585429aed8ee736f0be356c12ff9d13797b0",
+      "modified": false,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/usability-observation-template.json"
+    },
+    {
+      "original_path": "authored-source-custody.json",
+      "delivered_path": "authored-source-custody.json",
+      "original_sha256": "d5748121ff098928046262cb2b788cb689497b05a2be3faeef54050ef5106258",
+      "delivered_sha256": "d5748121ff098928046262cb2b788cb689497b05a2be3faeef54050ef5106258",
+      "modified": false,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/authored-source-custody.json"
+    },
+    {
+      "original_path": "authored-artifact-check.json",
+      "delivered_path": "authored-artifact-check.json",
+      "original_sha256": "c63d907babf92914fa2fc89c110607964e006aab9bb6c058607032f90a6f218c",
+      "delivered_sha256": "c63d907babf92914fa2fc89c110607964e006aab9bb6c058607032f90a6f218c",
+      "modified": false,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/authored-artifact-check.json"
+    },
+    {
+      "original_path": "render-authored-artifacts.py",
+      "delivered_path": "render-authored-artifacts.py",
+      "original_sha256": "74bed765dfa8a39fea5edf716c7b6e691b1273749b190cf8ba5994d7fd395e1f",
+      "delivered_sha256": "74bed765dfa8a39fea5edf716c7b6e691b1273749b190cf8ba5994d7fd395e1f",
+      "modified": false,
+      "original_archive": "primary-source-bundle.tar.gz",
+      "original_archive_member": "capabilities/render-authored-artifacts.py"
+    }
+  ]
+}

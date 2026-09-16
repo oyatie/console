@@ -1,0 +1,141 @@
+{
+  "kind": "replay6_driver_and_mandatory_auth_call_preparation",
+  "status": "EXACT_PROPOSALS_STATIC_CHECKS_PASS_PENDING_INDEPENDENT_REVIEW",
+  "author": "/root/capture_review",
+  "repository_and_runtime_owner": "/root",
+  "created_at_utc": "2026-09-15T05:54:24.022054+00:00",
+  "inspected_runtime_signature_commit": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810",
+  "artifacts": {
+    "/private/tmp/account-auth-refresh6-driver.sh": {
+      "sha256": "0855a1ad6861ece2b9c16f5464ebf1878f10dfa1f49634cd0fb07a33f3403711",
+      "bytes": 8523
+    },
+    "/private/tmp/account-auth-refresh6-probe.py": {
+      "sha256": "72525e112bec3a8016ead01bd2088d4d2234f7e74dc95763e2b6de1d6628147f",
+      "bytes": 389
+    },
+    "/private/tmp/account-legacy225-replay6-driver.sh": {
+      "sha256": "24167812218388234cab22320f521b823f7915e73b34aef5c9f2b7bba1e85cb3",
+      "bytes": 8586
+    },
+    "/private/tmp/account-legacy225-replay6-probe.py": {
+      "sha256": "16555d70fb2d5b268162035b00c3126675bedc7f49fcc8a9453af8a805804540",
+      "bytes": 397
+    },
+    "/private/tmp/account-legacy225-replay6-driver.patch": {
+      "sha256": "45fa995e4a3ea24a348b6aefb2215d50fea2eeb713895737eff1040ab11171c6",
+      "bytes": 4090
+    },
+    "/private/tmp/account-legacy225-replay-controls-candidate.rs": {
+      "sha256": "90e153ff8604c99dedf2172755d5d24f556971b6ce34768aeaea0b5d2d58ca13",
+      "bytes": 28097
+    },
+    "/private/tmp/account-legacy225-replay-controls-auth-candidate.rs": {
+      "sha256": "c18f069bcf3c65d88f35869a69ac12e7f80d3afcc9d477b70c21a50387ee2d52",
+      "bytes": 28286
+    },
+    "/private/tmp/account-legacy225-replay-controls-auth.patch": {
+      "sha256": "66a8cf1818e9a8f64fee6f55ad31e446a3c202a617ecae4f11ef5db38df39945",
+      "bytes": 652
+    }
+  },
+  "driver_changes": [
+    "Rename evidence/container label/probe-driver prefix from account-auth-refresh6 to account-legacy225-replay6.",
+    "Add account_migration.rs and its immutable fixture to before/after snapshots while retaining every prior snapshot path;23paths total.",
+    "Select existing app-account-migration-pg entry and validate its exact original whole-target account_migration argv. Remove the old refresh-name filter insertion, leaving the entire map object unchanged.",
+    "Narrow only the same exact seven-argument console-app prebuild to --test account_migration.",
+    "Select --only app-account-migration-pg; retain --num-threads1 and native --test-threads=1."
+  ],
+  "preserved_driver_boundaries": [
+    "All map entries and map fields.",
+    "Pinned PostgreSQL image, generated credentials, existing actual role/bootstrap/finalizer script and auth transport.",
+    "Exact owned container name/label and4GiBtmpfs setup.",
+    "Shared Cargo/toolchain settings.",
+    "Complete probe log/exit propagation, source pre/post equality, bounded fallback cleanup and successful absence readback."
+  ],
+  "source_change": {
+    "base_sha256": "90e153ff8604c99dedf2172755d5d24f556971b6ce34768aeaea0b5d2d58ca13",
+    "candidate_sha256": "c18f069bcf3c65d88f35869a69ac12e7f80d3afcc9d477b70c21a50387ee2d52",
+    "target": "backend/app/tests/account_migration.rs",
+    "insertions": [
+      "Immediately before the remaining post-current-migration rotate call, acquire console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Auth).await.",
+      "Pass &auth_pool as the new required second explicit rotate argument."
+    ],
+    "exact_reverse_restores_base": true,
+    "all_assertions_queries_and_existing_guards_preserved": true,
+    "remaining_rotate_calls": 1,
+    "no_mock_grant_role_switch_or_optional_auth_dependency": true,
+    "auth_helper_evidence": "Existing login_test_pool obtains CONSOLE_TEST_AUTH_DATABASE_URL, requires console_auth_rt, binds actual SQLx test database, authenticates directly and checks session_user/current_user plus absence of superuser/BYPASSRLS/admin attributes.",
+    "reached_boundary": "Acquisition remains after actual current migration/catalog checks and original revocation preservation queries. Missing company_actors still fails before this call; exact FamilyRevoked and material equality oracles remain unchanged."
+  },
+  "expected_command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "account_migration",
+    "--",
+    "--test-threads=1"
+  ],
+  "expected_static_roster": {
+    "total": 6,
+    "original_migration_tests": 2,
+    "fixture_controls": 4
+  },
+  "runtime_acceptance": [
+    "Require6actual executed tests; static count alone is not execution.",
+    "Require all4fixture controls pass after positive native replay. Preserve2original migration outcomes honestly; missing-current-catalog RED is allowed evidence, not a green suite.",
+    "No compile/prerequisite failure can authorize implementation or count as meaningful behavioral RED.",
+    "Bind installed source/fixture and clean immutable expected SHA before driver launch. Exact fixture digest remainsbc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4.",
+    "Keep complete exact counts/log and require successful owned-container absence plus source equality."
+  ],
+  "validation": {
+    "executed": [
+      {
+        "command": "bash -n /private/tmp/account-legacy225-replay6-driver.sh",
+        "exit_code": 0
+      },
+      {
+        "command": "rustup run 1.98.1 rustfmt --edition 2024 --check /private/tmp/account-legacy225-replay-controls-auth-candidate.rs",
+        "exit_code": 0
+      },
+      {
+        "command": "Python ast.parse for probe and five embedded Python blocks; execute exact map block without its terminal write_text",
+        "result": "PASS; whole map object unchanged; selected argv exact;23unique snapshot paths"
+      },
+      {
+        "command": "Python exact reversal of only auth-pool declaration and rotate argument; static test roster/hash/patch checks",
+        "result": "PASS; original candidate restored byte-exact; all prior assertions preserved;6tests"
+      }
+    ],
+    "tests_discovered": 0,
+    "tests_executed": 0,
+    "not_executed": [
+      "Cargo",
+      "PostgreSQL",
+      "Docker",
+      "actual login/rotate",
+      "replay6 suite"
+    ]
+  },
+  "pre_mortem": "A filter or source-plumbing adaptation could silently narrow tests or replace refusal semantics. Whole-target map equality,6static tests, exact source reversal and retained exact FamilyRevoked/material assertions constrain those risks; actual runtime counts remain required.",
+  "blast_radius": "Only new private evidence scripts, source candidate, patches and this receipt written. Prior reviewed files and repository untouched by author.",
+  "rollback": "Reject proposals if any exact diff/hash changes. Future runtime cleanup retains the already-reviewed owned-container boundary; no shared reset.",
+  "stop_conditions": [
+    "Source/fixture/driver hash differs.",
+    "Wrong current rotate signature.",
+    "Anything substitutes owner/SETROLE for genuine Auth LOGIN.",
+    "Fixture missing from clean source snapshot.",
+    "Less than6executed, any control failed, source drift or missing cleanup proof."
+  ],
+  "remaining_holds": [
+    "Independent driver and auth-call patch review.",
+    "Exact installed candidate commit/custody.",
+    "Actual compile and replay6 execution.",
+    "Current migration preservation failures remain separate product work."
+  ]
+}

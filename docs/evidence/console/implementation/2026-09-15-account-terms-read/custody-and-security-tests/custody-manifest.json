@@ -1,0 +1,38 @@
+{
+  "kind": "TERMS_CURRENT_CUSTODY_ADDITIVE_ACCEPTANCE_CANDIDATE",
+  "version": 1,
+  "base_sha": "dba42d1ab50afae99163f7b591e5749933d5dd25",
+  "author": "/root/inventory_repair",
+  "status": "Awaiting independent review; runtime0; not source implementation",
+  "allowed_target_paths": [
+    "backend/app/tests/auth_rest.rs",
+    "backend/app/tests/auth_rest/account_fence_projection.rs",
+    "backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql"
+  ],
+  "artifact_hashes": {
+    "backend/app/tests/auth_rest.rs": "2f26d99fc11c99acbe6fd5c5c7cadffc1ad4fb4e004fbf8cc3cd46dcf4e9093e",
+    "backend/app/tests/auth_rest/account_fence_projection.rs": "74ad1caf266ec088b08c1e447ccb3d1335772e2bc70f6d1e4d807854b7de8d6f",
+    "backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql": "eb090fe7a67ba216097a0ec04672030116bf0550ba6772ac17d90e888f94f7ab",
+    "base-auth_rest.rs": "b3192f03a5257737a2538f4311f808044409d65817e9dc4f576b8306cc0ef9f0",
+    "base-account_fence_projection.rs": "ee5ef5a220be6e9914d4196ad3143c828d9d5586632b1895ae8a7e5eefaa515c",
+    "terms_current_module.rs": "f9d1250ed52a8dd0a0baeea893448fb2d5a568be0ee1a9bc961a2d04b8b5e96f",
+    "candidate.patch": "bc4fdfa5dc2cfd1de2f05a0976e6dee37301addcba097afe985d7ab22409ae15",
+    "guide.json": "9e133a926888a44503f631c8b62a24b8a4599ec524883a582201e0857f0a03df"
+  },
+  "checks": [
+    "rustfmt --edition2024 --config skip_children=true --check both changed Rust files PASS",
+    "git apply --check private exact base PASS",
+    "private patch application reproduces all three candidate target bytes PASS",
+    "reverse enumerated test additions and fixture visibility to exact original source bytes PASS",
+    "historical fixture exact Git regular-blob extraction and SHA256 pin PASS"
+  ],
+  "counts": {
+    "new_lexical": 10,
+    "base_projection_module": 56,
+    "candidate_projection_module": 66,
+    "runtime_discovered": 0,
+    "runtime_executed": 0
+  },
+  "runtime": "No Cargo/Docker/PostgreSQL/sourceintegration actions by author. Missing helper and historical profile failures need exact root-run evidence.",
+  "review_receipts": []
+}

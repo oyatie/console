@@ -1,0 +1,12 @@
+{
+  "kind": "payroll.review.request_withdraw",
+  "body": {
+    "expected": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "case_id": "53da7ce8-0707-50fc-a954-b72c2956c54d",
+      "content_revision": "1",
+      "control_revision": "1"
+    },
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

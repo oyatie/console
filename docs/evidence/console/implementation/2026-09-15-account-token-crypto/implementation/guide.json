@@ -1,0 +1,72 @@
+{
+  "kind": "PRIVATE_ACCOUNT_TOKEN_CRYPTO_IMPLEMENTATION_GUIDE",
+  "lane": "account-token-crypto-owner",
+  "base_sha": "b2c52e27c719237590205d7441ba708a52d66265",
+  "owner": "/root",
+  "private_implementer": "/root/fast_gate_review",
+  "immutable_target": {
+    "api_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+    "tests_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb"
+  },
+  "admission": {
+    "spec": "/private/tmp/account-crypto-owner-lane-spec-b2c52e27.json",
+    "root_confirmed_admitted": true,
+    "red_exit": 101,
+    "red_compiler_errors": 27,
+    "red_error_kinds": [
+      "E0432",
+      "E0599"
+    ],
+    "runtime_discovered": 0,
+    "runtime_executed": 0,
+    "reason": "Frozen owner API missing at exact clean base; behavioral assertions unreached."
+  },
+  "mechanical_steps": [
+    "Independently review exact frozen postimages and patch against pinned API/tests. No implementer test or dependency changes.",
+    "Root verifies current exact auth preimage and test hashes match admitted b2c52e27; intervening commits must be source-unrelated. Root applies only this patch as sole repository writer.",
+    "Root serializes any required existing BUCK source ownership update; not part of this private source patch.",
+    "Root executes exact admitted15 probe, then unchanged full jwt_es25629 and jwt_verifier7 regression; record actual discovered/executed/fail/ignored/filtered counts and command exits.",
+    "Root runs appropriate formatting/library lint and independent source/runtime review. Preserve compiler-RED evidence; never report earlier compiler errors as runtime assertion failures."
+  ],
+  "probe": "env RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo test --locked --offline --manifest-path backend/Cargo.toml -p console-platform-auth --test jwt_es256 account_crypto:: -- --test-threads=1",
+  "implementation": [
+    "Existing issuer/verifier settings and ES256 key fields reused by nested jwt/account.rs; only requested public names reexported.",
+    "Closed structs deserialize directly from signed payload via jsonwebtoken. Required duplicates and unknown fields never collapse through Value. UUIDs must be nonnil canonical strings; generation is exact positive decimal i64 string. Assurance accepts only string PASSKEY_PRIMARY.",
+    "Configured issuer nonempty; audiences and kinds fixed by protocol. Signature, ES256, issuer/audience, closed grammar, identity/generation, nonnegative causal times and checked signed span all pass before expiry classification.",
+    "Access expiry retains verified claims; expired proof returns fixed ExpiredSignature. Hostile decode/validation errors replaced with fixed InvalidToken; trusted issue/config/sign errors use static messages. Signed token/claim/outcome Debug redacted.",
+    "Access TTL positive config/protocol/family minimum; proof TTL protocol/family minimum. Bounded duration computed before checked datetime addition; timestamp rounding cannot create zero signed lifetime.",
+    "Legacy jwt.rs byte-identical except module declaration/export insertion; lib.rs changes only export list. No new dependencies/crate/tests/Cargo/DB/browser routes/root source writes."
+  ],
+  "pre_mortem": "Expired path skips semantic/signature checks; serde unit enums admit wrong wire shape; duplicate collapse or diagnostics leak hostile claims; addition before family clamp overflows; cryptographic claims mistaken for live authority.",
+  "blast_radius": "Pure cryptography under existing platform/auth owners, one new module and narrow reexports. Root alone owns BUCK. No session/Account state or production activation.",
+  "detection": "Independent exactsource review; frozen acceptance15 then29+7regression; byte-preservation checks; fixed-error/Debug fixtures and near-limit duration fixture.",
+  "rollback": "Root-reviewed source-only correction/revert preserving tests, legacy guard and historical evidence. No key/database/session rollback.",
+  "stop_conditions": [
+    "API/test/source preimage hash mismatch",
+    "Unrelated source/dependency/schema changes",
+    "Fake owner or weakened/skipped test",
+    "Credential material in artifacts/errors",
+    "Failed independent source review or runtime/lint"
+  ],
+  "review_identities": {
+    "tests_and_api_author": "/root/inventory_repair",
+    "independent_source_reviewer": "/root/capture_review (pending frozen implementation review)",
+    "integrator_and_runtime_operator": "/root",
+    "implementation_author": "/root/fast_gate_review"
+  },
+  "head_observed_during_static_work": "ffabda81729fa22ad5fa581ae18d3417b77c6929",
+  "remaining_holds": [
+    "Independent implementation review",
+    "Root integration/exact15/29+7 runtime proof/lint",
+    "Live primary proof/current Account/generation/family/session authority and browser/cookie/CSRF binding",
+    "Production activation, payment and legal authority"
+  ],
+  "author_validation": {
+    "rustfmt_command": "rustfmt +1.98.1 --edition 2024 --config skip_children=true <three private postimages>",
+    "rustfmt_exit": 0,
+    "source_preservation": "PASS exact export removal recovers pinned preimages; entire legacy envelope/helper suffix byte-identical",
+    "cargo_runs": 0,
+    "runtime_tests_executed": 0,
+    "repo_source_writes": 0
+  }
+}

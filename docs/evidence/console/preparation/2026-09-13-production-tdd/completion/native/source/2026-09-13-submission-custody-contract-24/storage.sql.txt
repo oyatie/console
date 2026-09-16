@@ -1,0 +1,64 @@
+-- PROPOSED FRAGMENT, not installed migration. Requires13 CompanyActor,14 attempts,
+-- 17 retained_units and22 receipt constraints plus confined20 owner role.
+-- Full unit selector/state/ACL/retention bodies are still required before enrollment.
+BEGIN;
+ALTER TABLE public.ont_draft_submission_attempts
+ ADD CONSTRAINT submission24_attempt_exact UNIQUE(org_id,attempt_id,domain_command_id,original_account_id,command_fingerprint);
+CREATE TABLE public.ont_source_submissions (
+ org_id uuid NOT NULL,
+ unit_id uuid NOT NULL,
+ attempt_id uuid NOT NULL,
+ command_id uuid NOT NULL,
+ actor_account_id uuid NOT NULL,
+ command_fingerprint bytea NOT NULL CHECK(pg_catalog.octet_length(command_fingerprint)=32),
+ source_input_digest bytea NOT NULL CHECK(pg_catalog.octet_length(source_input_digest)=32),
+ metadata_bytes bytea NOT NULL CHECK(pg_catalog.octet_length(metadata_bytes) BETWEEN 1 AND 16384),
+ command_bytes bytea NOT NULL CHECK(pg_catalog.octet_length(command_bytes) BETWEEN 1 AND 65536),
+ input_bytes bytea NOT NULL CHECK(pg_catalog.octet_length(input_bytes) BETWEEN 1 AND 65536),
+ snapshot_digest bytea NOT NULL CHECK(pg_catalog.octet_length(snapshot_digest)=32),
+ PRIMARY KEY(org_id,unit_id),
+ UNIQUE(org_id,command_id),
+ UNIQUE(org_id,attempt_id),
+ FOREIGN KEY(org_id,unit_id) REFERENCES public.retained_units(org_id,unit_id)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ FOREIGN KEY(org_id,actor_account_id) REFERENCES public.company_actors(org_id,account_id)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ FOREIGN KEY(org_id,attempt_id,command_id,actor_account_id,command_fingerprint)
+   REFERENCES public.ont_draft_submission_attempts(org_id,attempt_id,domain_command_id,original_account_id,command_fingerprint)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ FOREIGN KEY(org_id,command_id) REFERENCES public.ont_action_command_receipts(org_id,command_id)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ CHECK(command_fingerprint=pg_catalog.sha256(pg_catalog.convert_to('console.command.ccf1','UTF8')||pg_catalog.decode('00','hex')||command_bytes)),
+ CHECK(source_input_digest=pg_catalog.sha256(pg_catalog.convert_to('console.source24.input','UTF8')||pg_catalog.decode('00','hex')||input_bytes)),
+ CHECK(snapshot_digest=pg_catalog.sha256(
+   pg_catalog.convert_to('console.source24.submission','UTF8')||pg_catalog.decode('00','hex')
+   ||pg_catalog.decode('01','hex')||pg_catalog.int4send(pg_catalog.octet_length(metadata_bytes))||metadata_bytes
+   ||pg_catalog.decode('02','hex')||pg_catalog.int4send(pg_catalog.octet_length(command_bytes))||command_bytes
+   ||pg_catalog.decode('03','hex')||pg_catalog.int4send(pg_catalog.octet_length(input_bytes))||input_bytes))
+);
+ALTER TABLE public.ont_source_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ont_source_submissions FORCE ROW LEVEL SECURITY;
+CREATE POLICY submission24_company ON public.ont_source_submissions
+ USING(org_id=NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid)
+ WITH CHECK(org_id=NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid);
+REVOKE ALL ON public.ont_source_submissions
+ FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+GRANT SELECT,INSERT ON public.ont_source_submissions TO console_owner_commit_writer;
+REVOKE UPDATE,DELETE,TRUNCATE ON public.ont_source_submissions FROM console_owner_commit_writer;
+CREATE FUNCTION public.submission24_immutable() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog AS $$
+BEGIN
+ RAISE EXCEPTION 'submitted source snapshot is immutable' USING ERRCODE='55000';
+END;
+$$;
+CREATE TRIGGER submission24_immutable BEFORE UPDATE OR DELETE ON public.ont_source_submissions
+ FOR EACH ROW EXECUTE FUNCTION public.submission24_immutable();
+REVOKE ALL ON FUNCTION public.submission24_immutable()
+ FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+COMMIT;
+-- Byte commitments are not parsers or authority. Before enrollment, the fixed owner participant
+-- validates canonical schema/bytes, metadata->command->input exact agreement, sealed unit binding,
+-- originalAccount/current actor/Cedar/SoD, domain obligation and protected evidence inventory.
+-- Existing default/inherited roles/schema ownership/function grants and TRUNCATE must be audited.
+-- No authenticated raw blob reader, LOGIN DML or public participant EXECUTE grant is introduced.
+-- Raw PostgreSQL diagnostics remain sensitive. Cleanup unavailable until separately proved F03 transition.

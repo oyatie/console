@@ -1,0 +1,85 @@
+{
+  "status": "PROPOSED_INTERNAL_RESULT_CONTRACT_NOT_EXECUTABLE_API",
+  "receipt_table": "ont_action_command_receipts",
+  "receipt_primary_key": [
+    "org_id",
+    "command_id"
+  ],
+  "receipt_extensions": {
+    "source_effect_protocol": "text nullable; SOURCE_EFFECTS21 when enrolled",
+    "source_effect_count": "smallint nullable;1..1024 when enrolled",
+    "source_effect_digest": "bytea nullable;32bytes when enrolled"
+  },
+  "receipt_presence_rule": "All three null for legacy; all three present for enrolled source command. Existing actor/owner/action/target/CCF1 enrollment extension still mandatory. No mixed legacy/source contract.",
+  "member_table": "ont_action_source_effects",
+  "member_columns": {
+    "org_id": "uuid NOT NULL",
+    "command_id": "uuid NOT NULL",
+    "ordinal": "smallint NOT NULL CHECK0..1023",
+    "family_code": "smallint NOT NULL CHECK1..7",
+    "effect_kind": "smallint NOT NULL CHECK1=REVISION,2=SUCCESSOR_CLAIM",
+    "root_id": "uuid NOT NULL",
+    "revision": "bigint NOT NULL CHECK>0",
+    "custody_digest": "bytea NOT NULL CHECKlength32",
+    "successor_root_id": "uuid nullable",
+    "successor_revision": "bigint nullable CHECK>0",
+    "successor_custody_digest": "bytea nullable CHECKlength32"
+  },
+  "member_primary_key": [
+    "org_id",
+    "command_id",
+    "ordinal"
+  ],
+  "member_unique": [
+    "org_id",
+    "family_code",
+    "root_id",
+    "revision",
+    "effect_kind"
+  ],
+  "one_successor_claim": "partial UNIQUE(org_id,family_code,root_id) WHERE effect_kind=2",
+  "member_presence_rule": "REVISION has all successor columns null; CLAIM requires family5..7 and all successor columns nonnull and successor_root_id<>root_id",
+  "foreign_keys": "Receipt/org and all source refs same Company with ON DELETE RESTRICT; receipt/source cycles DEFERRABLE INITIALLY DEFERRED. Conditional generated source-family FK columns must enforce complete required_exact_revision_effect_key for REVISION, exact old predecessor plus new successor keys for CLAIM; no unchecked tagged UUID. Exact emitted-source reverse checks mandatory.",
+  "access": "FORCE Company RLS and same-create-tx default grants revoked; only fixed20 finalizers through NOLOGIN confined writer. No raw runtime/generic DML/EXECUTE. UPDATE/DELETE/TRUNCATE unavailable; maintenance separate trusted boundary.",
+  "index_plan": [
+    "PK supports one bounded receipt scan",
+    "UNIQUE exact native result supports reverse result/adoption lookup",
+    "partial claim uniqueness supports one predecessor successor",
+    "source-owner subject/date indexes in source-key-matrix remain required"
+  ],
+  "order": [
+    "family_code ascending",
+    "root_id raw16 ascending",
+    "revision ascending",
+    "effect_kind ascending"
+  ],
+  "frame": {
+    "prefix_utf8": "console.source21.effects",
+    "separator_hex": "00",
+    "header": "orgUUIDraw16 || commandUUIDraw16 || U32BE(count)",
+    "member": "U8(family_code) || U8(effect_kind) || rootUUIDraw16 || U64BE(revision) || custody_digest32 || U8(successor_present) || successorUUIDraw16_or_zero || U64BE(successor_revision_or_zero) || successor_digest32_or_zero",
+    "member_bytes": 115,
+    "hash": "SHA256(prefix||separator||header||ordered_members)",
+    "maximum_members": 1024,
+    "maximum_framed_bytes": 117821
+  },
+  "internal_result": {
+    "protocol": "SOURCE_EFFECTS21",
+    "org_id": "UUID",
+    "command_id": "UUID",
+    "member_count": "canonical positive decimal string1..1024",
+    "manifest_digest": "lowercase64hex"
+  },
+  "disclosure": "Internal reference only, not an automatically serializable public DTO. Current owner-authorized paged projection may omit hidden effects/count/digest and give nondisclosing unavailable; receipt never reexecutes. No generic array above256.",
+  "check_statement_order": [
+    "Resolve exact receipt and registered source command under fence; fail if absent at deferred check",
+    "Load members WHERE(org,command) ORDER BY ordinal using PK; limit1025 and reject overflow",
+    "Check1..1024 count equals immutable header; count plus distinct PK/min0/max(count-1) proves ordinal contiguity",
+    "Check canonical source identity ordering and no duplicate identities",
+    "Resolve all conditional composite FKs and exact source/head/claim/owner/action/subject predicates",
+    "Reject every source/claim created by this command missing a member, via fixed registered table scans/indexes; no dynamic caller table",
+    "Compute fixed frame with pg_catalog.uuid_send/int8send/int4send and byte construction; SHA256 equals header digest",
+    "Reject mismatched attempt/result/adoption/terminal state; entire transaction rolls back"
+  ],
+  "sql_body_status": "Statement order specified; complete installed SQL bodies and exact source/claim FK columns remain F02. Frame arithmetic verified statically only."
+}

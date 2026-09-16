@@ -1,0 +1,23 @@
+{
+  "status": "proposed_pending_independent_review",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "fb8172bc92c4606fd1acdda38fc475899324179a",
+  "scope": "W02/B07 integrated first nonpayable payroll screen/input/recovery behavior; not all Console UI",
+  "main_screens": 10,
+  "auxiliary_surfaces": 6,
+  "logical_commands": 37,
+  "state_rows": 160,
+  "input_overlays": 7,
+  "nonexecutable_journeys": 13,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "remaining": [
+    "W04 exact transport/DTO/schema/owner SQL ACL migration/lock/source/numeric/runtime contracts",
+    "W05 current authority alignment + final integrated four-review consensus and explicit design SHA approval",
+    "W06 executable tests independently reviewed and explicit test SHA approval; valid RED admission",
+    "Pilot production proof and legal/payment/external capability authority",
+    "Full Console stories/common communications/sheets and Foundry leaf inventory remain separate work"
+  ]
+}

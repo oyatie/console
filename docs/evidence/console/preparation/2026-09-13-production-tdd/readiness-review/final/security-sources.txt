@@ -1,0 +1,78 @@
+# Security and migration readiness research
+
+The evidence supports early, explicit security contracts and independently reviewed tests. It does not establish a universal requirement to finish implementation, deployment certification, or every later product specification before writing the first slice. Gate timing must follow the operation whose risk is being controlled.
+
+The only selected source positively dated in the preferred June1–September13,2026 window is the verified September13 Verus prerelease. Cedar pages are undated current official documentation. NIST sources and the consistency/information-flow papers are older foundational material. No recent consensus is inferred from their availability.
+
+## Cedar policy administration and freshness
+
+Cedar explicitly treats administration of permissions as part of the authorization design [S4]. Its official guidance states: “These meta-permissions, or admin permissions, are themselves a part of the authorization model and should be included in the design exercise.” It also warns that an ownership-based administration rule makes protecting the owner attribute and who can change it important. This directly supports designing grant creation, delegation ceilings, policy publication/revocation, protected-field classification, schema administration and operational privileges before dependent implementation. It does not justify treating an organizational title as authority.
+
+A significant integration distinction is Cedar’s default error behavior [S5]: “skip on error: if a policy’s evaluation returns error, the policy does not factor into the authorization response; it is skipped.” An Allow can therefore coexist with diagnostics from another erroneous policy. The same official page says applications may inspect diagnostics and choose a different decision. Console’s approved deny-on-diagnostic behavior is a deliberately stricter application policy, not a default Cedar guarantee.
+
+Validation is conditional [S6]. Official documentation states: “By default, it is entirely up to the application to make sure that authorization requests are well-formed according to the schema’s expectations.” It warns that changing a schema can invalidate previously validated policies. Its validation-soundness discussion distinguishes a Lean proof and differential testing of the Rust implementation, and expressly excludes missing-entity errors from the general protection. This does not prove the application loaded current facts, included every applicable forbid, enforced every HTTP alias, or redacted a serialized response.
+
+The Zanzibar paper provides original evidence for the stale-policy hazard [S7]. Its “new enemy” examples describe old ACLs applied to new content after a user’s removal. The authors require causal ordering between authorization and content changes. This supports Console’s explicit current-authority/version relationship; it does not require adopting Zanzibar, Spanner, a remote policy service or globally synchronous authorization. A bounded PostgreSQL owner protocol can be evaluated against the required ordering.
+
+Concrete first-slice tests:
+- An otherwise permitted request plus an evaluation-error policy must be denied/unavailable under Console’s chosen policy, while a well-formed permitted control succeeds.
+- Missing entity, stale schema, changed owner/classification and an omitted applicable forbid must exercise the production evaluator/loader boundary.
+- A delegator cannot issue a broader action/scope/field/time tuple than its ceiling; changing an owner field cannot bypass the administration rule.
+- Pause after policy loading, revoke permission, then resume output release or action commit. Assert the specified serialization result across native route, alias, SSR and live subscription.
+- Preserve positive current grants and independently read back denied writes, grant revisions, audit attribution and authority-generation changes.
+
+## Verus and information-flow proof scope
+
+The official release metadata confirms prerelease0.2026.09.13.671956e, published September13 at17:36UTC, targeting commit671956ec527d3b7164779f767bdbfe769bedce6c [S1]. This verifies a reproducible source identity, not the maturity or applicability of all proof features.
+
+The pinned Verus guide states that “the ultimate correctness of the code is dependent not just on verification but on the assumptions being made” [S2]. It identifies assume, external_body proof axioms, executable axiomatic specifications, external_fn_specification and external items as mechanisms requiring review. In particular, external may indirectly introduce assumptions through a calling external_body wrapper; external trait implementations can affect Rust trait checking.
+
+Even similarly named generation facilities differ materially [S3]. exec_spec_unverified! produces executable counterparts without equivalence proofs. The guide additionally states: “For many vstd functions, however, the translation from spec code to the exec equivalent is unverified.” This warning occurs in the section covering both macros, including exec_spec_verified!, with affected translations marked by asterisks. A macro name cannot replace an assumption inventory.
+
+Clarkson and Schneider’s original Hyperproperties paper explains why ordinary single-execution properties are insufficient for general information-flow claims [S8]: “Hyperproperties can express security policies, such as secure information flow and service level agreements, that trace properties cannot.” Its discussion distinguishes termination-insensitive from termination-sensitive properties. A proof must define observations, low-equivalent starting states, allowed disclosures, environmental choices, and whether termination/timing belong in scope. Paired fixture executions can provide counterexamples or bounded regression evidence; finite successful pairs do not prove the universally quantified property.
+
+For Console, the pre-implementation deliverable is the relational specification, exact source boundary, trusted-component inventory, reproducible verifier, positive controls and known-false/mutant obligations. The actual production projection/event/egress proof belongs before acceptance of the corresponding implemented slice. A freshness predicate proof cannot be relabeled a projection proof. Do not manufacture a mock projector to claim completion when the real owner does not exist.
+
+Proof review should cover exact Git/blob/body binding; executable/spec equivalence; nonvacuity; all assume/external/unsafe/FFI surfaces; unchecked loaders; compiler/solver/library assumptions; serializers; actual caller closure; and deployment boundaries. An axiom that already states hidden outputs are equal would assume away the obligation.
+
+## Development, identity lifecycle and migration gates
+
+NIST SSDF1.1 recommends risk modeling (PW.1.1) and independent design assessment (PW.2.1), with executable-code testing addressed separately (PW.8.1) [S9]. It explicitly says its table order does not imply implementation sequence. Its practices are an outcome-oriented, risk-based framework; they are not evidence that the exact Console11-item checklist is a universal industry prerequisite. The official newer SSDF1.2 record is a December17,2025 initial public draft, with comments closed January30,2026 [S10]. Do not present it as a final June–September2026 standard.
+
+NIST800-63B-4 treats authenticator binding, replacement, compromise and invalidation as lifecycle events [S11]. Section4.5 defines invalidation as removal of the authenticator/account binding; it requires prompt invalidation for compromised authenticators or when the subscriber no longer meets the CSP’s eligibility requirements. The “Records Retention Policy” subsection addresses retention according to applicable obligations and a risk-management determination where mandatory requirements are absent. These passages support separating persistent Account identity, authentication capability, eligibility, and retained evidence. They do not prescribe Console’s employment-independent identity model or Korean employment retention periods. Define platform Account eligibility separately from employment eligibility; otherwise an “employee left” signal could incorrectly disable unrelated Account access.
+
+Gate recommendations are analytical judgments derived from these sources and Console’s accepted contract:
+- BEFORE_IMPLEMENTATION: exact conversion mapping; security/freshness and administrative authority contracts; mixed-version compatibility/refusal rules; resumable batch/quarantine semantics; identified irreversible cutover; test fixtures/oracles and meaningful owner-specific RED. Initial policy/recovery authority must be specified, though real deployment credentials are unnecessary for local code authoring.
+- BEFORE_SLICE_ACCEPTANCE: populated upgrade and restart tests; old-reader/writer refusal; permanent legacy-auth fence; no resurrection of revoked credentials through software rollback or restored snapshots; native receipt/identity preservation; actual projection/revocation tests and required source-bound proof.
+- BEFORE_PRODUCTION_EXPOSURE: deployment-specific source census, backup/restore/failover evidence, independent credential and network fencing, provider configuration and qualified retention authority, actual operator custody, and exact artifact readback.
+- Safety gates also apply BEFORE_REAL_DATA_CUTOVER_OR_IRREVERSIBLE_EFFECT, even when an activity is labeled internal and has no public exposure. Software rollback, data restore and post-disposal forward recovery are distinct operations.
+
+Do not require production-scale certification or a finished implementation to authorize a genuine test-first owner lane. Do not defer data-loss, privilege-escalation or stale-session safeguards until a marketing launch.
+
+## Evidence custody and limitations
+
+Raw downloads and extracted text are stored beside this brief. sources.json records exact URLs, titles, dates, quoted passages, page/section locators and SHA256 identities. Two guessed Cedar index URLs returned404 and support no claims. No claims rely on those failures. The official documentation and foundational papers establish mechanisms and cautions; none certifies Console implementation, deployment, compliance or legal adequacy.
+
+## Sources
+
+[S1] verus-lang/verus. [Rolling Release 0.2026.09.13.671956e](https://github.com/verus-lang/verus/releases/tag/release/rolling/0.2026.09.13.671956e). 2026-09-13T17:36:00Z.
+
+[S2] Verus project. [Assumptions and trusted components](https://github.com/verus-lang/verus/blob/671956ec527d3b7164779f767bdbfe769bedce6c/source/docs/guide/src/tcb.md). Undated guide, pinned at commit671956ec527d3b7164779f767bdbfe769bedce6c.
+
+[S3] Verus project. [Producing executable code from spec functions with the exec_spec_verified! and exec_spec_unverified! macros](https://github.com/verus-lang/verus/blob/671956ec527d3b7164779f767bdbfe769bedce6c/source/docs/guide/src/exec_spec.md). Undated guide, same pinned September2026 tree.
+
+[S4] Cedar Policy Language Reference Guide. [Meta-permissions](https://docs.cedarpolicy.com/bestpractices/bp-meta-permissions.html). Undated official documentation, accessed2026-09-13.
+
+[S5] Cedar Policy Language Reference Guide. [Authorization](https://docs.cedarpolicy.com/auth/authorization.html). Undated official documentation, accessed2026-09-13.
+
+[S6] Cedar Policy Language Reference Guide. [Cedar policy validation against schema](https://docs.cedarpolicy.com/policies/validation.html). Undated official documentation, accessed2026-09-13.
+
+[S7] Ruoming Pang et al., Google; USENIX ATC2019. [Zanzibar: Google’s Consistent, Global Authorization System](https://www.usenix.org/system/files/atc19-pang.pdf). 2019. Printed p.33 / PDF p.2; new-enemy examples printed p.35 / PDF p.4; PDF line-wrap hyphen normalized.
+
+[S8] Michael R. Clarkson and Fred B. Schneider; Journal of Computer Security18, IOS Press. [Hyperproperties](https://www.cs.cornell.edu/fbs/publications/Hyperproperties.pdf). 2010. Printed p.1157 / PDF p.1; PDF line-wrap hyphen/ligature normalized.
+
+[S9] NIST, SP800-218. [Secure Software Development Framework (SSDF) Version1.1: Recommendations for Mitigating the Risk of Software Vulnerabilities](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-218.pdf). February2022, final. Printed p.7 / PDF p.13; whitespace normalized.
+
+[S10] NIST, SP800-218r1 Initial Public Draft. [Secure Software Development Framework (SSDF) Version1.2: Recommendations for Mitigating the Risk of Software Vulnerabilities](https://csrc.nist.gov/pubs/sp/800/218/r1/ipd). December17,2025; comments closedJanuary30,2026.
+
+[S11] NIST, SP800-63B-4. [Digital Identity Guidelines: Authentication and Authenticator Management](https://pages.nist.gov/800-63-4/sp800-63b.html). July2025, final (official publication metadata verified). Section4.5; publication metadata https://csrc.nist.gov/pubs/sp/800/63/b/4/final

@@ -1,0 +1,294 @@
+{
+  "status": "PROPOSED_ACTION_SITES_NOT_NEW_ENDPOINTS",
+  "common_rule": "Mode selected by registered action and semantic field, never by user role or freeform reason. Package sites reuse existing explicit preparation action. Family overlays apply to original payload for propose/verify and only historical target inventory for revoke. Templates are parameterized by explicit field-purpose; a template is not unconditional recursion.",
+  "actions": [
+    {
+      "action_site": "CALENDAR_PUBLISH",
+      "schema": "CalendarPayload",
+      "mode": "POSITIVE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CALENDAR",
+        "CONTROL",
+        "DOCS",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Current paid-time qualification; exact finite dates and original submitted plan/rules"
+    },
+    {
+      "action_site": "CALENDAR_ASSIGN",
+      "schema": "CalendarAssignmentPayload",
+      "mode": "POSITIVE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CALENDAR",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Historical Employment and exact calendar revision; effective assignment overlap/absence witness"
+    },
+    {
+      "action_site": "COVERAGE_PUBLISH",
+      "schema": "CoveragePayload",
+      "mode": "OUTCOME_DEPENDENT",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CALENDAR",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "EVENTS",
+        "LEAVE",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "COMPLETE needs every date/event/boundary and current qualified treatment; BLOCKED retains known facts and diagnostics without claiming missing evidence exists"
+    },
+    {
+      "action_site": "CLOSE_BASIS",
+      "schema": "ClosePayload",
+      "mode": "POSITIVE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CALENDAR",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "EVENTS",
+        "LEAVE",
+        "NATIVE",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Expand member stream and native18 population; reuse valid sealed coverage inventories; operational close/amendments complete"
+    },
+    {
+      "action_site": "LEAVE_DISPOSITION",
+      "schema": "LeaveDispositionPayload",
+      "mode": "OUTCOME_DEPENDENT",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "LEAVE",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Real request/charge/decision required even UNRESOLVED; positive pay use requires qualified treatment"
+    },
+    {
+      "action_site": "SOURCE_PROPOSE",
+      "schema": "AdmissionPayload",
+      "mode": "PROPOSAL",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "HISTORY",
+        "HUMAN",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Family-specific payload overlay below; present refs must be authentic/custodied; proposal is not verified usable source"
+    },
+    {
+      "action_site": "SOURCE_VERIFY",
+      "schema": "VerifyPayload",
+      "mode": "POSITIVE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "HISTORY",
+        "HUMAN",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Resolve original admission/family overlay; current reviewer credential except credential issuer flow; gate is not source verification; eligibility must SUPPORTED"
+    },
+    {
+      "action_site": "SOURCE_REVOKE",
+      "schema": "RevokePayload",
+      "mode": "WITHDRAW",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "HISTORY",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Current exact head/CAS and revoke authority; historical target need not remain currently qualified; new evidence_refs must be currently admissible"
+    },
+    {
+      "action_site": "SOURCE_SUPERSEDE_INTERNAL",
+      "schema": "state-contract19 internal body",
+      "mode": "REPLACEMENT",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "HISTORY",
+        "HUMAN",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Only atomic with successor VERIFY; retain previously verified predecessor event and current head/successor-slot CAS; revoked predecessor stays revoked"
+    },
+    {
+      "action_site": "PACKAGE_PREPARE_EVENTS",
+      "schema": "EventPackageHeader + EventWitness",
+      "mode": "PREPARE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "EVENTS",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Explicit Docs preparation action; bounded complete scan and immutable exact original rows; no business publication"
+    },
+    {
+      "action_site": "PACKAGE_PREPARE_DAYS",
+      "schema": "CoverageDayPackageHeader + CoverageDay",
+      "mode": "PREPARE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CALENDAR",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "EVENTS",
+        "LEAVE",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Exact event-set binding and whole classified days; no silent truncation into COMPLETE"
+    },
+    {
+      "action_site": "PACKAGE_PREPARE_MEMBERS",
+      "schema": "CloseMemberPackageHeader + CloseMember",
+      "mode": "PREPARE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "NATIVE",
+        "PROTECTION",
+        "SELECT"
+      ],
+      "rule": "Complete same population; no close effect from package preparation"
+    },
+    {
+      "action_site": "NATIVE18_CONSUME",
+      "schema": "existing18 input/close/run registrations",
+      "mode": "POSITIVE",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CALENDAR",
+        "CONTROL",
+        "DOCS",
+        "EMPLOYMENT",
+        "EVENTS",
+        "HUMAN",
+        "LEAVE",
+        "NATIVE",
+        "PROTECTION",
+        "SELECT",
+        "TAX"
+      ],
+      "rule": "Inventory integration obligation for existing native actions; not a new action or replacement of18 schemas"
+    },
+    {
+      "action_site": "HISTORICAL_REPLAY",
+      "schema": "existing exact command identity",
+      "mode": "REPLAY",
+      "templates": [
+        "AUTH",
+        "BUILD",
+        "CONTROL"
+      ],
+      "rule": "20 receipt/provenance-first path; current disclosure only; no current qualification, package preload, new evidence adoption or reexecution"
+    }
+  ],
+  "family_overlays": [
+    {
+      "family": "QUALIFICATION:TAX_TABLE",
+      "templates": [
+        "TAX",
+        "DOCS"
+      ],
+      "rule": "TAX here selects source-edition/artifact/layout/admitted normalizer or reviewed locator map, support and complete rule-note evidence only. No employee assessment, selected employee cells or later tax-evidence/close dependency. Employee-specific selection and verified assessment apply to TAX_EVIDENCE and native18 consumption only."
+    },
+    {
+      "family": "QUALIFICATION:APPLICABILITY_RULE",
+      "templates": [
+        "DOCS"
+      ],
+      "rule": "Exact applicability/citation/executable evidence"
+    },
+    {
+      "family": "QUALIFICATION:WORK_CALENDAR_RULE",
+      "templates": [
+        "CALENDAR",
+        "DOCS"
+      ],
+      "rule": "Rule evidence only; never calendar publication self-dependency"
+    },
+    {
+      "family": "QUALIFICATION:RULE_BUNDLE",
+      "templates": [
+        "DOCS"
+      ],
+      "rule": "Direct declared qualifications only; no bundle-to-bundle edge"
+    },
+    {
+      "family": "QUALIFICATION:REVIEWER_CREDENTIAL",
+      "templates": [
+        "HUMAN",
+        "DOCS"
+      ],
+      "rule": "Scoped subject identity and independently pinned issuer root; no reviewer credential recursion"
+    },
+    {
+      "family": "ELIGIBILITY",
+      "templates": [
+        "EMPLOYMENT",
+        "CALENDAR",
+        "EVENTS",
+        "LEAVE",
+        "NATIVE"
+      ],
+      "rule": "Exact Employment/wage/coverage/profile/bases/obligations; no later tax evidence or close dependency; NATIVE here selects wage/input basis only"
+    },
+    {
+      "family": "TAX_EVIDENCE",
+      "templates": [
+        "EMPLOYMENT",
+        "TAX"
+      ],
+      "rule": "Exact verified SUPPORTED assessment and qualified edition; no later close/run dependency"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "kind": "verified-allowlist-retention-import",
+  "head_before_import": "3c3e263d38eff0c4559f24baeae4d6082efd11e0",
+  "manifest_sha256": "cedc71e32540b4610545c1d5571b682ef8afc51c3b20817346dc820116a9ed19",
+  "payloads": 97,
+  "bytes": 1704585,
+  "source_hashes_verified": true,
+  "destination_hashes_verified": true,
+  "scope": "completed auth transport and fast-gate corrections only; no production exposure or refresh result included"
+}

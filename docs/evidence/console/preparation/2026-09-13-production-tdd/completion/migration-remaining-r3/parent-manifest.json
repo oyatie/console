@@ -1,0 +1,42 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "owner": "/root/finish_migration",
+  "scope": "bounded migration remaining source; not implementation admission",
+  "files": [
+    {
+      "path": "execution.json",
+      "bytes": 670,
+      "sha256": "957adab6d08c759c3105719abf13808aae7df4086f8407061a6bd0f97039774a"
+    },
+    {
+      "path": "legacy-transport-producer.rs",
+      "bytes": 19895,
+      "sha256": "2afe494d15b25d2304363a2eedb6cdf7e6836974fe2e8166515d914b06c97987"
+    },
+    {
+      "path": "migrated-primary-producer.rs",
+      "bytes": 5095,
+      "sha256": "ed98c94da6ce57858a592fb4857331d4a2628678acc5bfdfbdceaf1eedb91a57"
+    },
+    {
+      "path": "migration-batch-process.rs",
+      "bytes": 4032,
+      "sha256": "a0e9cc3cf2f24914494d3d8f8971d3927ad2a5928eb02f24a7cbb7cb8b3e7dc8"
+    },
+    {
+      "path": "migration-remaining-tests.rs",
+      "bytes": 17455,
+      "sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a"
+    },
+    {
+      "path": "owner-interface-contract.txt",
+      "bytes": 3646,
+      "sha256": "3dc2a07795b09a0ece7d46d44cd695468b96f41dbfd18e9bdc3dd7fc110e4be9"
+    },
+    {
+      "path": "parser-checks.json",
+      "bytes": 1311,
+      "sha256": "ef892608350671fe635d1303fe323d7272773a65fd12a98ca57c7f74c66e430b"
+    }
+  ]
+}

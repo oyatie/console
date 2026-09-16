@@ -1,0 +1,54 @@
+{
+  "classification": "FROZEN_S3_NATIVE_UNIQUE_OBLIGATION_SOURCE_NOT_EXECUTED",
+  "author": "/root/fresh29_workflows",
+  "reviewers": [
+    "/root/preparation_recovery",
+    "/root"
+  ],
+  "review_status": "PENDING",
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "native_s2_dependency_manifest_sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d",
+  "files": [
+    {
+      "path": "interface-refinements.md",
+      "sha256": "04aa4f0b57ee56eb84c5adf2db05b5f5333fd55e2c0cda537b75328387d69dfb",
+      "bytes": 6291
+    },
+    {
+      "path": "native-lock-custody-tests.rs",
+      "sha256": "1f7858c12f4ec079dc5e7922bcd6dfe50e015494a71f7205db2649bdd43dc240",
+      "bytes": 5140
+    },
+    {
+      "path": "native-retention-tests.rs",
+      "sha256": "7a9fcd10fa625169996169046d1eacc289ef9ce4c3bacdd883aa03122e873ed7",
+      "bytes": 7346
+    },
+    {
+      "path": "native-stream-budget-tests.rs",
+      "sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52",
+      "bytes": 2550
+    },
+    {
+      "path": "source-inventory.json",
+      "sha256": "97fb4f34c8332ae4f50f87e3f0f933adf566bb45ff01b2096f478c41d6ed2b53",
+      "bytes": 1502
+    },
+    {
+      "path": "supplement-contract.md",
+      "sha256": "8e8d66a17d918522bf88fc73044ded23534d6e870e175ad236a74d78e2f0e959",
+      "bytes": 2347
+    },
+    {
+      "path": "syntax-execution.json",
+      "sha256": "1afc35bf6e7f1075ab2c28f19c2191fbe334d1e692e0ad58c5ac341657b6ed05",
+      "bytes": 1963
+    }
+  ],
+  "source_test_methods": 7,
+  "sqlx_methods": 4,
+  "codec_methods": 3,
+  "compiled": false,
+  "cargo_discovered": 0,
+  "executed": 0
+}

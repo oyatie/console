@@ -1,0 +1,73 @@
+{
+  "kind": "auth-transport-retention-readiness-additive-test-candidate",
+  "author": "/root/next_auth_context",
+  "status": "PROPOSED_TEST_ONLY_PENDING_INDEPENDENT_REVIEW_NOT_INSTALLED_OR_EXECUTED",
+  "base": {
+    "path": "/private/tmp/account-auth-pool-credential-candidate.rs",
+    "sha256": "db2bb8e31db91c1582abb4be781a70c36fbe0ba78bc749080bd6d24bc3b3863c",
+    "bytes": 12190,
+    "static_sqlx_test_attributes": 6
+  },
+  "candidate": {
+    "path": "/private/tmp/account-auth-transport-readiness-candidate.rs",
+    "sha256": "ea61a10fbce81689afdbf5b3e5bf3b77ccb5e5d2e278a41ca52b28c2d00078bf",
+    "bytes": 20491,
+    "static_sqlx_test_attributes": 7
+  },
+  "preservation": "Entire reviewed db2bb8e3 six-test source is byte-exact prefix; only one new SQLx test appended. No existing assertion or constructor modified.",
+  "new_test": "account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage",
+  "filter_effect": "account_fence_transport_ now statically selects4 tests, total file7 includes excluded refresh3. These are not compiler-discovered or executed counts.",
+  "fixture_oracle": [
+    "Actual prepare_http_database migration/finalizer; real restricted projection confirms Account row; its direct auth pool closes and bounded3s polling observes zero auth backend before application starts.",
+    "Real AppState::from_config with valid URLs starts; actual build_router /readyz returns200; current-database pg_stat_activity must show retained auth client backend. Ignored/discarded transport cannot rely on the closed direct projection control.",
+    "No auth sessions in any other database are permitted before the fault. Exclusive disposable-cluster lease and serial SQLx execution remain necessary; census alone cannot prevent a racing external connection.",
+    "Fixed ALTER ROLE console_auth_rt NOLOGIN changes no password, membership or grant. Readback proves no-login. Terminate only auth client backends whose datname=current_database(), using pg_terminate_backend(pid,5000) and require nonempty all-success plus actual absence readback.",
+    "Direct original auth URL now fails exact SQLSTATE28000 NOLOGIN. Database/network/timeout failures cannot manufacture the expected denial. This fault does not depend on password-vs-trust HBA; predecessor sixth test separately verifies real password28P01.",
+    "All4 other real serving identities authenticate and SELECT1. Runtime identity executes exact production account_custody_state.sql under same read-only/search_path/timeout transaction settings and must remain finalized. This prevents existing non-auth readiness dependencies from manufacturing503.",
+    "Actual same router readyz must now return503. Outer catch_unwind always restores LOGIN and compares full public role attributes to original. After success, same retained state/router must regain200; no public getter or test-only app injection is introduced."
+  ],
+  "failure_classification": {
+    "current_source_expected_red": "AUTH_POOL_RETAINED after real healthy startup because current source still ignores AUTH_DATABASE_URL. This is hypothesis until executed.",
+    "partial_implementation_expected_red": "AUTH_READINESS if pool is present but actual health ignores failed auth. Deeper outage assertion remains blocked while retention assertion fails.",
+    "prerequisites": [
+      "Migration/finalizer/projection failure",
+      "Direct auth pool not closed",
+      "Original role not LOGIN",
+      "Startup or initial200 failed",
+      "Other-database auth sessions violate exclusive fixture",
+      "NOLOGIN fault not established",
+      "Backend termination or exact direct28000 control failed",
+      "Any business/command/custody positive failed"
+    ],
+    "cleanup_failure": "AUTH_OUTAGE_CLEANUP, never green; root must retain failure and destroy only exact owned disposable fixture after investigation."
+  },
+  "data_safety": {
+    "scope": "One test-owned SQLx database for backend termination; NOLOGIN flag is cluster-global inside exclusively owned disposable harness only. Never run against shared/production cluster.",
+    "restoration": "Original LOGIN=true is proven; fixed restoration occurs outside caught unwinding body and exact public role-row equality is verified. No grants, memberships, credentials, schema, Account/fence/history deletion or mutation.",
+    "hard_limit": "catch_unwind covers Rust unwinding, not process kill/runtime abort/unreachable administrator. On those events external reviewed harness must clean its exact owned disposable container. No stronger cleanup claim."
+  },
+  "compile_assets": [
+    "Existing backend/app/src/account_custody_state.sql via target-relative include_str ../../src; same production source already compiled in console-app"
+  ],
+  "checks": [
+    {
+      "command": "rustup run 1.98.1 rustfmt --edition 2024 --check /private/tmp/account-auth-transport-readiness-candidate.rs",
+      "result": "PASS;syntax/format only"
+    },
+    {
+      "command": "byte-exact reviewed six-test prefix assertion",
+      "result": "PASS"
+    }
+  ],
+  "runtime_tests_executed": 0,
+  "cargo_runs": 0,
+  "database_runs": 0,
+  "repository_edits": 0,
+  "nonclaims": [
+    "No request-specific Account authorization/fence proof",
+    "Readiness is detection/routing,not worker drain or revocation enforcement",
+    "No physical-cluster/HA/failover/durability proof",
+    "No independent type checking or runtime result yet"
+  ],
+  "next": "Independent review before test installation and exact clean candidate RED; root must update new driver label/static expected count4 rather than misreport transport3."
+}

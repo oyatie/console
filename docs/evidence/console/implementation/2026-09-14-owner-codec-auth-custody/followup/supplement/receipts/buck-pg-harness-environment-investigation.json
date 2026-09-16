@@ -1,0 +1,32 @@
+{
+  "investigator": "/root/finish_browser",
+  "status": "ENVIRONMENT_CAUSE_REPRODUCED_NO_SOURCE_FIX",
+  "tested_worktree": "/private/tmp/console-verify-canonical-hardening-20260914",
+  "worktree_head": "535ac65cd3247aed687c9ab1661bc1b1c5e19fa9",
+  "relevant_source_exact_base": "9c846602511043014a039b77335e762e37032bea",
+  "source_sha256": {
+    "tools/buck/test_needs_postgres.test.sh": "dc41b7dc4da2c421926edf0b50688342c76f70ece3b2217853896b213e62cb9f",
+    "tools/buck/test_needs_postgres.sh": "ebd6d40e0e818a11169460b4125ab3c993ebabaab67c134d93af11aef9214847"
+  },
+  "runs": [
+    {
+      "command": "env -u BUCK_ISOLATION_DIR bash tools/buck/test_needs_postgres.test.sh",
+      "exit": 0,
+      "log": "/private/tmp/buck-pg-harness-no-isolation.log",
+      "result": "test_needs_postgres: PASS; entire shell suite reached its final sentinel",
+      "sha256": "a153bafd48cf18b551a568ae5bdcb195b7afafe88db5dc1431f44533fb42e1b1"
+    },
+    {
+      "command": "env BUCK_ISOLATION_DIR=verification-diagnostic bash tools/buck/test_needs_postgres.test.sh",
+      "exit": 1,
+      "log": "/private/tmp/buck-pg-harness-inherited-isolation.log",
+      "result": "Same original three negative-control setup messages then earlyexit",
+      "sha256": "97b3d11db9e38b451f7513415cd77fdff8df3e7ca8d63f27b3195ef14f0656c2"
+    }
+  ],
+  "source_explanation": "Test135 expects default buck-isolation<unset>; harness correctly preserves supplied isolation; test165 separately verifies caller-proof inheritance. Parent fullverify wrongly supplied nondefault isolation to alltests.",
+  "classification": "No macOS readiness/startup defect observed. FakeDocker readiness messages are expected negativecontrols; removedenv whole suitePASS, singlevar reintroductionFAIL.",
+  "counts": "Two shell suite invocations, one completePASS and one intentional reproductionFAIL. Shell exposes no trustworthy percase discovered/executed counter; no invented testcount.",
+  "recommendation": "Re-run full verification without inherited BUCK_ISOLATION_DIR. If actualBuck execution needs isolateddaemon scope, confine that environment to those exact commands, not globaltestprocess. Do not weaken default/inheritance tests or productionharness.",
+  "safety": "PrivatefakeDocker only; no realservice/DB/Cargo, no source edits; tests own and remove their scratch."
+}

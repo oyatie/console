@@ -1,0 +1,96 @@
+{
+  "kind": "independent-evidence-driver-review",
+  "reviewer": "/root/next_auth_context",
+  "author": "/root",
+  "status": "PASS_FOR_EXACT_DRIVER_ADAPTATION_AND_CLEAN_CANDIDATE_EXECUTION_NOT_RUNTIME_EVIDENCE",
+  "files": [
+    {
+      "path": "/private/tmp/account-fence37-driver.sh",
+      "sha256": "dbc79064b0ef3628bb919f3d8db623f4ee63befe84213e9280b817bd2c54f146",
+      "bytes": 8339
+    },
+    {
+      "path": "/private/tmp/account-auth-transport3-driver.sh",
+      "sha256": "bac6c8b4563cd58793adcf93b7fa47d2c02b737983bf0f37fad33d4faf03d27d",
+      "bytes": 8454
+    },
+    {
+      "path": "/private/tmp/account-fence37-probe.py",
+      "sha256": "3c9a8b5bf2eec93dd1f856918885d8977e6decc65ecd7b7c6ee5637914f699ca",
+      "bytes": 435
+    },
+    {
+      "path": "/private/tmp/account-auth-transport3-probe.py",
+      "sha256": "6e25fc7aaad1692b6fda64f95c4771bae4131ff2cfb93fa15d717df75e064c2d",
+      "bytes": 393
+    }
+  ],
+  "mechanical_diff_exact": true,
+  "driver_changes_only": [
+    "Unique evidence label prefix account-fence37 to account-auth-transport3",
+    "Append exact transport test and auth-rest source paths to source snapshot; all existing snapshot entries retained",
+    "Only cargo argument filter changes account_fence_projection_ to account_fence_transport_"
+  ],
+  "probe_changes": [
+    "Resolve root from cwd instead of historical fixed root",
+    "Read exact current root HEAD and pass it to same driver expected-SHA guard",
+    "New unique evidence directory prefix and corresponding reviewed driver path",
+    "Cosmetic import whitespace"
+  ],
+  "execution_unchanged": [
+    "Same exact pinned PostgreSQL18.6 image",
+    "Same whole cargo map custody and exact source command assertion before only-entry mutation",
+    "Same exact seven-argument prebuild narrowing to --test auth_rest; actual subprocess test argument filter preserved",
+    "Same single app-auth-rest-pg test target and serial test execution",
+    "Same Rust1.98.1/Cargo target and offline compilation settings",
+    "Same container name interception,4GiBtmpfs,unique ownership label and no second container rule",
+    "Same test exit capture/return with stricter nonzero on cleanup failure or source drift",
+    "Same bounded30s Docker fallback,successful listing requirement,exact-name+matching-label removal and final independent absence verification"
+  ],
+  "source_binding": "Driver snapshots expected HEAD and git status before services, refuses wrong/dirty candidate, then compares exact full snapshot after execution. Probe takes current cwd HEAD; root must invoke from reviewed immutable worktree and preserve expected lane candidate binding externally. No private hardcoded integration-tree root remains in new probe.",
+  "test_selection": {
+    "filter": "account_fence_transport_",
+    "candidate_static_selected_names": [
+      "account_fence_transport_same_database_real_startup_control",
+      "account_fence_transport_other_database_cannot_silently_report_absence",
+      "account_fence_transport_startup_consumes_configured_auth_credential"
+    ],
+    "static_expected_selected": 3,
+    "static_fixture_count_after_install": 6,
+    "compiler_discovered": null,
+    "runtime_executed": 0,
+    "limit": "Existing refresh3 tests have different names and remain excluded; module account_fence_transport:: itself does not match trailing underscore filter. Driver does not independently enforce discovered3; root must inspect real count and reject ran-nothing/omitted test artifacts."
+  },
+  "checks": [
+    {
+      "command": "bash -n /private/tmp/account-auth-transport3-driver.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "Python ast.parse of /private/tmp/account-auth-transport3-probe.py",
+      "result": "PASS"
+    },
+    {
+      "command": "Exact complete driver bytes equal old driver with only three declared substitutions",
+      "result": "PASS"
+    },
+    {
+      "command": "Static complete test-name enumeration against reviewed appended source",
+      "result": "3 unique selected names; inventory only"
+    }
+  ],
+  "prerequisites": [
+    "Reviewed additive test commit installed before root expects3 cases",
+    "Projection37 real finalizer prerequisite GREEN",
+    "Root holds shared Cargo/DB resources and chooses authorized isolated Docker context",
+    "Current driver/source hashes read back if any files change after this review"
+  ],
+  "nonclaims": [
+    "No Cargo/DB/Docker service or application runs by reviewer",
+    "No fresh behavioral RED or GREEN observed",
+    "No auth pool retention/request fence evidence",
+    "No physical cluster binding,HA,durability,recovery or production exposure proof",
+    "No new trap/signal/daemon robustness added; cleanup semantics are inherited byte-for-byte from prior reviewed driver"
+  ],
+  "blocking_findings": []
+}

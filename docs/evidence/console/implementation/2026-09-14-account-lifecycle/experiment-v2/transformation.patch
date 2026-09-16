@@ -1,0 +1,15 @@
+--- product-draft
++++ experiment-transformed
+@@ -141,11 +141,7 @@
+         LOOP
+             EXECUTE format('REVOKE ALL ON TABLE public.%I FROM %I', relation_name, grantee_name);
+         END LOOP;
+-        -- ALTER OWNER requires the target's schema CREATE privilege. Keep it
+-        -- transactional and remove it immediately; only migrator can SET owner.
+-        EXECUTE format('GRANT CREATE ON SCHEMA public TO %I', target_owner);
+-        EXECUTE format('ALTER TABLE public.%I OWNER TO %I', relation_name, target_owner);
+-        EXECUTE format('REVOKE CREATE ON SCHEMA public FROM %I', target_owner);
++
+     END LOOP;
+ END
+ $custody$;

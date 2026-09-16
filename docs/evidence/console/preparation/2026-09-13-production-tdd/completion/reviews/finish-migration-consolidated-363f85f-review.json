@@ -1,0 +1,84 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate_commit": "363f85fb8cbba6fd05bf9847ae8bf0f4a7567172",
+  "candidate_tree": "86de40aa613583ae0d35febaa12abdbc1bacce39",
+  "disposition": "REVISION_REQUIRED_BEFORE_CONSOLIDATED_APPROVAL",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Systems Thinking",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "scope": "Consolidated security/information-flow, concurrency/recovery contracts, evidence honesty, custody and mechanical assembly. Prior independent family reviews retained; migration remainder authored by this reviewer and independently reviewed by review_completeness, not self-certified here.",
+  "blocking_findings": [
+    {
+      "id": "CONSOLIDATED-AUTHORITY-01",
+      "location": "completion/consolidated/implementation-handoff.txt amendment6",
+      "finding": "Publication uses approved NDJSON claims approval despite actual MIME contract delta remaining proposed. Global proposed-amendment heading does not cure local authority ambiguity.",
+      "required_change": "Replace approved NDJSON with proposed NDJSON and reconcile exact candidate approval status."
+    }
+  ],
+  "independent_executions": [
+    {
+      "command": "python3 -B docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/verify-custody.py",
+      "exit_code": 0,
+      "packets": 36,
+      "members": 1160,
+      "application_runtime_tests": 0
+    },
+    {
+      "command": "python3 -B docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/test_verify_custody.py",
+      "exit_code": 0,
+      "discovered": 19,
+      "executed": 19,
+      "passed": 19
+    },
+    {
+      "command": "python3 -B docs/evidence/console/preparation/2026-09-13-production-tdd/completion/module-placement-r3/check.py --root /private/tmp/console-production-tdd-preparation-20260913",
+      "exit_code": 0,
+      "positive_controls": 1,
+      "hostile_controls": 10,
+      "passed": 11
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+      "exit_code": 101,
+      "discovered": 20,
+      "executed": 20,
+      "passed": 16,
+      "failed": 4,
+      "ignored": 0,
+      "filtered": 0,
+      "classification": "BEHAVIORAL_RED: four diagnostic-independent public response body equality assertions at src/lib.rs:993; actionable public class positive passed"
+    }
+  ],
+  "custody_findings": [
+    "Clean exact candidate verified before and after checks.",
+    "Mapping supplement manifest31c4b2cdaf7497ebd14caee0b722fe7599e024a63f52fca90ba40426b1cff5c7 preserves author manifest19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df and all14original members byte-for-byte; adds sizes and original manifest only.",
+    "76Rust sources26compile-time assets10runtime assets match exact regenerated roster. This is source/mount mechanics, not compiler/name-resolution or universal dependency closure.",
+    "FK source unchanged SHA2566f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5; exception unapplied."
+  ],
+  "assessment": [
+    "Current-policy publication/emission and actual owner controls are explicit, not job-title authority; Group isolation remains distinct from within-tenant Company cells.",
+    "SecurityS5 binds exact actual extraction, harness, mutation and compiler input closure; helper/Verus machinery does not claim production-wide noninterference.",
+    "Concurrency correctness remains separate from operating-envelope hypotheses; absent native owner contention execution is honestly0 and larger scales require measured workload evidence.",
+    "Migration/recovery source distinguishes real legacy transports, retained-key activation, durable-but-unobserved process completion and software rollback vs data restore. Deployed exercises remain separate gates.",
+    "Browser real owner sources15/app executions0, actual bounded helper15 and Chromium oracle10 are differentiated. Actual application lifecycle, hydration, revocation and usable task completion remain acceptance gates.",
+    "Gate assessment preserves source-only/precondition classifications and future capability preservation. Handoff amendment6 locally mislabels proposed NDJSON as approved and must be corrected before readiness for approval."
+  ],
+  "remaining_holds": [
+    "Current review is one integrated round only. Required sequential consolidated review rounds and exact successor revision binding remain pending.",
+    "Exact revision-bound consolidated design amendment and test approval.",
+    "Explicit trusted-user approval for separately proposed ephemeral ceremony FK assertion correction; automatic approval review rejected modification twice. Do not bypass or claim unrestricted readiness.",
+    "Each lane must rerun clean actual-boundary RED and admit/run through repository tooling; absent compiler/schema/owner does not admit unrelated behavior.",
+    "Actual assembled owner compilation/execution, deeper acceptance, browser lifecycle/usability and operational workload/recovery tests before slice acceptance.",
+    "Real-data activation, deployed controls, production/payment/legal authority remain separate exposure gates."
+  ],
+  "limitations": [
+    "This review is readiness for consolidated approval, not permission granted by a reviewer.",
+    "No application/product modifications made.",
+    "Prior family receipt execution scope remains as recorded; retained Chromium/Verus logs were reviewed, not rerun for this final pass."
+  ]
+}

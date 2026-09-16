@@ -1,0 +1,17 @@
+{
+  "kind": "work.transfer.execute",
+  "body": {
+    "plan": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "plan_id": "f6ed8f81-428e-55a1-a0d7-c88561f65360",
+      "control_epoch": "1",
+      "content_digest": "58c42cef00af96beac1d6eca7b28b141175d8b22f833b19379a281209987a0ea"
+    },
+    "task": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "task_id": "cd4cc409-6c89-559c-9409-0bfb7f028010",
+      "assignment_epoch": "1",
+      "control_revision": "1"
+    }
+  }
+}

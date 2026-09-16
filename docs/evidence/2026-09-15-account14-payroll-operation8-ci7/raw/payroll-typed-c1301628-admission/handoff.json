@@ -1,0 +1,26 @@
+{
+  "owner": "/root",
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "primary_test_patch_sha256": "8e54f40d01161cde6d826a14d453be7dbdab8d8ae7f72fc5e1d846494a1dc081",
+  "design_sha256": "1ca5c188e600c036ba6309e29498cbc9aa58db5ae6956bcc80c7b72575ca2cbd",
+  "test_approval": "/private/tmp/payroll-typed-unknown-v4-root-test-approval.json",
+  "pre_mortem": "Lost type becomes500, diagnostics leak, or Unknown acknowledged as successful workflow stage.",
+  "blast_radius": "Generic canonical error seam, payroll-owned adapter, workflow consumer error; existing response schema only.",
+  "detection": "Native observer fault App4 plus prefix control/typed positive and preserved recovery9/period-lock tests; explicit Operation negative control pending.",
+  "rollback": "Preserve command receipts; compatible error handling and current authorization on replay, never new command identity.",
+  "stop": "NonsemanticRED, source drift, unreviewed taxonomy/dependency/endpoint or test weakening.",
+  "manual_classification": {
+    "1": "app1251:5 actualHTTP500 vs503 following native payroll SyncRep",
+    "2": "app1251:5 actualHTTP500 vs503 following observerEXECUTE fault",
+    "4": "app1639:10 missing typed outcome after native confirmation, PENDING only"
+  },
+  "remaining": [
+    "actual fanout admission + manual readback",
+    "typed implementation/approved compatibility",
+    "same3probesGREEN",
+    "ordinaryOperation telemetry control",
+    "App3/recovery9/wrapper preservation",
+    "CI+public contract correction",
+    "independent final review and productionHOLD"
+  ]
+}

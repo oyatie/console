@@ -1,0 +1,40 @@
+   Compiling console-gate-tenant-isolation v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/ci/gates/tenant-isolation)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.95s
+     Running tests/qualified_table_identity.rs (backend/target/debug/deps/qualified_table_identity-dd6a802f6a93e521)
+
+running 19 tests
+test two_tables_in_one_schema_cannot_share_rls_evidence ... ok
+test mixed_public_create_and_unqualified_rls_share_identity ... ok
+test account_catalog_requires_explicit_classification_outside_parser_repair ... FAILED
+test qualified_add_column_and_set_not_null_update_same_table ... ok
+test dynamic_case_sensitive_identifier_cannot_supply_lowercase_rls ... ok
+test qualified_create_reuses_existing_unqualified_dynamic_rls_evidence ... ok
+test quoted_lowercase_org_column_in_alter_preserves_not_null ... ok
+test mixed_unqualified_create_and_quoted_public_rls_share_identity ... ok
+test quoted_lowercase_org_column_in_create_preserves_not_null ... ok
+test dynamic_single_identifier_dot_is_not_schema_qualification ... ok
+test qualified_nullable_exception_is_same_public_table ... ok
+test qualified_unknown_table_remains_unclassified ... ok
+test same_basename_in_another_schema_cannot_supply_rls_evidence ... ok
+test other_schema_does_not_inherit_global_or_nullable_allowlists ... ok
+test unqualified_tenant_positive_control_remains_clean ... ok
+test other_schema_or_column_name_is_not_an_owner_only_grant_target ... ok
+test quoted_case_or_dot_does_not_alias_existing_global_table ... ok
+test public_global_table_resolves_to_existing_classification ... ok
+test qualified_owner_only_grants_are_rejected_for_both_recipients ... ok
+
+failures:
+
+---- account_catalog_requires_explicit_classification_outside_parser_repair stdout ----
+
+thread 'account_catalog_requires_explicit_classification_outside_parser_repair' (29939258) panicked at ci/gates/tenant-isolation/tests/qualified_table_identity.rs:46:5:
+expected UnclassifiedTable for accounts, got []
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    account_catalog_requires_explicit_classification_outside_parser_repair
+
+test result: FAILED. 18 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p console-gate-tenant-isolation --test qualified_table_identity`

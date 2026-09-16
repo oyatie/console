@@ -1,0 +1,19 @@
+{
+  "kind": "real-historical-replay-and-corruption-controls",
+  "head": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "tests_executed": 6,
+  "passed": 4,
+  "failed": 2,
+  "filtered": 0,
+  "positive_replay": "all six cases reproduced exact recorded native rows/checksums and material projection before their subject assertions",
+  "controls": "digest corruption, omitted ceremony, wrong token family link and membership key all rejected; latter three explicitly rolled back with full readback",
+  "failures": "both original migration tests reached missing company_actors; deeper preservation/backfill assertions unexecuted",
+  "driver_receipt": "/private/tmp/account-legacy225-replay6-2a36677e2f5e44139a5a94e0e9ae828a/driver-receipt.json",
+  "driver_receipt_sha256": "95ff0347ee4c8011d7e9e8a9a648d9def650a718c5e2f23dcebaca4359cdc061",
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "limits": [
+    "No current migration success claimed",
+    "Mutation controls calibrate actual shared row guard after successful replay, not every importer failure mode",
+    "No production durability claim"
+  ]
+}

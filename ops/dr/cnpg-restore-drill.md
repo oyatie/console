@@ -38,9 +38,10 @@ Plugin 0.13**. The recovery uses the plugin-based `externalClusters` +
 1. The base backups and archived WAL in `s3://mnt-db-backups/console-db/` are
    readable with the production OCI credentials.
 2. CNPG can bootstrap a brand-new `Cluster` from them (`bootstrap.recovery`).
-3. The recovered database promotes (`pg_is_in_recovery() = false`), the schema
-   and row counts are intact, and a **PITR target time** stops replay where
-   expected.
+3. The recovered database promotes and regular-table row multisets and column
+   metadata match an independently retained reference for that database/system
+   identifier and requested target. Actual replay position, failover safety and
+   full schema/security equivalence are separate checks.
 4. None of this touches the live `console-db` cluster — the recovery runs in a
    throwaway namespace with its own PVCs and is deleted at the end.
 
@@ -66,9 +67,42 @@ after launch. Record evidence under `ops/dr/drill-logs/`.
 ## Automated drill
 
 ```sh
-ops/dr/cnpg-restore-drill.sh \
+ops/dr/cnpg-restore-drill.sh --expected-manifest /protected/recovery-reference.json \
   2>&1 | tee "ops/dr/drill-logs/$(date -u +%Y%m%dT%H%M%SZ)-cnpg-restore-drill.log"
 ```
+
+The expected manifest is required. Before a drill, retain a qualified snapshot
+independently of the restored target. On an authorized reference connection,
+use the fixed SQL generator and capture the result with a failing pipeline:
+
+```sh
+set -euo pipefail
+umask 077
+python3 ops/dr/recovery-manifest.py sql |
+  psql -XqAt -v ON_ERROR_STOP=1 --dbname="$REFERENCE_DATABASE" |
+  python3 ops/dr/recovery-manifest.py capture --target-time "$TARGET_TIME" \
+    > /protected/recovery-reference.json
+```
+
+Supply credentials through protected libpq configuration, not the connection
+argument. The reference must represent the intended recovery point: coordinate
+writes or use a separately qualified snapshot and retain its provenance. For
+PITR, include known before/after-target changes in that qualification. Capturing
+the restored target as its own reference is invalid. The script freezes the
+reference before provisioning and records its digest. A latest-WAL target must
+also have a known expected state; ongoing source writes cannot be compared to
+an unrelated old reference.
+
+SQL hashes each row, sorts the hashes with `C` collation, and Python streams the
+multiset digest. Duplicate rows remain significant. Raw values are not logged.
+SQL uses one read-only repeatable-read transaction with a 300-second transaction
+limit, 120-second statement limit, 16 MiB work memory and 1 GiB temporary-file
+limit; exceeding those limits fails the drill rather than relaxing comparison.
+Foreign tables/partitions are refused before traversal. This verifies ordinary
+tables, partition-parent content and column names/types/nullability. It does
+not certify sequences, constraints, indexes, triggers, RLS, roles, routines,
+partition topology, large objects, materialized views or non-PostgreSQL stores.
+Those need their own recovery acceptance before exposure.
 
 Useful flags (see `--help`):
 
@@ -82,9 +116,8 @@ Useful flags (see `--help`):
 Required success markers in the log:
 
 - `cnpg_recovery_cluster=healthy`
-- `verify_in_recovery=false`
-- `verify_row_counts=ok`
-- `verify_pitr_target=ok` (only when `--target-time` is supplied)
+- `verify_recovered_state=match manifest_sha256=... tables=...`
+- `verify_pitr_state=match` (only when `--target-time` is supplied; expected data state, not a WAL-position assertion)
 - `cnpg_restore_drill_complete=ok`
 - `scratch_teardown=complete namespace=<scratch-namespace>`
 
@@ -177,7 +210,8 @@ Required success markers in the log:
      psql -U postgres -d console -tAc 'SELECT pg_is_in_recovery();'   # expect: f
    ```
 
-6. **Verify schema + row counts** against the recovered database:
+6. **Inspect schema statistics** against the recovered database (diagnostic only;
+   estimated counts cannot satisfy the required manifest comparison above):
 
    ```sh
    kubectl exec -n "$ns" console-db-recovery-1 -c postgres -- \

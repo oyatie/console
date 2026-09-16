@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE corrected test candidate before clean RED readmission",
+  "head_sha": "11699e63dbc6d0d15f6fdd7f5deecd76ae119048",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "test_sha256": "6791f49a6084993178474be56732494d50cf34742ea3cdfed0483dc72773f5a9",
+  "supersedes": [
+    "/private/tmp/tenant-qualified-39d4e93a-independent-test-review.json",
+    "/private/tmp/tenant-qualified-39d4e93a-oracle-correction-review.json"
+  ],
+  "correction": "Original public.accounts clean expectation was incorrect; reviewer missed its absent classification. Use actual existing global object_types for positive/schema/quoted-case/dot controls; add explicit accounts remains UnclassifiedTable test.",
+  "verified": [
+    "Exact diff changes fixture identities only plus one additive negative",
+    "object_types exists in current global allowlist; accounts absent from global and owner-only allowlists",
+    "Original candidate RED and first13/14 source attempt retained",
+    "Existing15test functions retained/additive; no production source or allowlists changed in candidate"
+  ],
+  "limits": [
+    "Corrected candidate requires actual clean-tree RED; not yet claimed executed",
+    "First whole-gate attempt revealed6realAccountcatalogUnclassifiedTable findings; no whole-gateGREEN claim",
+    "Those classification decisions remain separate from parser repair",
+    "Earlier broad review limits still apply"
+  ]
+}

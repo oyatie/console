@@ -1,0 +1,82 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "owner": "/root/finish_migration",
+  "supersedes": "44495caa2de5dfaabd5761cd2eb0336e5e25f63661b1a6d45d165d843f2ce414",
+  "files": [
+    {
+      "path": "bounded-process-output.rs",
+      "sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62",
+      "bytes": 2545
+    },
+    {
+      "path": "execution.json",
+      "sha256": "a7d3dba29e901d167521330f0a2420fcca9f870bf7657a5d82439106bf450df1",
+      "bytes": 1143
+    },
+    {
+      "path": "legacy-transport-producer.rs",
+      "sha256": "643bbcf97c16734f03f2562a75c04552d760c7daca585cd9b2e2a9e6f14637ff",
+      "bytes": 20082
+    },
+    {
+      "path": "machinery/Cargo.lock",
+      "sha256": "bc30a425e7582eb1cbf3f2f117f3683ae1194dbbadb13103b9cfb06411d776ed",
+      "bytes": 3615
+    },
+    {
+      "path": "machinery/Cargo.toml",
+      "sha256": "380f6b7dc3cd1b8b2cc8dba1103b7ede955613274cb9ab1f367fbd842c6886e7",
+      "bytes": 212
+    },
+    {
+      "path": "machinery-execution.log",
+      "sha256": "7041dc0fff6ede2b7d686399bdfa1dcb662b7b01b9996f151a536fea3d0e3d03",
+      "bytes": 819
+    },
+    {
+      "path": "migrated-primary-producer.rs",
+      "sha256": "2c0d5ed21675b5426dadb5857e96c4e8eb67e87d8cfb7191cd4ef0d7cb6abd9d",
+      "bytes": 12744
+    },
+    {
+      "path": "migration-batch-process.rs",
+      "sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345",
+      "bytes": 3723
+    },
+    {
+      "path": "migration-remaining-tests.rs",
+      "sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a",
+      "bytes": 17455
+    },
+    {
+      "path": "owner-interface-contract.txt",
+      "sha256": "2dbfd2a49aa6cf69a120cffcc2df64ae9a8410d05ab2bb220da363eb7132f744",
+      "bytes": 6102
+    },
+    {
+      "path": "parent-manifest.json",
+      "sha256": "114999efbeced6c1b1ffa4aa5625106bac2aa35d86edd091ae8f45132b0a8da6",
+      "bytes": 1310
+    },
+    {
+      "path": "parser-checks.json",
+      "sha256": "bb0260515001fa7273618f0bc621f0d57e917b9275080473643cf1347aaa4039",
+      "bytes": 1543
+    },
+    {
+      "path": "r2-parent-manifest.json",
+      "sha256": "d4342b0bcf0d543bccfc6f62b866b71cbf508186445ceeacd50186233ece918a",
+      "bytes": 2097
+    },
+    {
+      "path": "r3-correction-evidence.json",
+      "sha256": "eae20e414dccc72f2c8b97e0595bb05251ee4ebbe72971260516ea7e99bd7da8",
+      "bytes": 714
+    },
+    {
+      "path": "r3-parent-manifest.json",
+      "sha256": "44495caa2de5dfaabd5761cd2eb0336e5e25f63661b1a6d45d165d843f2ce414",
+      "bytes": 2416
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "verdict": "APPROVE_EXACT_FIXTURE_PREREQUISITE_AMENDMENT_FOR_UNFILTERED_ROOT_RUNTIME",
+  "reviewer": "/root/capture_review",
+  "candidate": "/private/tmp/account-deactivation14-retained-fixtures-796173fc-v1-inventory",
+  "candidate_manifest_sha256": "bb0ebe8a6735a11d098bfff4fe811e072c12f58c429790099d6572aefa154773",
+  "candidate_patch_sha256": "0861dbe77c0d527ad0b774c93fe6a13902259265a1b0598a761fe84fb5fbca58",
+  "base_sha": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "preimages_verified_at": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "helper_path": "backend/crates/platform/test-support/src/lib.rs",
+  "helper_sha256": "373d025addcef0aaca30f78571bac4fa6584bf97816390be28c3aeeb9292b6fb",
+  "blocking_findings": [],
+  "conclusions": [
+    "Only one existing helper import, three migrations annotations and three calls per file change; removing exactly those changes recovers every original byte, including all assertions and six test names.",
+    "migrations=false delegates schema installation to existing prepare_account_test_database, which requires an empty marked SQLx admin database, transfers it to authenticated console_app, applies all real numbered migrations and executes actual production Account finalizer. No schema or assertion is skipped.",
+    "Helper is already a dev-dependency and used by accepted14; mapped Cargo PostgreSQL harness supplies the existing migration-owner and Auth transports. Existing raw SET ROLE console_rt runtime pools remain unchanged, so this does not upgrade their scope into genuine LOGIN evidence.",
+    "Preparation runs before all original fixture setup and owner calls. New finalization installs roots/bridge/guard; existing user inserts receive genuine root rows through the production bridge. No fake fence, guard result or direct grant synthesis is introduced.",
+    "Product four-file candidate remains separately frozen and independently reviewed; fixture authorization is root standing approval for independently reviewed prerequisites, relayed during this task."
+  ],
+  "test_names": {
+    "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": [
+      "replaying_deactivate_writes_no_second_transition_audit_row",
+      "replaying_deactivate_revokes_a_racing_credential",
+      "replaying_activate_writes_no_second_transition_audit_row"
+    ],
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": [
+      "subject_authz_versions_isolate_tenants_and_deny_delete_as_runtime_role",
+      "bump_and_get_subject_authz_versions_via_store",
+      "update_user_delta_scopes_the_preview_receipt_gate"
+    ]
+  },
+  "verification": {
+    "checks": 13,
+    "source_cases": 6,
+    "compiler_discovered": 0,
+    "rust_tests_executed": 0,
+    "rustfmt_invocations": 2,
+    "private_git_apply_invocations": 4,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "integration_writes": 0
+  },
+  "root_command": "bash tools/ci/cargo_needs_postgres.sh --only identity-adapter-postgres-user_lifecycle_noop_replay-pg,identity-adapter-postgres-subject-authz-versions-freshness-rls-pg --num-threads 1",
+  "remaining_holds": [
+    "Root unfiltered two-target runtime: discover/execute3+3 cases, classify any new fixture/semantic first failure",
+    "Account14 same admitted probe GREEN and retained root/profile checks",
+    "Exact-head closure",
+    "Broader guard coverage/native enrollment/Auth7/production authority"
+  ],
+  "premortem": "A missing finalizer hides product behavior as42883, or fixture migration ownership violates real custody admission.",
+  "blast_radius": "Two existing test fixture prerequisites; no test logic/product changes.",
+  "rollback": "Reject private patch; shared integration unchanged here.",
+  "stop": [
+    "Source/roster/assertion drift",
+    "Missing owner/Auth harness prerequisites",
+    "Unreviewed or incomplete runtime result"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton Fence",
+    "Red Team",
+    "Operability",
+    "Blast radius",
+    "Zero trust"
+  ]
+}

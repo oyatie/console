@@ -1,0 +1,19 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_REVIEW",
+  "owner": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "8575461bae72c4242e76d11a79deefdedaf67f86",
+  "native_relations": 7,
+  "schema_definitions": 43,
+  "source_kinds": 6,
+  "semantic_rules": 12,
+  "normalization_oracles": 18,
+  "invalid_fragment_oracles": 10,
+  "nonexecutable_proof_cases": 30,
+  "source_blobs": 40,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0
+}

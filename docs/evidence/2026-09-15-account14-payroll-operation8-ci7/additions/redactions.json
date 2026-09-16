@@ -1,0 +1,122 @@
+[
+  {
+    "source": "/private/tmp/recovery-test-local-cfg-23fa2771/baseline-discovery.log",
+    "original_sha256": "becd76cf6da23be04b7f6b3c0e008203a2435fb48d8083e1c028d795dc920b80",
+    "derivative_sha256": "4bf3b88ac5585fee6bc8ffcc2af5efc8457545314fe81434c7b19f6a31cc3f3d",
+    "lines": [
+      443,
+      449
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/recovery-test-local-cfg-v2/discovery.log",
+    "original_sha256": "37fcc29f1defdabe2380803a2bc31440679bc1c92bafffc713c3bd78b3beeb97",
+    "derivative_sha256": "cdb5afcb19cf809e9a6148d7a99945fe23507ac62d85cd67a72518fb28a75971",
+    "lines": [
+      443,
+      449
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/11.log",
+    "original_sha256": "c4d5a08cd1746e1734b82e3adea2b117dcf73c34005c9cc6cdb1fb6ac189ad51",
+    "derivative_sha256": "cf6050a64c0d7da401023faf890ac05111e10d5e271c2634a471d451ed28749f",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/12.log",
+    "original_sha256": "5b233604702e5599bf859defe58d6171adee52a0dd16ddadb070d8e1f3956693",
+    "derivative_sha256": "bd672807a7dff6a0d0cc13e08c394825d2d7c694a70edb93baeaf2dc9cb7f242",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/13.log",
+    "original_sha256": "7b8630adad64cc829a0a771e6dac59386cde6bdc64ce9c2f9ad5966d9a59313e",
+    "derivative_sha256": "32cbb3d9e4f591f93d394a1616a42e7f1ebc9909274f18dfc8aa10d9ce3e97da",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/14.log",
+    "original_sha256": "9068656de328ef41dd67b5e66bf1298051722520bc54e4f4ddf52f1a6f5ca5b0",
+    "derivative_sha256": "1e83fada11d29e2c55134f86cade4efde08898b7ea62faac4b964fa1fd6df6f8",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/15.log",
+    "original_sha256": "b843b3f210c8fc7e0c8daea5fe477e553032007b5f21573027f958b393ca7f64",
+    "derivative_sha256": "759a11764b744b08c40d8d7c1f1dc7f48f8611773d8436e51b1b85b8f07e3c25",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/16.log",
+    "original_sha256": "792db476f74618b22c4ea6a8b6f5f0dcd361f242ec7fb2eaeb6e245c677e40d6",
+    "derivative_sha256": "a74c85bf133164a44cd010d513f057a246ca6d21b4432710b39729b34cb11aec",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/17.log",
+    "original_sha256": "97ac4e56c8c21007a1eadbeb9c4babec24c6dea93c66343561653c03fb3141d7",
+    "derivative_sha256": "4b55d6850dbb34a1b7e2219a7388b445bf757882bfa7b83e4b8a1602e6f4778d",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  },
+  {
+    "source": "/private/tmp/console-ec673d27-recovery/18.log",
+    "original_sha256": "475193525004a45bc6602e49d777293282475836e061350907048675563de710",
+    "derivative_sha256": "129da6e3d3b259d26f9457758e1c64915ee5c6578b94f2b926940222f236a035",
+    "lines": [
+      450,
+      456
+    ],
+    "transformation": "Replace URI userinfo only in exact cfg(test) source-constant compiler excerpts; all other bytes preserved.",
+    "source_commit": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+    "source_path": "backend/app/src/lib.rs"
+  }
+]

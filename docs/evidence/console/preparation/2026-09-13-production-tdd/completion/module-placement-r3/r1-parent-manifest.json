@@ -1,0 +1,46 @@
+{
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "status": "FROZEN_CANDIDATE_PENDING_S7_R3_REFRESH",
+  "members": [
+    {
+      "path": "account_migration-declarations.rs",
+      "sha256": "81867bbcd986662230a293a01deb409ba5439d2eedcccdc7ebfdad26d45e8d80"
+    },
+    {
+      "path": "auth_rest-declarations.rs",
+      "sha256": "a2a3ec5921505e257c94a77176408582315d91c559c3344eabda76306efba77b"
+    },
+    {
+      "path": "build.py",
+      "sha256": "d55ffdc78b56f52fa60d66dff8d611e09a304a610c364f4ac131fc3c8853d5d4"
+    },
+    {
+      "path": "check.py",
+      "sha256": "55280e3c3db0777710599b32ae5f43f28438e70f7181e075f1bf7a693429d06a"
+    },
+    {
+      "path": "checks.json",
+      "sha256": "e27652a049bea44a174cb510c69f1ee96ca7fe9ac607c27923092d83796a4603"
+    },
+    {
+      "path": "dev-dependencies.json",
+      "sha256": "b298faf0d3a96e245248f46038453a84702abf8ca0a3da1b162072ee8903a585"
+    },
+    {
+      "path": "external-crate-reference-census.json",
+      "sha256": "d2b3659f13785f5dcc59da6f779ffa56d6a012f4781fe6167d340f5a2e71ac85"
+    },
+    {
+      "path": "mechanical-guide.txt",
+      "sha256": "ef4ce6e7eb437020b6b1aa3b3d4725f881545d68e2208de96e30df53fc748822"
+    },
+    {
+      "path": "module-placement.json",
+      "sha256": "a03fa21791dc666995006095617c0334c2aa29a6a658587b3794de40ca401e8c"
+    },
+    {
+      "path": "native_acceptance-declarations.rs",
+      "sha256": "600a3ebfeea5a275b25fb62a736c4cd7c383158c93e8846b9b013d139b49c462"
+    }
+  ]
+}

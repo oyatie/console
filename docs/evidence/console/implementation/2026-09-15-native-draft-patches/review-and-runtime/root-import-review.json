@@ -1,0 +1,13 @@
+{
+  "kind": "ROOT_INDEPENDENT_RETENTION_READBACK",
+  "head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "reviewer": "/root",
+  "manifest_sha256": "968f7ecb46591c7ec0c2766b80cd3bdeb611ffa0d6a0036071f5be8c8d22903c",
+  "archives": 34,
+  "source_git_bindings": 97,
+  "new_path_absence_checks": 3,
+  "existing_payloads_verified": 24,
+  "duplicate_payloads": 0,
+  "status": "PASS",
+  "scope": "Pure in-memory draft owner and its actual separated compile/test/lint results. No durable draft, current authority, production or full Console completion claim."
+}

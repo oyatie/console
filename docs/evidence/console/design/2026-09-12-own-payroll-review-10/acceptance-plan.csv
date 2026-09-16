@@ -1,0 +1,68 @@
+id,contract_refs,trigger,expected
+P01,PR1.1,Approved nonpayable result released to own subject,Own monetary review visible; PayRun not PAID/ISSUED and payable remains false
+P02,PR1.1,Old readiness route called,No new won fields or issued-statement claim
+P03,PR1.1,Review release tries old issue_payslips/vault bypass,Refuse; existing paid/release gates unchanged
+P04,PR1.2,Calculation changes after publication,Published content/labels remain frozen; current correction status separately shown
+P05,PR1.2,Rehire same Account with new Employment,Old and new subjects remain distinct; own history survives without old work grants
+P06,PR1.2,Two same-name users or guessed publication ID,No name/email recipient binding; current verified subject policy required
+P07,PR1.2,One selected subject has no verified recipient,Block selected release or explicitly preview narrower subset; no silent drop
+P08,PR1.2,Additional alias Account claims subject,Must prove current same-subject entitlement; no duplicate publication or automatic notification
+P09,PR1.3,Manage/read holder lacks disclosure permission,Deny release; read privilege does not grant publishing
+P10,PR1.3,Controller has exact release authority and metadata but restricted amounts,May release already fully reviewed exact projection if subject disclosure allowed; no new wage decision
+P11,PR1.3,Controller cannot discover selected recipients,Cannot release hidden selection; choose separately authorized scope
+P12,PR1.3,Source/calc/recipient proof changes after preview,Current locked guards reject stale release and preserve intent
+P13,PR1.3,Publication fails midway through2000 selected records,Transaction rolls back all content/entitlements/outbox/receipt; no partial publication
+P14,PR1.3,Release response lost after commit,Exact receipt replay after current disclosure; no duplicate publications
+P15,PR1.3,Same command ID different manifest,Payload conflict; no changed selection
+P16,PR1.3,Different command overlaps identical already released targets,Return existing identical bindings and create only missing; exact receipt target set
+P17,PR1.3,Release races approved-run supersession,Shared owner fence orders outcomes; no stale new release after supersession
+P18,PR1.4,Approved run enters correction after subject viewed it,Historical amounts remain; correction pending visible from owner truth
+P19,PR1.4,Successor rejected or release fails,No old correctness revival or case corrected-resolution
+P20,PR1.4,Two competing successor publication edges,At most one valid successor per predecessor; stale competitor conflicts
+P21,PR1.4,Source status unavailable,Show current basis unavailable; no unqualified current correctness or new release
+P22,PR1.4,Misbinding security incident suspends publication,All future surfaces deny according to current policy; preserve restricted forensic content
+P23,PR1.4,Employer wants to hide complainant by offboarding,Work revocation does not remove Account/own entitlement or become security suspension
+P24,PR1.5,Former worker has no active Employment,Same Account can read authorized own historical results and requests
+P25,PR1.5,Hidden line amount reconstructable from totals,Omit dependent totals/deltas unless explicitly authorized inference disclosure
+P26,PR1.5,No public result for authorized period,No public result message and inquiry path; no hidden run/count or zero pay
+P27,PR1.5,One known issuer Company unavailable,Permitted partial-record warning; no silent whole success or hidden Company leak
+P28,PR1.5,Two versions use incompatible projection semantics,No invented numerical delta; show authorized versions separately
+P29,PR1.5,Internal publication link sent outside,No bearer access/export/download grant from link possession
+P30,PR1.6,User selects disputed deduction without knowing correct amount,Form binds exact published item; explanation/request can submit without replacement salary
+P31,PR1.6,User writes OTHER narrative,Preserve versioned submitted text and surface to handler; no LLM-only classification
+P32,PR1.6,Autosave correction-request draft,FD1 private draft only; no Company case until explicit submission
+P33,PR1.6,Submit with no eligible handler,Durable case and unassigned exception; not rejected or fake assigned
+P34,PR1.6,Two distinct similar questions,No text-similarity auto-drop; explicit linkage preserves original paths
+P35,PR1.6,Missing result inquiry has no publication ID,Validate historical Employment/period and accept without exposing hidden run
+P36,PR1.7,Handler reads message or recipient acknowledges,No case resolution or rights waiver
+P37,PR1.7,New requester evidence after response preview,Stale revision conflict; preserve response input for review
+P38,PR1.7,No-change response covers only some issue items,Reject incomplete resolution; all items need subject-readable disposition
+P39,PR1.7,Requester is payroll handler attempting self-resolution,Different verified human required; underlying approval SoD unchanged
+P40,PR1.7,Internal deadline passes without requester answer,Reminder/pending state; no automatic dismissal
+P41,PR1.7,Corrected wage saved but replacement result not public,Case remains correction pending
+P42,PR1.7,Corrected approved exact result published and response complete,Resolve corrected and atomically complete participating task/release capacity
+P43,PR1.7,Requester disagrees after resolution,New linked follow-up; immutable old response preserved
+P44,PR1.8,Case handler lacks source write or publication right,Owning domain/explicit publication task handles it; no authority inheritance
+P45,PR1.8,Withdrawal races resolution or correction effect,CAS gives one recorded case outcome; completed domain correction not undone
+P46,PR1.8,Several cases share corrective run,Individual subject issue/outcome coverage preserved; no coworker exposure
+P47,PR1.9,Handler departure with response draft,WA1 work draft custody/epoch transfer; requester private draft remains private
+P48,PR1.9,Unknown submit/release/response outcome,Reconcile original receipt; no new command mint from timeout
+P49,PR1.10,Draft expired but released publication pinned by open case,Publication/case required content retained under owning policy
+P50,PR1.10,Restored DB predates current disclosure revocation,Readmission/current policy before SSR notifications or new effects
+P51,WA2.1,Present worker busy requests handover,Workload trigger works without absence or availability/Employment change
+P52,WA2.2,Incumbent lacks direct transfer authority,Persist requested plan; current assignee remains until authorized transfer commit
+P53,WA2.2,Authorized work instruction with no extra approval policy,Direct guarded transfer; no invented title or ceremonial approval requirement
+P54,WA2.2,CEO title or chat order without scoped authority,No transfer authorization from rank/text
+P55,WA2.3,Configured bounded workload condition matches,Same WA1 engine routes exact feasible editable/no-effect tasks without absence
+P56,WA2.3,Busy prose but no rule or workload mandate,Explicit request/repair only; no inferred autonomous reassignment
+P57,WA2.3,Instruction names overloaded recipient or hidden required evidence,Reject/incomplete plan; no force or permission bypass
+P58,WA2.3,Two opposing instructions on same task epoch,One wins under CAS; other stale; no overwrite or automatic ping-pong
+P59,WA2.3,Plan cancelled after partial transfers,Stop remaining transfers; keep actual completed receipts; return requires new transfer
+P60,WA2.4,Payroll case handler changed by workload instruction,Case stays actual state and content; reassignment never resolves dispute
+P61,PR1.4,Wrong published label/projection v1 but source calculation unchanged,Explicit projection replacement v2; one current slot; immutable predecessor; no wage or payroll approval change
+P62,PR1.4,Two projection successors race or normal release tries another CURRENT schema version,Current-slot CAS gives one winner; ordinary new-version release cannot bypass replacement
+P63,PR1.4,Projection replacement attempts changed recipient or monetary source,Reject; identity security repair or AC1 source correction required
+P64,WA2.3,Plan cancel commits before queued transfer obtains plan SHARE,Old plan epoch/state rejects; no assignment capacity custody change
+P65,WA2.3,Transfer holds plan SHARE before cancel EXCLUSIVE,Transfer commits actual receipt then cancel stops remaining; no deadlock or reversal
+P66,WA2.3,Cross-Company cancel succeeds in A but B unavailable,Show A stopped B unknown; no whole-stop claim; reconcile B exact receipt
+P67,WA2.3,ACTIVE plan edited or progress attempts SHARE upgrade,Stop then explicit successor for content change; progress from receipts; no lock upgrade

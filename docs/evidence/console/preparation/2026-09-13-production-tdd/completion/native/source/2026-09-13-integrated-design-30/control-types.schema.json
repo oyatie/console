@@ -1,0 +1,1428 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "console:design30:controls",
+  "$comment": "Decoded internal values;CCF1 canonical integers/text rules apply. Condition grammar bounded depth8,total256 nodes; empty ALL/ANY are rejected at publication, not executable universal grants. Every reference resolves exact scope and admitted registered type.",
+  "$defs": {
+    "ControlEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "COMPANY"
+            },
+            "evidence": {
+              "$ref": "action-types.schema.json#/$defs/ExactEvidence"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "GROUP_RECEIPT"
+            },
+            "command": {
+              "$ref": "action-types.schema.json#/$defs/GroupCommandRef"
+            },
+            "receipt_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "command",
+            "receipt_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ACCOUNT_SECURITY_EVENT"
+            },
+            "account_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "event_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "account_id",
+            "event_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "INDEPENDENT_CUSTODY"
+            },
+            "manifest": {
+              "$ref": "journal-types.schema.json#/$defs/CustodyManifestRef"
+            }
+          },
+          "required": [
+            "kind",
+            "manifest"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SecurityEvent": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "ENROLLED",
+            "CREDENTIAL_ADDED",
+            "CREDENTIAL_REVOKED",
+            "SESSION_REVOKED",
+            "RECOVERY_REQUIRED",
+            "RECOVERY_ADMITTED",
+            "TERMS_ACCEPTED",
+            "SECURITY_SUSPENDED",
+            "SECURITY_RESTORED"
+          ]
+        },
+        "account_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "before_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "after_generation": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        },
+        "credential_id": {
+          "anyOf": [
+            {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/ControlEvidence"
+        }
+      },
+      "required": [
+        "kind",
+        "account_id",
+        "before_generation",
+        "after_generation",
+        "credential_id",
+        "session_id",
+        "evidence"
+      ],
+      "additionalProperties": false
+    },
+    "PropertyRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "object_type_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "property_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "schema_revision": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        }
+      },
+      "required": [
+        "org_id",
+        "object_type_id",
+        "property_id",
+        "schema_revision"
+      ],
+      "additionalProperties": false
+    },
+    "Operand": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "PRINCIPAL_ACCOUNT"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "RESOURCE_FIELD"
+            },
+            "property": {
+              "$ref": "#/$defs/PropertyRef"
+            }
+          },
+          "required": [
+            "kind",
+            "property"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CONTEXT_INSTANT"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "LITERAL"
+            },
+            "value": {
+              "$ref": "action-types.schema.json#/$defs/FieldValue"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "RELATION_TARGET"
+            },
+            "relation_definition": {
+              "$ref": "types.schema.json#/$defs/GovernedRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "relation_definition"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ALL"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Condition"
+              },
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "kind",
+            "items"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ANY"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Condition"
+              },
+              "maxItems": 32
+            }
+          },
+          "required": [
+            "kind",
+            "items"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "NOT"
+            },
+            "item": {
+              "$ref": "#/$defs/Condition"
+            }
+          },
+          "required": [
+            "kind",
+            "item"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "EQUAL"
+            },
+            "left": {
+              "$ref": "#/$defs/Operand"
+            },
+            "right": {
+              "$ref": "#/$defs/Operand"
+            }
+          },
+          "required": [
+            "kind",
+            "left",
+            "right"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "IN_SCOPE"
+            },
+            "operand": {
+              "$ref": "#/$defs/Operand"
+            },
+            "scope": {
+              "$ref": "types.schema.json#/$defs/GovernedRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "operand",
+            "scope"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "WITHIN_INTERVAL"
+            },
+            "interval": {
+              "$ref": "action-types.schema.json#/$defs/Interval"
+            }
+          },
+          "required": [
+            "kind",
+            "interval"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "RELATION_EXISTS"
+            },
+            "definition": {
+              "$ref": "types.schema.json#/$defs/GovernedRevision"
+            },
+            "target": {
+              "$ref": "action-types.schema.json#/$defs/ObjectRef"
+            }
+          },
+          "required": [
+            "kind",
+            "definition",
+            "target"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CapabilityClause": {
+      "type": "object",
+      "properties": {
+        "clause_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "action": {
+          "$ref": "action-types.schema.json#/$defs/ActionRef"
+        },
+        "resource_type": {
+          "$ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        "field_group": {
+          "anyOf": [
+            {
+              "$ref": "types.schema.json#/$defs/GovernedRevision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effect": {
+          "enum": [
+            "PERMIT",
+            "FORBID"
+          ]
+        },
+        "condition": {
+          "$ref": "#/$defs/Condition"
+        }
+      },
+      "required": [
+        "clause_id",
+        "action",
+        "resource_type",
+        "field_group",
+        "effect",
+        "condition"
+      ],
+      "additionalProperties": false
+    },
+    "PolicyRoleContent": {
+      "type": "object",
+      "properties": {
+        "clauses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CapabilityClause"
+          },
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "clauses"
+      ],
+      "additionalProperties": false
+    },
+    "FieldDefinition": {
+      "type": "object",
+      "properties": {
+        "field_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "value_kind": {
+          "enum": [
+            "TEXT",
+            "INTEGER",
+            "DECIMAL",
+            "BOOLEAN",
+            "DATE",
+            "INSTANT",
+            "ENUM",
+            "OBJECT",
+            "REVISION",
+            "EVIDENCE",
+            "RECORD",
+            "LIST"
+          ]
+        },
+        "required_at_submit": {
+          "type": "boolean"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "max_items": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "semantic_group_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "definition": {
+          "anyOf": [
+            {
+              "$ref": "types.schema.json#/$defs/GovernedRevision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "owner_schema_path": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "minItems": 1,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "field_id",
+        "name",
+        "value_kind",
+        "required_at_submit",
+        "nullable",
+        "max_items",
+        "semantic_group_id",
+        "definition",
+        "owner_schema_path"
+      ],
+      "additionalProperties": false,
+      "description": "Fixed schema-owner admission checks actual field path: only PublicationRelease.targets permits2000; all other fields retain<=256 or narrower declared bound. This representational upper bound cannot authorize arbitrary wider lists."
+    },
+    "InputDefinition": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "$ref": "action-types.schema.json#/$defs/ActionRef"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FieldDefinition"
+          },
+          "maxItems": 128
+        },
+        "owner_body_schema_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "schema_digest": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        }
+      },
+      "required": [
+        "action",
+        "fields",
+        "owner_body_schema_id",
+        "schema_digest"
+      ],
+      "additionalProperties": false
+    },
+    "AssignmentBasis": {
+      "type": "object",
+      "properties": {
+        "receipt": {
+          "$ref": "action-types.schema.json#/$defs/ReceiptRef"
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "action-types.schema.json#/$defs/TransferPlanRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mandate": {
+          "anyOf": [
+            {
+              "$ref": "action-types.schema.json#/$defs/GovernanceRequestRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "definition": {
+          "$ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        "coverage": {
+          "$ref": "types.schema.json#/$defs/GovernedRevision"
+        }
+      },
+      "required": [
+        "receipt",
+        "plan",
+        "mandate",
+        "definition",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "GroupChargeRef": {
+      "type": "object",
+      "properties": {
+        "group_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "target_org_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "task_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "assignment_epoch": {
+          "$ref": "types.schema.json#/$defs/Positive"
+        }
+      },
+      "required": [
+        "group_id",
+        "target_org_id",
+        "task_id",
+        "assignment_epoch"
+      ],
+      "additionalProperties": false
+    },
+    "Availability": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "types.schema.json#/$defs/Time"
+        },
+        "until": {
+          "$ref": "types.schema.json#/$defs/Time"
+        },
+        "state": {
+          "enum": [
+            "AVAILABLE",
+            "UNAVAILABLE",
+            "UNKNOWN"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/ControlEvidence"
+        }
+      },
+      "required": [
+        "from",
+        "until",
+        "state",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "AuthorityVersion": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "GROUP"
+            },
+            "group_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "topology_epoch": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "identity_epoch": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            }
+          },
+          "required": [
+            "kind",
+            "group_id",
+            "topology_epoch",
+            "identity_epoch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "COMPANY"
+            },
+            "org_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "authority_epoch": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "authority_epoch"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ContextQuery": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "ALL",
+            "COMPANY",
+            "GROUP"
+          ]
+        },
+        "include_historical": {
+          "type": "boolean"
+        },
+        "page_size": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "kind",
+        "include_historical",
+        "page_size"
+      ],
+      "additionalProperties": false
+    },
+    "ContextSourceKey": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "GROUP_MEMBERSHIP"
+            },
+            "group_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "membership_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "incarnation": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "group_id",
+            "membership_id",
+            "incarnation"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "COMPANY_POLICY"
+            },
+            "org_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "assignment_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "revision": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "assignment_id",
+            "revision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "HISTORICAL_ENTITLEMENT"
+            },
+            "subject": {
+              "$ref": "action-types.schema.json#/$defs/HistoricalSubject"
+            },
+            "receipt": {
+              "$ref": "action-types.schema.json#/$defs/ReceiptRef"
+            }
+          },
+          "required": [
+            "kind",
+            "subject",
+            "receipt"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "SortKey": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "OBJECT_UUID"
+            },
+            "object": {
+              "$ref": "action-types.schema.json#/$defs/ObjectRef"
+            }
+          },
+          "required": [
+            "kind",
+            "object"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CONTEXT_UUID"
+            },
+            "context_kind": {
+              "enum": [
+                "COMPANY",
+                "GROUP"
+              ]
+            },
+            "id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "context_kind",
+            "id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OwnerBasis": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "PAYROLL_REVIEW"
+            },
+            "basis": {
+              "$ref": "action-types.schema.json#/$defs/ReviewBasis"
+            }
+          },
+          "required": [
+            "kind",
+            "basis"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "EXECUTION_GATE"
+            },
+            "attempt": {
+              "$ref": "action-types.schema.json#/$defs/AttemptRef"
+            },
+            "command_digest": {
+              "$ref": "types.schema.json#/$defs/Digest"
+            }
+          },
+          "required": [
+            "kind",
+            "attempt",
+            "command_digest"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "InputCalculationRef": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "types.schema.json#/$defs/NativeInputRef"
+        },
+        "batch": {
+          "$ref": "types.schema.json#/$defs/NativeBatchRef"
+        },
+        "manifest_digest": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        }
+      },
+      "required": [
+        "input",
+        "batch",
+        "manifest_digest"
+      ],
+      "additionalProperties": false
+    },
+    "ExactSourceRefs": {
+      "type": "array",
+      "items": {
+        "$ref": "types.schema.json#/$defs/RetainedSelector"
+      },
+      "maxItems": 256
+    },
+    "DecisionManifest": {
+      "type": "object",
+      "properties": {
+        "evidence": {
+          "$ref": "types.schema.json#/$defs/EvidenceRef"
+        },
+        "cycle": {
+          "$ref": "action-types.schema.json#/$defs/ReviewCycleRef"
+        },
+        "count": {
+          "$ref": "types.schema.json#/$defs/Count"
+        }
+      },
+      "required": [
+        "evidence",
+        "cycle",
+        "count"
+      ],
+      "additionalProperties": false
+    },
+    "AffectedUnitMap": {
+      "type": "object",
+      "properties": {
+        "manifest": {
+          "$ref": "types.schema.json#/$defs/EvidenceRef"
+        },
+        "predecessor_run_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "successor_run_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "affected_count": {
+          "$ref": "types.schema.json#/$defs/Count"
+        },
+        "unchanged_count": {
+          "$ref": "types.schema.json#/$defs/Count"
+        }
+      },
+      "required": [
+        "manifest",
+        "predecessor_run_id",
+        "successor_run_id",
+        "affected_count",
+        "unchanged_count"
+      ],
+      "additionalProperties": false
+    },
+    "PublicationContent": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "$ref": "action-types.schema.json#/$defs/HistoricalSubject"
+        },
+        "period": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+        },
+        "purpose": {
+          "const": "NONPAYABLE_REVIEW"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "$ref": "#/$defs/PropertyRef"
+              },
+              "value": {
+                "$ref": "action-types.schema.json#/$defs/FieldValue"
+              }
+            },
+            "required": [
+              "field",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 256
+        },
+        "source_digest": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        }
+      },
+      "required": [
+        "subject",
+        "period",
+        "purpose",
+        "fields",
+        "source_digest"
+      ],
+      "additionalProperties": false
+    },
+    "RecipientDisclosure": {
+      "type": "object",
+      "properties": {
+        "account_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "subject": {
+          "$ref": "action-types.schema.json#/$defs/HistoricalSubject"
+        },
+        "authority_witness": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "projection": {
+          "$ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        "evaluated_at": {
+          "$ref": "types.schema.json#/$defs/Time"
+        }
+      },
+      "required": [
+        "account_id",
+        "subject",
+        "authority_witness",
+        "projection",
+        "evaluated_at"
+      ],
+      "additionalProperties": false
+    },
+    "SubjectKey": {
+      "$ref": "action-types.schema.json#/$defs/HistoricalSubject"
+    },
+    "LineageKey": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "original_run_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "employee_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        }
+      },
+      "required": [
+        "org_id",
+        "original_run_id",
+        "employee_id"
+      ],
+      "additionalProperties": false
+    },
+    "ClaimUnitDefinition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "MONEY"
+            },
+            "unit_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "currency": {
+              "const": "KRW"
+            },
+            "decimal_places": {
+              "const": 0
+            }
+          },
+          "required": [
+            "kind",
+            "unit_id",
+            "label",
+            "currency",
+            "decimal_places"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "QUANTITY"
+            },
+            "unit_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "unit_code": {
+              "enum": [
+                "MINUTE",
+                "HOUR",
+                "DAY",
+                "COUNT"
+              ]
+            },
+            "decimal_places": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 6
+            }
+          },
+          "required": [
+            "kind",
+            "unit_id",
+            "label",
+            "unit_code",
+            "decimal_places"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ReviewIssueTypeContent": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "claim_units": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ClaimUnitDefinition"
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "label",
+        "claim_units"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewRequestContent": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "$ref": "action-types.schema.json#/$defs/CaseTarget"
+        },
+        "narrative": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "action-types.schema.json#/$defs/IssueItem"
+          },
+          "maxItems": 64
+        },
+        "predecessor_response_id": {
+          "anyOf": [
+            {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "target",
+        "narrative",
+        "items",
+        "predecessor_response_id"
+      ],
+      "additionalProperties": false
+    },
+    "ReviewResponseContent": {
+      "type": "object",
+      "properties": {
+        "explanation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "dispositions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResolvedIssueDisposition"
+          },
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "explanation",
+        "dispositions"
+      ],
+      "additionalProperties": false
+    },
+    "CaseContent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "REQUEST"
+            },
+            "content": {
+              "$ref": "#/$defs/ReviewRequestContent"
+            }
+          },
+          "required": [
+            "kind",
+            "content"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "RESPONSE"
+            },
+            "content": {
+              "$ref": "#/$defs/ReviewResponseContent"
+            }
+          },
+          "required": [
+            "kind",
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "StoredIssueDisposition": {
+      "type": "object",
+      "properties": {
+        "item_id": {
+          "$ref": "types.schema.json#/$defs/UUID"
+        },
+        "kind": {
+          "enum": [
+            "ANSWERED",
+            "NEEDS_REQUESTER",
+            "CORRECTION_PENDING",
+            "CORRECTED",
+            "OUTSIDE_SUPPORTED_PROCESS"
+          ]
+        },
+        "content_revision": {
+          "$ref": "types.schema.json#/$defs/GovernedRevision"
+        }
+      },
+      "required": [
+        "item_id",
+        "kind",
+        "content_revision"
+      ],
+      "additionalProperties": false
+    },
+    "ExecutionCommandBinding": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "$ref": "types.schema.json#/$defs/CommandRef"
+        },
+        "attempt": {
+          "$ref": "action-types.schema.json#/$defs/AttemptRef"
+        },
+        "command_fingerprint": {
+          "$ref": "types.schema.json#/$defs/Digest"
+        }
+      },
+      "required": [
+        "command",
+        "attempt",
+        "command_fingerprint"
+      ],
+      "additionalProperties": false
+    },
+    "FollowUpWorkBinding": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "$ref": "action-types.schema.json#/$defs/TaskRef"
+        },
+        "definition_revision": {
+          "$ref": "types.schema.json#/$defs/GovernedRevision"
+        },
+        "target": {
+          "$ref": "action-types.schema.json#/$defs/ObjectRef"
+        }
+      },
+      "required": [
+        "task",
+        "definition_revision",
+        "target"
+      ],
+      "additionalProperties": false
+    },
+    "ResolvedIssueDisposition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ANSWERED"
+            },
+            "item_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "$ref": "action-types.schema.json#/$defs/ExactEvidence"
+              },
+              "maxItems": 32,
+              "minItems": 0
+            },
+            "answer": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "kind",
+            "item_id",
+            "evidence",
+            "answer"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "NEEDS_REQUESTER"
+            },
+            "item_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "kind",
+            "item_id",
+            "question"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CORRECTION_PENDING"
+            },
+            "item_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "correction_receipt": {
+              "anyOf": [
+                {
+                  "$ref": "action-types.schema.json#/$defs/ReceiptRef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "follow_up": {
+              "$ref": "#/$defs/FollowUpWorkBinding"
+            }
+          },
+          "required": [
+            "kind",
+            "item_id",
+            "correction_receipt",
+            "follow_up"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CORRECTED"
+            },
+            "item_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "correction_receipt": {
+              "$ref": "action-types.schema.json#/$defs/ReceiptRef"
+            },
+            "publication": {
+              "$ref": "action-types.schema.json#/$defs/PublicationRef"
+            }
+          },
+          "required": [
+            "kind",
+            "item_id",
+            "correction_receipt",
+            "publication"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "OUTSIDE_SUPPORTED_PROCESS"
+            },
+            "item_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "explanation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "follow_up": {
+              "$ref": "#/$defs/FollowUpWorkBinding"
+            }
+          },
+          "required": [
+            "kind",
+            "item_id",
+            "explanation",
+            "follow_up"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

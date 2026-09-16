@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_29_CASE_TEST_CANDIDATE",
+  "candidate": "/private/tmp/account_fence_projection_29_candidate.rs",
+  "sha256": "1ed93de41455db89225e0bc8fda02bcc4c6dcb8ca2e8fbd55f2e76555dea252f",
+  "historical_sql_sha256": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+  "cases": 29,
+  "preservation": "14reviewed tests remain; original verdict query now runs with documented SET LOCAL search_path=pg_catalog,pg_temp and same assertion. Relation snapshot additionally includes xmin;15new tests appended.",
+  "findings": [
+    "Prepared profile asserts exact two self-granted owner SELECT ACL entries only, all serving raw-read denials remain.",
+    "Both half profiles, owner UPDATE, grant option, wrong grantor and each other four table reads independently refused with specific errors and unchanged metadata.",
+    "Function/ACL mismatched collective states refused; duplicate owner function ACL cannot satisfy missing auth privilege via cardinality alone.",
+    "Real ALTER FUNCTION event trigger faults after CREATE and owner transfer; specific reached failure, all six selected relation metadata and function rollback, then same install succeeds after only fault removal.",
+    "Historical7af6SQL exactbytes used to establish original dormant profile, followed by real upgrade; no simulated transfer."
+  ],
+  "limits": [
+    "Source review only; no PostgreSQL/Cargo execution, deep assertions require actual prepared owner implementation.",
+    "Historical upgrade data check compares row counts in accounts/account_security; it is not full nonempty-row content immutability proof.",
+    "Catalog snapshot covers selected six relation metadata and projection pg_proc; not all database objects.",
+    "OwnerSELECT profile preparation is not auth-pool/HTTP activation or production exposure."
+  ]
+}

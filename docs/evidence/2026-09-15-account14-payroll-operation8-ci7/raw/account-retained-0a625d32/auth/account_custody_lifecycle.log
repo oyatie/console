@@ -1,0 +1,46 @@
+recovery-fixture run=console-recovery-12671-faac224d evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.WfhVQ8
+topology: PG primary plus exact synchronous standby; remote_apply enabled
+SELECT 28
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.49s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-22aed68b00ab94a9)
+
+running 22 tests
+test account_custody_lifecycle::another_database_crosses_0165_while_finalization_is_in_flight ... ok
+test account_custody_lifecycle::blocked_finalizer_times_out_without_partial_transfer_and_retries ... ok
+test account_custody_lifecycle::committed_finalization_survives_unobserved_cli_response_and_retry ... ok
+test account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state ... ok
+test account_custody_lifecycle::failure_after_actual_third_transfer_rolls_back_every_owner ... ok
+test account_custody_lifecycle::fresh_actual_migration_finalizes_empty_catalog_and_is_idempotent ... ok
+test account_custody_lifecycle::missing_relation_refuses ... ok
+test account_custody_lifecycle::mixed_owners_refuse ... ok
+test account_custody_lifecycle::nonempty_staging_refuses ... ok
+test account_custody_lifecycle::owner_membership_refuses_and_fixture_cleans_cluster_edge ... ok
+test account_custody_lifecycle::populated_225_upgrade_preserves_legacy_rows_and_checksums ... ok
+test account_custody_lifecycle::request_accounting_rejects_omission_duplicate_and_failure ... ok
+test account_custody_lifecycle::runtime_refusals_have_real_login_and_exact_table_controls ... ok
+test account_custody_lifecycle::snapshot_checker_detects_missing_null_duplicate_and_omitted_transfer ... ok
+test account_custody_lifecycle::unexpected_column_privilege_refuses ... ok
+test account_custody_lifecycle::unexpected_inheritance_refuses ... ok
+test account_custody_lifecycle::unexpected_rule_refuses ... ok
+test account_custody_lifecycle::unexpected_table_privilege_refuses ... ok
+test account_custody_lifecycle::unexpected_table_trigger_refuses ... ok
+test account_custody_lifecycle::unvalidated_tuple_fk_refuses ... ok
+test account_custody_lifecycle::wrong_column_shape_refuses ... ok
+test account_custody_lifecycle::wrong_owner_refuses ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 194 filtered out; finished in 76.71s
+
+recovery-fixture evidence=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-recovery.WfhVQ8 exit=0

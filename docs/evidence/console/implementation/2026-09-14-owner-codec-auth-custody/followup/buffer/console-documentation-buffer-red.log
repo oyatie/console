@@ -1,0 +1,52 @@
+✖ large Git index: generator preserves complete custody beyond 1 MiB (235.482875ms)
+✖ large Git index: checker preserves complete custody beyond 1 MiB (205.000042ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 483.507125
+
+✖ failing tests:
+
+test at scripts/check-doc-links.test.mjs:739:3
+✖ large Git index: generator preserves complete custody beyond 1 MiB (235.482875ms)
+  Error: Command failed: /Users/jasonlee/.local/share/fnm/node-versions/v26.7.0/installation/bin/node scripts/console/generate-documentation-manifest.mjs --check
+  spawnSync git ENOBUFS
+  
+      at genericNodeError (node:internal/errors:999:15)
+      at wrappedFn (node:internal/errors:544:14)
+      at ChildProcess.exithandler (node:child_process:417:12)
+      at ChildProcess.emit (node:events:514:20)
+      at maybeClose (node:internal/child_process:1125:16)
+      at Socket.<anonymous> (node:internal/child_process:497:11)
+      at Socket.emit (node:events:514:20)
+      at Pipe.<anonymous> (node:net:362:12) {
+    code: 1,
+    killed: false,
+    signal: null,
+    cmd: '/Users/jasonlee/.local/share/fnm/node-versions/v26.7.0/installation/bin/node scripts/console/generate-documentation-manifest.mjs --check',
+    stdout: '',
+    stderr: 'spawnSync git ENOBUFS\n'
+  }
+
+test at scripts/check-doc-links.test.mjs:739:3
+✖ large Git index: checker preserves complete custody beyond 1 MiB (205.000042ms)
+  Error: Command failed: /Users/jasonlee/.local/share/fnm/node-versions/v26.7.0/installation/bin/node /private/tmp/console-documentation-buffer-20260914/scripts/check-doc-links.mjs /var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/doc-links-index-pESJPe
+  docs/documentation-index.json: cannot establish exact Git index-tree custody
+  
+      at genericNodeError (node:internal/errors:999:15)
+      at wrappedFn (node:internal/errors:544:14)
+      at ChildProcess.exithandler (node:child_process:417:12)
+      at ChildProcess.emit (node:events:514:20)
+      at maybeClose (node:internal/child_process:1125:16)
+      at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
+    code: 1,
+    killed: false,
+    signal: null,
+    cmd: '/Users/jasonlee/.local/share/fnm/node-versions/v26.7.0/installation/bin/node /private/tmp/console-documentation-buffer-20260914/scripts/check-doc-links.mjs /var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/doc-links-index-pESJPe',
+    stdout: '',
+    stderr: 'docs/documentation-index.json: cannot establish exact Git index-tree custody\n'
+  }

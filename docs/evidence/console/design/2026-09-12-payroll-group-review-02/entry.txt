@@ -1,0 +1,15 @@
+Payroll/group independent design review and proposed resolutions
+Owner: /root, sole writer of this additive evidence packet.
+Source base: 05200e43af13b527ce031b04369e05852862f1d6
+Reviewed predecessor: 6eda7d7cecc982ef500206d836d23051da19f0b2
+Predecessor content record: 1dd9d0acdde2130cfc49afecaae9172d2b402b685d6a85985bb1e54e4b4b132f
+Scope: settle candidate design gaps; do not implement business code or executable product tests before exact design approval.
+Authority: proposal/evidence only. PRODUCT/ROADMAP patches remain unapplied; current DELIVERY remains binding. Approval of this packet alone does not apply that amendment or clear its checks.
+Mechanical guide: source-backed independent review, explicit disposition and counterexample, revised contract, independent re-review, hash/regular-blob verification and exact candidate commit.
+No implementation lane has been admitted. No production, legal, payment or Intelligence HOLD is cleared.
+Selected lenses: Systems Thinking, Essentialism, Red Team, Zero-trust, Operability, Blast-radius.
+Blast radius: additive local design evidence only. Preserve predecessor, research, interviews and unrelated untracked HR designs.
+Pre-mortem: attractive but permanently blocked input; stale sources approved; duplicate or cross-company effects; group user mistaken for independent human; tests rewarding a blocked positive path.
+Detection: independent source trace and counterexample review; future distinct positive/negative acceptance oracles, never artifact counts as product proof.
+Rollback: superseding evidence commit; no deletion of custody records. Future migrations need separate compatibility and recovery proof.
+Stop: do not request approval while blocking design decisions remain; do not manufacture consensus, executed test results or an approved test SHA.

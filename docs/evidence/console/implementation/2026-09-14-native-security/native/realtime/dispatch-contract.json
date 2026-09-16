@@ -1,0 +1,32 @@
+{
+  "owner": "/root/finish_browser",
+  "owned_worktree": "/private/tmp/console-native30-realtime-20260914",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "immutable_design_test_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "allowed_production_paths": [
+    "backend/crates/platform/realtime/src/lib.rs"
+  ],
+  "protected": "All tests, manifests, lockfiles, generated output, migration and authority records; exact FK patch excluded",
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-realtime --test hub same_account_",
+  "expected_red_executed": 2,
+  "expected_red_failed": 2,
+  "invariant": "Dispatch message and acknowledgement only to connections bound to event Company; preserve queue and positive delivery",
+  "guide": "Trace actual shared callers; repair existing owner without introducing new contracts; preserve test bytes; require same-probe GREEN plus nearest regressions and independent peer review",
+  "pre_mortem": "A sibling path still violates invariant or positive control is suppressed; test pair and shared-caller review must detect both",
+  "blast_radius": [
+    "backend/crates/platform/realtime/src/lib.rs"
+  ],
+  "detection": "Classified real RED, exact GREEN counts, frozen test byte comparison, independent review",
+  "rollback": "Scoped source revert; no data effects",
+  "stop_conditions": [
+    "New public interface/design required",
+    "Unclassified prerequisite or unexpected effect",
+    "Out-of-scope source change"
+  ],
+  "authority": "../dispatch-authority.json",
+  "remaining_holds": [
+    "Exact ephemeral FK patch approval",
+    "All dependent owners and full slice acceptance",
+    "Hosted merge/release/production/payment/legal authority"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "reviewer": "/root/finish_browser",
+  "candidate_sha": "363f85fb8cbba6fd05bf9847ae8bf0f4a7567172",
+  "candidate_tree": "86de40aa613583ae0d35febaa12abdbc1bacce39",
+  "clean_before_and_after": true,
+  "scope": "Independent consolidated integration/authority/handoff review; author-owned BrowserR4 and MapR3 source semantics rely on other independent reviewer receipts, not self-approval",
+  "verdict": "HOLD_FOR_AUTHORITY_WORDING_CORRECTION",
+  "findings": [
+    {
+      "id": "INT-NDJSON-AUTHORITY",
+      "severity": "P2",
+      "path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/implementation-handoff.txt",
+      "section": "Material amendments proposed item6",
+      "finding": "Approved NDJSON MIME wording conflicts with explicit PROPOSED_INTERFACE_AMENDMENT_NOT_ADOPTED_SCHEMA in native-assertions-s2/mime-contract-delta.json",
+      "correction": "Distinguish approved NDJSON stream grammar from proposed UploadRequest MIME enum extension requiring consolidated approval"
+    }
+  ],
+  "checks": [
+    {
+      "command": "python3 -B docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/verify-custody.py",
+      "result": "PASS36packets1160members0runtime"
+    },
+    {
+      "command": "python3 -B docs/evidence/console/preparation/2026-09-13-production-tdd/completion/module-placement-r3/check.py --root /private/tmp/console-production-tdd-preparation-20260913",
+      "result": "PASS1exact-regeneration+10hostilecontrols"
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+      "discovered": 20,
+      "executed": 20,
+      "passed": 16,
+      "failed": 4,
+      "filtered": 0,
+      "exit_code": 101,
+      "classification": "MEANINGFUL_HTTP_FORMATTER_BODY_EQUALITY_RED",
+      "failure_names": [
+        "branch_resolution_failure_does_not_echo_private_diagnostic",
+        "forbidden_access_scope_failure_does_not_echo_private_diagnostic",
+        "policy_resolution_failure_does_not_echo_private_diagnostic",
+        "internal_access_scope_failure_does_not_echo_private_diagnostic"
+      ]
+    },
+    {
+      "command": "NODE_PATH=/private/tmp/console-preparation-browser/node_modules PLAYWRIGHT_BROWSERS_PATH=/private/tmp/console-preparation-browsers fnm exec --using=24.16.0 /private/tmp/console-preparation-browser/node_modules/.bin/playwright test --config docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/playwright.config.cjs --list",
+      "exit_code": 0,
+      "discovered": 25,
+      "application_discovered": 15,
+      "oracle_discovered": 10,
+      "application_executed": 0
+    }
+  ],
+  "integration_evidence": [
+    "Exact14original mapper member bytes preserved and root consolidated/module-placement.json byte-identical",
+    "BrowserR4 retained15helperPASS and10ChromiumoraclePASS evidence consistent;15application0executed preserved",
+    "55unique registrations51Company+4Group,source_only=true,runtime_count=0; no duplicatedCompanyDraft guarantees for Group controls",
+    "Firstlane limits formatter owner and preserves tests; approval/admit/run required; no schema failure used as auth/UI admission",
+    "One root writer, unchanged main-worktree custody constraints, separate production/payment/legal and ephemeralFK trusted approval retained"
+  ],
+  "not_claimed": [
+    "New browser/ontology owner execution",
+    "Self-approval of author-owned source semantics",
+    "Production exposure certification",
+    "Lane admission before user approval"
+  ]
+}

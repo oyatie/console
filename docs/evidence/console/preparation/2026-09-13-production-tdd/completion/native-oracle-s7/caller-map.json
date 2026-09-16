@@ -1,0 +1,20 @@
+{
+  "source-owner-tests.rs": [
+    "malformed predecessor with same-actor valid propose",
+    "same alias successful independent proposal verification then original Human refusal",
+    "stale verify with same-actor subsequent current verification",
+    "stale revoke with same-actor subsequent current revocation"
+  ],
+  "native-owner-tests.rs": [
+    "seven mutated expectations then same-actor actual current control calculate"
+  ],
+  "native-lifecycle-tests.rs": [
+    "unchanged S2 nullable review-open already actual good control",
+    "unchanged S2 withdrawal only proves actor pair refusal/success"
+  ],
+  "reason_callers": [
+    "source-owner-producer.rs three revocation helpers",
+    "source-owner-tests.rs stale revocation and successful revocation",
+    "source-owner-tests.rs two distinct concurrent revoke commands"
+  ]
+}

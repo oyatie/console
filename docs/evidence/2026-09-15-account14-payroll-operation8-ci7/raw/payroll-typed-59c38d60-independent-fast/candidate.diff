@@ -1,0 +1,457 @@
+diff --git a/backend/crates/ontology/canonical-domain/src/lib.rs b/backend/crates/ontology/canonical-domain/src/lib.rs
+index cf5228bd32e503c4fdd588d19e529810df9c69f8..c874b3a71f7ce7e0d1e3530d60541530278932ea 100644
+--- a/backend/crates/ontology/canonical-domain/src/lib.rs
++++ b/backend/crates/ontology/canonical-domain/src/lib.rs
+@@ -582,6 +582,12 @@ pub trait CanonicalQuery {
+ /// must preserve the real distinction: conflict → 409, validation → 422,
+ /// database / unreadable receipt → 500.
+ pub trait CanonicalPortError: std::fmt::Display + Send {
++    /// The owner could not confirm completion. False does not prove rollback.
++    /// Preserve this classification before converting to the kernel taxonomy.
++    fn is_completion_unknown(&self) -> bool {
++        false
++    }
++
+     /// Consume the port error into a [`KernelError`].
+     fn into_kernel_error(self) -> KernelError;
+ }
+diff --git a/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml b/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml
+index 0ecd5713c3d272fa057961cd25e6c698e110241b..21ccbfd9753ec43b60f45162d6c0d6073e249643 100644
+--- a/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml
++++ b/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml
+@@ -1,7 +1,20 @@
+ operationId: executeOntologyAction
+ summary: Execute an object action (single mutation path)
+-description: Re-evaluates the §16 gate chain inside the writeback transaction (TOCTOU-safe), then dispatches an instance-revision
+-  (append fixity-chained revision) or a projected use-case. Humans and automation use this same path.
++description: >-
++  Re-evaluates the gate chain and dispatches an instance revision or a projected
++  use-case. Humans and automation use this same path. Instance revisions and
++  their audit records share a transaction. Projected owners commit their effect
++  and immutable command receipt before the separate canonical success audit;
++  an audit failure can therefore return 500 after a confirmed owner effect.
++  Completion uncertainty returns 503 with error.code completion_unknown when
++  the owner can report it. A request timeout (408), disconnect, or lost response
++  can also leave completion uncertain without this JSON response. These outcomes
++  do not prove rollback, and receipt absence alone does not prove no effect.
++  After service recovery, retry with the original command_id, actor, target,
++  and unchanged business input under current authorization. If a required
++  approval was consumed, obtain a new approval for the same action and target
++  and update only four_eyes_request_ref. Replaying a confirmed receipt also
++  repairs a missing canonical success audit without repeating the owner effect.
+ tags:
+ - Ontology
+ security:
+@@ -20,7 +33,7 @@ requestBody:
+         $ref: '#/components/schemas/OntologyActionRequest'
+ responses:
+   '200':
+-    description: Action executed; the mutation and its audit row committed atomically.
++    description: Action execution and its success audit completed; projected owner effects and their canonical success audit use separate transactions.
+     content:
+       application/json:
+         schema:
+@@ -48,4 +61,17 @@ responses:
+         schema:
+           $ref: '#/components/schemas/ErrorBody'
+   '503':
+-    $ref: '#/components/responses/ServiceUnavailable'
++    description: >-
++      Service unavailable, or the projected owner could not confirm completion.
++      The completion_unknown code requires same-command reconciliation after
++      recovery; it does not assert success, cancellation, or rollback.
++    content:
++      application/json:
++        schema:
++          $ref: '#/components/schemas/ErrorBody'
++        examples:
++          completionUnknown:
++            value:
++              error:
++                code: completion_unknown
++                message: Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.
+diff --git a/backend/crates/ontology/rest/src/lib.rs b/backend/crates/ontology/rest/src/lib.rs
+index 56f06f61e439e2e32bd953c99f5bec08ecce7d9f..bd3f528ac9d05fa2b0ee244e71329b78d8837d35 100644
+--- a/backend/crates/ontology/rest/src/lib.rs
++++ b/backend/crates/ontology/rest/src/lib.rs
+@@ -508,7 +508,13 @@ where
+                         target.as_str()
+                     )))
+                 })?
+-                .map_err(|error| ActionError::domain(error.into_kernel_error()))?;
++                .map_err(|error| {
++                    if error.is_completion_unknown() {
++                        ActionError::CompletionUnknown
++                    } else {
++                        ActionError::domain(error.into_kernel_error())
++                    }
++                })?;
+ 
+             Ok(serde_json::json!({
+                 "owner": receipt.owner().as_str(),
+@@ -1622,6 +1628,8 @@ pub enum ActionError {
+     /// A `projected_usecase` action whose `dispatch_target` has no registered
+     /// domain handler (unwired or misconfigured). Fail-closed: no table write.
+     NotWiredYet { target: Option<String> },
++    /// The owner could not confirm completion; replay the same command identity.
++    CompletionUnknown,
+     /// A store / DB / context error.
+     Store(PgOntologyError),
+ }
+@@ -3145,6 +3153,12 @@ impl RestError {
+                 current: None,
+             },
+             ActionError::NotWiredYet { target } => Self::not_wired_yet(target.as_deref()),
++            ActionError::CompletionUnknown => Self {
++                status: StatusCode::SERVICE_UNAVAILABLE,
++                code: "completion_unknown",
++                message: "Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.".to_owned(),
++                current: None,
++            },
+             ActionError::Store(error) => Self::from_ontology(error),
+         }
+     }
+diff --git a/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs b/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs
+index 3786b3dfc7ef9cb0e1ca8a1464c25d4a4a4cfcd5..1e355b4e5b36476a4e8f91b3008e4c990a6a233b 100644
+--- a/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs
++++ b/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs
+@@ -584,10 +584,79 @@ async fn diagnostic_unknown_prefix_does_not_classify_an_operation_error() {
+         .await
+         .expect_err("ordinary operation fails");
+     let response = super::RestError::from_action(error);
+-    assert_eq!(response.status, axum::http::StatusCode::INTERNAL_SERVER_ERROR);
++    assert_eq!(
++        response.status,
++        axum::http::StatusCode::INTERNAL_SERVER_ERROR
++    );
+     assert_eq!(response.code, "internal");
+     assert_eq!(
+         response.message,
+         "database durability UNKNOWN: ordinary operation control"
+     );
+ }
++
++// Future-interface supplement. Not part of executable baseline admission.
++#[derive(Debug)]
++struct TypedUnknownControl(&'static str);
++impl std::fmt::Display for TypedUnknownControl {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        f.write_str(self.0)
++    }
++}
++impl CanonicalPortError for TypedUnknownControl {
++    fn is_completion_unknown(&self) -> bool {
++        true
++    }
++    fn into_kernel_error(self) -> KernelError {
++        KernelError::internal(self.to_string())
++    }
++}
++struct TypedUnknownControlPort(&'static str);
++impl CanonicalPort for TypedUnknownControlPort {
++    type Object = Company;
++    type Query = EchoQuery;
++    type Command = (OrgId, CommandId, UserId, DispatchTarget);
++    type Error = TypedUnknownControl;
++    fn preflight(_query: &Self::Query) -> Preflight {
++        Preflight::ok()
++    }
++    fn command(
++        org_id: OrgId,
++        command_id: CommandId,
++        actor_id: UserId,
++        query: Self::Query,
++        _action_key: &str,
++        _object_type_id: Uuid,
++    ) -> Self::Command {
++        (org_id, command_id, actor_id, query.dispatch_target())
++    }
++    fn execute(&self, _command: &Self::Command) -> Result<CanonicalReceipt, Self::Error> {
++        Err(TypedUnknownControl(self.0))
++    }
++}
++#[tokio::test]
++async fn typed_completion_unknown_ignores_changing_private_display() {
++    for diagnostic in [
++        "opaque internal witness one",
++        "unrelated changed diagnostic two",
++    ] {
++        let registry =
++            ProjectedDispatchRegistry::new().register_port(TypedUnknownControlPort(diagnostic));
++        let error = registry
++            .dispatch(input(
++                "company.revise",
++                json!({"attributes": {}}),
++                Some(Uuid::nil()),
++            ))
++            .await
++            .expect_err("typed unknown");
++        let response = super::RestError::from_action(error);
++        assert_eq!(response.status, axum::http::StatusCode::SERVICE_UNAVAILABLE);
++        assert_eq!(response.code, "completion_unknown");
++        assert_eq!(
++            response.message,
++            "Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target."
++        );
++        assert!(!response.message.contains(diagnostic));
++    }
++}
+diff --git a/backend/crates/payroll/adapter-postgres/src/pay_run.rs b/backend/crates/payroll/adapter-postgres/src/pay_run.rs
+index b54edb2b9982af7fce0c9532a39569cea953bd3e..20bf09da0c7c164c36dbd984b6e2ff1b047d4b09 100644
+--- a/backend/crates/payroll/adapter-postgres/src/pay_run.rs
++++ b/backend/crates/payroll/adapter-postgres/src/pay_run.rs
+@@ -111,7 +111,9 @@ use console_ontology_canonical_domain::{
+ use console_platform_db::durability::{
+     CompletionError, DurabilityPolicy, DurabilityUnknown, with_durability_transaction,
+ };
+-use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
++use console_workflow_domain::{
++    PayrollDraftStaging, PayrollStageError, PayrollStageFuture, StagePayrollDraft,
++};
+ use serde::Deserialize;
+ use sha2::{Digest, Sha256};
+ use sqlx::{PgPool, Postgres, Row, Transaction};
+@@ -509,6 +511,10 @@ pub enum PayRunError {
+ }
+ 
+ impl CanonicalPortError for PayRunError {
++    fn is_completion_unknown(&self) -> bool {
++        matches!(self, Self::DurabilityUnknown(_))
++    }
++
+     fn into_kernel_error(self) -> KernelError {
+         match self {
+             Self::Blocked(_) => KernelError::validation(self.to_string()),
+@@ -818,7 +824,7 @@ impl CanonicalPort for PgPayRunPort {
+ /// draft, armed for the tenant, idempotent on the natural key — which is what
+ /// lets the drain stage before it acks and still be exactly-once.
+ impl PayrollDraftStaging for PgPayRunPort {
+-    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool> {
++    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PayrollStageFuture<'a> {
+         Box::pin(async move {
+             let org = draft.org;
+             with_durability_transaction(
+@@ -839,10 +845,10 @@ impl PayrollDraftStaging for PgPayRunPort {
+             )
+             .await
+             .map_err(|error| match error {
+-                CompletionError::Operation(error) => {
+-                    KernelError::from(crate::PgPayrollError::from(error))
+-                }
+-                CompletionError::Unknown(error) => KernelError::internal(error.to_string()),
++                CompletionError::Operation(error) => PayrollStageError::Operation(
++                    KernelError::from(crate::PgPayrollError::from(error)),
++                ),
++                CompletionError::Unknown(_) => PayrollStageError::CompletionUnknown,
+             })
+         })
+     }
+diff --git a/backend/crates/payroll/adapter-postgres/tests/recovery.rs b/backend/crates/payroll/adapter-postgres/tests/recovery.rs
+index b4b2026c64661e30ac88cb9963cb689cddad488a..1fa369d8bd8d7d35cc549fc9222554ec72d801d0 100644
+--- a/backend/crates/payroll/adapter-postgres/tests/recovery.rs
++++ b/backend/crates/payroll/adapter-postgres/tests/recovery.rs
+@@ -1268,9 +1268,11 @@ async fn assert_fresh_capacity_retained(
+             .await
+             .expect("FRESH_SYNCREP_ATTEMPT_DEADLINE: queued owner must honor its own policy budget")
+             .unwrap_err();
+-        assert_eq!(error.kind, console_kernel_core::ErrorKind::Internal);
+         assert!(
+-            error.message.starts_with("database durability UNKNOWN:"),
++            matches!(
++                error,
++                console_workflow_domain::PayrollStageError::CompletionUnknown
++            ),
+             "FRESH_SYNCREP_ATTEMPT_UNKNOWN: queued stage cannot claim success or known rollback: {error}"
+         );
+         assert_exact_fresh_waiter(owner, backend).await;
+@@ -1510,10 +1512,12 @@ async fn fresh_stage_transport_error_closes_pool_before_reconciliation(owner: Pg
+         .expect("FRESH_SYNCREP_TRANSPORT: owner did not report the terminated COMMIT transport")
+         .unwrap()
+         .unwrap_err();
+-    assert_eq!(error.kind, console_kernel_core::ErrorKind::Internal);
+     assert!(
+-        error.message.starts_with("database durability UNKNOWN:"),
+-        "FRESH_SYNCREP_UNKNOWN: stage must retain the existing UNKNOWN error boundary: {error}"
++        matches!(
++            error,
++            console_workflow_domain::PayrollStageError::CompletionUnknown
++        ),
++        "FRESH_SYNCREP_UNKNOWN: stage must retain the typed UNKNOWN error boundary: {error}"
+     );
+     // Request capacity immediately after UNKNOWN, while owned async cleanup
+     // may still be running. A new physical connection is a failure, even if
+diff --git a/backend/crates/workflow/adapter-postgres/src/lib.rs b/backend/crates/workflow/adapter-postgres/src/lib.rs
+index 8de02d08b143ed387e4f7737e2b3066dd4084519..dbaf6d206e03d9d98293cb2c0255bb5f38aa9c3a 100644
+--- a/backend/crates/workflow/adapter-postgres/src/lib.rs
++++ b/backend/crates/workflow/adapter-postgres/src/lib.rs
+@@ -17,7 +17,7 @@ use console_notifications_domain::NotificationLink;
+ use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
+ use console_workflow_domain::{
+     FinalizeWaitingTaskCommand, FinalizeWaitingTaskContext, FinalizedWaitingTask, NewRun,
+-    NodeStepCommit, PayrollDraftStaging, PortFuture, PostFinalizationRejection,
++    NodeStepCommit, PayrollDraftStaging, PayrollStageError, PortFuture, PostFinalizationRejection,
+     PostFinalizationRejectionCommand, RunRecord, RunStatus, RunTerminalTimestamp, RunTransition,
+     StagePayrollDraft, WaitingTaskStatus, WorkflowRuntimePort,
+ };
+@@ -884,14 +884,24 @@ impl PgWorkflowRuntimeStore {
+                     created += drafts_created;
+                     staged.push((event_id, run_id, drafts_created));
+                 }
+-                Err(err) => {
+-                    // Leave the event PENDING. The next tick re-claims it and the
+-                    // restage is a no-op if a partial write did land.
++                Err(PayrollStageError::CompletionUnknown) => {
++                    // Neither uncertainty nor refusal changes the retryable
++                    // event's status, attempt count, delivery, or audit history.
+                     tracing::warn!(
++                        outcome = "unknown",
+                         %event_id,
++                        %run_id,
++                        %source_label,
++                        "payroll staging completion is unknown; event stays retryable"
++                    );
++                }
++                Err(PayrollStageError::Operation(err)) => {
++                    tracing::warn!(
++                        %event_id,
++                        %run_id,
+                         %source_label,
+                         error = %err,
+-                        "payroll draft staging failed; event stays pending"
++                        "payroll draft staging failed; event stays retryable"
+                     );
+                 }
+             }
+diff --git a/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs b/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs
+index 83c48fdbf0a159cece950236b1c05114af557f94..067cd504c5bdbe9979d8ed79084ffdb20400f147 100644
+--- a/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs
++++ b/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs
+@@ -16,7 +16,7 @@ use console_kernel_core::{KernelError, OrgId};
+ // prove the drain calls something.
+ use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
+ use console_platform_request_context::scope_org;
+-use console_workflow_domain::{PayrollDraftStaging, PortFuture, StagePayrollDraft};
++use console_workflow_domain::{PayrollDraftStaging, PayrollStageFuture, StagePayrollDraft};
+ use console_workflow_runtime_adapter_postgres::PgWorkflowRuntimeStore;
+ use sqlx::PgPool;
+ use sqlx::postgres::PgPoolOptions;
+@@ -212,7 +212,7 @@ struct LockAfterGate {
+ }
+ 
+ impl PayrollDraftStaging for LockAfterGate {
+-    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool> {
++    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PayrollStageFuture<'a> {
+         Box::pin(async move {
+             sqlx::query(
+                 "INSERT INTO period_locks (org_id, domain, period_start, period_end, reason) \
+diff --git a/backend/crates/workflow/domain/src/lib.rs b/backend/crates/workflow/domain/src/lib.rs
+index 91851416714106e4d0bece113baa2627f2b65ae6..c8cbea46c85de26a1838c20f2cea215c606600ae 100644
+--- a/backend/crates/workflow/domain/src/lib.rs
++++ b/backend/crates/workflow/domain/src/lib.rs
+@@ -582,9 +582,46 @@ pub trait PayrollDraftStaging: Send + Sync {
+     /// Stages one draft. `true` when this call created it, `false` when the
+     /// natural key already held an identical-provenance row; an error when the
+     /// natural key held a DIFFERENT provenance (refused, never absorbed).
+-    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PortFuture<'a, bool>;
++    fn stage<'a>(&'a self, draft: StagePayrollDraft) -> PayrollStageFuture<'a>;
+ }
+ 
++/// A staging refusal or an unconfirmed completion, without adapter dependencies.
++#[derive(Debug)]
++pub enum PayrollStageError {
++    /// Preserve the owning operation's existing error classification.
++    Operation(KernelError),
++    /// Completion is unknown. Keep the same event for idempotent reconciliation.
++    CompletionUnknown,
++}
++
++impl std::fmt::Display for PayrollStageError {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        match self {
++            Self::Operation(error) => std::fmt::Display::fmt(error, f),
++            Self::CompletionUnknown => f.write_str("payroll staging completion is unknown"),
++        }
++    }
++}
++
++impl std::error::Error for PayrollStageError {
++    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
++        match self {
++            Self::Operation(error) => Some(error),
++            Self::CompletionUnknown => None,
++        }
++    }
++}
++
++impl From<KernelError> for PayrollStageError {
++    fn from(error: KernelError) -> Self {
++        Self::Operation(error)
++    }
++}
++
++/// The payroll staging port preserves uncertainty separately from refusal.
++pub type PayrollStageFuture<'a> =
++    Pin<Box<dyn Future<Output = Result<bool, PayrollStageError>> + Send + 'a>>;
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+diff --git a/backend/openapi/openapi.yaml b/backend/openapi/openapi.yaml
+index 83420fccb3f14c501a0199a1fb7adda08af26041..a8a7ecee91d61b2f8dc5eb3e91e107069e41e552 100644
+--- a/backend/openapi/openapi.yaml
++++ b/backend/openapi/openapi.yaml
+@@ -10430,8 +10430,21 @@ paths:
+     post:
+       operationId: executeOntologyAction
+       summary: Execute an object action (single mutation path)
+-      description: Re-evaluates the §16 gate chain inside the writeback transaction (TOCTOU-safe), then dispatches an instance-revision
+-        (append fixity-chained revision) or a projected use-case. Humans and automation use this same path.
++      description: >-
++        Re-evaluates the gate chain and dispatches an instance revision or a projected
++        use-case. Humans and automation use this same path. Instance revisions and
++        their audit records share a transaction. Projected owners commit their effect
++        and immutable command receipt before the separate canonical success audit;
++        an audit failure can therefore return 500 after a confirmed owner effect.
++        Completion uncertainty returns 503 with error.code completion_unknown when
++        the owner can report it. A request timeout (408), disconnect, or lost response
++        can also leave completion uncertain without this JSON response. These outcomes
++        do not prove rollback, and receipt absence alone does not prove no effect.
++        After service recovery, retry with the original command_id, actor, target,
++        and unchanged business input under current authorization. If a required
++        approval was consumed, obtain a new approval for the same action and target
++        and update only four_eyes_request_ref. Replaying a confirmed receipt also
++        repairs a missing canonical success audit without repeating the owner effect.
+       tags:
+       - Ontology
+       security:
+@@ -10450,7 +10463,7 @@ paths:
+               $ref: '#/components/schemas/OntologyActionRequest'
+       responses:
+         '200':
+-          description: Action executed; the mutation and its audit row committed atomically.
++          description: Action execution and its success audit completed; projected owner effects and their canonical success audit use separate transactions.
+           content:
+             application/json:
+               schema:
+@@ -10478,7 +10491,20 @@ paths:
+               schema:
+                 $ref: '#/components/schemas/ErrorBody'
+         '503':
+-          $ref: '#/components/responses/ServiceUnavailable'
++          description: >-
++            Service unavailable, or the projected owner could not confirm completion.
++            The completion_unknown code requires same-command reconciliation after
++            recovery; it does not assert success, cancellation, or rollback.
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/ErrorBody'
++              examples:
++                completionUnknown:
++                  value:
++                    error:
++                      code: completion_unknown
++                      message: Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.
+   /api/v1/ontology/actions/{action_key}/preflight:
+     post:
+       operationId: preflightOntologyAction

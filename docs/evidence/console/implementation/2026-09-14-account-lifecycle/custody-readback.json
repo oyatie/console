@@ -1,0 +1,15 @@
+{
+  "integration_base": "b6f81a7bf155eaf7289ce26811cfb2a2d52ce0ea",
+  "main_head": "05200e43af13b527ce031b04369e05852862f1d6",
+  "main_staged_diff_sha256": "2a4a15c33cb1db7f512654f42c26d494843c6a45e997740594de43601d6d69c3",
+  "main_touched_by_this_stage": false,
+  "account_worktree": "/private/tmp/console-native30-account-catalog-20260914",
+  "account_base": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "account_draft_changed_by_this_stage": false,
+  "draft_hashes": {
+    "ops/postgres-reconcile-topology.sh": "4b2a354bfa97a7ea732b47719138b0adff68fc61da0bb18e913a0d3c9794a953",
+    "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql": "6e10412d1cd92274c171ffb181794d08b3f59385c95606221386c218e60b177a"
+  },
+  "unapplied_four_membership_test_patch": "Retained historical proposal; superseded recommendation, not applied",
+  "fk_approval": "Applied and committed cca76fee; no additionalschema change in thatcommit"
+}

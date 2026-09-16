@@ -1,0 +1,120 @@
+{
+  "status": "PROPOSED_INPUT_BINDINGS_NOT_GENERATED_OPENAPI",
+  "envelope": "CCF1 Company actions14/15; Group controls use separately registered group-control namespace/target, never Company UUID substitution. Account navigation GET is authenticated read, not effect. Numeric revisions/units decimal strings; all refs exact typed Company/Group/Account ownership. No raw client actor, role, allowed flag or unregistered action.",
+  "actions": [
+    {
+      "action": "work.transfer.preview",
+      "target": "WorkflowTaskSet",
+      "input": "task_refs[1..20], expected_epochs, nominee_or_routing_ref, responsibility_intent, interval, reason_ref?, context_refs",
+      "outcome": "read-only; complete required data surfaced"
+    },
+    {
+      "action": "work.transfer.submit",
+      "target": "WorkflowTransferPlanCreate",
+      "input": "common_draft_revision, expected_source_refs",
+      "outcome": "policy derives requested or directly active plan; no reason branch"
+    },
+    {
+      "action": "work.transfer.execute",
+      "target": "WorkflowTransferPlanTask",
+      "input": "plan_id,control_epoch,task_id,expected_assignment_epoch",
+      "outcome": "one task transition and receipt; same manual/automatic owner"
+    },
+    {
+      "action": "work.transfer.stop",
+      "target": "WorkflowTransferPlan",
+      "input": "expected_control_epoch,reason/evidence",
+      "outcome": "stop remaining; prior effects remain"
+    },
+    {
+      "action": "work.configuration.publish",
+      "target": "RegisteredWorkflowConfiguration",
+      "input": "common_draft_revision,expected_head,exact optional gate",
+      "outcome": "typed owner validation/policy; no generic editable bypass"
+    },
+    {
+      "action": "group.operation.create",
+      "target": "GroupOperationCreate",
+      "input": "creation_command_id,exact <=6 selected slots,registered owner action",
+      "outcome": "PREPARING; immutable selected scope"
+    },
+    {
+      "action": "group.operation.activate",
+      "target": "GroupOperation",
+      "input": "expected_epoch,manifest_digest,explicit current session intent",
+      "outcome": "only all slots prepared"
+    },
+    {
+      "action": "group.operation.resume",
+      "target": "GroupOperation",
+      "input": "expected_dispatch_epoch,same original Account fresh session proof",
+      "outcome": "explicit reauthorization unchanged unexecuted binding"
+    },
+    {
+      "action": "group.operation.stop",
+      "target": "GroupOperation",
+      "input": "expected_control_epoch,reason/evidence",
+      "outcome": "parent fence only; cleanup separately"
+    },
+    {
+      "action": "review.submit",
+      "target": "RegisteredOwnerReviewBasis",
+      "input": "exact immutable basis/evidence contract,attestation",
+      "outcome": "owner creates common request; no hidden submitter input"
+    },
+    {
+      "action": "review.decide",
+      "target": "RegisteredOwnerReviewRequest",
+      "input": "exact request/basis digest,APPROVE|REJECT,reason,optional execution_gate_ref",
+      "outcome": "owner-domain + common decision/completion atomic"
+    },
+    {
+      "action": "review.withdraw",
+      "target": "RegisteredOwnerReviewRequest",
+      "input": "expected control/basis,reason/evidence",
+      "outcome": "no undo of prior effects; owning coordinator"
+    },
+    {
+      "action": "payroll.review.release",
+      "target": "PayrollApprovedSource",
+      "input": "exact common draft target manifest,projection_ref,expected_completion",
+      "outcome": "explicit own-review release only"
+    },
+    {
+      "action": "payroll.review.replace_projection",
+      "target": "PayrollPublication",
+      "input": "expected current slot,exact unchanged source,new governed projection,reason",
+      "outcome": "one successor, no wage/recipient change"
+    },
+    {
+      "action": "payroll.review.request",
+      "target": "PayrollOwnSubject",
+      "input": "common submitted draft exact publication or Employment/period,issue refs",
+      "outcome": "durable case even no handler"
+    },
+    {
+      "action": "payroll.review.respond",
+      "target": "PayrollReviewRequest",
+      "input": "expected issue/content/task epochs,per-item responses,linked publication refs",
+      "outcome": "resolution criterion enforced before task completion"
+    }
+  ],
+  "navigation": {
+    "method": "GET",
+    "route": "/api/v2/accounts/me/contexts",
+    "input": "page_size1..100 default25; opaque cursor optional; no actor/group list in body",
+    "result": "authorized contexts[{kind,context_ref,permitted label,entry_ref}], optional opaque next_cursor; no hidden count; zero contexts still Account settings",
+    "errors": "401 current auth invalid;409 stale_cursor;503 navigation_unavailable; undiscoverable known target404; no distinction about hidden candidates"
+  },
+  "limits": {
+    "transfer_tasks": 20,
+    "transfer_units": 100,
+    "group_targets": 6,
+    "routing_candidate_accounts": 2000,
+    "review_batch": 100,
+    "publication_subjects": 2000,
+    "navigation_groups": 32,
+    "navigation_companies": 256
+  },
+  "remaining": "This maps owner input responsibility; complete generated serializers and applied source-schema registration remain b05/tests after exact design approval. Previous NP1 command codecs unchanged."
+}

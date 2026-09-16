@@ -1,0 +1,22 @@
+{
+  "classification": "evidence",
+  "status": "USER_BOUNDED_TEST_SHA_APPROVED_BY_CONTEXTUAL_ASSENT",
+  "approved_test_sha": "2b1a7d3494e6545fa5ee63597a3e285143435505",
+  "packet_sha": "3457cda7bf9452cb2fcfcc1eea826e1347a81b13",
+  "user_message": {
+    "timestamp": "2026-09-13T21:15:20.889Z",
+    "role": "user",
+    "text": "다음"
+  },
+  "preceding_approval_request": {
+    "timestamp": "2026-09-13T21:10:46.604Z",
+    "role": "assistant",
+    "text": "Account 브라우저 테스트 후보의 독립 검토와 증거 정리를 완료했습니다.\n\n- 추가 14개, 기존 포함 **44개 실행: 24개 통과·20개 실패**, 제외 없음.\n- 새 테스트 9개는 미구현 약관 스키마에서 중단되어 후속 검증은 미실행입니다.\n- 보안·운영·사용자 흐름 검토 모두 동의했습니다.\n- 기존 빌드 생성 오류 12개는 별도 미해결 사항으로 유지했습니다.\n- 인터뷰 48차까지 기록하고 무결성을 확인했습니다.\n\n[승인 자료](/Users/jasonlee/Developer/console/docs/evidence/console/tests/2026-09-13-account-browser-04/approval-request.txt)의 **한정된 테스트 후보 SHA** `2b1a7d3494e6545fa5ee63597a3e285143435505`를 승인하시겠습니까?\n\n[DELIVERY.md:26](/Users/jasonlee/Developer/console/docs/current/DELIVERY.md:26)이 독립 검토 후 테스트 SHA 승인을 요구합니다. 기존 설계 승인은 유지되며, 이번 승인은 전체 Account 검증 완료나 구현 착수 승인을 뜻하지 않습니다."
+  },
+  "binding": "다음 immediately follows the exact bounded test-SHA approval request; recorded as contextual assent, not literal 승인. Only initial14-test scope approved; no full Account or implementation admission.",
+  "source_file": "rollout-2026-09-11T16-59-27-01a09244-a53e-7c83-b38a-73150cfa02dd.jsonl",
+  "source_prefix_bytes": 141072949,
+  "source_prefix_sha256": "d611153964101690437178ec5b1f9593ba2cd9bc5ec1d024aff5a424e1b7fac4",
+  "implementation_admitted": false,
+  "production_authorized": false
+}

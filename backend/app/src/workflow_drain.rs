@@ -64,7 +64,10 @@ impl WorkflowDrainHandle {
 /// Spawn the workflow payroll outbox drainer on the app pool. The loop runs until
 /// the returned handle is shut down.
 #[must_use]
-pub fn spawn(pool: sqlx::PgPool) -> WorkflowDrainHandle {
+pub fn spawn(
+    pool: sqlx::PgPool,
+    durability: console_platform_db::durability::DurabilityPolicy,
+) -> WorkflowDrainHandle {
     let (shutdown_tx, mut shutdown_rx) = watch::channel(false);
     let store = PgWorkflowRuntimeStore::new(pool.clone());
     // The compensation NOTIFICATION outbox drains into real notification rows
@@ -77,7 +80,8 @@ pub fn spawn(pool: sqlx::PgPool) -> WorkflowDrainHandle {
     // may not depend on it (adapter → adapter is a layer-boundary violation), so
     // the owner is injected here as `console_workflow_domain::PayrollDraftStaging`
     // — exactly how `notification_sink` above crosses the same boundary.
-    let payroll_staging = PgPayRunPort::new(pool.clone(), tokio::runtime::Handle::current());
+    let payroll_staging =
+        PgPayRunPort::new(pool.clone(), tokio::runtime::Handle::current(), durability);
 
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(Duration::from_secs(DEFAULT_TICK_SECS));

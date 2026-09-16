@@ -1,0 +1,100 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVE bounded historical evidence byte and source-custody retention",
+  "candidate": "/private/tmp/console-followup-evidence-candidate",
+  "retention_sha256": "18a1791a9527b8f76e488c5ca889f4bdeebead0a7c9eaae0b0338538b452bf62",
+  "records_verified": 166,
+  "filesystem_sources": 162,
+  "git_sources": 4,
+  "payload_bytes": 1840846,
+  "no_unindexed_payloads": true,
+  "runs": [
+    {
+      "run": "account-custody36",
+      "head": "96537febf2e17467449abc5c7701ed48372cc98e",
+      "clean_unchanged": true,
+      "git_source_hashes_verified": 19,
+      "artifact_hashes_verified": 13,
+      "retained_driver": "receipts/account-custody-regression-driver.sh",
+      "exit": 1,
+      "results": [
+        "test result: FAILED. 32 passed; 4 failed; 0 ignored; 0 measured; 95 filtered out; finished in 140.82s"
+      ],
+      "cleanup": "Recorded successful bounded docker ps -a establishes owned container absence at run completion; no current Docker workload executed"
+    },
+    {
+      "run": "account-custody36-after-order-fix",
+      "head": "783b5cac7dbcca150f906aceb433e9be00ce01c9",
+      "clean_unchanged": true,
+      "git_source_hashes_verified": 19,
+      "artifact_hashes_verified": 13,
+      "retained_driver": "receipts/account-custody-regression-driver.sh",
+      "exit": 1,
+      "results": [
+        "test result: FAILED. 33 passed; 3 failed; 0 ignored; 0 measured; 95 filtered out; finished in 146.07s"
+      ],
+      "cleanup": "Recorded successful bounded docker ps -a establishes owned container absence at run completion; no current Docker workload executed"
+    },
+    {
+      "run": "account-finalizer-order-385d7c1d9edb40a1bf3569b4ea426cc1",
+      "head": "783b5cac7dbcca150f906aceb433e9be00ce01c9",
+      "clean_unchanged": true,
+      "git_source_hashes_verified": 19,
+      "artifact_hashes_verified": 13,
+      "retained_driver": "receipts/account-finalizer-diagnostic-driver.sh",
+      "exit": 0,
+      "results": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 130 filtered out; finished in 4.07s"
+      ],
+      "cleanup": "Recorded successful bounded docker ps -a establishes owned container absence at run completion; no current Docker workload executed"
+    },
+    {
+      "run": "account-finalizer-order-598c285c3c944404a448695992a71180",
+      "head": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+      "clean_unchanged": true,
+      "git_source_hashes_verified": 19,
+      "artifact_hashes_verified": 13,
+      "retained_driver": "receipts/account-finalizer-diagnostic-driver.sh",
+      "exit": 1,
+      "results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 130 filtered out; finished in 3.70s"
+      ],
+      "cleanup": "Recorded successful bounded docker ps -a establishes owned container absence at run completion; no current Docker workload executed"
+    },
+    {
+      "run": "account-projection37",
+      "head": "96537febf2e17467449abc5c7701ed48372cc98e",
+      "clean_unchanged": true,
+      "git_source_hashes_verified": 18,
+      "artifact_hashes_verified": 13,
+      "retained_driver": "receipts/account-fence37-driver.sh",
+      "exit": 1,
+      "results": [
+        "test result: FAILED. 4 passed; 33 failed; 0 ignored; 0 measured; 94 filtered out; finished in 154.63s"
+      ],
+      "cleanup": "Recorded successful bounded docker ps -a establishes owned container absence at run completion; no current Docker workload executed"
+    },
+    {
+      "run": "finalizer-diagnostic",
+      "head": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+      "clean_unchanged": true,
+      "git_source_hashes_verified": 19,
+      "artifact_hashes_verified": 13,
+      "retained_driver": "receipts/account-finalizer-diagnostic-driver.sh",
+      "exit": 1,
+      "results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 130 filtered out; finished in 4.85s"
+      ],
+      "cleanup": "Recorded successful bounded docker ps -a establishes owned container absence at run completion; no current Docker workload executed"
+    }
+  ],
+  "interpretation": [
+    "Old full36 remains FAILED32PASS4FAIL; revised full36 remains FAILED33PASS3FAIL",
+    "Targeted finalizer RED0PASS1FAIL becomes GREEN1PASS0FAIL; does not make full36 green",
+    "Projection37 remains4PASS33FAIL;32 logged SQLSTATE42501 errors and0 logged53100, no37GREEN claim",
+    "Three storage failures remain; no unauthorized owner UPDATE(id) grant implied",
+    "tmpfs execution provides no durability, HA, production-exposure, or fulltransitive evidence-closure proof",
+    "Canonicalfix GREEN and finalverification supplements require separate audit"
+  ],
+  "writes": "Only detached review receipt; candidate and repository baseline untouched"
+}

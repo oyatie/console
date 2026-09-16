@@ -1,0 +1,41 @@
+{
+  "owner": "/root",
+  "base_sha": "7b3d24944c6511b36e8343e37c43dae704e0a9da",
+  "target": "account_storage::terms_head_acceptance_and_event_references_bind_complete_immutable_tuples",
+  "test_status": "RED: one executed failure at six-table absence;60filtered,0ignored",
+  "red_log_sha256": "b8fcac8a5434fe0ec072a0c3dd8119c86e88e0e80c5d9512a62612fceaeb10e8",
+  "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo DOCKER_CONTEXT=colima-console-design30 SQLX_OFFLINE=true fnm exec --using=24.16.0 tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-native30-native-execution-20260914/account/terms-catalog-probe-map.json --only app-auth-rest-pg --runner cargo --num-threads 1",
+  "allowed_paths": [
+    "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql",
+    "ops/postgres-reconcile-topology.sh"
+  ],
+  "guide": [
+    "Use approved physical Account/terms definitions, no seeds or legacy edits",
+    "Create zero-edge NOLOGIN owners through existing admin topology",
+    "Create empty catalog as actual migration owner and remove default table exposure",
+    "Run identical catalog probe; independent source/schema review before integration",
+    "No final custody/Account activation claim until separately tested finalizer and startup boundaries pass"
+  ],
+  "premortem": [
+    "Role grants break immutable0165",
+    "Default ACL exposes global Account rows",
+    "Incomplete FK tuple permits substitution",
+    "Guard row accidentally disables legacy authentication"
+  ],
+  "blast_radius": "Six new empty tables and two zero-membership ownership roles; no existing data changes",
+  "detection": "Same existing composite FK probe plus staged-role/catalog/ACL regression tests under development",
+  "rollback": "Keep dormant relations inaccessible; migration rollback transaction on failure; no destructive down migration",
+  "stop_conditions": [
+    "Old migration bytes or assertions changed",
+    "Unexpected role reachability",
+    "Any seeded Account/security row",
+    "Different failure means setup/prerequisite investigation, not GREEN"
+  ],
+  "reviewers": [
+    "/root/finish_browser",
+    "/root/review_completeness"
+  ],
+  "remaining_holds": [
+    "Final custody, serving admission and full Account/auth behavior"
+  ]
+}

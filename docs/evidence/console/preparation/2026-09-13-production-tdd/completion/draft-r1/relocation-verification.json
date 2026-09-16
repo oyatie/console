@@ -1,0 +1,54 @@
+{
+  "source_manifest_sha256": "446d0eae75ffad2c4b18e77c68263854c6a1909a53b455a9165afd08bcaf8fa6",
+  "verified_original_members": 7,
+  "mapping": [
+    {
+      "original": "checker-execution.log",
+      "retained": "checker-execution.log.gz",
+      "original_sha256": "29097b33a5ea7221e54d25451784b6d27c2a54a58888f092cf83b6df50701a2f",
+      "retained_sha256": "49201a318223f92fc03012d1a668fec7659ea8031db140e8fb3ed8834e786185"
+    },
+    {
+      "original": "draft-owner-acceptance.rs",
+      "retained": "draft-owner-acceptance.rs",
+      "original_sha256": "926260e7fdc94e73b87de0e2590abf6ff85293b7bf24f51ef80f7cef682f0cd1",
+      "retained_sha256": "926260e7fdc94e73b87de0e2590abf6ff85293b7bf24f51ef80f7cef682f0cd1"
+    },
+    {
+      "original": "execution.json",
+      "retained": "execution.json",
+      "original_sha256": "f09c13b766b44da28cd08bf69add10f219f95cede2046dd3eb31127a63e87cf5",
+      "retained_sha256": "f09c13b766b44da28cd08bf69add10f219f95cede2046dd3eb31127a63e87cf5"
+    },
+    {
+      "original": "history_oracle.py",
+      "retained": "history_oracle.py",
+      "original_sha256": "f3491b7ba77192734fbde463b6742dce35ec1f9bde0fc3bafc3268b4779d4d24",
+      "retained_sha256": "f3491b7ba77192734fbde463b6742dce35ec1f9bde0fc3bafc3268b4779d4d24"
+    },
+    {
+      "original": "lifecycle-producer.rs",
+      "retained": "lifecycle-producer.rs",
+      "original_sha256": "18987f7de8ae9083e693aae26457e393438216652698a79424ac19804a49d6fd",
+      "retained_sha256": "18987f7de8ae9083e693aae26457e393438216652698a79424ac19804a49d6fd"
+    },
+    {
+      "original": "owner-read-contract.txt",
+      "retained": "owner-read-contract.txt",
+      "original_sha256": "d8ba33068d8a0644b8961d5ee335a1aa50f0569c4ccb88863da8c6459fb66705",
+      "retained_sha256": "d8ba33068d8a0644b8961d5ee335a1aa50f0569c4ccb88863da8c6459fb66705"
+    },
+    {
+      "original": "test_history_oracle.py",
+      "retained": "test_history_oracle.py",
+      "original_sha256": "1d876dc7ffeca15a3c857b9db63b558beb1742e4416b5991f9f3194e0d946201",
+      "retained_sha256": "1d876dc7ffeca15a3c857b9db63b558beb1742e4416b5991f9f3194e0d946201"
+    },
+    {
+      "original": "freeze-manifest.json",
+      "retained": "freeze-manifest.json",
+      "original_sha256": "446d0eae75ffad2c4b18e77c68263854c6a1909a53b455a9165afd08bcaf8fa6",
+      "retained_sha256": "446d0eae75ffad2c4b18e77c68263854c6a1909a53b455a9165afd08bcaf8fa6"
+    }
+  ]
+}

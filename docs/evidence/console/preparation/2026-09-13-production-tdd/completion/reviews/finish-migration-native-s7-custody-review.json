@@ -1,0 +1,48 @@
+{
+  "reviewer": "/root/finish_migration",
+  "native_s7": {
+    "manifest_sha256": "11fa2d76e09041228e84dbeb9686587561c2897c4373efdbeb9810948e5c2df2",
+    "verified_members": 8,
+    "disposition": "ACCEPT_BOUNDED_SOURCE_CORRECTIONS",
+    "closed": [
+      "N6-INPUT whole retained input equality plus absence of duplicate common reason",
+      "N6-CURRENT original exact effect reread for alias/reviewer after positive setup with Proposed/admission/head/digest/credential current witnesses",
+      "N6-DOC editable blank input explicitly retained by compiler;ordinary seal enforces required reason"
+    ],
+    "compiled": 0,
+    "runtime": 0
+  },
+  "custody_verifier": {
+    "files": {
+      "verify-custody.py": "9fffa48f83c9710fee211b492d8ebae9a59b2cdd62648b8c89a7b7dbf1cec362",
+      "test_verify_custody.py": "d5ef8dc68fde5e6ba59b9b74c1b15a158bcc2d9cc6de34538ff6121c522e1f96",
+      "required-packets.json": "91117b8ccfafeb55e0f6117ad3b7e71d40380ac33dcff34cbec370d560ce0b8a"
+    },
+    "disposition": "ACCEPT_BOUNDED_LOCAL_CUSTODY_CHECKER",
+    "commands": [
+      [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated",
+        "-p",
+        "test_verify_custody.py",
+        "-v"
+      ],
+      [
+        "python3",
+        "-B",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/consolidated/verify-custody.py"
+      ]
+    ],
+    "controls_discovered": 19,
+    "controls_executed": 19,
+    "controls_passed": 19,
+    "actual_packet_output": "PASS 31 required packets 1055 retained members; runtime tests executed:0",
+    "basis": "Exact exclusive files/members shape, duplicate original names/mappings rejected, complete mapping cardinality, independently pinned required manifest SHA, exact discovered packet set, raw bytes/length/optional compressed digest checks, unsafe paths/symlinks rejected. Preserves existing legacy map shapes and explicit manifest-as-member only.",
+    "limits": "Local trusted review artifacts and exact ordinary invocation; no application/test coverage proof,cryptographic reviewer identity assurance,or hostile unbounded gzip resource certification. Actual verifier result pins current required roster; root must rerun on final additions."
+  }
+}

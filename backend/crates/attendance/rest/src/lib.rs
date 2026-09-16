@@ -25,7 +25,7 @@ use console_attendance_domain::{
     AttendanceDateRange, ExceptionKind, ResolutionAction, SubstitutionWindow,
 };
 use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
 use console_platform_request_context::{RequestContextError, resolve_principal};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -112,16 +112,22 @@ fn record_read(surface: &'static str) {
 #[derive(Clone)]
 pub struct AttendanceRestState {
     store: PgAttendanceStore,
-    jwt: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 impl AttendanceRestState {
     #[must_use]
-    pub fn new(store: PgAttendanceStore, jwt: Option<JwtVerifier>) -> Self {
-        Self { store, jwt }
+    pub fn new(
+        store: PgAttendanceStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
+        Self {
+            store,
+            session_verification,
+        }
     }
 }
 pub fn router(state: AttendanceRestState) -> Router {
-    let verifier = state.jwt.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let r = Router::new()
         .route(
@@ -163,7 +169,7 @@ async fn principal(
     state: &AttendanceRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -175,6 +181,7 @@ async fn principal(
         .map_err(|e| match e {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",
@@ -185,6 +192,11 @@ async fn principal(
                     "token is not authorized for attendance",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

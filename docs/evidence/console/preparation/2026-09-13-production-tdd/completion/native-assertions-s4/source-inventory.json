@@ -1,0 +1,27 @@
+{
+  "classification": "AUTHORED_SOURCE_OWNER_IMPLEMENTATION_PREREQUISITE",
+  "author": "/root/fresh29_workflows",
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "native_s2_manifest_sha256": "7e9b50db134a0f45365e210f86190dacac1626a2373980c96e55b9ab4d66424d",
+  "authored_sqlx_methods": 4,
+  "authored_in_owner_unit_methods": 3,
+  "authored_total": 7,
+  "cargo_discovered": 0,
+  "compiled": false,
+  "executed": 0,
+  "resolved_source_obligations": [
+    "Actual native stream/copy alias identity",
+    "Two actual independent hold-purpose obligations and exact partial release/replay",
+    "Late hold plus stale/current disposal eligibility refuses with no bytes/jobs removed",
+    "Deterministic observed native run-row lock rendezvous between2actual commands",
+    "Twelve actual runtime UPDATE/DELETE authority probes over6immutable tables",
+    "Short reads, oversized prefix rejection before body, partial writer failure"
+  ],
+  "limits": [
+    "No successful native physical deletion while mandatory native domain pins active",
+    "Shared root draft/shared-retention/journal-issuer tests cover eligible physical lifecycle; no fabricated retirement",
+    "Complete2000-person workload/counter/memory/latency execution remains acceptance gate; these7source methods do not claim it",
+    "Source-family races in S2 remain nondeterministic; native rendezvous does not claim all possible lock schedules",
+    "Owner APIs are proposed and absent; Rust parser does not compile or execute"
+  ]
+}

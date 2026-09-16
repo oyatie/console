@@ -1,0 +1,22 @@
+{
+  "rounds": [
+    {
+      "candidate_sha": "46f13bb1079da24f58bef7983ad69750e8505dad",
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "PR-B01/PR-C01 projection-only correction lacked current-slot successor path",
+        "PR-B02 plan cancellation lacked plan-level effect fence"
+      ],
+      "scenarios": 60
+    },
+    {
+      "candidate_sha": "c4871c8b1e5baa55b476c50b06bdbb646a62d1ad",
+      "verdict": "Both independent reviewers ACCEPT_SCOPED_REMEDIATION",
+      "remediation": [
+        "Explicit immutable same-source projection successor and shared current-slot CAS",
+        "Company-owned plan SHARE effect fence and exclusive cancellation with truthful cross-Company outcomes"
+      ],
+      "scenarios": 67
+    }
+  ]
+}

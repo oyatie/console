@@ -35,8 +35,9 @@ struct JsonResponse {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn workflow_object_context_is_exact_pair_scoped_and_read_only(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let org = OrgId::knl();
     let branch_a = seed_branch(&pool, org, "A").await;
@@ -85,8 +86,11 @@ async fn workflow_object_context_is_exact_pair_scoped_and_read_only(pool: PgPool
     )
     .await;
     let mutation_before = mutation_snapshot(&pool).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let initiator_token = bearer(&keys, org, initiator, "ADMIN");
 
     // Stable `(updated_at DESC, run_id DESC)` page with opaque UUID cursor.
@@ -599,9 +603,18 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AppState::new(
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             ("CONSOLE_JWT_ISSUER", ISSUER.to_owned()),
@@ -610,4 +623,5 @@ fn app_state(pool: PgPool, public_key: String) -> Result<AppState, console_app::
         ])?,
         DatabaseDependency::Postgres(pool),
     )
+    .map(|state| state.with_auth_database(auth_database))
 }

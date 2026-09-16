@@ -1,0 +1,266 @@
+{
+  "kind": "READINESS_DEEP_RESEARCH_AND_ADVERSARIAL_REVIEW_ARTIFACT",
+  "owner": "/root",
+  "exact_code_base_sha": "b76e958156ec7e28d6115547d45d849dfcef5cf4",
+  "immutable_report_sha256": "305814e194de2b7c8a3c64b42d10ce864630347430a5c5cf0e213386836890dc",
+  "entry": "report.html",
+  "source_text": "report.txt",
+  "gate_map": "gate-assessment.json",
+  "review_record": "independent-review.json",
+  "scope": "Complete assessment of11requirements+8refinements, comprehensive cited research,23family preservation ledger,12task usability protocol, two bounded executed prerequisite/checker corrections. Does not assert wholefirstslice implementation preparation complete.",
+  "research_window": "2026-06-01 through2026-09-13; recent/revised/undated/older sources labeled. As-oflocalAmerica/New_York, no futureSeptembercoverage claimed.",
+  "writing_authority": "Evidence only; current PRODUCT/ROADMAP/DELIVERY and approved design history unchanged; no publication/deployment.",
+  "runtime_cleanup": "Dedicated console-design30 VM stopped after confirming zero containers; baseline checkout clean; no other runtime touched.",
+  "files": [
+    {
+      "path": "artifact-validation.json",
+      "bytes": 514,
+      "sha256": "acb80531d38843f39b98bfa4be8d384619d77eaddc6074b1270233c260ff4b5e"
+    },
+    {
+      "path": "authored-artifact-check.json",
+      "bytes": 816,
+      "sha256": "c63d907babf92914fa2fc89c110607964e006aab9bb6c058607032f90a6f218c"
+    },
+    {
+      "path": "authored-artifact-delivery-map.json",
+      "bytes": 4740,
+      "sha256": "20c6f4b9d8243cdc89bbd81b9c83275e2e03b9255863bfb0773613e0fc4e5a86"
+    },
+    {
+      "path": "authored-artifacts-handoff.json",
+      "bytes": 3201,
+      "sha256": "d4bd01e0a02670aae8547ece61809a03abe723f8f2a2f4ea8ff70a16f8998129"
+    },
+    {
+      "path": "authored-review-corrections.json",
+      "bytes": 2142,
+      "sha256": "8e2cdd62a7e0ce88ef124f3601203a9754ab751a84bcc9faa9b4cfdfa4f6e1a2"
+    },
+    {
+      "path": "authored-source-custody.json",
+      "bytes": 2558,
+      "sha256": "d5748121ff098928046262cb2b788cb689497b05a2be3faeef54050ef5106258"
+    },
+    {
+      "path": "capability-family-preservation-ledger.csv",
+      "bytes": 24601,
+      "sha256": "934618dfb5a8a005eb8a7d372d0e13973849eaf65f9dc9d6542aa98f7cfb03c7"
+    },
+    {
+      "path": "capability-family-preservation-ledger.html",
+      "bytes": 34273,
+      "sha256": "6490034b9ae2a69602dad8c65f1c3cf11af897efc3931bae22bf6248d8a59f38"
+    },
+    {
+      "path": "capability-family-preservation-ledger.json",
+      "bytes": 46141,
+      "sha256": "db164c28f0650a88a001add8a185250085c7cae31a95b4a420c785a7041dbdb1"
+    },
+    {
+      "path": "capability-family-preservation-ledger.txt",
+      "bytes": 27844,
+      "sha256": "07da45b7a51ddee3698fe003caa46988ebd062d6fefb03f1921a6002613bfe9c"
+    },
+    {
+      "path": "capability-sources.html",
+      "bytes": 27489,
+      "sha256": "02420e3b9d6c5b805d1ea72e3175ebb76b504ae2005ebcb0554e465b4f62c8c6"
+    },
+    {
+      "path": "capability-sources.txt",
+      "bytes": 22533,
+      "sha256": "9c98c3e10ac567241224ceb69fc77b14a19bed157204e4ad1e836e2a5cc7706e"
+    },
+    {
+      "path": "console-buck-credential-content-probes-initial.log.gz",
+      "bytes": 213,
+      "sha256": "955da5d7f4abfddc7da454008b5d3b50a1e072883342b9af3958226a09d923a4"
+    },
+    {
+      "path": "console-buck-credential-content-probes-initial.py",
+      "bytes": 1245,
+      "sha256": "af248df398d1b164657c7a680658510fb1639241d92ae9858dda8bf2e812326f"
+    },
+    {
+      "path": "console-buck-credential-content-probes.log.gz",
+      "bytes": 169,
+      "sha256": "8b2286754bf28c102153e58006357b1e1d1f15d16c60a6619d2367613d3b5c21"
+    },
+    {
+      "path": "console-buck-credential-content-probes.py",
+      "bytes": 1253,
+      "sha256": "a4bf276d86069bde06e48f9a0f8eebd3cf3ac89b0e23fd1f8c50c7114404341b"
+    },
+    {
+      "path": "console-buck-credential-oracle-admission.log.gz",
+      "bytes": 499,
+      "sha256": "0a25930d9187c0b74ce9b0da9c26dd5e263cd3921e12114e10d5ef54ab5dfb03"
+    },
+    {
+      "path": "console-buck-credential-oracle-entry.json",
+      "bytes": 1705,
+      "sha256": "f6f12b28945cd6b5f2405a284dd7fcfec2b5e25fba458c97512f0d214119fb12"
+    },
+    {
+      "path": "console-buck-credential-oracle-green.log.gz",
+      "bytes": 253,
+      "sha256": "a8ab7991b55b3da5d88709a1a3307f97bdf1b587aa5457a1620d16ca34989601"
+    },
+    {
+      "path": "console-buck-credential-oracle-probe.py",
+      "bytes": 1487,
+      "sha256": "c3325ec9632d5e12c6b441f1c367bcf9ffe28f541ed6abf6a223bbd7e14390e8"
+    },
+    {
+      "path": "console-buck-credential-oracle-red.log.gz",
+      "bytes": 499,
+      "sha256": "0a25930d9187c0b74ce9b0da9c26dd5e263cd3921e12114e10d5ef54ab5dfb03"
+    },
+    {
+      "path": "console-pg184-rls-baseline.log.gz",
+      "bytes": 2540,
+      "sha256": "1be6974ab62bb7ab5600ae869521d1f51b001a4fe7ed537924f4c87d2105830b"
+    },
+    {
+      "path": "console-pg186-buck-wrapper.log.gz",
+      "bytes": 302,
+      "sha256": "778a011ece21b59e6667c2444ec3db70413806a11155f7eee87cc19b0fddc4f9"
+    },
+    {
+      "path": "console-pg186-compatibility.log.gz",
+      "bytes": 6479,
+      "sha256": "04bde6433198cdda5fedd84a5615647fe4d2660f09a88b14fbf26f3c35810f18"
+    },
+    {
+      "path": "console-pg186-entry.json",
+      "bytes": 2077,
+      "sha256": "8cb27f7a3a88c1cbe7b1be84bb2d05a679aea4060018fc476f72d5c3d421aff0"
+    },
+    {
+      "path": "console-pg186-probe-green.log.gz",
+      "bytes": 332,
+      "sha256": "fac9927ed217eeed206f3f130074ecaac59bfc2bc1f17a26a6a9e0d6878e13dd"
+    },
+    {
+      "path": "console-pg186-probe-initial-red.log.gz",
+      "bytes": 333,
+      "sha256": "3620432664312bf8957d8897ac7d554eebd5633be2ef3f3ab7f65578817bd723"
+    },
+    {
+      "path": "console-pg186-probe.log.gz",
+      "bytes": 333,
+      "sha256": "3620432664312bf8957d8897ac7d554eebd5633be2ef3f3ab7f65578817bd723"
+    },
+    {
+      "path": "console-pg186-probe.py",
+      "bytes": 1332,
+      "sha256": "eb19794f9fbff8e9864cbc87d2c3619378a3b5bb1e8410498187de3461c3a3b0"
+    },
+    {
+      "path": "console-pg186-tooling-tests.log.gz",
+      "bytes": 624,
+      "sha256": "af719df184d650cdfb9bbc22a18c12a256d741a38086e224d76478f5da5fe4e3"
+    },
+    {
+      "path": "credential-oracle-update.json",
+      "bytes": 2103,
+      "sha256": "742d9ad3214ce875d1b35d70892ca913c63fe91f140773bb362698602bdb553a"
+    },
+    {
+      "path": "gate-assessment.json",
+      "bytes": 15509,
+      "sha256": "6ce0833e59151c76ae17871ae692411d8d325173efa69ba4058e3144c8f6b748"
+    },
+    {
+      "path": "independent-review.json",
+      "bytes": 2833,
+      "sha256": "58ea4cf6d376fb43c792340389b16bd9600167bcbbe6150a3d18be2a35402f41"
+    },
+    {
+      "path": "interview-continuation-record.json",
+      "bytes": 1259,
+      "sha256": "f425db32b5bcd4f6bee6334f1a0b63eb1801e484120aac6ec7e55d8e6404dbe4"
+    },
+    {
+      "path": "interview-continuation.jsonl",
+      "bytes": 32823,
+      "sha256": "94e8503cc13c3db42c4d4cc74d160c08d9cf8ad85a8e066e14e4d717052b3852"
+    },
+    {
+      "path": "native-nonpayable-usability-protocol.html",
+      "bytes": 37083,
+      "sha256": "87eaf32a6fa20f4c00a7e521cf73d7f3df28f417f3741420b6f93d6f315fa77c"
+    },
+    {
+      "path": "native-nonpayable-usability-protocol.json",
+      "bytes": 40296,
+      "sha256": "521676ae08283d0011d4889927bc882db45524e273a4633c9dc80a4607630856"
+    },
+    {
+      "path": "native-nonpayable-usability-protocol.txt",
+      "bytes": 30988,
+      "sha256": "bb3e853d7900c17276207edb160d9056d5584874a28c70a38d9da3a1bb82e279"
+    },
+    {
+      "path": "operations-sources.html",
+      "bytes": 21000,
+      "sha256": "1fa8441230425d5d92eec980cbb80e10e4b8fb713f52b2ab18c70187c9256fed"
+    },
+    {
+      "path": "operations-sources.txt",
+      "bytes": 18267,
+      "sha256": "371a88ff8cb57013760f3957532f047727bedef8c713f6923bccaf73906917d9"
+    },
+    {
+      "path": "postgres-update.json",
+      "bytes": 4980,
+      "sha256": "ac0b7c935952d9e8495f88e464704fc9c9c13e1a636adc18334d5aea4ea5cfd4"
+    },
+    {
+      "path": "primary-source-bundle.tar.gz",
+      "bytes": 9430216,
+      "sha256": "47189e49ef9fa7386632809122ff56f665e9c5436aae4cba3e6d09b11852bfc5"
+    },
+    {
+      "path": "primary-source-manifest.json",
+      "bytes": 46680,
+      "sha256": "64fe9272d573d4ac41858ef120e9216f7da2c8d2324cb9a30c6a42fc5b0d91ed"
+    },
+    {
+      "path": "render-authored-artifacts.py",
+      "bytes": 8872,
+      "sha256": "74bed765dfa8a39fea5edf716c7b6e691b1273749b190cf8ba5994d7fd395e1f"
+    },
+    {
+      "path": "render-report.py",
+      "bytes": 5583,
+      "sha256": "82c07871bf7669dbee40d699bd7d67ca847a1680e578e37d9004ecca983da5ad"
+    },
+    {
+      "path": "report.html",
+      "bytes": 46595,
+      "sha256": "9b3ae75996b2f9e47acf0a2e41a57e81020f26c4e4e23e71088ed69fef01eb97"
+    },
+    {
+      "path": "report.txt",
+      "bytes": 37692,
+      "sha256": "305814e194de2b7c8a3c64b42d10ce864630347430a5c5cf0e213386836890dc"
+    },
+    {
+      "path": "security-sources.html",
+      "bytes": 15465,
+      "sha256": "ec0a4d26743c8a69483d8015e6c1a4bb46ca213ea23cbafe2b954685da38de67"
+    },
+    {
+      "path": "security-sources.txt",
+      "bytes": 13029,
+      "sha256": "643b0b573294ca2d62c8696d9c66437cdf4efb659902cbae63d893223a3f1afc"
+    },
+    {
+      "path": "usability-observation-template.json",
+      "bytes": 732,
+      "sha256": "5cab8ea9e433647e04a58f52e887585429aed8ee736f0be356c12ff9d13797b0"
+    }
+  ]
+}

@@ -225,3 +225,29 @@ test("the topology script rejects duplicate role passwords before DB access", ()
   assert.notEqual(afterPreflight.status, 0, "fixture intentionally has no database");
   assert.doesNotMatch(afterPreflight.stderr, /passwords must be pairwise distinct/);
 });
+
+// Runner migration: source selection, feature identity and local tiers must agree.
+test("app Cargo runner preserves all four test selections", () => {
+  const workflow = yaml.load(readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8"));
+  const cases = [
+    ["app-unit", "Cargo console-app unit suite", "--lib", "fast"],
+    ["openapi-drift", "Cargo console-app OpenAPI drift suite", "--test openapi_drift", "fast"],
+    ["app-inline-pg", "Cargo console-app inline PostgreSQL suite", "--lib --features test-postgres -- --test-threads=1", "db"],
+    ["app-dev-auth-pg", "Cargo console-app dev-auth PostgreSQL suite", "--test dev_auth_persona_guard_feature --features dev-auth -- --test-threads=1", "db"],
+  ];
+  for (const [id, name, selection, tier] of cases) {
+    const step = workflow.jobs.backend.steps.find((step) => step.id === id);
+    assert.ok(step, `missing independent test step ${id}`);
+    assert.equal(step.name, name);
+    assert.equal(step["working-directory"], ".");
+    const cargo = `cargo test --locked --manifest-path backend/Cargo.toml -p console-app ${selection}`;
+    const expected = tier === "fast"
+      ? `env -u DATABASE_URL ${cargo}`
+      : 'export DATABASE_URL="${CONSOLE_BUCK_ADMIN_DATABASE_URL:?missing test bootstrap URL}"\n' + cargo;
+    assert.equal(step.run.trim(), expected, `${id} must preserve its source/features/bootstrap identity`);
+    assert.deepEqual(verifyModule.stepMirrorDisposition(name), { tier });
+    assert.match(step.if, /!cancelled\(\)/);
+    assert.match(step.if, /matrix\.leg == 'buck-app'/);
+    if (tier === "db") assert.match(step.if, /steps\.topology\.outcome == 'success'/);
+  }
+});

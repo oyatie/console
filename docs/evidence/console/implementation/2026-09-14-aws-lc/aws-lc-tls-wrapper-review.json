@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/review_completeness",
+  "candidate_sha": "991f8ddda14f73e56952f0a938c75bad14349056",
+  "verdict": "ACCEPT_LC02_EXECUTION_EVIDENCE",
+  "result_path": "/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-account-wrapper-evidence-rl2hmklh/result.json",
+  "result_sha256": "1636ac9b3a7614a2909f8fc8839836fe02663dd3a98522191290afa157a7eda8",
+  "verified": {
+    "exact_unique_case_roster": 13,
+    "executed_pass": 13,
+    "blocked": 0,
+    "git_blob_source_hashes_verified": 2933,
+    "referenced_command_logs_present": 816,
+    "actual_migrator_runs": 4,
+    "successful_migrations_each": 226,
+    "complete_ledger_snapshots_compared_to_frozen_sha384_manifest": 28,
+    "negative_cases_independent_before_after_comparisons": 11,
+    "positive": "six exact owner changes only in relation snapshots; repeated finalization complete snapshot identical",
+    "tls_negatives": "wrong CA actual certificate verification failure exit2; wrong hostname actual certificate/host mismatch exit2",
+    "operator_target_ledger_negatives": "exact expected stable errors and exit3 or descriptor exit1; all recorded table metadata/counts/ledger snapshots byte-identical before and after",
+    "cleanup": "two registered containers rm exit0 then exact absent inspect errors; private credential/build directory absent"
+  },
+  "binary_sha256": "bbee1d3e718aac1ad87293c05fa546b67d6b8fbdf7cb8ad2ec994b04dacf5471",
+  "mechanism": "Reviewed frozen test source supplies actual SQLx migrator DATABASE_URL verify-full with CA; fixed binary checked before/after each invocation. Operator wrapper runs real psql TLS on two pinned18.6 clusters. Reviewer recomputed source hashes against immutable Git blobs and inspected all case causes/snapshot pair equivalence.",
+  "library_log": {
+    "path": "/private/tmp/console-account-lifecycle-execution-20260914/awslc-final-libraries.log",
+    "counts": "IMAP18 + SMTP17 + jobs8 =43 passed,0failed,0ignored,0filtered",
+    "sha256": "824466ea70921db3232ac6f9bfeeb068c2de4da2bc2830b20cf6442f1ba3168e"
+  },
+  "limits": [
+    "LC02 wrapper execution only; root lifecycle/startup33-case execution is separate and not claimed here.",
+    "Binary execution is macOS-host Rust executable connecting to Linux PostgreSQL containers, not Linux application publication/build proof.",
+    "AWS-LC provider choice is not FIPS validation; no Account activation/full Console/production exposure claim.",
+    "Readback snapshots cover six-table catalog metadata/counts and SQLx ledger per reviewed fixture; do not claim full arbitrary database or cluster no-effect proof.",
+    "TLS CA/hostname negatives cover psql operator transport; SQLx positive verify-full migration ran, but this suite does not separately negative-test SQLx CA/hostname."
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "manifest_sha256": "31c4b2cdaf7497ebd14caee0b722fe7599e024a63f52fca90ba40426b1cff5c7",
+  "reviewed_author_manifest_sha256": "19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df",
+  "files": [
+    {
+      "original": "account_migration-declarations.rs",
+      "retained": "account_migration-declarations.rs",
+      "original_sha256": "81867bbcd986662230a293a01deb409ba5439d2eedcccdc7ebfdad26d45e8d80",
+      "retained_sha256": "81867bbcd986662230a293a01deb409ba5439d2eedcccdc7ebfdad26d45e8d80"
+    },
+    {
+      "original": "auth_rest-declarations.rs",
+      "retained": "auth_rest-declarations.rs",
+      "original_sha256": "a2a3ec5921505e257c94a77176408582315d91c559c3344eabda76306efba77b",
+      "retained_sha256": "a2a3ec5921505e257c94a77176408582315d91c559c3344eabda76306efba77b"
+    },
+    {
+      "original": "build.py",
+      "retained": "build.py",
+      "original_sha256": "cad2b9bf94876eafc748f66ba00fce7fc9d80441eaecbb90d46583ea692ef5f1",
+      "retained_sha256": "cad2b9bf94876eafc748f66ba00fce7fc9d80441eaecbb90d46583ea692ef5f1"
+    },
+    {
+      "original": "check.py",
+      "retained": "check.py",
+      "original_sha256": "1e986e3230cfbb7a5fa3367e381c7c9595fcef30a4f064fb37cddc61689e8cdf",
+      "retained_sha256": "1e986e3230cfbb7a5fa3367e381c7c9595fcef30a4f064fb37cddc61689e8cdf"
+    },
+    {
+      "original": "checker-execution.txt",
+      "retained": "checker-execution.txt",
+      "original_sha256": "a56ed6694c80b08aadc17fb2a2aca5b51a53259011b4e3da743d553634a0691a",
+      "retained_sha256": "a56ed6694c80b08aadc17fb2a2aca5b51a53259011b4e3da743d553634a0691a"
+    },
+    {
+      "original": "checks.json",
+      "retained": "checks.json",
+      "original_sha256": "d9878fea75289c5385181fdceba260dd99510e5d47f43bd92916f6bad833080b",
+      "retained_sha256": "d9878fea75289c5385181fdceba260dd99510e5d47f43bd92916f6bad833080b"
+    },
+    {
+      "original": "dev-dependencies.json",
+      "retained": "dev-dependencies.json",
+      "original_sha256": "b298faf0d3a96e245248f46038453a84702abf8ca0a3da1b162072ee8903a585",
+      "retained_sha256": "b298faf0d3a96e245248f46038453a84702abf8ca0a3da1b162072ee8903a585"
+    },
+    {
+      "original": "external-crate-reference-census.json",
+      "retained": "external-crate-reference-census.json",
+      "original_sha256": "d2b3659f13785f5dcc59da6f779ffa56d6a012f4781fe6167d340f5a2e71ac85",
+      "retained_sha256": "d2b3659f13785f5dcc59da6f779ffa56d6a012f4781fe6167d340f5a2e71ac85"
+    },
+    {
+      "original": "mechanical-guide.txt",
+      "retained": "mechanical-guide.txt",
+      "original_sha256": "f6ce62b4dbc00bf33def1af286e12526bf8d57dba392cad4b9aba44b01dec122",
+      "retained_sha256": "f6ce62b4dbc00bf33def1af286e12526bf8d57dba392cad4b9aba44b01dec122"
+    },
+    {
+      "original": "module-placement.json",
+      "retained": "module-placement.json",
+      "original_sha256": "3f42fb56a372335f771b6d5d716d6314b7b3a47ac09af2cf04a1f22679667da7",
+      "retained_sha256": "3f42fb56a372335f771b6d5d716d6314b7b3a47ac09af2cf04a1f22679667da7"
+    },
+    {
+      "original": "native_acceptance-declarations.rs",
+      "retained": "native_acceptance-declarations.rs",
+      "original_sha256": "600a3ebfeea5a275b25fb62a736c4cd7c383158c93e8846b9b013d139b49c462",
+      "retained_sha256": "600a3ebfeea5a275b25fb62a736c4cd7c383158c93e8846b9b013d139b49c462"
+    },
+    {
+      "original": "r1-parent-manifest.json",
+      "retained": "r1-parent-manifest.json",
+      "original_sha256": "f811e23cf36574d1bc4b0761da0dd4a2435d2a5e54f20b459bd08662d5be7227",
+      "retained_sha256": "f811e23cf36574d1bc4b0761da0dd4a2435d2a5e54f20b459bd08662d5be7227"
+    },
+    {
+      "original": "r2-parent-manifest.json",
+      "retained": "r2-parent-manifest.json",
+      "original_sha256": "d808059c55052407cee15dec445d19105a05b709af8c65c9bcd14bb946479e02",
+      "retained_sha256": "d808059c55052407cee15dec445d19105a05b709af8c65c9bcd14bb946479e02"
+    },
+    {
+      "original": "selection-base.json",
+      "retained": "selection-base.json",
+      "original_sha256": "255c4213d3d0748da92cccbadbfaaccafdc5c54434cb0e2b5637c1e879b321b6",
+      "retained_sha256": "255c4213d3d0748da92cccbadbfaaccafdc5c54434cb0e2b5637c1e879b321b6"
+    },
+    {
+      "original": "author-freeze-manifest.json",
+      "retained": "author-freeze-manifest.json",
+      "original_sha256": "19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df",
+      "retained_sha256": "19c5a9b674457291f11528be7a944f2d373dc1eefea4b1049d32decdd72432df"
+    }
+  ]
+}

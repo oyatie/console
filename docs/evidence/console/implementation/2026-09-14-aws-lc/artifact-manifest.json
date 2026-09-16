@@ -1,0 +1,197 @@
+{
+  "crypto-source-review.json": {
+    "source": "/private/tmp/console-native30-native-execution-20260914/account/reviews/audit-aws-lc-migration-source-review.json",
+    "source_sha256": "eeabf60d2bdf49764fd8b63fcff7b0cd4d9aec57bd5ee62575f38a539ff4bc91",
+    "artifact_sha256": "eeabf60d2bdf49764fd8b63fcff7b0cd4d9aec57bd5ee62575f38a539ff4bc91"
+  },
+  "buck-fixups-review-r1.json": {
+    "source": "/private/tmp/aws-lc-buck-fixup-independent-review.json",
+    "source_sha256": "800d50006645a3e8896c3f8b80576f4f906843a4ea35fda59984c8120314e9c8",
+    "artifact_sha256": "800d50006645a3e8896c3f8b80576f4f906843a4ea35fda59984c8120314e9c8"
+  },
+  "buck-fixups-review-r2.json": {
+    "source": "/private/tmp/aws-lc-buck-fixup-independent-r2-review.json",
+    "source_sha256": "7459b96be05b2f177011e2bb9b382ed1fa5a09fa0ed7e9d29e9a3bf7ca83aaf8",
+    "artifact_sha256": "7459b96be05b2f177011e2bb9b382ed1fa5a09fa0ed7e9d29e9a3bf7ca83aaf8"
+  },
+  "compatibility-tests-review.json": {
+    "source": "/private/tmp/audit-ed25519-18fd-independent-review.json",
+    "source_sha256": "6874928317f4b62fa926a8f42d1b14646a994937a9b6ee2025b9408ae93e0053",
+    "artifact_sha256": "6874928317f4b62fa926a8f42d1b14646a994937a9b6ee2025b9408ae93e0053"
+  },
+  "compatibility-tests-baseline.json": {
+    "source": "/private/tmp/audit-ed25519-18fd4267-evidence.json",
+    "source_sha256": "8c2c48a090cb78b9f4190ba692ca740a47cb2dc32493bacd2704f50a6f6c165d",
+    "artifact_sha256": "8c2c48a090cb78b9f4190ba692ca740a47cb2dc32493bacd2704f50a6f6c165d"
+  },
+  "differential-review.json": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/review.json",
+    "source_sha256": "86bf74d0dbf3dbc5e2017965fa878136f1dea0f6d16349417eb4737741abd31a",
+    "artifact_sha256": "86bf74d0dbf3dbc5e2017965fa878136f1dea0f6d16349417eb4737741abd31a"
+  },
+  "optional-lock-review.json": {
+    "source": "/private/tmp/console-cargo-optional-ring-5t_54pmq/review.json",
+    "source_sha256": "2d4ddd7abeb54ce02feb84f7f6e17c8339a2998845ad390d98f516968fbbe2cb",
+    "artifact_sha256": "2d4ddd7abeb54ce02feb84f7f6e17c8339a2998845ad390d98f516968fbbe2cb"
+  },
+  "optional-lock-results.json": {
+    "source": "/private/tmp/console-cargo-optional-ring-5t_54pmq/corrected-results.json",
+    "source_sha256": "79c366f46e0d0cd5ce45546515502d84f920212397c0ded106b8ddb8aa98589f",
+    "artifact_sha256": "79c366f46e0d0cd5ce45546515502d84f920212397c0ded106b8ddb8aa98589f"
+  },
+  "aws-lc-tls-source-review.json": {
+    "source": "/private/tmp/console-native30-native-execution-20260914/account/reviews/aws-lc-provider-source-review.json",
+    "source_sha256": "eedd873c766219109e3264da959b3a0c9331d23527cb2782a0e0e42d779f962a",
+    "artifact_sha256": "eedd873c766219109e3264da959b3a0c9331d23527cb2782a0e0e42d779f962a"
+  },
+  "aws-lc-tls-wrapper-review.json": {
+    "source": "/private/tmp/console-native30-native-execution-20260914/account/reviews/aws-lc-wrapper-execution-review.json",
+    "source_sha256": "fb5ecbb243a4fee83202ad3cc54655272416e956d4cbb66effd8f92382691631",
+    "artifact_sha256": "fb5ecbb243a4fee83202ad3cc54655272416e956d4cbb66effd8f92382691631"
+  },
+  "compatibility-ring-baseline.log.gz": {
+    "source": "/private/tmp/audit-ed25519-ring-baseline.log",
+    "source_sha256": "782d3129aa495f4bcdcb4d7bb0ed6365d1a9c1d967262d959f4df9b3f4b038c5",
+    "artifact_sha256": "09ce9686b6dd02408ecd846072def659b0d19ab609f4a3e93541705482250ffd"
+  },
+  "active-dependency-tree-red.txt.gz": {
+    "source": "/private/tmp/console-no-ring-red-tree.txt",
+    "source_sha256": "38318e52f09c4ee65ed395a428c14edf297f8c4e841b4a3907d468cd27066036",
+    "artifact_sha256": "5b17b143b9e325b22a60d5bd85806e14ab76e318311ff8c224403c16f27e796e"
+  },
+  "audit-awslc-compat-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/audit-awslc-compat-green.log",
+    "source_sha256": "fd20529910773dd1886e6a3aab163f816c2878dd46b2fb4dd2b15161c9e25c74",
+    "artifact_sha256": "350cac6a65ff419299a45dac986f3d28b06ce6491ec2b07833e4c88b0738ba68"
+  },
+  "audit-awslc-pg-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/audit-awslc-pg-green.log",
+    "source_sha256": "492c413ed8d40681f013272ba730c948892f1df9d152f3807272ddc34db4c834",
+    "artifact_sha256": "99ad62ea0a33bbb45c8994e7cb44e8cfa89500c7424337c5d6ce35438281b6e7"
+  },
+  "no-ring-clippy.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-clippy.log",
+    "source_sha256": "2d01515a2fca300f2eec1efb5fea8ab31f8dd56546dc1e68a98b3660c6fd1980",
+    "artifact_sha256": "04e34a626588e607b6fdc22b6e7e3ad796a50898d7c5aa88b7b97c90fae9a051"
+  },
+  "no-ring-final-all-targets-tree.txt.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-final-all-targets-tree.txt",
+    "source_sha256": "9edb2a321054bab497be163d6d9732cc7e6e127164ca8ee418cbf91168b59868",
+    "artifact_sha256": "1d275d29f160855f9214fff064f00e6a0d36f0590fb6ae0aed8d13da8b20b6af"
+  },
+  "no-ring-generator-tests.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-generator-tests.log",
+    "source_sha256": "a49488f1d0e4794e9e93396f05ae21e7260a4a89a24a558d733206ca8289bae5",
+    "artifact_sha256": "449077ff62edbe3948c634aa706ad7ce1919286006aae8e1695866266230d5c1"
+  },
+  "no-ring-generator-tests-clean-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-generator-tests-clean-green.log",
+    "source_sha256": "7f5d027456e7c453efe38cdf96681b5768c3cdfd6b17f0191a7c7ce8b2fc6756",
+    "artifact_sha256": "3ff832fde1e31bdbb4d73944bf2ed06e16cd58b923e19dcbd7a924847aaa4439"
+  },
+  "no-ring-buckify-final.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buckify-final.log",
+    "source_sha256": "8ed86f39c3ced8bd1815b1d3576079e6432f52f3173c11e3b9044a88afd2660d",
+    "artifact_sha256": "04083e3212feb8a17a96b5cb7e692560657c6dbb771f4fb5958723eee2fd59c5"
+  },
+  "awslc-final-libraries.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/awslc-final-libraries.log",
+    "source_sha256": "824466ea70921db3232ac6f9bfeeb068c2de4da2bc2830b20cf6442f1ba3168e",
+    "artifact_sha256": "4827133538d55869d7e52f46c5815963ec56f277c7e29c12aaba16c83f042edb"
+  },
+  "awslc-apalis-adapter-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/awslc-apalis-adapter-green.log",
+    "source_sha256": "2ecaa2b00355200a6834186ffe7e27d00d5b284505d9acb8a4b2dea0cf3cf514",
+    "artifact_sha256": "03f9e45957864b0d4a2d6591a5f050d44b9d0f33f74cd721fd05664772e69fef"
+  },
+  "awslc-combined-custody-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/awslc-combined-custody-green.log",
+    "source_sha256": "7eef9fad4cae36925cb6f874c2832bc35cd6f523d81f6a1b15de33248978ecd3",
+    "artifact_sha256": "ec2aaebc73237f18b461665ea00edf531e2319f284d89d26671d6ee8d80bd02d"
+  },
+  "differential-Cargo.toml.gz": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/Cargo.toml",
+    "source_sha256": "55b8fb42e0e01bf45f54e4b392fcf1b42fbb46f34dc88391346883edb89b82aa",
+    "artifact_sha256": "cb3f797b7cc0f278cedecc63cebf4afb823bd015fae58bc9ed64ca62927687b4"
+  },
+  "differential-Cargo.lock.gz": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/Cargo.lock",
+    "source_sha256": "a7845b42a2b3eefa7632f9c7431fe682d042a9afcfada816321a6df42535447a",
+    "artifact_sha256": "13cd5ea290e63951e8007857883d9fdded045a40522a56de9cc472c600966599"
+  },
+  "differential-src-main.rs.gz": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/src/main.rs",
+    "source_sha256": "f20be2ba0228d6d133d3561ccc7981eedc2c1d8501a3b63125224a9ae78e2387",
+    "artifact_sha256": "63e0b6b20459ca8683b4d4d00e45d74cb165444db4eb9e6ebac8de889d022329"
+  },
+  "differential-wycheproof-ed25519.json.gz": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/wycheproof-ed25519.json",
+    "source_sha256": "752d2ea7d7c6cf4736381b6cbacb61f8182b126ab7cd9b058f00c50084975536",
+    "artifact_sha256": "de7a4bc0f5aefc8461be4c56ba8223779b6aaf4d2a27ca1c1e682a170bd80356"
+  },
+  "differential-results.json.gz": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/results.json",
+    "source_sha256": "b9c7b344acb9e579533f2766df2ce0d9aa215e70ff398826fbf00bc7c4dc3c14",
+    "artifact_sha256": "368f94829d4d415baabe603c0651a3eebda7584a47cb8400f9dc0524c6c668d9"
+  },
+  "differential-torsion-results.json.gz": {
+    "source": "/private/tmp/console-ed25519-differential-20260914/torsion-results.json",
+    "source_sha256": "b61f519c197a77b34bfe6a6e561123123f04f6be16f759b423fbb52f66acbc78",
+    "artifact_sha256": "49fd4ba817e64a148f2a84e81a9773c39a4681672acc560c32ef74659af9b720"
+  },
+  "buck-candidate-binding-review.json": {
+    "source": "/private/tmp/aws-lc-69c86eee-buck-binding-review.json",
+    "source_sha256": "085323cc7604ee8d3907ba61a4bc41acd31b2d8597a9ac8f5974f2960bb9dad8",
+    "artifact_sha256": "085323cc7604ee8d3907ba61a4bc41acd31b2d8597a9ac8f5974f2960bb9dad8"
+  },
+  "no-ring-final-probe-tree.txt.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-final-probe-tree.txt",
+    "source_sha256": "ab3658dd0d98089892e7f2ba74bdc489877208eb6d7fa6b0c9b83687fcb9548e",
+    "artifact_sha256": "83d8d04d077faf76f87aa9bb74acd3859c4e16ba4ef74b2ddb234c7c450e3e46"
+  },
+  "no-ring-buck-build-pinned.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-build-pinned.log",
+    "source_sha256": "2dc04230f4e9459557532ab63dd4d1546a5acd996558e53125e455a0114043f5",
+    "artifact_sha256": "2815e2006b4a1622490203db2968261e906c7c5125818bccc093099406ffd0f0"
+  },
+  "no-ring-buck-output.json.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-output.json",
+    "source_sha256": "a144b862f20a443431169f4d58093d375ab279b76ed0eabf4783db7c423cb1dc",
+    "artifact_sha256": "56c9ee0ff9a6c9b735f575c7248e0d338f15f3d824bb2ef821667f0dbd9b93bf"
+  },
+  "no-ring-buck-output.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-output.log",
+    "source_sha256": "690f64d4a4a9b80e2479c6cb28e36787b452282902161f0de70a5e98698fd5b5",
+    "artifact_sha256": "54886b2c2ead3acf00b2b56666f1fe88df4cfacb35344b22d8c43ae2a66cedbb"
+  },
+  "no-ring-buck-compat-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-compat-green.log",
+    "source_sha256": "d9700ab061011f80636c118b01813c218d96eb91641b37550538d44a6df6b161",
+    "artifact_sha256": "8e2682ac6cffc6e7b1eb1d52c8836da60f191c8a6faed4c60e8e509d878a4485"
+  },
+  "no-ring-buck-binary.json.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/no-ring-buck-binary.json",
+    "source_sha256": "428c3d90f5a8cbe8eaf421e67f7e6ae5c29cd92ea543613ad90cb81491365777",
+    "artifact_sha256": "1a8b5db0b9c305a453ad55945aa4f7c7bde8d17e94921fef04ca3cfbe63cbb84"
+  },
+  "startup-probe-map.json.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/startup-probe-map.json",
+    "source_sha256": "2a9c0cc56e4513ffbf0a976fe9043a2a95e4b3d644a449011bd3d542d64e736c",
+    "artifact_sha256": "df6277aa1cceaa7f7d937dadcec35b6f624877a50123f84709e19813f342dd03"
+  },
+  "crypto-candidate-binding-review.json": {
+    "source": "/private/tmp/console-native30-native-execution-20260914/account/reviews/crypto-69c86eee-evidence-review.json",
+    "source_sha256": "403c4a5f3f07616aa72a5b05fb1e2f83507b511bd65c658fdb32d5329327e847",
+    "artifact_sha256": "403c4a5f3f07616aa72a5b05fb1e2f83507b511bd65c658fdb32d5329327e847"
+  },
+  "audit-awslc-final-candidate-green.log.gz": {
+    "source": "/private/tmp/console-account-lifecycle-execution-20260914/audit-awslc-final-candidate-green.log",
+    "source_sha256": "a228d61505ee523005acadb94a12402f5dc4c9e4f3838b8518b2463907aa1d5e",
+    "artifact_sha256": "4cd12e2dff4d7ff6d2e24a2e5d82c06c2411607f5ec6bc26a90c43fde91d40d2"
+  },
+  "buck-native-final-review.json": {
+    "source": "/private/tmp/aws-lc-69c86eee-native-final-independent-review.json",
+    "source_sha256": "93f1469b036dca09c10139871953b7c1db82d15b12f391659fa726b5da3978f4",
+    "artifact_sha256": "93f1469b036dca09c10139871953b7c1db82d15b12f391659fa726b5da3978f4"
+  }
+}

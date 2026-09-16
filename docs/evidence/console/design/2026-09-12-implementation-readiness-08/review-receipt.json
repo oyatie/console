@@ -1,0 +1,27 @@
+{
+  "reviewed_candidate_sha": "c86a2bfad0b641aa929111b5aa833cf8275032ac",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "writer": "/root",
+  "reviewers": [
+    {
+      "identity": "/root/continuity_review",
+      "verdict": "ACCEPT_SCOPED_READINESS_MAP",
+      "scope": "Readiness levels, authorities, UX and authorization/custody dependencies; OPEN B04 brief",
+      "edits": 0,
+      "product_tests_executed": 0
+    },
+    {
+      "identity": "/root/payroll_contract_review",
+      "verdict": "ACCEPT_SCOPED_READINESS_MAP",
+      "scope": "G/P/B closure mapping, first slice/production boundaries, attempt and Group barriers, performance assumptions",
+      "edits": 0,
+      "product_tests_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "implementation_authorized": false,
+  "b04_closed": false,
+  "remaining_work_register": "work-packages.csv"
+}

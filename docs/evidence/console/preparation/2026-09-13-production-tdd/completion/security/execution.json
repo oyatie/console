@@ -1,0 +1,51 @@
+{
+  "base_sha": "67693004c16edd192e744529512bf8fec09ad2b1",
+  "kind": "ACTUAL_EXISTING_OWNER_RED",
+  "owner": "/root",
+  "author": "/root/fresh29_security",
+  "independent_review": "Bounded existing-owner review by /root/preparation_recovery; exact candidate consolidated review pending",
+  "product_changes": 0,
+  "new_tests": 9,
+  "executed": 9,
+  "passed": 2,
+  "failed": 7,
+  "scope_limits": [
+    "Cedar runtime errors compile under actual schema and reach evaluation; no full policy administration claim",
+    "Realtime actual shared dispatch used by for_tests skips PostgreSQL membership loading; company-filter result is proven at supplied dispatch boundary only",
+    "Telemetry real error conversions emit private synthetic diagnostic into captured tracing; no complete egress/caller-path claim"
+  ],
+  "results": {
+    "cedar": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml --locked -p console-platform-authz --test cedar_diagnostic_fail_closed -- --nocapture",
+      "executed": 5,
+      "passed": 2,
+      "failed": 3,
+      "failure": "Actual Allow with runtime diagnostic; ordinary clean permit and matching forbid controls pass",
+      "current_log": "../execution-67693004/console-preparation-cedar-67693004.log.gz"
+    },
+    "realtime": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml --locked -p console-platform-realtime --test hub same_account_ -- --nocapture",
+      "executed": 2,
+      "passed": 0,
+      "failed": 2,
+      "filtered": 3,
+      "failure": "B receives B and A events; independent same-account active Company contexts both connected",
+      "current_log": "../execution-67693004/console-preparation-realtime-67693004.log.gz"
+    },
+    "telemetry": {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --manifest-path backend/Cargo.toml --locked -p console-app --lib security_diagnostic_sink_tests -- --nocapture",
+      "executed": 2,
+      "passed": 0,
+      "failed": 2,
+      "filtered": 164,
+      "failure": "Stable actual production event witnessed; protected synthetic diagnostic in real tracing output; later paired equality assertions unreached",
+      "current_log": "../execution-67693004/console-preparation-telemetry-67693004.log.gz"
+    }
+  },
+  "source_sha256": {
+    "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs": "914385a944d375c70c6c24e4e5e901bf98c3a20a0b80966e402c1b51b24d2dd6",
+    "backend/crates/platform/realtime/tests/hub.rs": "29d6adf7aea6b2d2727d1035328ed288d598cf1db46fa9ac8ebdd0741698dfb2",
+    "backend/app/src/console_telemetry.rs": "84d10c46eaade3f2ac0fd9808e0fd2f61ad256c00e33c96c7735cdb112db8095"
+  },
+  "approval": "UNAPPROVED_TEST_CANDIDATE; no implementation admission"
+}

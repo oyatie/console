@@ -1,0 +1,2705 @@
+{
+  "status": "MECHANICAL_PLACEMENT_CANDIDATE_NOT_ADMISSION",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "rules": [
+    "Use final reviewed successor overlay before activation; never overwrite frozen evidence",
+    "shared-module has no workflow tests; bounded_process_output helper tests are the explicit exception mounted once under account_migration",
+    "test-module emitted only at listed root; avoids duplicate discovered test counts",
+    "No source/include macro may refer to private scratch at activation",
+    "Append owner-local test modules only once to actual responsible owner; no speculative runtime stubs",
+    "Mounts do not admit implementation; same exact named behavioral RED rule applies"
+  ],
+  "entries": [
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "account-enrollment-producer.rs",
+      "target": "backend/app/tests/support/native/account-enrollment-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "account_enrollment_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/account-enrollment-producer.rs",
+      "source_sha256": "a260c3b99ba1f78027d43da19b9a87ca1948ad0fbd07dd1cf84aa691c764b982",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/account-enrollment-producer.rs\"] mod account_enrollment_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "artifact-owner-producer.rs",
+      "target": "backend/app/tests/support/native/artifact-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "artifact_owner_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/artifact-owner-producer.rs",
+      "source_sha256": "27e105bc0d7b1274b8f29b3b8fb48e3a3c34757e324a99d9ea234f7bb5797c53",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/artifact-owner-producer.rs\"] mod artifact_owner_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-oracle-s8",
+      "source": "binder-sequence.rs",
+      "target": "backend/app/tests/support/native/binder-sequence.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "binder_sequence",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/binder-sequence.rs",
+      "source_sha256": "f037f11cef0cffd4f1a2c2aabf2dd0d8d1f2e4ee613ecb343158f0b97d22b2de",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/binder-sequence.rs\"] mod binder_sequence;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "commit-ack-relay.rs",
+      "target": "backend/app/tests/support/native/commit-ack-relay.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "commit_ack_relay",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/commit-ack-relay.rs",
+      "source_sha256": "741f9c478e7315881cfb3c6cdd3c72cf92f5aa157cee4fd8e540f4d16e542733",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/dependencies/commit_relay.py"
+      ],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/commit-ack-relay.rs\"] mod commit_ack_relay;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "deployment-root-producer.rs",
+      "target": "backend/app/tests/support/native/deployment-root-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "deployment_root_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/deployment-root-producer.rs",
+      "source_sha256": "9243b23df1eabd138f16b9c10307db2f67586cb2c3ade432fd40b7b0ff4629a3",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/deployment-root-producer.rs\"] mod deployment_root_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "deployment-runtime-producer.rs",
+      "target": "backend/app/tests/support/native/deployment-runtime-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "deployment_runtime_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/deployment-runtime-producer.rs",
+      "source_sha256": "3a1a67d0fd68e48b6d09c5213725c111eb8d6e0f0d5c06f8a1c6d194d62b96b6",
+      "crate_refs": [
+        "native_fixture",
+        "operator_custody_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/deployment-runtime-producer.rs\"] mod deployment_runtime_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-fixture.rs",
+      "target": "backend/app/tests/support/native/native-fixture.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "native_fixture",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-fixture.rs",
+      "source_sha256": "ed0a60d300450a8295bcd814b8e5876ced5ba8746dd6baf79fc8abcc25f21315",
+      "crate_refs": [
+        "account_enrollment_producer",
+        "attendance_owner_producer",
+        "binder_sequence",
+        "deployment_runtime_producer",
+        "native_owner_producer",
+        "ordinary_issuer_bootstrap",
+        "payroll_source_facts_producer",
+        "publish_then_root_producer",
+        "source_foundation_producer",
+        "workforce_owner_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/business-readback.sql",
+        "backend/app/tests/support/native/registered-action-keys.json"
+      ],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/native-fixture.rs\"] mod native_fixture;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-money-assertions.rs",
+      "target": "backend/app/tests/support/native/native-money-assertions.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "native_money_assertions",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-money-assertions.rs",
+      "source_sha256": "6e2a48c34b85b8426a594d7b14ff4b94cdcbedf34761cea7a8d0f33b90ebf072",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/native-money-golden.json"
+      ],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/native-money-assertions.rs\"] mod native_money_assertions;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "native-owner-producer.rs",
+      "target": "backend/app/tests/support/native/native-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "native_owner_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-owner-producer.rs",
+      "source_sha256": "9ca5c2d564566837231d4c52162bae2add39116dacbc0eb2bfd188cc25c0177c",
+      "crate_refs": [
+        "binder_sequence"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/native-owner-producer.rs\"] mod native_owner_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-oracle-s8",
+      "source": "negative-assertions.rs",
+      "target": "backend/app/tests/support/native/negative-assertions.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "negative_assertions",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/negative-assertions.rs",
+      "source_sha256": "c7fb20a83e8a51d4b261b601b510aaab10a3365ae55b63bff6fb461b7448334d",
+      "crate_refs": [
+        "assert_registered_refusal",
+        "binder_sequence"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/negative-assertions.rs\"] mod negative_assertions;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "operator-custody-producer.rs",
+      "target": "backend/app/tests/support/native/operator-custody-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "operator_custody_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/operator-custody-producer.rs",
+      "source_sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/operator-custody-producer.rs\"] mod operator_custody_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "ordinary-issuer-bootstrap.rs",
+      "target": "backend/app/tests/support/native/ordinary-issuer-bootstrap.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "ordinary_issuer_bootstrap",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/ordinary-issuer-bootstrap.rs",
+      "source_sha256": "50e0fb9e77889f6acaf3111b920453f2c5c7b5e4800bdfbb848ddb63aa8ad494",
+      "crate_refs": [
+        "account_enrollment_producer",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/ordinary-issuer-bootstrap.rs\"] mod ordinary_issuer_bootstrap;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "browser-r4",
+      "source": "payroll-source-facts-producer.rs",
+      "target": "backend/app/tests/support/native/payroll-source-facts-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "payroll_source_facts_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/payroll-source-facts-producer.rs",
+      "source_sha256": "015cc3062f4f6918adda88b6133c82d073d45c7741e0919c097c7fae4333d9b9",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "source_foundation_producer",
+        "source_owner_producer",
+        "workforce_owner_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/payroll-source-facts-producer.rs\"] mod payroll_source_facts_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "publish-then-root-producer.rs",
+      "target": "backend/app/tests/support/native/publish-then-root-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "publish_then_root_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/publish-then-root-producer.rs",
+      "source_sha256": "56f047d7a2087ff79286aade76cc166cc56e9c384dc57da5eaca75fffdbf0027",
+      "crate_refs": [
+        "deployment_root_producer",
+        "native_fixture",
+        "operator_custody_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/publish-then-root-producer.rs\"] mod publish_then_root_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "review-correction-producer.rs",
+      "target": "backend/app/tests/support/native/review-correction-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "review_correction_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/review-correction-producer.rs",
+      "source_sha256": "f0f3fdda6ffb95a5146ba017fdd571649df4e9383bae4ec1b4a15b9d697ec1bc",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "source_owner_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/review-correction-producer.rs\"] mod review_correction_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "source-foundation-producer.rs",
+      "target": "backend/app/tests/support/native/source-foundation-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "source_foundation_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/source-foundation-producer.rs",
+      "source_sha256": "8ebc38ad1204769e34c8629e026ecb89dc141bc6c0b8522ebb9356d8c05e014a",
+      "crate_refs": [
+        "artifact_owner_producer",
+        "native_fixture",
+        "ordinary_issuer_bootstrap",
+        "source_owner_producer",
+        "workforce_owner_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/source-foundation-producer.rs\"] mod source_foundation_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-oracle-s8",
+      "source": "source-owner-producer.rs",
+      "target": "backend/app/tests/support/native/source-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "source_owner_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/source-owner-producer.rs",
+      "source_sha256": "109c120bda9e95d9f46a34969b7c2227e5b66c95b35214f6b59db1e37fa4d815",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/source-owner-producer.rs\"] mod source_owner_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "browser-r4",
+      "source": "two-subject-producer.rs",
+      "target": "backend/app/tests/support/native/two-subject-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest"
+      ],
+      "module_alias": "two_subject_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/two-subject-producer.rs",
+      "source_sha256": "5d6b644fac22909929213f72eca310dfa1e666d572b14071a14a342cd473e71a",
+      "crate_refs": [
+        "attendance_owner_producer",
+        "binder_sequence",
+        "native_fixture",
+        "ordinary_issuer_bootstrap",
+        "payroll_source_facts_producer",
+        "source_foundation_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/two-subject-producer.rs\"] mod two_subject_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "workforce-owner-producer.rs",
+      "target": "backend/app/tests/support/native/workforce-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "workforce_owner_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/workforce-owner-producer.rs",
+      "source_sha256": "cd955704de2f263bac25abf4dbab2fce241283166368f281f585de92011e363f",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/workforce-owner-producer.rs\"] mod workforce_owner_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "attendance-r2",
+      "source": "attendance-owner-producer.rs",
+      "target": "backend/app/tests/support/native/attendance-owner-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "attendance_owner_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/attendance-owner-producer.rs",
+      "source_sha256": "08121eb293b6e8c0d08881be2596243af258228bd0c12bb284974474b40fe83a",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "source_foundation_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/attendance-owner-producer.rs\"] mod attendance_owner_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-oracle-s8",
+      "source": "native-owner-tests.rs",
+      "target": "backend/app/tests/support/native/native-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "native_owner_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/native-owner-tests.rs",
+      "source_sha256": "af5a8f7fc6c271ce224285a10fde6fcef414c57e9ba80e5d28d27d83ec19d213",
+      "crate_refs": [
+        "assert_registered_refusal",
+        "binder_sequence",
+        "native_fixture",
+        "native_money_assertions",
+        "native_owner_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "native_owner_chain_produces_complete_nonpayable_review",
+        "native_first_prepare_is_durable_pending_before_terminal_effects",
+        "native_prepare_replay_returns_same_receipt_without_second_input",
+        "native_calculation_replay_returns_same_money_and_receipt",
+        "native_same_draft_control_command_changed_input_refuses",
+        "native_owner_wage_change_after_building_prevents_old_activation",
+        "native_blocked_population_cannot_close",
+        "native_two_original_calculate_intents_have_one_current_winner",
+        "review_partial_approvals_do_not_produce_completion",
+        "review_second_account_of_same_human_cannot_self_approve"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_owner_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_owner_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-owner-tests.rs\"] mod native_owner_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-oracle-s8",
+      "source": "native-lifecycle-tests.rs",
+      "target": "backend/app/tests/support/native/native-lifecycle-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "native_lifecycle_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/native-lifecycle-tests.rs",
+      "source_sha256": "3373e4b6792464b80cf2d15d113e1d2a731029e9919d47d565f75cd38e9130c1",
+      "crate_refs": [
+        "assert_registered_refusal",
+        "binder_sequence",
+        "commit_ack_relay",
+        "native_fixture",
+        "native_owner_producer",
+        "review_correction_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "contract_wage_create_replays_exact_subject_fact_without_duplicate",
+        "contract_wage_correction_recovers_commit_and_preserves_original",
+        "native_create_is_header_only_and_original_command_replays",
+        "native_prepare_recovers_lost_building_ack_on_original_subject",
+        "native_reopen_preserves_history_and_current_projection_excludes_old_money",
+        "native_close_replay_does_not_unlock_or_replace_operational_basis",
+        "native_cancel_review_is_explicit_and_generic_reopen_refuses",
+        "approved_successor_is_unique_staged_and_preserves_old_decisions",
+        "native_review_revision_preserves_only_exact_unaffected_approval",
+        "native_review_open_rejects_each_wrong_nullable_expectation",
+        "review_withdraw_keeps_immutable_decision_and_replays_control_once"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_lifecycle_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_lifecycle_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-lifecycle-tests.rs\"] mod native_lifecycle_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "artifact-owner-tests.rs",
+      "target": "backend/app/tests/support/native/artifact-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "artifact_owner_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/artifact-owner-tests.rs",
+      "source_sha256": "629e5a37b48b6d059eefacb7ea59757f1015cb7ae70cad24634e72ce5beb043d",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "source_foundation_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "artifact_upload_request_and_worker_verification_replay_exact_receipts",
+        "artifact_wrong_declared_digest_cannot_create_verified_source",
+        "artifact_reused_ticket_cannot_verify_changed_bytes_or_location_revision",
+        "artifact_parallel_worker_commands_append_one_verification",
+        "artifact_worker_boundary_refuses_account_token_before_owner_dispatch"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance artifact_owner_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance artifact_owner_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/artifact-owner-tests.rs\"] mod artifact_owner_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-oracle-s8",
+      "source": "source-owner-tests.rs",
+      "target": "backend/app/tests/support/native/source-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "source_owner_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-oracle-s8/source-owner-tests.rs",
+      "source_sha256": "13147153d86ec2685cec72a27dbedf1b82fd419d215d0e0410c623c6a09b11b6",
+      "crate_refs": [
+        "assert_registered_refusal",
+        "binder_sequence",
+        "commit_ack_relay",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance source_owner_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance source_owner_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/source-owner-tests.rs\"] mod source_owner_tests;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "source-preparation-tests.rs",
+      "target": "backend/app/tests/support/native/source-preparation-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "source_preparation_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/source-preparation-tests.rs",
+      "source_sha256": "cd63fe12160c74335273b758adfdfde05e7738a3833255eaee3651ccc09e4e8e",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "source_preparation_replay_retains_exact_schema_head_and_bytes",
+        "source_preparation_other_draft_unit_cannot_seal",
+        "source_preparation_changed_head_keeps_old_unit_but_cannot_seal_it"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance source_preparation_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance source_preparation_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/source-preparation-tests.rs\"] mod source_preparation_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-lock-s4",
+      "source": "native-lock-custody-tests.rs",
+      "target": "backend/app/tests/support/native/native-lock-custody-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "native_lock_custody_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s4/native-lock-custody-tests.rs",
+      "source_sha256": "e403a7fba260b93e2339500514c9af4221b7beec40de69244150fd20e1fc0200",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "native_owner_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "native_calculate_two_distinct_commands_rendezvous_on_actual_run_lock",
+        "native_runtime_cannot_update_or_delete_actual_immutable_custody"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_lock_custody_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_lock_custody_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-lock-custody-tests.rs\"] mod native_lock_custody_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-assertions-s3",
+      "source": "native-retention-tests.rs",
+      "target": "backend/app/tests/support/native/native-retention-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "native_retention_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s3/native-retention-tests.rs",
+      "source_sha256": "7a9fcd10fa625169996169046d1eacc289ef9ce4c3bacdd883aa03122e873ed7",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "native_aliases_share_one_real_copy_but_keep_distinct_live_obligations",
+        "native_late_hold_invalidates_disposal_preflight_without_claiming_bytes_removed"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_retention_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance native_retention_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-retention-tests.rs\"] mod native_retention_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "draft-r3",
+      "source": "draft-owner-acceptance.rs",
+      "target": "backend/app/tests/support/native/draft-owner-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "draft_owner_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/draft-owner-acceptance.rs",
+      "source_sha256": "873786ca013ec5af21927e849d5f7209ffce82a06b938993dc0b5f9fefc21f42",
+      "crate_refs": [
+        "binder_sequence",
+        "lifecycle_producer",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "draft_start_replay_preserves_identity_and_has_no_business_effect",
+        "draft_get_binding_does_not_mint_intent_or_revision",
+        "draft_save_stale_head_does_not_overwrite_acknowledged_input",
+        "draft_incomplete_text_survives_replay_and_refuses_seal",
+        "draft_restore_appends_selected_history_without_rewriting_old_revisions",
+        "draft_two_saves_same_head_have_one_winner_and_keep_original_history",
+        "draft_discard_keeps_acknowledged_content_and_refuses_later_seal",
+        "draft_seal_replay_has_one_original_attempt_without_business_effect",
+        "cancel_ready_attempt_is_terminal_no_effect_and_cannot_execute",
+        "attempt_execute_replay_reuses_original_domain_receipt",
+        "attempt_cancel_cannot_erase_an_already_committed_effect",
+        "attempt_cancel_pending_owner_work_requires_definitive_owner_evidence",
+        "draft_schema_upgrade_preserves_identity_fields_and_old_schema",
+        "draft_schema_upgrade_partial_mapping_cannot_drop_complete_input",
+        "draft_expiry_uses_current_server_policy_and_retains_history",
+        "draft_expiry_ends_editing_but_preserves_held_evidence"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance draft_owner_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance draft_owner_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/draft-owner-acceptance.rs\"] mod draft_owner_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "attendance-r2",
+      "source": "attendance-owner-tests.rs",
+      "target": "backend/app/tests/support/native/attendance-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "attendance_owner_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/attendance-owner-tests.rs",
+      "source_sha256": "b08212fa66c32270dc85d1af70a5c62c3c6333d4c07920d6d85539e08f93e62f",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "calendar_published_bytes_and_same_attempt_replay_are_immutable",
+        "calendar_duplicate_weekday_and_wrong_derived_minutes_refuse",
+        "calendar_assignment_overlap_refuses_without_second_interval",
+        "attendance_coverage_accounts_for_every_actual_event_and_qualified_break",
+        "attendance_missing_real_clock_out_is_blocked_without_close_basis",
+        "attendance_changed_package_digest_cannot_create_coverage",
+        "attendance_close_basis_has_exact_membership_and_replays_its_receipt",
+        "attendance_close_basis_cannot_omit_or_invent_member"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance attendance_owner_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance attendance_owner_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/attendance-owner-tests.rs\"] mod attendance_owner_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "attendance-r2",
+      "source": "leave-owner-tests.rs",
+      "target": "backend/app/tests/support/native/leave-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "leave_owner_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/attendance-r2/leave-owner-tests.rs",
+      "source_sha256": "9ca8c024a8000d1607da2b8e6f36b49fa7eaf5e40aee96bd95ebea82f9a4091b",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "leave_timing_consultation_keeps_original_request_and_replays_once",
+        "leave_old_request_revision_cannot_overwrite_new_consultation",
+        "leave_two_consultations_at_same_revision_have_one_current_effect"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance leave_owner_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance leave_owner_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/leave-owner-tests.rs\"] mod leave_owner_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-owner-tests.rs",
+      "target": "backend/app/tests/support/native/workflow-owner-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "workflow_owner_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-owner-tests.rs",
+      "source_sha256": "8880e5edc2b61818ebe70e977f5d76e4e028a23f51ab9674a15e4c914e090dce",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "workflow_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "gate_request_binds_actual_sealed_calculation_without_effect",
+        "gate_decide_requires_independence_and_never_executes_business",
+        "publication_release_preserves_exact_source_and_is_nonpayable",
+        "publication_replace_preserves_history_and_rejects_stale_slot",
+        "case_request_retains_real_content_and_actual_accountable_task",
+        "case_append_preserves_prior_items_and_refuses_stale_revision",
+        "case_withdraw_retains_immutable_content_and_replays_once",
+        "case_respond_requires_complete_items_then_resolves_with_real_receipt",
+        "transfer_submit_retains_task_and_selection_without_assigning",
+        "transfer_execute_changes_one_assignment_and_charge_once",
+        "transfer_stop_fences_later_execution_and_keeps_assignment",
+        "group_create_freezes_six_actual_companies_without_calculation",
+        "group_activate_requires_all_prepared_original_attempts",
+        "group_resume_preserves_manifest_and_original_pending_commands",
+        "group_stop_blocks_prepared_child_without_cross_company_effect"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance workflow_owner_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance workflow_owner_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/workflow-owner-tests.rs\"] mod workflow_owner_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-race-projection-tests.rs",
+      "target": "backend/app/tests/support/native/workflow-race-projection-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "workflow_race_projection_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-race-projection-tests.rs",
+      "source_sha256": "cbfd62612ae4173b5db64a488d882e775f5de9171c673a43fa061747a3829337",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "workflow_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "publication_concurrent_same_predecessor_has_one_exact_successor",
+        "publication_replay_after_current_grant_revocation_is_not_disclosed",
+        "transfer_stop_races_effect_preserving_one_truthful_assignment"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance workflow_race_projection_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance workflow_race_projection_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/workflow-race-projection-tests.rs\"] mod workflow_race_projection_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-obligation-tests.rs",
+      "target": "backend/app/tests/support/native/workflow-obligation-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "workflow_obligation_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-obligation-tests.rs",
+      "source_sha256": "a7c6f78be1865bc430b115c7834e6e6426ce6032bcc8722cbad2a94deedd6e42",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "native_owner_producer",
+        "workflow_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/assignment-readback.sql"
+      ],
+      "source_test_names": [
+        "publication_one_forbidden_company_target_prevents_all_local_publication",
+        "own_case_request_and_withdraw_do_not_follow_general_handler_permission",
+        "stale_case_handler_attempt_cannot_resolve_after_real_transfer",
+        "group_create_rejects_another_members_actual_incarnation",
+        "group_stop_preserves_unknown_when_authoritative_company_receipt_is_unavailable",
+        "transfer_rechecks_actual_recipient_availability_after_seal",
+        "transfer_nomination_never_restores_revoked_recipient_domain_authority",
+        "group_command_replay_preserves_allocated_parent_and_rejects_changed_body",
+        "publication_valid_same_company_forbidden_field_prevents_all_targets",
+        "transfer_capacity_conflict_preserves_two_real_task_charges",
+        "transfer_unknown_receipt_retains_actual_assignment_and_capacity_until_reconciled",
+        "group_resume_requires_original_account_even_for_same_human_with_group_grant"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance workflow_obligation_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance workflow_obligation_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/workflow-obligation-tests.rs\"] mod workflow_obligation_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "migration-admission-tests.rs",
+      "target": "backend/app/tests/support/native/migration-admission-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "migration_admission_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-admission-tests.rs",
+      "source_sha256": "63faa9a23fa4c6cd1c615fb40821b861c106e7a1964f34f639f131eb63a15111",
+      "crate_refs": [
+        "migration_catalog_producer",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/actor-migration.csv"
+      ],
+      "source_test_names": [
+        "m0_enrollment_binds_full_actual_catalog_and_all_actor_references",
+        "m0_actual_column_acl_drift_blocks_enrollment",
+        "m0_actual_security_definer_search_path_drift_blocks_enrollment",
+        "m2_m4_incomplete_business_catalog_cannot_readmit_while_account_still_works"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance migration_admission_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance migration_admission_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/migration-admission-tests.rs\"] mod migration_admission_tests;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "draft-r3",
+      "source": "lifecycle-producer.rs",
+      "target": "backend/app/tests/support/native/lifecycle-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest"
+      ],
+      "module_alias": "lifecycle_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/lifecycle-producer.rs",
+      "source_sha256": "03e342a9b5bc4806ab37ef8f623af8a50f41e5d1c6fd9bb5c7d71c355069b632",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/lifecycle-producer.rs\"] mod lifecycle_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "workflow-r5",
+      "source": "workflow-fixture.rs",
+      "target": "backend/app/tests/support/native/workflow-fixture.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "workflow_fixture",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/workflow-fixture.rs",
+      "source_sha256": "170cc5a8b1759d0db80ec51a59cb1035059ae34f314f33decd590438d2ba557d",
+      "crate_refs": [
+        "account_enrollment_producer",
+        "binder_sequence",
+        "native_fixture",
+        "native_owner_producer",
+        "two_subject_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/publication-readback.sql"
+      ],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/workflow-fixture.rs\"] mod workflow_fixture;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "migration-catalog-producer.rs",
+      "target": "backend/app/tests/support/native/migration-catalog-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "account_migration"
+      ],
+      "module_alias": "migration_catalog_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-catalog-producer.rs",
+      "source_sha256": "9be995e540a59afbf25dad9255509927ca349730d7038c662c2790ba321c3bdd",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [
+        "backend/app/tests/support/native/catalog_snapshot.sql"
+      ],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/migration-catalog-producer.rs\"] mod migration_catalog_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "postgres-snapshot-producer.rs",
+      "target": "backend/app/tests/support/native/postgres-snapshot-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "module_alias": "postgres_snapshot_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/postgres-snapshot-producer.rs",
+      "source_sha256": "17ef554655131089e447de49d8e77230fda722ea233a562ec30fcbff90f723e9",
+      "crate_refs": [
+        "migration_catalog_producer",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/postgres-snapshot-producer.rs\"] mod postgres_snapshot_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "context-discovery-acceptance.rs",
+      "target": "backend/app/tests/support/native/context-discovery-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "context_discovery_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-discovery-acceptance.rs",
+      "source_sha256": "461235bbc37190f059ac0ec355b7d1017c6761b008e00a731c45b44ae0519179",
+      "crate_refs": [
+        "context_owner_fixture",
+        "operator_custody_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "ctx_maximum_populated_page_one_is_complete_projected_and_read_only",
+        "ctx_revocation_and_denied_to_allowed_invalidate_whole_scan_cursor",
+        "ctx_foreign_query_and_future_cursor_binding_refuse_uniformly",
+        "ctx_empty_is_success_and_unavailable_is_not_empty",
+        "ctx_cursor_has_five_minute_lifetime_and_expires_at_real_authoritative_time",
+        "ctx_future_allow_outside_page_one_invalidates_cursor_without_epoch_change",
+        "ctx_thirty_three_real_group_candidates_refuse_whole_scan_instead_of_truncating",
+        "ctx_two_hundred_fifty_seven_real_company_candidates_refuse_without_partial_disclosure"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest context_discovery_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest context_discovery_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/context-discovery-acceptance.rs\"] mod context_discovery_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "context-topology-acceptance.rs",
+      "target": "backend/app/tests/support/native/context-topology-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "context_topology_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-topology-acceptance.rs",
+      "source_sha256": "6bc2be8f0b5b04b72c1cee510200e8e80aab183a298c945ceee88b377cd552ee",
+      "crate_refs": [
+        "context_owner_fixture",
+        "operator_custody_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "ctx_known_undiscoverable_target_and_unknown_target_have_same_public404",
+        "ctx_other_account_actual_allowed_a_does_not_gain_b_from_first_account",
+        "ctx_detach_reattach_witnesses_atomic_candidate_fence_and_fresh_membership_incarnation"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest context_topology_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest context_topology_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/context-topology-acceptance.rs\"] mod context_topology_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "current-context-projection-acceptance.rs",
+      "target": "backend/app/tests/support/native/current-context-projection-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "current_context_projection_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/current-context-projection-acceptance.rs",
+      "source_sha256": "14919ce92fad09108a197477e29dbbd19a88ccf32682e56cadc584a54179b00f",
+      "crate_refs": [
+        "context_owner_fixture",
+        "operator_custody_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "current_active_company_never_uses_other_switchable_company_and_old_context_expires",
+        "hidden_company_label_changes_do_not_change_allowed_context_projection",
+        "context_result_revocation_refuses_existing_opaque_context_but_fresh_unrevoked_read_succeeds"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest current_context_projection_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest current_context_projection_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/current-context-projection-acceptance.rs\"] mod current_context_projection_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "live-context-invalidation-acceptance.rs",
+      "target": "backend/app/tests/support/native/live-context-invalidation-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "live_context_invalidation_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/live-context-invalidation-acceptance.rs",
+      "source_sha256": "b9cbea19b1b87e9ce32dca02729fb2b7f30f1a4e2891dabdf3d5eea86e32f99b",
+      "crate_refs": [
+        "context_owner_fixture",
+        "native_fixture",
+        "security_grant_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "live_buffered_actual_projection_refuses_after_switch_and_fresh_b_emits",
+        "context_cursor_actual_switch_invalidates_prior_scan_and_new_scan_succeeds"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest live_context_invalidation_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest live_context_invalidation_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/live-context-invalidation-acceptance.rs\"] mod live_context_invalidation_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "native-control-reference-acceptance.rs",
+      "target": "backend/app/tests/support/native/native-control-reference-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "native_control_reference_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-control-reference-acceptance.rs",
+      "source_sha256": "1608b02e4935d21fd42ac649e488d8474c1ca73f4207098380ecdfd7bd006587",
+      "crate_refs": [
+        "binder_sequence",
+        "browser_auth_producer",
+        "lifecycle_producer",
+        "native_fixture",
+        "security_grant_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "control_reference_renderer_envelope_seals_exact_private_reference_json_and_html",
+        "control_reference_cross_account_scope_field_schema_and_raw_reference_refuse",
+        "control_reference_revocation_and_real_fifteen_minute_expiry_require_fresh_render",
+        "control_reference_new_session_and_actual_switch_never_reuse_old_handle",
+        "control_reference_actual_different_action_draft_cannot_consume_handle"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest native_control_reference_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest native_control_reference_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-control-reference-acceptance.rs\"] mod native_control_reference_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "native-projection-alias-acceptance.rs",
+      "target": "backend/app/tests/support/native/native-projection-alias-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "native_projection_alias_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-projection-alias-acceptance.rs",
+      "source_sha256": "bd77cb8c652f51dbf947a292675fab615488e7edc1ccc20fa07ecf8a4cc62a2f",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "security_grant_producer",
+        "two_subject_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "native_aliases_hide_other_company_changes_while_emitting_permitted_salary",
+        "native_same_run_two_real_members_expose_only_actual_granted_line_gross"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest native_projection_alias_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest native_projection_alias_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-projection-alias-acceptance.rs\"] mod native_projection_alias_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "native-replay-disclosure-acceptance.rs",
+      "target": "backend/app/tests/support/native/native-replay-disclosure-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "native_replay_disclosure_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/native-replay-disclosure-acceptance.rs",
+      "source_sha256": "49b31b7017276a3d5b17b235876c9dc08e7da90c982294357317c498ea66ae30",
+      "crate_refs": [
+        "binder_sequence",
+        "native_fixture",
+        "security_grant_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "native_original_command_replay_rechecks_disclosure_after_real_grant_revocation",
+        "native_original_calculation_replay_fresh_context_reduces_fields_without_second_effect"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest native_replay_disclosure_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest native_replay_disclosure_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/native-replay-disclosure-acceptance.rs\"] mod native_replay_disclosure_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "projector-counterfactual-acceptance.rs",
+      "target": "backend/app/tests/support/native/projector-counterfactual-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "projector_counterfactual_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/projector-counterfactual-acceptance.rs",
+      "source_sha256": "4736a440e2eca6192404514b4b90b8cbe415737de6794ae2bb382f1bd491c6cd",
+      "crate_refs": [
+        "native_fixture",
+        "native_projection_alias_acceptance",
+        "projector_observation_collector",
+        "security_grant_producer",
+        "two_subject_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "proj_actual_two_member_decisions_hide_denied_scalar_across_all_concrete_sink_encoders"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest projector_counterfactual_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest projector_counterfactual_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/projector-counterfactual-acceptance.rs\"] mod projector_counterfactual_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "publication-boundary-acceptance.rs",
+      "target": "backend/app/tests/support/native/publication-boundary-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "publication_boundary_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/publication-boundary-acceptance.rs",
+      "source_sha256": "ad2f40ccccc4eef619bb548fae5aa09a5e608b89dce8d52ba7c432cc5a4d78cc",
+      "crate_refs": [
+        "browser_auth_producer",
+        "expanded_custody_producer",
+        "native_fixture"
+      ],
+      "super_refs": [
+        "super::prepare_http_database(&pool).await;"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "publication_eight_registered_kinds_and_exact_wrapper_bytes_are_real_positive_controls",
+        "publisher_unknown_operator_challenge_replay_missing_file_and_public_json_refuse",
+        "newer_publication_with_old_artifact_configuration_closes_enrollment_preserves_existing_account"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest publication_boundary_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest publication_boundary_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/publication-boundary-acceptance.rs\"] mod publication_boundary_acceptance;",
+      "root_private_contract": "auth_rest existing private helper scope; mount directly as child of integration root",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "publication-transition-acceptance.rs",
+      "target": "backend/app/tests/support/native/publication-transition-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "publication_transition_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/publication-transition-acceptance.rs",
+      "source_sha256": "98f850b4c450d0f5a5a7387f16bb5cb0ffef235350820b52ac45924258cd3f34",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "publication_revision_genesis_successor_and_signed_bigint_boundaries",
+        "publication_revision_requires_exact_predecessor_and_never_repairs_a_head"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest publication_transition_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest publication_transition_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/publication-transition-acceptance.rs\"] mod publication_transition_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "replica-key-acceptance.rs",
+      "target": "backend/app/tests/support/native/replica-key-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "replica_key_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/replica-key-acceptance.rs",
+      "source_sha256": "fa902b1916b293ab8c6261fd1fb76ee0565f4ec095bed50e988685effc03b93a",
+      "crate_refs": [
+        "browser_auth_producer",
+        "native_fixture",
+        "real_process_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "replica_key_identity_requires_homogeneity_and_replacement_revokes_old_credentials"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest replica_key_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest replica_key_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/replica-key-acceptance.rs\"] mod replica_key_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "storage-no-redirect-acceptance.rs",
+      "target": "backend/app/tests/support/native/storage-no-redirect-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "storage_no_redirect_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/storage-no-redirect-acceptance.rs",
+      "source_sha256": "7973ce0b2d3db2ece3a151bedfa7c34021c5188fc9c7e5cf639774d6fb630bb2",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "configured_storage_get_returns_exact_direct_endpoint_bytes",
+        "configured_storage_get_never_follows_redirect_to_second_endpoint"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest storage_no_redirect_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest storage_no_redirect_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/storage-no-redirect-acceptance.rs\"] mod storage_no_redirect_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "terms-publication-acceptance.rs",
+      "target": "backend/app/tests/support/native/terms-publication-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "terms_publication_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/terms-publication-acceptance.rs",
+      "source_sha256": "0178db0e32ab0d3dc87183328e7a8ec83b4b5f45835b82670506706439042bd4",
+      "crate_refs": [
+        "operator_custody_producer"
+      ],
+      "super_refs": [
+        "super::prepare_http_database;"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "pub_authenticated_custody_genesis_and_same_digest_republication",
+        "pub_expected_seven_concurrent_publishers_append_exactly_one_receipt",
+        "pub_untrusted_copy_and_wrong_signature_have_no_custody_authority",
+        "pub_production_rejects_test_roots_and_missing_qualified_content",
+        "pub_closed_manifest_validation_and_content_integrity",
+        "pub_real_database_failure_rolls_back_receipt_and_head",
+        "pub_security_definer_entrypoint_denies_real_runtime_logins",
+        "pub_registration_holds_share_through_commit_and_publisher_only_waits_on_head",
+        "pub_symlink_escape_and_oversized_or_non_utf8_content_refuse_before_effect",
+        "pub_actual_a_b_a_publications_do_not_revive_old_registration",
+        "pub_publisher_wins_real_head_lock_then_registration_refuses_without_activation"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest terms_publication_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest terms_publication_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/terms-publication-acceptance.rs\"] mod terms_publication_acceptance;",
+      "root_private_contract": "auth_rest existing private helper scope; mount directly as child of integration root",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "bound-egress-acceptance.rs",
+      "target": "backend/app/tests/support/native/bound-egress-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "bound_egress_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/bound-egress-acceptance.rs",
+      "source_sha256": "fe41a716f706c03fbf4a527f0874a563699b2f7edc5b25e275457c1138823112",
+      "crate_refs": [
+        "local_egress_peer",
+        "native_fixture",
+        "security_grant_producer"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "bound_egress_checks_each_destination_identity_before_any_actual_outbound_request"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest bound_egress_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest bound_egress_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/bound-egress-acceptance.rs\"] mod bound_egress_acceptance;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "browser-r4",
+      "source": "browser-auth-producer.rs",
+      "target": "backend/app/tests/support/native/browser-auth-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance",
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "browser_auth_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-auth-producer.rs",
+      "source_sha256": "2cf499110ec906d167c299ed3ce996906c66dd02bfca7dbc51115df686ce68f1",
+      "crate_refs": [
+        "account_enrollment_producer",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/browser-auth-producer.rs\"] mod browser_auth_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "context-owner-fixture.rs",
+      "target": "backend/app/tests/support/native/context-owner-fixture.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "context_owner_fixture",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/context-owner-fixture.rs",
+      "source_sha256": "15e0c1995e4d425b8c9b3001487159c7d0f035101e41172b3e05868c2e9cfe27",
+      "crate_refs": [
+        "account_enrollment_producer",
+        "operator_custody_producer",
+        "ordinary_issuer_bootstrap",
+        "publish_then_root_producer"
+      ],
+      "super_refs": [
+        "super::prepare_http_database(admin).await;",
+        "super::account_transport_urls(admin);"
+      ],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/context-owner-fixture.rs\"] mod context_owner_fixture;",
+      "root_private_contract": "auth_rest existing private helper scope; mount directly as child of integration root",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "expanded-custody-producer.rs",
+      "target": "backend/app/tests/support/native/expanded-custody-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "expanded_custody_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/expanded-custody-producer.rs",
+      "source_sha256": "7b45f89271398090947e9ed0f0dc18f739b703eece8d38904c12fe2f997ef4f2",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/expanded-custody-producer.rs\"] mod expanded_custody_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "local-egress-peer.rs",
+      "target": "backend/app/tests/support/native/local-egress-peer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "local_egress_peer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/local-egress-peer.rs",
+      "source_sha256": "28bfdbaa15cfa1d6e784e6335ba08e3e72041f1e91b62f31157c0099c51d17ce",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/local-egress-peer.rs\"] mod local_egress_peer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "logical-http-collector.rs",
+      "target": "backend/app/tests/support/native/logical-http-collector.rs",
+      "mount": "shared-module",
+      "integration_roots": [],
+      "module_alias": "logical_http_collector",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/logical-http-collector.rs",
+      "source_sha256": "d28ba7a46510b05cf9f7a3b8d44b56db4f5c241c0d2d30c26820d6260ccfab80",
+      "crate_refs": [
+        "browser_auth_producer",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/logical-http-collector.rs\"] mod logical_http_collector;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "projector-observation-collector.rs",
+      "target": "backend/app/tests/support/native/projector-observation-collector.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "projector_observation_collector",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/projector-observation-collector.rs",
+      "source_sha256": "2aa9147939a225094bd9c7a3835ba7d8609f954c9a9316ea3fc11febed0f3b92",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/projector-observation-collector.rs\"] mod projector_observation_collector;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "real-process-producer.rs",
+      "target": "backend/app/tests/support/native/real-process-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest",
+        "account_migration"
+      ],
+      "module_alias": "real_process_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/real-process-producer.rs",
+      "source_sha256": "89f640d7a5345d0cff4f7ac5471b0304805993a1f89bf268e9dcecba0edf7d9d",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/real-process-producer.rs\"] mod real_process_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "security-grant-producer.rs",
+      "target": "backend/app/tests/support/native/security-grant-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "security_grant_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/security-grant-producer.rs",
+      "source_sha256": "0b43d28dea65ba15eca4dbe7dcc3a1d330248af3b7d63ae7af28b9d8a6d1e7ed",
+      "crate_refs": [
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/security-grant-producer.rs\"] mod security_grant_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "migration-transition-acceptance.rs",
+      "target": "backend/app/tests/support/native/migration-transition-acceptance.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "module_alias": "migration_transition_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/migration-transition-acceptance.rs",
+      "source_sha256": "69308e55730f526ff243f725d9519b65743e4cac660f1d1369130eb83b9d0bd6",
+      "crate_refs": [],
+      "super_refs": [
+        "super::{apply_current_and_require_account_catalog, material_snapshot, seed_legacy};"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "m1_real_cutover_preserves_active_revoked_and_unresolved_legacy_material",
+        "m5_more_than_500_sources_form_exact_restartable_partition",
+        "m5_byte_budget_is_independent_of_row_limit",
+        "m5_source_version_change_cannot_silently_map_stale_input",
+        "m6_actual_startup_requires_exact_manifest_and_independent_current_generation",
+        "m5_worker_backend_interruption_before_commit_has_no_partial_mapping"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test account_migration migration_transition_acceptance -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test account_migration migration_transition_acceptance -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/migration-transition-acceptance.rs\"] mod migration_transition_acceptance;",
+      "root_private_contract": "account_migration existing private helper scope; mount directly as child of integration root",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "migration-r3",
+      "source": "migration-rollback-tests.rs",
+      "target": "backend/app/tests/support/native/migration-rollback-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "module_alias": "migration_rollback_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/migration-rollback-tests.rs",
+      "source_sha256": "9c7fddc7b5c44f846898c85b3be4ab56c9d2ebd512270d278f270a6743428c27",
+      "crate_refs": [
+        "binder_sequence",
+        "browser_auth_producer",
+        "native_fixture",
+        "postgres_snapshot_producer",
+        "real_process_producer"
+      ],
+      "super_refs": [
+        "super::{seed_legacy,apply_current_and_require_account_catalog,material_snapshot};"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "rollback_before_business_write_preserves_permanent_legacy_fence",
+        "compatible_reader_preserves_new_rows_pending_intent_and_original_replay",
+        "restored_old_image_cannot_readmit_against_later_current_authority"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test account_migration migration_rollback_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test account_migration migration_rollback_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/migration-rollback-tests.rs\"] mod migration_rollback_tests;",
+      "root_private_contract": "account_migration existing private helper scope; mount directly as child of integration root",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "publication-r1",
+      "source": "publication-completion-tests.rs",
+      "target": "backend/app/tests/support/native/publication-completion-tests.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "auth_rest"
+      ],
+      "module_alias": "publication_completion_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/publication-r1/publication-completion-tests.rs",
+      "source_sha256": "e5b7e70ad91fea91c296221df1aa3ee7796d2f771d7ccb174b243edb1f894a24",
+      "crate_refs": [
+        "expanded_custody_producer"
+      ],
+      "super_refs": [
+        "super::prepare_http_database(pool).await;"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "publication_title_and_locale_unicode_cardinality_has_both_boundaries",
+        "publication_content_limit_counts_utf8_bytes_and_preserves_exact_digest",
+        "publication_real_operator_challenge_expires_without_changing_head",
+        "publication_digest_is_local_address_and_never_remote_or_alias_resolution",
+        "publication_runtime_roles_cannot_escalate_or_write_any_publication_column"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest publication_completion_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test auth_rest publication_completion_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/publication-completion-tests.rs\"] mod publication_completion_tests;",
+      "root_private_contract": "auth_rest existing private helper scope; mount directly as child of integration root",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-assertions-s2",
+      "source": "rust-codec-assertions.rs",
+      "target": "backend/crates/payroll/adapter-postgres/src/native28_codec_tests.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": [],
+      "module_alias": "rust_codec_assertions",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/rust-codec-assertions.rs",
+      "source_sha256": "1dc2043400ec7da6e00d6d3269f2b8da2819e77ba43d614310d75867c8ed36ee",
+      "crate_refs": [],
+      "super_refs": [
+        "super::native28::{decode_input_stream,encode_input_stream,decode_calculation_stream,encode_calculation_stream,InputFrame,CalculationFrame};"
+      ],
+      "include_assets": [
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-blocked-one.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-blocked-one.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-success-one.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-success-one.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-blocked-two.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-blocked-two.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-resolved-one.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-resolved-one.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-attempt-create-run.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-attempt-create-run.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-case-response.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-case-response.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-direct-wage.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-direct-wage.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-gated-calculate.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-gated-calculate.json",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-publication.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-publication.json"
+      ],
+      "source_test_names": [
+        "rust_input_blocked_two_matches_independent_literal_bytes",
+        "rust_input_resolved_one_matches_independent_literal_bytes",
+        "rust_calculation_blocked_one_matches_independent_literal_bytes",
+        "rust_calculation_success_one_matches_independent_literal_bytes",
+        "rust_owner_direct_wage_matches_independent_literal_bytes",
+        "rust_owner_attempt_create_run_matches_independent_literal_bytes",
+        "rust_owner_gated_calculate_matches_independent_literal_bytes",
+        "rust_owner_publication_matches_independent_literal_bytes",
+        "rust_owner_case_response_matches_independent_literal_bytes",
+        "rust_input_decoder_rejects_truncation_every_byte_boundary",
+        "rust_native_decoder_rejects_trailing_bytes_and_bad_frame_lengths",
+        "rust_calc_decoder_requires_exact_input_custody_not_semantics",
+        "rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest"
+      ],
+      "package": "console-payroll-adapter-postgres",
+      "parent_owner": "backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "declaration": "# [cfg(test)] mod native28_codec_tests;",
+      "nesting_note": "Sibling of native28: source use super::native28 resolves at crate root.",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_input_blocked_two_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_input_blocked_two_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_input_blocked_two_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_input_resolved_one_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_input_resolved_one_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_input_resolved_one_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_calculation_blocked_one_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_calculation_blocked_one_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_calculation_blocked_one_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_calculation_success_one_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_calculation_success_one_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_calculation_success_one_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_direct_wage_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_direct_wage_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_owner_direct_wage_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_attempt_create_run_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_attempt_create_run_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_owner_attempt_create_run_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_gated_calculate_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_gated_calculate_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_owner_gated_calculate_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_publication_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_publication_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_owner_publication_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_case_response_matches_independent_literal_bytes -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_case_response_matches_independent_literal_bytes -- --nocapture",
+          "required_leaf": "rust_owner_case_response_matches_independent_literal_bytes"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_input_decoder_rejects_truncation_every_byte_boundary -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_input_decoder_rejects_truncation_every_byte_boundary -- --nocapture",
+          "required_leaf": "rust_input_decoder_rejects_truncation_every_byte_boundary"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_native_decoder_rejects_trailing_bytes_and_bad_frame_lengths -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_native_decoder_rejects_trailing_bytes_and_bad_frame_lengths -- --nocapture",
+          "required_leaf": "rust_native_decoder_rejects_trailing_bytes_and_bad_frame_lengths"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_calc_decoder_requires_exact_input_custody_not_semantics -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_calc_decoder_requires_exact_input_custody_not_semantics -- --nocapture",
+          "required_leaf": "rust_calc_decoder_requires_exact_input_custody_not_semantics"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest -- --nocapture",
+          "required_leaf": "rust_owner_decoder_rejects_public_numeric_tokens_duplicate_keys_and_future_gate_digest"
+        }
+      ],
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "native-assertions-s3",
+      "source": "native-stream-budget-tests.rs",
+      "target": "backend/crates/payroll/adapter-postgres/src/native28_stream_budget_tests.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": [],
+      "module_alias": "native_stream_budget_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s3/native-stream-budget-tests.rs",
+      "source_sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52",
+      "crate_refs": [],
+      "super_refs": [
+        "super::native28::{decode_input_stream,encode_input_stream,InputFrame};"
+      ],
+      "include_assets": [
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-resolved-one.bin",
+        "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-resolved-one.json"
+      ],
+      "source_test_names": [
+        "native_stream_decoder_accepts_short_reads_without_duplicate_consumption",
+        "native_stream_declared_u32_max_header_refuses_before_any_body_read",
+        "native_stream_writer_never_returns_complete_manifest_after_partial_destination_failure"
+      ],
+      "package": "console-payroll-adapter-postgres",
+      "parent_owner": "backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "declaration": "# [cfg(test)] mod native28_stream_budget_tests;",
+      "nesting_note": "Sibling of native28: source use super::native28 resolves at crate root.",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib native_stream_decoder_accepts_short_reads_without_duplicate_consumption -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib native_stream_decoder_accepts_short_reads_without_duplicate_consumption -- --nocapture",
+          "required_leaf": "native_stream_decoder_accepts_short_reads_without_duplicate_consumption"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib native_stream_declared_u32_max_header_refuses_before_any_body_read -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib native_stream_declared_u32_max_header_refuses_before_any_body_read -- --nocapture",
+          "required_leaf": "native_stream_declared_u32_max_header_refuses_before_any_body_read"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib native_stream_writer_never_returns_complete_manifest_after_partial_destination_failure -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --lib native_stream_writer_never_returns_complete_manifest_after_partial_destination_failure -- --nocapture",
+          "required_leaf": "native_stream_writer_never_returns_complete_manifest_after_partial_destination_failure"
+        }
+      ],
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "authority-vector-acceptance.append.rs",
+      "target": "backend/crates/platform/request-context/src/account.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": [],
+      "note": "Inside responsible account module proposed by approved Account/context design; existing module may stay inline in lib.rs, match actual ownership.",
+      "module_alias": "authority_vector_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/authority-vector-acceptance.append.rs",
+      "source_sha256": "f22f04ed31d2f9fa31b279f0f0944eb124e7072c6c05db1198a396c46c5183af",
+      "crate_refs": [],
+      "super_refs": [
+        "super::{AuthorityBindingSnapshot, check_exact_authority_binding};"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "exact_binding_accepts_equal_current_operands",
+        "exact_binding_rejects_each_stale_and_unexpected_future_operand",
+        "exact_binding_rejects_each_account_session_and_scope_identity"
+      ],
+      "package": "console-platform-request-context",
+      "parent_owner": "backend/crates/platform/request-context/src/account.rs",
+      "declaration": "append source directly INSIDE account owner; source already declares cfg(test) child module",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_binding_accepts_equal_current_operands -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_binding_accepts_equal_current_operands -- --nocapture",
+          "required_leaf": "exact_binding_accepts_equal_current_operands"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_binding_rejects_each_stale_and_unexpected_future_operand -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_binding_rejects_each_stale_and_unexpected_future_operand -- --nocapture",
+          "required_leaf": "exact_binding_rejects_each_stale_and_unexpected_future_operand"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_binding_rejects_each_account_session_and_scope_identity -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-platform-request-context --lib exact_binding_rejects_each_account_session_and_scope_identity -- --nocapture",
+          "required_leaf": "exact_binding_rejects_each_account_session_and_scope_identity"
+        }
+      ],
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "public-telemetry-registry-acceptance.append.rs",
+      "target": "backend/app/src/console_telemetry.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": [],
+      "module_alias": "public_telemetry_registry_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/public-telemetry-registry-acceptance.append.rs",
+      "source_sha256": "80b9632a0964b7849102bbba25ea751c6690ef7341c479a7a6ca51560dd28b9b",
+      "crate_refs": [],
+      "super_refs": [
+        "super::*;"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "registered_route_release_and_error_are_real_positive_controls",
+        "grammar_valid_private_labels_cannot_survive_public_normalization"
+      ],
+      "package": "console-app",
+      "parent_owner": "backend/app/src/console_telemetry.rs",
+      "declaration": "append source directly inside existing console_telemetry module; source declares cfg(test) child",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib registered_route_release_and_error_are_real_positive_controls -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib registered_route_release_and_error_are_real_positive_controls -- --nocapture",
+          "required_leaf": "registered_route_release_and_error_are_real_positive_controls"
+        },
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib grammar_valid_private_labels_cannot_survive_public_normalization -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib grammar_valid_private_labels_cannot_survive_public_normalization -- --nocapture",
+          "required_leaf": "grammar_valid_private_labels_cannot_survive_public_normalization"
+        }
+      ],
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "security-s5",
+      "source": "safe-event-constructor-acceptance.append.rs",
+      "target": "backend/app/src/console_telemetry.rs",
+      "mount": "owner-local-test-module",
+      "integration_roots": [],
+      "module_alias": "safe_event_constructor_acceptance",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/security-s5/safe-event-constructor-acceptance.append.rs",
+      "source_sha256": "64161af9a4e17e8a792808e37b7e7c831ae3d1abbc8cb0aa5bc3be4f485fad07",
+      "crate_refs": [],
+      "super_refs": [
+        "super::*;"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields"
+      ],
+      "package": "console-app",
+      "parent_owner": "backend/app/src/console_telemetry.rs",
+      "declaration": "append source directly inside existing console_telemetry module; source declares cfg(test) child",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --lib safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields -- --nocapture",
+          "required_leaf": "safe_event_actual_constructor_and_serializer_accept_only_registered_public_fields"
+        }
+      ],
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "browser-r4",
+      "source": "browser-case-producer.rs",
+      "target": "backend/app/tests/support/native/browser-case-producer.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "browser_case_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-case-producer.rs",
+      "source_sha256": "1a17e57086bb312364293b5105d596cfe2ddfcd72554d1ff63e6f4d8a01d8c4e",
+      "crate_refs": [
+        "binder_sequence",
+        "browser_auth_producer",
+        "native_fixture",
+        "source_foundation_producer",
+        "two_subject_producer",
+        "workflow_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/browser-case-producer.rs\"] mod browser_case_producer;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "browser-r4",
+      "source": "browser-runtime-helpers.rs",
+      "target": "backend/app/tests/support/native/browser-runtime-helpers.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "browser_runtime_helpers",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-runtime-helpers.rs",
+      "source_sha256": "577138ad387f6cb0cd2fc84fddc38374abc37bd0e660e7a02078016a5662c8b7",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/browser-runtime-helpers.rs\"] mod browser_runtime_helpers;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "browser-r4",
+      "source": "browser-acceptance-producer.rs",
+      "target": "backend/app/tests/support/native/browser-acceptance-producer.rs",
+      "mount": "test-module",
+      "integration_roots": [
+        "native_acceptance"
+      ],
+      "module_alias": "browser_acceptance_producer",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/browser-acceptance-producer.rs",
+      "source_sha256": "10482f33d9f89a67fe83a50254aa02556f72d59293b14c2921c201410a49b615",
+      "crate_refs": [
+        "browser_case_producer",
+        "browser_runtime_helpers",
+        "native_fixture"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [
+        "browser_draft_save",
+        "browser_invalid_input",
+        "browser_stale_save",
+        "browser_scoped_review",
+        "browser_historical_own",
+        "browser_read_only",
+        "browser_keyboard",
+        "browser_narrow",
+        "browser_js_scoped",
+        "browser_js_historical",
+        "browser_js_read_only",
+        "browser_hydrated_autosave",
+        "browser_hydrated_stale",
+        "browser_wasm_fallback",
+        "browser_hydrated_reconnect"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance browser_acceptance_producer -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test native_acceptance browser_acceptance_producer -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"support/native/browser-acceptance-producer.rs\"] mod browser_acceptance_producer;",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "migration-remaining-r4",
+      "source": "migration-batch-process.rs",
+      "target": "backend/app/tests/support/native/migration-batch-process.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "module_alias": "migration_batch_process",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migration-batch-process.rs",
+      "source_sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345",
+      "crate_refs": [
+        "bounded_process_output"
+      ],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/migration-batch-process.rs\"] mod migration_batch_process;",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "migration-remaining-r4",
+      "source": "bounded-process-output.rs",
+      "target": "backend/app/tests/support/native/bounded-process-output.rs",
+      "mount": "shared-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "module_alias": "bounded_process_output",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/bounded-process-output.rs",
+      "source_sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62",
+      "crate_refs": [],
+      "super_refs": [
+        "super::*;"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "actual_small_output_is_retained",
+        "actual_unbounded_output_is_refused",
+        "actual_stalled_child_is_terminated"
+      ],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "#[path = \"support/native/bounded-process-output.rs\"] mod bounded_process_output;",
+      "contains_inline_tests": true,
+      "classification_note": "Helper machinery tests intentionally discovered once under account_migration, not domain acceptance cases."
+    },
+    {
+      "source_packet": "migration-remaining-r4",
+      "source": "migration-remaining-tests.rs",
+      "target": "backend/app/tests/support/native/migration-remaining-tests.rs",
+      "mount": "nested-test-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "parent_module": "migration_transition_acceptance",
+      "module_alias": "migration_remaining_tests",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migration-remaining-tests.rs",
+      "source_sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a",
+      "crate_refs": [
+        "migration_batch_process"
+      ],
+      "super_refs": [
+        "super::{\n    apply_current_and_require_account_catalog, mapping_partition, seed_legacy, snapshot_mapping,\n    source_keys,\n};"
+      ],
+      "include_assets": [],
+      "source_test_names": [
+        "migration_related_refresh_revocation_invalidates_source_even_when_user_xmin_is_unchanged",
+        "migration_concurrent_distinct_batch_ids_cannot_duplicate_source_partition",
+        "migration_startup_waits_for_actual_migration_ledger_then_rejects_changed_catalog",
+        "migration_actual_process_loss_after_committed_batch_replays_original_receipt",
+        "migration_real_legacy_transports_drain_before_fence_and_stay_denied_after_fresh_primary_activation"
+      ],
+      "package": "console-app",
+      "commands": [
+        {
+          "discover": "cargo test --manifest-path backend/Cargo.toml -p console-app --test account_migration migration_remaining_tests -- --list",
+          "execute": "cargo test --manifest-path backend/Cargo.toml -p console-app --test account_migration migration_remaining_tests -- --test-threads=1 --nocapture"
+        }
+      ],
+      "declaration": "#[path = \"migration-remaining-tests.rs\"] mod migration_remaining_tests; inside migration_transition_acceptance",
+      "contains_inline_tests": true
+    },
+    {
+      "source_packet": "migration-remaining-r4",
+      "source": "legacy-transport-producer.rs",
+      "target": "backend/app/tests/support/native/legacy-transport-producer.rs",
+      "mount": "nested-shared-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "parent_module": "migration_transition_acceptance::migration_remaining_tests",
+      "module_alias": "legacy_transport",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/legacy-transport-producer.rs",
+      "source_sha256": "643bbcf97c16734f03f2562a75c04552d760c7daca585cd9b2e2a9e6f14637ff",
+      "crate_refs": [],
+      "super_refs": [],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "Use existing #[path] child declarations",
+      "contains_inline_tests": false
+    },
+    {
+      "source_packet": "migration-remaining-r4",
+      "source": "migrated-primary-producer.rs",
+      "target": "backend/app/tests/support/native/migrated-primary-producer.rs",
+      "mount": "nested-shared-module",
+      "integration_roots": [
+        "account_migration"
+      ],
+      "parent_module": "migration_transition_acceptance::migration_remaining_tests",
+      "module_alias": "migrated_primary",
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-remaining-r4/migrated-primary-producer.rs",
+      "source_sha256": "2c0d5ed21675b5426dadb5857e96c4e8eb67e87d8cfb7191cd4ef0d7cb6abd9d",
+      "crate_refs": [
+        "deployment_runtime_producer"
+      ],
+      "super_refs": [
+        "super::legacy_transport::{ORIGIN, Transport};"
+      ],
+      "include_assets": [],
+      "source_test_names": [],
+      "package": "console-app",
+      "commands": [],
+      "declaration": "Use existing #[path] child declarations",
+      "contains_inline_tests": false
+    }
+  ],
+  "runtime_assets": [
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/history_oracle.py",
+      "source_sha256": "bb3094287e2344eeab74cd30d6f1fd01f98d681d3dbaa9616f1eee227fb5182f",
+      "target": "backend/app/tests/support/draft/history_oracle.py",
+      "classification": "runtime-subprocess",
+      "consumers": [
+        "draft_owner_acceptance"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/draft-r3/test_history_oracle.py",
+      "source_sha256": "2d217c7fa20e49decf5182b56a41c2aa63a68b5102108ae76c0322c589ba1848",
+      "target": "backend/app/tests/support/draft/test_history_oracle.py",
+      "classification": "independent-checker-tests",
+      "consumers": [
+        "draft_owner_acceptance"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/acceptance.spec.cjs",
+      "source_sha256": "055be6e0571563511ed9a393fdb5217061b0a5240f22f852dd5f228b2b9783ff",
+      "target": "backend/app/tests/browser/acceptance.spec.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/effective-submissions.cjs",
+      "source_sha256": "4f0cc37c5777a29f56aeeca1dfdfa06d6331f273cf1b13dcc4348e93c69daa4d",
+      "target": "backend/app/tests/browser/effective-submissions.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/fixture.cjs",
+      "source_sha256": "dd153b32e1016d0c76dfc7f62fb72d3ba2e0f71f28bbb6efa5d4576ac34c29b1",
+      "target": "backend/app/tests/browser/fixture.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/hydration.spec.cjs",
+      "source_sha256": "6bba04ae4e5ea6516f5f08407b573454891c45081c5d514b39a5632ed123da06",
+      "target": "backend/app/tests/browser/hydration.spec.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/oracle.spec.cjs",
+      "source_sha256": "55dab811b28b39873755c436f032bac44ed086b5f163bb4849edc9929e3e2098",
+      "target": "backend/app/tests/browser/oracle.spec.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/playwright.config.cjs",
+      "source_sha256": "c7af0ab8d4f0b29a8f801a1e2a1151196d326abe0c1ff6da0deaf5160bc26515",
+      "target": "backend/app/tests/browser/playwright.config.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/reflow.cjs",
+      "source_sha256": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+      "target": "backend/app/tests/browser/reflow.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser-r4/playwright/wasm-observer.cjs",
+      "source_sha256": "b7702906d326c694a568b315a4fba487133a58f0cdbedeca3a0f88a582086a44",
+      "target": "backend/app/tests/browser/wasm-observer.cjs",
+      "classification": "playwright-runtime-source",
+      "consumers": [
+        "browser_acceptance_producer"
+      ]
+    }
+  ],
+  "runtime_commands": [
+    {
+      "command": "python3 -B -m unittest -v test_history_oracle",
+      "cwd": "backend/app/tests/support/draft"
+    },
+    {
+      "command": "node /actual/pinned/playwright/cli.js test --config backend/app/tests/browser/playwright.config.cjs --list",
+      "note": "15 application leaves plus10 oracle leaves; actual fixture owner supplies case-specific env at execution"
+    }
+  ],
+  "assets": [
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/dependencies/commit_relay.py",
+      "source_sha256": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb",
+      "target": "backend/app/tests/support/native/dependencies/commit_relay.py",
+      "consumers": [
+        "commit_ack_relay"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/business-readback.sql",
+      "source_sha256": "21cca62c3f79a7c296b8b02864043ca8eb4b38697f9bd2f45e4092276b70dc06",
+      "target": "backend/app/tests/support/native/business-readback.sql",
+      "consumers": [
+        "native_fixture"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/registered-action-keys.json",
+      "source_sha256": "8f7095958f0b5e4008a0f17ddb7b6b43879f79cc2e84cc3943d8c58e724a0619",
+      "target": "backend/app/tests/support/native/registered-action-keys.json",
+      "consumers": [
+        "native_fixture"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/native-money-golden.json",
+      "source_sha256": "8e5411a2a891be250ddfbb16a85930449d68a964d506d3eccbbf79b9d29a53d4",
+      "target": "backend/app/tests/support/native/native-money-golden.json",
+      "consumers": [
+        "native_money_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/assignment-readback.sql",
+      "source_sha256": "fdecb50669c0c8108fc327a751bcf3b64acef8cdfbdddc5f8dc8f0b2229d199f",
+      "target": "backend/app/tests/support/native/assignment-readback.sql",
+      "consumers": [
+        "workflow_obligation_tests"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/actor-migration.csv",
+      "source_sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "target": "backend/app/tests/support/native/actor-migration.csv",
+      "consumers": [
+        "migration_admission_tests"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/workflow-r5/publication-readback.sql",
+      "source_sha256": "549ba07a895b4e0c7ad229f2e82f3ef010e0f2535cfa89475eda1c89e367d227",
+      "target": "backend/app/tests/support/native/publication-readback.sql",
+      "consumers": [
+        "workflow_fixture"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/migration-r3/catalog_snapshot.sql",
+      "source_sha256": "f7bd241e891298ba21f504593769d8a759d3073b243baba74d86ac1521d3afaf",
+      "target": "backend/app/tests/support/native/catalog_snapshot.sql",
+      "consumers": [
+        "migration_catalog_producer"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/calculation-blocked-one.bin",
+      "source_sha256": "00438949c40484663b4ffbc74fa529dcc03c708bcbf6f3411eeb5809f9cc0a8f",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-blocked-one.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/calculation-blocked-one.json",
+      "source_sha256": "f2c93871d4bb37dc806107265bf1d03d0851c9091457660004e52f62059e0f09",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-blocked-one.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/calculation-success-one.bin",
+      "source_sha256": "33bad30007efe3a43e07cc05ad34d9c19af72092b87b0227009e857ac27ec156",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-success-one.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/calculation-success-one.json",
+      "source_sha256": "e47065698451241bd1e24305754fc1e06e9028e76ecc6552ac55e7a68f59915f",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/calculation-success-one.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/input-blocked-two.bin",
+      "source_sha256": "a426f26631b5d388919c3205295253fefc8cc2cde5e5a74fd4bbe98b7efb9b69",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-blocked-two.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/input-blocked-two.json",
+      "source_sha256": "5ff094919568924d0179c0c2057edb1cbee4eb7c59fad7a9ff76090e65123d3d",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-blocked-two.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/input-resolved-one.bin",
+      "source_sha256": "4a93f3889dfe4eb2a2617a83452202665a0e6afd9edaf998ea6bf8084cf009c4",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-resolved-one.bin",
+      "consumers": [
+        "rust_codec_assertions",
+        "native_stream_budget_tests"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/input-resolved-one.json",
+      "source_sha256": "bff74725af378893971ab51d597a387315374fd601ac1ac43c18a3f2141d29e6",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/input-resolved-one.json",
+      "consumers": [
+        "rust_codec_assertions",
+        "native_stream_budget_tests"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-attempt-create-run.bin",
+      "source_sha256": "e962a57c7ed5f5e397fd607390e58561d3b40373e5bb091ab6298f2c967383df",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-attempt-create-run.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-attempt-create-run.json",
+      "source_sha256": "148e9c4cda11e1e3db9823a808207e237f22c3bfe69f432ad398996ed9090b8c",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-attempt-create-run.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-case-response.bin",
+      "source_sha256": "df2fcb0667d45d82075f504c5d36b07cb2be7639dcbf45142fc81e05a44326d5",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-case-response.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-case-response.json",
+      "source_sha256": "373b08e46c419e92a606f12684170ae4735100e74a1e9c913fa4cba295bbd0ba",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-case-response.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-direct-wage.bin",
+      "source_sha256": "8d27899205f60348204015c80d3dfa2c09db8caca3241426abc6c2ce0665170b",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-direct-wage.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-direct-wage.json",
+      "source_sha256": "f0a1f210604c07ed62af39a3cfc8b28db4b02f2769d5bc7cb6d33b1cbd571d09",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-direct-wage.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-gated-calculate.bin",
+      "source_sha256": "a08be2ac3ff8f5ad657bbe4a5fb8494956269af5e35949af4ff3ff7e721afcf0",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-gated-calculate.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-gated-calculate.json",
+      "source_sha256": "9f8a835b3f84fb0f5f3337112d6d238d56415d968665ee6305ce3be1e60a190b",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-gated-calculate.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-publication.bin",
+      "source_sha256": "9489ebfea27dfc175711bb65425dff04628d7a2fdff2296a0084b77aa81ef6ad",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-publication.bin",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    },
+    {
+      "source_repository_path": "docs/evidence/console/preparation/2026-09-13-production-tdd/completion/native-assertions-s2/codec-goldens/owner-publication.json",
+      "source_sha256": "777af25e2ae0ca39993cf71df11513c93fd56ab34d8550b80f5b69214ba55a3b",
+      "target": "backend/crates/payroll/adapter-postgres/src/codec-goldens/owner-publication.json",
+      "consumers": [
+        "rust_codec_assertions"
+      ]
+    }
+  ],
+  "unresolved_crate_references": [],
+  "pending_successors": [],
+  "authority_hold": "current_controls shared reason/control compiler is a pending consolidated design amendment, not already approved authority"
+}

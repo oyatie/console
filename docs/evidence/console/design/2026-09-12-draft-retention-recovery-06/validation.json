@@ -1,0 +1,53 @@
+{
+  "kind": "evidence_consistency_not_product_tests",
+  "candidate_sha": "ab7efa258e37871ab75330c8daa9d0d192252cad",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06/verify-packet.py"
+      ],
+      "exit_code": 0,
+      "result": {
+        "core_files_verified": 6,
+        "source_blobs_verified": 9,
+        "scenarios_discovered": 39,
+        "product_scenarios_executed": 0,
+        "screen_states": 13,
+        "contract_sections": 9,
+        "reader_links_verified": 8,
+        "json_files_parsed": 4
+      }
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "5688c8fde92cb78fd57995a168c631041927aa85",
+        "--",
+        "docs/evidence/console/design/2026-09-12-draft-retention-recovery-06"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "prior_repository_gate": {
+    "command": [
+      "node",
+      "scripts/check-doc-links.mjs"
+    ],
+    "rerun_for_this_packet": false,
+    "record": "../2026-09-12-action-input-drafts-05/doc-link-diagnostic.json",
+    "prior_result": "Exit1 for candidate01 evidence unclassified Markdown and missing DELIVERY links",
+    "reason": "This bounded packet adds no Markdown/authority changes; its reader links checked directly. Prior failure is not claimed fixed or a current whole-repository pass."
+  },
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "not_verified": [
+    "Runtime/migration/ACL/provider behavior",
+    "Browser, performance, backup pruning or recovery",
+    "Current whole-repository gate or merge readiness",
+    "Legal/production authority"
+  ]
+}

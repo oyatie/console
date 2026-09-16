@@ -1,0 +1,8 @@
+{
+  "approved_base": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "source": "backend/crates/platform/request-context/src/lib.rs",
+  "source_sha256": "dd15344be6488b64deb357258610d7421bf0a70f3432b5315238d4167d2017af",
+  "all_test_section_sha256": "f60cc80bd8968a9aed74a4f258f98037d8a7a37ce2b4d0432cc8d1ef539a9fb6",
+  "test_boundary": "first #[cfg(test)] through EOF; exact bytes must remain unchanged",
+  "fk_source_sha256": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5"
+}

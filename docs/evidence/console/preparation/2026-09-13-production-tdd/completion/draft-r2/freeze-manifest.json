@@ -1,0 +1,47 @@
+{
+  "source_base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "owner": "/root",
+  "supersedes": "446d0eae75ffad2c4b18e77c68263854c6a1909a53b455a9165afd08bcaf8fa6",
+  "files": [
+    {
+      "path": "checker-execution.log",
+      "bytes": 2593,
+      "sha256": "30bca6616d67c207dd4c44c0989420782ca7c75aed3ab59d725aec619bdd637f"
+    },
+    {
+      "path": "draft-owner-acceptance.rs",
+      "bytes": 26331,
+      "sha256": "ca64c7079c69f47a7a21d1ec25d4c9a40841cce10d4ff2ec8466ce355bb0f797"
+    },
+    {
+      "path": "execution.json",
+      "bytes": 381,
+      "sha256": "85c2ac70f8716ae856bff5188a696f42b9ca9a67f0841dab413f7c20ed03e8af"
+    },
+    {
+      "path": "history_oracle.py",
+      "bytes": 5013,
+      "sha256": "63095076286de71bc2319d6a36eac75ed4983898d82749ce7a4beeb5700c471b"
+    },
+    {
+      "path": "lifecycle-producer.rs",
+      "bytes": 5232,
+      "sha256": "03e342a9b5bc4806ab37ef8f623af8a50f41e5d1c6fd9bb5c7d71c355069b632"
+    },
+    {
+      "path": "owner-read-contract.txt",
+      "bytes": 5845,
+      "sha256": "f6826348f60ea8d3bc2ca95142ac84f1b4ef5cbc6276a0d4ab53be8877a239a8"
+    },
+    {
+      "path": "r1-parent-manifest.json",
+      "bytes": 1193,
+      "sha256": "446d0eae75ffad2c4b18e77c68263854c6a1909a53b455a9165afd08bcaf8fa6"
+    },
+    {
+      "path": "test_history_oracle.py",
+      "bytes": 6001,
+      "sha256": "17da8d795709c4ebc3acd11cb0f7e0ab702b4f32c8fa76a74a79b63f585eb007"
+    }
+  ]
+}

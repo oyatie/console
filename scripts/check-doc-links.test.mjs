@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { promisify } from "node:util";
 import {
   documentationArchiveMessage,
@@ -718,6 +718,39 @@ async function makeGeneratorRepo() {
     { cwd: root },
   );
   return root;
+}
+
+async function makeLargeGeneratorRepo() {
+  const root = await makeGeneratorRepo();
+  const { stdout: oid } = await run("git", ["rev-parse", ":README.md"], { cwd: root });
+  const padding = Array.from({ length: 6000 }, (_, i) =>
+    `100644 ${oid.trim()}\tpadding/${String(i).padStart(5, "0")}-${"x".repeat(180)}.txt\n`).join("");
+  execFileSync("git", ["update-index", "--index-info"], { cwd: root, input: padding });
+  const { stdout: tree } = await run("git", ["write-tree"], { cwd: root });
+  const { stdout: listing } = await run("git", ["ls-tree", "-r", "-z", tree.trim()], {
+    cwd: root, maxBuffer: 4 * 1024 * 1024,
+  });
+  assert.ok(Buffer.byteLength(listing) > 1024 * 1024, "fixture must exceed the default Git output buffer");
+  assert.equal(listing.split("\0").filter((record) => record.includes("\tpadding/")).length, 6000);
+  return root;
+}
+
+for (const consumer of ["generator", "checker"]) {
+  test(`large Git index: ${consumer} preserves complete custody beyond 1 MiB`, async () => {
+    const root = await makeLargeGeneratorRepo();
+    const args = consumer === "generator"
+      ? ["scripts/console/generate-documentation-manifest.mjs", "--check"]
+      : [script, root];
+    await run(process.execPath, args, { cwd: root });
+    if (consumer === "generator") {
+      await run(process.execPath, ["scripts/console/generate-documentation-manifest.mjs", "--write"], { cwd: root });
+      await run("git", ["add", "docs"], { cwd: root });
+      await run(process.execPath, args, { cwd: root });
+    }
+    await writeFile(join(root, "zzzz-unclassified.md"), "# Must not disappear after padding\n");
+    await run("git", ["add", "zzzz-unclassified.md"], { cwd: root });
+    await assert.rejects(run(process.execPath, args, { cwd: root }), /zzzz-unclassified\.md must have exactly one (?:document )?record/);
+  });
 }
 
 function literalStringArray(source, name) {

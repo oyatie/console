@@ -1,0 +1,109 @@
+{
+  "cwd": "/private/tmp/account14-app8-ci-0a625d32-inventory-v1/validation",
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "results": [
+    {
+      "command": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+      "log": "probe.log",
+      "exit": 0,
+      "discovered": 114,
+      "executed": 114,
+      "passed": 114,
+      "failed": 0,
+      "skipped": 0,
+      "log_sha256": "bc460f8a0b28082f8cabd0c2df76cf210a69e522a6964b4ca9a92e00b8f9b513"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_preparation_wiring.py -v",
+      "log": "preparation.log",
+      "exit": 0,
+      "discovered": 15,
+      "executed": 15,
+      "passed": 15,
+      "failed": 0,
+      "log_sha256": "66bc21ea52d6e9c53653403cc15967eea9d43b99ad098161694d537c723ed5eb"
+    },
+    {
+      "command": "npm run check:executed-tests",
+      "log": "executed-tests.log",
+      "exit": 0,
+      "discovered": 15,
+      "executed": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0,
+      "resolver": {
+        "defined": 387,
+        "reachable": 387,
+        "static_attributes": 3193,
+        "dark": 1,
+        "buck_only": 13
+      },
+      "log_sha256": "8957125b6941246ac0fa7ce2219037ba086270be8d18456270cdad3480b8fc29"
+    },
+    {
+      "command": "node scripts/check-ci-preflight.mjs",
+      "log": "preflight-gate-indexed.log",
+      "exit": 0,
+      "kind": "gate",
+      "log_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e"
+    },
+    {
+      "command": "node --test --test-name-pattern=\"accepts the workflow's cheap preflight and protected expensive jobs|rejects every run-step condition, soft-failure, and retained-text early-exit bypass\" scripts/check-ci-preflight.test.mjs",
+      "log": "preflight-focused-indexed.log",
+      "exit": 0,
+      "selected": 2,
+      "executed": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "bypass_mutations": 468,
+      "log_sha256": "3b697f01614fa1092324ca727d5ea8e26d7a05c4e490465f5f328ab10bd83a3a"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/lanes/recovery -p 'test_*.py' -v",
+      "log": "recovery-unit-process-access.log",
+      "exit": 0,
+      "discovered": 21,
+      "executed": 21,
+      "passed": 21,
+      "failed": 0,
+      "process_access": "automatic escalation approved for ps owned-subprocess death check; Docker stub only",
+      "log_sha256": "00a1cb7bf2bd0158a6d866d715545eadc141349fdb73832e07089fbffd897477"
+    }
+  ],
+  "retained_environment_attempts": [
+    {
+      "log": "preflight-gate.log",
+      "exit": 1,
+      "reason": "private archive had no tracked Git index; domain-unit source inventory failed closed",
+      "log_sha256": "dca694ace5dbfb5b50eae15e4b960124d30ce11e5c3691af4b559dc4a175238a"
+    },
+    {
+      "log": "preflight-focused.log",
+      "exit": 1,
+      "executed": 2,
+      "passed": 1,
+      "failed": 1,
+      "reason": "same missing private Git index",
+      "log_sha256": "f64e24295a71493e7bd9dc87bec8fecf0ee5ca578c1acac856d57043aa80b4fa"
+    },
+    {
+      "log": "recovery-unit.log",
+      "exit": 1,
+      "executed": 21,
+      "passed": 20,
+      "errors": 1,
+      "reason": "sandbox PermissionError for ps checking owned child; source unchanged before full rerun",
+      "log_sha256": "782098d75fcb6e25c6d6bbae359acf688c44b626426395e944310ca417d562c4"
+    }
+  ],
+  "source_checks": 10,
+  "mechanical_checks": 10,
+  "cargo_invocations": 0,
+  "rust_tests_discovered": 0,
+  "rust_tests_executed": 0,
+  "real_docker_commands": 0,
+  "database_commands": 0,
+  "integration_writes": 0
+}

@@ -1,0 +1,34 @@
+{
+  "owner": "/root",
+  "base_sha": "0b1316379d92b166b7786f0ccbc8c528ab3eb58a",
+  "immutable_target": "Only four active disposable PostgreSQL image literals; preserve existing test assertions and historical references.",
+  "allowed": [
+    "tools/lanes/pgtest.sh",
+    "tools/ci/cargo_needs_postgres.sh",
+    "tools/buck/test_needs_postgres.sh",
+    "backend/ci/gates/writer-ownership/tests/census_executes_against_postgres.rs"
+  ],
+  "forbidden": "All production templates, deployed state, migration SQL, lockfiles, schema, test assertions, historical evidence.",
+  "mechanical_guide": "Replace exactly one active18.4image/digest literal per allowed file with independently verified18.6index; run same probe and existing migration/RLS/ownership compatibility checks.",
+  "probe": "DOCKER_CONTEXT=colima-console-design30 python3 /private/tmp/console-pg186-probe.py > /private/tmp/console-pg186-probe.log 2>&1",
+  "probe_sha256": "eb19794f9fbff8e9864cbc87d2c3619378a3b5bb1e8410498187de3461c3a3b0",
+  "premortem": "Official new minor may alter migration/catalog assumptions; wrong digest/architecture or unresolved prerequisite cannot count as semantic RED.",
+  "blast_radius": "Fresh disposable local test containers only; four tooling callers. No real data or deployed upgrade.",
+  "detection": "Exact binary version plus migration/topology/RLS/ownership suite regression.",
+  "rollback": "Revert four local literals if incompatible; preserve failed evidence and stop using vulnerable dependency for new security acceptance. No data restore required because fixtures are fresh disposable clusters.",
+  "stop_conditions": [
+    "Source mismatch/dirty base",
+    "Unclassified probe failure",
+    "Digest or runtime mismatch",
+    "Unexpected test regression",
+    "Any need for deployed-data transition"
+  ],
+  "reviewers": [
+    "/root/fresh29_security"
+  ],
+  "remaining_holds": [
+    "Other active18.4templates not remediated by this bounded change",
+    "No CVE reproduction or production upgrade claim",
+    "No crash-durability evidence from durability-off runners"
+  ]
+}

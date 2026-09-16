@@ -1,0 +1,185 @@
+EEEEEEEEEE
+======================================================================
+ERROR: test_failed_container_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_container_inventory_is_not_successful_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 100, in test_failed_container_inventory_is_not_successful_absence
+    self.assertNotEqual(self.run_cleanup(inventory_failure="container").returncode, 0)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-avvjyq0u/calls.jsonl'
+
+======================================================================
+ERROR: test_failed_network_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_network_inventory_is_not_successful_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 106, in test_failed_network_inventory_is_not_successful_absence
+    self.assertNotEqual(self.run_cleanup(inventory_failure="network").returncode, 0)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-kbcdz3za/calls.jsonl'
+
+======================================================================
+ERROR: test_failed_volume_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_volume_inventory_is_not_successful_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 103, in test_failed_volume_inventory_is_not_successful_absence
+    self.assertNotEqual(self.run_cleanup(inventory_failure="volume").returncode, 0)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-oiprr9pu/calls.jsonl'
+
+======================================================================
+ERROR: test_remaining_container_refuses_success (__main__.RecoveryCleanupTests.test_remaining_container_refuses_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 109, in test_remaining_container_refuses_success
+    self.assertNotEqual(self.run_cleanup(remaining="container").returncode, 0)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-ghynp0a3/calls.jsonl'
+
+======================================================================
+ERROR: test_remaining_network_refuses_success (__main__.RecoveryCleanupTests.test_remaining_network_refuses_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 115, in test_remaining_network_refuses_success
+    self.assertNotEqual(self.run_cleanup(remaining="network").returncode, 0)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-cqmqhwuy/calls.jsonl'
+
+======================================================================
+ERROR: test_remaining_volume_refuses_success (__main__.RecoveryCleanupTests.test_remaining_volume_refuses_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 112, in test_remaining_volume_refuses_success
+    self.assertNotEqual(self.run_cleanup(remaining="volume").returncode, 0)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-2q21jqnt/calls.jsonl'
+
+======================================================================
+ERROR: test_removal_error_can_reconcile_to_verified_absence (__main__.RecoveryCleanupTests.test_removal_error_can_reconcile_to_verified_absence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 124, in test_removal_error_can_reconcile_to_verified_absence
+    self.assertEqual(self.run_cleanup(removal_failure=True).returncode, 0)
+                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-_de7hrkp/calls.jsonl'
+
+======================================================================
+ERROR: test_successful_absence_preserves_original_failure (__main__.RecoveryCleanupTests.test_successful_absence_preserves_original_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 118, in test_successful_absence_preserves_original_failure
+    self.assertEqual(self.run_cleanup(original_exit=7).returncode, 7)
+                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-diycqn9t/calls.jsonl'
+
+======================================================================
+ERROR: test_successful_absence_preserves_timeout_classification (__main__.RecoveryCleanupTests.test_successful_absence_preserves_timeout_classification)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 121, in test_successful_absence_preserves_timeout_classification
+    self.assertEqual(self.run_cleanup(original_exit=124).returncode, 124)
+                     ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-y92tctmq/calls.jsonl'
+
+======================================================================
+ERROR: test_successful_empty_inventory_preserves_success (__main__.RecoveryCleanupTests.test_successful_empty_inventory_preserves_success)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 97, in test_successful_empty_inventory_preserves_success
+    self.assertEqual(self.run_cleanup().returncode, 0)
+                     ~~~~~~~~~~~~~~~~^^
+  File "/private/tmp/console-recovery-cleanup-20260914/tools/lanes/recovery/test_supervise_recovery.py", line 86, in run_cleanup
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+                                          ~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 787, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/recovery-cleanup-test-hnbxmcpx/calls.jsonl'
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.756s
+
+FAILED (errors=10)

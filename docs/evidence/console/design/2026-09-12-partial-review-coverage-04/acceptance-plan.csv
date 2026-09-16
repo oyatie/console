@@ -1,0 +1,40 @@
+id,scenario,given,required_outcome,contract_refs
+C01,서로 다른 범위의 양성 완료,"한 법인 U1/U2; S1,D1은 U1필수근거만 S2,D2는 U2만 허용",각 unit owning action 제출/결정; 각 S≠D; union=R; Completion 하나; PayRun APPROVED/nonpayable; 숨긴금액 상호미노출,"PC1.2,PC1.3,PC1.4,PC1.5"
+C02,1개 단위도 같은 흐름,비어 있지 않은 1인 supported run,별도 generic gate 없는 S/D 한번씩; 같은 coverage ledger/완료 조건; 새 직급/관리자 필요 없음,"PC1.4,PC1.5"
+C03,공백과 중복 개수가 같음,"R={U1,U2}; 승인집합이 U1두개 또는 U1,U3",개수2만으로 승인 금지; 정확한 집합/유일성 검사; missing/extra 차단,PC1.5
+C04,0명 vacuous success,empty target selection,cycle/Completion 생성 실패; 명확한 허용된 빈 상태; 전체승인 없음,"PC1.2,PC1.5"
+C05,보이지 않는 인원 누락 방지,scope상 U2포함; initiator는 U1만 볼 수 있음,owner R에 U2유지; 필터/권한으로 제외 불가; local완료와 global미완료 분리,"PC1.2,PC1.8"
+C06,임원카드와 금액 권한 차이,인사카드 read허용/compensation불허,카드 허용정보는 보임; 해당 monetary decision 불허; 허용된 근태기여는 가능,"PC1.3,PC1.8"
+C07,반려된 한 단위,U1APPROVED; U2REJECT,revise_review_cycle로 U2재계산/new DRAFT proposal·current cycle 원자전환; U1원결정 보존; whole REVIEWING; 반려를 누락처리하지 않음,"PC1.4,PC1.6,PC1.12"
+C08,변경없는 단위 재사용,같은 run 새 cycle; U1 동일 proposal및모든dependency; U2새proposal,U1원승인ref 그대로 재사용 검증기록; U2새 S/D; 다른target으로 old command replay하지 않음,"PC1.6,PC1.12"
+C09,금액은 같지만 근거 변경,U1금액 동일; taxsource/rule/requirednote 버전변경,동일금액으로 승인 재사용 금지; 새검토 필요; old receipt보존,"PC1.3,PC1.6"
+C10,공통 의존성 변경,shared rate/eligibility/membership 의미가 모든 unit에 영향,전체 관련proposal stale; graph완전성 모르면 보수적 재검토; 국소변경인척 금지,"PC1.5,PC1.6"
+C11,새 required 인원,U1/U2검토중 유효 source scope에 U3추가,명시적 current membership 재검증·new cycle/correction; U3누락으로 completion불가,"PC1.2,PC1.6,PC1.7"
+C12,중복 payroll 예약,같은Company employee의 겹치는 기간에 두 regular run 동시진입,owner reservation 공유fence로 하나만 현재범위획득; loser무효과; scope축소로 숨겨진충돌 우회불가,"PC1.2,PC1.7"
+C13,다른 법인 분리,A/B동일 account/기간 또는 shared site,각Company FK/RLS/예약/결정 분리; Group 전체 mixed write 없음,"PC1.2,PC1.9"
+C14,승인후 정정,wholeAPPROVED; U2 오류발견,AC1 successor/new run; 원run/unit승인보존; successor fresh S/D; old approval 이식 없음,"PC1.4,PC1.9"
+C15,같은 사람 다른 계정,S와D UUID다르나 같은 Grouphuman,unit결정/optionalgate 요구에 맞춰 SoD거부; completion불가,"PC1.3,PC1.7"
+C16,게이트와 결정 구분,D의 추가실행gate만 G가허가,unit remains SUBMITTED; 정확 D명령만 승인효과; 다른 unit/payload로 gate재사용 거부,"PC1.3,PC1.4"
+C17,단위 두 동시 결정,same proposal에 distinct D명령; 별도 identical command replay,서로 다른결정 한승자; 동일명령 같은receipt; double consumption 없음,PC1.7
+C18,마지막 두 결정 경합,U1/U2마지막승인 동시 실행,잠금/plan검증으로 최종 exactcover 하나; local승인 유실없음; 중복 Completion 없음,PC1.7
+C19,권한회수와 실행 경합,D권한회수/identitymerge/source폐기 vs decide,sharedguard순서대로 결과; 회수commit후 oldproof neweffect불가; source변경은 기존receipt삭제 아님,PC1.7
+C20,다른 단위 stale와 로컬 성공,U1유효 decide; U2근거만현재stale,U1결정 commit가능; global REVIEWING; U1응답에 U2정체/금액/error누출없음,"PC1.4,PC1.8"
+C21,전사 합계 인간검토 요구,Companypolicy가 공통 예산검토 명시; 모든개별unit승인,Common typed proposal의 submit/decide owner경로; last common결정이면 같은트랜잭션 exact R/C Completion; 근거권한없으면 blocked,"PC1.5,PC1.11"
+C22,필수 근거와 불필요한 비밀,필수금액/원천attestation허용; rawID/medical불허,필수 review contract 충족하면 해당unit결정가능; 무관한 개인정보 all-read강요 없음,PC1.3
+C23,필수근거 누락,D가 필요한 공제정보 못봄,blindapprove금지; restricted를0/empty로 취급하지 않음; 적격자배정/권한요청,"PC1.3,PC1.8"
+C24,화면·SSR·알림 누출,U1사용자에게 full R/amount props/cache/progress push생성시도,U1projection만; hidden ID/count/denominator/digest/timing 미노출; globalstatus도별도권한,PC1.8
+C25,원결과 응답 유실,unitdecision+completioncommit후 response loss,samecommand로 현재허용receipt회복; 새명령/승인중복 없음; source stale여도 committed사실보존,PC1.7
+C26,100개 원자 batch,100이하 explicit inspected proposals; 하나권한불허 또는versionstale,전체 batch무효과·gate미소비; 성공이면선택전체효과; silent skip없음,PC1.7
+C27,100개 초과 chunk,250선택; 첫chunkcommit·둘째응답불명,100/100/50각고정ID; 첫결과보존 둘째receipt조회 세번째아직미실행; 전체성공으로표시안함,PC1.7
+C28,legacy 직접 호출,UNIT_COVERAGE run에 old whole submit/decide/withdraw/restage 호출,공유fence 또는 unavailable; coverage우회 전체승인/roster변경/값노출불가,PC1.9
+C29,소스 비분리가능 규칙,여러사람 sharedbonus/cap 또는 unsupported Employment,unit가독성만으로 지원claim없음; revieweddependency/commondecision계약전 계산완료불가,PC1.5
+C30,담당자 변경,기존 unit 담당퇴사; 현재다른적격자수동배정,account보존; 과거S/D불변; pendingintent확정취소후 새로운actor명령; rank복사권한없음,"PC1.2,PC1.4,PC1.7"
+C31,롤백 호환성,new completionhistory 존재후 신규effects비활성,coverage-aware reads/history/fences보존; fakelegacy decider나 receipt삭제없음,PC1.9
+C32,경합 재시도 상한,계속plan변경/serialization 실패,최대3회 동일command; 매시도5초ownerdeadline; exhaustion retryable·입력보존·무한루프없음,PC1.7
+C33,마지막 공통 결정,모든 Unit APPROVED; Common만 SUBMITTED,Common독립 D명령이 정확 C근거로 승인·Completion 하나; U배열만 보고 조기완료 금지,PC1.11
+C34,정정 vs 마지막 결정,REVIEWING에서 revise_review_cycle과 old last decide 동시,정정먼저면 oldchangedproposal거부; 결정먼저APPROVED면 정정거부·AC1successor; oldcycle로newcycle완료금지,PC1.12
+C35,원천정정만 먼저 commit,source-owner correction 성공; payroll cycle revision DB실패,source원결과보존; oldaffectedproposalstale; 동일cycle명령재시도; source까지rollback됐다고표현않음,PC1.12
+C36,이미 결정한 담당자 퇴사,U1결정commit후 D1퇴사/session만료; U2결정뒤 전체완료,U1역사승인/당시권한증거유효하면그대로composition; 재직/로그인유지강요없음; D1새효과는현권한필요,PC1.13
+C37,명시적 결정 회수 vs 완료,현재권한 withdraw_review_decision과 last approval 경쟁,한ordered결과; withdrawal먼저coverage불충족; Completion먼저면unit회수불가AC1경로; oldreceipt보존,PC1.13
+C38,전부 검토된 범위 정정,approved U1/rejected U2; 근거·권한있는 membership amendment로 U2제외; C없음,revise_review_cycle이새nonempty exact R/C검사후 Completion원자생성; 재승인할pendingunit없어도교착없음; causalcommand는정정,"PC1.12,PC1.14"
+C39,반려·기밀대상 삭제 우회,현재선택scope의 eligible U2를 rejected/hidden/unassigned이유만으로제외시도,owner가거부; R유지·Completion없음; 실제narrowedscope허용도Company전체완료주장불가,"PC1.2,PC1.14"

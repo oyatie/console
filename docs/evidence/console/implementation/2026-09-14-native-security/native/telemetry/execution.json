@@ -1,0 +1,71 @@
+{
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "candidate_status": "uncommitted sole-owner source; root to freeze exact SHA",
+  "changed_paths": [
+    "backend/app/src/console_telemetry.rs"
+  ],
+  "source_sha256": "e43ff0f118dba5387555568dc309751de124cfad2753173200b2a0d13497973e",
+  "test_suffix_sha256": "483941b8f02f7b7c68d5fc433bc948e0b12d21ddb90b258dcdd460d9449298b8",
+  "semantic_change": "Remove only private diagnostic tracing fields from DbError and RequestContextError conversions; retain stable production event messages and unchanged500/internal response. SQLx conversion delegates to same corrected DbError conversion.",
+  "scope_limits": [
+    "Synthetic Protocol/EffectivePolicy capture proves formatter event-content/schedule boundary only.",
+    "Does not prove real database-origin errors, inherited span fields, exporter configuration, timing, transport, or all Console information flow.",
+    "No new event schema, observability crate, protected diagnostic storage or incident IDs introduced."
+  ],
+  "environment": {
+    "RUSTUP_TOOLCHAIN": "1.98.1",
+    "RUSTC_WRAPPER": "",
+    "CARGO_INCREMENTAL": "1",
+    "CARGO_TARGET_DIR": "/private/tmp/console-account30-cargo"
+  },
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-app --lib security_diagnostic_sink_tests",
+  "red": {
+    "exit_code": 101,
+    "executed": 2,
+    "passed": 0,
+    "failed": 2,
+    "filtered": 164,
+    "reason": "Both actual captured conversion events disclosed PRIVATE_DIAGNOSTIC_A"
+  },
+  "green": {
+    "exit_code": 0,
+    "executed": 2,
+    "passed": 2,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 164
+  },
+  "discovery": {
+    "binary": "/private/tmp/console-account30-cargo/debug/deps/console_app-5239c15374219a69 --list",
+    "total": 166,
+    "nearest_telemetry_unit_cases": 2
+  },
+  "format": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 rustfmt --edition 2024 --check backend/app/src/console_telemetry.rs",
+    "exit_code": 0,
+    "baseline_difference": "One existing extra blank before immutable test comment removed; entire test comment/module suffix unchanged."
+  },
+  "diff_check": {
+    "command": "git diff --check",
+    "exit_code": 0
+  },
+  "clippy": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --lib -- -D warnings",
+    "exit_code": 0
+  },
+  "remaining_holds": [
+    "Independent exact-SHA review required after root freezes source.",
+    "Other telemetry normalization/source-owner/real runtime assurance remains separate.",
+    "FK exception remains unapplied; production/merge authority not inferred."
+  ],
+  "evidence_sha256": {
+    "red.log": "51e934dae121d89131338761cbebfbdc51d89c8652e62d76dd600b64f9590a34",
+    "green.log": "3fe3dc12c890c7395401b6f20ba5ca5969772b6363b91fe38c504ad7f477c1a8",
+    "discovered.log": "dd752a7afaae2cae49a8d962a5cc59ab49557d4c95cd464e5f0790077c6fef03",
+    "fmt-before.log": "1c3d50adcdbecc1da629516ca5cd943bfb48fea8476d784d15a37ee9b18ff562",
+    "fmt-after.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "clippy.log": "75a3b59d8f10362f7a048b3fd66f1022878561a2eadfc34ea9f1d37ee188e4ce"
+  },
+  "inherited_toolchain_notice": "Cargo emitted existing proc-macro-error2 v2.0.1 future-incompatibility advisory; no lint failure or dependency change.",
+  "fk_source_sha256": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5"
+}

@@ -1,0 +1,286 @@
+{
+  "classification": "ACTUAL_PLAYWRIGHT_DISCOVERY_ONLY_NO_APPLICATION_REQUESTS",
+  "checks": [
+    {
+      "rust_name": "browser_draft_save",
+      "project": "no-js",
+      "title": "draft save preserves exact acknowledged input across reload",
+      "kind": "Draft",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )draft\\ save\\ preserves\\ exact\\ acknowledged\\ input\\ across\\ reload$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_invalid_input",
+      "project": "no-js",
+      "title": "invalid submission preserves input and exposes linked errors",
+      "kind": "Draft",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )invalid\\ submission\\ preserves\\ input\\ and\\ exposes\\ linked\\ errors$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_stale_save",
+      "project": "no-js",
+      "title": "stale save preserves acknowledged inputs and offers recovery",
+      "kind": "Draft",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )stale\\ save\\ preserves\\ acknowledged\\ inputs\\ and\\ offers\\ recovery$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_scoped_review",
+      "project": "no-js",
+      "title": "scoped review presents permitted evidence without hidden coverage",
+      "kind": "Scoped",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )scoped\\ review\\ presents\\ permitted\\ evidence\\ without\\ hidden\\ coverage$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_historical_own",
+      "project": "no-js",
+      "title": "historical own publication remains nonpayable with correction entry",
+      "kind": "Historical",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )historical\\ own\\ publication\\ remains\\ nonpayable\\ with\\ correction\\ entry$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_read_only",
+      "project": "no-js",
+      "title": "read-only projection has no state-changing form or concealed private fields",
+      "kind": "ReadOnly",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )read\\-only\\ projection\\ has\\ no\\ state\\-changing\\ form\\ or\\ concealed\\ private\\ fields$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_keyboard",
+      "project": "no-js",
+      "title": "keyboard user can discover edit save and recover acknowledged input",
+      "kind": "Draft",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )keyboard\\ user\\ can\\ discover\\ edit\\ save\\ and\\ recover\\ acknowledged\\ input$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_narrow",
+      "project": "no-js",
+      "title": "narrow composer preserves essential context inputs and actions",
+      "kind": "Draft",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "no-js",
+        "--grep",
+        "(?:^| )narrow\\ composer\\ preserves\\ essential\\ context\\ inputs\\ and\\ actions$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_js_scoped",
+      "project": "js-enabled-ssr",
+      "title": "scoped review presents permitted evidence without hidden coverage",
+      "kind": "Scoped",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "js-enabled-ssr",
+        "--grep",
+        "(?:^| )scoped\\ review\\ presents\\ permitted\\ evidence\\ without\\ hidden\\ coverage$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_js_historical",
+      "project": "js-enabled-ssr",
+      "title": "historical own publication remains nonpayable with correction entry",
+      "kind": "Historical",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "js-enabled-ssr",
+        "--grep",
+        "(?:^| )historical\\ own\\ publication\\ remains\\ nonpayable\\ with\\ correction\\ entry$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    },
+    {
+      "rust_name": "browser_js_read_only",
+      "project": "js-enabled-ssr",
+      "title": "read-only projection has no state-changing form or concealed private fields",
+      "kind": "ReadOnly",
+      "argv": [
+        "node",
+        "/private/tmp/console-preparation-browser/node_modules/playwright/cli.js",
+        "test",
+        "--config",
+        "/private/tmp/console-production-tdd-preparation-20260913/docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+        "--project",
+        "js-enabled-ssr",
+        "--grep",
+        "(?:^| )read\\-only\\ projection\\ has\\ no\\ state\\-changing\\ form\\ or\\ concealed\\ private\\ fields$",
+        "--list",
+        "--reporter=json"
+      ],
+      "env": {
+        "NODE_PATH": "/private/tmp/console-preparation-browser/node_modules"
+      },
+      "exit_code": 0,
+      "discovered": 1,
+      "executed": 0
+    }
+  ],
+  "discovered": 11,
+  "executed": 0,
+  "prior_discovery_attempts": [
+    "Missing NODE_PATH rejected before loading config",
+    "Fully anchored leaf title selected0 because Playwright includes project/file prefixes; corrected and each exact report leaf verified"
+  ]
+}

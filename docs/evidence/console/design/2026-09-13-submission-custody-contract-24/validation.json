@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-09-13T05:22:59.204262+00:00",
+  "candidate_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-13-submission-custody-contract-24/verify-packet.py --commit 5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+      "result": "PASS",
+      "output": {
+        "candidate_sha": "5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+        "core_files": 11,
+        "source_blobs": 16,
+        "synthetic_frames": 3,
+        "schema_reference_resolution": "PASS; not full schema validation",
+        "maximum_frame_bytes": 147499,
+        "new_tables_proposed": 1,
+        "foreign_keys": 4,
+        "nonexecuted_cases": 18,
+        "reader_links": 6,
+        "validation_scope": "Static custody/ref/key/framing arithmetic only. No SQL parse/typecheck/runtime, full JSON Schema validator, product tests or Verus proof.",
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "verus_proofs_executed": 0,
+        "implementation_authorized": false
+      }
+    },
+    {
+      "command": "git diff --check f26819bf2002c29379ea12d17eb92b00ec8784ce 5648b52576090c63feed9630f27f8ebfeeb2fdaa",
+      "result": "PASS"
+    }
+  ],
+  "environment_probe": {
+    "command": "python3 -c 'import jsonschema; print(jsonschema.__version__)'",
+    "result": "ModuleNotFoundError: jsonschema unavailable; no installation or full JSON Schema validation claimed"
+  },
+  "limits": "Static custody/reference/field-key/framing only; schema references resolved, not full schema validation.18proposed cases not executed. No product/SQL/Verus proof."
+}

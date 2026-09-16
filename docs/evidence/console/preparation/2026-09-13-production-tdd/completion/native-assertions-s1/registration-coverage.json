@@ -1,0 +1,538 @@
+{
+  "registrations": [
+    {
+      "registration": "draft.save",
+      "owner": "ontology",
+      "authored_assertion_bodies": [
+        "native_first_prepare_is_durable_pending_before_terminal_effects"
+      ],
+      "schema_example": "R2/payloads/draft.save.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "draft.restore",
+      "owner": "ontology",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/draft.restore.json",
+      "implementation_boundary": "SUBSEQUENT_ONTOLOGY_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "attempt.cancel",
+      "owner": "ontology",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/attempt.cancel.json",
+      "implementation_boundary": "SUBSEQUENT_ONTOLOGY_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.create_run",
+      "owner": "payroll",
+      "authored_assertion_bodies": [
+        "native_owner_chain_produces_complete_nonpayable_review"
+      ],
+      "schema_example": "R2/payloads/payroll.create_run.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.create_contract_wage",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.create_contract_wage.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.correct_contract_wage",
+      "owner": "payroll",
+      "authored_assertion_bodies": [
+        "native_owner_wage_change_after_building_prevents_old_activation"
+      ],
+      "schema_example": "R2/payloads/payroll.correct_contract_wage.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.prepare_inputs",
+      "owner": "payroll",
+      "authored_assertion_bodies": [
+        "native_first_prepare_is_durable_pending_before_terminal_effects",
+        "native_prepare_replay_returns_same_receipt_without_second_input",
+        "native_owner_wage_change_after_building_prevents_old_activation"
+      ],
+      "schema_example": "R2/payloads/payroll.prepare_inputs.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.reopen_inputs",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.reopen_inputs.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.close_attendance",
+      "owner": "payroll",
+      "authored_assertion_bodies": [
+        "native_owner_chain_produces_complete_nonpayable_review",
+        "native_blocked_population_cannot_close"
+      ],
+      "schema_example": "R2/payloads/payroll.close_attendance.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.calculate_run",
+      "owner": "payroll",
+      "authored_assertion_bodies": [
+        "native_owner_chain_produces_complete_nonpayable_review",
+        "native_calculation_replay_returns_same_money_and_receipt",
+        "native_two_original_calculate_intents_have_one_current_winner",
+        "native_expected_run_id_is_not_defaulted",
+        "native_expected_run_revision_is_not_defaulted",
+        "native_expected_input_revision_is_not_defaulted",
+        "native_expected_input_revision_null_is_not_defaulted",
+        "native_expected_calculation_revision_is_not_defaulted",
+        "native_expected_close_basis_null_is_not_defaulted",
+        "native_expected_review_cycle_id_is_not_defaulted"
+      ],
+      "schema_example": "R2/payloads/payroll.calculate_run.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.open_review_cycle",
+      "owner": "payroll",
+      "authored_assertion_bodies": [
+        "native_owner_chain_produces_complete_nonpayable_review",
+        "review_partial_approvals_do_not_produce_completion"
+      ],
+      "schema_example": "R2/payloads/payroll.open_review_cycle.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "review.submit",
+      "owner": "governance+payroll",
+      "authored_assertion_bodies": [
+        "review_partial_approvals_do_not_produce_completion",
+        "review_second_account_of_same_human_cannot_self_approve"
+      ],
+      "schema_example": "R2/payloads/review.submit.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "review.decide",
+      "owner": "governance+payroll",
+      "authored_assertion_bodies": [
+        "review_partial_approvals_do_not_produce_completion",
+        "review_second_account_of_same_human_cannot_self_approve"
+      ],
+      "schema_example": "R2/payloads/review.decide.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "review.withdraw",
+      "owner": "governance+payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/review.withdraw.json",
+      "implementation_boundary": "SUBSEQUENT_GOVERNANCE_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.revise_review_cycle",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.revise_review_cycle.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.cancel_review_cycle",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.cancel_review_cycle.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.supersede_approved_draft",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.supersede_approved_draft.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "governance.execution_gate.request",
+      "owner": "governance",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/governance.execution_gate.request.json",
+      "implementation_boundary": "SUBSEQUENT_GOVERNANCE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "governance.execution_gate.decide",
+      "owner": "governance",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/governance.execution_gate.decide.json",
+      "implementation_boundary": "SUBSEQUENT_GOVERNANCE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.review.release",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.review.release.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.review.replace_projection",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.review.replace_projection.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.review.request",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.review.request.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.review.request_append",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.review.request_append.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.review.request_withdraw",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.review.request_withdraw.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.review.respond",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.review.respond.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "work.transfer.submit",
+      "owner": "workflow",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/work.transfer.submit.json",
+      "implementation_boundary": "SUBSEQUENT_WORKFLOW_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "work.transfer.execute",
+      "owner": "workflow",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/work.transfer.execute.json",
+      "implementation_boundary": "SUBSEQUENT_WORKFLOW_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "work.transfer.stop",
+      "owner": "workflow",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/work.transfer.stop.json",
+      "implementation_boundary": "SUBSEQUENT_WORKFLOW_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "group.operation.create",
+      "owner": "group",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/group.operation.create.json",
+      "implementation_boundary": "SUBSEQUENT_GROUP_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "group.operation.activate",
+      "owner": "group",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/group.operation.activate.json",
+      "implementation_boundary": "SUBSEQUENT_GROUP_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "group.operation.resume",
+      "owner": "group",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/group.operation.resume.json",
+      "implementation_boundary": "SUBSEQUENT_GROUP_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "group.operation.stop",
+      "owner": "group",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/group.operation.stop.json",
+      "implementation_boundary": "SUBSEQUENT_GROUP_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "calendar.publish",
+      "owner": "attendance",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/calendar.publish.json",
+      "implementation_boundary": "SUBSEQUENT_ATTENDANCE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "calendar.assign",
+      "owner": "attendance",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/calendar.assign.json",
+      "implementation_boundary": "SUBSEQUENT_ATTENDANCE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "attendance.resolve_coverage",
+      "owner": "attendance",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/attendance.resolve_coverage.json",
+      "implementation_boundary": "SUBSEQUENT_ATTENDANCE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "attendance.create_close_basis",
+      "owner": "attendance",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/attendance.create_close_basis.json",
+      "implementation_boundary": "SUBSEQUENT_ATTENDANCE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "source.propose_qualification",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/source.propose_qualification.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "source.verify_qualification",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/source.verify_qualification.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "source.revoke_qualification",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/source.revoke_qualification.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "eligibility.propose",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/eligibility.propose.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "eligibility.verify",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/eligibility.verify.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "eligibility.revoke",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/eligibility.revoke.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.admit_tax_evidence",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.admit_tax_evidence.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.verify_tax_evidence",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.verify_tax_evidence.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "payroll.revoke_tax_evidence",
+      "owner": "payroll",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/payroll.revoke_tax_evidence.json",
+      "implementation_boundary": "SUBSEQUENT_PAYROLL_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "draft.start",
+      "owner": "ontology",
+      "authored_assertion_bodies": [
+        "native_same_draft_control_command_changed_input_refuses"
+      ],
+      "schema_example": "R2/payloads/draft.start.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "draft.seal",
+      "owner": "ontology",
+      "authored_assertion_bodies": [
+        "native_first_prepare_is_durable_pending_before_terminal_effects"
+      ],
+      "schema_example": "R2/payloads/draft.seal.json",
+      "implementation_boundary": "FIRST_NATIVE_VERTICAL_SLICE_PARTIAL_ASSERTIONS",
+      "remaining_source": "Additional six-dimension registration coverage required; authored references do not imply complete registration readiness.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "attempt.execute",
+      "owner": "actual_bound_domain",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/attempt.execute.json",
+      "implementation_boundary": "SUBSEQUENT_ACTUAL_BOUND_DOMAIN_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "draft.discard",
+      "owner": "ontology",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/draft.discard.json",
+      "implementation_boundary": "SUBSEQUENT_ONTOLOGY_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "draft.upgrade_schema",
+      "owner": "ontology",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/draft.upgrade_schema.json",
+      "implementation_boundary": "SUBSEQUENT_ONTOLOGY_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "draft.expire",
+      "owner": "ontology",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/draft.expire.json",
+      "implementation_boundary": "SUBSEQUENT_ONTOLOGY_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "source.prepare_submission",
+      "owner": "ontology",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/source.prepare_submission.json",
+      "implementation_boundary": "SUBSEQUENT_ONTOLOGY_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "artifact.request_upload",
+      "owner": "docs",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/artifact.request_upload.json",
+      "implementation_boundary": "SUBSEQUENT_DOCS_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "artifact.verify_version",
+      "owner": "docs",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/artifact.verify_version.json",
+      "implementation_boundary": "SUBSEQUENT_DOCS_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    },
+    {
+      "registration": "leave.decide",
+      "owner": "leave",
+      "authored_assertion_bodies": [],
+      "schema_example": "R2/payloads/leave.decide.json",
+      "implementation_boundary": "SUBSEQUENT_LEAVE_OWNER_LANE",
+      "remaining_source": "SOURCE_NOT_AUTHORED: valid/negative/replay/race/recovery/current-projection owner assertions; explicitly assigned subsequent owner lane.",
+      "owner_execution": "OWNER_IMPLEMENTATION_PREREQUISITE;0 executed"
+    }
+  ],
+  "count": 55,
+  "rule": "No all55-ready claim; source examples/dispatch calls are not assertion bodies."
+}

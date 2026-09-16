@@ -1,0 +1,14 @@
+{
+  "kind": "payroll.create_contract_wage",
+  "body": {
+    "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+    "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+    "effective_from": "2026-09-01",
+    "wage_kind": "MONTHLY",
+    "amount_won": "3000000",
+    "monthly_standard_hours": 209,
+    "source_note": "검토 근거를 확인했습니다.",
+    "evidence_refs": [],
+    "subject_source_generation": "1"
+  }
+}

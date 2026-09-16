@@ -1,0 +1,27 @@
+id,surface,trigger,expected,status
+P01,publication,one command emits two calendar roots plus assignments,single receipt includes every emitted revision; any failure rolls back all,PROPOSED_NOT_EXECUTED
+P02,source lineage,VERIFY replaces VERIFIED predecessor,successor VERIFY and predecessor SUPERSEDE appear under same creating command,PROPOSED_NOT_EXECUTED
+P03,source lineage,VERIFY replaces previously verified REVOKED predecessor,immutable claim retains predecessor old command identity; no new fake revoked event,PROPOSED_NOT_EXECUTED
+P04,membership,late source/member insertion after sealed success,deferred reciprocal checks refuse; no mutable count/digest,PROPOSED_NOT_EXECUTED
+P05,membership,omit member or ordinal gap/duplicate/reorder,count/key/order/frame mismatch fails,PROPOSED_NOT_EXECUTED
+P06,membership,valid root revision but wrong Company/kind/subject/command,composite source keys plus fixed owning predicates fail,PROPOSED_NOT_EXECUTED
+P07,membership,1025 effects or full prepared plan exceeds admitted budget,refuse before effect; preserve acknowledged draft/old assignments; no truncation,PROPOSED_NOT_EXECUTED
+P08,adoption,private draft cleanup after source publication,separate domain unit remains readable under current domain policy,PROPOSED_NOT_EXECUTED
+P09,adoption,second physical copy is same private disposal unit,independent adoption requirement rejects it,PROPOSED_NOT_EXECUTED
+P10,adoption,source payload copied but required reason/gate/notes omitted,cannot release private pins or succeed adoption,PROPOSED_NOT_EXECUTED
+P11,replay,source/draft disposed or storage down after committed effect,current receipt projection; no dependency on reloading old private bytes,PROPOSED_NOT_EXECUTED
+P12,history,new calendar head or exit/rehire changes current projection,explicit old calendar references and historical Employment preserved; current source eligibility still checked,PROPOSED_NOT_EXECUTED
+P13,confidentiality,B business values/row counts vary for same admitted A request,same modeled A-visible response/error/log/notification trace,PROPOSED_NOT_EXECUTED
+P14,confidentiality,secret-dependent branch emits constant operational log,relational/control-dependency proof must reject unauthorized event occurrence,PROPOSED_NOT_EXECUTED
+P15,tenant context,one Account authorized in both A and B requests in A context,B data still excluded; explicit context switch required,PROPOSED_NOT_EXECUTED
+P16,tenant context,six Companies in A and one Company in B,cross-tenant negative checks use A versus B; authorized intra-A consolidation remains separate,PROPOSED_NOT_EXECUTED
+P17,tenant integrity,A worker retries with reused connection/cache/cursor/topic from B,current active tenant/Company/subject/provenance binding prevents B read or mutation,PROPOSED_NOT_EXECUTED
+P18,egress,TLS endpoint points to unauthorized recipient or redirects,egress admission fails; encryption alone never authorizes release,PROPOSED_NOT_EXECUTED
+P19,logs,raw SQL/debug/credential/OTP string reaches ordinary event,sink-boundary/dependency validation rejects; sensitive audit has separate allowed contract,PROPOSED_NOT_EXECUTED
+P20,SSR,hidden B value affects data attribute/header/count/download/websocket,current projection noninterference fails even if visible text is redacted,PROPOSED_NOT_EXECUTED
+P21,proof scope,external_body/assumption simply declares sink safe,"body not proved; boundary remains trusted/unavailable, no whole-system claim",PROPOSED_NOT_EXECUTED
+P22,side channel,shared resource timing differs although logical output equal,report timing exclusion; no promotion to timing-sensitive guarantee,PROPOSED_NOT_EXECUTED
+P23,crypto,ciphertext varies with plaintext or random nonce,do not require byte equality; document crypto assumptions and observable length/time,PROPOSED_NOT_EXECUTED
+P24,proof nonvacuity,no admitted A/B states or no verified entry function,reject empty proof coverage as unavailable,PROPOSED_NOT_EXECUTED
+P25,retention locks,finalizer given allocated UUID with no pre-staged retained-unit row,"refuse; no absent-row lock fiction; stage through registered preparation before seal, never during historical replay",PROPOSED_NOT_EXECUTED
+P26,proof assumptions,B-dependent DB/cache/error/queue response is coupled equal or reclassified public,independent specification review rejects assumption; negative witness must expose differing observation,PROPOSED_NOT_EXECUTED

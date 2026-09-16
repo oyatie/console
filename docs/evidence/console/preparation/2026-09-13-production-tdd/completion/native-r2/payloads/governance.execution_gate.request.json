@@ -1,0 +1,26 @@
+{
+  "kind": "governance.execution_gate.request",
+  "body": {
+    "draft_id": "1f9a8da5-3585-5ab8-b4a9-46560970445b",
+    "expected_revision_id": "6dae6bf4-4125-5d58-b167-3608a1bd519f",
+    "editing_token": {
+      "draft_id": "1f9a8da5-3585-5ab8-b4a9-46560970445b",
+      "editing_epoch": "1",
+      "nonce": "c56e7e4644312180ca32ef108adc581f17c97c710118be387f8281deaaed3e38",
+      "assignment_epoch": null
+    },
+    "gate_policy": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "object_type_id": "1d3b0cd7-238e-5f5e-84fc-49492b4923f8",
+      "instance_id": "ec796328-4e80-5003-8a5c-977449490de3",
+      "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+      "version": "1",
+      "row_hash": "e3d245ea3498b502c0f38161d4e042baaf3e6fbc573a9de8c491a23edc11d56c"
+    },
+    "evidence": [],
+    "requested_validity": {
+      "from": "1788220800000000",
+      "until": "1790780400000000"
+    }
+  }
+}

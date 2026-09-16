@@ -1,0 +1,92 @@
+PREPARATION TEST WIRING: SERIALIZED TOOLING LANE GUIDE
+
+Scope: build metadata, exact test execution reachability, and topology-safe routing for three already-authored test roots. No payroll/auth behavior implementation, test weakening, Account DDL, rejected account_storage FK exception, dependency/lockfile changes, or production/VM work.
+
+Base at review: 58b6f758ac2a49b28589b9506628a43b6158e925 in /private/tmp/console-production-tdd-preparation-20260913 plus root-owned preparation changes. Root must commit test-only candidate, independently review the test, and replace this base with that exact clean test SHA before fanout.py admission. Immutable success target: the same nine-test wiring command changes from RED to GREEN, with generated/CI checks green; product REDs remain RED and are not fixed by this lane.
+
+ROOT-OWNED TEST CANDIDATE
+Copy /private/tmp/test_preparation_wiring.py to tools/buck/test_preparation_wiring.py. It uses repository-relative default root when installed there; the environment override exists solely for scratch review. Run:
+PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_preparation_wiring.py -v
+Scratch execution on the current preparation tree discovered/executed 9 unittest methods, failures=8 and errors=3 because two methods have three subcases. Do not call that 11 test methods. All failures describe actual current missing metadata/wiring or unsafe queue fallback; no product implementation is involved.
+
+1. GENERATOR / SOURCES
+tools/buck/gen_first_party.py:
+- Declare console-app tests/account_migration.rs = postgres.
+- Declare console-platform-authz tests/cedar_diagnostic_fail_closed.rs = none.
+- Declare console-payroll-adapter-postgres tests/recovery.rs = postgres-recovery.
+- Add tests/auth_rest/publication_privileges.rs to console-app auth_rest integration resource srcs. It remains a nested module, never a separate Rust crate/test target.
+- Add postgres-recovery to reviewed resource values and resource.postgres-recovery to RESOURCE_LABELS. Generated recovery target has exactly that resource label, not resource.none or resource.postgres, and MUST NOT carry needs-postgres because that dispatches the one-node harness.
+- Keep existing bool callers of test_labels compatible, or update every caller/test mechanically to pass the explicit resource value. Critical: generation must pass resource_requirement rather than collapsing recovery through the current boolean requires_postgres. Existing none/postgres targets must retain identical labels. The existing exhaustive taxonomy test must inspect the explicit resource value for recovery.
+- Regenerate first-party BUCKs; expected changed generated faces are backend/app/BUCK, backend/crates/platform/authz/BUCK, backend/crates/payroll/adapter-postgres/BUCK. Stop on unrelated generated changes and inspect provenance; do not reset them destructively.
+
+2. ORDINARY MIGRATION / HERMETIC CEDAR
+- Add app-account-migration-pg wrapper to tools/buck/BUCK, using existing credential-safe run_test_with_postgres_env.sh and console-app-itest-account_migration target.
+- Add one in_workflow_postgres_job=true entry to tools/ci/postgres-cargo-map.json: package console-app, test account_migration, cargo argv exactly cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test account_migration -- --test-threads=1. No fabricated measured_seconds; retain legitimate unknown/imputed handling. Update derived counts, source-consistency pins and preflight wrapper requirement mechanically.
+- Existing app facet then executes migration through its real owner-login transport, with no new job needed.
+- Append --test cedar_diagnostic_fail_closed to existing domain-unit console-platform-authz hermetic integration invocation. Preserve keep-going/check_status and existing tests. No PostgreSQL map entry for Cedar.
+
+3. PROMOTE RECOVERY EXECUTION TO TOOLS, RETAIN HISTORICAL EVIDENCE
+Copy these existing reviewed fixture files byte-preservingly from docs/evidence/console/preparation/2026-09-13-production-tdd/completion/recovery/ into tools/lanes/recovery/: recovery_postgres.sh, recovery_control.sh, supervise_recovery.py, commit_relay.py, test_commit_relay.py, test_supervise_recovery.py. Root retains original evidence copies and hashes. Preserve executable modes for controls. Active CI invokes tools paths; never dated evidence code. Original C source/evidence archives do not need promotion.
+
+4. TWO REQUIRED RECOVERY EXECUTIONS; NO ORDINARY MAP ENTRY
+Keep payroll recovery completely out of tools/ci/postgres-cargo-map.json, even inactive entries. The normal runner is one-node and cannot execute these tests correctly.
+Use the existing postgres-reachability-domain-b required facet, with its checkout/toolchain/cache and current run_live_postgres gating. Before recovery, ensure the exact pinned multi-platform image exists; one explicit docker pull postgres:18.6@sha256:4ef4dbc939d61acea57712655ddb4b4ab27419c913f94cca0cd57cb3ea3c2280 setup step is sufficient. The fixture deliberately does not pull and a cold hosted runner otherwise fails before any test. No third-party provider setup is needed.
+Add TWO separate execution steps. Both must run after successful setup even if the earlier ordinary tests or first recovery case fail (use !cancelled() and explicit setup-outcome/run_live_postgres conditions, not continue-on-error). They remain sequential because they are steps in one job. Each runs its own supervised owned two-node topology and cleanup; never run both in the same unspecialized cargo invocation.
+
+CONSOLE_RECOVERY_CUT= python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery replay_cannot_acknowledge_a_locally_visible_receipt_before_remote_apply -- --exact --test-threads=1 --nocapture
+
+CONSOLE_RECOVERY_CUT=after-commit-response python3 tools/lanes/recovery/supervise_recovery.py "$GITHUB_WORKSPACE" -- cargo test --locked --manifest-path backend/Cargo.toml -p console-payroll-adapter-postgres --test recovery lost_commit_transport_reply_replays_one_real_payroll_effect -- --exact --test-threads=1 --nocapture
+
+These are not skipped tests: each invocation executes one and filters the other; the required union executes both discovered cases exactly once. Record per invocation discovered2/executed1/filtered1 and union2/2/omitted0. Timeouts/fixture errors retain their existing distinct classification and cannot satisfy RED product evidence. Preserve the supervisor's 600s process-group bound and owned-resource cleanup evidence. Increase the existing facet timeout only if bounded sequential work needs it; no new aggregator job or permission changes.
+
+5. REACHABILITY / ROUTING MUST UNDERSTAND THE REAL EXECUTOR
+- scripts/check-executed-tests.mjs currently only recognizes direct cargo and ordinary mapped runner. Add a narrow recognizer for exact python3 tools/lanes/recovery/supervise_recovery.py REPO -- cargo test invocation. Never broadly unwrap arbitrary Python/bash or trust command substrings. Validate selected package/test, exact complete scenario set, --exact, and mode binding; attribute the actual cargo metadata target only after both required calls are recognized. Prefer small testable helper in scripts/lib/recovery-test-invocations.mjs and mutation tests if extraction is needed. Existing executableWorkflowCommands already excludes echo/comment/disabled/non-gating/control-flow tricks; reuse it.
+- scripts/console/run-verification-queue.mjs must explicitly reject resource.postgres-recovery with a dedicated-topology instruction before the normal/needs-postgres split. Otherwise it incorrectly runs recovery as a hermetic target. This does not skip CI recovery: the two explicit required facet invocations above are its executable path.
+- Register tools/lanes/recovery/** and the recovery test's owning backend path in existing live-PostgreSQL path classification. Ordinary tooling-only changes currently may not set run_live_postgres; harness edits must trigger their own tests.
+- Add the nine-method wiring regression and promoted relay/supervisor unit suites to executable CI tooling checks, with receipt of their exact discovered/executed counts. If a new JS helper test is added, enroll it in existing JS test reachability.
+- Update scripts/check-ci-preflight.mjs/tests only for concrete expected new steps, exact command/digest pins, source closure, and wrapper inventory. Preserve all other protected checks.
+- Refresh docs/program/executed-tests-baseline.json using the existing --update only after independently checking no dark test was newly excused and every new source attribute has an actual path. This is static source accounting, not runtime test counts.
+
+EXACT IMPLEMENTATION ALLOWLIST (root serial writer; no delegated shared edits)
+tools/buck/gen_first_party.py
+tools/buck/test_gen_first_party.py
+tools/buck/BUCK
+backend/app/BUCK
+backend/crates/platform/authz/BUCK
+backend/crates/payroll/adapter-postgres/BUCK
+tools/ci/postgres-cargo-map.json
+.github/workflows/ci.yml
+scripts/check-executed-tests.mjs
+scripts/lib/recovery-test-invocations.mjs [only if extracted narrow recognizer]
+scripts/lib/recovery-test-invocations.test.mjs [matching behavioral mutation tests]
+scripts/check-ci-preflight.mjs
+scripts/check-ci-preflight.test.mjs
+scripts/console/run-verification-queue.mjs
+scripts/console/run-verification-queue.test.mjs
+docs/program/executed-tests-baseline.json
+tools/lanes/recovery/recovery_postgres.sh
+tools/lanes/recovery/recovery_control.sh
+tools/lanes/recovery/supervise_recovery.py
+tools/lanes/recovery/commit_relay.py
+tools/lanes/recovery/test_commit_relay.py
+tools/lanes/recovery/test_supervise_recovery.py
+tools/buck/test_preparation_wiring.py is APPROVED TEST INPUT, not an implementation-edit path; semantic changes return to test review.
+If source-derived gate evidence requires another exact file, root must amend the bounded guide explicitly before mutation; no wildcard permission to change authority/lockfiles.
+
+DETECTION / PROOF / STOP
+Run same nine-test regression first after edits, then python3 tools/buck/test_gen_first_party.py, focused queue/recognizer/preflight tests, map/partition checks, executed-tests ratchet, promoted relay/supervisor unit suites, and git diff --check. Existing generator test includes regeneration and checks clean generated faces; run it against the committed candidate or separate generation drift from expected uncommitted edits. All commands/counts bind to the actual tooling candidate SHA. Do not claim the migration/PUB/browser prerequisite blocks or known Cedar/recovery product failures are fixed.
+Pre-mortem: recovery mislabeled as one-node; new test darkens behind custom runner; second scenario never runs after first failure; cold CI lacks image; generated face misses nested module; generic queue executes unsupported topology. Detection: nine-method regression plus narrow parser mutation tests and hosted-like execution evidence. Blast radius: test scheduling and generated build metadata, no serving behavior. Rollback: revert only the reviewed tooling candidate as an ordinary new commit, retaining test/evidence history; never reset shared worktrees. Stop if missing clean SHA/approved tests, unrelated generated changes, new active-resource requirements, changed product tests, new dark exceptions, or prerequisite failure misreported as product RED.
+
+R2 TEST-REVIEW AMENDMENT (scratch-only, implementation remains stopped)
+The revised probe has nine methods: seven repository wiring checks and two hostile-workflow mutation suites. Mutation suites first accept a valid synthetic workflow control, then reject seven Cedar and fourteen recovery mutations. Their workflow fixtures prove the checker only; they are not application fixtures or CI execution evidence. The full current-tree probe remains RED.
+
+Exact Cedar executable argv is the existing --locked/--manifest-path/backend/Cargo.toml console-platform-authz invocation with its existing cedar_pbac_readiness_cases and cedar_pbac_legacy_only_observe_and_record roots, followed by --test cedar_diagnostic_fail_closed. No --no-run, --list, name filter, --skip, --ignored or extra execution-changing argument can satisfy reachability.
+
+Retain complete executableWorkflowCommands metadata, including step conditions and contents. Domain-b checkout id must be recovery-checkout and use the existing pinned actions/checkout SHA with persist-credentials:false and no ref/repository/path override. Existing pinned Rust setup receives id recovery-toolchain and toolchain 1.98.1. Common pinned-image step id recovery-image must run exact docker pull of the pinned digest. All three setup steps have if: ${{ needs.preflight.outputs.run_live_postgres == 'true' }}, preserve failure propagation, and occur in checkout/toolchain/image order BEFORE the ordinary PostgreSQL test step. That prevents earlier ordinary RED from skipping image setup.
+
+Both dedicated recovery steps occur separately AFTER the ordinary test step and use this exact condition:
+${{ !cancelled() && needs.preflight.outputs.run_live_postgres == 'true' && steps.recovery-checkout.outcome == 'success' && steps.recovery-toolchain.outcome == 'success' && steps.recovery-image.outcome == 'success' }}
+They have no continue-on-error or working-directory override. The raw invocation contains exactly its CONSOLE_RECOVERY_CUT assignment and the approved Python supervisor argv; repo argument is exactly "$GITHUB_WORKSPACE". A stale /tmp checkout, alternate step success guard, missing condition, success()-only condition, wrong mode, build/list variant, or late image setup must fail the test. No product/tooling implementation is admitted until root independently reviews this revised test SHA and runs a fresh fanout.py admission.
+
+R3 NARROW EXECUTOR CLOSURE (test review only)
+Cedar raw tokens must equal SQLX_OFFLINE=true followed by the exact admitted Cargo argv: no env -C or alternate wrapper. Its step condition remains exactly ${{ needs.preflight.outputs.run_heavy == 'true' }} and it has no working-directory override. Both Cedar and recovery require effective shell absent/default or bash, including shell when it is the first YAML key following a step dash. Failure-only Cedar, alternate-directory Cedar, and echo {0} shells are rejected. New hostile cases raise the mutation totals to eleven Cedar and fifteen recovery cases, with unchanged nine unittest methods. No tooling implementation before fresh root readmission.

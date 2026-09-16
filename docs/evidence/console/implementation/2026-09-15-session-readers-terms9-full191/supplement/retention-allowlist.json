@@ -1,0 +1,259 @@
+{
+  "blast_radius": "Private inert archives; root may append one bounded evidence supplement only.",
+  "classifications": {
+    "fixture77_preparation": "Frozen and independently approved helper/source-roster/parser preparation only. Zero fixture runtime tests included or claimed.",
+    "full191_failures": "Independent Fast review binds all23 panic blocks:18 first HTTP route404 blockers and5 precise first storage blockers; later assertions remain unreached.",
+    "full191_source_roster": "180 explicit test functions plus11 independently inspected hostile macro instantiations from eight source files exactly equal all191 qualified runtime names.",
+    "npm_default_sandbox": {
+      "completion_exit_root_reported": 1,
+      "raw_failed_steps": [
+        "Release metadata documentation manifest gate",
+        "Release metadata documentation local-link gate",
+        "Cheap Buck2 generated-face admission",
+        "CI preflight contract tests",
+        "CI preflight contract",
+        "Layer-boundary gate",
+        "Buck2 CI-gate mutation suites \u2014 every gate proven to still reject",
+        "Buck2 platform-authz unit suite",
+        "Cargo console-app unit suite",
+        "Domain crate unit tests"
+      ],
+      "raw_failed_steps_count": 10,
+      "root_cause_attribution": "Root completion message attributes sandbox Git index/write-tree, Buck metadata/process inspection and loopback-bind denials. Log retained as completed prerequisite evidence; independent preparer checked raw10failed summary, not all causal hypotheses.",
+      "root_reported_source_unchanged": true
+    }
+  },
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement",
+  "detection": "Exact hashes, gzip round trips,23-name/failure and191-source roster identity,10-step raw summary.",
+  "execution_by_preparer": {
+    "cargo": 0,
+    "database": 0,
+    "docker": 0,
+    "repository_writes": 0,
+    "runtime_tests": 0
+  },
+  "explicit_exclusions": [
+    "Active npm local-permissions rerun.",
+    "Queued or active fixture77 runtime.",
+    "New Account JWT/CSRF acceptance candidates and implementation.",
+    "Environment files, live credentials, caches, container/volume contents, unlisted neighbors."
+  ],
+  "head": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "kind": "finite_completed_evidence_and_frozen_fixture_preparation_supplement",
+  "new_archive_bytes": 159804,
+  "pre_mortem": "Mixing preparation with runtime or omitting restricted-environment failure would misstate evidence.",
+  "preparer": "/root/capture_review",
+  "primary_allowlist": "/private/tmp/account-session-retention-candidate-capture-20260915/retention-allowlist.json",
+  "primary_allowlist_sha256": "c160a32bba80714c161cb3f21331173392064729db8da5d0c0fa585332ce5f50",
+  "record_count": 17,
+  "records": [
+    {
+      "archive_bytes": 5656,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/full191/account-auth-rest-full191-failure-classification-fast.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/full191/account-auth-rest-full191-failure-classification-fast.json.gz",
+      "archive_sha256": "54dfa5caead168d0a87610a527adc3204b37852dcff4cd958158744277e98e69",
+      "byte_exact_decompression_verified": true,
+      "category": "full191",
+      "original_bytes": 32319,
+      "original_path": "/private/tmp/account-auth-rest-full191-failure-classification-fast.json",
+      "original_sha256": "5a70b0e32e8958b53aff062323c77b533693704a31351e8aa5d40d4059089544"
+    },
+    {
+      "archive_bytes": 4783,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/full191/account-auth-rest-full191-source-roster-independent-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/full191/account-auth-rest-full191-source-roster-independent-capture.json.gz",
+      "archive_sha256": "f06f116b902d7d7582a33da2341d7126ecf244677a346601961b982f9b245f74",
+      "byte_exact_decompression_verified": true,
+      "category": "full191",
+      "original_bytes": 20460,
+      "original_path": "/private/tmp/account-auth-rest-full191-source-roster-independent-capture.json",
+      "original_sha256": "3d6b0d4c355ef1c48be536bcc16f82ba34631ab8fea817c6affb09403d42e724"
+    },
+    {
+      "archive_bytes": 1011,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/retention/account-session-retention-second-pass-validation-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/retention/account-session-retention-second-pass-validation-capture.json.gz",
+      "archive_sha256": "687c0e5e196c0d139c4895b7dc94d6abe871040de31e65099217f7c85b66a96c",
+      "byte_exact_decompression_verified": true,
+      "category": "retention",
+      "original_bytes": 1981,
+      "original_path": "/private/tmp/account-session-retention-second-pass-validation-capture.json",
+      "original_sha256": "26ebdef4c9943623c045c7ce23f504909a169511a19ae1787a3879bf2c5fcd9f"
+    },
+    {
+      "archive_bytes": 102522,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/npm-default-sandbox/account-session-f96eddd3-npm-verify.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/npm-default-sandbox/account-session-f96eddd3-npm-verify.log.gz",
+      "archive_sha256": "674a02a4569388fb75768f1584881e70d43aa19a8ac710881f1b4993991754bf",
+      "byte_exact_decompression_verified": true,
+      "category": "npm-default-sandbox",
+      "original_bytes": 590952,
+      "original_path": "/private/tmp/account-session-f96eddd3-npm-verify.log",
+      "original_sha256": "2e5dd33276dd79543f843eb48a2decadf95e09eb4ef69980392d0d0bf9a38cc5"
+    },
+    {
+      "archive_bytes": 1435,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/account-session-fixture77-independent-review-capture.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/account-session-fixture77-independent-review-capture.json.gz",
+      "archive_sha256": "f9bb085cfacaeb260ef8e72e6d5ed6c791e97fa49107233b8199e03752782ee5",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 3928,
+      "original_path": "/private/tmp/account-session-fixture77-independent-review-capture.json",
+      "original_sha256": "94387cf84b2efff254eab82c3de68fca086aa6f792ac98eb2653f02d0009bb17"
+    },
+    {
+      "archive_bytes": 3040,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/account-session-fixture-validation-plan-fast.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/account-session-fixture-validation-plan-fast.json.gz",
+      "archive_sha256": "19d21b8bfaf1d17eb0f49b150a27a23cdf9965d7e9466bccc50eb8d1b45a5ac3",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 7516,
+      "original_path": "/private/tmp/account-session-fixture-validation-plan-fast.json",
+      "original_sha256": "18ab429bd819378020ab5780b18c554062cf70f786182883e7da8399c3dea617"
+    },
+    {
+      "archive_bytes": 3389,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/manifest.json.gz",
+      "archive_sha256": "257dd9a5b0ca646f5f4a2909d49e1b05bd9ac9ab82c24138c8db939ee2bfd082",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 7426,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/manifest.json",
+      "original_sha256": "254c39a68a92088ee329785a83108c486fb8b2148b9145a4813616f532ed9f2a"
+    },
+    {
+      "archive_bytes": 1313,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/check-parser.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/check-parser.py.gz",
+      "archive_sha256": "376f5cedd2f9a65dbaff163a643e5985ec38f9db10c72150461badee195c7353",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 3027,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/check-parser.py",
+      "original_sha256": "4576b0734c8826867a00fe97f50d15db494396a94cb8796307a7f85d138529e7"
+    },
+    {
+      "archive_bytes": 4121,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/driver.sh.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/driver.sh.gz",
+      "archive_sha256": "e3eca19c48d5f611df50a4f8a0e6f48dca2275a1b7e2a183e82da3452bcada8c",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 12045,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/driver.sh",
+      "original_sha256": "b96c9674a9e3c60ea657ad1a2469120fc1dac01d97875b9926b316b758e4185d"
+    },
+    {
+      "archive_bytes": 10622,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/fixture-roster.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/fixture-roster.json.gz",
+      "archive_sha256": "2c4511db43b31686cb231d82a2c9e7fe46298349e569a4171863bee294ad9f88",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 67936,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/fixture-roster.json",
+      "original_sha256": "20762b55d61f3cfc150dbb633d4800a029503a01c6ff0062ff337bc924d1102b"
+    },
+    {
+      "archive_bytes": 787,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/only.txt.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/only.txt.gz",
+      "archive_sha256": "3971dd1e568e3dd70bd6af90059f0e7e3d6d21ab3cf4d2fa276b58869db13ca2",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 2279,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/only.txt",
+      "original_sha256": "f760d1d13595f913bb609fd975337f7c2e25f83964c14d5f59842cf28d3457a1"
+    },
+    {
+      "archive_bytes": 284,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/parser-check-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/parser-check-receipt.json.gz",
+      "archive_sha256": "166ac045d08a57f034011c2869f383cc16495b5dc494b4ba21589168e08e0e06",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 1294,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/parser-check-receipt.json",
+      "original_sha256": "02d45398fa44b9f84a94328a56e3dd026826a57be8ce53a0fd9ef0663fcca90c"
+    },
+    {
+      "archive_bytes": 10999,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/postgres-map.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/postgres-map.json.gz",
+      "archive_sha256": "429ed4458d23c8532a3ec1fdf070a9b2053eeea7677b1a2afbf510d84323fc69",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 184116,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/postgres-map.json",
+      "original_sha256": "2cc161fd8a747741306d0ac2149755df11c7825ce9ebd762669901fdc1fa7401"
+    },
+    {
+      "archive_bytes": 5505,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/preflight-check-receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/preflight-check-receipt.json.gz",
+      "archive_sha256": "53046da237266b2cbda46ecd51683abc52cff50402918766df209c4eab4d8a0e",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 13446,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/preflight-check-receipt.json",
+      "original_sha256": "f0c5ecff2f252e3bab52603a065b5047f513cd2f8f92be8da4f8d77ea5b46130"
+    },
+    {
+      "archive_bytes": 286,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/probe.py.gz",
+      "archive_sha256": "258f03ba207c2a4cdab6cde80671f9a151c5d11e37d2609e130b1b6a96d7509d",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 416,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/probe.py",
+      "original_sha256": "971fe03db86c5b3f276bd6fc95380b67e1efa8d78a0fe1fb878f979087e46093"
+    },
+    {
+      "archive_bytes": 1635,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/selected.jsonl.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/selected.jsonl.gz",
+      "archive_sha256": "38ee2c68b42f795663616ad1245d706eed37c1dca3a72bdc3148e4141942f6be",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 16887,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/selected.jsonl",
+      "original_sha256": "1d3a26339f16cca817c629e60ed03c874b6a8cbdfd03ff8ed68c88c3a684c8b4"
+    },
+    {
+      "archive_bytes": 2416,
+      "archive_candidate": "/private/tmp/account-session-retention-supplement-capture-20260915/fixture77-preparation/validate-results.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-session-readers-terms9-full191/supplement/fixture77-preparation/validate-results.py.gz",
+      "archive_sha256": "9959ac62154a4075ce9116616b8dd7b26cb0db935fb89f3d412e0759fdf7ae86",
+      "byte_exact_decompression_verified": true,
+      "category": "fixture77-preparation",
+      "original_bytes": 7224,
+      "original_path": "/private/tmp/account-session-fixture77-candidate-f96eddd3/validate-results.py",
+      "original_sha256": "5fdd97fd980a69ec0b35a630abdd01fd40f2f8337609691d54579c385c657c8e"
+    }
+  ],
+  "remaining_holds": [
+    "Root independent import review",
+    "Full suite23 failures",
+    "Fixture77 runtime",
+    "npm local-permission rerun",
+    "Production and rollout authority"
+  ],
+  "repository_writer": "/root",
+  "rollback": "Discard unimported supplement; preserve imported history through ordinary reviewed correction.",
+  "root_import_contract": [
+    "Require exact supplement manifest hash; verify every original/archive hash and exact decompression.",
+    "Import only records into absent supplement directory, retain manifest and root independent import receipt.",
+    "Retain primary package immutable; this supplement adds evidence without altering historical statuses or running probes."
+  ],
+  "source_payload_copies": 0,
+  "status": "READY_FOR_ROOT_INDEPENDENT_REVIEW_AND_SERIAL_IMPORT",
+  "stop_conditions": [
+    "Hash mismatch",
+    "Active or unlisted input",
+    "Source or runtime claims beyond receipts"
+  ]
+}

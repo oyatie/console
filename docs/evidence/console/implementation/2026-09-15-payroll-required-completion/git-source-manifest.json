@@ -1,0 +1,164 @@
+[
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/crates/platform/db/src/durability.rs",
+    "mode": "100644",
+    "blob": "2a54acd0c0f865017c917117e81659cf3d4466fa",
+    "sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/platform/db/src/durability.rs.gz",
+    "gz_sha256": "cb21fcbfd86dcb9137a40603a4b751b07254305a812dac32fc6107140de01859"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+    "mode": "100644",
+    "blob": "b54edb2b9982af7fce0c9532a39569cea953bd3e",
+    "sha256": "c24816b44ae5af9f2d33d48d3d6e93059732bb88b171cdb9470bde79aff8b197",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/payroll/adapter-postgres/src/pay_run.rs.gz",
+    "gz_sha256": "c146831d8a4021efda057d66b75b39e4dc93c861b5c90d7de66d53ee7ffc7291"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+    "mode": "100644",
+    "blob": "b4b2026c64661e30ac88cb9963cb689cddad488a",
+    "sha256": "4440c53f96708c965c6ae15ded946b6b815dead05637e6472bc991fb08222e36",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/payroll/adapter-postgres/tests/recovery.rs.gz",
+    "gz_sha256": "db6ee4b5f26ba9c326d5c1ae9b1f12278ff1f84e8eda00f360bc00bfc151ac93"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/crates/payroll/adapter-postgres/tests/durability_observer.rs",
+    "mode": "100644",
+    "blob": "373e27c7e88d49ba553e0c23262409459a8efa59",
+    "sha256": "5187e0b2ffe59b60cf05ed8ba2f36457b9f54e62503addf68590303fb0e8f3c1",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/crates/payroll/adapter-postgres/tests/durability_observer.rs.gz",
+    "gz_sha256": "4e4dc52484c3813c25b250a5bdbc9c2ce2ba04550a632f85f8f73c05e85ad4f1"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/app/src/durability_composition_tests.rs",
+    "mode": "100644",
+    "blob": "9d29ef95d2b3ec789a24ab6885de9e65f32c295c",
+    "sha256": "a7a4cbd3d56c5321500964027571837223a3f9bb3720fa8b60e5fa3ef06bf1aa",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/src/durability_composition_tests.rs.gz",
+    "gz_sha256": "fed7b718dd25170b70eec8b57bc766781fd3ea11d78f9a3d158f0578e5a48d4d"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/app/src/lib.rs",
+    "mode": "100644",
+    "blob": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+    "sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/src/lib.rs.gz",
+    "gz_sha256": "06de9053605467e8c2653186f86109f7155ab7a9d5cf44799232d2b429f5575c"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/app/src/workflow_drain.rs",
+    "mode": "100644",
+    "blob": "ef37b66726c8cb756f5bcdde4efeb16e752fde45",
+    "sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/src/workflow_drain.rs.gz",
+    "gz_sha256": "a78792d2e3c5642b9fa15132c8967b14ee021576dbabc0cebbef8cb7b162bd1e"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/app/tests/database_durability_config.rs",
+    "mode": "100644",
+    "blob": "ab620f455eaafc208d978bc91492a89021edb3db",
+    "sha256": "b8779b11a7127127d61a695f32d3b30e0fd6911b79b4e34755035c8f03b4cb1d",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/tests/database_durability_config.rs.gz",
+    "gz_sha256": "9348a3fd5768522a91ebc06d8d0a318100c01083bb600caf0232c7e6c5559a27"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "backend/app/Cargo.toml",
+    "mode": "100644",
+    "blob": "6c755dba14d008d5d1923581df98b8c0391c3d03",
+    "sha256": "adc778c0805ebdfa275f5de8f9f34d426240a538aff1da3d8685e11493e788bc",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/backend/app/Cargo.toml.gz",
+    "gz_sha256": "dc22560f4307b45d92bf8d01cbf05604e5b332006c69eb0cf0527ac63639c338"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": ".github/workflows/ci.yml",
+    "mode": "100644",
+    "blob": "ef1c1af8da8dfd4870221f05f0cddd5706f5ed20",
+    "sha256": "3ac68326e809780332a35a2e90043e8409ce69fcef1b75595dbb8ee22f7a070d",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/.github/workflows/ci.yml.gz",
+    "gz_sha256": "5bb2ff3572ebf8a98cbb358ba1825087ca21785c16f89f015596f06763d3c59e"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "scripts/check-ci-preflight.mjs",
+    "mode": "100644",
+    "blob": "acfdbdf7d15e06e36988367e3118107d3d0b1d02",
+    "sha256": "8ff3871b60b343bbc80c6028bad3fb42e85694bf836c7f43fe4bd398d5a0fd60",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-ci-preflight.mjs.gz",
+    "gz_sha256": "757320566bcaf74dc923b281a369ec3b138ad224e1cd0d320c3d359bf6549755"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "scripts/check-ci-preflight.test.mjs",
+    "mode": "100644",
+    "blob": "0bdedff0268d59aaa388da0f24ff5a2af735e2a6",
+    "sha256": "94a13437619d7f19c78668b517e06ba2a89dfb8a1c3aabed238463c578be8a70",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-ci-preflight.test.mjs.gz",
+    "gz_sha256": "0136232d5d1a0c235e3d4b0b6856968c874e22b91a51c026ae4876d2c40a6eed"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "scripts/lib/recovery-test-invocations.mjs",
+    "mode": "100644",
+    "blob": "043db7631825014b81d4b1349327ea7a2833bd9f",
+    "sha256": "498ac4f0cd4e3f0c465257ab8f1de0311b9b24098aa160f541d16099e71f20da",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/lib/recovery-test-invocations.mjs.gz",
+    "gz_sha256": "c9a96b5cb98de6cf0c0383f9f6cb20f496bbf2b9d2eed24a3759ba57265a35e0"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "scripts/lib/recovery-test-invocations.test.mjs",
+    "mode": "100644",
+    "blob": "2fd7d8df1ee21b4c48cdc446e9109d18151064fc",
+    "sha256": "2a71ce282b6373a3d533597121f23bdd9f76a4f1ddd8cf0e3435c91d3e448260",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/lib/recovery-test-invocations.test.mjs.gz",
+    "gz_sha256": "3a9f64b343833fc84c851561e228acdbeebbab1233b85de5120900e9a3be28be"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "scripts/check-executed-tests.mjs",
+    "mode": "100644",
+    "blob": "beeb5670f7fe2d284507ece13dd0bd68e9906cc8",
+    "sha256": "2c0bda91295ed90e47a5917f6dd2d6a85591196d179f3411fe7741a9601640ee",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-executed-tests.mjs.gz",
+    "gz_sha256": "1a84b991f5672057e04417a78ebfcd7662a547f84caa9fc2c16495c326915c7c"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "scripts/check-executed-tests.test.mjs",
+    "mode": "100644",
+    "blob": "937e774baaea0bc7c1f9fb8bf9614c529bd136db",
+    "sha256": "06af633d29548b565bbeb0e588ece7247a1d5c9ae1fd9029cd191dbfcda39f02",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/scripts/check-executed-tests.test.mjs.gz",
+    "gz_sha256": "82898cedbd131a111db5856956e7d6a3aa1613c9c4807efa119557f4d003eb6f"
+  },
+  {
+    "commit": "e27623abacb115b5026e8cae68a5a7079b6f901a",
+    "path": "tools/lanes/recovery/supervise_recovery.py",
+    "mode": "100755",
+    "blob": "5ecc39d44d9bdbb1767b6e2a642088da56a3c0c9",
+    "sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c",
+    "retained": "sources/e27623abacb115b5026e8cae68a5a7079b6f901a/tools/lanes/recovery/supervise_recovery.py.gz",
+    "gz_sha256": "2892882f044fc4aea72628dca4972b971c3873ee67bb90d88e5748f27d831d19"
+  },
+  {
+    "commit": "928e1e4815f5e6336f85667bc27529b5c4fe8b0c",
+    "path": "docs/program/executed-tests-baseline.json",
+    "mode": "100644",
+    "blob": "9b61001ccce47dbeb799a41d572fb51c8f8cb59c",
+    "sha256": "166ed21d79532582dc59a90cbd73f6a415d8409a6ecf58864d4f5b05d8ffea99",
+    "retained": "sources/928e1e4815f5e6336f85667bc27529b5c4fe8b0c/docs/program/executed-tests-baseline.json.gz",
+    "gz_sha256": "c4979177588c06248471849fc376b034098f9dfea157ddb53c741fd7cc7f000a"
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "reviewer": "/root/review_completeness",
+  "scope": "Independent Ring0.17.14 -> AWS-LC1.18.1 audit Ed25519 compatibility investigation; scratch only",
+  "verdict": "SUPPORTED_WITH_RAW_KEY_GUARD_AND_EXPLICIT_REJECTION_DIFFERENCE",
+  "facts": {
+    "wycheproof_raw_cases": 151,
+    "valid_accepted_by_both": 88,
+    "invalid_rejected_by_both": 63,
+    "raw_differences_in_wycheproof": 0,
+    "spki_der_acceptance_widenings_without_guard": 88,
+    "rfc8032_test1_exact_signature": "PASS",
+    "bidirectional_pkcs8_generation_import_and_deterministic_signature_roundtrips": 32,
+    "malformed_zero_buffer_key_signature_length_cases": 14,
+    "constructed_loworder_noncanonical_point_scalar_matrix": 400,
+    "matrix_both_reject": 383,
+    "matrix_both_accept": 6,
+    "matrix_ring_accept_aws_reject": 11,
+    "matrix_ring_reject_aws_accept": 0
+  },
+  "required_guards": [
+    "Before UnparsedPublicKey verification, require public_key.len()==32 in BOTH ExternalSealSigner and InMemoryEd25519Signer. Otherwise AWS parses SPKI DER and widens the API beyond existing raw32 semantics. Return Ok(false) on wrong lengths, preserving existing tamper-verdict behavior rather than constructor/service failure.",
+    "Explicit signature.len()==64 is a useful fixed wire-contract guard; tested backends already reject malformed lengths. Preserve unknown anchor=false, trusted local anchor lookup, exact message bytes, key_ref semantics and signature/hash serialization.",
+    "Do not restore malformed/noncanonical public-key acceptance via bespoke curve code or a permissive verifier. Document stricter AWS rejection. Before production migration, actual pinned historical anchors/seals must verify; this experiment uses public/synthetic fixtures, not customer seal history."
+  ],
+  "compatibility_limits": [
+    "All11 constructed narrowing cases use noncanonical/invalid-sign-bit encodings of low-order public keys and S=0; these are not normally generated Ed25519 public keys. Ordinary old keys/signatures and cross-generation PKCS8 matched. This does not prove equivalence for every possible input.",
+    "Six low-order cases are accepted by both libraries; therefore this change must not claim new complete torsion rejection. Trust-anchor custody/quality remains required.",
+    "AWS generate_pkcs8 uses its own CSPRNG and ignores supplied SecureRandom for compatibility; existing app only supplies SystemRandom, so do not rely on externally injected RNG determinism. Both implementations generated/imported PKCS8v2 successfully in32 rounds.",
+    "No FIPS claim. No actual customer data scan, production mutation, Linux release, or repository dependency change was performed."
+  ],
+  "corpus": {
+    "url": "https://raw.githubusercontent.com/C2SP/wycheproof/master/testvectors_v1/ed25519_test.json",
+    "downloaded_sha256": "752d2ea7d7c6cf4736381b6cbacb61f8182b126ab7cd9b058f00c50084975536",
+    "case_flags": [
+      "Ktv",
+      "TinkOverflow",
+      "InvalidEncoding",
+      "InvalidSignature",
+      "Valid",
+      "SignatureMalleability",
+      "SignatureWithGarbage",
+      "CompressedSignature",
+      "TruncatedSignature",
+      "InvalidKtv"
+    ],
+    "additional_matrix": "10 hand-constructed compressed points (canonical y0,identity,y=p-1;noncanonical y=p,y=p+1 and toggled sign bits),10R values,2scalars(0,L),2messages =400; comparative observations, not independently proven valid-signature oracle."
+  },
+  "execution": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER= CARGO_TARGET_DIR=/private/tmp/console-ed25519-differential-20260914/target cargo run --offline --manifest-path /private/tmp/console-ed25519-differential-20260914/Cargo.toml",
+    "exit": 0,
+    "private_target": "/private/tmp/console-ed25519-differential-20260914/target",
+    "shared_cargo_or_docker_used": false
+  },
+  "artifacts": {
+    "Cargo.toml": "55b8fb42e0e01bf45f54e4b392fcf1b42fbb46f34dc88391346883edb89b82aa",
+    "Cargo.lock": "a7845b42a2b3eefa7632f9c7431fe682d042a9afcfada816321a6df42535447a",
+    "src/main.rs": "f20be2ba0228d6d133d3561ccc7981eedc2c1d8501a3b63125224a9ae78e2387",
+    "wycheproof-ed25519.json": "752d2ea7d7c6cf4736381b6cbacb61f8182b126ab7cd9b058f00c50084975536",
+    "results.json": "b9c7b344acb9e579533f2766df2ce0d9aa215e70ff398826fbf00bc7c4dc3c14",
+    "torsion-results.json": "b61f519c197a77b34bfe6a6e561123123f04f6be16f759b423fbb52f66acbc78",
+    "build.log": "fce5c7f598ab6e260c2a47751d6c80d9d4971418ef729278c0bf81da12eb27ff"
+  }
+}

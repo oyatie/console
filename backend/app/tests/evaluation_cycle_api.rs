@@ -33,11 +33,14 @@ const CYCLES: &str = "/api/v1/evaluation/cycles";
 const SUBJECTS: &str = "/api/v1/evaluation/subjects";
 const ORG_B: Uuid = Uuid::from_u128(0xeb00_0000_0000_0000_0000_0000_0000_00b2);
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn evaluation_routes_are_mounted_by_the_authenticated_app_router(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let fixture = Fixture::new(&pool).await;
     let router = build_router(
-        app_state(runtime_role_pool(&pool).await, fixture.public_pem.clone()).unwrap(),
+        app_state(runtime_role_pool(&pool).await, fixture.public_pem.clone())
+            .await
+            .unwrap(),
     );
 
     let (status, body) = send(&router, "GET", CYCLES, None, None).await;
@@ -60,8 +63,9 @@ async fn evaluation_routes_are_mounted_by_the_authenticated_app_router(pool: PgP
     assert_eq!(page["total"], 0);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn story_evaluation_001_walks_cycle_to_ledger_as_runtime_role(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let f = Fixture::new(&pool).await;
     let router = f.router(&pool).await;
 
@@ -630,8 +634,9 @@ async fn story_evaluation_001_walks_cycle_to_ledger_as_runtime_role(pool: PgPool
     }
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn authorization_conceals_and_isolates_without_leakage(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let f = Fixture::new(&pool).await;
     let router = f.router(&pool).await;
 
@@ -830,8 +835,9 @@ async fn authorization_conceals_and_isolates_without_leakage(pool: PgPool) {
     assert_eq!(unarmed, 0, "unarmed GUC must read nothing under FORCE RLS");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn review_identity_relationships_fail_closed_by_kind(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let f = Fixture::new(&pool).await;
     let router = f.router(&pool).await;
 
@@ -944,8 +950,9 @@ async fn review_identity_relationships_fail_closed_by_kind(pool: PgPool) {
     assert_eq!(saved["kind"], "MANAGER");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn identity_relinks_serialize_submit_detail_and_review_authorship(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let f = Fixture::new(&pool).await;
     let router = f.router(&pool).await;
 
@@ -1246,12 +1253,20 @@ impl Fixture {
     /// The evaluation router mounted exactly as the app will mount it, but
     /// backed by a pool whose every connection runs as `console_rt`.
     async fn router(&self, owner: &PgPool) -> axum::Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            owner,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let rt = runtime_role_pool(owner).await;
         let verifier =
             JwtVerifier::from_es256_public_pem(jwt_settings(), self.public_pem.as_bytes()).unwrap();
         console_evaluation_rest::router(EvaluationRestState::new(
             PgEvaluationStore::new(rt),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ))
     }
 }
@@ -1278,8 +1293,20 @@ async fn runtime_role_pool(owner: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", ISSUER.to_owned()),
@@ -1287,6 +1314,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn send(

@@ -1,0 +1,17 @@
+{
+  "checker_command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_source_binding_gate"
+  ],
+  "cwd": "proof-harness",
+  "checker_discovered": 21,
+  "checker_executed": 21,
+  "checker_passed": 21,
+  "new_production_verus_proofs": 0,
+  "retained_verus_dependency_mechanism_checks": 3,
+  "root_owner_sources_compiled": false
+}

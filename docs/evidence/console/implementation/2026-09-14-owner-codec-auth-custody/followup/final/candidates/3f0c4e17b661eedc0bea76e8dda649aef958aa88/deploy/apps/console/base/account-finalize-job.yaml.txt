@@ -1,0 +1,102 @@
+# Prerequisites are provisioned independently BEFORE app PreSync: verified TLS,
+# protected target inventory and operator password, plus DB/DNS network access.
+# This local-unpublished image reference cannot authorize production exposure.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: console-account-finalize
+  namespace: console
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "-10"
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 180
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels: { app: console-account-finalize }
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: console-account-finalize
+          image: console-account-custody:local-unpublished
+          env:
+            - name: ACCOUNT_CUSTODY_EXPECTED_OPERATOR
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: ACCOUNT_CUSTODY_EXPECTED_OPERATOR
+            - name: ACCOUNT_CUSTODY_EXPECTED_SYSTEM_IDENTIFIER
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: ACCOUNT_CUSTODY_EXPECTED_SYSTEM_IDENTIFIER
+            - name: ACCOUNT_CUSTODY_EXPECTED_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: ACCOUNT_CUSTODY_EXPECTED_DATABASE
+            - name: ACCOUNT_CUSTODY_EXPECTED_DATABASE_OID
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: ACCOUNT_CUSTODY_EXPECTED_DATABASE_OID
+            - name: ACCOUNT_CUSTODY_EXPECTED_TLS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: ACCOUNT_CUSTODY_EXPECTED_TLS_HOST
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: POSTGRES_HOST
+            - name: POSTGRES_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: POSTGRES_PORT
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: POSTGRES_DB
+            - name: POSTGRES_ADMIN_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: console-account-custody-target
+                  key: POSTGRES_ADMIN_USER
+            - name: POSTGRES_ADMIN_PASSWORD_FILE
+              value: /run/operator/password
+            - name: PGSSLROOTCERT
+              value: /run/operator-ca/ca.crt
+          resources:
+            requests: { cpu: 100m, memory: 64Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: operator, mountPath: /run/operator, readOnly: true }
+            - { name: ca, mountPath: /run/operator-ca, readOnly: true }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: operator
+          secret:
+            secretName: console-account-custody-operator
+            defaultMode: 0440
+        - name: ca
+          secret:
+            secretName: console-account-custody-ca
+            defaultMode: 0440
+        - name: tmp
+          emptyDir: { medium: Memory, sizeLimit: 16Mi }

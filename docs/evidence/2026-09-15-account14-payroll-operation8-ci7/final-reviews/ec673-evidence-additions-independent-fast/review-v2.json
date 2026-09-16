@@ -1,0 +1,63 @@
+{
+  "status": "APPROVED_EXACT_66_PLUS_4_EVIDENCE_ADDITIONS_AND_SCOPED_ATTRIBUTES",
+  "reviewer": "/root/fast_gate_review",
+  "writer": "/root",
+  "source_head": "ec673d27bb2e29e1d52b6e9372bd7516ac125eae",
+  "packet": "/private/tmp/console-ec673d27-evidence-additions",
+  "packet_manifest_sha256": "b61928be871d2533546b9e9774109d0b2bd61df4cfff7c6e3e306fd5f96e5ce2",
+  "facts": {
+    "payloads": 66,
+    "proposal_records": 4,
+    "payload_bytes": 1085695,
+    "total_bytes": 1126134,
+    "regular_utf8_no_nul": 70,
+    "symlinks": 0,
+    "duplicate_or_escaping_destinations": 0,
+    "all_source_and_payload_hashes_verified": true,
+    "all_payload_git_blob_oids_verified": true,
+    "all_packet_members_exactly_enumerated": true,
+    "redacted_derivatives": 10,
+    "redacted_userinfo_occurrences": 20,
+    "redaction_reproduction": "Every changed line exactly replaces URI userinfo with [REDACTED]; all remaining bytes preserved. Raw lines equal exact ec673 source constants under cfg(test) command_database_config_tests. Original hashes retain custody; no observed runtime credential leak inferred.",
+    "bounded_credential_pattern_candidates": 0
+  },
+  "saved_count_review": "counts.json; prior exact cfg/native reviews reused. No new runtime. Failed npm78/two gates, partial cfg111/114 and combined135/144 RED preserved beside final144/144 and listed31/8App; Recovery18 has separate final receipt.",
+  "claim_review": "No completion/merge/production/payment/legal claim. Native404 traced to registration/start with later session/context checks unreached; fixture terms are not publication authority. Preflight initial failure and separately reproduced sandbox cause remain qualified.",
+  "initial227_current_workspace_readback": {
+    "approved_expected_import": "/private/tmp/account14-payroll-operation8-ci7-allowlist-v2-independent-fast/expected-import.json",
+    "sha256": "da339e22a6647b0937217a1e06dcbe8e96ef72a12051b2165d6c37dfd040f72d",
+    "matching_regular_files": 227,
+    "note": "Exact current workspace bytes/OIDs checked; root import not yet final committed readback."
+  },
+  "prospective_import": "expected-import.json",
+  "attributes": {
+    "proposal": "proposed.gitattributes",
+    "sha256": "8f802c863ea555aa29abd05f7dac91024ce12ca506a331b498233db8c741bf86",
+    "exact_patterns": [
+      "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/**/*.patch -text -whitespace",
+      "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/**/*.log -text -whitespace",
+      "docs/evidence/2026-09-15-account14-payroll-operation8-ci7/**/*.diff -text -whitespace"
+    ],
+    "reason": "Preserve raw reviewed unified-diff/test-output bytes; observed intentional trailing whitespace patch28/log13/diff4 across14 files.",
+    "scope_check": "27 read-only git check-attr assertions: exact-prefix patch/log/diff text+whitespace unset; diff unspecified everywhere; JSON/Markdown/source/other-prefix paths unaffected.",
+    "does_not_change_test_oracle": true
+  },
+  "supporting_sha256": {
+    "proposed.gitattributes": "8f802c863ea555aa29abd05f7dac91024ce12ca506a331b498233db8c741bf86",
+    "expected-import.json": "ded5d91e1a2372f16fc2bb905ca9eaadb05069f88ebaaaf28e143074aab437d8",
+    "counts.json": "e264905f0768aee045b0b45baf2959fd22d4aeec1a08a79a3b35baf8bdcff3ac",
+    "attribute-scope.txt": "0ee2df1e7989958d3e1d3ba38b1e9b7b7e49f0dbd43fa627312562b9dafae5ca"
+  },
+  "limits": [
+    "Root alone imports/stages and verifies committed70files plus separately frozen review artifacts and exact.gitattributes bytes.",
+    "Root supported npm verify and finalclean readback pending.",
+    "Auth7 final fixture/probe and native/full firstvertical acceptance remain separate."
+  ],
+  "runtime_by_reviewer": 0,
+  "shared_writes": 0,
+  "supersedes": {
+    "path": "/private/tmp/ec673-evidence-additions-independent-fast/review.json",
+    "sha256": "83b32c1f2a35ea7ecb75c8c842edb14410c2395b54d93c8b4a1ccb5f55d3aee6",
+    "reason": "Correct the fixture module name to the independently inspected command_database_config_tests."
+  }
+}

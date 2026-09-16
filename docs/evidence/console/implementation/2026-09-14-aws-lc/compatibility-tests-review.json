@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/finish_browser",
+  "candidate": "18fd4267ed1c67b6b7695a299e18f06c861144b1",
+  "source": "backend/crates/platform/audit-chain/tests/ed25519_compatibility.rs",
+  "source_sha256_before_after": "a1814a54ad23d8a7f14301f898f3f77c5725390ea7c222899603f065a316a5b5",
+  "verdict": "APPROVE_CONSERVATION_TESTS",
+  "positive_findings": [
+    "Fixed RFC8032 TEST1/TEST2 verify empty and one-byte messages using independent standard vectors.",
+    "Frozen old-provider transcript uses fixed public message/key; independently verified by reviewer through Python cryptography Ed25519PublicKey.verify.",
+    "Both actual public verification paths exercised: pinned external anchors and stored dev raw-key reference.",
+    "Raw32 public key contract rejects valid DER SPKI and empty/31/33-byte representations; raw64 signature contract rejects short/long encodings.",
+    "Every signature byte mutation, changed messages and swapped valid keys reject.",
+    "Trust anchor absence/rotation/substitution and typed malformed-key-ref outcomes preserved.",
+    "Offline signing failure does not disable verification or cause transport use; exact external transport request/response assertions preserved.",
+    "Generated-key roundtrip is supplemental, not sole correctness oracle."
+  ],
+  "execution": {
+    "reviewed_author_log": "/private/tmp/audit-ed25519-ring-baseline.log",
+    "independent_command": "/private/tmp/console-audit-awslc-cargo/debug/deps/ed25519_compatibility-a46457bc638a8c5b --test-threads=1",
+    "binary_sha256_before_after": "1c4fcdea4a64c7afa89c93a5c569fc4458cc08d2389bb195fca005bdda9ecd28",
+    "executed": 13,
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 0,
+    "note": "Reexecuted already-built author baseline binary; no independent rebuild and no Cargo invocation."
+  },
+  "checks": [
+    "git diff HEAD^ HEAD --check passed",
+    "working tree clean",
+    "test source and baseline executable hashes unchanged across review"
+  ],
+  "blocking_findings": [],
+  "limits": [
+    "Conservation tests are correctly GREEN under old Ring; no-Ring graph probe is separate implementation RED owned by root.",
+    "AWS-LC successor must pass same API tests and explicit32/64-byte guards; broader Wycheproof/PKCS8/torsion evidence owned by independent review_completeness reviewer.",
+    "No mathematical or exhaustive cryptographic correctness claim."
+  ]
+}

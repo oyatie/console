@@ -1,0 +1,42 @@
+   Compiling futures-sink v0.3.32
+   Compiling rustls v0.23.40
+   Compiling aws-lc-rs v1.18.1
+   Compiling futures-channel v0.3.32
+   Compiling futures-util v0.3.32
+   Compiling hyper v1.10.1
+   Compiling rustls-webpki v0.103.13
+   Compiling hyper-util v0.1.20
+   Compiling tower v0.5.3
+   Compiling futures v0.3.32
+   Compiling axum v0.8.9
+   Compiling sqlx-core v0.9.0
+   Compiling sqlx-postgres v0.9.0
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling console-platform-db v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/db)
+   Compiling console-platform-authz v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/authz)
+   Compiling console-platform-auth v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/auth)
+   Compiling console-platform-group v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/group)
+   Compiling console-platform-audit-chain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/audit-chain)
+   Compiling console-platform-request-context v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/request-context)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.71s
+     Running tests/ed25519_compatibility.rs (backend/target/debug/deps/ed25519_compatibility-410d6f9ad236a8fa)
+
+running 13 tests
+test offline_external_signing_fails_closed_while_fixed_signature_verification_remains_available ... ok
+test external_signing_preserves_exact_transport_key_message_and_signature_bytes ... ok
+test trusted_key_bytes_do_not_make_an_unpinned_key_reference_trusted ... ok
+test pinned_old_anchor_survives_rotation_but_cannot_be_substituted_for_active_key ... ok
+test malformed_dev_key_references_retain_typed_error_instead_of_panicking ... ok
+test rfc8032_empty_message_vector_verifies_through_both_public_apis ... ok
+test frozen_old_ring_transcript_remains_verifiable_without_ring_test_dependency ... ok
+test generated_dev_signer_preserves_raw_key_signature_and_key_reference_shapes ... ok
+test nonraw_public_key_encodings_are_rejected_including_valid_der_spki_wrapper ... ok
+test rfc8032_one_byte_message_vector_verifies_through_both_public_apis ... ok
+test truncated_and_extended_signatures_do_not_change_raw_wire_contract ... ok
+test wrong_messages_and_swapped_keys_are_bad_signatures_not_transport_errors ... ok
+test flipping_each_signature_byte_is_rejected ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

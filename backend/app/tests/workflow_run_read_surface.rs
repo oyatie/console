@@ -50,15 +50,19 @@ struct JsonResponse {
 // ===========================================================================
 // 1. Run detail: initiator sees head + waiting task + timeline.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_visible_to_initiator_with_timeline(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.detail.initiator").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     let started = post(
@@ -103,15 +107,19 @@ async fn run_detail_visible_to_initiator_with_timeline(pool: PgPool) {
 // 2. Run detail: a non-initiator authority-role holder sees it too (mirrors
 //    `resolve_approval_run`'s visibility contract exactly).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_visible_to_authority_role_holder(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.detail.authority").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let started = post(
         service.clone(),
@@ -146,15 +154,19 @@ async fn run_detail_visible_to_authority_role_holder(pool: PgPool) {
 //     authority-role OR-branch on its own, not merely riding `is_admin`
 //     (ADMIN fails RoleManage/workflow-manage but passes CompletionReview).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_visible_to_non_admin_authority_role_holder(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.detail.authority.nonadmin").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let started = post(
         service.clone(),
@@ -194,15 +206,19 @@ async fn run_detail_visible_to_non_admin_authority_role_holder(pool: PgPool) {
 //     proves the `initiated_by` OR-branch on its own (MECHANIC fails both
 //     RoleManage and CompletionReview).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_visible_to_non_admin_initiator(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "MECHANIC", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.detail.initiator.nonadmin").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "MECHANIC", branch);
 
     let started = post(
@@ -230,15 +246,19 @@ async fn run_detail_visible_to_non_admin_initiator(pool: PgPool) {
 // 3. Run detail: insufficient-role stranger gets 404 (deny-by-omission, never
 //    a 403 that would confirm the run's existence).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_denies_by_omission_for_insufficient_role(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.detail.stranger").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let started = post(
         service.clone(),
@@ -275,16 +295,20 @@ async fn run_detail_denies_by_omission_for_insufficient_role(pool: PgPool) {
 // ===========================================================================
 // 4. Run detail: cross-org caller gets 404 (RLS org isolation, not a leak).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_denies_cross_org_caller(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     seed_org(&pool, OTHER_ORG, "Other").await;
     let definition_id = seed_approval_definition(&pool, "approval.detail.crossorg").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let started = post(
         service.clone(),
@@ -329,14 +353,18 @@ async fn run_detail_denies_cross_org_caller(pool: PgPool) {
 // ===========================================================================
 // 5. Run detail: a nonexistent run is 404 too (same shape as denied access).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_404_for_unknown_run(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let caller = UserId::new();
     seed_user(&pool, caller, "SUPER_ADMIN", branch).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let missing = get(
         service,
@@ -353,15 +381,19 @@ async fn run_detail_404_for_unknown_run(pool: PgPool) {
 //    deny-by-omission — the list endpoint itself is manage-gated like every
 //    other workflow-studio admin endpoint).
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn admin_run_list_filters_status_and_paginates(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
     seed_user(&pool, initiator, "SUPER_ADMIN", branch).await;
     let definition_id = seed_approval_definition(&pool, "approval.admin.list").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = bearer(&keys, initiator, "SUPER_ADMIN", branch);
 
     let started = post(
@@ -425,8 +457,9 @@ async fn admin_run_list_filters_status_and_paginates(pool: PgPool) {
 // ===========================================================================
 // 7. Dead-letter visibility on the detail endpoint: failure reason surfaces.
 // ===========================================================================
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn run_detail_shows_dead_letter_failure_reason(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let initiator = UserId::new();
@@ -434,8 +467,11 @@ async fn run_detail_shows_dead_letter_failure_reason(pool: PgPool) {
     let definition_id = seed_approval_definition(&pool, "approval.detail.deadletter").await;
     let dead_letter_id =
         seed_dead_lettered_run(&pool, definition_id, initiator, "outbox exhausted retries").await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let detail = get(
         service,
@@ -682,8 +718,20 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -691,6 +739,7 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }
 
 async fn post(service: axum::Router, uri: &str, token: &str, body: Value) -> JsonResponse {

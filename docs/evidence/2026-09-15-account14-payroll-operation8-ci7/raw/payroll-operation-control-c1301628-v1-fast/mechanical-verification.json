@@ -1,0 +1,93 @@
+{
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "observed_shared_head": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "verified_at_utc": "2026-09-15T17:37:39.021222+00:00",
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2024",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/durability_composition_tests.rs"
+      ],
+      "cwd": "/private/tmp/payroll-operation-control-c1301628-v1-fast",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "cwd": "/private/tmp/payroll-operation-private-mechanical-0lh62o1j",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "cwd": "/private/tmp/payroll-operation-private-mechanical-0lh62o1j",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "cwd": "/private/tmp/payroll-operation-private-mechanical-0lh62o1j",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/payroll-operation-control-c1301628-v1-fast/candidate.patch"
+      ],
+      "cwd": "/private/tmp/payroll-operation-private-mechanical-0lh62o1j",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "counts": {
+    "mechanical_commands_executed": 5,
+    "rustfmt_checks_executed": 1,
+    "private_patch_checks_or_applies_executed": 4,
+    "source_cases_before": 7,
+    "source_cases_after": 8,
+    "runtime_cases_discovered": 0,
+    "runtime_cases_executed": 0,
+    "cargo_commands_executed": 0,
+    "database_commands_executed": 0,
+    "shared_repository_writes": 0
+  },
+  "preservation": {
+    "original_seven_test_bodies_byte_identical": true,
+    "all_original_file_bytes_preserved_except_additive_logger_capture": true,
+    "original_saw_unknown_predicate_byte_identical": true,
+    "applied_candidate_byte_identical": true,
+    "inverse_restores_base_byte_identical": true,
+    "shared_target_still_base": true
+  },
+  "limitations": [
+    "Rustfmt parses syntax; no Rust typecheck or runtime result is claimed.",
+    "Eight is a source roster count, not Cargo-discovered or executed count.",
+    "Positive/negative log assertions and owner/standby preservation await root-supervised execution."
+  ]
+}

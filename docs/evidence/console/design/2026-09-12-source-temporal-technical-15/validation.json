@@ -1,0 +1,53 @@
+{
+  "recorded_at": "2026-09-12T21:03:52.867600+00:00",
+  "reviewed_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "worktree": "/private/tmp/console-design-review-20260912"
+  },
+  "commands": [
+    {
+      "command": "python3 docs/evidence/console/design/2026-09-12-source-temporal-technical-15/verify-packet.py",
+      "exit_code": 0,
+      "result": {
+        "result": "PASS",
+        "reviewed_sha": "c7dca44f03522fa0aae976d2f57c72a6ff3449a8",
+        "core_files_verified": 16,
+        "source_blobs_verified": 27,
+        "proposed_tables": 15,
+        "source_definitions": 22,
+        "source_actions": 12,
+        "writer_surfaces": 14,
+        "nonexecutable_cases_discovered": 47,
+        "encoding_witnesses_verified": 10,
+        "temporal_witness_consistency_checked": 6,
+        "synthetic_csv_rows": 2,
+        "reader_links_verified": 15,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "record_manifest_checked": false
+      }
+    },
+    {
+      "command": "git diff --check 6626c3976f4a668b11dda2f67c3ec1945f065781 c7dca44f03522fa0aae976d2f57c72a6ff3449a8 -- docs/evidence/console/design/2026-09-12-source-temporal-technical-15",
+      "exit_code": 0
+    }
+  ],
+  "earlier_failures": [
+    {
+      "command": "git diff --cached --check",
+      "result": "Initial CSV CRLF reported trailing whitespace; commit did not run. Changed only new candidate CSV to LF; same staged check then passed."
+    }
+  ],
+  "product_tests_written": 0,
+  "product_tests_discovered": 0,
+  "product_tests_executed": 0,
+  "limitations": [
+    "Evidence bytes/structure and synthetic command/temporal representation only; no Rust decoder, SQL, source authenticity or domain runtime proof",
+    "47 CSV scenarios are non-executable candidates, not passing product tests",
+    "No whole-repository documentation gate rerun; earlier historical candidate05 diagnostics remain unresolved",
+    "Actual issuer/source evidence, normalizer equivalence, ACL, DDL/migration, recovery, workload and applied ports remain open",
+    "No approved integrated design/test SHA; no implementation, legal compliance, payment or exposure authority"
+  ]
+}

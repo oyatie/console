@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/fresh29_security",
+  "writer": "/root",
+  "changes": [
+    [
+      "Each admitted first-slice action validates current inputs/authority, preflights without mutation, commits once and returns the original receipt on replay.",
+      "Each admitted first-slice action validates current inputs/authority, preflights without mutation, commits once and returns only the currently authorized projection of the original outcome/receipt on replay."
+    ],
+    [
+      "An Account remains usable independent of Employment; current policy controls contexts, own historical records and actions without job-title role classes.",
+      "Account identity persists independently of Employment; separate security suspension, recovery and session-revocation controls remain effective. Current policy controls login eligibility, contexts, own historical records and actions without job-title role classes."
+    ],
+    [
+      "Review the evidence you are authorized to decide, complete that decision, and explain why it does or does not finish the entire run.",
+      "Review the evidence you are authorized to decide, complete that decision, and explain what your decision establishes without assuming access to the whole-run status."
+    ],
+    [
+      "Own precise obligation and permitted evidence/differences; other required coverage remains incomplete; payroll decision versus command execution permission; expiry/currentness.",
+      "Own precise obligation and permitted evidence/differences; own completion does not itself establish whole-run approval. Actual remaining coverage or global status appears only with independent authorization; payroll decision versus command execution permission; expiry/currentness."
+    ]
+  ],
+  "reason": "Scoped reviewers cannot be required to observe unauthorized global coverage; replay disclosure is current-policy-bound; identity persistence does not override security suspension.",
+  "source": "Approved design30 integration-corrections.txt:10 and current Account/policy contracts",
+  "status": "APPROVED_AT_DELIVERY_MAP_HASHES",
+  "final_independent_reviewer": "/root/fresh29_security"
+}

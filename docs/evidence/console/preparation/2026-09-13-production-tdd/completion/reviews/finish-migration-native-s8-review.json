@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/finish_migration",
+  "manifest_sha256": "07722dd57f91c3533fda58e96ca44e6bb8e5a2d996e86813cd27a6a63981aaf1",
+  "members_verified": 9,
+  "disposition": "ACCEPT_BOUNDED_DUPLICATE_REASON_TEST_SOURCE",
+  "basis": "Actual decision author and unchanged current decision body tested with conflicting common reason; classified no effect and immutable decision/control/current accepted readbacks unchanged. Fresh intent same author matching common/body reason then succeeds/replays through actual owner with real lost commit ACK. No fabricated policy or proposed global refusal code.",
+  "source_delta_parser": {
+    "command": [
+      "rustup",
+      "run",
+      "1.98.1",
+      "rustfmt",
+      "--edition",
+      "2024",
+      "--config",
+      "skip_children=true",
+      "--emit",
+      "stdout"
+    ],
+    "exit": 0
+  },
+  "compiled": 0,
+  "runtime": 0,
+  "limits": "Compiler must preserve both draft values for ordinary sealing validation, as source comments specify; required explicit reason mapping remains consolidated material design refinement. This review covers new withdrawal method delta; S7 independent receipt covers inherited corrections."
+}

@@ -1,0 +1,812 @@
+{
+  "kind": "FINITE_NATIVE_DRAFT_IMPLEMENTATION_REVIEW_RUNTIME_RETENTION",
+  "version": 1,
+  "preparer": "/root/inventory_repair",
+  "repository_writer": "/root",
+  "source_head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+  "source_heads": [
+    "0b8ec4c1b4c767cf607001b811a61bf799a6cf58",
+    "3807135a511f899d3a46788c337cf9d3e07ee362",
+    "0c9a0259d04afde10d8e5c5fb5b5a17c0fa64a46",
+    "d66e2112cf0d96c2ed490f1c85b8250f870390df"
+  ],
+  "candidate_root": "/private/tmp/native-draft-retention-d66e2112-inventory",
+  "destination_root": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime",
+  "status": "FROZEN_FOR_INDEPENDENT_ROOT_REVIEW_AND_SERIAL_IMPORT",
+  "record_count": 34,
+  "original_bytes": 257990,
+  "archive_bytes": 68636,
+  "root_prepared21_archives_exactly_reproduced": true,
+  "root_preparation_manifest_sha256": "e87ac3d58d0d475fb544ec5fa3c28b1f31ebdb1274746a10069fe861b9b73724",
+  "records": [
+    {
+      "category": "implementation-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-0b8ec4c1-v1/manifest.json"
+      },
+      "original_sha256": "32fe10eb87d31683db8d5247eb218c2c85c8146fb3f94405d64f2b3db932dd31",
+      "original_bytes": 2447,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/implementation-v1/manifest.json.gz",
+      "archive_relative_path": "implementation-v1/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/implementation-v1/manifest.json.gz",
+      "archive_sha256": "3f05c507dde4d746ab00c4e2a71e3f9cd224e0c19688a76008bd63024859a1d7",
+      "archive_bytes": 1062,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "implementation-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-0b8ec4c1-v1/implementation.patch"
+      },
+      "original_sha256": "88c17a50d95b0d5990cfd350c0553fc8b345567cf175076af649821e5f9fafc7",
+      "original_bytes": 45490,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/implementation-v1/implementation.patch.gz",
+      "archive_relative_path": "implementation-v1/implementation.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/implementation-v1/implementation.patch.gz",
+      "archive_sha256": "182e780310476c751fdbf3a8756da479a1ac416409da412d7a23212be48aa4e7",
+      "archive_bytes": 10180,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "implementation-v1",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-0b8ec4c1-v1/GUIDE.md"
+      },
+      "original_sha256": "c343f01ccf2a50c944d9d25658f346757b9b28773096b6efe7a7f7ff0c97fc3a",
+      "original_bytes": 3551,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/implementation-v1/GUIDE.md.gz",
+      "archive_relative_path": "implementation-v1/GUIDE.md.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/implementation-v1/GUIDE.md.gz",
+      "archive_sha256": "733b32ca7064cb895d56548b1a843badec543c2f3e14c91806261813a28d100b",
+      "archive_bytes": 1842,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-v1-independent-review-inventory.json"
+      },
+      "original_sha256": "4ee03f6318d8a43e4a19011f658a5b1f2ebec7698d120c86de1b921f27adf124",
+      "original_bytes": 15920,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/reviews/v1-source.json.gz",
+      "archive_relative_path": "reviews/v1-source.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/reviews/v1-source.json.gz",
+      "archive_sha256": "1bb2b4f2c50499c1c233fed9b551bf449de3e092312b44eb4a44bd714b8af78f",
+      "archive_bytes": 4644,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-v1-independent-runtime-review-inventory.json"
+      },
+      "original_sha256": "4980c1025c4921b6b7cad7ae0125561d8ed753596c99a436369fc15a0b0bb1f9",
+      "original_bytes": 2914,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/reviews/v1-runtime.json.gz",
+      "archive_relative_path": "reviews/v1-runtime.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/reviews/v1-runtime.json.gz",
+      "archive_sha256": "3a1b30dd5b0d42872f4237955f555dcae0bed011ec61e117175ebaf890062822",
+      "archive_bytes": 1479,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "hardening",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-probe.py"
+      },
+      "original_sha256": "04e3bcf0e046bc40a27c2d544ce5672a492551f0aeb6fa9819eeb74d315014fd",
+      "original_bytes": 1857,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening/probe.py.gz",
+      "archive_relative_path": "hardening/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening/probe.py.gz",
+      "archive_sha256": "b3430df8656736a6a34b289c05f5e44263543b37f28470e43c8dedd2af619568",
+      "archive_bytes": 902,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "hardening",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-lane-0c9a0259.json"
+      },
+      "original_sha256": "389299d211b28b3469d9c9027f71325ee356eecec0b9847755a7454e79ea807c",
+      "original_bytes": 4174,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening/lane.json.gz",
+      "archive_relative_path": "hardening/lane.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening/lane.json.gz",
+      "archive_sha256": "82aecf04366ea2e1c0dca66d61a28f07be7f3ae65a2b6cae005a4bbc358db7b5",
+      "archive_bytes": 1913,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-probe-independent-review-inventory.json"
+      },
+      "original_sha256": "4c5c1de24d78c10aa8f07bcd1ccf0fbfec2b60cae82862221cd161f4362c4a98",
+      "original_bytes": 2500,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/reviews/hardening-probe.json.gz",
+      "archive_relative_path": "reviews/hardening-probe.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/reviews/hardening-probe.json.gz",
+      "archive_sha256": "e9f8ad03db7cb679d80652560037a35c4bc2f6e9583ca2ecf83ef2f30cc3fdf8",
+      "archive_bytes": 1280,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "hardening",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-red-admission-0c9a0259.json"
+      },
+      "original_sha256": "488fb88b9aed2665c169da45554157d394a6cb986acf16f741aa52c658a44d5f",
+      "original_bytes": 1419,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening/red-admission.json.gz",
+      "archive_relative_path": "hardening/red-admission.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening/red-admission.json.gz",
+      "archive_sha256": "70d87ad847cd4e5c953445de82cd6df0a2ff13447cbf5be7f8b0cdbd2f2b2ec2",
+      "archive_bytes": 703,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-red-independent-review-inventory.json"
+      },
+      "original_sha256": "07a43ed330e0ff1b53f34be23af82430ff7add634b0755482c52f2521b1e9340",
+      "original_bytes": 3590,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/reviews/hardening-red.json.gz",
+      "archive_relative_path": "reviews/hardening-red.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/reviews/hardening-red.json.gz",
+      "archive_sha256": "45ac4236267ff46611ba0a7de8f72fab69480fa282c9eb6a676af2aab15f2496",
+      "archive_bytes": 1624,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "original-compile-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-m9ytu1__/receipt.json"
+      },
+      "original_sha256": "a6d62e05cb781929bf717a99ad473bb45d21be8e65801f658a5de4c8a435f5fe",
+      "original_bytes": 1754,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/original-compile-red/receipt.json.gz",
+      "archive_relative_path": "original-compile-red/receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/original-compile-red/receipt.json.gz",
+      "archive_sha256": "dee2919cc53203ca90cdd9f5cbb1b15ed8d54cf54cfcc930d4d2d2cebdd3f025",
+      "archive_bytes": 672,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "original-compile-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-m9ytu1__/probe.log"
+      },
+      "original_sha256": "4d5b325afd6cf05b54c9cd144c58a9d5c2e653dddec9855fa80320356114f45e",
+      "original_bytes": 1250,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/original-compile-red/probe.log.gz",
+      "archive_relative_path": "original-compile-red/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/original-compile-red/probe.log.gz",
+      "archive_sha256": "99b92a1855c7aaaf3f7909b87a624f87caac578f2571f3e3e59b63984e0f6045",
+      "archive_bytes": 462,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "v1-original12-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-jxu531ty/receipt.json"
+      },
+      "original_sha256": "fa2dfd42f7261f4999ea91a102de94848cf31de88dac208cc2d9b9c48741afe5",
+      "original_bytes": 1752,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/v1-original12-green/receipt.json.gz",
+      "archive_relative_path": "v1-original12-green/receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/v1-original12-green/receipt.json.gz",
+      "archive_sha256": "182f9398375e49c3d86f621363558ee27efc324e36ab1fd7194c6b9462a00d30",
+      "archive_bytes": 670,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "v1-original12-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-jxu531ty/probe.log"
+      },
+      "original_sha256": "4a4790c77360aa7cbf7341c01a48b0342d0f1bf096d292337adb1543e10c0f2d",
+      "original_bytes": 1679,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/v1-original12-green/probe.log.gz",
+      "archive_relative_path": "v1-original12-green/probe.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/v1-original12-green/probe.log.gz",
+      "archive_sha256": "880e665ef686b20d91dd40416a9f6e55e5bc809e166bb694eabb9426b559cefb",
+      "archive_bytes": 723,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "v1-full-and-clippy",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-v1-3807135a/checks.json"
+      },
+      "original_sha256": "7f7bf4a1821f10be4bcfe96671abc9e540a70e5cdc6b0c777936b8a11989201d",
+      "original_bytes": 1266,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/v1-full-and-clippy/checks.json.gz",
+      "archive_relative_path": "v1-full-and-clippy/checks.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/v1-full-and-clippy/checks.json.gz",
+      "archive_sha256": "d91a5b612aa2cf2a57f4753de5e67e547150b7f77c40ca74984dad066c6e016a",
+      "archive_bytes": 487,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "v1-full-and-clippy",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-v1-3807135a/application43.log"
+      },
+      "original_sha256": "4ddb06fb6611c58d9ee4810522a7b5d20144f96aa79119fb4c447b757c8c9271",
+      "original_bytes": 4189,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/v1-full-and-clippy/application43.log.gz",
+      "archive_relative_path": "v1-full-and-clippy/application43.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/v1-full-and-clippy/application43.log.gz",
+      "archive_sha256": "0326f44fc57857f2c2a784aab5a48ac32693591166e482d65cb591d0e4c6f0c1",
+      "archive_bytes": 1406,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "v1-full-and-clippy",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-v1-3807135a/clippy.log"
+      },
+      "original_sha256": "fdbc10ec9333eedce6caafe59c2fc94d49297c345412628eb2e1620dba8e1907",
+      "original_bytes": 12660,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/v1-full-and-clippy/clippy.log.gz",
+      "archive_relative_path": "v1-full-and-clippy/clippy.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/v1-full-and-clippy/clippy.log.gz",
+      "archive_sha256": "e3116e3a691adbfff8c15e12225c9f9175631e44b815d61266a68589a8961679",
+      "archive_bytes": 2483,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "v1-full-and-clippy",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-v1-3807135a/root-observations.json"
+      },
+      "original_sha256": "4d73deb4978a5a6dc79c712237cb904bca3ff15ad17feb60c56a7ddd2439ada8",
+      "original_bytes": 1062,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/v1-full-and-clippy/root-observations.json.gz",
+      "archive_relative_path": "v1-full-and-clippy/root-observations.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/v1-full-and-clippy/root-observations.json.gz",
+      "archive_sha256": "a245395fcc83648d375905a9351d464704388ed031d363ac2232455dda8e70be",
+      "archive_bytes": 622,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "hardening-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-zw1lj1e7/receipt.json"
+      },
+      "original_sha256": "383cf089d34a956a19ce0474d4f552a3a5c0c41f53cef016828bc2a54ed56ef9",
+      "original_bytes": 11310,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening-red/receipt.json.gz",
+      "archive_relative_path": "hardening-red/receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening-red/receipt.json.gz",
+      "archive_sha256": "2d12b1c7df64cbc2d3e9a0f5272f76b97a08be617be3eb6a0be4c70c13c840f9",
+      "archive_bytes": 2371,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "hardening-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-zw1lj1e7/application.log"
+      },
+      "original_sha256": "2b56e9480867fd61e7741bba5a2cf68b8ec9edb1d04e58432da747aa90c4ded6",
+      "original_bytes": 7236,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening-red/application.log.gz",
+      "archive_relative_path": "hardening-red/application.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening-red/application.log.gz",
+      "archive_sha256": "fb4b653a1a737b2ca2ad3e28a71cd22970b92efb057fcc0f338472ed36ccb873",
+      "archive_bytes": 2007,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "hardening-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-zw1lj1e7/clippy.log"
+      },
+      "original_sha256": "4591d9578defcb60366668b53ea06fe17b880c53bd08b2b840acc63ee2d30af4",
+      "original_bytes": 12203,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening-red/clippy.log.gz",
+      "archive_relative_path": "hardening-red/clippy.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening-red/clippy.log.gz",
+      "archive_sha256": "59ac2670c9aa8e0b7918bb8f1a18326049720941ff0daa4412eec12c40d7c830",
+      "archive_bytes": 2400,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": true
+    },
+    {
+      "category": "implementation-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-0c9a0259-v2/manifest.json"
+      },
+      "original_sha256": "061d6fb25f5c55c6b4453bfa6b3c261298e1dff484509d546d242828d9bb1982",
+      "original_bytes": 3967,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/implementation-v2/manifest.json.gz",
+      "archive_relative_path": "implementation-v2/manifest.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/implementation-v2/manifest.json.gz",
+      "archive_sha256": "d62dafcbb2edb531b5888057fc4079b8a9d73780982a1b4dd5826de9c22f0108",
+      "archive_bytes": 1443,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "implementation-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-0c9a0259-v2/implementation.patch"
+      },
+      "original_sha256": "82b576084d87d52f2e7a924360ae6ca0b245986334d1cc18c6451017e1e4b125",
+      "original_bytes": 14011,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/implementation-v2/implementation.patch.gz",
+      "archive_relative_path": "implementation-v2/implementation.patch.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/implementation-v2/implementation.patch.gz",
+      "archive_sha256": "051f35932372bf1ff5e57309822dfc684db856d355818873fbd55f38ed12b452",
+      "archive_bytes": 3563,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "implementation-v2",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-0c9a0259-v2/GUIDE.md"
+      },
+      "original_sha256": "e76240479edda723aae5a2450b7ca292a3ada84f126c48c6a04af610e19ced71",
+      "original_bytes": 4049,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/implementation-v2/GUIDE.md.gz",
+      "archive_relative_path": "implementation-v2/GUIDE.md.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/implementation-v2/GUIDE.md.gz",
+      "archive_sha256": "3eaa6539ceafdbf96b53a0e309cd7e368c89d2d7d6cc6a924241dcc4b6da2328",
+      "archive_bytes": 2058,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-implementation-v2-independent-review-inventory.json"
+      },
+      "original_sha256": "4d3fd580555b7b5e053017a2b8c65b45b43e7e12632a09e8661865c4e953d3b0",
+      "original_bytes": 13784,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/reviews/v2-source.json.gz",
+      "archive_relative_path": "reviews/v2-source.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/reviews/v2-source.json.gz",
+      "archive_sha256": "ad16900311b70149fe4519021acc534ca851975d7d3cdfb617b9471cb5e3ef8d",
+      "archive_bytes": 3896,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "reviews",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-red-green-independent-review-inventory.json"
+      },
+      "original_sha256": "2f9d28931f5d34a94d76faeba4731b04cf0f74827a3778797d6aa4de5fce4254",
+      "original_bytes": 9442,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/reviews/hardening-red-green.json.gz",
+      "archive_relative_path": "reviews/hardening-red-green.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/reviews/hardening-red-green.json.gz",
+      "archive_sha256": "bf65b062b204775febc7fac89c7ea1b32442e12011fd4f9dbaff58c464f92436",
+      "archive_bytes": 3541,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "original-compile-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-probe.py"
+      },
+      "original_sha256": "77dd0c80c6f59030cd630cdb7716edf977251604138b6dc7e8c29121a80d6da4",
+      "original_bytes": 1644,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/original-compile-red/probe.py.gz",
+      "archive_relative_path": "original-compile-red/probe.py.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/original-compile-red/probe.py.gz",
+      "archive_sha256": "a458d10e981f2cc5df0b430969872058f05bab8d2a55b761ff92670edf750eca",
+      "archive_bytes": 796,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "original-compile-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-lane-0b8ec4c1.json"
+      },
+      "original_sha256": "857dd73a2d5af834adc42e2e91a6bda4b7f2e249ccf7f88b20fbdea3a33ab0d6",
+      "original_bytes": 2889,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/original-compile-red/lane.json.gz",
+      "archive_relative_path": "original-compile-red/lane.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/original-compile-red/lane.json.gz",
+      "archive_sha256": "cbdbb4aa3b727f5909e7fb418bd7a53a97be866033ad1a0e38039fa7b6536d43",
+      "archive_bytes": 1414,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "original-compile-red",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft12-red-admission-0b8ec4c1.json"
+      },
+      "original_sha256": "dae83c1d8774cfdc46cfde34a133291f817213858a19f19154a87f7a4d37cdce",
+      "original_bytes": 645,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/original-compile-red/admission.json.gz",
+      "archive_relative_path": "original-compile-red/admission.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/original-compile-red/admission.json.gz",
+      "archive_sha256": "fc22187765ba751039f02d4f71ba47d3809b705522693504e4fb5e5820a644c6",
+      "archive_bytes": 381,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "hardening-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-jw_6ie8b/receipt.json"
+      },
+      "original_sha256": "63928913c20f61d85b1b7431e97183319d9e1af7017b6ea28e8e84c6abe0e441",
+      "original_bytes": 11306,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening-green/receipt.json.gz",
+      "archive_relative_path": "hardening-green/receipt.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening-green/receipt.json.gz",
+      "archive_sha256": "c4ac91473182f86f57c6a90299402609c7d22c7c6643826becfc183f43e24c66",
+      "archive_bytes": 2362,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "hardening-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-jw_6ie8b/application.log"
+      },
+      "original_sha256": "4246520c4d4127f0715b0a48f60313b449dda13aca2379a2d825a16ddebb04e6",
+      "original_bytes": 4791,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening-green/application.log.gz",
+      "archive_relative_path": "hardening-green/application.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening-green/application.log.gz",
+      "archive_sha256": "a54a5a9b853c5d3d7b6bb305bd359577bdeb643748679975d01341684eb822c4",
+      "archive_bytes": 1566,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "hardening-green",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-hardening-jw_6ie8b/clippy.log"
+      },
+      "original_sha256": "78051e6e4d0ebf12c26056de3570fa44330c1a87ed090d92405c21daffca2c0b",
+      "original_bytes": 216,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/hardening-green/clippy.log.gz",
+      "archive_relative_path": "hardening-green/clippy.log.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/hardening-green/clippy.log.gz",
+      "archive_sha256": "647ecd3700babeea02399b3b937e1dad43cc6aa653f9e41d6f28d4775a533abe",
+      "archive_bytes": 179,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "preparation-provenance",
+      "origin": {
+        "kind": "EXPLICIT_PRIVATE_FILE",
+        "path": "/private/tmp/native-draft-review-retention-preparation/retention-allowlist.json"
+      },
+      "original_sha256": "e87ac3d58d0d475fb544ec5fa3c28b1f31ebdb1274746a10069fe861b9b73724",
+      "original_bytes": 7398,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/preparation-provenance/root-original21-allowlist.json.gz",
+      "archive_relative_path": "preparation-provenance/root-original21-allowlist.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/preparation-provenance/root-original21-allowlist.json.gz",
+      "archive_sha256": "9801ade067d06dde80926c1253c2a9eb56e3890caaf6eabf216c65e80a4b0862",
+      "archive_bytes": 2578,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    },
+    {
+      "category": "source-index",
+      "origin": {
+        "kind": "DERIVED_EXACT_GIT_BINDING_INDEX",
+        "method": "Four explicit runtime snapshot maps plus two frozen candidate six-source pre/postimage maps checked against regular immutable Git blobs; three original new-path absences proven."
+      },
+      "original_sha256": "28ab4a725a94b4e386694f9280bccc6b27857a85c6fce2449394b88e2f6a9171",
+      "original_bytes": 43625,
+      "archive_candidate": "/private/tmp/native-draft-retention-d66e2112-inventory/source-index/runtime-and-candidate-git-bindings.json.gz",
+      "archive_relative_path": "source-index/runtime-and-candidate-git-bindings.json.gz",
+      "archive_destination": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/review-and-runtime/source-index/runtime-and-candidate-git-bindings.json.gz",
+      "archive_sha256": "1e52da5b77d8c8f7a996c7ea7810818e0e17d725b59fa298d92ea0b8d18b3395",
+      "archive_bytes": 4927,
+      "byte_exact_decompression_verified": true,
+      "deterministic_gzip_verified": true,
+      "root_prepared_archive_reproduced": false
+    }
+  ],
+  "runtime_receipt_checks": [
+    {
+      "receipt": "/private/tmp/native-draft12-m9ytu1__/receipt.json",
+      "sha256": "a6d62e05cb781929bf717a99ad473bb45d21be8e65801f658a5de4c8a435f5fe",
+      "head": "0b8ec4c1b4c767cf607001b811a61bf799a6cf58",
+      "snapshot_fields": 4,
+      "equal_clean_before_after": true
+    },
+    {
+      "receipt": "/private/tmp/native-draft12-jxu531ty/receipt.json",
+      "sha256": "fa2dfd42f7261f4999ea91a102de94848cf31de88dac208cc2d9b9c48741afe5",
+      "head": "3807135a511f899d3a46788c337cf9d3e07ee362",
+      "snapshot_fields": 4,
+      "equal_clean_before_after": true
+    },
+    {
+      "receipt": "/private/tmp/native-draft-hardening-zw1lj1e7/receipt.json",
+      "sha256": "383cf089d34a956a19ce0474d4f552a3a5c0c41f53cef016828bc2a54ed56ef9",
+      "head": "0c9a0259d04afde10d8e5c5fb5b5a17c0fa64a46",
+      "snapshot_fields": 34,
+      "equal_clean_before_after": true
+    },
+    {
+      "receipt": "/private/tmp/native-draft-hardening-jw_6ie8b/receipt.json",
+      "sha256": "63928913c20f61d85b1b7431e97183319d9e1af7017b6ea28e8e84c6abe0e441",
+      "head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+      "snapshot_fields": 34,
+      "equal_clean_before_after": true
+    }
+  ],
+  "source_binding_counts": {
+    "runtime": 76,
+    "candidate": 21,
+    "new_path_absences": 3,
+    "unique_git_blobs": 45
+  },
+  "prior_preparation_and_tests": {
+    "git_head": "d66e2112cf0d96c2ed490f1c85b8250f870390df",
+    "existing_payload_bindings": [
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/GUIDE.md.gz",
+        "git_blob_oid": "959f84dd51de295ca77315b0f2f5f6f7d27649ba",
+        "original_payload_sha256": "37cfd5eebc2e5264d7a8c0f87c367a4e3daf5ca5eb77feaff5e7c2809f8e42ff"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/identity-tests.rs.gz",
+        "git_blob_oid": "3110684feca1a26edd3360a09ce8f193f6236528",
+        "original_payload_sha256": "41c50c7974e28f852e9b00750eda2173b4ec62ed3ef71fa5dcb3f61256b7cf4b"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/independent-review.json",
+        "git_blob_oid": "ee6c3783808e11df3812ae810d3335314ddab4b6",
+        "original_payload_sha256": "f0dd61aeadfab8c143105924aa3a63c7e97d1f58e523da98a920eb00365368a2"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/manifest.json.gz",
+        "git_blob_oid": "fd48cab4777e198036165a34113672a75e6508da",
+        "original_payload_sha256": "705d1d37caecd609343a5b599b497470bccf1ccc942616ce5f2c050e5225113e"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/root-adoption.json",
+        "git_blob_oid": "cefa7230912527c43c57f45e5106de0fe292a667",
+        "original_payload_sha256": "a58ac22011d1acf1ace2c1130e17b4045e11ac0fa1fbb722ce28392fc7bef7e4"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/schema-tests.rs.gz",
+        "git_blob_oid": "d126c4964c56a3c31e84112dc4a0b3734ad467fc",
+        "original_payload_sha256": "2dabfab594964bf3bed848521fe3633004c687474aa5ed8b4ae468ea5bef2c2b"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/hardening-tests/tests.patch.gz",
+        "git_blob_oid": "b852636f9aa9a8796c1bb4d0500d0255ab9e8824",
+        "original_payload_sha256": "4f51060ea9343e57101daed97dde8594c99bc55c689f0f5125a9a82d807e2fc4"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/independent-review.json",
+        "git_blob_oid": "7d1c6c3cbef40752ff6bbae520a270fcb3d239aa",
+        "original_payload_sha256": "e0e5eca226eadf7a4c6795376daa589042c6321cf6d576c68dc550c619c4f724"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/root-adoption.json",
+        "git_blob_oid": "fe96071b30aaba3535dda3c2f67e860168bec781",
+        "original_payload_sha256": "a8b5e115117ddd7c5c11583d346bfa3de3093bc951359312998f6c287512a24b"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v1/GUIDE.md.gz",
+        "git_blob_oid": "f32aa9b52ada57abf77438055f45e03021cbd5c3",
+        "original_payload_sha256": "d6eb35191b32b3147b7fc6b6a9c8b7ce5322ca76aefb1e814a4a9207aeba811d"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v1/candidate.patch.gz",
+        "git_blob_oid": "351c85add5c313fb4b8f317cf299df53714b2dc3",
+        "original_payload_sha256": "203bf92377d79abefd6c831fe701f9ea753114f9f21caed2fa34f637c3712af3"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v1/expected-tests.json.gz",
+        "git_blob_oid": "b7f88fcd4501a5633ac6f62b567106f6de01b185",
+        "original_payload_sha256": "a42c4fabd1d1d9b2a1a5714537322ce1acdf82ee4375869e5a7990593aa58b4f"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v1/manifest.json.gz",
+        "git_blob_oid": "d38b5952d2a1e172defe068e0f80f61de4c58226",
+        "original_payload_sha256": "c1ca0bc13b61cb176cc6ff15d5b38f688fe67309eafe6571430f61130aea18d4"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v1/source-identities.json.gz",
+        "git_blob_oid": "bbbfccec316294ad56830c779aac3cb688766536",
+        "original_payload_sha256": "0cc2b369f85a4b43dd7427ee85622b88c760b3e663ef8a0ee4a4f00a4ae05c8e"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v2/GUIDE.md.gz",
+        "git_blob_oid": "435a000e3806a9badc747a88094b5111d44b7967",
+        "original_payload_sha256": "db9bd593c39e08ed0064ee5d5ee37906fa7eeba0b116bf637071c40fc82d6c0c"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v2/candidate.patch.gz",
+        "git_blob_oid": "144304f1cb42b56bd447c5f0bf9d682960d626d3",
+        "original_payload_sha256": "5cc56979fd611cce7771457b56ef900a95ff547df9948d16d1ed30f8df5f176a"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v2/expected-tests.json.gz",
+        "git_blob_oid": "b7f88fcd4501a5633ac6f62b567106f6de01b185",
+        "original_payload_sha256": "a42c4fabd1d1d9b2a1a5714537322ce1acdf82ee4375869e5a7990593aa58b4f"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v2/manifest.json.gz",
+        "git_blob_oid": "0c9467acbf16d3e095b0bd68e22cba700ad7cdf5",
+        "original_payload_sha256": "d10b097fe997256bcfd18f684a72bfe62b15087998e1240b8a08c387c504bed4"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v2/source-identities.json.gz",
+        "git_blob_oid": "bbbfccec316294ad56830c779aac3cb688766536",
+        "original_payload_sha256": "0cc2b369f85a4b43dd7427ee85622b88c760b3e663ef8a0ee4a4f00a4ae05c8e"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v3/GUIDE.md.gz",
+        "git_blob_oid": "cde34a85326a56a2513e7e91137b1f207a08ee31",
+        "original_payload_sha256": "fde5bbeda89ee8b3fb22b6876906d779d5bf24dcc62323b3f44a69e765db3d17"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v3/candidate.patch.gz",
+        "git_blob_oid": "73293a651862c74a58d28fad0f15933ca36c2a37",
+        "original_payload_sha256": "d0229793c5f2fdf3727ec3b5852274c203efe75fc9f8b19f1e3defc0bda38b42"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v3/expected-tests.json.gz",
+        "git_blob_oid": "b7f88fcd4501a5633ac6f62b567106f6de01b185",
+        "original_payload_sha256": "a42c4fabd1d1d9b2a1a5714537322ce1acdf82ee4375869e5a7990593aa58b4f"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v3/manifest.json.gz",
+        "git_blob_oid": "87d2dbedf47369dd1edbd443e51449a89e1ea549",
+        "original_payload_sha256": "9794a11df0874670a0eeedc1efa3d16bfa5a7d4448cf1bffbc19a3d607b13a64"
+      },
+      {
+        "path": "docs/evidence/console/implementation/2026-09-15-native-draft-patches/preparation/v3/source-identities.json.gz",
+        "git_blob_oid": "bbbfccec316294ad56830c779aac3cb688766536",
+        "original_payload_sha256": "0cc2b369f85a4b43dd7427ee85622b88c760b3e663ef8a0ee4a4f00a4ae05c8e"
+      }
+    ],
+    "duplicate_payloads": 0,
+    "payloads_not_reimported": true
+  },
+  "classifications": {
+    "original_compile_red": "At0b8ec4c1 missing crate::draft E0432/E0433, Cargo101,0runtime discovered/executed. Twelve authored cases are not twelve runtime failures. Original selector/probe/lane/admission retained separately.",
+    "v1_original12": "At3807135a original12 executed12PASS0FAIL31filtered. Whole original test source unchanged.",
+    "v1_full43": "At3807135a full43 executed43PASS0FAIL0filtered, including original12 and31existing cases.",
+    "v1_clippy_and_source": "Same V1 Clippy exits101 with56diagnostics=1unused-import+55dead-code. Independent source review required global live-item uniqueness/fresh insertion and fail-closed structural constraints; passing43 did not close those findings.",
+    "hardening_red": "At0c9a0259 full48 executes43PASS5FAIL0ignored/measured/filtered. Each new failure is intended refusal assertion after positive control. StrictClippy101/56diagnostics. Outer admission0 records actual innerRED, not application success.",
+    "v2_source": "Frozen source V2 addresses global evolving liveID set/removals and schema structural rejection. Root-approved10narrow non-test expectations acknowledge absent real caller; strictClippy command not weakened.",
+    "hardening_green": "Atd66e2112 identical full48probe executes48PASS0FAIL0ignored/measured/filtered; identical strictalltargetsClippy exits0 without diagnostics. Same34source snapshots and immutable tests verified; prior43 retained.",
+    "scope": "Staged pure in-memory engine only. No real production caller, current-authority/reference resolution, durable save/CAS/history, SSR, or production/payment/legal conclusion.",
+    "npm": "Finalnpm verification retained separately after root completion/review, absent from this package."
+  },
+  "explicit_exclusions": [
+    "All unlisted temporary neighbors, source worktree copies, preparer scripts and bytecode/caches.",
+    "Already retained test preparation and hardening-test packets; no duplicate payloads imported.",
+    "Credential/environment/connection material, Docker configuration, real database/volume/private fixture contents.",
+    "Npm/Account/OpenAPI and unrelated evidence; no authority document or production/publication/legal claim."
+  ],
+  "sensitive_material_check": "Regular non-symlink explicit originals and archives only; all payloads scanned for actual multiline private keys and credential-bearing URLs, no matches and no values printed.",
+  "pre_mortem": "Compilation failure becomes alleged runtime coverage; old43GREEN masks five uncovered findings; lint failure disappears; blanket temporary import includes secrets; archive or Git bytes drift.",
+  "blast_radius": "34 inert gzip archives plus finite manifest/copyguide; no source/runtime/database mutation.",
+  "detection": "Exact original21archive readback, every origin pin and deterministic gzip/decompression, runtime logs/snapshots, all97source Gitbindings plus3absence proofs, independent root copy/readback.",
+  "rollback": "Preserve frozen candidates and all raw failures; add corrections as new receipts instead of overwriting historical evidence.",
+  "stop_conditions": [
+    "Any hash/size/decompression/source-binding mismatch",
+    "Unlisted or unequal existing destination",
+    "Duplicate retained preparation/test payload",
+    "Unexpected sensitive material or overstated result"
+  ],
+  "review_identities": {
+    "root_preparer_and_importer": "/root",
+    "supplement_preparer_and_original21reviewer": "/root/inventory_repair",
+    "final_independent_import_review": "/root pending",
+    "test_independent_reviewer": "/root/capture_review",
+    "source_author": "/root/fast_gate_review"
+  },
+  "remaining_holds": [
+    "Root independent finite import/readback",
+    "Separate completed finalnpmreview/retention",
+    "Durable caller/current-authority/CAS/history/SSR and broaderAccount/Console",
+    "Production/payment/legal authority"
+  ],
+  "execution_by_preparer": {
+    "cargo": 0,
+    "runtime": 0,
+    "database": 0,
+    "docker": 0,
+    "root_writes": 0
+  }
+}

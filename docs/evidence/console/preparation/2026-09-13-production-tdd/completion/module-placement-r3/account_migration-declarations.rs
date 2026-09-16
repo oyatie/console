@@ -1,0 +1,24 @@
+// Proposed integration-root declarations; do not replace existing test root.
+#[path = "support/native/account-enrollment-producer.rs"] mod account_enrollment_producer;
+#[path = "support/native/artifact-owner-producer.rs"] mod artifact_owner_producer;
+#[path = "support/native/binder-sequence.rs"] mod binder_sequence;
+#[path = "support/native/deployment-root-producer.rs"] mod deployment_root_producer;
+#[path = "support/native/deployment-runtime-producer.rs"] mod deployment_runtime_producer;
+#[path = "support/native/native-fixture.rs"] mod native_fixture;
+#[path = "support/native/native-owner-producer.rs"] mod native_owner_producer;
+#[path = "support/native/operator-custody-producer.rs"] mod operator_custody_producer;
+#[path = "support/native/ordinary-issuer-bootstrap.rs"] mod ordinary_issuer_bootstrap;
+#[path = "support/native/payroll-source-facts-producer.rs"] mod payroll_source_facts_producer;
+#[path = "support/native/publish-then-root-producer.rs"] mod publish_then_root_producer;
+#[path = "support/native/source-foundation-producer.rs"] mod source_foundation_producer;
+#[path = "support/native/source-owner-producer.rs"] mod source_owner_producer;
+#[path = "support/native/workforce-owner-producer.rs"] mod workforce_owner_producer;
+#[path = "support/native/attendance-owner-producer.rs"] mod attendance_owner_producer;
+#[path = "support/native/migration-catalog-producer.rs"] mod migration_catalog_producer;
+#[path = "support/native/postgres-snapshot-producer.rs"] mod postgres_snapshot_producer;
+#[path = "support/native/browser-auth-producer.rs"] mod browser_auth_producer;
+#[path = "support/native/real-process-producer.rs"] mod real_process_producer;
+#[path = "support/native/migration-transition-acceptance.rs"] mod migration_transition_acceptance;
+#[path = "support/native/migration-rollback-tests.rs"] mod migration_rollback_tests;
+#[path = "support/native/migration-batch-process.rs"] mod migration_batch_process;
+#[path = "support/native/bounded-process-output.rs"] mod bounded_process_output;

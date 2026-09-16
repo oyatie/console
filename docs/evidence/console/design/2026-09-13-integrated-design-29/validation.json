@@ -1,0 +1,43 @@
+{
+  "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+  "recorded_by": "/root",
+  "commands": [
+    {
+      "invocation": "python3 docs/evidence/console/design/2026-09-13-integrated-design-29/verify-packet.py",
+      "exit_code": 0,
+      "output": {
+        "status": "STATIC_PACKET_PASS",
+        "counts": {
+          "json_documents": 11,
+          "schema_references": 956,
+          "source_blobs": 218,
+          "owner_bindings": 55,
+          "ui_bindings": 33,
+          "fixtures": 16
+        },
+        "schema_instance_validation": false,
+        "product_tests_discovered": 0,
+        "product_tests_executed": 0,
+        "sql_executed": false,
+        "load_experiments_executed": 0,
+        "verus_proofs_executed": 0
+      }
+    },
+    {
+      "invocation": "git diff --check 7a3a9db3f5122f4cb9709899f3e5a6d8292abf82 e249e0a537d1246d770904a24326a75a61974418 -- docs/evidence/console/design/2026-09-13-integrated-design-29",
+      "exit_code": 0
+    },
+    {
+      "invocation": "revision-origin.json exact prior git show/hash comparison",
+      "prior_blobs_verified": 30,
+      "unchanged": 16,
+      "changed": 14,
+      "new": 2
+    },
+    {
+      "invocation": "git ls-tree/git cat-file exact candidate readback",
+      "regular_blobs_verified": 32
+    }
+  ],
+  "limitation": "Static refs/custody/whitespace and independent design review; no schema-instance, product, SQL, Verus, browser or load execution. No current-authority change."
+}

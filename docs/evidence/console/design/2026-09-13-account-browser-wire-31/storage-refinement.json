@@ -1,0 +1,134 @@
+{
+  "status": "Proposed identity/auth-owned extensions; not migration DDL",
+  "new_relations": [
+    {
+      "name": "account_terms_head",
+      "scope": "ACCOUNT_GLOBAL_CONTROL",
+      "owner": "identity security/release control",
+      "columns": {
+        "id": "smallint PK CHECK(id=1)",
+        "manifest_sha256": "bytea NOT NULL length32",
+        "revision": "bigint NOT NULL >=1 monotonic",
+        "release_receipt_ref": "immutable exact release receipt UUID NOT NULL",
+        "updated_at": "timestamptz NOT NULL"
+      },
+      "constraints": [
+        "Exactly one usable row before enrollment; absent means503",
+        "No Company FK/RLS cell",
+        "Auth runtime can read+FOR SHARE only via owning helper; publisher-only CAS update; no public runtime mutation",
+        "Receipt and head change atomic; registry artifact bytes fully validated before update",
+        "Composite FK (release_receipt_ref,revision,manifest_sha256) -> receipts(id,revision,manifest_sha256) RESTRICT; all three describe the SAME receipt",
+        "Head revision CAS expected=current; next=current+1, genesis1, overflow refuses; never repair by decreasing or deleting head"
+      ]
+    },
+    {
+      "name": "account_terms_release_receipts",
+      "scope": "ACCOUNT_GLOBAL_CONTROL",
+      "owner": "identity security/release control",
+      "columns": {
+        "id": "uuid PK",
+        "previous_revision": "bigint >=1 or NULL only genesis",
+        "revision": "bigint UNIQUE NOT NULL >=1",
+        "manifest_sha256": "bytea NOT NULL length32",
+        "approved_release_ref": "jsonb NOT NULL wire.schema.json#/$defs/OperatorApprovalRef",
+        "recorded_at": "timestamptz NOT NULL",
+        "approval_bytes": "bytea NOT NULL <=16KiB; exact immutable UTF-8 TermsPublicationApproval JSON; SHA256 matches approved_release_ref"
+      },
+      "constraints": [
+        "Append-only; no credentials,terms acknowledgments or Company PII",
+        "Exact head receipt FK; genesis revision1",
+        "One-shot restricted release command; no invented company administrator privilege",
+        "UNIQUE(id,revision,manifest_sha256) referenced by head and acceptances",
+        "previous_revision equals CAS predecessor, next=previous+1; genesis previous NULL and revision1; duplicate existing but mismatched tuple fails",
+        "Approval bytes manifest/expected_revision/next_revision exactly equal receipt tuple; approval digest resolves ONLY trusted operator-approved custody bundle; JSON or hash alone grants no authority"
+      ]
+    }
+  ],
+  "existing_extensions": [
+    {
+      "name": "auth_webauthn_ceremonies",
+      "retain": [
+        "id",
+        "user_id",
+        "ceremony_kind",
+        "challenge_json",
+        "state_json",
+        "expires_at",
+        "consumed_at",
+        "created_at"
+      ],
+      "add": {
+        "account_browser_flow": "nullable enum ACCOUNT_REGISTRATION|ACCOUNT_LOGIN; null legacy",
+        "browser_nonce_sha256": "nullable bytea32; required for v2 browser flow",
+        "browser_origin": "nullable exact configured origin; required for v2 browser flow",
+        "terms_manifest_sha256": "nullable bytea32; required registration, absent login",
+        "terms_head_revision": "nullable bigint>=1; required registration, absent login"
+      },
+      "constraints": [
+        "Registration row user_id equals pending Account UUID; login resolves subject by verified assertion then rechecks under Account lock",
+        "Nonce is raw only in HttpOnly cookie; no raw nonce in stored state_json",
+        "consumed_at provides completion tombstone; do not delete row as a credential replay mechanism",
+        "Account-owned scope; no Company ownership or privilege restoration"
+      ]
+    },
+    {
+      "name": "account_terms_acceptances",
+      "retain": "Existing immutable PK(account_id,terms_kind,terms_version), content_sha256,accepted_at,security_event_id remain unchanged",
+      "add": {
+        "terms_release_receipt_id": "nullable UUID",
+        "terms_release_revision": "nullable bigint>=1",
+        "terms_manifest_sha256": "nullable bytea32"
+      },
+      "constraints": [
+        "All three NULL only preserved pre-BW31 evidence; all three NOT NULL on BW31 enrollment by owner function",
+        "Composite FK(terms_release_receipt_id,terms_release_revision,terms_manifest_sha256) -> receipts(id,revision,manifest_sha256) RESTRICT",
+        "For BW31 terms_version equals lowercase manifest digest; item kind and content digest resolve in that exact manifest",
+        "Composite FK(account_id,security_event_id) -> account_security_events(account_id,id), requiring UNIQUE(account_id,id)",
+        "Event kind TERMS_ACCEPTED, same Account and event evidence equals this TermsReleaseRef, enforced by owning transactional constraint; no other-Account event substitution",
+        "One immutable first acceptance per version retained; any future repeat acknowledgment must append a distinct SecurityEvent referencing its exact new release, never overwrite first acceptance; reacceptance flow remains separately designed HOLD",
+        "Legacy exact evidence retained as-is, no fabricated new publication receipt; unknown consent never converted to acceptance"
+      ]
+    },
+    {
+      "name": "account_security_events",
+      "add": "No new columns; enroll one explicit ControlEvidence union variant ACCOUNT_TERMS_RELEASE using wire.schema.json#/$defs/TermsReleaseRef; existing variants unchanged",
+      "constraints": [
+        "payload SecurityEvent stays closed and same required fields; evidence and nonnull evidence_ref are identical typed TermsReleaseRef for BW31 TERMS_ACCEPTED events",
+        "Referenced release tuple must exist and match; same transaction as acceptance and activation; no silent arbitrary fields in old JSON schema",
+        "UNIQUE(account_id,id) supports exact acceptance attribution; immutable event and release evidence linkage",
+        "Legacy evidence variants preserved; no inference of acceptance from enrollment/security events of another kind"
+      ]
+    }
+  ],
+  "lock_order": [
+    "Registration: Account security EXCLUSIVE -> terms head SHARE -> sorted family/token -> key/ceremony per AS1",
+    "Login: preliminary opaque lookup -> Account security EXCLUSIVE -> sorted family/token -> key/ceremony; no terms publication lock",
+    "Publisher: terms head UPDATE only, never waits on Accounts"
+  ],
+  "not_added": [
+    "No duplicate sessions table",
+    "No generic content registry service",
+    "No CSRF token store",
+    "No Company-scoped terms or action type coercion"
+  ],
+  "migration_proofs_required": [
+    "Actual role/function/ACL and RLS closure",
+    "Head monotonicity/CAS/receipt atomicity",
+    "Only v2 browser flows require new ceremony fields; legacy rows preserved",
+    "No current Account activation without required existing AS1 root/family/protocol closure",
+    "New event union variant explicitly enrolled without loosening closed payloads; legacy all-null acceptance tuple preserved and v2 null tuple refused",
+    "No rollback removes permanent fences or drops new acceptance/evidence; old unsupported binary keeps enrollment disabled"
+  ],
+  "retention": {
+    "owner": "identity security/release control",
+    "public_artifacts": "Retain every published manifest/content bytes and private approval/custody bytes for as long as head,receipt,acceptance or required recovery evidence refers to them. No release-bundle pruning may remove a referenced artifact. First slice has no disposal command for receipts/acceptances/artifacts; later qualified retention/disposal policy remains HOLD. Public artifact reads resolve retained approved bytes only; absent expected bytes503 + operator incident, not404 or substitution.",
+    "ceremonies": "Expired or consumed v2 ceremony rows eligible after expires_at+24h; indexed bounded cleanup batches <=1000 once/minute, alert on oldest eligible >1h or capacity threshold. No renewal of expiry. Delete only ceremony, never Account/security/key/acceptance/event/permanent legacy fence. Unknown and cleaned attempts remain401; never recreate. Pending Account cleanup is not admitted here; pending admission quotas include retained pending guards and stop new starts before exhaustion.",
+    "readiness": "Terms artifact/head failure closes terms/enrollment, not otherwise valid established Account reads, refresh, logout or eligible historic login. Shared auth DB outage still fails relevant operations closed."
+  },
+  "release_control": {
+    "owner": "Existing deployment/release operator boundary, separate from Company and browser auth",
+    "approval": "Operator explicitly authorizes exact TermsPublicationApproval bytes/digest into a deployment custody bundle inaccessible for mutation by app/auth/business roles; approved_by resolves authenticated operator identity in that custody receipt, never a caller claimed role. Publisher is one-shot restricted OS/deployment release command plus dedicated restricted DB publisher role. It resolves only approved digest and verifies all exact bytes and content authority refs before transaction. No public API and no request-time remote lookup.",
+    "no_forgery": "A syntactically valid approval, filesystem path or digest alone is insufficient. Unapproved bundle, unresolved operator/content authority, mismatch, or missing bytes rejects publication. Test bundles distinctly TEST_ONLY; production authority remains separately required, never supplied by this design.",
+    "database": "Runtime and business roles cannot write head/receipts/approval bytes or invoke publisher mutation. Non-login migration owner, fixed search_path qualified helper, PUBLIC revoked; publisher has head/receipt-only owner helper, no Account locks or Company grants."
+  }
+}

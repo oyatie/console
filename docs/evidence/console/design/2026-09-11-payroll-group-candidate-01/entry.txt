@@ -1,0 +1,39 @@
+Candidate entry record
+Status: concrete design/evidence candidate; not approved, not an admitted implementation lane.
+Base HEAD: 05200e43af13b527ce031b04369e05852862f1d6
+One writer: Codex /root for this new evidence directory. Prior research/interviews/designs and active authorities untouched.
+Immutable target: files enumerated in record.json, content hashes. These are content identities, not a Git design SHA approval.
+Mechanical guide: trace existing entry/owner; describe input/output/permission/state/recovery; prepare unapplied authority patch; validate references/matrix/patch applicability; archive interview continuation.
+Selected lenses: Systems Thinking, Essentialism, Red Team, Zero-trust, Operability, Blast-radius.
+
+Concrete decisions
+- Existing canonical create/submit/decide and receipts are reused. Current direct calculate/close API has different retry semantics.
+- Same-tenant group operations are real management, not only consolidated reports. Per-company child actions preserve business ownership.
+- Native payroll source bridge, immutable input revision, recalculation and approval parity are required before full vertical completion.
+- First screen delivery is payroll draft; HR/leave/continuity and shared communications/sheets remain the full required target.
+- Readiness flags, imported payroll sums, contract-wage insurance preview and issued payslips must remain truthful distinct representations.
+
+Bounded implementation sequence after required review
+I1 Correct/prove harness admission and same-probe mutation sensitivity under existing rules.
+I2 Establish native input/revision and actual authorized source-verification path; use existing writers and kernel.
+I3 Converge shared action/direct route authority, replay, snapshot, natural-person SoD and recalculation semantics.
+I4 Leptos V01–V08 with actual persistence and recovery; V10 needs an actual self-service monetary contract before showing amounts.
+I5 Durable group operation V09 and full group/selected-company management on the same action contracts. Group overview can be developed with earlier UI, but full group execution remains incomplete until this step.
+No I-row is an admitted lane. It needs a named, executable assertion RED at an approved clean test commit and the same GREEN after.
+
+Pre-mortem / detection
+Disconnected input creates an attractive unusable workflow -> P04/P05 and native source readback.
+Role/scope confusion leaks another company's salary -> P02/P13 and negative synthetic second tenant.
+Same-person dual-account approval bypass -> P09 and independent natural-person oracle.
+Approval consumed then owner fails -> P10 with durable receipt/re-request; do not fake atomic rollback.
+Partial group success shown as full -> P11/P12 and receipt/result reconciliation.
+Stale source approved or wrong run ID -> P03/P07/P14.
+
+Blast radius now: additive design evidence only; no production writes or active policy changes.
+Rollback now: supersede this snapshot, preserve evidence. Proposed implementation migrations require their own expand/backfill/rollback proof.
+Review identities: author Codex /root. No independent reviews performed or fabricated; no four-round consensus claimed.
+Remaining HOLDs: exact design/test Git SHAs and approvals; identified design gaps; separate legal/provider/production authority; Intelligence stable base.
+Stop condition for this turn: concrete source-backed design, exact unapplied authority patch, validated coverage/references, archived continuation. Do not turn a passing artifact check into product GREEN.
+
+Approval discipline
+Prepare an exact clean authority/design Git candidate and its required checks before asking the owner for the revision-bound design approval required by docs/current/DELIVERY.md. This evidence packet is reviewable but is not that approved commit. Do not ask the user to repeat established scope or re-approve already authorized read/design preparation.

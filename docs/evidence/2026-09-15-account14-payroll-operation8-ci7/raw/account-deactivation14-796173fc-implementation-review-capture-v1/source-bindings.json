@@ -1,0 +1,73 @@
+{
+  "head": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "bindings": [
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "sha256": "ef620495a547484ededbb8b2e080222b47a63119534ff6f48f722116c9edd32a"
+    },
+    {
+      "path": "backend/app/src/account_custody_state.sql",
+      "sha256": "e735fb392dceeea589faed80bff7e8c9a02e12ed25cd5df9f855cfee23188fbc"
+    },
+    {
+      "path": "ops/generate-account-custody.py",
+      "sha256": "1bee882acf5d709f51ed89c3f098b3b6fd8255965af9e4090c24d0e6b484b274"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sql",
+      "sha256": "f4626454cbd5f1ab09f1684d0bc8a6de28fc3c7122de849eb504b7ba3b938036"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "sha256": "e06b77f8841cf3e7f5bc595756c1b8933c136e9cbfae1a536fac2862375dc471"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs",
+      "sha256": "e1c05e3116de8f4f2f0906b044b09c912fa108d06ba6062b176b894d66dda714"
+    },
+    {
+      "path": "backend/crates/platform/db/src/audit_tx.rs",
+      "sha256": "6d749bd55cf98fbce524a8152b046db492068dccbc8b9f2a459e7c6cb3a4952c"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql",
+      "sha256": "3f03683d7f117cf094c58e1230283de1dfa816be33de5573aa55e761985a8afc"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0030_enable_rls.sql",
+      "sha256": "791ec944dab4748e875b5a784e70457e6af176ee68c7f130cc2cc9e065bcc3bd"
+    },
+    {
+      "path": "backend/app/src/account_custody.rs",
+      "sha256": "3b5ab66b18ae27b10730929d29c0c1b9364da72d52050309ec25d7434e4c7dcd"
+    }
+  ],
+  "role": "independent read-only implementation review; root integration/runtime writer",
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton Fence",
+    "Red Team",
+    "Operability",
+    "Blast radius",
+    "Zero trust"
+  ],
+  "premortem": "Stale classification or cross-Company oracle; root backfill repeated; routine/ACL drift repaired; legacy typed error or audit semantics change.",
+  "detection": "Exact guide/candidate comparison; root/account/credential lock trace; profile generated identity and complete Rust owner path; exact scope and source bindings; root runtime remains required.",
+  "rollback": "Reject private implementation candidate; root controls integration and compatible guarded recovery.",
+  "stop": [
+    "Unfrozen candidate",
+    "Source drift",
+    "Unapproved scope/ACL expansion",
+    "Claimed runtime not executed",
+    "Weakened tests"
+  ],
+  "remaining_holds": [
+    "Frozen Inventory candidate",
+    "Independent implementation review",
+    "Same admitted14 probe GREEN",
+    "Retained root/profile/legacy gates",
+    "Broader guard cancellation/progress/replay-lock acceptance",
+    "Privileged post-startup arbitrary body replacement outside trust boundary",
+    "Production exposure"
+  ]
+}

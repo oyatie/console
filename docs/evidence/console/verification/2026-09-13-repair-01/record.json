@@ -1,0 +1,614 @@
+{
+  "schema_version": 1,
+  "classification": "evidence",
+  "status": "local_verified_source_candidate",
+  "owner": "/root",
+  "main_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "approved_design_sha": "7b6e4c6836750a23fc5fc38bdd37ac391e970215",
+  "approved_authority_source_sha": "31f769accc08ac7dcb0d140709021c58d2a86c7e",
+  "reviewed_source_sha": "2153226abaa99d2df6d997a9ce38dfd48037f19a",
+  "scope": "Adopt approved PRODUCT/ROADMAP bytes and repair verification blockers; no Account feature implementation",
+  "environment": {
+    "rust": "1.98.1 explicit RUSTUP_TOOLCHAIN for final full verification",
+    "node": "24.16.0 via fnm",
+    "dotslash": "0.5.7",
+    "postgresql": "18.4 in task-specific disposable Colima topology",
+    "cargo_target": "/private/tmp/console-account30-cargo"
+  },
+  "verification": {
+    "final_full_command": "PATH=/private/tmp/console-authority30-dotslash:$PATH RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo fnm exec --using=24.16.0 npm run verify",
+    "final_full_exit_code": 0,
+    "authority_test_command": "fnm exec --using=24.16.0 node --test --test-reporter=tap scripts/check-doc-links.test.mjs scripts/check-adrs.test.mjs scripts/check-foundation-gates.test.mjs scripts/check-ci-preflight.test.mjs scripts/verify.test.mjs",
+    "authority_tests": {
+      "executed": 173,
+      "passed": 173,
+      "failed": 0,
+      "skipped": 0,
+      "discovery": "Runner reports173tests; no separate list-only run"
+    },
+    "authority_gates": "All six gates plus diff --check exit0; exact commands in compressed authority-gates-final.json",
+    "app_selections": [
+      {
+        "id": "app-unit",
+        "discovered": 164,
+        "executed": 164,
+        "passed": 164,
+        "runtime_source_sha": "2153226abaa99d2df6d997a9ce38dfd48037f19a",
+        "discovery_source_sha": "2fcfc026f298ae95b5b0f1e44b64f062e835b51f"
+      },
+      {
+        "id": "openapi-drift",
+        "discovered": 15,
+        "executed": 15,
+        "passed": 15,
+        "runtime_source_sha": "2153226abaa99d2df6d997a9ce38dfd48037f19a",
+        "discovery_source_sha": "2fcfc026f298ae95b5b0f1e44b64f062e835b51f",
+        "delta": "Only equivalent lifetime elision; all names reconciled"
+      },
+      {
+        "id": "app-inline-pg",
+        "discovered": 23,
+        "executed": 23,
+        "passed": 23,
+        "runtime_source_sha": "2fcfc026f298ae95b5b0f1e44b64f062e835b51f"
+      },
+      {
+        "id": "app-dev-auth-pg",
+        "discovered": 1,
+        "executed": 1,
+        "passed": 1,
+        "runtime_source_sha": "2fcfc026f298ae95b5b0f1e44b64f062e835b51f"
+      }
+    ],
+    "app_pg_inheritance": "PG commands, source roots, manifests, features, helper and production sources unchanged since2fcfc. Final delta only baseline/signature/evidence. No final-SHA PG rerun claimed.",
+    "parser_suite": {
+      "executed": 29,
+      "passed": 29,
+      "new_tests_red": {
+        "executed": 4,
+        "passed": 3,
+        "failed": 1
+      },
+      "new_tests_green": {
+        "executed": 4,
+        "passed": 4
+      },
+      "corpus_tables": 296,
+      "corpus_columns": 3389
+    },
+    "ratchet": "Exactly one static test-attribute value25→29; all dark entries, exclusions and other counts unchanged",
+    "runner_preservation": "Four source/feature roots equal to original Buck declarations. Old Buck did not compile, so no before/after runtime/performance equivalence is claimed.",
+    "initial_full_failure": "verify.log exited1 with exactly ratchet and needless_lifetimes failures. Initial direct-root Cargo runtime may inherit1.100-nightly; not used as1.98 evidence.",
+    "other_failures": "Earlier expected REDs, preflight fixture failures, scratch harness import failure and npm offline failure retained with successful corrected runs. No suppression, skipping or assertion weakening."
+  },
+  "reviews": {
+    "candidate_sha": "2153226abaa99d2df6d997a9ce38dfd48037f19a",
+    "reviews": [
+      {
+        "identity": "/root/fresh29_security",
+        "verdict": "ACCEPT",
+        "findings": 0,
+        "scope": "Exact final source delta vs2fcfc; count-only ratchet and lifetime equivalence; no assertion/membership/exclusion/body changes",
+        "executed_product_tests": 0
+      },
+      {
+        "identity": "/root/fresh29_operations",
+        "verdict": "ACCEPT",
+        "findings": 0,
+        "scope": "Exact integration delta, runner preservation, independent discovered/executed name reconciliation for all4 selections",
+        "executed_product_tests": 0
+      }
+    ],
+    "limitations": "Review accepts source candidate. Final mandatory verification and local import are independently recorded; no hosted merge/readback or Account implementation approval."
+  },
+  "custody": {
+    "format": "Lossless gzip with SHA256 for compressed and original bytes",
+    "raw_logs": "Failures retained. Historical authority worktree logs untouched.",
+    "import": "Copy exact regular Git blobs after local final review, validate original main hashes; local import is not hosted merge",
+    "count_artifact_sha256": "c8847762ec9116edfd9d87ee56a25f67f41bc7f0fdef05089bf446d4e3df00bc"
+  },
+  "remaining_holds": [
+    "Hosted protected-path adoption and readback are not established by this local candidate",
+    "Complete Account test candidate requires real restricted-auth-role continuity tests as well as credential ACL denial; prerequisite8-test boundary candidate is incomplete",
+    "Independent complete test review and explicit test-SHA approval before Account implementation RED admission",
+    "Production exposure, payment, legal/compliance and provider deployment remain separately authorized"
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/action-inbox-tests.log.gz",
+      "source_name": "action-inbox-tests.log",
+      "raw_bytes": 1994,
+      "raw_sha256": "d4c088b5885b8f1bbd0c28f9cd948424b882117561913eb297a08ac77a94f718",
+      "gzip_bytes": 821,
+      "gzip_sha256": "49fbe685445e3b07425115618fcff5ff80400995745b52acc4514b3410ad4b78"
+    },
+    {
+      "path": "artifacts/adrs-final.log.gz",
+      "source_name": "adrs-final.log",
+      "raw_bytes": 53,
+      "raw_sha256": "9da728c9a29f09c299185d4563a9805fd185e29ade4a180d3f2ac0b054d9fa82",
+      "gzip_bytes": 73,
+      "gzip_sha256": "3a326a90e589effcf00bf06e4b9855164c041c735491728ba7fbac279a90fac0"
+    },
+    {
+      "path": "artifacts/app-dev-auth-pg-discovery.log.gz",
+      "source_name": "app-dev-auth-pg-discovery.log",
+      "raw_bytes": 3297,
+      "raw_sha256": "ff42f4c3d5f157e2ded58df6383100ac19744d592c90b5c33c775494a32d01c3",
+      "gzip_bytes": 814,
+      "gzip_sha256": "a7cf2677b1f2034821906198fa664c4c852deccb6e8e0e905d8579123197f8c5"
+    },
+    {
+      "path": "artifacts/app-dev-auth-pg-execution.log.gz",
+      "source_name": "app-dev-auth-pg-execution.log",
+      "raw_bytes": 936,
+      "raw_sha256": "e541b2bcbcc1e9f69a481fa9a6af3d40dcac68dd13e480ce1ab3a337fbcc735f",
+      "gzip_bytes": 573,
+      "gzip_sha256": "96f4d5fd8baa320104b3d97e02ba3072a7f102a7775f06dc1b5d1c56b3315ae3"
+    },
+    {
+      "path": "artifacts/app-fast-discovery-results.json.gz",
+      "source_name": "app-fast-discovery-results.json",
+      "raw_bytes": 534,
+      "raw_sha256": "213371eee935305c8cad549ce4a86e3dd08c73dbf8a4c60d0c53739046ac8dd5",
+      "gzip_bytes": 183,
+      "gzip_sha256": "eee853a8195d1de0ee78135ac425087195cd5c95e66b6df344b5feff9cc09ec3"
+    },
+    {
+      "path": "artifacts/app-inline-pg-discovery.log.gz",
+      "source_name": "app-inline-pg-discovery.log",
+      "raw_bytes": 54760,
+      "raw_sha256": "9803c4c0a6bc60ac70c5efeffc34ec6c8e0eff380e922a48337a84d1753d127e",
+      "gzip_bytes": 10138,
+      "gzip_sha256": "8170dcd028bad4b940ff36dc901c2b2503f2e5ab3ae0f87d72c35ee43e490500"
+    },
+    {
+      "path": "artifacts/app-inline-pg-execution.log.gz",
+      "source_name": "app-inline-pg-execution.log",
+      "raw_bytes": 19420,
+      "raw_sha256": "8ea998823e6db4e3038087f066b1616c9bf55cd7a5505d2563151e5f4ab363bd",
+      "gzip_bytes": 4359,
+      "gzip_sha256": "dea219ba00daa7ed75f05751efe11c50ee97800f1c19e1204e64a19abe4e605b"
+    },
+    {
+      "path": "artifacts/app-pg-harness-import-failure.log.gz",
+      "source_name": "app-pg-harness-import-failure.log",
+      "raw_bytes": 1077,
+      "raw_sha256": "658ee9971494d872c043dd0f12fd239d8d8110facd2e8bce751fcbaca9cb907a",
+      "gzip_bytes": 453,
+      "gzip_sha256": "8c662ef9d0769051e5b2b4a3f2c5199048919c51003be97fe5fb86935489bd45"
+    },
+    {
+      "path": "artifacts/app-pg-harness.log.gz",
+      "source_name": "app-pg-harness.log",
+      "raw_bytes": 409,
+      "raw_sha256": "d79850ef19407f2fb2d23e4cd5d9ec150428a3c1025c4e95f4ab942c20d86c3c",
+      "gzip_bytes": 222,
+      "gzip_sha256": "e195e38a63aa27f32ced3b97460d7f86928856d6936a75adbb23a10ee21ecd4a"
+    },
+    {
+      "path": "artifacts/app-pg-results.json.gz",
+      "source_name": "app-pg-results.json",
+      "raw_bytes": 1502,
+      "raw_sha256": "7155c0856faa64564ef9781b97020ddf8ff07fcfe40b6371ebe019e874148662",
+      "gzip_bytes": 499,
+      "gzip_sha256": "329c6d94448dad5ceb6ac9970405bb65d54cd1179a5399aa7d6c8367a3bcc381"
+    },
+    {
+      "path": "artifacts/app-runner-admission.log.gz",
+      "source_name": "app-runner-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/app-runner-probe.log.gz",
+      "source_name": "app-runner-probe.log",
+      "raw_bytes": 183,
+      "raw_sha256": "967119e32def5364dd2c4d866db6aa991e5faab3e73714fc08eb278736be25a0",
+      "gzip_bytes": 154,
+      "gzip_sha256": "cfbcd04e4209592d4e74202b12048d3b0f741ce79d648cab61c4d30cc2ef1685"
+    },
+    {
+      "path": "artifacts/app-runner-red.log.gz",
+      "source_name": "app-runner-red.log",
+      "raw_bytes": 1058,
+      "raw_sha256": "eda849aacfb5d0380feb207c99f9170fd507e4eabd4613cea3b56c53c90717f4",
+      "gzip_bytes": 534,
+      "gzip_sha256": "f5363e1cadca162145c32feb8c577026ac57f904d0ccd12dc40f951265004184"
+    },
+    {
+      "path": "artifacts/app-source-feature-preservation.json.gz",
+      "source_name": "app-source-feature-preservation.json",
+      "raw_bytes": 2541,
+      "raw_sha256": "93dd0ec7681b9aeeaa2f61b0f9c039163da81e08ee9b4ec7dd9d47b6429d4e3a",
+      "gzip_bytes": 689,
+      "gzip_sha256": "559d9e9a947f6efe0f5a21d45750c07dbe96e53ab3287c67ac2929cc550c8c34"
+    },
+    {
+      "path": "artifacts/app-unit-discovery.log.gz",
+      "source_name": "app-unit-discovery.log",
+      "raw_bytes": 13760,
+      "raw_sha256": "e21be6f90fc45faecdcad005441a9da1050367ac2111973069d4b742b7c89b98",
+      "gzip_bytes": 3895,
+      "gzip_sha256": "4bdb9216ecc5a81f91d9071ab876c0ad9890de3a4373e3ecb11b6ee340d65d77"
+    },
+    {
+      "path": "artifacts/authority-gates-final.json.gz",
+      "source_name": "authority-gates-final.json",
+      "raw_bytes": 1301,
+      "raw_sha256": "082b06bbf2343be6bb85ff924dff238a7e99c908a288084765af1302aa0a9732",
+      "gzip_bytes": 311,
+      "gzip_sha256": "7904ee12756ffd4fa9274b992633326af223ddb7bfe61b8b332a85ca5dfc7125"
+    },
+    {
+      "path": "artifacts/authority-tests-final.log.gz",
+      "source_name": "authority-tests-final.log",
+      "raw_bytes": 36545,
+      "raw_sha256": "06bc3a3a7759cfd70dfc159843693deb828134632b117bfecd07048352f24b9e",
+      "gzip_bytes": 7096,
+      "gzip_sha256": "2224c2d510a1ea780e8f5af2245350328568ed3107fb6f251c555e755125494e"
+    },
+    {
+      "path": "artifacts/baseline-admission.log.gz",
+      "source_name": "baseline-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/baseline-probe.log.gz",
+      "source_name": "baseline-probe.log",
+      "raw_bytes": 333,
+      "raw_sha256": "ae4413124b96791aca211fc34cab0ac240a666f45b79be3653ef9d82a3fb923b",
+      "gzip_bytes": 233,
+      "gzip_sha256": "47783cc0098cc18f09f98a83170cc0fd83a3c067371c461f0cc59c3285ef5429"
+    },
+    {
+      "path": "artifacts/baseline-red.log.gz",
+      "source_name": "baseline-red.log",
+      "raw_bytes": 441,
+      "raw_sha256": "a049136808abc327bf2b00f2a6dc3181a99866ee7ff98b992d30ae3275075ad5",
+      "gzip_bytes": 282,
+      "gzip_sha256": "d45d5bc66d38fe777579fd7674d35ceaea5dfead698df70d7267b747294e95e3"
+    },
+    {
+      "path": "artifacts/baseline-update.log.gz",
+      "source_name": "baseline-update.log",
+      "raw_bytes": 525,
+      "raw_sha256": "f0e5e5513d37c4031c98bd33c8ef9a03ab72df03a7d7668d59f7c7090afc0a24",
+      "gzip_bytes": 328,
+      "gzip_sha256": "9f6596c773941d42b24e18fa64d69d21be8250eed2a04ef4e018a82ee6a37fa4"
+    },
+    {
+      "path": "artifacts/chunks-admission.log.gz",
+      "source_name": "chunks-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/chunks-probe.log.gz",
+      "source_name": "chunks-probe.log",
+      "raw_bytes": 217,
+      "raw_sha256": "1c55dc678d733a42a8efd4a54c223fcc639e81ba0e2a6b7e6578977c04e6859f",
+      "gzip_bytes": 178,
+      "gzip_sha256": "ba7797ac0207f56a184aa6741f456cb44d9d717d8e6a24537c5ded03fc307ba2"
+    },
+    {
+      "path": "artifacts/chunks-red.log.gz",
+      "source_name": "chunks-red.log",
+      "raw_bytes": 1387,
+      "raw_sha256": "98fdaeef3d33c56b7a2c2e15168821364412ff78dcd4d2cc06ef09963b8cee45",
+      "gzip_bytes": 599,
+      "gzip_sha256": "5db60fcc41fa70060a853d5b6d98f36531e5cfe3daa07327f6d3e2d27c3720fe"
+    },
+    {
+      "path": "artifacts/ci-mirror-tests-v2.log.gz",
+      "source_name": "ci-mirror-tests-v2.log",
+      "raw_bytes": 18291,
+      "raw_sha256": "81bb7c48fc7711345729850725c53ac864614bd8352de8337f9cfce59ec83a53",
+      "gzip_bytes": 3846,
+      "gzip_sha256": "32f817f50aca995926b8996aa7f54a8cfcda5dcd1d1bb8d1f4db95fe41ebf740"
+    },
+    {
+      "path": "artifacts/ci-mirror-tests.log.gz",
+      "source_name": "ci-mirror-tests.log",
+      "raw_bytes": 19439,
+      "raw_sha256": "a9d7268b7f3a75a3ec41f5987b8aabcbd003e9790bf58a5f85a164b2d51dc008",
+      "gzip_bytes": 4231,
+      "gzip_sha256": "84b58ee859c865162a49869e2a7557a4d5aae11dc685eea64647f143c08ed857"
+    },
+    {
+      "path": "artifacts/citations-final.log.gz",
+      "source_name": "citations-final.log",
+      "raw_bytes": 80605,
+      "raw_sha256": "7ce10afea00efda684b787940dea00bc1fb566ea57fc9a6bf77b858f62cf953b",
+      "gzip_bytes": 12688,
+      "gzip_sha256": "7ee03e0008a762956919e6104db538ee923c564f6cd154bb80226594078074df"
+    },
+    {
+      "path": "artifacts/clippy-all.log.gz",
+      "source_name": "clippy-all.log",
+      "raw_bytes": 25954,
+      "raw_sha256": "bac09b6fbd6d260f0bbd8e996b003380b80d9ae29986d2bc6f3bb3d712304af0",
+      "gzip_bytes": 5419,
+      "gzip_sha256": "2d41b4aaf0ce3b5ff6cc7a5686532956ffeaf4f1e942e89bc9c422c188169767"
+    },
+    {
+      "path": "artifacts/diff-final.log.gz",
+      "source_name": "diff-final.log",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "gzip_bytes": 20,
+      "gzip_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64"
+    },
+    {
+      "path": "artifacts/doc-links-final.log.gz",
+      "source_name": "doc-links-final.log",
+      "raw_bytes": 34,
+      "raw_sha256": "f0184b0b93670191b4c7350e4e76864b88d7348c00b828ebba8b74d6849316c0",
+      "gzip_bytes": 54,
+      "gzip_sha256": "c49515cc1c087e0071c1badfbeff1200f2833d8642c30c2963749ffba810267e"
+    },
+    {
+      "path": "artifacts/executed-reachability.log.gz",
+      "source_name": "executed-reachability.log",
+      "raw_bytes": 441,
+      "raw_sha256": "a049136808abc327bf2b00f2a6dc3181a99866ee7ff98b992d30ae3275075ad5",
+      "gzip_bytes": 282,
+      "gzip_sha256": "d45d5bc66d38fe777579fd7674d35ceaea5dfead698df70d7267b747294e95e3"
+    },
+    {
+      "path": "artifacts/final-exit-status.json.gz",
+      "source_name": "final-exit-status.json",
+      "raw_bytes": 381,
+      "raw_sha256": "ac55ac413efe82947d76e8aea482be0001ca56d167be9625acafdf05a9a48a9a",
+      "gzip_bytes": 206,
+      "gzip_sha256": "aa4fd83ce54ec16a5d996d29a6fa7e4f6afa4c7162f4a2c1e2b9cc494c16217d"
+    },
+    {
+      "path": "artifacts/final-independent-reviews.json.gz",
+      "source_name": "final-independent-reviews.json",
+      "raw_bytes": 833,
+      "raw_sha256": "8ac4131acc76d1f1d0cce086cc127d0df9ca8505f9b4cac32a2a32c6085f1cf2",
+      "gzip_bytes": 449,
+      "gzip_sha256": "e479d3834ec0967d1fedf929035919c9ce8c886524e22e962aba76a456341979"
+    },
+    {
+      "path": "artifacts/foundation-final.log.gz",
+      "source_name": "foundation-final.log",
+      "raw_bytes": 8122,
+      "raw_sha256": "29d0c2bb01be1eaa982ba3258dbc027685a1f4f416dfce420678dc49b259a5e2",
+      "gzip_bytes": 2100,
+      "gzip_sha256": "f3518921bd69b237046fcc872cf34a6a7536884ce47177f647961733b10c3cc9"
+    },
+    {
+      "path": "artifacts/log-custody-scan.json.gz",
+      "source_name": "log-custody-scan.json",
+      "raw_bytes": 643,
+      "raw_sha256": "526059f346e40ec412df868e9bcefa730a2e358233f640372d939f1952d02326",
+      "gzip_bytes": 310,
+      "gzip_sha256": "e6a374c7bc715ed4f1b73790a7e5114f9115b6cde8c1450710579baf6980b4e9"
+    },
+    {
+      "path": "artifacts/main-import-preflight.json.gz",
+      "source_name": "main-import-preflight.json",
+      "raw_bytes": 9984,
+      "raw_sha256": "eaa86cb5e25046f58f5ad6fb828c2a24bd3c33ac73dac50aaaf47180c08dce61",
+      "gzip_bytes": 3467,
+      "gzip_sha256": "50b6a59dcad1c1457f9c85b5efec78375e2d2ccd2048cfb4fca84d649151286b"
+    },
+    {
+      "path": "artifacts/manifest-final.log.gz",
+      "source_name": "manifest-final.log",
+      "raw_bytes": 47,
+      "raw_sha256": "17ccdbeef7ca47a4aec8b66e016cbe6dcc925292c338604e9f6aa5653d0cce98",
+      "gzip_bytes": 66,
+      "gzip_sha256": "3a8565ae8933412114687b2fdd2477d71f28905fcee8ad0e0e827dba93dc6ffa"
+    },
+    {
+      "path": "artifacts/npm-ci-online.log.gz",
+      "source_name": "npm-ci-online.log",
+      "raw_bytes": 228,
+      "raw_sha256": "5ee823eda8e3c06bd5e5fac08afeb43f322925a100a27e49b41bf66ccec895bf",
+      "gzip_bytes": 169,
+      "gzip_sha256": "9350f75aaf3cba25eb2892a734291fc06a9d91098c0422927d3e9c28e5aa18e8"
+    },
+    {
+      "path": "artifacts/npm-ci.log.gz",
+      "source_name": "npm-ci.log",
+      "raw_bytes": 360,
+      "raw_sha256": "6b681f8f036fc06fe4c66fceec4e4e18ac0e837f9f9d30710e14c40e3a4595fb",
+      "gzip_bytes": 256,
+      "gzip_sha256": "bf8beb29712b7e9d3db5919fd5a0aad0c1adad948287b39bc95f0d6cd366856b"
+    },
+    {
+      "path": "artifacts/openapi-drift-discovery.log.gz",
+      "source_name": "openapi-drift-discovery.log",
+      "raw_bytes": 1820,
+      "raw_sha256": "892deec21e0207763ee4308bf0f232b899bf546bc3f75a55ce905c3b00c5da3a",
+      "gzip_bytes": 905,
+      "gzip_sha256": "4e8dab718bba74311343edab7b992411e3a27ff261a0799d5d4d6295c8f41929"
+    },
+    {
+      "path": "artifacts/openapi-lint-198-admission.log.gz",
+      "source_name": "openapi-lint-198-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/openapi-lint-198-probe.log.gz",
+      "source_name": "openapi-lint-198-probe.log",
+      "raw_bytes": 423,
+      "raw_sha256": "7576b592723919e48db13a01ece2361aec3b9181df485869747a5db1e00f2414",
+      "gzip_bytes": 305,
+      "gzip_sha256": "d165a051a2655dbf7bd7f428c0afc8ea125b1decb143c1b8e4d3ef00874da8f6"
+    },
+    {
+      "path": "artifacts/openapi-lint-198-red.log.gz",
+      "source_name": "openapi-lint-198-red.log",
+      "raw_bytes": 13526,
+      "raw_sha256": "a5fced3a5e186e43271457637e932c31895bdeb4c2f9b4ae73d583d4cf25792c",
+      "gzip_bytes": 1667,
+      "gzip_sha256": "f61da6253f96061f241bf5457a514e170e57b61bef17df44dcb348a2f60437e1"
+    },
+    {
+      "path": "artifacts/openapi-lint-admission.log.gz",
+      "source_name": "openapi-lint-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/openapi-lint-probe.log.gz",
+      "source_name": "openapi-lint-probe.log",
+      "raw_bytes": 42581,
+      "raw_sha256": "15b9c8542332a6cc934866f310e6e5ea7f46a37ee71e2d2224b7a08725a51f74",
+      "gzip_bytes": 7469,
+      "gzip_sha256": "565524199d2035d95e5868a3402b29c293731d54a08c5fb51f31e22db625edd1"
+    },
+    {
+      "path": "artifacts/parser-admission.log.gz",
+      "source_name": "parser-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/parser-all.log.gz",
+      "source_name": "parser-all.log",
+      "raw_bytes": 3028,
+      "raw_sha256": "8dbf0bd60751126418539bf7f5aa7890f067786ef8c4a3421886d4f2fff0b92c",
+      "gzip_bytes": 1000,
+      "gzip_sha256": "7a4245c89d9012f54e232561fd200673b468b88493204c11fa765d729f1d3306"
+    },
+    {
+      "path": "artifacts/parser-gate-green.log.gz",
+      "source_name": "parser-gate-green.log",
+      "raw_bytes": 503,
+      "raw_sha256": "ee42f7da2c45d893e39b8d3961e2c916d20ad40d4ae991389b8c0d0e4dec79c6",
+      "gzip_bytes": 277,
+      "gzip_sha256": "f176b2c03e198f8a6209db323f919059277b712c939c79def93f64ed593ecbfa"
+    },
+    {
+      "path": "artifacts/parser-gate-red.log.gz",
+      "source_name": "parser-gate-red.log",
+      "raw_bytes": 949,
+      "raw_sha256": "de347dcabd288c6d767d98b56171a3b6f937b749504d7e7d0f75e62e1695e816",
+      "gzip_bytes": 501,
+      "gzip_sha256": "e02359f44a674d5ab465a1520ac0a0382f61c39e5bd4749b8ba3b859bf3d015a"
+    },
+    {
+      "path": "artifacts/parser-probe.log.gz",
+      "source_name": "parser-probe.log",
+      "raw_bytes": 746,
+      "raw_sha256": "0e37824c974c5fda4701542a5bd4cfd9c3b68db32ee47ffae52fc4500f40168c",
+      "gzip_bytes": 413,
+      "gzip_sha256": "bc506323a863113f91ba9801e0cb370cdb981372f9bf9db41d0a458cbdf7131e"
+    },
+    {
+      "path": "artifacts/parser-tests-red.log.gz",
+      "source_name": "parser-tests-red.log",
+      "raw_bytes": 1751,
+      "raw_sha256": "710a5da494119d71875cc7082eec2e9b8368618c017543a8f9e2c5134c535e72",
+      "gzip_bytes": 881,
+      "gzip_sha256": "81dfeab27e4431553197da5854d9d86508337539cc17ba261457aa9ecac0249c"
+    },
+    {
+      "path": "artifacts/pin-admission.log.gz",
+      "source_name": "pin-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/preflight-final.log.gz",
+      "source_name": "preflight-final.log",
+      "raw_bytes": 30,
+      "raw_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "gzip_bytes": 50,
+      "gzip_sha256": "b792a4464b2d3eb2ab961ad7921dd05a14f1760de99a3677b6e447c96d20ab38"
+    },
+    {
+      "path": "artifacts/preflight-first.log.gz",
+      "source_name": "preflight-first.log",
+      "raw_bytes": 234,
+      "raw_sha256": "bd65a7aa0504fdf3bbf1b1168d7a5c1ca23859e1d1e50a638aa3d49f5fcb15f4",
+      "gzip_bytes": 132,
+      "gzip_sha256": "70a2cc5e767098991ebfc5f60f866351d752b9f9cae989c1ada995327278c315"
+    },
+    {
+      "path": "artifacts/preflight-green.log.gz",
+      "source_name": "preflight-green.log",
+      "raw_bytes": 30,
+      "raw_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "gzip_bytes": 50,
+      "gzip_sha256": "b792a4464b2d3eb2ab961ad7921dd05a14f1760de99a3677b6e447c96d20ab38"
+    },
+    {
+      "path": "artifacts/rest-clippy-admission.log.gz",
+      "source_name": "rest-clippy-admission.log",
+      "raw_bytes": 48,
+      "raw_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "gzip_bytes": 65,
+      "gzip_sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5"
+    },
+    {
+      "path": "artifacts/rest-clippy-probe.log.gz",
+      "source_name": "rest-clippy-probe.log",
+      "raw_bytes": 320,
+      "raw_sha256": "0f112bc5ea87b9a52524efb993ed59ded506036230f977bc5d70fe4b1cb34f71",
+      "gzip_bytes": 187,
+      "gzip_sha256": "b2da95750bbb874a23dfc77baca9e780081797a57f0d0b16ed3c0ceff6ccc090"
+    },
+    {
+      "path": "artifacts/rest-clippy-red.log.gz",
+      "source_name": "rest-clippy-red.log",
+      "raw_bytes": 11893,
+      "raw_sha256": "1c991cee48c7102cebe3ef1828d39d086ddde2e8174b7b34a2e01b92a18e7544",
+      "gzip_bytes": 3160,
+      "gzip_sha256": "95b04ee45fd65c28610b9b30237841e68746cb36d22b19cf0a872aa654e6ea91"
+    },
+    {
+      "path": "artifacts/task-vm-stop.json.gz",
+      "source_name": "task-vm-stop.json",
+      "raw_bytes": 264,
+      "raw_sha256": "a9ddec4947e0e5060e1bc5f0ea94b90d36d1857703f49a05bc1e2156b2725ba0",
+      "gzip_bytes": 211,
+      "gzip_sha256": "c5c2ae7752ff59feabe913d8ac431e07af915d76242dcd7efa4c929f6893354d"
+    },
+    {
+      "path": "artifacts/test-vm-start.log.gz",
+      "source_name": "test-vm-start.log",
+      "raw_bytes": 5212,
+      "raw_sha256": "ed8146ad4ac6ef8417cd4c336ddd3725d638cb5826266aa735a3891efad3f996",
+      "gzip_bytes": 1133,
+      "gzip_sha256": "e8ee3a83eaad4894f36b623aaf3f7045536bf01a888565601ee560aec204d3bc"
+    },
+    {
+      "path": "artifacts/verify-final.log.gz",
+      "source_name": "verify-final.log",
+      "raw_bytes": 610602,
+      "raw_sha256": "3bb7e1262a752de5c43092d6e66024da35b08c32807447d9a9ae5029360ffcf7",
+      "gzip_bytes": 115709,
+      "gzip_sha256": "0df046be14295933efe1f357bbc17e81d1d9a8fe08e280cad6b1d49f8d8e07e0"
+    },
+    {
+      "path": "artifacts/verify.log.gz",
+      "source_name": "verify.log",
+      "raw_bytes": 750347,
+      "raw_sha256": "85840b4bf4bbd69d624c968c35d8217e2a05cdb44a0b2da3ebdc34c65981fe02",
+      "gzip_bytes": 130719,
+      "gzip_sha256": "1ea1ab924dd61d2a4c8e0caeab9b8ad69a08b345067a4a63c2ed3606a73a37f1"
+    }
+  ]
+}

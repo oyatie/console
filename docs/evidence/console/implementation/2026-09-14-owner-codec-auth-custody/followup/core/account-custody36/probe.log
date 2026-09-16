@@ -1,0 +1,121 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_59626" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_59626, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 1.53s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+cargo-postgres: === app-auth-rest-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_custody_ -- --test-threads=1
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.53s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-account30-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+
+running 36 tests
+test account_custody_lifecycle::another_database_crosses_0165_while_finalization_is_in_flight ... ok
+test account_custody_lifecycle::blocked_finalizer_times_out_without_partial_transfer_and_retries ... ok
+test account_custody_lifecycle::committed_finalization_survives_unobserved_cli_response_and_retry ... ok
+test account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state ... FAILED
+test account_custody_lifecycle::failure_after_actual_third_transfer_rolls_back_every_owner ... ok
+test account_custody_lifecycle::fresh_actual_migration_finalizes_empty_catalog_and_is_idempotent ... ok
+test account_custody_lifecycle::missing_relation_refuses ... ok
+test account_custody_lifecycle::mixed_owners_refuse ... ok
+test account_custody_lifecycle::nonempty_staging_refuses ... ok
+test account_custody_lifecycle::owner_membership_refuses_and_fixture_cleans_cluster_edge ... ok
+test account_custody_lifecycle::populated_225_upgrade_preserves_legacy_rows_and_checksums ... ok
+test account_custody_lifecycle::request_accounting_rejects_omission_duplicate_and_failure ... ok
+test account_custody_lifecycle::runtime_refusals_have_real_login_and_exact_table_controls ... ok
+test account_custody_lifecycle::snapshot_checker_detects_missing_null_duplicate_and_omitted_transfer ... ok
+test account_custody_lifecycle::unexpected_column_privilege_refuses ... ok
+test account_custody_lifecycle::unexpected_inheritance_refuses ... ok
+test account_custody_lifecycle::unexpected_rule_refuses ... ok
+test account_custody_lifecycle::unexpected_table_privilege_refuses ... ok
+test account_custody_lifecycle::unexpected_table_trigger_refuses ... ok
+test account_custody_lifecycle::unvalidated_tuple_fk_refuses ... ok
+test account_custody_lifecycle::wrong_column_shape_refuses ... ok
+test account_custody_lifecycle::wrong_owner_refuses ... ok
+test account_custody_startup::custody_api_readyz_detects_column_grant_drift ... ok
+test account_custody_startup::custody_api_readyz_detects_owner_drift ... ok
+test account_custody_startup::custody_api_startup_refuses_partial_catalog ... ok
+test account_custody_startup::custody_api_startup_requires_actual_finalization ... ok
+test account_custody_startup::custody_configured_database_failure_does_not_become_no_database_mode ... ok
+test account_custody_startup::custody_genuine_no_database_configuration_keeps_existing_behavior ... ok
+test account_custody_startup::custody_readyz_ignores_session_temporary_pg_class_forgery ... ok
+test account_custody_startup::custody_worker_readyz_detects_column_grant_drift ... ok
+test account_custody_startup::custody_worker_readyz_detects_owner_drift ... ok
+test account_custody_startup::custody_worker_startup_refuses_partial_catalog ... ok
+test account_custody_startup::custody_worker_startup_requires_actual_finalization ... ok
+test account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys ... FAILED
+test account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business ... FAILED
+test account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context ... FAILED
+
+failures:
+
+---- account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state stdout ----
+
+thread 'account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state' (28244178) panicked at app/tests/auth_rest/account_custody_lifecycle.rs:537:5:
+assertion failed: complete_successful_requests(&["first", "second"], &requests)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys stdout ----
+
+thread 'account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys' (28251082) panicked at app/tests/auth_rest/account_storage.rs:177:9:
+auth_refresh_token_families: Company provenance must not be mandatory custody ownership
+
+---- account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business stdout ----
+
+thread 'account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business' (28251270) panicked at app/tests/auth_rest/account_storage.rs:388:5:
+custody must have distinct NOLOGIN owners: [("auth_webauthn_ceremonies", "console_app", true), ("auth_refresh_token_families", "console_app", true), ("auth_webauthn_credentials", "console_app", true), ("auth_refresh_tokens", "console_app", true), ("auth_bootstrap_credentials", "console_app", true), ("auth_device_login_handoffs", "console_app", true), ("auth_webauthn_ceremony_bindings", "console_app", true), ("account_terms_acceptances", "console_account_owner", false), ("accounts", "console_account_owner", false), ("account_security", "console_account_owner", false), ("account_security_events", "console_account_owner", false), ("account_terms_release_receipts", "console_terms_owner", false), ("account_terms_head", "console_terms_owner", false)]
+
+---- account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context stdout ----
+
+thread 'account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context' (28251731) panicked at app/tests/auth_rest/account_storage.rs:361:18:
+Company LOGIN must have no direct custody privilege: PgQueryResult { rows_affected: 0 }
+
+
+failures:
+    account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state
+    account_storage::account_custody_has_no_company_ownership_or_destructive_foreign_keys
+    account_storage::account_custody_owners_and_effective_column_grants_are_separate_from_business
+    account_storage::company_login_cannot_read_or_mutate_account_custody_even_with_company_context
+
+test result: FAILED. 32 passed; 4 failed; 0 ignored; 0 measured; 95 filtered out; finished in 140.82s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`
+cargo-postgres-timing: {"name": "app-auth-rest-pg", "package": "console-app", "seconds": 141.431, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-auth-rest-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

@@ -1,0 +1,79 @@
+{
+  "candidate_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "files": [
+    {
+      "source_path": "/private/tmp/console-preparation-wiring-integrated-green.log",
+      "retained_path": "execution-fd94667f/console-preparation-wiring-integrated-green.log.gz",
+      "sha256": "f555de5b2c00ab39aab3f85d0a63073d39e45ef1cadb72910847e4e99bff8f02"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-generator-integrated.log",
+      "retained_path": "execution-fd94667f/console-preparation-generator-integrated.log.gz",
+      "sha256": "32a0cfbd0251f313cf4c17ad7e9aa2efe09d14b09182205535092fcd4accd981"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-node-integrated.log",
+      "retained_path": "execution-fd94667f/console-preparation-node-integrated.log.gz",
+      "sha256": "3a7e47388316a152728775e4872d679b0126a38cc47711095b8c09c531e18f36"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-generator-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-generator-fd94667f.log.gz",
+      "sha256": "a821188be4d89c69e957dd3accdca49249312ee632978df3248fbf26b5d66117"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-preflight-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-preflight-fd94667f.log.gz",
+      "sha256": "d3d1809b3455f446c6df7bf966b21c5b3202c15eb65c8dbbddbd61d29c24315e"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-preflight-fd94667f-approved.log",
+      "retained_path": "execution-fd94667f/console-preparation-preflight-fd94667f-approved.log.gz",
+      "sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-node-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-node-fd94667f.log.gz",
+      "sha256": "364921bb6e28339ce058cf8f0d695e7e9ccc1279256eef1a59bd1833ab850536"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-pgmap-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-pgmap-fd94667f.log.gz",
+      "sha256": "c43d8f4c424e6763fa44d7868a61e2f735067ace69a3252a7b387af01d3da348"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-partition-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-partition-fd94667f.log.gz",
+      "sha256": "bb47de01669dbb564b5dfe5c207abe35a784128ce91e2016abff0bddec179ba5"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-executed-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-executed-fd94667f.log.gz",
+      "sha256": "af1eacfc3a320b069b184abfe83b21b0e9c763e086ec397159e8efca65b0fabf"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-jsreach-fd94667f.log",
+      "retained_path": "execution-fd94667f/console-preparation-jsreach-fd94667f.log.gz",
+      "sha256": "5aeefe0ff96ed030f8a0809a7eb1be4ac74f68f830d454ca209ca0e089f200ed"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-migration-mapped.log",
+      "retained_path": "execution-fd94667f/console-preparation-migration-mapped.log.gz",
+      "sha256": "ec4f61c18995cad8d1ec7881e5402d67d11b135074c9f77628899c121748b77e"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-active-sync.log",
+      "retained_path": "execution-fd94667f/console-preparation-recovery-active-sync.log.gz",
+      "sha256": "6783c2b494094b982999a7bcf69a177dffe15b56cf32aaf0cb12bf75559f8bb9"
+    },
+    {
+      "source_path": "/private/tmp/console-preparation-recovery-active-transport.log",
+      "retained_path": "execution-fd94667f/console-preparation-recovery-active-transport.log.gz",
+      "sha256": "559c0e18509eb4d3374dac3933f4beaaf68603395cf2e619ce7dd79309e96377"
+    }
+  ],
+  "historical_failures": [
+    "generator-integrated failed only because generated changes not yet committed; same generator35PASS after commit",
+    "node-integrated/preflight without escalation failed existing git write-tree custody because sandbox denied worktree index.lock; exact101tests/preflightPASS with permitted owned-index access, no code change"
+  ]
+}

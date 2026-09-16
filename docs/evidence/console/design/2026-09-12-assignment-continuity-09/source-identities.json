@@ -1,0 +1,88 @@
+{
+  "sources": [
+    {
+      "path": "docs/current/PRODUCT.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "path": "docs/current/ROADMAP.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "sha256": "eccba4cb8f0ea3a684ab125967eddc20c98be5807f24b6905e4bad8599adcc57"
+    },
+    {
+      "path": "docs/current/DELIVERY.md",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "91851416714106e4d0bece113baa2627f2b65ae6",
+      "sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a"
+    },
+    {
+      "path": "backend/crates/workflow/runtime/src/authz_guard.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "adcbc46a17383a7a6f3dd210fef681db0b2cb921",
+      "sha256": "9384899bc153e98feccf622385747b4be0f8c6dff7b1f8e28da82705f92c5b4a"
+    },
+    {
+      "path": "backend/crates/workflow/runtime/src/completion.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "6f7018210fb781914e44e26946836844281dbdb9",
+      "sha256": "55badb7e363940bfcaf7874b2a8fcd29ba16a027b7c0012b367d38137180c385"
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "8de02d08b143ed387e4f7737e2b3066dd4084519",
+      "sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5"
+    },
+    {
+      "path": "backend/crates/platform/group/src/lib.rs",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "c5058b642b760f3b258a405afa2882ea9bfc3442",
+      "sha256": "260f3f3e1bb5c0837f6d7a7847e13db559fab30bfe2ec7ed623fb9a497aad636"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0060_create_groups_and_membership.sql",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "680808ff2cdecdb61ee890d5759d387df8b225f6",
+      "sha256": "96ba3f2dd50fcceaa76c0dde4d3809f98f2a0d81c3bb5d4f246d0498d947852c"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0077_create_workflow_runtime_spine.sql",
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "git_blob": "a560d8994b11eec60746b3447bbde6f9a069d8aa",
+      "sha256": "3e68ba2ba21def1d3b302419d7dc3227ae9e6623e439368c7e8224a909a4d180"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-actor-approval-contract-03/actor-and-identity.txt",
+      "commit": "e3712a2cbf485c197e0769c20789800c825863e9",
+      "git_blob": "743b777a0e774c0062a0cdcfc227f3977fbebc1f",
+      "sha256": "2a487dafb1255fbdd3e81b38085d8216bc056066fc13f89789888b170725bdee"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-action-input-drafts-05/draft-contract.txt",
+      "commit": "e3712a2cbf485c197e0769c20789800c825863e9",
+      "git_blob": "a752a191ae552bc283f541466300b92699112595",
+      "sha256": "24b4d0ba93484f5cc65e362c70fdc7f25db653a4039d4e57ae25baeb791b7bc1"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-group-operation-07/group-contract.txt",
+      "commit": "e3712a2cbf485c197e0769c20789800c825863e9",
+      "git_blob": "17cf3fc61958898f579b5b3d6badd2ad52aed7e4",
+      "sha256": "309a96f5f5cc2ed331a83399d8acb70f9ca88727e3c466340c0484101b56c605"
+    },
+    {
+      "path": "docs/evidence/console/design/2026-09-12-implementation-readiness-08/assignment-next.txt",
+      "commit": "e3712a2cbf485c197e0769c20789800c825863e9",
+      "git_blob": "abd3df3e7de07b781cd9196fbe34f75d8f4483f5",
+      "sha256": "2110b15c44e6d1974f79c3c962be83c4cc694a4cb7a6dd2a832976e087095180"
+    }
+  ]
+}

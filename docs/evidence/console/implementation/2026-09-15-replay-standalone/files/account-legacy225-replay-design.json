@@ -1,0 +1,113 @@
+{
+  "kind": "historical225_permanent_native_replay_proposal",
+  "status": "PROPOSAL_ONLY_PENDING_INDEPENDENT_REVIEW_AND_RUNTIME",
+  "author": "/root/capture_review",
+  "independent_reviewer": "/root/inventory_repair",
+  "runtime_operator_and_repository_writer": "/root",
+  "created_at_utc": "2026-09-15T05:45:11.202688+00:00",
+  "base_sha": "4664c581815ab6278f1a454d04aa6156560bd3c2",
+  "target_path": "backend/app/tests/account_migration.rs",
+  "original_sha256": "a313e2611cb7aabeaab49029e23bd6dd6ca1e3f30e090bc0749e6334d484186a",
+  "artifacts": {
+    "/private/tmp/account-legacy225-replay-candidate.rs": {
+      "sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+      "bytes": 23067
+    },
+    "/private/tmp/account-legacy225-replay.patch": {
+      "sha256": "1e2d23bb48401019e154506f2c5585a1291953c0df465bef9d03585937f82b37",
+      "bytes": 17047
+    },
+    "/private/tmp/account-legacy225-capture-completion-review.json": {
+      "sha256": "33bc5e21f8f939b44423200acc92455e3150763773e5d244a49b45ef4d02bc4d",
+      "bytes": 5233
+    }
+  },
+  "fixture": {
+    "source": "/private/tmp/account-legacy225-captured-output-20260915/_sqlx_test_DajtA0KV6TbLO5Sby_VaYlLRoHs25jDXZB3P6OHrqXe4ZlbvpOnQ.json",
+    "sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+    "proposed_repository_path": "backend/app/tests/fixtures/account-legacy225-owner-output-v1.json",
+    "custody": "Only this exact independently reviewed TEST_ONLY historical producer output may satisfy the embedded digest. Root must preserve bytes; no source fixture copied by this author."
+  },
+  "mechanical_guide": [
+    "Keep existing old_migration_login and actual run_to225 owner/migrator boundary. Validate embedded digest, exact format/base/subject/audit identity uniqueness and fixed10table roster before database seeding.",
+    "Compare actual historical migration checksums to all225 captured values before replay. No altered ledger, fake Account schema, or owner implementation copy.",
+    "Insert9fixed native table rosters inside one transaction, with exact affected counts and active constraints. Group/organization/user parents precede auth rows; all4refresh tokens share one INSERT SELECT.",
+    "Organization trigger creates memberships. Require exact two original group/org keys before updating only captured created_at. Full native table query then checks all10rosters including membership timestamps.",
+    "Before commit require exact native tables, version/checksums/unused edges, original2credential and4token/2replacement/1revokedfamily invariants, plus retained raw-token SHA256 matched to both revoked token/family.",
+    "Commit local fixture transaction after full-row validation. Re-run unchanged material_snapshot on pool and require exact captured projection before any current migration. A postcommit projection mismatch still fails the owned disposable test; no generic helper or extra fixture framework.",
+    "Retain unchanged apply_current_and_require_account_catalog and both existing test bodies. The later mandatory auth dependency adaptation remains a separate narrowly reviewed callsite edit; no oracle changes are proposed here."
+  ],
+  "test_preservation": {
+    "old_migration_login_exact": true,
+    "material_snapshot_exact": true,
+    "shared_current_migration_oracle_exact": true,
+    "both_test_bodies_exact": true,
+    "unchanged_oracle_plus_two_test_suffix_sha256": "ed0c782c5483743786908f987a8f587367ba901903fec1f2bc1b94cb1cb2f255",
+    "static_tests": 2,
+    "original_seed_guarantees": "Historical captured2independentcredentials,2families,4tokens,2replaced_by correlations,1revokedfamily,4realceremonies,7originalaudits retained by exact immutable fixture and native equality."
+  },
+  "validation": {
+    "executed": [
+      {
+        "command": "rustup run 1.98.1 rustfmt --edition 2024 --check /private/tmp/account-legacy225-replay-candidate.rs",
+        "exit_code": 0
+      },
+      {
+        "command": "Python exact immutable Git/helper/test suffix/patch/hash comparison",
+        "result": "PASS; login/material/shared oracle/two tests unchanged; fixed9INSERTs,1membershiptimestampUPDATE, no conflict suppression/schema/grant/trigger override or historical rotate calls in seed"
+      }
+    ],
+    "tests_discovered": 0,
+    "tests_executed": 0,
+    "not_executed": [
+      "Cargo/typecheck",
+      "PostgreSQL replay",
+      "runtime negative controls",
+      "current migration tests"
+    ]
+  },
+  "runtime_acceptance": [
+    "Root installs only the reviewed source proposal and exact reviewed fixture bytes in its owned bounded checkout, recording exact commit and path/hash custody.",
+    "Run the existing account_migration target through the reviewed owned PostgreSQL harness and retain both test results/counts. Require native full-row and material checks to complete before calling any postmigration failure meaningful.",
+    "Expected current result remains missing company_actors at catalog prerequisite unless another separately owned migration implementation changes that fact. Never classify successful fixture replay alone as migration preservation success.",
+    "Runtime negative controls remain pending: corrupt fixture bytes must fail digest before seed DB work; rollback-only row omission, protected-byte/token correlation mutation and wrong membership key must be rejected by the same native replay/readback invariants. Controls need a separately reviewed bounded harness; do not weaken committed test or digest checks to run them."
+  ],
+  "pre_mortem": [
+    {
+      "failure": "Unknown constraint/trigger or native JSON conversion differs.",
+      "detection": "Active PostgreSQL constraints, affected counts and exact full native row comparison before commit.",
+      "response": "Rollback; inspect the fixed225schema and stop before broadening roster."
+    },
+    {
+      "failure": "Capture provenance or immutable migration bytes drift.",
+      "detection": "Embedded SHA256, format/base guards, original file review and full225checksum equality.",
+      "response": "Reject fixture; keep prior capture evidence."
+    },
+    {
+      "failure": "Replay hides missing Account conversion.",
+      "detection": "Shared actual-current-migration prerequisite and both test bodies remain byte-exact.",
+      "response": "Report genuineRED and unreached downstream assertions."
+    },
+    {
+      "failure": "Unchanged material projection differs after local commit.",
+      "detection": "Exact comparison before current migration.",
+      "response": "Fail the disposable test; preserve diagnostics without material dump. No shared/production state involved."
+    }
+  ],
+  "blast_radius": "Only private candidate, patch and proposal JSON written by author. Future installed change affects one test file plus one immutable TEST_ONLY fixture; no product implementation or production DB.",
+  "rollback": "All insertion/readback failures before commit roll back the fixture transaction. Postcommit projection failure leaves only failed owned disposable-test state, cleaned by existing harness. Preserve original historical producer/patch/bytes.",
+  "stop_conditions": [
+    "Candidate or fixture digest changes.",
+    "Original helper/shared oracle/test suffix changes.",
+    "Source/migration custody cannot be bound.",
+    "FK/trigger/count/full-row/checksum/material mismatch.",
+    "A helper or harness would suppress errors, ignore conflicts, fabricate Account rows, disable constraints, or bypass current migration."
+  ],
+  "remaining_holds": [
+    "Independent replay code review.",
+    "Exact candidate compile and native replay.",
+    "Runtime negative controls.",
+    "Two-test current-migration outcomes and downstream preservation assertions.",
+    "Actual missing Account conversion/backfill and mandatory refresh dependency implementation remain root-owned separate work."
+  ]
+}

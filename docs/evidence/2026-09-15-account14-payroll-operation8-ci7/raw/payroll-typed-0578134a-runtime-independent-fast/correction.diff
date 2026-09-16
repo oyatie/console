@@ -1,0 +1,68 @@
+diff --git a/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml b/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml
+index 21ccbfd9753ec43b60f45162d6c0d6073e249643..3e6814b004b8794eafb2fd01032ba542a46b288b 100644
+--- a/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml
++++ b/backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml
+@@ -3,17 +3,17 @@ summary: Execute an object action (single mutation path)
+ description: >-
+   Re-evaluates the gate chain and dispatches an instance revision or a projected
+   use-case. Humans and automation use this same path. Instance revisions and
+-  their audit records share a transaction. Projected owners commit their effect
++  their audit records share a transaction. Canonical projected owners commit their effect
+   and immutable command receipt before the separate canonical success audit;
+   an audit failure can therefore return 500 after a confirmed owner effect.
+   Completion uncertainty returns 503 with error.code completion_unknown when
+   the owner can report it. A request timeout (408), disconnect, or lost response
+   can also leave completion uncertain without this JSON response. These outcomes
+   do not prove rollback, and receipt absence alone does not prove no effect.
+-  After service recovery, retry with the original command_id, actor, target,
++  For canonical projected actions, after service recovery retry with the original command_id, actor, target,
+   and unchanged business input under current authorization. If a required
+   approval was consumed, obtain a new approval for the same action and target
+-  and update only four_eyes_request_ref. Replaying a confirmed receipt also
++  and update only four_eyes_request_ref. Replaying a confirmed canonical receipt also
+   repairs a missing canonical success audit without repeating the owner effect.
+ tags:
+ - Ontology
+@@ -33,7 +33,7 @@ requestBody:
+         $ref: '#/components/schemas/OntologyActionRequest'
+ responses:
+   '200':
+-    description: Action execution and its success audit completed; projected owner effects and their canonical success audit use separate transactions.
++    description: Action execution completed. Canonical projected owner effects and their canonical success audit use separate transactions; other projected handlers own their audit behavior.
+     content:
+       application/json:
+         schema:
+diff --git a/backend/openapi/openapi.yaml b/backend/openapi/openapi.yaml
+index a8a7ecee91d61b2f8dc5eb3e91e107069e41e552..642351a8253b4b6db100996d38dbc268499c804f 100644
+--- a/backend/openapi/openapi.yaml
++++ b/backend/openapi/openapi.yaml
+@@ -10433,17 +10433,17 @@ paths:
+       description: >-
+         Re-evaluates the gate chain and dispatches an instance revision or a projected
+         use-case. Humans and automation use this same path. Instance revisions and
+-        their audit records share a transaction. Projected owners commit their effect
++        their audit records share a transaction. Canonical projected owners commit their effect
+         and immutable command receipt before the separate canonical success audit;
+         an audit failure can therefore return 500 after a confirmed owner effect.
+         Completion uncertainty returns 503 with error.code completion_unknown when
+         the owner can report it. A request timeout (408), disconnect, or lost response
+         can also leave completion uncertain without this JSON response. These outcomes
+         do not prove rollback, and receipt absence alone does not prove no effect.
+-        After service recovery, retry with the original command_id, actor, target,
++        For canonical projected actions, after service recovery retry with the original command_id, actor, target,
+         and unchanged business input under current authorization. If a required
+         approval was consumed, obtain a new approval for the same action and target
+-        and update only four_eyes_request_ref. Replaying a confirmed receipt also
++        and update only four_eyes_request_ref. Replaying a confirmed canonical receipt also
+         repairs a missing canonical success audit without repeating the owner effect.
+       tags:
+       - Ontology
+@@ -10463,7 +10463,7 @@ paths:
+               $ref: '#/components/schemas/OntologyActionRequest'
+       responses:
+         '200':
+-          description: Action execution and its success audit completed; projected owner effects and their canonical success audit use separate transactions.
++          description: Action execution completed. Canonical projected owner effects and their canonical success audit use separate transactions; other projected handlers own their audit behavior.
+           content:
+             application/json:
+               schema:

@@ -1,0 +1,20 @@
+{
+  "command": [
+    "node",
+    "scripts/check-doc-links.mjs"
+  ],
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "docs/documentation-index.json: docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/PRODUCT.md must have exactly one document record (found 0)\ndocs/documentation-index.json: docs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/ROADMAP.md must have exactly one document record (found 0)\ndocs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/ROADMAP.md:3: missing target: DELIVERY.md\ndocs/evidence/console/design/2026-09-11-payroll-group-candidate-01/authority-candidate/docs/current/ROADMAP.md:57: missing target: DELIVERY.md\n",
+  "initial_sandbox_attempt": {
+    "command": [
+      "node",
+      "scripts/check-doc-links.mjs"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": "docs/documentation-index.json: cannot establish exact Git index-tree custody\n",
+    "scope": "Existing whole-repository checker result; failure does not become product evidence or permission to alter frozen records."
+  },
+  "scope": "Full-repository gate. Runtime permitted to establish Git index-tree custody. No remediation to frozen evidence or authority attempted."
+}

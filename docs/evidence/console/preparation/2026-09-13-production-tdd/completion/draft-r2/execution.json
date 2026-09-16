@@ -1,0 +1,21 @@
+{
+  "parsers": [
+    {
+      "file": "draft-owner-acceptance.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "file": "lifecycle-producer.rs",
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "checker_discovered": 21,
+  "checker_executed": 21,
+  "checker_pass": 21,
+  "rust_compiled": 0,
+  "rust_runtime_discovered": 0,
+  "rust_executed": 0,
+  "owner_test_bodies": 16
+}

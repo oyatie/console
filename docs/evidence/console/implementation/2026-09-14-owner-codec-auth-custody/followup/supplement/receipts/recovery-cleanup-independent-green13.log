@@ -1,0 +1,18 @@
+test_failed_container_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_container_inventory_is_not_successful_absence) ... ok
+test_failed_container_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_container_inventory_partial_output_is_still_unavailable) ... ok
+test_failed_network_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_network_inventory_is_not_successful_absence) ... ok
+test_failed_network_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_network_inventory_partial_output_is_still_unavailable) ... ok
+test_failed_volume_inventory_is_not_successful_absence (__main__.RecoveryCleanupTests.test_failed_volume_inventory_is_not_successful_absence) ... ok
+test_failed_volume_inventory_partial_output_is_still_unavailable (__main__.RecoveryCleanupTests.test_failed_volume_inventory_partial_output_is_still_unavailable) ... ok
+test_remaining_container_refuses_success (__main__.RecoveryCleanupTests.test_remaining_container_refuses_success) ... ok
+test_remaining_network_refuses_success (__main__.RecoveryCleanupTests.test_remaining_network_refuses_success) ... ok
+test_remaining_volume_refuses_success (__main__.RecoveryCleanupTests.test_remaining_volume_refuses_success) ... ok
+test_removal_error_can_reconcile_to_verified_absence (__main__.RecoveryCleanupTests.test_removal_error_can_reconcile_to_verified_absence) ... ok
+test_successful_absence_preserves_original_failure (__main__.RecoveryCleanupTests.test_successful_absence_preserves_original_failure) ... ok
+test_successful_absence_preserves_timeout_classification (__main__.RecoveryCleanupTests.test_successful_absence_preserves_timeout_classification) ... ok
+test_successful_empty_inventory_preserves_success (__main__.RecoveryCleanupTests.test_successful_empty_inventory_preserves_success) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 3.983s
+
+OK

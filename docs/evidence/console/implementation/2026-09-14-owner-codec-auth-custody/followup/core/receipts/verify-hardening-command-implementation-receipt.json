@@ -1,0 +1,42 @@
+{
+  "owner": "/root/finish_browser",
+  "lane": "VERIFY-hardening-command-enrollment",
+  "base_sha": "9c846602511043014a039b77335e762e37032bea",
+  "candidate_sha": "535ac65cd3247aed687c9ab1661bc1b1c5e19fa9",
+  "source_sha256": "26aabc85433ea42f1c46c5f6a7397a5bee3ecd0bb426190ac96443b1c99d9dd3",
+  "change": "One canonical command literal adds auth-launch-callers.test.mjs matchingpackage exactly; no suite removal, predicate or test edit",
+  "same_probe": {
+    "executed": 1,
+    "passed": 1,
+    "skipped": 0
+  },
+  "focused_workflow_suite": {
+    "command": "NODE_PATH=/private/tmp/console-production-tdd-preparation-20260913/node_modules node --test --test-name-pattern='production hardening workflow gates' scripts/check-production-hardening.test.mjs",
+    "executed": 21,
+    "passed": 21,
+    "skipped": 0
+  },
+  "logs": {
+    "/private/tmp/verify-hardening-command-admit.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/verify-hardening-command-green.log": "66ecc0e78a34cd761b528260c82893a1d1846799c19312f4e5c590665a38e6a4",
+    "/private/tmp/verify-hardening-workflow-suite-green.log": "477d445bdf31f3aa92439520af4569b8155bc04298f8a1039996346dd27dea1f"
+  },
+  "independent_review": {
+    "receipt": "/private/tmp/verify-hardening-535ac65c-independent-review.json",
+    "sha256": "5c4ab9947900822e51afc1405f6b58c1c9b72a263ce89a15c056b56f3f9aa181",
+    "decision": "approved",
+    "controls": "8independent actualchecker controls pass:canonical positive+6suite omissions+failopen suffix"
+  },
+  "limits": "Developmentchecker enrollment only; no application/production acceptance",
+  "original_red": {
+    "source": "/private/tmp/auth-caller-production-hardening.log",
+    "preserved_copy": "/private/tmp/verify-hardening-command-original-red.log",
+    "sha256": "5f2e4e4ff342103687ca04d83e2fa5dacbcc09c4c503e1f334d4801c9524dc61",
+    "executed": 256,
+    "passed": 255,
+    "failed": 1,
+    "exact_failure": "accepts active CI, security, and image-release workflow gates at1716; canonical fail-closed command mismatch finding rather than expectedempty[]",
+    "source_lines": "303-338",
+    "attribution": "Root execution; independently inspected raw failure output; no duplicate base rerun"
+  }
+}

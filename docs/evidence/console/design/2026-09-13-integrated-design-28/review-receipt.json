@@ -1,0 +1,69 @@
+{
+  "recorded_at": "2026-09-13T12:07:02.423445+00:00",
+  "recorded_by": "/root",
+  "provenance": "Independent collaboration review final responses; summaries transcribed by root, not cryptographic reviewer signatures",
+  "candidate_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+  "status": "FOUR_INDEPENDENT_INTEGRATED_REVIEWS_ACCEPT",
+  "reviews": [
+    {
+      "round": 1,
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+      "verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "verbatim_verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "summary": "All continuity/owner/native preparation/Group/dispatch/direct-intent findings closed; no remaining design blocker.",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "load_experiments_executed": 0,
+      "verus_proofs_executed": 0,
+      "limitations": "Design review only; not explicit user SHA approval, implementation, future-module approval, production or legal evidence."
+    },
+    {
+      "round": 2,
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+      "verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "verbatim_verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "summary": "W01-W04/F01-F08 integrated consistency accepted; exact30-file custody and static validation passed; all material findings closed.",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "load_experiments_executed": 0,
+      "verus_proofs_executed": 0,
+      "limitations": "Design review only; not explicit user SHA approval, implementation, future-module approval, production or legal evidence."
+    },
+    {
+      "round": 3,
+      "reviewer": "/root/design_round3",
+      "candidate_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+      "verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "verbatim_verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "summary": "Input/readback/scoped disclosure/Group controls/native preparation/reconciliation/publication/manual fallback/direct intent coherent; no remaining integration blocker.",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "load_experiments_executed": 0,
+      "verus_proofs_executed": 0,
+      "limitations": "Design review only; not explicit user SHA approval, implementation, future-module approval, production or legal evidence."
+    },
+    {
+      "round": 4,
+      "reviewer": "/root/design_round4",
+      "candidate_sha": "f8618ba9c31f6b5f87211778317c68dbb1ede220",
+      "verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "verbatim_verdict": "ACCEPT — integrated design review",
+      "summary": "Own four findings closed plus constructive common/native submission and public Group/nested view integration; no remaining bounded-scope design blocker.",
+      "read_only": true,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "load_experiments_executed": 0,
+      "verus_proofs_executed": 0,
+      "limitations": "Design review only; not explicit user SHA approval, implementation, future-module approval, production or legal evidence."
+    }
+  ],
+  "user_design_sha_approval": false,
+  "test_sha_approval": false,
+  "implementation_authorized": false,
+  "material_design_findings_remaining": []
+}

@@ -1,0 +1,34 @@
+{
+  "source_base_sha": "e44e0448abee62ea7d296ffca4ace3b3dbfbdb85",
+  "source_sha256": {
+    "oracle.spec.cjs": "5e8b6ecd0d5f7c7880c94e02603dc84dd3b4470baf1000de0a66c757dc306cc9",
+    "effective-submissions.cjs": "4f0cc37c5777a29f56aeeca1dfdfa06d6331f273cf1b13dcc4348e93c69daa4d",
+    "reflow.cjs": "41e163c302aeb275ea9c6a8a07bad30425b60ed8edc2693472ac9b560e9f805a",
+    "playwright.config.cjs": "d5ead572f631ccbee50d903b455290b6c2338f1c270a1d9aed2ab751e764869b",
+    "acceptance.spec.cjs": "0f2ac583a021b6819495d616bfb35da033c3201b05a91c63f30792615b5c24ff",
+    "fixture-contract.txt": "0746708f27b909ecb7acd1bcb65f8bca51a51a52da872e5b4af9e58af60ec342"
+  },
+  "application": {
+    "discovered": 11,
+    "invoked": 11,
+    "requests_reached": 0,
+    "assertions_reached": 0,
+    "blocked": 11,
+    "reason": "CONSOLE_BROWSER_FIXTURE absent: real owner-produced credential/source/native/review fixture depends on missing owners. Not product RED."
+  },
+  "oracle": {
+    "discovered": 8,
+    "executed": 8,
+    "passed": 8,
+    "scope": "6effective-form-submission controls +2reflow controls, synthetic DOM only"
+  },
+  "browser": "Chromium153.0.8010.12 v1243 via @playwright/test1.63.0",
+  "command": "NODE_PATH=/private/tmp/console-preparation-browser/node_modules PLAYWRIGHT_BROWSERS_PATH=/private/tmp/console-preparation-browsers fnm exec --using=24.16.0 /private/tmp/console-preparation-browser/node_modules/.bin/playwright test --config docs/evidence/console/preparation/2026-09-13-production-tdd/completion/browser/playwright.config.cjs",
+  "log": "../execution-e44e0448/console-preparation-browser-r3-execution.log.gz",
+  "limits": [
+    "JS-enabled SSR is not hydration proof",
+    "No user task observations, WCAG conformance, deployed browser or full information flow claim",
+    "No simulated HTTP owner routes or invented credentials"
+  ],
+  "fixture_contract_note": "Current contract wording supersedes historical9-case count; application11 and oracle8 execution unchanged."
+}

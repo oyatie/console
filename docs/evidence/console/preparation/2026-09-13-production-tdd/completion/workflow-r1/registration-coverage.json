@@ -1,0 +1,131 @@
+{
+  "classification": "FIFTEEN_CONCRETE_ASSERTION_BODIES_NOT_EXECUTED",
+  "entries": [
+    {
+      "key": "governance.execution_gate.request",
+      "source": "workflow-owner-tests.rs",
+      "function": "gate_request_binds_actual_sealed_calculation_without_effect",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "governance.execution_gate.decide",
+      "source": "workflow-owner-tests.rs",
+      "function": "gate_decide_requires_independence_and_never_executes_business",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.release",
+      "source": "workflow-owner-tests.rs",
+      "function": "publication_release_preserves_exact_source_and_is_nonpayable",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.replace_projection",
+      "source": "workflow-owner-tests.rs",
+      "function": "publication_replace_preserves_history_and_rejects_stale_slot",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.request",
+      "source": "workflow-owner-tests.rs",
+      "function": "case_request_retains_real_content_and_actual_accountable_task",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.request_append",
+      "source": "workflow-owner-tests.rs",
+      "function": "case_append_preserves_prior_items_and_refuses_stale_revision",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.request_withdraw",
+      "source": "workflow-owner-tests.rs",
+      "function": "case_withdraw_retains_immutable_content_and_replays_once",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "payroll.review.respond",
+      "source": "workflow-owner-tests.rs",
+      "function": "case_respond_requires_complete_items_then_resolves_with_real_receipt",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "work.transfer.submit",
+      "source": "workflow-owner-tests.rs",
+      "function": "transfer_submit_retains_task_and_selection_without_assigning",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "work.transfer.execute",
+      "source": "workflow-owner-tests.rs",
+      "function": "transfer_execute_changes_one_assignment_and_charge_once",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "work.transfer.stop",
+      "source": "workflow-owner-tests.rs",
+      "function": "transfer_stop_fences_later_execution_and_keeps_assignment",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.create",
+      "source": "workflow-owner-tests.rs",
+      "function": "group_create_freezes_six_actual_companies_without_calculation",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.activate",
+      "source": "workflow-owner-tests.rs",
+      "function": "group_activate_requires_all_prepared_original_attempts",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.resume",
+      "source": "workflow-owner-tests.rs",
+      "function": "group_resume_preserves_manifest_and_original_pending_commands",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    },
+    {
+      "key": "group.operation.stop",
+      "source": "workflow-owner-tests.rs",
+      "function": "group_stop_blocks_prepared_child_without_cross_company_effect",
+      "status": "AUTHORED_OWNER_TEST_BODY",
+      "compiled": false,
+      "executed": 0
+    }
+  ],
+  "not_claimed": [
+    "Complete55registration acceptance",
+    "All design proof-case variants per registration",
+    "Fault/concurrency/live projection closure",
+    "Runtime fixture completion before native dependencies independently reviewed"
+  ]
+}

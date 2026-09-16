@@ -1,0 +1,42 @@
+{
+  "history": [
+    {
+      "candidate_sha": "27341e0481524955fdb15ee8978b2a0474e51450",
+      "status": "STATIC_CHECK_FAILED",
+      "finding": "Independent schema traversal ROOT marker None differed from census ROOT at15 top-level refs; site count345 unchanged."
+    },
+    {
+      "candidate_sha": "50d089ddda63f2d38d85f297e822be20c702eef9",
+      "status": "STATIC_CENSUS_PASS_DIFF_CHECK_FAILED",
+      "finding": "47 CSV lines CRLF reported as trailing whitespace; normalized line endings only."
+    },
+    {
+      "candidate_sha": "796036ae497e897f389856ea4f278e5120c5c223",
+      "status": "CHANGES_REQUIRED",
+      "reviews": [
+        {
+          "reviewer": "/root/continuity_review",
+          "verdict": "SCOPED_ACCEPT"
+        },
+        {
+          "reviewer": "/root/payroll_contract_review",
+          "verdict": "CHANGES_REQUIRED"
+        }
+      ],
+      "findings": [
+        "TAX_TABLE overlay must exclude downstream employee assessment and selected employee cells",
+        "Calendar dependency template must include next boundary plan and selector evidence for overlap checks"
+      ],
+      "resolution": "Four files corrected at final reviewed SHA; both reviewers re-review exact corrected candidate"
+    },
+    {
+      "candidate_sha": "b2cc299fdd8253675cb397f08c2e289e7e4d09df",
+      "status": "SCOPED_ACCEPT",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review"
+      ],
+      "counts_as_integrated_round": false
+    }
+  ]
+}

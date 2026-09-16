@@ -30,6 +30,9 @@ use console_platform_auth::{
     PasskeyRegistrationStart, PasskeyService, RefreshTokenStore, WebauthnSettings,
 };
 use console_platform_provisioning::{BootstrapCredentialStore, ProvisioningError};
+use console_platform_test_support::{
+    TestDatabaseLogin, login_test_pool, prepare_account_test_database,
+};
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use time::{Duration, OffsetDateTime};
@@ -220,9 +223,11 @@ async fn handoff_is_scoped_to_the_issuing_user_only(owner_pool: PgPool) {
 // (2) HANDOFF → ENROLL → SINGLE-USE: a handoff redeems, the user enrolls a
 // passkey (which consumes the code), and a SECOND redeem of the same code fails.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handoff_redeems_then_enroll_consumes_it_single_use(owner_pool: PgPool) {
+    prepare_account_test_database(&owner_pool).await;
     let rt_pool = runtime_role_pool(&owner_pool).await;
+    let auth_pool = login_test_pool(&owner_pool, TestDatabaseLogin::Auth).await;
     let knl = OrgId::knl();
     let user_id = seed_org_and_user(&owner_pool, *knl.as_uuid(), "KNL").await;
 
@@ -253,6 +258,7 @@ async fn handoff_redeems_then_enroll_consumes_it_single_use(owner_pool: PgPool) 
     RefreshTokenStore
         .issue_family(
             &rt_pool,
+            &auth_pool,
             user_id,
             knl,
             OffsetDateTime::now_utc(),

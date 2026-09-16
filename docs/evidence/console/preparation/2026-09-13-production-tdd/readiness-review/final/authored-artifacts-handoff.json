@@ -1,0 +1,73 @@
+{
+  "schema_version": "console-authored-preservation-usability-handoff-v1",
+  "status": "AUTHORING_COMPLETE_INDEPENDENT_CONSOLIDATED_REVIEW_PENDING",
+  "base_sha": "0f89f248812cbebd4e9be0997da7ed7812119ab6",
+  "author": "/root/fresh29_workflows",
+  "repository_writer": "/root",
+  "independent_reviewer": null,
+  "premortem": "A family map is mistaken for leaf parity or proposed tasks for executed usability, silently expanding implementation or clearing exposure HOLDs.",
+  "blast_radius": "Scratch review artifacts only; no product code, tests, authority or shared generated files edited.",
+  "detection": "Explicit authored-only statuses, zero observation/test counts, family/leaf distinction, exact current-authority and approved-design bindings; structural source checks recorded.",
+  "rollback": "Do not adopt these scratch artifacts; retain source evidence and existing authority unchanged.",
+  "stop_conditions": [
+    "Artifact contradicts current authority or approved design",
+    "A task requires unapproved capability or owner semantics",
+    "A claimed observation lacks real participant and owner evidence",
+    "A preservation recommendation implies second writer or different tenancy"
+  ],
+  "remaining_holds": [
+    "Complete versioned Foundry leaf inventory and acceptance evidence",
+    "Independent consolidated review of authored artifacts",
+    "Actual first-slice browser and representative-user acceptance",
+    "Exact approved test SHA and named boundary RED admission for implementation",
+    "Later capability design/tests/implementation admission",
+    "Separate production/payment/provider/legal authority"
+  ],
+  "files": [
+    {
+      "path": "capability-family-preservation-ledger.json",
+      "bytes": 45979,
+      "sha256": "131e8cba74fffacbe9625a9afc9cfb00c4cb51e61c6df3e505b5d32f7788a9e5"
+    },
+    {
+      "path": "capability-family-preservation-ledger.md",
+      "bytes": 27682,
+      "sha256": "17e04dbe054245275b21c7410d642dc3d2e7a1c357a73c1580f8eccdeeab1706"
+    },
+    {
+      "path": "capability-family-preservation-ledger.csv",
+      "bytes": 24463,
+      "sha256": "7cda634492495c6f0fd7b00ce724fd139f25cf2132b31a08fcbebbd889c59729"
+    },
+    {
+      "path": "native-nonpayable-usability-protocol.json",
+      "bytes": 40158,
+      "sha256": "90bb0dbeb46ead7d116a0c44b873451eec6539dce54c4c8d6978bbbde406a640"
+    },
+    {
+      "path": "native-nonpayable-usability-protocol.md",
+      "bytes": 30850,
+      "sha256": "20fea86c5594665b4521c25751e2bf1ef3e8acffbb57903b0e3b1a52886ff494"
+    },
+    {
+      "path": "usability-observation-template.json",
+      "bytes": 732,
+      "sha256": "5cab8ea9e433647e04a58f52e887585429aed8ee736f0be356c12ff9d13797b0"
+    },
+    {
+      "path": "authored-source-custody.json",
+      "bytes": 2558,
+      "sha256": "d5748121ff098928046262cb2b788cb689497b05a2be3faeef54050ef5106258"
+    },
+    {
+      "path": "authored-artifact-check.json",
+      "bytes": 816,
+      "sha256": "c63d907babf92914fa2fc89c110607964e006aab9bb6c058607032f90a6f218c"
+    },
+    {
+      "path": "render-authored-artifacts.py",
+      "bytes": 8872,
+      "sha256": "74bed765dfa8a39fea5edf716c7b6e691b1273749b190cf8ba5994d7fd395e1f"
+    }
+  ]
+}

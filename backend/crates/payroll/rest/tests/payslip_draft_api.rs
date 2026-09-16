@@ -106,7 +106,12 @@ fn bearer(keys: &Keys, user_id: UserId, org: OrgId, role: &str) -> String {
         .unwrap()
 }
 
-fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+async fn app(pool: PgPool, keys: &Keys) -> axum::Router {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let verifier = JwtVerifier::from_es256_public_pem(
         JwtSettings {
             issuer: TEST_ISSUER.to_owned(),
@@ -118,7 +123,10 @@ fn app(pool: PgPool, keys: &Keys) -> axum::Router {
     .unwrap();
     router(PayrollRestState::new(
         PgPayrollStore::new(pool),
-        Some(verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database.clone(),
+        )),
     ))
 }
 
@@ -338,10 +346,11 @@ fn assert_no_compensation_payload(body: &Value, employee_name: &str) {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn golden_case_gc_2026_07_kr_monthly_a_over_http_matches_the_hand_calculation(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let pool = runtime_role_pool(&owner_pool).await;
     let keys = keys();
     let org = OrgId::knl();
@@ -357,7 +366,7 @@ async fn golden_case_gc_2026_07_kr_monthly_a_over_http_matches_the_hand_calculat
     // 근로계약: 월 기본급 3,000,000원, 월 소정근로시간 209h, 시행 2025-03-02.
     // Written over HTTP, so the whole vertical is reachable by a user.
     let created = post(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
         &token,
         json!({
@@ -372,7 +381,7 @@ async fn golden_case_gc_2026_07_kr_monthly_a_over_http_matches_the_hand_calculat
     assert_eq!(created.status, StatusCode::CREATED, "{}", created.json);
 
     let response = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -490,8 +499,9 @@ async fn golden_case_gc_2026_07_kr_monthly_a_over_http_matches_the_hand_calculat
     }));
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn withholding_is_explicitly_deferred_and_never_a_silent_zero(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let pool = runtime_role_pool(&owner_pool).await;
     let keys = keys();
     let org = OrgId::knl();
@@ -503,7 +513,7 @@ async fn withholding_is_explicitly_deferred_and_never_a_silent_zero(owner_pool: 
     let token = bearer(&keys, actor, org, "EXECUTIVE");
 
     post(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
         &token,
         json!({
@@ -516,7 +526,7 @@ async fn withholding_is_explicitly_deferred_and_never_a_silent_zero(owner_pool: 
     .await;
 
     let body = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -741,8 +751,9 @@ async fn seeded_statutory_rate_register_agrees_with_the_kernel_it_cites(owner_po
     assert_eq!(component.employee_won, Some(14_170));
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let pool = runtime_role_pool(&owner_pool).await;
     let keys = keys();
     let org = OrgId::knl();
@@ -754,7 +765,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     seed_user(&owner_pool, member, *org.as_uuid(), "MEMBER").await;
     let member_token = bearer(&keys, member, org, "MEMBER");
     let denied = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07"),
         &member_token,
     )
@@ -770,7 +781,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     // Same 403 for a UUID that does not exist — MEMBER must not get a 404
     // that would distinguish "coworker" from "never heard of".
     let denied_missing = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{}/payslip-draft?period=2026-07",
             Uuid::new_v4()
@@ -790,7 +801,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     seed_user(&owner_pool, executive, *org.as_uuid(), "EXECUTIVE").await;
     let token = bearer(&keys, executive, org, "EXECUTIVE");
     let body = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07"),
         &token,
     )
@@ -813,7 +824,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     // A future-dated contract stays invisible until its own effective date —
     // which is why history is stored rather than overwritten.
     post(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
         &token,
         json!({
@@ -825,7 +836,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     )
     .await;
     let body = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -838,7 +849,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     // An in-force wage is still not issuable: withholding is named, never a
     // silent zero, and never client-side tax math.
     let created = post(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
         &token,
         json!({
@@ -851,7 +862,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     .await;
     assert_eq!(created.status, StatusCode::CREATED, "{}", created.json);
     let body = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -883,7 +894,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
 
     // MEMBER still 403 once figures exist — the 403 body must not leak them.
     let denied_after_wage = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -927,7 +938,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     .unwrap();
     let foreign = seed_employee(&owner_pool, other_org, "박타사").await;
     let foreign_draft = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{foreign}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -936,7 +947,7 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
     .await;
     let missing_id = Uuid::new_v4();
     let missing_draft = get(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!(
             "/api/v1/payroll/employees/{missing_id}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),
@@ -973,10 +984,11 @@ async fn draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage(owner_p
 /// Before this, an employee with ZERO attendance records for the period got a
 /// byte-identical full-month draft with nothing naming the absence. The draft
 /// is not allowed to look complete on data it never read.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_period_with_no_attendance_records_blocks_instead_of_paying_a_full_month(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let pool = runtime_role_pool(&owner_pool).await;
     let keys = keys();
     let org = OrgId::knl();
@@ -993,7 +1005,7 @@ async fn a_period_with_no_attendance_records_blocks_instead_of_paying_a_full_mon
 
     for employee in [worked, absent] {
         let created = post(
-            app(pool.clone(), &keys),
+            app(pool.clone(), &keys).await,
             &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
             &token,
             json!({
@@ -1013,7 +1025,7 @@ async fn a_period_with_no_attendance_records_blocks_instead_of_paying_a_full_mon
         let token = token.clone();
         async move {
             get(
-                app(pool, keys),
+                app(pool, keys).await,
                 &format!(
                     "/api/v1/payroll/employees/{employee}/payslip-draft\
                      ?period=2026-07&pay_date=2026-08-10"
@@ -1080,10 +1092,11 @@ async fn a_period_with_no_attendance_records_blocks_instead_of_paying_a_full_mon
 /// `worked_days > 0` and `clock_in == clock_out`. The draft came back as a full
 /// month with no attendance blocker at all, while its own earnings line reads
 /// 완전출근 기준. Half a month of records is not evidence of a full month.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn a_partial_but_balanced_timesheet_blocks_although_every_punch_is_paired(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let pool = runtime_role_pool(&owner_pool).await;
     let keys = keys();
     let org = OrgId::knl();
@@ -1108,7 +1121,7 @@ async fn a_partial_but_balanced_timesheet_blocks_although_every_punch_is_paired(
 
     for employee in [full, half] {
         let created = post(
-            app(pool.clone(), &keys),
+            app(pool.clone(), &keys).await,
             &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
             &token,
             json!({
@@ -1128,7 +1141,7 @@ async fn a_partial_but_balanced_timesheet_blocks_although_every_punch_is_paired(
         let token = token.clone();
         async move {
             get(
-                app(pool, keys),
+                app(pool, keys).await,
                 &format!(
                     "/api/v1/payroll/employees/{employee}/payslip-draft\
                      ?period=2026-07&pay_date=2026-08-10"
@@ -1238,8 +1251,9 @@ async fn a_rate_row_backdated_before_its_own_instrument_is_rejected(owner_pool: 
 /// HTTP payslip GET. Fixture `INSERT INTO employees` is not this path: the
 /// employee id is the appointed person (`person_id = employee_id`). Does not
 /// re-assert GC-2026-07 won arithmetic — that lives in the golden above.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn empty_tenant_payslip_draft_sits_on_canonical_org_tree(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let tree = provision_empty_tenant_appointed_employee(&owner_pool).await;
     let pool = runtime_role_pool(&owner_pool).await;
     let keys = keys();
@@ -1247,7 +1261,7 @@ async fn empty_tenant_payslip_draft_sits_on_canonical_org_tree(owner_pool: PgPoo
     let employee = tree.employee_id;
 
     let created = post(
-        app(pool.clone(), &keys),
+        app(pool.clone(), &keys).await,
         &format!("/api/v1/payroll/employees/{employee}/contract-wages"),
         &token,
         json!({
@@ -1262,7 +1276,7 @@ async fn empty_tenant_payslip_draft_sits_on_canonical_org_tree(owner_pool: PgPoo
     assert_eq!(created.status, StatusCode::CREATED, "{}", created.json);
 
     let response = get(
-        app(pool, &keys),
+        app(pool, &keys).await,
         &format!(
             "/api/v1/payroll/employees/{employee}/payslip-draft?period=2026-07&pay_date=2026-08-10"
         ),

@@ -37,12 +37,16 @@ struct JsonResponse {
     json: Value,
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn delegated_finalize_endpoint_requires_reason_and_authorization(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_finalize_waiting_task(&pool).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let super_admin = UserId::new();
     seed_user(&pool, super_admin, "SUPER_ADMIN", fixture.branch_id).await;
@@ -185,12 +189,16 @@ async fn delegated_finalize_endpoint_requires_reason_and_authorization(pool: PgP
     assert_eq!(shadow_after["resourceType"], "approval_document");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn finalization_with_receipt_step_keeps_run_waiting_and_opens_receipt_task(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_finalize_waiting_task_with_receipt(&pool).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let author = UserId::new();
     seed_user(&pool, author, "ADMIN", fixture.branch_id).await;
@@ -261,12 +269,16 @@ async fn finalization_with_receipt_step_keeps_run_waiting_and_opens_receipt_task
     );
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn post_finalization_rejection_creates_compensation_without_reopening_run(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_finalize_waiting_task(&pool).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
 
     let reviewer = UserId::new();
     let approver = UserId::new();
@@ -422,8 +434,9 @@ async fn post_finalization_rejection_creates_compensation_without_reopening_run(
 // Security L6: an idempotency_key already used to compensate one run must 409
 // when re-presented against a DIFFERENT run (cross-run reuse), never silently
 // replay the stored compensation.
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn post_finalization_idempotency_key_cannot_cross_runs(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let branch = seed_branch(&pool).await;
     let actor = UserId::new();
@@ -431,8 +444,11 @@ async fn post_finalization_idempotency_key_cannot_cross_runs(pool: PgPool) {
     let definition_id = seed_definition_with_receipt(&pool, false).await;
     let run_a = seed_succeeded_run(&pool, definition_id, actor).await;
     let run_b = seed_succeeded_run(&pool, definition_id, actor).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = issue_token(
         keys.private_pem.as_bytes(),
         keys.public_pem.as_bytes(),
@@ -485,12 +501,16 @@ async fn seed_succeeded_run(pool: &PgPool, definition_id: Uuid, initiated_by: Us
     run_id
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn author_finalize_replays_same_idempotency_key_as_200(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_finalize_waiting_task(&pool).await;
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     // The fixture run's initiator is the seeded author; author-mode finalize is owner-checked.
     let token = issue_token(
         keys.private_pem.as_bytes(),
@@ -525,8 +545,9 @@ async fn author_finalize_replays_same_idempotency_key_as_200(pool: PgPool) {
     assert_eq!(finalize_audits, 1);
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn finalize_conflicts_when_task_claimed_by_another_user(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = keys();
     let fixture = seed_finalize_waiting_task(&pool).await;
 
@@ -543,8 +564,11 @@ async fn finalize_conflicts_when_task_claimed_by_another_user(pool: PgPool) {
     .await
     .unwrap();
 
-    let service =
-        build_router(app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).unwrap());
+    let service = build_router(
+        app_state(runtime_role_pool(&pool).await, keys.public_pem.clone())
+            .await
+            .unwrap(),
+    );
     let token = issue_token(
         keys.private_pem.as_bytes(),
         keys.public_pem.as_bytes(),
@@ -876,8 +900,20 @@ async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -886,4 +922,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
     ])?;
 
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

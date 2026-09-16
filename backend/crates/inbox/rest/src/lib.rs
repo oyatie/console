@@ -23,7 +23,7 @@ use console_inbox_application::{
     ConfirmReceiptCommand, GetInboxDocQuery, InboxDocFilter, ListInboxDocsQuery,
 };
 use console_kernel_core::{ErrorKind, InboxDocId, KernelError, TraceContext};
-use console_platform_auth::{JwtVerifier, PasskeyAuthenticationCredential, PasskeyService};
+use console_platform_auth::{PasskeyAuthenticationCredential, PasskeyService, SessionVerification};
 use console_platform_authz::Principal;
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
@@ -42,14 +42,17 @@ pub const INBOX_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct InboxRestState {
     store: PgInboxStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
 }
 
 impl std::fmt::Debug for InboxRestState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("InboxRestState")
-            .field("has_jwt_verifier", &self.jwt_verifier.is_some())
+            .field(
+                "has_session_verification",
+                &self.session_verification.is_some(),
+            )
             .field("has_passkey_step_up", &self.passkey_step_up.is_some())
             .finish()
     }
@@ -57,10 +60,10 @@ impl std::fmt::Debug for InboxRestState {
 
 impl InboxRestState {
     #[must_use]
-    pub fn new(store: PgInboxStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgInboxStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
         }
     }
@@ -73,7 +76,7 @@ impl InboxRestState {
 }
 
 pub fn router(state: InboxRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(ME_INBOX_DOCS_PATH, get(list_inbox_docs))
@@ -181,7 +184,11 @@ async fn verify_step_up(
     })?;
     verifier
         .verify_step_up_for_user(
-            state.store.pool(),
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| RestError::unavailable("authentication storage unavailable"))?
+                .auth_pool(),
             step_up.ceremony_id,
             step_up.credential,
             *principal.user_id.as_uuid(),
@@ -277,7 +284,7 @@ async fn principal_from_headers(
     state: &InboxRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for the inbox API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -287,6 +294,9 @@ async fn principal_from_headers(
 
 fn rest_error_from_request_context(err: RequestContextError) -> RestError {
     match err {
+        RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for the inbox API")
         }
@@ -304,7 +314,9 @@ fn rest_error_from_request_context(err: RequestContextError) -> RestError {
         RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        RequestContextError::InvalidToken => RestError::unauthorized("invalid bearer token"),
+        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => {
+            RestError::unauthorized("invalid bearer token")
+        }
         RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }

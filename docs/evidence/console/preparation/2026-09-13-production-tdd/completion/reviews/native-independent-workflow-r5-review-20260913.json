@@ -1,0 +1,82 @@
+{
+  "reviewer": "/root/fresh29_workflows",
+  "author": "/root/preparation_recovery",
+  "packet": "/private/tmp/console-workflow15-owner-assertions-r5-20260913",
+  "manifest_sha256": "a43c3366e238ad10b42fee30ffff746dde511b590324a31298f5485ad42c54bc",
+  "status": "NO_BLOCKING_SOURCE_FINDINGS_AFTER_R3_TO_R5_CORRECTIONS",
+  "findings_resolved": [
+    "Same-Company negative publication now allocates actual NEW intent before binding just like positive control",
+    "Final publication and capacity owner results now require specific reason classification"
+  ],
+  "evidence": [
+    "Real A+C supported-source fixture prerequisite pinned separately to native S2; both actual current-profile signed Docs evidence refs now preserved",
+    "Company object/schema correlated field grants and same-authority first-target positive release",
+    "Actual two accountable work tasks consume capacity; refusal preserves exact assignment/charge snapshot",
+    "Real Company receipt ACCESS EXCLUSIVE barrier and pg_blocking_pids witness establish unavailable lookup; no manufactured UNKNOWN",
+    "Group stop uses own receipt namespace; resolves earlier Company effect after barrier release",
+    "Same-Human alias has actual Group resume grant and distinct original Account identity"
+  ],
+  "hashes_verified": 15,
+  "parser_checks": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-fixture.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-obligation-tests.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-owner-tests.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-workflow15-owner-assertions-r5-20260913/workflow-race-projection-tests.rs"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "compiled": false,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "limitations": [
+    "Owner APIs remain proposed production implementations",
+    "Reason taxonomy/current policy must be wired exactly during compile/runtime integration",
+    "Native protected retention/source gaps are separate and not closed by Workflow15"
+  ]
+}

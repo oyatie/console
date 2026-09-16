@@ -1,0 +1,161 @@
+{
+  "kind": "INDEPENDENT_FROZEN_ACCOUNT_TOKEN_CRYPTO_IMPLEMENTATION_SOURCE_REVIEW",
+  "reviewer": "/root/capture_review",
+  "author": "/root/fast_gate_review",
+  "root_writer_and_runtime_operator": "/root",
+  "base_sha": "b2c52e27c719237590205d7441ba708a52d66265",
+  "verified_intervening_evidence_only_head": "ffabda81729fa22ad5fa581ae18d3417b77c6929",
+  "candidate_manifest": "/private/tmp/account-token-crypto-implementation-b2c52e27/manifest.json",
+  "candidate_manifest_sha256": "8b869b6fad5b138b458f114cb23107855a83839b5e9aaf4c5f2e8a5e5758cfa8",
+  "patch_sha256": "1aaafb255240024ebd172f6c7901f9fa3d0ea0fcda5b58e8cc9d0fe9a59c81b5",
+  "guide_sha256": "8bad4b1bfc81af40a6b680ec5c1f96d5115962cd93f41f9d3ad2a5c52452d1b5",
+  "api_sha256": "8727208acdfee7e100994f7f12870655423842ff619c5503774bc1b767317ac3",
+  "tests_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+  "verdict": "APPROVE_EXACT_SOURCE_CANDIDATE_FOR_ROOT_INTEGRATION_AND_RUNTIME_PROOF",
+  "findings": [],
+  "checks": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "--whitespace=error-all",
+        "/private/tmp/account-token-crypto-implementation-b2c52e27/implementation.patch"
+      ],
+      "cwd": "private immutable exact-base copy",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/account-token-crypto-implementation-b2c52e27/implementation.patch"
+      ],
+      "cwd": "private immutable exact-base copy",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--check",
+        "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/jwt.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--check",
+        "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/lib.rs"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--check",
+        "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/jwt/account.rs"
+      ],
+      "exit": 0
+    }
+  ],
+  "postimages": [
+    {
+      "path": "backend/crates/platform/auth/src/jwt.rs",
+      "preimage_sha256": "732de0b16d4b1f765ebb73137147595b3e5931365ec3c9bef28431ce6ec28c3e",
+      "postimage_sha256": "2062377f372daf61789dd345f7b634d7352bb72293f322078efbe047a2d9a87f",
+      "postimage_bytes": 21413,
+      "postimage": "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/jwt.rs"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/lib.rs",
+      "preimage_sha256": "aa9a5f848d3045bb400591bdc6459ddf0e3752018e592b04a2bbfd9e3c9fa3f6",
+      "postimage_sha256": "523365a70e8fe2a4b1b2228895b9c76f71f78936e058c563d3e3ebd10e7f0d0c",
+      "postimage_bytes": 1405,
+      "postimage": "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/lib.rs"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/jwt/account.rs",
+      "preimage_sha256": null,
+      "postimage_sha256": "55e871a3cd6bab34bdc957f522b5e1d2f58edb09bffb1af0e906f7dcb67aa841",
+      "postimage_bytes": 12568,
+      "postimage": "/private/tmp/account-token-crypto-implementation-b2c52e27/postimages/backend/crates/platform/auth/src/jwt/account.rs"
+    }
+  ],
+  "dependency_source_sha256": {
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jsonwebtoken-10.4.0/src/decoding.rs": "358eec3256f460b4e07551ad7b473dfc37a9e33cac69da98fc90ab10c91c719c",
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jsonwebtoken-10.4.0/src/validation.rs": "e65a6e24129f5b4afb4ade510ea2eee70d569cd0d2c9e9d90f337611b2951777"
+  },
+  "preservation": {
+    "all_preimage_postimage_and_artifact_hashes_verified": true,
+    "intervening_commit_paths_only_docs": true,
+    "api_and_test_hashes_match_admitted_base_and_roothead": true,
+    "jwt_original_source_restored_by_removing_only_module_export_insertion": true,
+    "legacy_suffix_sha256": "dead958c52883c66447fbdc6cd787d962673043774116dbfe40a0451aafd097f",
+    "lib_original_restored_by_export_list_reversal": true,
+    "patch_changes_exact3_allowed_paths_and_recreates_postimages": true,
+    "test_dependency_lockfile_db_or_http_edits": 0
+  },
+  "contract_review": {
+    "owner": "Nested jwt/account.rs reuses existing JwtIssuer/JwtVerifier key and settings fields. Exports only frozen Account inputs/claims/outcome/assurance/token wrapper; no duplicate crypto owner or service.",
+    "signed_typed_parse": "jsonwebtoken::decode<T> receives AccountAccessClaims or AccountCsrfClaims directly. Both deny_unknown_fields, all fields required, no flatten/Value roundtrip or insecure decode. Derived duplicate guards remain active for every required field including identical repetitions.",
+    "wire_grammar": "Access exact12 fields and CSRF exact9. String canonical UUID parser rejects nil, uppercase/compact/braced/noncanonical forms without unnecessary version restriction. Generation requires canonical positive decimal STRING bounded by i64; numeric/zero/sign/leadingzero/overflow rejected. Assurance explicitly deserializes String then requires PASSKEY_PRIMARY, avoiding unit-enum object acceptance.",
+    "crypto_protocol": "Validation::new(ES256) preserves enabled signature and audience validation. Configured issuer exact/nonempty and distinct hardcoded audiences/kinds. Typed String issuer/audience rejects array alternatives. Pinned dependency verifies signature before signed typed parsing and standard issuer/audience validation.",
+    "expiry_order": "Both methods decode all cryptographic/closed-schema/identity/generation claims first, then exact kind and access auth_time, then every causal/nonnegative/non-expiry time rule. Only afterward access exp>trusted now is Current, exp<=now is Expired; valid expired proof yields fixed ExpiredSignature. Invalid expired inputs cannot reach an expiry success/fallback variant.",
+    "trusted_time": "validate_exp=false and validate_nbf=false plus leeway0 disable dependency internal wall-clock branch; pinned validation source confirms it calls wall clock only if either flag enabled. Local validation exclusively uses explicit trusted now; requires iat/nbf/exp>=0,iat/nbf<=now,exp>iat,nbf<=exp,checked span<=900/300 and access0<=auth_time<=iat.",
+    "issuance_arithmetic": "Access configured TTL must be positive; CSRF uses fixed300seconds. Nonnegative issuance, nonnil identity, positive generation, family ceiling after issuance required. lifetime=min(configuredTTL,protocolmax,familyremaining) precedes checked datetime addition, so large TTL and near-maximum date with short valid ceiling cannot overflow prematurely. Truncated wire timestamps must still give exp>iat. nbf=iat; access fresh UUIDv4 jti.",
+    "fixed_errors": "Every library decode error discarded into fixed AuthError::Jwt(InvalidToken). Token-derived local failures use same fixed error. Otherwise valid expired proof alone uses fixed ExpiredSignature. Trusted config/issuance/sign failures use static InvalidStoredData messages; raw serde/JWT/SQL/input diagnostics never retained or formatted by these new APIs.",
+    "debug": "SignedAccountToken private String has explicit as_str only, no Serialize/Display, fixed redacted Debug. Claim Debug methods write constant redacted names. Outcome derived Debug contains variant plus redacted claims only; input/assurance structs do not expose automatic input Debug. No tracing/printing of credentials or claims in module.",
+    "authority_limit": "Current and Expired remain cryptographic data. Caller must independently recheck ACTIVE/current generation/family protocol ownership/revocation/absolute lifetime and matching proof before expired-access fallback. No DB/session/Principal construction or primary-authentication proof inferred."
+  },
+  "runtime_status": {
+    "reviewer_cargo_runs": 0,
+    "reviewer_discovered": 0,
+    "reviewer_executed": 0,
+    "initial_missing_owner": "Root-recorded27 E0432/E0599 compiler errors/exit101 at b2 with0runtime; not15behavioral failures. Root reports formal admitted owner lane.",
+    "next": "Root applies exact candidate, serializes required BUCK source ownership, executes unchanged selected15 then complete jwt_es25629 + jwt_verifier7; exact counts/exits and lint before closure. This static approval is not GREEN."
+  },
+  "pre_mortem": "Expired path skips semantic/signature checks; serde unit enums admit wrong wire shape; duplicate collapse or diagnostics leak hostile claims; addition before family clamp overflows; cryptographic claims mistaken for live authority.",
+  "blast_radius": "Pure cryptography under existing platform/auth owners, one new module and narrow reexports. Root alone owns BUCK. No session/Account state or production activation.",
+  "detection": "Exact candidate/API/test hashes, preserved legacy bytes, pinned dependency signature/time ordering, fixed errors and opaque Debug source; root next unchanged15 and29+7 runtime acceptance.",
+  "rollback": "Root-reviewed source-only correction/revert preserving tests, legacy guard and historical evidence. No key/database/session rollback.",
+  "stop_conditions": [
+    "API/test/source preimage hash mismatch",
+    "Unrelated source/dependency/schema changes",
+    "Fake owner or weakened/skipped test",
+    "Credential material in artifacts/errors",
+    "Failed independent source review or runtime/lint"
+  ],
+  "remaining_holds": [
+    "Root exact source/BUCK integration and15/29+7runtime/lint",
+    "Independent immutable integrated-source and completed-runtime review",
+    "Live Account/family/primary/browser/CSRF authority checks",
+    "Production activation, rotation/cutover, payment and legal authority"
+  ],
+  "reviewer_execution": {
+    "cargo": 0,
+    "database": 0,
+    "docker": 0,
+    "integration_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "base_sha": "e44e0448abee62ea7d296ffca4ace3b3dbfbdb85",
+  "patch_sha256": "c78b7f10f064eed3b3d078549e45bd5d04341549fd5b05468fc48d1d06b5d765",
+  "paths": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "276a82657c867b916690c108c084e35ac4c21b9537ad4b19550f3ad7f4dcd6ea"
+    },
+    {
+      "path": "backend/app/BUCK",
+      "sha256": "0d5ad0e1a321044dff10dfd868a7fc8d85fd0d93872cae0a58e42e605fbf0d95"
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/BUCK",
+      "sha256": "bf2c9b9b19de6226140065bc8cc1593f0c6c3fcc8f5e57a1d1f1809ba69a271b"
+    },
+    {
+      "path": "backend/crates/platform/authz/BUCK",
+      "sha256": "35ee0b821665f584bd3e4fb90ca1b267b2c7974b6bb2583f23a22832063ad2fd"
+    },
+    {
+      "path": "docs/program/executed-tests-baseline.json",
+      "sha256": "6021431b9ac63511236ff28ce242502e15e6964848bf3fe3daad9c3f81b55633"
+    },
+    {
+      "path": "scripts/check-ci-preflight.mjs",
+      "sha256": "63890aa2211c35eee5823c76c555f6920efa2deeec3ee8fcb48319de0663b354"
+    },
+    {
+      "path": "scripts/check-ci-preflight.test.mjs",
+      "sha256": "9f8d0a273bb13dfe82809bc8dce93cf9d071a9affaf2f1fdec9e17a71a28637a"
+    },
+    {
+      "path": "scripts/check-executed-tests.mjs",
+      "sha256": "9e86ca2580f28621e169cf61747304a4cd75b66a491556ab07891352f7ac093d"
+    },
+    {
+      "path": "scripts/console/run-verification-queue.mjs",
+      "sha256": "949e0ebe4c54e1f5c5f95fede1e1f13d6f358baaccb14d16d97e68a5a337946d"
+    },
+    {
+      "path": "scripts/console/run-verification-queue.test.mjs",
+      "sha256": "f5c9125b6a36dd6cf3a0b7b755481091facc31a8da09e2cd8e595b011ce686ce"
+    },
+    {
+      "path": "scripts/lib/recovery-test-invocations.mjs",
+      "sha256": "f9441064f5e59df140a17ffd87aaff7ec4892ad30013e17c5dcb8d4583ccc9ce"
+    },
+    {
+      "path": "scripts/lib/recovery-test-invocations.test.mjs",
+      "sha256": "a544f4386a764d5cdb94f20abb4a62de19d70cc4c42980fdc0d46fba2d52fc86"
+    },
+    {
+      "path": "tools/buck/BUCK",
+      "sha256": "a0c4d5359e597c14a1f2b3ba426b75c0a60d9f9b1706c29844fc3c42932a9c6c"
+    },
+    {
+      "path": "tools/buck/gen_first_party.py",
+      "sha256": "6f9cfc2ba009bad5cc9546df688fcf7240e81f48f9171500e369444f5d48e16a"
+    },
+    {
+      "path": "tools/buck/test_gen_first_party.py",
+      "sha256": "2f90a5f6123fad125fc4efc6cb1acfb2f6ebc61a2d6eca856bd775ee292f3312"
+    },
+    {
+      "path": "tools/ci/postgres-cargo-map.json",
+      "sha256": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54"
+    },
+    {
+      "path": "tools/lanes/recovery/commit_relay.py",
+      "sha256": "bb90cf1189d5eabdd74e1dfcebec0e83fafc181df59ad9c379549bae1158c1bb"
+    },
+    {
+      "path": "tools/lanes/recovery/recovery_control.sh",
+      "sha256": "2e9a3d82fa86acdd90d90a9c628bf9b6b2bdcb94cd74c394d853e14cafc9d003"
+    },
+    {
+      "path": "tools/lanes/recovery/recovery_postgres.sh",
+      "sha256": "1d6a11c69ae75c9f6639d07f84bd0d78214f9e56d7feca5f7a1d2de0cf837a5c"
+    },
+    {
+      "path": "tools/lanes/recovery/supervise_recovery.py",
+      "sha256": "0249a2011cf63938cded4b2785a69a9cbe88ebd1ed45447f62e7dad4a19df40c"
+    },
+    {
+      "path": "tools/lanes/recovery/test_commit_relay.py",
+      "sha256": "7f69110d1a7b1f5ae002cc1818ed2b9c320509a206c80076522f5dcbbfb6640a"
+    },
+    {
+      "path": "tools/lanes/recovery/test_supervise_recovery.py",
+      "sha256": "fb14551ac4b0d91c6730abc3957a654193cb0b608009875ccae94b870f7fd396"
+    }
+  ],
+  "excluded_root_correction": {
+    "path": "backend/app/src/console_telemetry.rs",
+    "sha256": "e9b38b126805593299587e8833afb6b24fcbd95053028641c77d9ae33b17fb56"
+  },
+  "verification": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_preparation_wiring.py -v",
+      "exit": 0,
+      "executed": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/wiring-admission-green.log",
+      "sha256": "1ee34d2779ffc884c41c1a1abf8b7aae7e0f91edd2ece2130ee42088cb10bcd1"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_gen_first_party.py -v",
+      "exit": 0,
+      "executed": 35,
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/wiring-generator-tests-final.log",
+      "sha256": "6114d09c9a404e57d6466423111f31dfe4699446f77a3b22290b8e0f9e523a22"
+    },
+    {
+      "command": "node --test scripts/check-ci-preflight.test.mjs scripts/console/run-verification-queue.test.mjs scripts/lib/recovery-test-invocations.test.mjs",
+      "exit": 0,
+      "executed": 101,
+      "passed": 101,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/wiring-node-tests-final.log",
+      "sha256": "5e572e992644681ee54be152aad09650258a15c809304cc4df6b761271f469a7"
+    },
+    {
+      "command": "node --test tools/ci/check-postgres-cargo-map.test.mjs tools/ci/postgres-partition.test.mjs scripts/check-js-test-reachability.test.mjs",
+      "exit": 0,
+      "executed": 35,
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/wiring-map-tests.log",
+      "sha256": "c9c41de0170cee3700d483bdc9446faec694f6741b2358d88379fc73d664298b"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/lanes/recovery -p 'test_*.py' -v",
+      "exit": 0,
+      "executed": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/private/tmp/wiring-recovery-unit-final.log",
+      "sha256": "90faefc951d5707ffe1f799ed748bfbd4bfac6f15cc01544187ece08904e2b03"
+    }
+  ],
+  "gates": [
+    "node scripts/check-ci-preflight.mjs",
+    "node tools/ci/check-postgres-cargo-map.mjs",
+    "node tools/ci/postgres-partition.mjs --check",
+    "node scripts/check-executed-tests.mjs",
+    "node scripts/check-js-test-reachability.mjs",
+    "git diff --cached HEAD --check",
+    "git apply --check /private/tmp/console-wiring-e44e0448.patch [root integration worktree, read-only]"
+  ],
+  "limits": [
+    "Private scratch evidence bound to base plus listed source hashes, not an integrated reviewed candidate SHA.",
+    "Live domain recovery cases were not rerun by this tooling lane; their expected product RED/GREEN status remains independent.",
+    "root-owned telemetry guard correction is present for verification and excluded from patch.",
+    "Existing sole SeaweedFS dark exception unchanged; source-attribute census update includes inherited increases, never runtime test counts."
+  ]
+}

@@ -1,0 +1,765 @@
+{
+  "reviewer": "/root/finish_migration",
+  "scope": "76selected mechanicalR2source entries including literal subprocess/runtime filesystem paths,not include macros only",
+  "selected_source_roster_sha256": "c98b52b6eafae595fa8f1dba6dd5279c65ab43c40bcfaa0faa55f723eebbe374",
+  "copy_required_missing_from26include_assets": [
+    {
+      "source": "draft-owner-acceptance.rs:96",
+      "target": "backend/app/tests/support/draft/history_oracle.py",
+      "retained_source": "completion/draft-r3/history_oracle.py",
+      "status": "already reported by browser author; final mapping must include"
+    }
+  ],
+  "other_copy_required_runtime_assets_found": [],
+  "classified_other_runtime_paths": {
+    "commit_relay.py": "written from already included dependencies/commit_relay.py bytes then executed",
+    "custody deployment.json/operator.pem/content.pem/objects/approvals/authority": "ordinary fixture creates these in owned TempDir",
+    "database.dump": "actual pg_dump output produced before pg_restore",
+    "fixture.json/owner-receipts.json/reports": "ordinary fixture writes before subprocess uses",
+    "CONSOLE_NATIVE_DEPLOYMENT_CONFIG": "operator/deployment environment input;not an automatically copied packet asset",
+    "CONSOLE_BROWSER_*": "explicit installed Node/Playwright/config/module environment paths;browser config/spec external review package separately retained",
+    "CONSOLE_ACCOUNT_MIGRATION_BINARY and replica process binary": "actual built binaries identified by installed release digest;not packet payload",
+    "python3/docker/printf/yes/sleep": "host or pinned container tools,not retained source assets"
+  },
+  "limitations": "Manual lexical/runtime call-site audit of exact selected source bytes;does not certify future dynamic paths,unimplemented owner config loading or AST/macro semantic closure. Exact-regeneration checker verifies reviewed declared roster,not completeness of all runtime behavior dependencies. Final browser hydration successor paths need separate refresh review.",
+  "runtime_reference_inventory": [
+    {
+      "source": "artifact-owner-producer.rs",
+      "sha256": "27e105bc0d7b1274b8f29b3b8fb48e3a3c34757e324a99d9ea234f7bb5797c53",
+      "references": [
+        {
+          "line": 36,
+          "text": "    let url=base_url.join(&ticket.upload_path)?;"
+        }
+      ]
+    },
+    {
+      "source": "commit-ack-relay.rs",
+      "sha256": "741f9c478e7315881cfb3c6cdd3c72cf92f5aa157cee4fd8e540f4d16e542733",
+      "references": [
+        {
+          "line": 11,
+          "text": "  let script=directory.path().join(\"commit_relay.py\");"
+        },
+        {
+          "line": 12,
+          "text": "  std::fs::write(&script,include_bytes!(\"dependencies/commit_relay.py\"))?;"
+        },
+        {
+          "line": 13,
+          "text": "  let port_file=directory.path().join(\"port\");let events=directory.path().join(\"events.jsonl\");"
+        },
+        {
+          "line": 14,
+          "text": "  let mut child=tokio::process::Command::new(\"python3\").arg(script)"
+        },
+        {
+          "line": 24,
+          "text": "  let port=std::fs::read_to_string(port_file)?.trim().parse::<u16>()?;"
+        },
+        {
+          "line": 29,
+          "text": "  let events=std::fs::read_to_string(self.directory.path().join(\"events.jsonl\"))?;"
+        }
+      ]
+    },
+    {
+      "source": "deployment-runtime-producer.rs",
+      "sha256": "3a1a67d0fd68e48b6d09c5213725c111eb8d6e0f0d5c06f8a1c6d194d62b96b6",
+      "references": [
+        {
+          "line": 19,
+          "text": "    let mut url=Url::parse(&std::env::var(variable)?)?;"
+        },
+        {
+          "line": 34,
+          "text": "    let config=deployment::load_config(std::path::Path::new(&std::env::var(\"CONSOLE_NATIVE_DEPLOYMENT_CONFIG\")?))?;"
+        }
+      ]
+    },
+    {
+      "source": "native-fixture.rs",
+      "sha256": "ed0a60d300450a8295bcd814b8e5876ced5ba8746dd6baf79fc8abcc25f21315",
+      "references": [
+        {
+          "line": 80,
+          "text": "   action_keys:serde_json::from_str::<Vec<String>>(include_str!(\"registered-action-keys.json\"))?.into_iter().filter(|key|!key.starts_with(\"group.operation.\")).collect(),"
+        },
+        {
+          "line": 175,
+          "text": "        Ok(sqlx::query_scalar::<_,serde_json::Value>(include_str!(\"business-readback.sql\")).bind(self.org).bind(run).fetch_one(&self.readback).await?)"
+        }
+      ]
+    },
+    {
+      "source": "native-money-assertions.rs",
+      "sha256": "6e2a48c34b85b8426a594d7b14ff4b94cdcbedf34761cea7a8d0f33b90ebf072",
+      "references": [
+        {
+          "line": 6,
+          "text": "    let bytes=include_bytes!(\"native-money-golden.json\");"
+        }
+      ]
+    },
+    {
+      "source": "operator-custody-producer.rs",
+      "sha256": "2bc844f66b850e5eca954cd1f2cae13bce4cd871dedb4e35bf65a1be245d7f03",
+      "references": [
+        {
+          "line": 26,
+          "text": "    let mut file = fs::OpenOptions::new()"
+        },
+        {
+          "line": 32,
+          "text": "    use std::os::unix::fs::PermissionsExt;"
+        },
+        {
+          "line": 33,
+          "text": "    let permissions = fs::Permissions::from_mode(0o400);"
+        },
+        {
+          "line": 56,
+          "text": "            url::Url::parse(&std::env::var(\"CONSOLE_TERMS_PUBLISHER_DATABASE_URL\")?)?;"
+        },
+        {
+          "line": 65,
+          "text": "        fs::create_dir(root.join(\"objects\"))?;"
+        },
+        {
+          "line": 66,
+          "text": "        fs::create_dir(root.join(\"approvals\"))?;"
+        },
+        {
+          "line": 67,
+          "text": "        fs::create_dir(root.join(\"authority\"))?;"
+        },
+        {
+          "line": 76,
+          "text": "        immutable(&root.join(\"operator.pem\"), &operator.public_key_to_pem()?)?;"
+        },
+        {
+          "line": 78,
+          "text": "            &root.join(\"content.pem\"),"
+        },
+        {
+          "line": 84,
+          "text": "        immutable(&root.join(\"objects\").join(&content_digest), &content)?;"
+        },
+        {
+          "line": 89,
+          "text": "        immutable(&root.join(\"objects\").join(digest(&manifest)), &manifest)?;"
+        },
+        {
+          "line": 91,
+          "text": "            \"custody_root\":root,\"publisher_database_url\":publisher_url.as_str(),\"operator_keys\":{\"test.operator\":\"operator.pem\"},"
+        },
+        {
+          "line": 92,
+          "text": "            \"content_authorities\":{\"test.content\":{\"key_path\":\"content.pem\","
+        },
+        {
+          "line": 96,
+          "text": "        let config_path = root.join(\"deployment.json\");"
+        },
+        {
+          "line": 115,
+          "text": "        let object = root.join(\"objects\").join(&manifest_digest);"
+        },
+        {
+          "line": 123,
+          "text": "        let authority_path = root.join(\"authority\").join(&authority_digest);"
+        },
+        {
+          "line": 141,
+          "text": "        let custody_path = root.join(\"approvals\").join(&approval_digest);"
+        },
+        {
+          "line": 169,
+          "text": "        use std::os::unix::fs::PermissionsExt;"
+        },
+        {
+          "line": 170,
+          "text": "        fs::set_permissions(path, fs::Permissions::from_mode(0o600))?;"
+        },
+        {
+          "line": 171,
+          "text": "        fs::write(path, bytes)?;"
+        }
+      ]
+    },
+    {
+      "source": "artifact-owner-tests.rs",
+      "sha256": "629e5a37b48b6d059eefacb7ea59757f1015cb7ae70cad24634e72ce5beb043d",
+      "references": [
+        {
+          "line": 18,
+          "text": " let url=f.runtime.origin.join(&ticket.upload_path)?;assert_eq!(url.origin(),f.runtime.origin.origin());"
+        },
+        {
+          "line": 58,
+          "text": " let url=f.runtime.origin.join(&actual.ticket.upload_path)?;assert_eq!(url.origin(),f.runtime.origin.origin());"
+        }
+      ]
+    },
+    {
+      "source": "draft-owner-acceptance.rs",
+      "sha256": "873786ca013ec5af21927e849d5f7209ffce82a06b938993dc0b5f9fefc21f42",
+      "references": [
+        {
+          "line": 96,
+          "text": "    let checker = std::path::Path::new(env!(\"CARGO_MANIFEST_DIR\")).join(\"tests/support/draft/history_oracle.py\");"
+        },
+        {
+          "line": 97,
+          "text": "    let mut child = std::process::Command::new(\"python3\").arg(checker)"
+        }
+      ]
+    },
+    {
+      "source": "workflow-obligation-tests.rs",
+      "sha256": "a7c6f78be1865bc430b115c7834e6e6426ce6032bcc8722cbad2a94deedd6e42",
+      "references": [
+        {
+          "line": 343,
+          "text": "    Ok(sqlx::query_scalar(include_str!(\"assignment-readback.sql\"))"
+        }
+      ]
+    },
+    {
+      "source": "migration-admission-tests.rs",
+      "sha256": "63faa9a23fa4c6cd1c615fb40821b861c106e7a1964f34f639f131eb63a15111",
+      "references": [
+        {
+          "line": 31,
+          "text": "    let mut reader=csv::Reader::from_reader(include_bytes!(\"actor-migration.csv\").as_slice());"
+        }
+      ]
+    },
+    {
+      "source": "workflow-fixture.rs",
+      "sha256": "170cc5a8b1759d0db80ec51a59cb1035059ae34f314f33decd590438d2ba557d",
+      "references": [
+        {
+          "line": 271,
+          "text": "        let snapshot: Value = sqlx::query_scalar(include_str!(\"publication-readback.sql\"))"
+        }
+      ]
+    },
+    {
+      "source": "migration-catalog-producer.rs",
+      "sha256": "9be995e540a59afbf25dad9255509927ca349730d7038c662c2790ba321c3bdd",
+      "references": [
+        {
+          "line": 8,
+          "text": "    let catalog:Value=sqlx::query_scalar(include_str!(\"catalog_snapshot.sql\")).fetch_one(&mut *tx).await?;"
+        }
+      ]
+    },
+    {
+      "source": "postgres-snapshot-producer.rs",
+      "sha256": "17ef554655131089e447de49d8e77230fda722ea233a562ec30fcbff90f723e9",
+      "references": [
+        {
+          "line": 24,
+          "text": "    let _=bounded_cleanup(std::process::Command::new(\"docker\").args([\"rm\",\"-f\",&self.0]));"
+        },
+        {
+          "line": 31,
+          "text": "    let mut command=std::process::Command::new(\"docker\");"
+        },
+        {
+          "line": 45,
+          "text": "    let mut url=Url::parse(&std::env::var(\"CONSOLE_APALIS_OWNER_DATABASE_URL\")?)?;"
+        },
+        {
+          "line": 55,
+          "text": "    let mut command=Command::new(\"docker\");"
+        },
+        {
+          "line": 64,
+          "text": "    if let Some(path)=input {command.stdin(Stdio::from(std::fs::File::open(path)?));}else{command.stdin(Stdio::null());}"
+        },
+        {
+          "line": 66,
+          "text": "        use std::os::unix::fs::OpenOptionsExt;"
+        },
+        {
+          "line": 67,
+          "text": "        command.stdout(Stdio::from(std::fs::OpenOptions::new().write(true).create_new(true).mode(0o600).open(path)?));"
+        },
+        {
+          "line": 79,
+          "text": "    let directory=tempfile::tempdir()?;let archive=directory.path().join(\"database.dump\");"
+        },
+        {
+          "line": 83,
+          "text": "    assert!(std::fs::metadata(&archive)?.len()>0);"
+        }
+      ]
+    },
+    {
+      "source": "publication-boundary-acceptance.rs",
+      "sha256": "ad2f40ccccc4eef619bb548fae5aa09a5e608b89dce8d52ba7c432cc5a4d78cc",
+      "references": [
+        {
+          "line": 120,
+          "text": "    std::fs::remove_file(&a.custody_path)?;"
+        },
+        {
+          "line": 163,
+          "text": "            .join(\"objects\")"
+        },
+        {
+          "line": 164,
+          "text": "            .join(&new.manifest_sha256)"
+        },
+        {
+          "line": 170,
+          "text": "        .get(d.runtime.origin.join(\"/api/v2/auth/terms\")?)"
+        },
+        {
+          "line": 184,
+          "text": "        .post(d.runtime.origin.join(\"/api/v2/auth/registration/start\")?)"
+        }
+      ]
+    },
+    {
+      "source": "terms-publication-acceptance.rs",
+      "sha256": "0178db0e32ab0d3dc87183328e7a8ec83b4b5f45835b82670506706439042bd4",
+      "references": [
+        {
+          "line": 151,
+          "text": "        .join(\"approvals\")"
+        },
+        {
+          "line": 152,
+          "text": "        .join(&approval.approval_digest);"
+        },
+        {
+          "line": 153,
+          "text": "    std::fs::copy(&approval.custody_path, &copied)?;"
+        },
+        {
+          "line": 154,
+          "text": "    std::fs::copy("
+        },
+        {
+          "line": 192,
+          "text": "    std::fs::remove_file(f.directory.path().join(\"authority\").join(authority))?;"
+        },
+        {
+          "line": 258,
+          "text": "    let content_path = f.directory.path().join(\"objects\").join(&f.content_digest);"
+        },
+        {
+          "line": 447,
+          "text": "        let object = f.directory.path().join(\"objects\").join(&hash);"
+        },
+        {
+          "line": 448,
+          "text": "        std::fs::write(&object, &bytes)?;"
+        },
+        {
+          "line": 456,
+          "text": "    let object = f.directory.path().join(\"objects\").join(&f.content_digest);"
+        },
+        {
+          "line": 458,
+          "text": "    let target = outside.path().join(\"content\");"
+        },
+        {
+          "line": 459,
+          "text": "    std::fs::write(&target, &f.content)?;"
+        },
+        {
+          "line": 460,
+          "text": "    std::fs::remove_file(&object)?;"
+        },
+        {
+          "line": 461,
+          "text": "    std::os::unix::fs::symlink(&target, &object)?;"
+        },
+        {
+          "line": 464,
+          "text": "    std::fs::remove_file(&object)?;"
+        },
+        {
+          "line": 465,
+          "text": "    std::fs::write(&object, &f.content)?;"
+        }
+      ]
+    },
+    {
+      "source": "browser-auth-producer.rs",
+      "sha256": "2cf499110ec906d167c299ed3ce996906c66dd02bfca7dbc51115df686ce68f1",
+      "references": [
+        {
+          "line": 21,
+          "text": "            .join(\"; \")"
+        },
+        {
+          "line": 43,
+          "text": "            .get(endpoint.join(\"/api/v2/auth/csrf\")?)"
+        },
+        {
+          "line": 79,
+          "text": "            .request(method, origin.join(path)?)"
+        },
+        {
+          "line": 159,
+          "text": "        .get(origin.join(\"/api/v2/auth/csrf\")?)"
+        }
+      ]
+    },
+    {
+      "source": "context-owner-fixture.rs",
+      "sha256": "15e0c1995e4d425b8c9b3001487159c7d0f035101e41172b3e05868c2e9cfe27",
+      "references": [
+        {
+          "line": 54,
+          "text": "    let mut url = url::Url::parse(&std::env::var(key)?)?;"
+        },
+        {
+          "line": 108,
+          "text": "                issuer: std::env::var(\"CONSOLE_JWT_ISSUER\")?,"
+        },
+        {
+          "line": 109,
+          "text": "                audience: std::env::var(\"CONSOLE_JWT_AUDIENCE\")?,"
+        },
+        {
+          "line": 112,
+          "text": "            std::env::var(\"CONSOLE_JWT_PUBLIC_KEY_PEM\")?.as_bytes(),"
+        },
+        {
+          "line": 300,
+          "text": "            pairs.push((name, std::env::var(name)?));"
+        }
+      ]
+    },
+    {
+      "source": "expanded-custody-producer.rs",
+      "sha256": "7b45f89271398090947e9ed0f0dc18f739b703eece8d38904c12fe2f997ef4f2",
+      "references": [
+        {
+          "line": 27,
+          "text": "    let mut file = fs::OpenOptions::new()"
+        },
+        {
+          "line": 33,
+          "text": "    use std::os::unix::fs::PermissionsExt;"
+        },
+        {
+          "line": 34,
+          "text": "    let permissions = fs::Permissions::from_mode(0o400);"
+        },
+        {
+          "line": 57,
+          "text": "            url::Url::parse(&std::env::var(\"CONSOLE_TERMS_PUBLISHER_DATABASE_URL\")?)?;"
+        },
+        {
+          "line": 66,
+          "text": "        fs::create_dir(root.join(\"objects\"))?;"
+        },
+        {
+          "line": 67,
+          "text": "        fs::create_dir(root.join(\"approvals\"))?;"
+        },
+        {
+          "line": 68,
+          "text": "        fs::create_dir(root.join(\"authority\"))?;"
+        },
+        {
+          "line": 77,
+          "text": "        immutable(&root.join(\"operator.pem\"), &operator.public_key_to_pem()?)?;"
+        },
+        {
+          "line": 79,
+          "text": "            &root.join(\"content.pem\"),"
+        },
+        {
+          "line": 85,
+          "text": "        immutable(&root.join(\"objects\").join(&content_digest), &content)?;"
+        },
+        {
+          "line": 90,
+          "text": "        immutable(&root.join(\"objects\").join(digest(&manifest)), &manifest)?;"
+        },
+        {
+          "line": 92,
+          "text": "            \"custody_root\":root,\"publisher_database_url\":publisher_url.as_str(),\"operator_keys\":{\"test.operator\":\"operator.pem\"},"
+        },
+        {
+          "line": 93,
+          "text": "            \"content_authorities\":{\"test.content\":{\"key_path\":\"content.pem\","
+        },
+        {
+          "line": 97,
+          "text": "        let config_path = root.join(\"deployment.json\");"
+        },
+        {
+          "line": 116,
+          "text": "        let object = root.join(\"objects\").join(&manifest_digest);"
+        },
+        {
+          "line": 131,
+          "text": "        let authority_path = root.join(\"authority\").join(&authority_digest);"
+        },
+        {
+          "line": 149,
+          "text": "        let custody_path = root.join(\"approvals\").join(&approval_digest);"
+        },
+        {
+          "line": 180,
+          "text": "        use std::os::unix::fs::PermissionsExt;"
+        },
+        {
+          "line": 181,
+          "text": "        fs::set_permissions(path, fs::Permissions::from_mode(0o600))?;"
+        },
+        {
+          "line": 182,
+          "text": "        fs::write(path, bytes)?;"
+        }
+      ]
+    },
+    {
+      "source": "real-process-producer.rs",
+      "sha256": "89f640d7a5345d0cff4f7ac5471b0304805993a1f89bf268e9dcecba0edf7d9d",
+      "references": [
+        {
+          "line": 23,
+          "text": "        let actual = hex::encode(Sha256::digest(tokio::fs::read(binary).await?));"
+        },
+        {
+          "line": 25,
+          "text": "        let mut command = Command::new(binary);"
+        },
+        {
+          "line": 92,
+          "text": "            match client.get(self.origin.join(\"/readyz\")?).send().await {"
+        }
+      ]
+    },
+    {
+      "source": "publication-completion-tests.rs",
+      "sha256": "e5b7e70ad91fea91c296221df1aa3ee7796d2f771d7ccb174b243edb1f894a24",
+      "references": [
+        {
+          "line": 25,
+          "text": "    use std::{io::Write,os::unix::fs::OpenOptionsExt};"
+        },
+        {
+          "line": 26,
+          "text": "    let hash=digest(bytes);let path=f.directory.path().join(\"objects\").join(&hash);"
+        },
+        {
+          "line": 27,
+          "text": "    let mut file=std::fs::OpenOptions::new().write(true).create_new(true).mode(0o400).open(path)?;"
+        },
+        {
+          "line": 54,
+          "text": "    assert_eq!(std::fs::read(f.directory.path().join(\"objects\").join(&hash))?,exact);"
+        },
+        {
+          "line": 94,
+          "text": "    assert_eq!(std::fs::read(f.directory.path().join(\"objects\").join(hash))?,url.as_bytes());"
+        },
+        {
+          "line": 103,
+          "text": "    assert!(!f.directory.path().join(\"objects\").join(&missing).exists());"
+        },
+        {
+          "line": 104,
+          "text": "    std::fs::write(f.directory.path().join(\"objects\").join(\"current\"),&f.content)?;"
+        }
+      ]
+    },
+    {
+      "source": "rust-codec-assertions.rs",
+      "sha256": "1dc2043400ec7da6e00d6d3269f2b8da2819e77ba43d614310d75867c8ed36ee",
+      "references": [
+        {
+          "line": 15,
+          "text": "    let fixture:InputFrame=serde_json::from_slice(include_bytes!(\"codec-goldens/input-blocked-two.json\")).unwrap();"
+        },
+        {
+          "line": 28,
+          "text": "    let fixture:InputFrame=serde_json::from_slice(include_bytes!(\"codec-goldens/input-resolved-one.json\")).unwrap();"
+        },
+        {
+          "line": 42,
+          "text": "    let fixture:CalculationFrame=serde_json::from_slice(include_bytes!(\"codec-goldens/calculation-blocked-one.json\")).unwrap();"
+        },
+        {
+          "line": 56,
+          "text": "    let fixture:CalculationFrame=serde_json::from_slice(include_bytes!(\"codec-goldens/calculation-success-one.json\")).unwrap();"
+        },
+        {
+          "line": 69,
+          "text": "    let fixture:NormalizedOwnerSubmission=serde_json::from_slice(include_bytes!(\"codec-goldens/owner-direct-wage.json\")).unwrap();"
+        },
+        {
+          "line": 81,
+          "text": "    let fixture:NormalizedOwnerSubmission=serde_json::from_slice(include_bytes!(\"codec-goldens/owner-attempt-create-run.json\")).unwrap();"
+        },
+        {
+          "line": 93,
+          "text": "    let fixture:NormalizedOwnerSubmission=serde_json::from_slice(include_bytes!(\"codec-goldens/owner-gated-calculate.json\")).unwrap();"
+        },
+        {
+          "line": 105,
+          "text": "    let fixture:NormalizedOwnerSubmission=serde_json::from_slice(include_bytes!(\"codec-goldens/owner-publication.json\")).unwrap();"
+        },
+        {
+          "line": 117,
+          "text": "    let fixture:NormalizedOwnerSubmission=serde_json::from_slice(include_bytes!(\"codec-goldens/owner-case-response.json\")).unwrap();"
+        }
+      ]
+    },
+    {
+      "source": "native-stream-budget-tests.rs",
+      "sha256": "f09718517bbe3690d4ab8073dd55ce792375a4a0bb15f2fd80703bba12feba52",
+      "references": [
+        {
+          "line": 39,
+          "text": " let fixture:InputFrame=serde_json::from_slice(include_bytes!(\"codec-goldens/input-resolved-one.json\")).unwrap();"
+        }
+      ]
+    },
+    {
+      "source": "browser-runtime-helpers.rs",
+      "sha256": "98d17985626163a86160876418fe6e3ee8c7785fac72343e37180aa0c6aae373",
+      "references": [
+        {
+          "line": 3,
+          "text": "use std::{path::Path,io::Write,os::unix::fs::{OpenOptionsExt,PermissionsExt}};"
+        },
+        {
+          "line": 7,
+          "text": " let mut f=std::fs::OpenOptions::new().create_new(true).write(true).mode(0o600).open(path)?;"
+        }
+      ]
+    },
+    {
+      "source": "browser-acceptance-producer.rs",
+      "sha256": "e2fce2655679aea3c3aea4e4fdf946d95071d6df407d7cb287b80d334337507d",
+      "references": [
+        {
+          "line": 5,
+          "text": "use std::{path::Path,sync::Mutex,os::unix::fs::PermissionsExt};"
+        },
+        {
+          "line": 13,
+          "text": " let candidate=std::env::var(\"CONSOLE_BROWSER_CANDIDATE_SHA\")?;"
+        },
+        {
+          "line": 23,
+          "text": " let target=d.runtime.origin.join(&route.path)?;assert_eq!(target.origin(),d.runtime.origin.origin());"
+        },
+        {
+          "line": 29,
+          "text": " let fixture=directory.join(\"fixture.json\");let receipt=directory.join(\"owner-receipts.json\");"
+        },
+        {
+          "line": 35,
+          "text": " let node=std::env::var(\"CONSOLE_BROWSER_NODE\")?;let cli=std::env::var(\"CONSOLE_BROWSER_PLAYWRIGHT_CLI\")?;"
+        },
+        {
+          "line": 36,
+          "text": " let config=std::env::var(\"CONSOLE_BROWSER_PLAYWRIGHT_CONFIG\")?;"
+        },
+        {
+          "line": 37,
+          "text": " for path in [&node,&cli,&config]{assert!(Path::new(path).is_absolute()&&Path::new(path).is_file());}"
+        },
+        {
+          "line": 42,
+          "text": " let modules=std::env::var(\"CONSOLE_BROWSER_NODE_MODULES\")?;"
+        },
+        {
+          "line": 43,
+          "text": " assert!(Path::new(&modules).is_absolute()&&Path::new(&modules).is_dir());"
+        },
+        {
+          "line": 45,
+          "text": "  let mut c=tokio::process::Command::new(&node);c.arg(&cli).arg(\"test\").arg(\"--config\").arg(&config).arg(\"--project\").arg(project)"
+        },
+        {
+          "line": 48,
+          "text": "   .env(\"CONSOLE_BROWSER_OUTPUT\",directory.join(\"results\"));"
+        },
+        {
+          "line": 52,
+          "text": " private_write(&directory.join(\"invocations.json\"),&serde_json::to_vec(&json!({\"node\":node,\"cli\":cli,\"config\":config,\"project\":project,\"grep\":grep,"
+        },
+        {
+          "line": 54,
+          "text": " let list=invoke(true).await?;private_write(&directory.join(\"discovery.json\"),&list.stdout)?;private_write(&directory.join(\"discovery.stderr\"),&list.stderr)?;"
+        },
+        {
+          "line": 58,
+          "text": " let executed=invoke(false).await?;private_write(&directory.join(\"execution.json\"),&executed.stdout)?;private_write(&directory.join(\"execution.stderr\"),&executed.stderr)?;"
+        },
+        {
+          "line": 76,
+          "text": " private_write(&directory.join(\"post-browser-owner-readback.json\"),&serde_json::to_vec(&post)?)?;"
+        }
+      ]
+    },
+    {
+      "source": "migration-batch-process.rs",
+      "sha256": "d6f481faaa30b3db9a470ea93287d7c9f0c92ef5591e4984a9b4b8deed067345",
+      "references": [
+        {
+          "line": 20,
+          "text": "    let binary = PathBuf::from(std::env::var(\"CONSOLE_ACCOUNT_MIGRATION_BINARY\")?);"
+        },
+        {
+          "line": 21,
+          "text": "    let hash = hex::encode(Sha256::digest(tokio::fs::read(&binary).await?));"
+        },
+        {
+          "line": 27,
+          "text": "    let mut input = tempfile::NamedTempFile::new()?;"
+        },
+        {
+          "line": 39,
+          "text": "    let mut child = Command::new(binary);"
+        }
+      ]
+    },
+    {
+      "source": "bounded-process-output.rs",
+      "sha256": "f993feab5beb08c2c68bc889259cf8eedc4506132a6313089b7e35318b9d8d62",
+      "references": [
+        {
+          "line": 52,
+          "text": "        let mut c = Command::new(\"/usr/bin/printf\");"
+        },
+        {
+          "line": 63,
+          "text": "        let mut c = Command::new(\"/usr/bin/yes\");"
+        },
+        {
+          "line": 74,
+          "text": "        let mut c = Command::new(\"/bin/sleep\");"
+        }
+      ]
+    },
+    {
+      "source": "migration-remaining-tests.rs",
+      "sha256": "fc4ff20c3b57bc4686212b4f1b311b23e1f1bb1327773d53ce9f4849d574321a",
+      "references": [
+        {
+          "line": 292,
+          "text": "#[path = \"legacy-transport-producer.rs\"]"
+        },
+        {
+          "line": 294,
+          "text": "#[path = \"migrated-primary-producer.rs\"]"
+        }
+      ]
+    }
+  ]
+}

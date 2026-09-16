@@ -12,7 +12,7 @@ use axum::{
 };
 use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
 use console_logistics_adapter_postgres::{PgLogisticsError, PgLogisticsStore};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
 use console_platform_request_context::RequestContextError;
 use serde::Deserialize;
@@ -34,16 +34,19 @@ pub const LOGISTICS_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct LogisticsRestState {
     store: PgLogisticsStore,
-    jwt: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 impl LogisticsRestState {
     #[must_use]
-    pub fn new(store: PgLogisticsStore, jwt: Option<JwtVerifier>) -> Self {
-        Self { store, jwt }
+    pub fn new(store: PgLogisticsStore, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            store,
+            session_verification,
+        }
     }
 }
 pub fn router(state: LogisticsRestState) -> Router {
-    let verifier = state.jwt.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let r = Router::new()
         .route("/api/v1/logistics/asns", post(create_asn))
@@ -386,7 +389,7 @@ async fn settle(
     ))
 }
 async fn principal(s: &LogisticsRestState, h: &HeaderMap) -> Result<Principal, RestError> {
-    let verifier = s.jwt.as_ref().ok_or_else(|| {
+    let verifier = s.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -398,6 +401,7 @@ async fn principal(s: &LogisticsRestState, h: &HeaderMap) -> Result<Principal, R
         .map_err(|e| match e {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",
@@ -408,6 +412,11 @@ async fn principal(s: &LogisticsRestState, h: &HeaderMap) -> Result<Principal, R
                     "token is not authorized for logistics",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

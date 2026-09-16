@@ -1,0 +1,44 @@
+{
+  "reviewer": "/root/finish_migration",
+  "root": "/private/tmp/console-production-tdd-preparation-20260913",
+  "head": "e58858b928be25c9d09b1623b9f3d007a66e6d36",
+  "candidate": "da3c6e22 implementation plus e58858b9 test whitespace fix",
+  "verdict": "APPROVE requested LC07 source scope; cold cache blocker resolved",
+  "blockers": [],
+  "positive_findings": [
+    "Finalize is after migrations and before seed/serve; failure propagates",
+    "Independent local socket inventory captured and retained; finalizer uses verify-full and validates system id/database OID/operator",
+    "Operator passfile and CA isolated from serving container mounts; host serving child drops declared operator/libpq channels",
+    "Finalized ownership path is idempotent; topology legacy reassignment does not take back Account-owned relations",
+    "PreSync network policies precede migration/finalize and persist until next hook creation"
+  ],
+  "execution": {
+    "command": "node --test scripts/account-custody-orchestration.test.mjs scripts/lib/dev-account-custody.test.mjs",
+    "tests": 80,
+    "passed": 80,
+    "failed": 0,
+    "skipped": 0,
+    "output": "/private/tmp/lc07-e588-independent-node.txt",
+    "limits": "Independently executed declaration/filesystem/crypto; root-owned real7runtime evidence not independently rerun"
+  },
+  "source_sha256": {
+    "scripts/dev-up.mjs": "6affb0a9d63fb630eea18fcae0959e91944282135c3cad1b11819c61704a6c75",
+    "scripts/lib/dev-account-custody.mjs": "40e411ef4bff4d77dba6197a586afe680e7a693387668b3d6858fed779022aba",
+    "ops/compose.yml": "953b254c5de3b870ec85494751410c72090d46017c1d14ea67361745ebf875ab",
+    "ops/account-custody.Dockerfile": "582301f82a88bc25cc5f949bb6b13c384adec9f0377e031387a40efc111f3b73",
+    "deploy/apps/console/base/account-finalize-job.yaml": "d4cca4fbaec30c884351395db568370bca372329a5d20f0b45f2a48e13780208",
+    "deploy/apps/console/base/migration-networkpolicy.yaml": "605c2f8570636959d36507ae9cabe8aae7253e079b14f71940dd3a2c7794eaa4",
+    "deploy/apps/console/base/migrate-job.yaml": "e9ea2af77eca2f390549c2b98d8370b0fe6385e704a04f7d89d9b3f9d061c902",
+    "deploy/apps/console/base/kustomization.yaml": "d0378973f2f4dee826e5441a0af2995560fcc76dbefbd8aab51a9756f1bda3c7",
+    ".github/workflows/image-release.yml": "e4f8a2a3426904954ce8c1f8389765252074974f18f20e1258bc58779a3ea868"
+  },
+  "remaining_exposure_prerequisites": [
+    "Pinned published operator image; local-unpublished is intentionally nondeployable",
+    "Independently provisioned namespace/database/network/TLS/target inventory/CA/operator Secret before PreSync",
+    "Real migrator and repeat-finalization runtime evidence owned by root",
+    "Future custody schema changes require separately authorized migration owner; current console_app does not regain DDL authority"
+  ],
+  "resolved_findings": [
+    "Pinned image checked before certificate generation; bounded explicit pull only on verified image absence; isolated container retains --pull never and owner cleanup"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "kind": "governance.execution_gate.decide",
+  "body": {
+    "request": {
+      "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+      "request_id": "d82c5562-830d-5d42-8bc2-890b2a9bb6d6",
+      "control_revision": "1",
+      "binding_digest": "51aecc7547927580fe2acced4da37862ece471c9e1eeefcd1ceb038325c0203d"
+    },
+    "decision": "PERMIT",
+    "reason": "검토 근거를 확인했습니다."
+  }
+}

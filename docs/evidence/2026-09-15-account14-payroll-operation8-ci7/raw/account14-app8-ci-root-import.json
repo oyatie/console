@@ -1,0 +1,7 @@
+{
+  "owner": "/root",
+  "base_sha": "0a625d323be1184f94af549e20c7f47bfbd63702",
+  "patch_sha256": "3292aa623fc40c2fc7d9c08ae45b76d81222cc54299241a19123024a0beb2808",
+  "independent_review_sha256": "f5694d6d2b5a70505156d4fe889c25817d9cc210e12e663fe368640db7f2638b",
+  "decision": "Approve exact7 paths and existing assertion count amendments; root read complete patch, old controls preserved; integration verification pending."
+}

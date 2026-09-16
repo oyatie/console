@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/preparation_recovery",
+  "base_sha": "e44e0448abee62ea7d296ffca4ace3b3dbfbdb85",
+  "observed_root_head": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "patch_sha256": "c78b7f10f064eed3b3d078549e45bd5d04341549fd5b05468fc48d1d06b5d765",
+  "author_manifest_sha256": "3cb56a4197dac9cc42c2419b758b2f96cd30ed369ee3bd5e17b8db65dd879933",
+  "listed_paths": 22,
+  "listed_path_hash_mismatches": [],
+  "approved_test_sha256": "ad665d1de72bb801e509305f869a5d9ecb8a0ff23b73da556e215913fe855487",
+  "independent_tests": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tools/buck/test_preparation_wiring.py -v",
+      "executed": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "node --test scripts/lib/recovery-test-invocations.test.mjs",
+      "executed": 17,
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "author_test_log_hashes_verified": 5,
+  "author_claimed_tool_test_total": 188
+}

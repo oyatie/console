@@ -1,0 +1,1364 @@
+{
+  "source_root": "/private/tmp/console-native28-contract-refinement-r2-20260913",
+  "manifest_sha256": "764e3e4454a0e059337a9d6faa7ae0c861f586ca2762f27a6a484b404582649e",
+  "verified_members": 226,
+  "status": "FROZEN_REVIEW_CANDIDATE_NOT_APPROVAL",
+  "files": [
+    {
+      "source_path": "action-cases.tsv",
+      "retained_path": "action-cases.tsv",
+      "raw_sha256": "e8345ea67fbf3d0034f56ca68e2a731409c70eb48ed0b13ee2827ac8de39df44",
+      "compression": null
+    },
+    {
+      "source_path": "author_fixtures.py",
+      "retained_path": "author_fixtures.py",
+      "raw_sha256": "9d8408ee2473703fc867d30adfc738c66f4ebb4703d69c600f8ea972de96690d",
+      "compression": null
+    },
+    {
+      "source_path": "author_goldens.py",
+      "retained_path": "author_goldens.py",
+      "raw_sha256": "8fa38f1d59c37f46014b66dec3c4473674760f108c86383781665965632ffec5",
+      "compression": null
+    },
+    {
+      "source_path": "binder-sequence.rs",
+      "retained_path": "binder-sequence.rs",
+      "raw_sha256": "6c042c54a84f9f363f5ae850bbdf74edf97c4ef8debd2c2118c461f6de0e481f",
+      "compression": null
+    },
+    {
+      "source_path": "contract-refinement.md",
+      "retained_path": "contract-refinement.txt",
+      "raw_sha256": "7ed1f26c3f4c5ff5019293fa94e780e82cdf7051276e5285b4e387a451fa4d1d",
+      "compression": null
+    },
+    {
+      "source_path": "execution-r2.json",
+      "retained_path": "execution-r2.json",
+      "raw_sha256": "6e8fda128094ee95f8c26280c356dd23e03ea3b4f14471e050751d520df05a1c",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/calculation-blocked-one.bin",
+      "retained_path": "goldens/calculation-blocked-one.bin",
+      "raw_sha256": "00438949c40484663b4ffbc74fa529dcc03c708bcbf6f3411eeb5809f9cc0a8f",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/calculation-blocked-one.json",
+      "retained_path": "goldens/calculation-blocked-one.json",
+      "raw_sha256": "f2c93871d4bb37dc806107265bf1d03d0851c9091457660004e52f62059e0f09",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/calculation-success-one.bin",
+      "retained_path": "goldens/calculation-success-one.bin",
+      "raw_sha256": "33bad30007efe3a43e07cc05ad34d9c19af72092b87b0227009e857ac27ec156",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/calculation-success-one.json",
+      "retained_path": "goldens/calculation-success-one.json",
+      "raw_sha256": "e47065698451241bd1e24305754fc1e06e9028e76ecc6552ac55e7a68f59915f",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/index.json",
+      "retained_path": "goldens/index.json",
+      "raw_sha256": "d7538317809644c2cb8f009a812756fc6ec9f6b207f24fe2d78711d0b7b80c7d",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/input-blocked-two.bin",
+      "retained_path": "goldens/input-blocked-two.bin",
+      "raw_sha256": "a426f26631b5d388919c3205295253fefc8cc2cde5e5a74fd4bbe98b7efb9b69",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/input-blocked-two.json",
+      "retained_path": "goldens/input-blocked-two.json",
+      "raw_sha256": "5ff094919568924d0179c0c2057edb1cbee4eb7c59fad7a9ff76090e65123d3d",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/input-resolved-one.bin",
+      "retained_path": "goldens/input-resolved-one.bin",
+      "raw_sha256": "4a93f3889dfe4eb2a2617a83452202665a0e6afd9edaf998ea6bf8084cf009c4",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/input-resolved-one.json",
+      "retained_path": "goldens/input-resolved-one.json",
+      "raw_sha256": "bff74725af378893971ab51d597a387315374fd601ac1ac43c18a3f2141d29e6",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-attempt-create-run.bin",
+      "retained_path": "goldens/owner-attempt-create-run.bin",
+      "raw_sha256": "e962a57c7ed5f5e397fd607390e58561d3b40373e5bb091ab6298f2c967383df",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-attempt-create-run.json",
+      "retained_path": "goldens/owner-attempt-create-run.json",
+      "raw_sha256": "148e9c4cda11e1e3db9823a808207e237f22c3bfe69f432ad398996ed9090b8c",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-case-response.bin",
+      "retained_path": "goldens/owner-case-response.bin",
+      "raw_sha256": "df2fcb0667d45d82075f504c5d36b07cb2be7639dcbf45142fc81e05a44326d5",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-case-response.json",
+      "retained_path": "goldens/owner-case-response.json",
+      "raw_sha256": "373b08e46c419e92a606f12684170ae4735100e74a1e9c913fa4cba295bbd0ba",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-direct-wage.bin",
+      "retained_path": "goldens/owner-direct-wage.bin",
+      "raw_sha256": "8d27899205f60348204015c80d3dfa2c09db8caca3241426abc6c2ce0665170b",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-direct-wage.json",
+      "retained_path": "goldens/owner-direct-wage.json",
+      "raw_sha256": "f0a1f210604c07ed62af39a3cfc8b28db4b02f2769d5bc7cb6d33b1cbd571d09",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-gated-calculate.bin",
+      "retained_path": "goldens/owner-gated-calculate.bin",
+      "raw_sha256": "a08be2ac3ff8f5ad657bbe4a5fb8494956269af5e35949af4ff3ff7e721afcf0",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-gated-calculate.json",
+      "retained_path": "goldens/owner-gated-calculate.json",
+      "raw_sha256": "9f8a835b3f84fb0f5f3337112d6d238d56415d968665ee6305ce3be1e60a190b",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-publication.bin",
+      "retained_path": "goldens/owner-publication.bin",
+      "raw_sha256": "9489ebfea27dfc175711bb65425dff04628d7a2fdff2296a0084b77aa81ef6ad",
+      "compression": null
+    },
+    {
+      "source_path": "goldens/owner-publication.json",
+      "retained_path": "goldens/owner-publication.json",
+      "raw_sha256": "777af25e2ae0ca39993cf71df11513c93fd56ab34d8550b80f5b69214ba55a3b",
+      "compression": null
+    },
+    {
+      "source_path": "historical-r1-freeze-manifest.json",
+      "retained_path": "historical-r1-freeze-manifest.json",
+      "raw_sha256": "7599f608f7174af2282250ac9ba88b225fc4b4c1bc2bf06d9d4d763dc1792785",
+      "compression": null
+    },
+    {
+      "source_path": "native-owner-producer.rs",
+      "retained_path": "native-owner-producer.rs",
+      "raw_sha256": "88ab7d49943397cd2de2f94d1bfc83d2c7ae0e96f86aa317de6985d048050492",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+      "retained_path": "normalized-source/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+      "raw_sha256": "7570bf1a63047ba88a0a4484011eec64434ef35bcacbb4b2f56a28a93b041366",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "retained_path": "normalized-source/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "raw_sha256": "c572905e8fee5d2d289f1040bcac5694ca00803589819df9c985a150b07f8a37",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-13-integrated-design-30/action-types.schema.json",
+      "retained_path": "normalized-source/2026-09-13-integrated-design-30/action-types.schema.json",
+      "raw_sha256": "bb932aa6bfd387d981024b660d7643a2ea7e28a665bac5371350c0d2620f01e6",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-13-integrated-design-30/control-types.schema.json",
+      "retained_path": "normalized-source/2026-09-13-integrated-design-30/control-types.schema.json",
+      "raw_sha256": "db77b03b5876e901e223672178e60a140c97cac7794e839e5cd890be0f9cebe8",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-13-integrated-design-30/journal-types.schema.json",
+      "retained_path": "normalized-source/2026-09-13-integrated-design-30/journal-types.schema.json",
+      "raw_sha256": "75c962f2614797edbbb335a713b03bf98cc6056e6b3a95ea6aa615d5a9ee6447",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-13-integrated-design-30/types.schema.json",
+      "retained_path": "normalized-source/2026-09-13-integrated-design-30/types.schema.json",
+      "raw_sha256": "d44e09b1f94d3addb797f4978f576749f1c4da24dfbc3207724b846f821e8375",
+      "compression": null
+    },
+    {
+      "source_path": "normalized-source/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+      "retained_path": "normalized-source/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+      "raw_sha256": "21f89a8849abd39dd1edee2d7eba71dfb24cb4d543bc4f8c54b93f7598088a65",
+      "compression": null
+    },
+    {
+      "source_path": "oracle.py",
+      "retained_path": "oracle.py",
+      "raw_sha256": "1a91122284363ab36b7cc29101dab3ee503db27813452d5e1dfefe27df5769f1",
+      "compression": null
+    },
+    {
+      "source_path": "owner-calls.rs",
+      "retained_path": "owner-calls.rs",
+      "raw_sha256": "29a3be68b1d4c31508afa324828003417d27b973d006afd37cef2cfe69c3003f",
+      "compression": null
+    },
+    {
+      "source_path": "owner-entry-map.json",
+      "retained_path": "owner-entry-map.json",
+      "raw_sha256": "4b73f09938da83c7c68329aad678eb9f0096267e42845cb50c02c406e5b0fa12",
+      "compression": null
+    },
+    {
+      "source_path": "owner-interface-refinement.md",
+      "retained_path": "owner-interface-refinement.txt",
+      "raw_sha256": "be0202f3e6363099de20245485d042896cb4737cf37a184b8d69027232710263",
+      "compression": null
+    },
+    {
+      "source_path": "owner-runtime-holds.md",
+      "retained_path": "owner-runtime-holds.txt",
+      "raw_sha256": "2e19e94ba124ebec24ee62f1677d3d1ccdcfe5f5a180cbfb9408a4236d6a2e67",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/artifact.request_upload.json",
+      "retained_path": "payloads/artifact.request_upload.json",
+      "raw_sha256": "926319a7fb6e3a6fdb979ff87591e76c5bf04cab08b90b24f6f5e74b85ab72f5",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/artifact.verify_version.json",
+      "retained_path": "payloads/artifact.verify_version.json",
+      "raw_sha256": "5fdc25efb6c006c82abdb405d293edf0f4e7bbed5b3d64553c3254f0e55eeb85",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/attempt.cancel.json",
+      "retained_path": "payloads/attempt.cancel.json",
+      "raw_sha256": "a9e6b30267dbc3fc9e5be11a0a2198b958a1b2ada3ebf8f5c13a1ec5d467c049",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/attempt.execute.json",
+      "retained_path": "payloads/attempt.execute.json",
+      "raw_sha256": "caa3d07b5995465c7f38eda2b1fb15c24f1974cde427d9e1b21fa70fd0b5b7b0",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/attendance.create_close_basis.json",
+      "retained_path": "payloads/attendance.create_close_basis.json",
+      "raw_sha256": "d35f98e2d048e0ea9fc8ab2671765549af6ee12322812c24918fa6b84cffbb1e",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/attendance.resolve_coverage.json",
+      "retained_path": "payloads/attendance.resolve_coverage.json",
+      "raw_sha256": "7934d733d3e2044e6292a542a051cea29b2b3429dcb7d813b7d1442fd7168717",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/calendar.assign.json",
+      "retained_path": "payloads/calendar.assign.json",
+      "raw_sha256": "77d9933fee83d59bc405e1845e4cea105943d5f170649cc3785a025ecb3d20b4",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/calendar.publish.json",
+      "retained_path": "payloads/calendar.publish.json",
+      "raw_sha256": "c88277382a7a0fd031523cdb0f8e353617c33eb0686c08a98ba4673473d3246e",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.discard.json",
+      "retained_path": "payloads/draft.discard.json",
+      "raw_sha256": "963d678edf5e9dc7e6f56c8ea48b5872188a731588649b30f94f3d93890256fa",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.expire.json",
+      "retained_path": "payloads/draft.expire.json",
+      "raw_sha256": "ad6d96081e85aece3eb0c933bd338769894289003095651d4db6c845ecd7e867",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.restore.json",
+      "retained_path": "payloads/draft.restore.json",
+      "raw_sha256": "21b7fb05395f90a92966781cdf82c36034e341befed1881807356ed47d424b64",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.save.json",
+      "retained_path": "payloads/draft.save.json",
+      "raw_sha256": "7f7eddea2da233c336e5f55d509aa2f40611939c978a4331466020d42743c348",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.seal.json",
+      "retained_path": "payloads/draft.seal.json",
+      "raw_sha256": "82d1f9913a2e50a926365750f7b93b2ca9589f154d290ff60c19e89f8a85ae15",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.start.json",
+      "retained_path": "payloads/draft.start.json",
+      "raw_sha256": "e46271795bd6252d0dcfd585e6b0ba2033d2d2590d8a2f03318be739bf4ec099",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/draft.upgrade_schema.json",
+      "retained_path": "payloads/draft.upgrade_schema.json",
+      "raw_sha256": "c62fd98030057a7599e30928d399ff2733b377a99f444a0aa541093c359c69f8",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/eligibility.propose.json",
+      "retained_path": "payloads/eligibility.propose.json",
+      "raw_sha256": "dcf99e90f80817d885bb12b7c55655a6b4e6ec5dabf35677a2b8aabf52fb9294",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/eligibility.revoke.json",
+      "retained_path": "payloads/eligibility.revoke.json",
+      "raw_sha256": "c8bf930b434af1bc8e7b505f50145f4007f21c4a4c69c0af75f02c8d5bb292f9",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/eligibility.verify.json",
+      "retained_path": "payloads/eligibility.verify.json",
+      "raw_sha256": "75a3d10db7548ac5bcbc0e438dacbfd28b213f31e8730f5613aaea0b6176b49f",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/governance.execution_gate.decide.json",
+      "retained_path": "payloads/governance.execution_gate.decide.json",
+      "raw_sha256": "345b718a2809ae10e97d9b1fdeb598576ae22ffd29c5ce5f6648d3dd9099b4f6",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/governance.execution_gate.request.json",
+      "retained_path": "payloads/governance.execution_gate.request.json",
+      "raw_sha256": "4fd3ff947c8907ecf4fd506deb05894cdd56b7b42836adfef947af155822b1df",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/group.operation.activate.json",
+      "retained_path": "payloads/group.operation.activate.json",
+      "raw_sha256": "c8cbe14fbd3df166cdd6e2d1d245fff6f32d6a2a2b8ab5792dc91db55e336ebe",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/group.operation.create.json",
+      "retained_path": "payloads/group.operation.create.json",
+      "raw_sha256": "45dad0edabaf9c7d4494e1c56720c4adbef0f3cfd55c71beea555fbd73fbf03f",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/group.operation.resume.json",
+      "retained_path": "payloads/group.operation.resume.json",
+      "raw_sha256": "ca71d5ca9dc3d46c3034e68c8b2b32cef675fb220afd19c5e96e3c9d1a8d0f8d",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/group.operation.stop.json",
+      "retained_path": "payloads/group.operation.stop.json",
+      "raw_sha256": "d6169441f3b0db18b4cd9693308b5dc2a933b2cdecff5ec7161b998bab56bdc1",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/leave.decide.json",
+      "retained_path": "payloads/leave.decide.json",
+      "raw_sha256": "2722aec7c18a46b3ff86cef224abd0cd9b9f3a50103168969afe754b16a522bd",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.admit_tax_evidence.json",
+      "retained_path": "payloads/payroll.admit_tax_evidence.json",
+      "raw_sha256": "082ec5b0e31df279d0d556931f5127f34898930dfb7240f595aa07dabce9679d",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.calculate_run.json",
+      "retained_path": "payloads/payroll.calculate_run.json",
+      "raw_sha256": "4dee9b25fd11f0c2c9e78a0ece9bce6422e775592ae23b9d6540d0d33156a87c",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.cancel_review_cycle.json",
+      "retained_path": "payloads/payroll.cancel_review_cycle.json",
+      "raw_sha256": "7d389886800b718a3dfec502ada5ff582ebf21166f7245ce6981d6f4dda881a1",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.close_attendance.json",
+      "retained_path": "payloads/payroll.close_attendance.json",
+      "raw_sha256": "a4006e19f009e560e0fb0ac0981e0ace2297058dcba8d3a1d9811d80d58de685",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.correct_contract_wage.json",
+      "retained_path": "payloads/payroll.correct_contract_wage.json",
+      "raw_sha256": "7109590eb4f8cb9fa855960f2ece703a8b7a02e89db95c8365e96ceda652fef9",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.create_contract_wage.json",
+      "retained_path": "payloads/payroll.create_contract_wage.json",
+      "raw_sha256": "1374bc8ec2b206c3f6183384dd9ecaa0865c44dc0333767cbb01e24db4bcdf53",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.create_run.json",
+      "retained_path": "payloads/payroll.create_run.json",
+      "raw_sha256": "929fa5c6ea678429a423f5e1fc735b18b07442489aaf09ad629a54ab9bff7766",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.open_review_cycle.json",
+      "retained_path": "payloads/payroll.open_review_cycle.json",
+      "raw_sha256": "6b4955e7dad6300d90cc4d2a601ffb6ec6bdde28ca546513a3c3552cee569ff0",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.prepare_inputs.json",
+      "retained_path": "payloads/payroll.prepare_inputs.json",
+      "raw_sha256": "d3ac9bfea3ba9b7e70a1478a4d49d8598e7901d35e4f5d7f6fb45903933f9eaf",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.reopen_inputs.json",
+      "retained_path": "payloads/payroll.reopen_inputs.json",
+      "raw_sha256": "54556b0bfcbc3befb25eb93c4671ff4c194d77d1862ff1e25d8605572e9c4342",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.review.release.json",
+      "retained_path": "payloads/payroll.review.release.json",
+      "raw_sha256": "235b84a7ae5a0d0cd0e92ed767c43761f00cf550821ca46068aeac69a2dd34e6",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.review.replace_projection.json",
+      "retained_path": "payloads/payroll.review.replace_projection.json",
+      "raw_sha256": "afb51dbb29470c3059be90cd9703bde5c0b457a71148a66776726be337066afb",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.review.request.json",
+      "retained_path": "payloads/payroll.review.request.json",
+      "raw_sha256": "39aa1b2c670f0d92a93cbb858c7a6a4bece23571ee05bea1afa9c0e33996d8c3",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.review.request_append.json",
+      "retained_path": "payloads/payroll.review.request_append.json",
+      "raw_sha256": "f6165846d32226b985c83a21216efa1ab3d1ab1007cfd04c94a51d1e157f1e98",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.review.request_withdraw.json",
+      "retained_path": "payloads/payroll.review.request_withdraw.json",
+      "raw_sha256": "d0392f9b359b2be1f0b5591f82e46387aa44635aba5bcb9ff5a442c2eff340cc",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.review.respond.json",
+      "retained_path": "payloads/payroll.review.respond.json",
+      "raw_sha256": "79c65774571ba05ef561d2c0a565387a05f81bbb1a58adeb40cea8a3b4e85f77",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.revise_review_cycle.json",
+      "retained_path": "payloads/payroll.revise_review_cycle.json",
+      "raw_sha256": "30c2f150aede1d9be3d73d2850b8eee4390a958167c10258cded1075a3a020e0",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.revoke_tax_evidence.json",
+      "retained_path": "payloads/payroll.revoke_tax_evidence.json",
+      "raw_sha256": "d71d082e7111b0f9a65493dd035f23630894b3d68bdee2d963db63699c450193",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.supersede_approved_draft.json",
+      "retained_path": "payloads/payroll.supersede_approved_draft.json",
+      "raw_sha256": "518ba70141d07126123027e54473f93b6d05daf85ee9719d3e50b40bc7e64986",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/payroll.verify_tax_evidence.json",
+      "retained_path": "payloads/payroll.verify_tax_evidence.json",
+      "raw_sha256": "9fcc8dea8f360369c94749a8bdf7c82032d3aa9c8085bcb22d353893ed850ef2",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/review.decide.json",
+      "retained_path": "payloads/review.decide.json",
+      "raw_sha256": "c900824a8184624726facb605a5b7bdb4acef25749ff1d439088d65ef2535669",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/review.submit.json",
+      "retained_path": "payloads/review.submit.json",
+      "raw_sha256": "7a953daf4de0c09f777308e9098b9c342f315d2f2c87ad4ab57eb074189b3d4f",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/review.withdraw.json",
+      "retained_path": "payloads/review.withdraw.json",
+      "raw_sha256": "17ec1a883aeeca994e71bcbdb0faf141eee03520d107db67691e8e565128a1df",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/source.prepare_submission.json",
+      "retained_path": "payloads/source.prepare_submission.json",
+      "raw_sha256": "8c953e8b4040db77f8510b8e340ecb72f5561e9414fed9f2d45c539aca3f1aa8",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/source.propose_qualification.json",
+      "retained_path": "payloads/source.propose_qualification.json",
+      "raw_sha256": "4017505fa467249ac7797d3df6bc35b3809884e1abb8007d88293b898a13c8e9",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/source.revoke_qualification.json",
+      "retained_path": "payloads/source.revoke_qualification.json",
+      "raw_sha256": "d08eab7f478f2d34b4f20d379ef523977006e6be2e8095c2dea1f3312459613a",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/source.verify_qualification.json",
+      "retained_path": "payloads/source.verify_qualification.json",
+      "raw_sha256": "c5a897620aa0cf7e5d6684ab55c7124b47fa9fa0f7cc5c0135a1a8a3f5dbd01a",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/work.transfer.execute.json",
+      "retained_path": "payloads/work.transfer.execute.json",
+      "raw_sha256": "4945c4c4fc953caf1fbd94ec5454b8149b1791dbda1d131da5d3b2749a00429c",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/work.transfer.stop.json",
+      "retained_path": "payloads/work.transfer.stop.json",
+      "raw_sha256": "9750d65e664763074b98abc08023398dba937bcad7a13a3cd97459f5ffb4a188",
+      "compression": null
+    },
+    {
+      "source_path": "payloads/work.transfer.submit.json",
+      "retained_path": "payloads/work.transfer.submit.json",
+      "raw_sha256": "a6c847279efd7375717f60f7e3485817e8b4378442677fa89aeb0914ba67883a",
+      "compression": null
+    },
+    {
+      "source_path": "project_normalized_schemas.py",
+      "retained_path": "project_normalized_schemas.py",
+      "raw_sha256": "02f9a8ded39e5f0e7d24bbb4e8aa7a8a1f98c4a7270cf0f8ee3efb3041a4e1c7",
+      "compression": null
+    },
+    {
+      "source_path": "reference-execution.log",
+      "retained_path": "reference-execution.log.gz",
+      "raw_sha256": "dddbbc9124452f77928e77885501b316308aee0bed6009eb67c7ac47fadcb755",
+      "compression": "gzip"
+    },
+    {
+      "source_path": "reference-r2-execution.log",
+      "retained_path": "reference-r2-execution.log.gz",
+      "raw_sha256": "46cff9c792a6130411e9decb17642ee9ab25b5641a82f03af7f2a13a2f5e2abf",
+      "compression": "gzip"
+    },
+    {
+      "source_path": "revision-history.md",
+      "retained_path": "revision-history.txt",
+      "raw_sha256": "454c201dffb46cf72ad92a16ab2c676e7fff41bc32b2134db6cadf739b814217",
+      "compression": null
+    },
+    {
+      "source_path": "schema-execution.json",
+      "retained_path": "schema-execution.json",
+      "raw_sha256": "00435535dfb7c8114d212b063a1a3af2c3a5797188e626a645d6e091415d992f",
+      "compression": null
+    },
+    {
+      "source_path": "schema-r2-execution.json",
+      "retained_path": "schema-r2-execution.json",
+      "raw_sha256": "00435535dfb7c8114d212b063a1a3af2c3a5797188e626a645d6e091415d992f",
+      "compression": null
+    },
+    {
+      "source_path": "schema_check.py",
+      "retained_path": "schema_check.py",
+      "raw_sha256": "fc07ba2c8f578dd3a3df342e71188329cee7a3fc5b3ae005e619bf6b3aa4217c",
+      "compression": null
+    },
+    {
+      "source_path": "signature-contract.rs",
+      "retained_path": "signature-contract.rs",
+      "raw_sha256": "36a88e7da82e42f519102d990c67c8d8fac070cabf2246fb8435da475734f4e9",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/boundary-ports.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/boundary-ports.json",
+      "raw_sha256": "9b695429c8e1c73c02fd683eaa4d0c2c0fa2a07a0225c3d58f400153a807fc92",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "retained_path": "source/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "raw_sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "retained_path": "source/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "raw_sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/entry.txt",
+      "retained_path": "source/2026-09-12-common-action-technical-14/entry.txt",
+      "raw_sha256": "ef855f40b2b9484e352db058fe0321726fdaab144a61a9bab6f157ee5ef20a0d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/fingerprint-vectors.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/fingerprint-vectors.json",
+      "raw_sha256": "02c804d2a82600e013a3a122752f9d82ce5f733e6adffa466e88aec082848711",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/migration-and-proof.txt",
+      "retained_path": "source/2026-09-12-common-action-technical-14/migration-and-proof.txt",
+      "raw_sha256": "54a665ce9703dd25949f9ad73641d88134e43f131555953ed516eb956b655a2d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/proof-cases.csv",
+      "retained_path": "source/2026-09-12-common-action-technical-14/proof-cases.csv",
+      "raw_sha256": "f246799efdc0f2872970fc90d15255d54d52ff7516ba002d9354d75688621a65",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/record.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/record.json",
+      "raw_sha256": "b9c2f6146303070a216a0a179737d58af295fc80888f2468e81826724c29083f",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/registration-contract.txt",
+      "retained_path": "source/2026-09-12-common-action-technical-14/registration-contract.txt",
+      "raw_sha256": "19d53204eb859b19c037974adeced39b0b3e90302d1ee7a634ff1336a704d59c",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/registration.csv",
+      "retained_path": "source/2026-09-12-common-action-technical-14/registration.csv",
+      "raw_sha256": "50bce656da13a558cfd0e8dd0845379290c0ba5d4b65a0466a322f61b24fe0fe",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/review-history.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/review-history.json",
+      "raw_sha256": "67b359de84c12e7a55294a71eb67af3e1e1cc033039ab594949fdffa375c1ea4",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/review-receipt.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/review-receipt.json",
+      "raw_sha256": "b174475043764b93857b550d1d509935ca222d64afb0442a149eda003a4b1035",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/review.html",
+      "retained_path": "source/2026-09-12-common-action-technical-14/review.html",
+      "raw_sha256": "d08a1138c598f61d1280a4847ea0062fb84126ffe4809a67d7edd9ecc1fa5194",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "raw_sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/scope.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/scope.json",
+      "raw_sha256": "79b00f02baa114af5d862f84d2fef28c713f0c7f9685d78e87b4205d34cf25b8",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/source-identities.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/source-identities.json",
+      "raw_sha256": "0d3a683e65b02bceb16ca24a48c8f07872892d662369b150e2fd8bb5dd29ec64",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/validation.json",
+      "retained_path": "source/2026-09-12-common-action-technical-14/validation.json",
+      "raw_sha256": "d3aded1ac60d6fac60720536cc3318ab90d6071fe507f5601558f22904cb6619",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-common-action-technical-14/verify-packet.py",
+      "retained_path": "source/2026-09-12-common-action-technical-14/verify-packet.py",
+      "raw_sha256": "fcaa977875b9e493f4f2defff65a9332ade27ca8baae1cab929f6965434a9d39",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/entry.txt",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/entry.txt",
+      "raw_sha256": "123afbb882ee931348e8d23085a759a013a6f629c5c5f88c79fed15f77ae8f4d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/native-contract.txt",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/native-contract.txt",
+      "raw_sha256": "ecb0d073f1998a87e05968c96505e3d4fdb5264647460ec77931067bfd95c5dd",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/native-types.schema.json",
+      "raw_sha256": "cf49487e8de7a427092b6f97c0b8a7d901f3805d465403c5f7dc54c9f419f62b",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/normalization-vectors.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/normalization-vectors.json",
+      "raw_sha256": "0176d3bdc77fdca3119ebfb3a98dc7269807516fe09b3aec694e71d4f5ac12f7",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/owner-and-migration.txt",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/owner-and-migration.txt",
+      "raw_sha256": "48ab817eef2e1bec6d7e786d5d3001c5b4935c3aa615eb0e2ec3548bc31086dc",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/physical-contract.sql.txt",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/physical-contract.sql.txt",
+      "raw_sha256": "531c8b6acdb596544f2d1a75d001267fe4255a62a89229eff212af84eb06f1db",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/proof-cases.csv",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/proof-cases.csv",
+      "raw_sha256": "5ec8219306e32eb4e2656b7d09a57c5a5e480901ad76791851f2e069fd22fdb4",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/readiness.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/readiness.json",
+      "raw_sha256": "1919479e2f7ab8ddfb3ef4378fa158eab4a50c036ec92fbafea04b2264df3e5d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/record.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/record.json",
+      "raw_sha256": "788460322d7c31992c38079505b7143d75e327294140557e57e3c90f4eac5415",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/review-history.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/review-history.json",
+      "raw_sha256": "e668ffa4db7dcf2484d29db780d7d93ef0f6f5450504768c2a260c11332b69fa",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/review-receipt.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/review-receipt.json",
+      "raw_sha256": "b31d0e169c56e9f33df1eeb6d42c6d21d07419ad2bd2bcfe6c163f47fc01268c",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/review.html",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/review.html",
+      "raw_sha256": "e916ff213f850086d18c8f9dfe7bc9778f2772889adf09134e5747335bf064f7",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/scalar-and-encoding.txt",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/scalar-and-encoding.txt",
+      "raw_sha256": "fd9f54f39801df50120a03b685c9a37497179741a98ce4e5fc563f8bfbfd4157",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/scope.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/scope.json",
+      "raw_sha256": "33c56405d4149940dd2b0c37f2902029ec59a603874337cc0d386950db8f5c80",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/source-identities.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/source-identities.json",
+      "raw_sha256": "97d19cd7752036e43526c98d049f830dbb677ce7863fff13e76157269ed1c4c9",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/source-slot-cardinality.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/source-slot-cardinality.json",
+      "raw_sha256": "c7b3de12a98592a2e3cb2d7de7de90469cc4b282fe247d76a528fb91e4123fa0",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/validation.json",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/validation.json",
+      "raw_sha256": "541e5828f61651bb7aa39dfd61b435ca7c65659709afb38d5d1794301869b90f",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-native-manifest-contract-18/verify-packet.py",
+      "retained_path": "source/2026-09-12-native-manifest-contract-18/verify-packet.py",
+      "raw_sha256": "eee42f0fc9ed333fe75ef5d959ea811063720a7812dd02b8cc5e38892cecfaf9",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/dependency-contract.csv",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/dependency-contract.csv",
+      "raw_sha256": "7eb670e0b092915b028baf59b3eb34acff965bcca7a2f390e18d07ac4a70cff8",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/encoding-and-packages.txt",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/encoding-and-packages.txt",
+      "raw_sha256": "6e2a33d756a8b19d5d370d7513bf8d32531ec23ccde35a7ba3821c28e979255f",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/entry.txt",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/entry.txt",
+      "raw_sha256": "cfe62b605331ca755b49afeff9e821962b2f90985f6814883ea122fc36d66f51",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/normalization-vectors.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/normalization-vectors.json",
+      "raw_sha256": "e8da94a456a059a5b6764dac852896981278683502d5e55251b06bfb3b427368",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/proof-cases.csv",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/proof-cases.csv",
+      "raw_sha256": "bac8dac65d58b43875c8c899d8627566f56d02c9efb3b67b52bb42759dec2647",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/readiness.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/readiness.json",
+      "raw_sha256": "7f2ff3c42cb8dd6be84e544d12169cfb73456df4224ccf9b57eee11b71db1956",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/record.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/record.json",
+      "raw_sha256": "b3cbeeea26bff62d53e3cdc396cb02412401d793813e75ac896ce135053807e0",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/repair-and-readiness.txt",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/repair-and-readiness.txt",
+      "raw_sha256": "62dbc439d156c4d94d46e7ab3d7e28027e7af6a211d5a8cd385c085bd9e3b787",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/review-history.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/review-history.json",
+      "raw_sha256": "7e6b91a1d5b40a0cdc143451ffb7b045c6fdcc398ebb9aed3d91a6eb5517eda4",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/review-receipt.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/review-receipt.json",
+      "raw_sha256": "dd380fef00ccb2ccd79b7199990bfa76bfd9f79e6c1da193b4529409e495e8be",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/review.html",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/review.html",
+      "raw_sha256": "49d5edf6b8cc27fa437b28b9885b8aa24e22e75fc9f280a767c0b8c46a1c5cc7",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/scope.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/scope.json",
+      "raw_sha256": "bc940aa82324432aa476894aecc1fa17ad186b4ba94aa0b888c0701689cb2675",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/source-contract.txt",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/source-contract.txt",
+      "raw_sha256": "ecd92c45511c4b72ed044252ab5ba8e5f90d4ac6672d3cb8682cf5126808c695",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/source-identities.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/source-identities.json",
+      "raw_sha256": "f00ba9bbaa3be4e4d9620495c3f8efe2abb215c6de0aa6a2587b91e1cc5ac135",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/source-types.schema.json",
+      "raw_sha256": "6d52b788855826e553a9e4a8e31c3e777fa80a878d03debbb1ceb2d84de7a71e",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/state-contract.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/state-contract.json",
+      "raw_sha256": "1908c1e49f95c94b77ffaf5d30874f1f00c05e8c9639123aa0ba7c9509188329",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/validation.json",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/validation.json",
+      "raw_sha256": "062acfc25e07ae63cce7d26d4e1e782fa43f5d38fd2f787e6426262c3a31ac51",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-12-source-payload-contract-19/verify-packet.py",
+      "retained_path": "source/2026-09-12-source-payload-contract-19/verify-packet.py",
+      "raw_sha256": "6d3367ef8e66101c1bdf4c4b06fe5279151b9fb5c2026cd4b78507049ce5d30a",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/action-inventory.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/action-inventory.json",
+      "raw_sha256": "9fd07ebe08b7c11f6bdac7b889a64e32eb3817eb3e71fcea26f9e16f54636cb8",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/budgets.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/budgets.json",
+      "raw_sha256": "cbcbb179fdd8f0d6f87dfb782f364ad6cac4310046ab4ca193bb9c9755a8056a",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/choices.txt",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/choices.txt",
+      "raw_sha256": "a9cce388ce092ff852852430fa648dea7df2425861df56b3a5c592b2d6947a6f",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/contract.txt",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/contract.txt",
+      "raw_sha256": "8e59a8c76e87f752d70010667b647216f76c3672dd35c6792828fb1c8d575dfc",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/dependency-templates.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/dependency-templates.json",
+      "raw_sha256": "de6018168902506a031e38b36b2aa6f89c01d59a6f3f98ece48794752318de7c",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/entry.txt",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/entry.txt",
+      "raw_sha256": "63ff11fcdbe0129e473816ffd9773e41cd7531d1934fe327dec28d0d61468834",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/lifecycle.csv",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/lifecycle.csv",
+      "raw_sha256": "935cbd680a96f1126e6d04b9eb8c198e3f67eff2058405f63d1b69afa9b52c70",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/proof-cases.csv",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/proof-cases.csv",
+      "raw_sha256": "ce59ddc9017fd4bfd698c17732832762eb9abf23e776aaabf526633723b99c83",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/readiness.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/readiness.json",
+      "raw_sha256": "e5b8f825cd8cc763e7eceb37fc6d5d09bb304e3ae25d1fd485334b9afc4efb1e",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/record.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/record.json",
+      "raw_sha256": "da011dcc21f37578749db111c28e7ac7d7b9c26a3e5d44006e397436769a13d0",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/reference-rules.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/reference-rules.json",
+      "raw_sha256": "cba7d6cc01282ad47144d8fc81d0d0c79c2af051b546a7b326a9e889bcaa7872",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/review-history.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/review-history.json",
+      "raw_sha256": "21adf807a6296c478381737281cf7ba1b3654a99dd90b6d830f1419301591315",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/review-receipt.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/review-receipt.json",
+      "raw_sha256": "2decf62d16c95389275ac2edb22e46296165994e88e1dae78fd2e85d9ea9e706",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/review.html",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/review.html",
+      "raw_sha256": "88e8a1a48bb2d16c9dc89bcd46a734ad2109ea505d7ec8372a4922308feeaf8d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/schema-reference-sites.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/schema-reference-sites.json",
+      "raw_sha256": "d9575f91a59aeed54abe359b50397d8882c42c444cf4b5f137fa9288d1cf959a",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/scope.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/scope.json",
+      "raw_sha256": "e877a32f115b18d53c9e9374efa5f50ef3d6b6c478054680dde329b8875ed891",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/source-identities.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/source-identities.json",
+      "raw_sha256": "88a351674d1793a744b4dce713bbbd20c9ec69ff9120b150aa8c073c98207c0b",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/validation.json",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/validation.json",
+      "raw_sha256": "42e0be7c7870bf28abf38121b3037115541f3d14ee85fbe4d09edfeb3e301f37",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-evidence-protection-contract-26/verify-packet.py",
+      "retained_path": "source/2026-09-13-evidence-protection-contract-26/verify-packet.py",
+      "raw_sha256": "044b69f95f0d3cf537c6a3b7064ca5b282ce2651f3a1817cdad7946c1bfcb270",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/PRODUCT.proposed.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/PRODUCT.proposed.txt",
+      "raw_sha256": "95d355c8eba7ce56594db8aaacc213133eb18eae32f9fe79945c940088010c4e",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/ROADMAP.proposed.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/ROADMAP.proposed.txt",
+      "raw_sha256": "16862f4bb350b74d417cea291396f355680ef1ade0e7fc32bbcd74cc2ca12d37",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/action-bindings.csv",
+      "retained_path": "source/2026-09-13-integrated-design-30/action-bindings.csv",
+      "raw_sha256": "00ed92ad8bbe52307d68b064c11a9cebc10cae1b5742c6b7fa2f2bc5545cdeaf",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/action-types.schema.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/action-types.schema.json",
+      "raw_sha256": "3aac115e3792430fbf6b5106d70e30ed2ca7626765051a00a3f2868553e85fc3",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/actor-migration.csv",
+      "retained_path": "source/2026-09-13-integrated-design-30/actor-migration.csv",
+      "raw_sha256": "434cfef1ead44079323100e491e3b657a6b31b4820921e3220824ddc93f7f392",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/authority-proposal.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/authority-proposal.txt",
+      "raw_sha256": "97d22db164f7b0342fad21bb3badd81c42005755f39bfd556042c5a19699e6d0",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/concurrency-protocol.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/concurrency-protocol.txt",
+      "raw_sha256": "3f77aa275b29c50713516397f6771e560fdc6709bddd9e6146328e9418ce4c04",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/control-types.schema.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/control-types.schema.json",
+      "raw_sha256": "56663ed3fa4af03145bdc0456fe46606695bab3a84568f6ac1e5a8bc93539330",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/custody-schema.sql.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/custody-schema.sql.txt",
+      "raw_sha256": "12eb8d07c6241c19bc780d92e902ee26da5ca91c15dc6182324409c0d8017265",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/design-corrections.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/design-corrections.txt",
+      "raw_sha256": "bc35ff8ff977aa7c521a230f87502921ae7a4c7ca8892e015023d6a790eadaf8",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/entry.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/entry.txt",
+      "raw_sha256": "4ddd59dbef9d71084d679a80c285d98a5e476f2481e04f2999be706ae6e971e1",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/fixtures.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/fixtures.json",
+      "raw_sha256": "6c1bf3f5aa4b8c8cdc80d3fb55cd1196e75a894167d4d84125b5aaa18be94351",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/follow-up-work-contract.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/follow-up-work-contract.txt",
+      "raw_sha256": "fabf4d8592e7ea897272b040920ff550d79c64dec36bcc65e36c88d8eda626f4",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/integration-corrections.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/integration-corrections.txt",
+      "raw_sha256": "4d32bbf3193d90d3f6dda66aaa416fe5d0ae25e852afc4bce44128a04654d4b4",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/journal-types.schema.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/journal-types.schema.json",
+      "raw_sha256": "37fc788c2adc33c7e5e9f833652361051d40898874d4131353a5573b75604d22",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/object-owner-custody-contract.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/object-owner-custody-contract.txt",
+      "raw_sha256": "4b2b68613fc20cfa788db2e551cbdfccc9b84aeadd2cf3994fa847f977fd6f36",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/operations-recovery-information-flow.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/operations-recovery-information-flow.txt",
+      "raw_sha256": "479b8d0e470ada6b09de4ff68d82e6a173f5e80d436cc86c69c346404abd7846",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/owner-bindings.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/owner-bindings.json",
+      "raw_sha256": "181e55b7313c2ce4c3996b345ec0d4a2d6aeb99fe5a3f3383354e0e9459ed23e",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/participant-contract.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/participant-contract.txt",
+      "raw_sha256": "569bb08f5d7983a00a432a1c52d1ed8043ced847cb8cb09aa39e4afc518d183d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/physical-contract.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/physical-contract.txt",
+      "raw_sha256": "0cb892a71898cee7ea311b3d568a7f4f8ab35243c6beffecd6f08edc71c891af",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/readiness.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/readiness.json",
+      "raw_sha256": "ef75a67339654ef4a06ce4f164f7cd26ed3231595a104fd953665f85040e3304",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/review.html",
+      "retained_path": "source/2026-09-13-integrated-design-30/review.html",
+      "raw_sha256": "c7b5bc0d891688ccbd84bf197df2defdb5aac2189df61de1e2e23d3ad5df4590",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/review.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/review.txt",
+      "raw_sha256": "e81413d93ad92146af64b1d7e323d7263bfa45d67c7b2c72e2b529b95e28c9bd",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/revision-origin.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/revision-origin.json",
+      "raw_sha256": "2062258afe60880e92a16d7665d06d5cbde1be0c6495ce55cb8fbd524ea63a67",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/run-manifest.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/run-manifest.json",
+      "raw_sha256": "744437a0fc82341914327afe6487669e35646d18f73747e5fbff167319f7b6fc",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/screen-integration.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/screen-integration.txt",
+      "raw_sha256": "bf37a4a87eb000bc649e2e513b5ae73339f948deea26618437784719868664f8",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/source-census.csv",
+      "retained_path": "source/2026-09-13-integrated-design-30/source-census.csv",
+      "raw_sha256": "5c5a66fdb15a7d10dcdfd20e6f72d9a04a03ddabe6372e36d5326251f108662c",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/source-identities.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/source-identities.json",
+      "raw_sha256": "91567c3f149349fd2276a5609c4091dfbdfedac530d7371bccaa31ccba36e5f8",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/source-sink-map.csv",
+      "retained_path": "source/2026-09-13-integrated-design-30/source-sink-map.csv",
+      "raw_sha256": "d5bac022c9fd7ffa08b3325d68129897a668e32c494d4df9c29ffdb74bbdb376",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/storage-mapping.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/storage-mapping.json",
+      "raw_sha256": "09fff6540daaf9f97b3b302c8bee102059327ab604886866feb6b64fef8c1ce4",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/types.schema.json",
+      "retained_path": "source/2026-09-13-integrated-design-30/types.schema.json",
+      "raw_sha256": "875a3ee2159aa40608fd8d091ad2e92ef58b84e26ab75b2c423d688e8c095a55",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/verification-plan.txt",
+      "retained_path": "source/2026-09-13-integrated-design-30/verification-plan.txt",
+      "raw_sha256": "7470ee853b6602e05e40ceb870f4a816dbefbd6fedf9309ce54f02ba89d51b9d",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-integrated-design-30/verify-packet.py",
+      "retained_path": "source/2026-09-13-integrated-design-30/verify-packet.py",
+      "raw_sha256": "1cbcf41994f1ff327aa1f77bbba10721729ab1299f2afaf131a6c3ead1b5cc1b",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/contract.txt",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/contract.txt",
+      "raw_sha256": "cf7c1eeba17475722d7d93e76e5b144805dadca39502c4a824998e986d81c3c2",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/entry.txt",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/entry.txt",
+      "raw_sha256": "6a00357db5cc53412c5f6ba464a09fc2f53bc1dfb6aa113eef5213c13a881b6c",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/framing-vectors.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/framing-vectors.json",
+      "raw_sha256": "4d4cb9ab6a81f909a9073e41782729c02c6da8a1a10ccdea2586e93742b7d17f",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/proof-cases.csv",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/proof-cases.csv",
+      "raw_sha256": "81046f60f50a6e050ffa2af1bba4e51055fd07e301e622b2361619599a25cd36",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/readiness.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/readiness.json",
+      "raw_sha256": "5739f29f59a6ca09ca4e9011ae1da066c62dbf210d3fe778aa9b3e21f188f3a7",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/record.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/record.json",
+      "raw_sha256": "90c656ac9b5aff7adaf578f653949718b544a840ef910f3531d367ea1569a698",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/review-history.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/review-history.json",
+      "raw_sha256": "6d4ce8c6091d68d4091da0ab7bec8407945d0af8951d96305a8c2a63f0b77bfe",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/review-receipt.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/review-receipt.json",
+      "raw_sha256": "525ae49b5215d69a92008dfdf7cf1981ea6e2cf1066a54cec5f752796b4140c3",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/review.html",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/review.html",
+      "raw_sha256": "368625d059293cd5bc696f8670a6d62e23b09073383bf297cac1115e14192254",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/scope.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/scope.json",
+      "raw_sha256": "05d765b560d92cdb668de38613369973b3d0a711971306da98d9ecfaa941621f",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/source-identities.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/source-identities.json",
+      "raw_sha256": "897ce26dc4addc255f31eee4c5ff209dd8b6c6f13ba61e73c9c0042609b4b5ea",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/storage.sql.txt",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/storage.sql.txt",
+      "raw_sha256": "d5deaeb0f39f3b93dbf2424566c86bc4df770bd36a0d7f0f7bee52e9a19193f0",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/submission-types.schema.json",
+      "raw_sha256": "21f89a8849abd39dd1edee2d7eba71dfb24cb4d543bc4f8c54b93f7598088a65",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/validation.json",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/validation.json",
+      "raw_sha256": "2c0ef612154a7795ca9a7c648a32595d6d274db036fc9ab873606f2205dc3157",
+      "compression": null
+    },
+    {
+      "source_path": "source/2026-09-13-submission-custody-contract-24/verify-packet.py",
+      "retained_path": "source/2026-09-13-submission-custody-contract-24/verify-packet.py",
+      "raw_sha256": "54c98b1eee372a0610729ca454bae18f9143f3298f4c784d6ed01491b23e4f96",
+      "compression": null
+    },
+    {
+      "source_path": "source-custody.json",
+      "retained_path": "source-custody.json",
+      "raw_sha256": "f1a87e12f994ad721c7e54f9231adf2c65c13cc4b61130b65da4348f25c53fee",
+      "compression": null
+    },
+    {
+      "source_path": "test_reference.py",
+      "retained_path": "test_reference.py",
+      "raw_sha256": "24a9e9f53d5334b1c16ebfe9fb2e165cac5065007bd0b8cbe9be006fe90c0dc3",
+      "compression": null
+    },
+    {
+      "source_path": "upload.csv",
+      "retained_path": "upload.csv",
+      "raw_sha256": "63ebe81b75eb31ee1d90d53441f402b529f4a765307d9b5fb89a1f6849698f8e",
+      "compression": null
+    }
+  ]
+}

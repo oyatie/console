@@ -1,0 +1,91 @@
+{
+  "classification": "RUSTFMT_PARSE_ONLY",
+  "checks": [
+    {
+      "source": "browser-auth-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/browser-auth-producer.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "source": "browser-case-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/browser-case-producer.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "source": "two-subject-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/two-subject-producer.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "source": "browser-runtime-helpers.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/browser-runtime-helpers.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "source": "browser-acceptance-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/browser-acceptance-producer.rs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "source": "payroll-source-facts-producer.rs",
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--emit",
+        "stdout",
+        "/private/tmp/console-browser-owner-producer-r3-20260914/payroll-source-facts-producer.rs"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "owner_rust_compiled": false,
+  "owner_tests_executed": 0
+}

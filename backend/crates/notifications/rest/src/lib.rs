@@ -25,7 +25,7 @@ use console_notifications_application::{
 use console_notifications_domain::{
     NotificationLink, NotificationPolicyId, NotificationPolicyScope,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::Principal;
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
@@ -55,21 +55,24 @@ pub const NOTIFICATIONS_ROUTE_PATHS: &[&str] = &[
 #[derive(Debug, Clone)]
 pub struct NotificationRestState {
     store: PgNotificationStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl NotificationRestState {
     #[must_use]
-    pub fn new(store: PgNotificationStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(
+        store: PgNotificationStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
 
 pub fn router(state: NotificationRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(ME_NOTIFICATIONS_PATH, get(list_notifications))
@@ -390,7 +393,7 @@ async fn principal_from_headers(
     state: &NotificationRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for notifications API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -400,6 +403,9 @@ async fn principal_from_headers(
 
 fn rest_error_from_request_context(err: RequestContextError) -> RestError {
     match err {
+        RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for notifications API")
         }
@@ -417,7 +423,9 @@ fn rest_error_from_request_context(err: RequestContextError) -> RestError {
         RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        RequestContextError::InvalidToken => RestError::unauthorized("invalid bearer token"),
+        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => {
+            RestError::unauthorized("invalid bearer token")
+        }
         RequestContextError::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }

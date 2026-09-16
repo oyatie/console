@@ -26,7 +26,7 @@ use console_notifications_application::{
     NotificationSummary,
 };
 use console_notifications_domain::NotificationLink;
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_db::{DbError, with_org_conn};
 use console_platform_request_context::{RequestContextError, current_org};
 use serde::{Deserialize, Serialize};
@@ -882,6 +882,7 @@ impl PgRealtimeHub {
                 let connections = self.connections.lock().await;
                 connections
                     .values()
+                    .filter(|slot| slot.principal.org_id == org)
                     .filter(|slot| slot.principal.branch_scope.allows(branch_id))
                     .map(|slot| slot.principal.user_id)
                     .collect::<Vec<_>>()
@@ -896,6 +897,7 @@ impl PgRealtimeHub {
             let connections = self.connections.lock().await;
             connections
                 .iter()
+                .filter(|(_, slot)| slot.principal.org_id == org)
                 .filter(|(_, slot)| slot.principal.branch_scope.allows(branch_id))
                 .filter(|(_, slot)| {
                     candidate_users
@@ -1129,13 +1131,16 @@ impl PostgresBridgeHandle {
 #[derive(Debug, Clone)]
 pub struct RealtimeRestState {
     hub: Arc<PgRealtimeHub>,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl RealtimeRestState {
     #[must_use]
-    pub fn new(hub: Arc<PgRealtimeHub>, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { hub, jwt_verifier }
+    pub fn new(hub: Arc<PgRealtimeHub>, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            hub,
+            session_verification,
+        }
     }
 
     #[must_use]
@@ -1257,7 +1262,7 @@ async fn principal_from_headers(
     state: &RealtimeRestState,
     headers: &HeaderMap,
 ) -> Result<RealtimePrincipal, RealtimeApiError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RealtimeApiError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -1326,6 +1331,11 @@ fn websocket_protocol_bearer_token(headers: &HeaderMap) -> Result<Option<&str>, 
 
 fn realtime_error_from_request_context(err: RequestContextError) -> RealtimeApiError {
     match err {
+        RequestContextError::SessionVerificationUnavailable => RealtimeApiError::new(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "unavailable",
+            "session verification unavailable",
+        ),
         RequestContextError::VerifierUnavailable => RealtimeApiError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -1354,7 +1364,9 @@ fn realtime_error_from_request_context(err: RequestContextError) -> RealtimeApiE
         RequestContextError::MissingBearer => {
             RealtimeApiError::unauthorized("missing or malformed bearer token")
         }
-        RequestContextError::InvalidToken => RealtimeApiError::unauthorized("invalid bearer token"),
+        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => {
+            RealtimeApiError::unauthorized("invalid bearer token")
+        }
         RequestContextError::InvalidClaim(message) => {
             RealtimeApiError::unauthorized(format!("token claim is invalid: {message}"))
         }

@@ -1,0 +1,190 @@
+#!/usr/bin/env python3
+"""Freeze the shared metadata query into the standalone operator statement.
+
+No runtime SQL inputs or database-derived expectations. --check verifies bytes
+without writing. Numbered migration checksums match SQLx 0.9's SHA-384 format.
+"""
+from pathlib import Path
+import hashlib
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+TABLES = ('accounts', 'account_security', 'account_security_events',
+          'account_terms_acceptances', 'account_terms_head', 'account_terms_release_receipts')
+
+
+FENCE_BODY = """BEGIN
+    IF subject_account_id IS NULL THEN
+        RAISE EXCEPTION USING MESSAGE='account_fence_projection.null_identity', ERRCODE='22004';
+    END IF;
+    RETURN EXISTS(SELECT 1 FROM public.account_security WHERE account_id=subject_account_id);
+END;"""
+
+# Installed only by the existing operator transaction. This is a presence
+# projection, never credential or lifecycle write authority. Valid replay is
+# read-only; any incompatible existing routine is drift, not repair input.
+FENCE_INSTALL = """
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt'
+          AND rolcanlogin AND NOT rolsuper AND NOT rolbypassrls AND NOT rolinherit
+          AND NOT rolcreatedb AND NOT rolcreaterole AND NOT rolreplication
+    ) OR EXISTS (
+        SELECT 1 FROM pg_catalog.pg_auth_members m
+        JOIN pg_catalog.pg_roles r ON r.oid=m.member OR r.oid=m.roleid
+        WHERE r.rolname='console_auth_rt'
+    ) THEN
+        RAISE EXCEPTION 'account_fence_projection.role_mismatch';
+    END IF;
+    IF NOT fence_present THEN
+        -- Explicit dormant ACLs revoke even an owner's ordinary SELECT.
+        -- PostgreSQL FK key-share checks also require parent-column UPDATE.
+        -- This is ordinary owner-only UPDATE authority, not a lock-only right.
+        GRANT SELECT ON public.accounts, public.account_security TO console_account_owner;
+        GRANT UPDATE(id) ON public.accounts TO console_account_owner;
+        EXECUTE pg_catalog.format('CREATE FUNCTION public.account_legacy_fenced_v1(subject_account_id uuid)
+            RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
+            SET search_path=pg_catalog,pg_temp SET row_security=off AS %L', expected_fence_body);
+        ALTER FUNCTION public.account_legacy_fenced_v1(uuid) OWNER TO console_account_owner;
+        REVOKE ALL ON FUNCTION public.account_legacy_fenced_v1(uuid) FROM PUBLIC;
+        GRANT EXECUTE ON FUNCTION public.account_legacy_fenced_v1(uuid) TO console_auth_rt;
+    END IF;
+    IF (SELECT count(*) FROM pg_catalog.pg_proc p
+        JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+        WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') <> 1
+    OR NOT EXISTS (
+        SELECT 1 FROM pg_catalog.pg_proc p
+        JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+        JOIN pg_catalog.pg_roles owner_role ON owner_role.oid=p.proowner
+        JOIN pg_catalog.pg_language language ON language.oid=p.prolang
+        WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1'
+          AND owner_role.rolname='console_account_owner' AND language.lanname='plpgsql'
+          AND p.prokind='f' AND p.prosecdef AND NOT p.proisstrict AND NOT p.proretset
+          AND NOT p.proleakproof AND p.provolatile='s' AND p.proparallel='u' AND p.prosupport=0
+          AND p.pronargs=1 AND p.proargtypes=ARRAY['pg_catalog.uuid'::regtype::oid]::oidvector
+          AND p.proargnames=ARRAY['subject_account_id']::text[]
+          AND p.proallargtypes IS NULL AND p.proargmodes IS NULL AND p.provariadic=0
+          AND p.pronargdefaults=0 AND p.proargdefaults IS NULL
+          AND p.prorettype='pg_catalog.bool'::regtype AND p.probin IS NULL
+          AND p.prosqlbody IS NULL AND p.protrftypes IS NULL
+          AND p.prosrc=expected_fence_body
+          AND p.proconfig=ARRAY['search_path=pg_catalog, pg_temp','row_security=off']::text[]
+          AND (SELECT count(*)=2 AND count(DISTINCT a.grantee)=2 AND bool_and(a.grantor=p.proowner
+                AND a.privilege_type='EXECUTE' AND NOT a.is_grantable
+                AND a.grantee IN (p.proowner,'console_auth_rt'::regrole::oid))
+               FROM pg_catalog.aclexplode(COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a)
+    ) THEN
+        RAISE EXCEPTION 'account_fence_projection.definition_mismatch';
+    END IF;
+"""
+
+
+def generated_files():
+    query = (ROOT / 'backend/app/src/account_custody_state.sql').read_text().strip().removesuffix(';')
+    names = ','.join("'" + name + "'" for name in TABLES)
+    locks = ', '.join('ONLY public.' + name for name in TABLES)
+    inspect = 'state := (\n' + query + '\n);'
+    inspect_acl = f"""SELECT bool_and(c.relacl IS NOT NULL AND cardinality(c.relacl)=0) INTO dormant
+      FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+      WHERE n.nspname='public' AND c.relname IN ({names});"""
+    sql = f"""-- Generated by ops/generate-account-custody.py; review the canonical query.
+-- One atomic statement for SQLx and psql. The operator transport must set its
+-- statement_timeout before issuing this DO; changing it inside a running
+-- statement would not bound that statement. Relation waits are bounded here.
+DO $account_custody$
+DECLARE
+    state text;
+    relation_name text;
+    target_owner text;
+    populated boolean;
+    dormant boolean;
+    fence_present boolean;
+    expected_fence_body text := $fence_body${FENCE_BODY}$fence_body$;
+BEGIN
+    PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+    PERFORM pg_catalog.set_config('lock_timeout','5s',true);
+    IF session_user<>current_user
+       OR NOT (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=session_user)
+       OR session_user IN ('console_app','console_rt','console_auth_rt',
+          'console_leave_cmd','console_leave_definer','console_ontology_cmd',
+          'console_ontology_writer','console_platform_force_cmd',
+          'console_account_owner','console_terms_owner') THEN
+        RAISE EXCEPTION USING MESSAGE='account_custody.operator_identity_mismatch', ERRCODE='P0001';
+    END IF;
+    -- Before locking, inspect only existence and kind. Catalog helpers in the
+    -- full verdict can wait across another finalizer's ownership/ACL commit.
+    IF (SELECT count(*) FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname IN ({names})) <> {len(TABLES)} THEN
+        RAISE EXCEPTION USING MESSAGE='account_custody.catalog_missing', ERRCODE='P0001';
+    END IF;
+    IF EXISTS (SELECT 1 FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relname IN ({names}) AND c.relkind<>'r') THEN
+        RAISE EXCEPTION USING MESSAGE='account_custody.catalog_shape_mismatch', ERRCODE='P0001';
+    END IF;
+    LOCK TABLE {locks} IN ACCESS EXCLUSIVE MODE;
+    -- The complete verdict is authoritative only under the six relation locks.
+    {inspect}
+    IF state IS DISTINCT FROM 'account_custody.finalized' AND state IS DISTINCT FROM 'account_custody.pending' THEN
+        RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
+    END IF;
+    -- Inspect the complete profile and any same-named routine BEFORE mutation.
+    -- Valid historical v1 has neither reads nor function; prepared v2 has both.
+    {inspect_acl}
+    SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p
+      JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+      WHERE n.nspname='public' AND p.proname='account_legacy_fenced_v1') INTO fence_present;
+    IF dormant IS NULL OR dormant=fence_present THEN
+        RAISE EXCEPTION 'account_fence_projection.profile_mismatch';
+    END IF;
+    IF state='account_custody.pending' THEN
+    FOREACH relation_name IN ARRAY ARRAY[{names}] LOOP
+        EXECUTE format('SELECT EXISTS(SELECT 1 FROM public.%I)',relation_name) INTO populated;
+        IF populated IS DISTINCT FROM false THEN
+            RAISE EXCEPTION USING MESSAGE='account_custody.nonempty_staging', ERRCODE='P0001';
+        END IF;
+    END LOOP;
+    FOREACH relation_name IN ARRAY ARRAY[{names}] LOOP
+        target_owner := CASE WHEN relation_name IN ('account_terms_head','account_terms_release_receipts')
+            THEN 'console_terms_owner' ELSE 'console_account_owner' END;
+        EXECUTE format('ALTER TABLE public.%I OWNER TO %I',relation_name,target_owner);
+    END LOOP;
+    {inspect}
+    IF state IS DISTINCT FROM 'account_custody.finalized' THEN
+        RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
+    END IF;
+    END IF;
+{FENCE_INSTALL}
+    -- Certify the complete installed state, not merely the routine definition.
+    {inspect}
+    IF state IS DISTINCT FROM 'account_custody.finalized' THEN
+        RAISE EXCEPTION USING MESSAGE=COALESCE(state,'account_custody.catalog_missing'), ERRCODE='P0001';
+    END IF;
+    {inspect_acl}
+    IF dormant IS DISTINCT FROM false THEN
+        RAISE EXCEPTION 'account_fence_projection.profile_mismatch';
+    END IF;
+END
+$account_custody$;
+"""
+    migrations = sorted((ROOT / 'backend/crates/platform/db/migrations').glob('*.sql'))
+    ledger = ''.join(str(int(path.name.split('_', 1)[0])) + '\t'
+                     + hashlib.sha384(path.read_bytes()).hexdigest() + '\n' for path in migrations)
+    return {'ops/postgres-finalize-account-custody.sql': sql,
+            'ops/account-custody-migrations.sha384': ledger}
+
+
+def main():
+    if sys.argv[1:] not in ([], ['--check']):
+        raise SystemExit('usage: generate-account-custody.py [--check]')
+    for name, expected in generated_files().items():
+        path = ROOT / name
+        if sys.argv[1:]:
+            if not path.is_file() or path.read_bytes() != expected.encode():
+                raise SystemExit('generated Account custody artifact differs: ' + name)
+        else:
+            path.write_bytes(expected.encode())
+
+
+if __name__ == '__main__':
+    main()

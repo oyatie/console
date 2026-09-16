@@ -1,0 +1,43 @@
+{
+  "recorded_at": "2026-09-13T04:20:44.179795+00:00",
+  "status": "SCOPED_SOURCE_RESULT_IDENTITY_AND_RECOVERY_MAPPING_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Full12files reviewed;7 reciprocal mappings, finite19 prior-event chain, old-command preserving claim/historical successor, reciprocal head pointer and11 screen mappings accepted within explicit structural scope. Two CSV line-ending-only corrections confirmed.",
+      "independently_verified_static_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Full12files reviewed;7 reciprocal mappings, finite19 prior-event chain, old-command preserving claim/historical successor, reciprocal head pointer and11 screen mappings accepted within explicit structural scope. Two CSV line-ending-only corrections confirmed.",
+      "independently_verified_static_sha": "596356ec5c4778a6d835900d657f6a96b03ef9e4",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "F01 full source custody/adoption/Account and batch input envelope",
+    "F02 complete seven source/head/domain projections and owner bodies; current head completeness, subjects, roster/legacy downgrade and final participant integration",
+    "F03 retention/adoption/provider; F04 actual identity/Cedar/log/egress information-flow proof boundaries",
+    "F05-F08 migration/journal/recovery/harness final contracts",
+    "W01-W03 final integration reconciliation, current-authority alignment, four final integrated rounds and explicit design/test SHA approvals",
+    "Actual SQL/catalog/races/load/Verus proof not executed; separate production/payment/legal authority"
+  ]
+}

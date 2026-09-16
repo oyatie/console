@@ -527,3 +527,136 @@ async fn digest_conflict_from_port_surfaces_as_conflict_not_internal() {
         other => panic!("expected Store(Domain(Conflict)), got {other:?}"),
     }
 }
+
+// Diagnostic text must never opt an ordinary error into a typed outcome.
+#[derive(Debug)]
+struct UnknownLookingOperation;
+
+impl std::fmt::Display for UnknownLookingOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("database durability UNKNOWN: ordinary operation control")
+    }
+}
+
+impl CanonicalPortError for UnknownLookingOperation {
+    fn into_kernel_error(self) -> KernelError {
+        KernelError::internal(self.to_string())
+    }
+}
+
+struct UnknownLookingOperationPort;
+
+impl CanonicalPort for UnknownLookingOperationPort {
+    type Object = Company;
+    type Query = EchoQuery;
+    type Command = (OrgId, CommandId, UserId, DispatchTarget);
+    type Error = UnknownLookingOperation;
+
+    fn preflight(_query: &Self::Query) -> Preflight {
+        Preflight::ok()
+    }
+
+    fn command(
+        org_id: OrgId,
+        command_id: CommandId,
+        actor_id: UserId,
+        query: Self::Query,
+        _action_key: &str,
+        _object_type_id: Uuid,
+    ) -> Self::Command {
+        (org_id, command_id, actor_id, query.dispatch_target())
+    }
+
+    fn execute(&self, _command: &Self::Command) -> Result<CanonicalReceipt, Self::Error> {
+        Err(UnknownLookingOperation)
+    }
+}
+
+#[tokio::test]
+async fn diagnostic_unknown_prefix_does_not_classify_an_operation_error() {
+    let registry = ProjectedDispatchRegistry::new().register_port(UnknownLookingOperationPort);
+    let error = registry
+        .dispatch(input(
+            "company.revise",
+            json!({"attributes": {}}),
+            Some(Uuid::nil()),
+        ))
+        .await
+        .expect_err("ordinary operation fails");
+    let response = super::RestError::from_action(error);
+    assert_eq!(
+        response.status,
+        axum::http::StatusCode::INTERNAL_SERVER_ERROR
+    );
+    assert_eq!(response.code, "internal");
+    assert_eq!(
+        response.message,
+        "database durability UNKNOWN: ordinary operation control"
+    );
+}
+
+// Future-interface supplement. Not part of executable baseline admission.
+#[derive(Debug)]
+struct TypedUnknownControl(&'static str);
+impl std::fmt::Display for TypedUnknownControl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.0)
+    }
+}
+impl CanonicalPortError for TypedUnknownControl {
+    fn is_completion_unknown(&self) -> bool {
+        true
+    }
+    fn into_kernel_error(self) -> KernelError {
+        KernelError::internal(self.to_string())
+    }
+}
+struct TypedUnknownControlPort(&'static str);
+impl CanonicalPort for TypedUnknownControlPort {
+    type Object = Company;
+    type Query = EchoQuery;
+    type Command = (OrgId, CommandId, UserId, DispatchTarget);
+    type Error = TypedUnknownControl;
+    fn preflight(_query: &Self::Query) -> Preflight {
+        Preflight::ok()
+    }
+    fn command(
+        org_id: OrgId,
+        command_id: CommandId,
+        actor_id: UserId,
+        query: Self::Query,
+        _action_key: &str,
+        _object_type_id: Uuid,
+    ) -> Self::Command {
+        (org_id, command_id, actor_id, query.dispatch_target())
+    }
+    fn execute(&self, _command: &Self::Command) -> Result<CanonicalReceipt, Self::Error> {
+        Err(TypedUnknownControl(self.0))
+    }
+}
+#[tokio::test]
+async fn typed_completion_unknown_ignores_changing_private_display() {
+    for diagnostic in [
+        "opaque internal witness one",
+        "unrelated changed diagnostic two",
+    ] {
+        let registry =
+            ProjectedDispatchRegistry::new().register_port(TypedUnknownControlPort(diagnostic));
+        let error = registry
+            .dispatch(input(
+                "company.revise",
+                json!({"attributes": {}}),
+                Some(Uuid::nil()),
+            ))
+            .await
+            .expect_err("typed unknown");
+        let response = super::RestError::from_action(error);
+        assert_eq!(response.status, axum::http::StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(response.code, "completion_unknown");
+        assert_eq!(
+            response.message,
+            "Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target."
+        );
+        assert!(!response.message.contains(diagnostic));
+    }
+}

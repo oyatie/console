@@ -1,0 +1,51 @@
+id,scenario,given,required_outcome,contract_refs
+G01,6법인 양성 실행,6개 기존 PayRun과 exact prepared input; 실제 actor별 target 권한,6개 독립 Company 계산/receipt; Group에는 금액 없음; payable false; 목표당 한 효과,"GO1.1,GO1.6"
+G02,전사 조회 부분 오류,A/B 조회 성공; C owner 조회 실패,허용 A/B 유지; C는 허용된 unavailable; 전체 result 버리지 않음,"GO1.3,GO1.10"
+G03,선택 대상 고정,실행 후 새로운 법인 추가,기존 manifest 불변; 새 법인 자동 child 없음; 기준 시점 표시,GO1.3
+G04,명시 준비된 범위 실행,6개 중2개 blocked; user가4개 선택,manifest는 정확4개; 전체6개 완료 claim 없음; 제외를 조용히 추론하지 않음,GO1.3
+G05,초기 blocked 대상,선택 target중 incomplete/invalid input 존재,PREPARING 이전/입력수정 상태; 실행 없음; 명시 subset 또는 수정 필요,GO1.3
+G06,zero target GET,허용 target없음 또는 GET새로고침,operation/child/business 생성 없음; empty view,GO1.3
+G07,중복 생성,같은 creation command+manifest로두 요청,같은 operation; 다른manifest는conflict; 별도ID는domain중복규칙 유지,GO1.4
+G08,child 준비 ACK유실,Company intent/receipt commit; Group 등록전 crash,exact slot로찾아register; 두번째child/실행 없음,GO1.4
+G09,부분 준비 crash,3개child준비; 나머지미준비; browserrestart,durable PREPARING재개; 첫3개조기실행 없음; savedinput유지,GO1.4
+G10,activation과 child변경,activate EXCLUSIVE vs boundchild unseal/edit,parent fence로serialize; receipt와다른input으로activate못함,GO1.4
+G11,타법인 principal,B에서고용된Account가A legitimategrant+CompanyActor 보유,Aowner로실제Account귀속; fakeAuser/Employment없이성공; B급여불변,"GO1.5,GO1.12"
+G12,Group권한만 보유,Groupoperationallowed; Apayroll권한없음,Achild계산불가; worker권한으로확장않음,"GO1.2,GO1.5"
+G13,권한tuple교차,A급여권한+Bdirectory권한,B급여grant생성안됨; 허용tuple별판단,GO1.10
+G14,세션 종료,launch후sessionexpire/logout; 아직 effect미시작,pendingdispatch중단; finished효과유지; 새세션명시resume필요,GO1.5
+G15,창 닫기,tabclose지만session/currentgrant유효,이미explicitlaunch한계산은boundeddispatch가능; 자동approval추가없음,GO1.5
+G16,same actor 재개,sessionexpiry전미실행child; 새validsession+동일basis,explicitresume후새dispatchgeneration; 원unchangedcommand유지가능; oldworker차단,GO1.5
+G17,다른 actor 재개,원actorA부재; B가권한있음,Aintent로B실행불가; 결과는현재권한read; B04successor별도,"GO1.5,GO1.9"
+G18,필드권한회수,임원급여등필수evidencefield읽기권한회수,새effectcurrentguard거부; SSR원값제거; blindreview승계없음,"GO1.5,GO1.10"
+G19,법인 remove/readd,선택membership incarnation종료후같은Company재가입,oldslot권한자동회복없음; changedmembershipbasis재검토; 성공history유지,GO1.3
+G20,원천 stale,activation후wage/sourceversion변경,새effectstale검증; 기존sealedpayload재계산해덮기않음; reviewed successor,"GO1.6,GO1.9"
+G21,성공 ACK유실,Companyeffect+receipt+childSUCCESS commit; parentmirrorold,reconcile원receipt; 중복효과없음; mirror지연을실패로단정안함,GO1.6
+G22,owner rollback,effect도중DBdeadlock/timeout확정rollback,전체Companyeffect/receipt/childstate rollback; currentguards후samecommandretry,"GO1.6,GO1.7"
+G23,실행 결과 unknown,commit응답불명; receipt조회도불가,unknown유지; 새command/successor로재실행안함,"GO1.7,GO1.9"
+G24,lease만 만료,oldtransaction아직childlock보유; 새workerclaim,lock획득전takeover효과없음; 획득후receipt판단; expiredlease가rollback증거아님,GO1.7
+G25,늦은 worker,generation갱신후옛claimtokenexecute,effect전에fencing거부; 현재payload같아도oldgeneration불가,"GO1.5,GO1.7"
+G26,재시도 한도,확정noeffecttransient실패반복,5회boundedbackoff후actionablepause; 무한poll/더강한권한시도없음,GO1.7
+G27,준비중 취소,PREPARING중cancel및늦은childfactory,STOPPED후factory/execute거부; 준비된child정리별도; noearlyeffect,"GO1.4,GO1.8"
+G28,cancel과 실행 경합,childparentSHARE effect vs cancelEXCLUSIVE,effect먼저면성공보존; cancel먼저면new effect거부; 전사rollback없음,"GO1.6,GO1.8"
+G29,부분 성공 후 취소,3성공3미실행; cancel,3receipt유지3noeffectstop; allundone/allfailed표시않음,GO1.8
+G30,cancel 결과 ACK유실,parentSTOPPED commit후timeout/Companyunavailable,samecontrolidreconcile; parentfence로lateeffect없음; childunknown은확인대기,GO1.8
+G31,legacyroute 우회,STOPPEDparent의childdomaincommandid로singleCompanyAPI,sharedownerprovenance/parentguard거부; wrapper우회효과없음,GO1.6
+G32,실패 입력 정정,성공A와terminalrejectedB; B입력수정,B만명시successoroperation; A재실행없음; 원실패slothistory유지,GO1.9
+G33,성공과 현재 준비도,계산성공후source변경,historicalsuccess와currentstale분리; approval/payment/legal완료claim없음,GO1.9
+G34,부분 권한 메타누출,동일authorizedslots; 다른worldhiddenchild추가,허용rows/totals/continuation/errors/notification동일; hiddenplaceholder없음,GO1.10
+G35,메타와 금액 분리,wholemanifest/statusright있고salaryfield없음,wholeprogress가능; 금액/원입력/digest미노출,GO1.10
+G36,링크와 SSR,chatoperationlink를권한없는account가열기,linkgrant없음; deniedDTO에hiddeninput/name/count없음,GO1.10
+G37,복원된 ACTIVE,oldbackup에는ACTIVE; currentcancel/resultreceipt따로존재,recoveryadmission전dispatch없음; currentfence/receipts로재구성; allchild재시작없음,GO1.11
+G38,운영 rollback,newoperation중featuredisable/oldschema요청,newdispatchstop; parentfence/receiptreader보존; 잊힌명령실행없음,GO1.11
+G39,공용HR 의존 법인,6법인중A/C에localHR없음; Groupservice실제Account존재,각targetgrant/attribution으로수행; fake직원/로컬역할필수아님; A/C법적owner유지,GO1.12
+G40,본사 사업장 담당,A지역Site관리자없음; A본사SiteAccount가해당업무권한,원격담당허용; HQ표시가무제한권한은아님; 대상Site스코프로계산입력,GO1.12
+G41,다른 법인의 담당부서,ASite업무를BSite/Departmentprovider가담당,compositeprovider ref/coverage와target정책분리; CompanyAownerwrite; orgtree병합없음,GO1.12
+G42,서로 다른 필드범위,providerAccount가A전체입력과C제한field만허용,각Company별허용범위적용; union으로C비밀공개/실행확대없음,GO1.12
+G43,CEO보다 넓은 사원 권한,employee-labelledAccount에technicalaction허용; CEO-labelledAccount에는없음,employee허용CEO거부; title로grant상속/최상위우회없음; payroll/법적권한추론없음,GO1.12
+G44,직함만 변경,권한관계동일한채직함승진/변경,자동read/write/approve증가없음; 실제정책관계변경만영향,GO1.12
+G45,본사라도 범위 밖,HQAccount가미허용Site/Department선택,scope거부; headquarters/ancestor로우회없음,GO1.12
+G46,provider팀과 실행자,providerunit에여러Account; 일부만대상권한/assignment,teamcoverage만으로모두grant없음; atomicWorkItem책임Account하나,GO1.12
+G47,coverage ABA,coverage/팀membership제거후같은label로재추가,dependencygenerationoldtoken차단; 무관한grant는독립평가,GO1.12
+G48,직접 법인 업무,A권한은있고Groupoperation권한없음; A업무화면접근,A소유직접업무허용; Groupbatch는추가권한필요; 공용HR만들기필수아님,GO1.12
+G49,오래된 준비 ACK 방지,Company 준비 commit/ACK 후 별도 unseal/cancel/edit 요청; 그다음 activate,PREPARING의 prepared artifact 수정 거부; activate는 원 READY만 사용; 변경은 parentSTOPPED와 후속준비; stale ACK로취소된attempt실행없음,GO1.4
+G50,ACK 전 준비 불변,Company 준비commit; GroupACK미전달; standalone취소와늦은ACK,ACK전에도parentPREPARING-bound artifact수정거부; lostACK원receipt복구; parentstop이면activation불가,GO1.4

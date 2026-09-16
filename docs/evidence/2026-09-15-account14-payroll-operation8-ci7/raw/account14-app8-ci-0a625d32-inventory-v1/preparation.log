@@ -1,0 +1,20 @@
+test_all_new_roots_have_reviewed_resource_requirements (__main__.PreparationWiringTests.test_all_new_roots_have_reviewed_resource_requirements) ... ok
+test_app_exact_supervision_rejects_command_drift (__main__.PreparationWiringTests.test_app_exact_supervision_rejects_command_drift) ... ok
+test_app_module_guard_ignores_prose_and_rejects_additional_guards (__main__.PreparationWiringTests.test_app_module_guard_ignores_prose_and_rejects_additional_guards) ... ok
+test_app_recovery_isolation_rejects_dark_cases_and_ordinary_enrollment (__main__.PreparationWiringTests.test_app_recovery_isolation_rejects_dark_cases_and_ordinary_enrollment) ... ok
+test_app_recovery_source_and_ordinary_feature_isolation (__main__.PreparationWiringTests.test_app_recovery_source_and_ordinary_feature_isolation) ... ok
+test_app_source_rejects_extra_disabled_ignored_and_spoofed_cases (__main__.PreparationWiringTests.test_app_source_rejects_extra_disabled_ignored_and_spoofed_cases) ... ok
+test_both_recovery_cases_have_separate_supervised_exact_workflow_paths (__main__.PreparationWiringTests.test_both_recovery_cases_have_separate_supervised_exact_workflow_paths) ... ok
+test_cedar_execution_oracle_rejects_nonexecuting_mutations (__main__.PreparationWiringTests.test_cedar_execution_oracle_rejects_nonexecuting_mutations) ... ok
+test_generated_new_targets_preserve_exact_resource_taxonomy (__main__.PreparationWiringTests.test_generated_new_targets_preserve_exact_resource_taxonomy) ... ok
+test_generic_queue_refuses_recovery_resource_instead_of_running_without_topology (__main__.PreparationWiringTests.test_generic_queue_refuses_recovery_resource_instead_of_running_without_topology) ... ok
+test_hermetic_cedar_binary_has_executable_cargo_workflow_path (__main__.PreparationWiringTests.test_hermetic_cedar_binary_has_executable_cargo_workflow_path) ... ok
+test_ordinary_postgres_map_executes_migration_once_and_excludes_recovery (__main__.PreparationWiringTests.test_ordinary_postgres_map_executes_migration_once_and_excludes_recovery) ... ok
+test_owner_and_observer_sources_share_all_enrollment_controls (__main__.PreparationWiringTests.test_owner_and_observer_sources_share_all_enrollment_controls) ... ok
+test_publication_nested_module_is_materialized_without_duplicate_root (__main__.PreparationWiringTests.test_publication_nested_module_is_materialized_without_duplicate_root) ... ok
+test_recovery_execution_oracle_rejects_unbound_or_success_only_mutations (__main__.PreparationWiringTests.test_recovery_execution_oracle_rejects_unbound_or_success_only_mutations) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 11.539s
+
+OK

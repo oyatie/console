@@ -1,0 +1,49 @@
+{
+  "owner": "/root",
+  "base_sha": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "immutable_target": "Complete first native NONPAYABLE vertical preparation against approved design30/BW31; exact contract refinements, authored acceptance fixtures/oracles, existing-owner executions, independent candidate review and mechanical handoff. No production owner implementation.",
+  "mechanical_guide": [
+    "Preserve main HEAD05200e43 and94staged paths with cached diff2a4a15c3 unchanged.",
+    "Root alone integrates source test/evidence changes; agents author scratch only.",
+    "Close byte/ref and admission-contract contradictions explicitly, never silently reinterpret approved schema.",
+    "Reuse existing owner fixtures and run real boundary tests; record discovered/executed/assertion reached separately.",
+    "Freeze candidate and independently review source, fixture, oracle and evidence; incorporate concrete findings and recheck.",
+    "Bind handoff to exact commits, scoped probes and remaining explicit approvals."
+  ],
+  "agents": {
+    "/root/fresh29_workflows": "native bytes/reference and55owner acceptance fixtures",
+    "/root/fresh29_security": "existing-owner Cedar/realtime and Account/policy test preparation",
+    "/root/preparation_recovery": "two-node durable recovery fixtures and real owner faults"
+  },
+  "allowed_paths": [
+    "docs/evidence/console/preparation/2026-09-13-production-tdd/completion",
+    "backend/** test sources and existing test modules"
+  ],
+  "forbidden": [
+    "main worktree writes",
+    "production implementation without admission",
+    "migrations/lockfiles/generated/CI without separate exactRED admission",
+    "rejected storage FK test correction",
+    "current authority changes without prescribed gates"
+  ],
+  "pre_mortem": [
+    "An authored scenario is counted as executable coverage",
+    "Invalid fixture fails before target invariant",
+    "An oracle misses omitted outcomes",
+    "A local durability test is reported as deployed recovery proof"
+  ],
+  "detection": [
+    "Compile/discover/execute exact tests and inspect failures",
+    "Positive controls and hostile histories",
+    "Independent source-bound reviews",
+    "Exact candidate and command/log hashes"
+  ],
+  "blast_radius": "isolated sole-writer preparation worktree and owned disposable console-design30 runtime",
+  "rollback": "preserve earlier commits/evidence; stop and remove only owned disposable test resources",
+  "stop_conditions": [
+    "No unrelated scope expansion",
+    "No claimed full preparation while authored owner coverage or reviewed contracts remain incomplete",
+    "No implementation admission on infrastructure error or unrelated prerequisite failure"
+  ],
+  "remaining_approval_hold": "Exact ephemeral ceremony FK DELETE CASCADE exception: automatic approval review rejection remains in force; no correction applied."
+}

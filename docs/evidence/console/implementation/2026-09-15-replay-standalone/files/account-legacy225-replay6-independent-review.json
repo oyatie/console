@@ -1,0 +1,171 @@
+{
+  "kind": "independent_historical225_four_controls_auth_argument_and_replay6_harness_review",
+  "status": "APPROVE_EXACT_SOURCE_CONTROLS_AUTH_ADAPTER_AND_HARNESS_FOR_BOUNDED_ROOT_INSTALLATION_AND_RUN",
+  "reviewer": "/root/inventory_repair",
+  "author": "/root/capture_review",
+  "repository_writer_and_runtime_operator": "/root",
+  "created_at_utc": "2026-09-15T05:59:35.156860+00:00",
+  "base_replay_sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+  "controls_candidate_sha256": "90e153ff8604c99dedf2172755d5d24f556971b6ce34768aeaea0b5d2d58ca13",
+  "final_source_candidate_sha256": "c18f069bcf3c65d88f35869a69ac12e7f80d3afcc9d477b70c21a50387ee2d52",
+  "fixture_sha256": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+  "refresh_signature_commit": "8fcf3ca02bb76f1c8a825b85374c4a67eacd4810",
+  "target_path": "backend/app/tests/account_migration.rs",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "artifacts": {
+    "/private/tmp/account-legacy225-replay-candidate.rs": {
+      "sha256": "5eebbc6348ea29170e4280e910aeaac565c0b7529e6f0c2b2d730e8cef4c4579",
+      "bytes": 23067
+    },
+    "/private/tmp/account-legacy225-replay-controls-candidate.rs": {
+      "sha256": "90e153ff8604c99dedf2172755d5d24f556971b6ce34768aeaea0b5d2d58ca13",
+      "bytes": 28097
+    },
+    "/private/tmp/account-legacy225-replay-controls-design.json": {
+      "sha256": "2a9a7efa37b55f161404b4033cda90b102a5e2082f256ff5009030d6af2a2b64",
+      "bytes": 8015
+    },
+    "/private/tmp/account-legacy225-replay-controls.patch": {
+      "sha256": "8fab9234d4563fdfac713d66d1180009fac4e5c8a283535800c62e77ff86df37",
+      "bytes": 21124
+    },
+    "/private/tmp/account-legacy225-replay-controls-auth-candidate.rs": {
+      "sha256": "c18f069bcf3c65d88f35869a69ac12e7f80d3afcc9d477b70c21a50387ee2d52",
+      "bytes": 28286
+    },
+    "/private/tmp/account-legacy225-replay-controls-auth.patch": {
+      "sha256": "66a8cf1818e9a8f64fee6f55ad31e446a3c202a617ecae4f11ef5db38df39945",
+      "bytes": 652
+    },
+    "/private/tmp/account-legacy225-replay6-driver.sh": {
+      "sha256": "24167812218388234cab22320f521b823f7915e73b34aef5c9f2b7bba1e85cb3",
+      "bytes": 8586
+    },
+    "/private/tmp/account-legacy225-replay6-probe.py": {
+      "sha256": "16555d70fb2d5b268162035b00c3126675bedc7f49fcc8a9453af8a805804540",
+      "bytes": 397
+    },
+    "/private/tmp/account-legacy225-replay6-driver.patch": {
+      "sha256": "45fa995e4a3ea24a348b6aefb2215d50fea2eeb713895737eff1040ab11171c6",
+      "bytes": 4090
+    },
+    "/private/tmp/account-legacy225-replay6-preparation.json": {
+      "sha256": "77f3c69bebc6e458cee3aee02c8ff680c349a0b6c8f468bcc456405e99b2a172",
+      "bytes": 7392
+    },
+    "/private/tmp/account-auth-refresh6-driver.sh": {
+      "sha256": "0855a1ad6861ece2b9c16f5464ebf1878f10dfa1f49634cd0fb07a33f3403711",
+      "bytes": 8523
+    }
+  },
+  "findings": [],
+  "source_checks": [
+    "Frozen5eebbc63 replay proposal remains byte-identical. Existing old_migration_login and material_snapshot are byte-identical in the four-controls candidate.",
+    "Original current-migration helper and both original test bodies are preserved exactly in the controls candidate; one blank separator line follows their original complete suffix before appended helpers.",
+    "Fixed complete native row query is moved byte-exact into LEGACY225_ROWS. Existing digest comparison and full-row/version/checksum/unused-edge comparisons are shared private guards called by seed before its existing commit boundary.",
+    "All four controls require actual seed_legacy success first, including genuine actual225 migration, fixed typed native inserts, frozen digest/checksums/full rows and postcommit material equality. A failed positive prerequisite cannot be caught as a successful negative test.",
+    "Digest control changes only trailing newline to space, preserving valid JSON. The same pure seed digest guard must reject with exact historical fixture digest differs; complete native DB state is read again and must match.",
+    "Three row controls apply one real parameter-bound DML statement inside a new transaction, require DML success and exactly one affected row, then call the same seed full-row guard over actual changed native rows. Only the exact full-row rejection message is accepted; SQL/type/decoding failures are not valid denials.",
+    "Row omission deletes one ceremony; captured bindings are empty. Token correlation mutation points one replaced_by at an existing token from the other captured family. Membership mutation points one existing org membership at the other existing group. Historical225 FKs/unique keys permit these intended relational faults without constraint bypass.",
+    "Every row control explicitly rolls back after expected rejection, then proves full native row/version/checksum/unused-edge equality and original material equality. No failed mutation becomes permanent disposable state on the passing path.",
+    "Finalc18f069b source differs from90e153ff only by real restricted Auth login acquisition immediately before the sole remaining post-current-migration rotate call and its mandatory second pool argument. Exact reversal restores90e153ff byte-for-byte. No query, assertion, error oracle, helper or earlier migration boundary changes.",
+    "Real Auth pool acquisition uses existing login_test_pool/Auth identity checks. Existing FamilyRevoked-only result and material equality remain unchanged. Missing company_actors still fails at the original earlier catalog prerequisite."
+  ],
+  "harness_checks": [
+    "Bash syntax passes; Python probe and all five embedded Python blocks parse. No Cargo, Docker, PostgreSQL or test runtime was invoked by reviewer.",
+    "New snapshot adds account_migration.rs and exact fixture to all prior21 source paths, producing23 unique paths. Existing expected HEAD/clean status checks and before/after byte comparison remain.",
+    "Independent execution of the map-building Python block with only its terminal write removed shows the complete parsed map object remains unchanged. Existing app-account-migration-pg entry must have exact whole-target account_migration argv; no case-name filter, --exact, skip, ignored-only or list-only option is inserted.",
+    "Only the existing exact seven-argument package prebuild is narrowed to --test account_migration. Actual native test invocation still comes from the existing Cargo runner and is not replaced by the Bash prebuild adapter.",
+    "Docker interception, pinned image, own unique label/name,4GiB tmpfs, shared toolchain settings and post-probe cleanup/source/receipt/exit tail are byte-identical to the reviewed refresh6 harness except approved target/evidence naming. Fallback removal requires exact ownership label and successful bounded absence readback.",
+    "Probe captures caller cwd HEAD and passes it to the existing driver; root must independently bind that installed HEAD to this reviewed source/fixture before launch. This approval does not bless an arbitrary future HEAD merely because the wrapper can snapshot it.",
+    "Runner preserves nonzero suite exit. It does not recast the expected two migration failures as overall success; root must report six actual test results and exact failure boundaries."
+  ],
+  "control_roster": [
+    "historical225_fixture_corrupt_digest_refuses_before_replay_write",
+    "historical225_fixture_omitted_row_rejects_and_rolls_back",
+    "historical225_fixture_token_correlation_rejects_and_rolls_back",
+    "historical225_fixture_membership_key_rejects_and_rolls_back"
+  ],
+  "expected_native_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "account_migration",
+    "--",
+    "--test-threads=1"
+  ],
+  "static_roster": {
+    "total": 6,
+    "original_migration_tests": 2,
+    "controls": 4
+  },
+  "coverage_limits": [
+    "Digest negative control calibrates the exact shared pure guard and verifies DB unchanged; it does not re-enter seed_legacy with corrupted injected bytes. Seed call ordering was independently source-reviewed.",
+    "Three DML faults calibrate the same full-row guard after successful replay, with explicit rollback. They are not claims that every possible omitted INSERT, altered SQL type or PostgreSQL failure was simulated.",
+    "Postcommit full original material projection remains intentionally the previously reviewed narrower projection, after full native rows were proven inside the replay transaction.",
+    "No native compile or six-case execution has occurred as part of this independent review. Successful controls alone cannot establish that the two current-migration preservation tests pass."
+  ],
+  "checks_performed": [
+    {
+      "command": "bash -n /private/tmp/account-legacy225-replay6-driver.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "Python immutable candidate/hash/byte-exact moved query/old helper and original test suffix comparisons",
+      "result": "PASS"
+    },
+    {
+      "command": "Python exact reversal of mandatory Auth pool acquisition and argument",
+      "result": "PASS"
+    },
+    {
+      "command": "Python ast.parse probe/five embedded blocks plus read-only map block execution without terminal write",
+      "result": "PASS; whole map unchanged;23 snapshot paths; exact whole-target argv"
+    },
+    {
+      "command": "Compare Docker/toolchain block and complete post-probe cleanup/receipt/exit tail with reviewed0855a1ad refresh6 driver",
+      "result": "Byte-identical"
+    },
+    {
+      "command": "Read actual225 membership and refresh self-FK definitions and candidate mutation SQL",
+      "result": "Static control feasibility verified; runtime remains pending"
+    }
+  ],
+  "pre_mortem": "Vacuous controls could pass on setup/storage failure, expected values could be generated after tampering, required Auth plumbing could change refusal semantics, or the runner could hide the original two failures. Positive frozen replay, exact one-row DML, shared exact-message guards, rollback equality, exact source reversal and whole-map/unfiltered command checks address these risks.",
+  "blast_radius": "Private review artifacts only. Future controls operate only in their marked SQLx disposable databases under the existing reviewed owned-container harness; no shared or production service.",
+  "rollback": "Reject changed hashes; preserve frozen replay and capture. Passing row controls explicitly rollback; unexpected failures fail the disposable test and root harness must prove owned-container cleanup.",
+  "stop_conditions": [
+    "Reviewed source, fixture or driver hash differs",
+    "Installed source/fixture are not tracked regular blobs in clean immutable candidate",
+    "Any positive replay fails or mutation does not affect exactly one row",
+    "Expected rejection comes from storage/decoding or a different panic",
+    "Rollback/native/material equality fails",
+    "Runner executes fewer than six tests, filters away original tests or suppresses nonzero exit",
+    "Container ownership, successful absence or source-before/after equality cannot be proven"
+  ],
+  "remaining_holds": [
+    "Root must install exactc18f069b source andbc0c8a fixture and bind their regular Git blob identities to an immutable commit",
+    "Native compile and full six-test run",
+    "Require four controls PASS and retain both original migration outcomes and exact reached boundaries",
+    "Expected missing company_actors remains genuine product RED absent separate implementation",
+    "No production migration, serving authorization, deployment, durability or legal/compliance claim"
+  ],
+  "reviewer_execution": {
+    "tests_discovered": 0,
+    "tests_executed": 0,
+    "cargo_commands": 0,
+    "database_commands": 0,
+    "source_edits": 0
+  }
+}

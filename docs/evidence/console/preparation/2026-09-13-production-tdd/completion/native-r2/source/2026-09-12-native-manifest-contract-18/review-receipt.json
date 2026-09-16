@@ -1,0 +1,38 @@
+{
+  "recorded_at": "2026-09-12T22:48:51.600467+00:00",
+  "status": "SCOPED_NATIVE_MANIFEST_DESIGN_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+  "review_mode": "Independent read-only full scoped review and exact correction diff; /root sole writer",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Input custody digest ambiguity resolved with proposed exact FK and owner checks; outcome/batch witnesses consistent. Structural verifier independently passed.",
+      "product_tests_executed": 0,
+      "sql_executed": false
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "720b0920fcfd8277f11686081937ccd09a77f1f0",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Corrected six-column custody reference and corresponding UNIQUE are coherent. Explicit source mappings and encoding witnesses add no qualification/kernel claims. No remaining scoped blocker.",
+      "product_tests_executed": 0,
+      "sql_executed": false
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "F01/F02 partial: transitive source-owner payloads, complete owner/helper/trigger/ACL/lifecycle/index contracts",
+    "F03-F08 admission/custody/provider issuance/recovery/migration/harness closures from17",
+    "Final authority-aligned integrated design review4 rounds and exact design SHA approval",
+    "Executable tests independent review and exact test SHA approval",
+    "Implementation via actual named RED probe admission; runtime/migration/restore/load proof",
+    "Separate release/exposure/legal/payment authority"
+  ]
+}

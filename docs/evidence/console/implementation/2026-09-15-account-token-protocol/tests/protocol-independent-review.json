@@ -1,0 +1,115 @@
+{
+  "kind": "INDEPENDENT_ADDITIVE_TEST_REVIEW_WITH_CONCRETE_GUIDE_REFINEMENT",
+  "reviewer": "/root/fast_gate_review",
+  "author": "/root/inventory_repair",
+  "root_writer_and_runtime_operator": "/root",
+  "base_sha": "f96eddd34bff78f734e6f0306c48acf14b930bcb",
+  "candidate_directory": "/private/tmp/account-jwt-protocol-separation-v2-candidate-f96eddd3",
+  "candidate_manifest_sha256": "cafb0faf47f2a6bac7c51a7680b9028c32e7e8bb9c84b9913f8a3f0be737dacf",
+  "candidate_patch_sha256": "4b9ceec4299a5572e2d8a3140856bb290279579322c006a2ca2305cebf1bbdea",
+  "candidate_file_sha256": "262dc89618f39f4222f376158c89abaa151993266eab058cfca927a5a6ab8def",
+  "verdict": "APPROVE_ADDITIVE_TEST_CANDIDATE_FOR_ROOT_BASELINE_RED_AND_FORMAL_LANE_ADMISSION",
+  "findings": [],
+  "scope": "The two recognized protocol markers account_v1 and account_csrf_v1 must be refused by both legacy verification entry points even in same-signer otherwise valid legacy-shaped claims; unmarked legacy behavior remains compatible. No arbitrary unknown-marker policy change.",
+  "evidence": {
+    "git_apply_check": "PASS: git apply --check /private/tmp/account-jwt-protocol-separation-v2-candidate-f96eddd3/candidate.patch in exact clean worktree",
+    "manifest_and_five_source_hashes": "PASS",
+    "test_declarations_static": {
+      "full_binary": 4,
+      "selected_module": 3,
+      "preserved_existing": 1,
+      "new_positive": 1,
+      "new_negative": 2
+    },
+    "original_test_issuance_and_assertions_byte_preserved": true,
+    "original_key_configuration_setup_exactly_retained_in_shared_helper": true,
+    "negative_controls": "Each negative verifies an owner-issued legacy JWT and unchanged same-signer reencoding through both APIs before adding only the recognized token_kind. Both marked-token results are evaluated before assertion.",
+    "no_ignored_or_should_panic_cases": true,
+    "no_raw_token_or_key_failure_messages": true,
+    "runtime_tests_executed_by_reviewer": 0,
+    "source_mutations_by_reviewer": 0
+  },
+  "contract_citations": [
+    "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt:14",
+    "docs/evidence/console/design/2026-09-13-account-browser-wire-31/contract.txt:31"
+  ],
+  "static_current_failure_analysis": {
+    "facts": [
+      "AccessClaims derives Deserialize and has no token_kind field or deny_unknown_fields attribute.",
+      "The common private helper currently calls decode::<AccessClaims>.",
+      "Both JwtIssuer::verify_access_token and JwtVerifier::verify_access_token call the same private helper.",
+      "Pinned serde_derive treats unrecognized fields as IgnoredAny; thus token_kind is discarded before returned AccessClaims."
+    ],
+    "inference": "Correctly signed otherwise valid legacy-shaped payloads with recognized Account protocol markers are currently accepted; expected3 selected results are1PASS2FAIL. Actual RED is root runtime work, not claimed observed here.",
+    "citations": [
+      "backend/crates/platform/auth/src/jwt.rs:80",
+      "backend/crates/platform/auth/src/jwt.rs:452",
+      "backend/crates/platform/auth/src/jwt.rs:468",
+      "backend/crates/platform/auth/src/jwt.rs:473",
+      "backend/crates/platform/auth/src/jwt.rs:484"
+    ]
+  },
+  "guide_refinement": {
+    "responsible_layer": "Only the common private verify_access_token helper and a private deserialization envelope in jwt.rs; keep public AccessClaims unchanged.",
+    "minimal_shape": "Private #[derive(Deserialize)] envelope with #[serde(flatten)] claims: AccessClaims and #[serde(default)] token_kind: serde_json::Value. Decode this envelope with the unchanged configured ES256 Validation. After successful decode, reject only token_kind.as_str() matching account_v1 or account_csrf_v1 with existing fixed jsonwebtoken::errors::ErrorKind::InvalidToken mapped through AuthError. Then apply the unchanged existing org/scope/group/tenant validation to the typed AccessClaims and return it.",
+    "compatibility": "No deny_unknown_fields on public legacy claims; no changed required public fields; no whole-payload Value roundtrip; unrelated unknown marker values remain outside the policy of this lane. Missing marker defaults to JSON null and follows existing legacy behavior. The envelope must not be used to select a parser based on unverified fields.",
+    "duplicate_field_reasoning": "Pinned serde flatten collects a Vec of individual key/value pairs, then FlatStructAccess replays each recognized pair into the derived AccessClaims visitor. Its duplicate_field guard remains active; this avoids collapsing duplicate known fields through a JSON object map. Duplicate recognized token_kind keys are rejected by the envelope derive, preventing a last-value overwrite of a recognized marker.",
+    "reviewed_dependency_sources": [
+      {
+        "path": "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jsonwebtoken-10.4.0/src/decoding.rs",
+        "lines": [
+          275,
+          289,
+          292,
+          293
+        ],
+        "sha256": "358eec3256f460b4e07551ad7b473dfc37a9e33cac69da98fc90ab10c91c719c"
+      },
+      {
+        "path": "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_derive-1.0.228/src/de/struct_.rs",
+        "lines": [
+          227,
+          269,
+          280,
+          341
+        ],
+        "sha256": "7b26982ce59504a9bb5a18c3ab56eee2d75e70fd465774ff035d15c50452c118"
+      },
+      {
+        "path": "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs",
+        "lines": [
+          3259,
+          3388,
+          3397,
+          3430
+        ],
+        "sha256": "68ee17774d3bbc693d9f19803747fa2c3afdb7046482e6d94ac6cf7db5a4fe20"
+      }
+    ],
+    "runtime_validation_after_admission": "Same unchanged selected3 probe must become GREEN, plus existing jwt_es256 and complete jwt_verifier regression targets. Capture exact counts; generic invalid marker error must not echo the marker/token/claims.",
+    "supplemental_coverage_gap": "Current3 selected tests do not exercise raw duplicate known claims or duplicate recognized protocol markers, nor all configured cryptographic validation failures. Consider raw duplicate org/roles and recognized token_kind runtime controls in the supplemental crypto suite; static serde inspection is not runtime duplicate-field evidence."
+  },
+  "pre_mortem": "An invalid signer could make a negative pass; a fix in only one public API could leave the other permissive; a whole JSON Value conversion could silently accept duplicate known claims.",
+  "blast_radius": "Private legacy JWT verification only; tests reuse one existing registered binary; no database/session/route/public contract or generated artifact changes.",
+  "detection": "Same-signer controls and both API booleans in each negative; unchanged original issuance/assertions; later duplicate-field supplemental crypto controls.",
+  "rollback": "Preserve exact candidate and root RED/GREEN evidence. Any demonstrated compatibility regression requires reviewed correction/revert of the isolated helper; no destructive shared-workspace operation.",
+  "stop_conditions": [
+    "No actual RED or controls fail.",
+    "Candidate bytes differ from reviewed hashes.",
+    "Implementation changes public AccessClaims, uses whole-payload Value roundtrip, broadens arbitrary unknown-marker policy or modifies unrelated paths.",
+    "Tests weakened/skipped or token/key/claim data printed."
+  ],
+  "remaining_holds": [
+    "Root actual baseline/compilation/RED and formal fanout admission before production implementation.",
+    "New Account claims/CSRF cryptographic owner and live Account/family proof are separate tasks.",
+    "No production exposure, cookie/session completion, release or legal/compliance conclusions."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

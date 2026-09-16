@@ -1,0 +1,176 @@
+-- DESIGN DDL ONLY. Not a migration and not executed.
+-- Prerequisites:13 Account/CompanyActor;14 receipt;18 native membership;
+--22/23 source effects;24/25 submission binding;PH28 private owner guards.
+-- These CREATE shapes are coupled with owner procedures below; bare tables
+-- or syntax validation alone cannot establish semantic/ACL closure.
+CREATE TABLE public.retained_units (
+ org_id uuid NOT NULL REFERENCES public.organizations(id),
+ unit_id uuid NOT NULL,
+ owner_kind text NOT NULL CHECK (owner_kind IN ('DRAFT_CHAIN','SOURCE_SUBMISSION','DOCS_COPY','CALENDAR','CALENDAR_ASSIGNMENT','ATTENDANCE_COVERAGE','CLOSE_BASIS','QUALIFICATION','ELIGIBILITY','TAX_EVIDENCE','ATTENDANCE_EVENT','EXCEPTION_RESOLUTION','OPERATIONAL_CLOSE','EMPLOYMENT_SEGMENT','WAGE_BASIS','NATIVE_INPUT_UNIT','NATIVE_CALCULATION_UNIT','OWNER_WITNESS','PROTECTED_INVENTORY','OWNER_SUBMISSION')),
+ selector jsonb NOT NULL CHECK (jsonb_typeof(selector)='object' AND octet_length(selector::text)<=65536),
+ selector_key bytea NOT NULL CHECK(octet_length(selector_key)<=4096),
+ identity_digest bytea NOT NULL CHECK(octet_length(identity_digest)=32),
+ schema_manifest_digest bytea NOT NULL CHECK(octet_length(schema_manifest_digest)=32),
+ payload_state text NOT NULL CHECK(payload_state IN ('STAGED','LIVE','QUARANTINED','PAYLOAD_REMOVED')),
+ revision bigint NOT NULL CHECK(revision>0),
+ created_command_id uuid NOT NULL,
+ PRIMARY KEY(org_id,unit_id), UNIQUE(org_id,owner_kind,selector_key),
+ UNIQUE(org_id,unit_id,identity_digest)
+);
+CREATE TABLE public.retained_payload_locations (
+ org_id uuid NOT NULL, unit_id uuid NOT NULL, location_id uuid NOT NULL,
+ adapter_kind text NOT NULL CHECK(adapter_kind IN ('SQL_OWNER_ROWS','DOCS_EXACT_VERSION','INDEPENDENT_MANIFEST')),
+ exact_target jsonb NOT NULL CHECK(jsonb_typeof(exact_target)='object' AND octet_length(exact_target::text)<=65536),
+ expected_digest bytea CHECK(expected_digest IS NULL OR octet_length(expected_digest)=32),
+ expected_size bigint CHECK(expected_size>=0),
+ inventory_revision bigint NOT NULL CHECK(inventory_revision>0),
+ state text NOT NULL CHECK(state IN ('RESERVED','AVAILABLE','UNRESOLVED','REMOVED')),
+ PRIMARY KEY(org_id,unit_id,location_id),
+ FOREIGN KEY(org_id,unit_id) REFERENCES public.retained_units(org_id,unit_id),
+ CHECK ((state='RESERVED' AND expected_digest IS NULL AND expected_size IS NULL) OR
+        (state<>'RESERVED' AND expected_digest IS NOT NULL AND expected_size IS NOT NULL))
+);
+CREATE TABLE public.retention_governed_bindings (
+ org_id uuid NOT NULL, binding_id uuid NOT NULL,
+ instance_id uuid NOT NULL, revision_id uuid NOT NULL, version bigint NOT NULL CHECK(version>0),
+ object_type_id uuid NOT NULL, row_hash bytea NOT NULL CHECK(octet_length(row_hash)=32),
+ kind text NOT NULL CHECK(kind IN ('PURPOSE','POLICY','OBLIGATION')),
+ PRIMARY KEY(org_id,binding_id), UNIQUE(org_id,instance_id,revision_id,version,object_type_id),
+ UNIQUE(org_id,binding_id,kind)
+ -- Deferred exact common-row/type/hash constraint PH28;immutable native binding.
+);
+CREATE TABLE public.content_pins (
+ org_id uuid NOT NULL, pin_id uuid NOT NULL, unit_id uuid NOT NULL,
+ pinner_kind text NOT NULL CHECK(pinner_kind IN ('PREPARATION','DOMAIN_ADOPTION','INVENTORY_EDGE','ATTEMPT')),
+ pinner_id uuid NOT NULL, purpose_binding_id uuid NOT NULL, obligation_binding_id uuid NOT NULL,
+ acquisition_command_id uuid NOT NULL, release_command_id uuid,
+ release_evaluation_id uuid,
+ PRIMARY KEY(org_id,pin_id),
+ FOREIGN KEY(org_id,unit_id) REFERENCES public.retained_units(org_id,unit_id),
+ FOREIGN KEY(org_id,purpose_binding_id) REFERENCES public.retention_governed_bindings(org_id,binding_id),
+ FOREIGN KEY(org_id,obligation_binding_id) REFERENCES public.retention_governed_bindings(org_id,binding_id),
+ UNIQUE(org_id,unit_id,pinner_kind,pinner_id,purpose_binding_id,obligation_binding_id),
+ UNIQUE(org_id,pin_id,unit_id),
+ CHECK ((release_command_id IS NULL)=(release_evaluation_id IS NULL))
+);
+CREATE INDEX content_pins_active_unit ON public.content_pins(org_id,unit_id) WHERE release_command_id IS NULL;
+CREATE TABLE public.retention_evaluation_witnesses (
+ org_id uuid NOT NULL, evaluation_id uuid NOT NULL, unit_id uuid NOT NULL,
+ obligation_binding_id uuid NOT NULL, command_id uuid NOT NULL,
+ body jsonb NOT NULL CHECK(jsonb_typeof(body)='object' AND octet_length(body::text)<=65536),
+ evidence_digest bytea NOT NULL CHECK(octet_length(evidence_digest)=32),
+ PRIMARY KEY(org_id,evaluation_id),
+ FOREIGN KEY(org_id,unit_id) REFERENCES public.retained_units(org_id,unit_id),
+ FOREIGN KEY(org_id,obligation_binding_id) REFERENCES public.retention_governed_bindings(org_id,binding_id)
+);
+ALTER TABLE public.content_pins ADD CONSTRAINT pin_release_evaluation_fk
+ FOREIGN KEY(org_id,release_evaluation_id) REFERENCES public.retention_evaluation_witnesses(org_id,evaluation_id)
+ DEFERRABLE INITIALLY DEFERRED;
+CREATE TABLE public.domain_adoptions (
+ org_id uuid NOT NULL, adoption_id uuid NOT NULL,
+ owner_result_kind text NOT NULL CHECK(owner_result_kind IN ('SOURCE_EFFECT','NATIVE_INPUT','NATIVE_BATCH','NATIVE_RESULT','COMMON_RECEIPT','WAGE_FACT','LEAVE_DECISION','DOCS_ATTESTATION')),
+ owner_result_key bytea NOT NULL CHECK(octet_length(owner_result_key)<=4096),
+ owner_result jsonb NOT NULL CHECK(jsonb_typeof(owner_result)='object' AND octet_length(owner_result::text)<=65536),
+ snapshot_unit_id uuid NOT NULL,
+ snapshot_digest bytea NOT NULL CHECK(octet_length(snapshot_digest)=32),
+ purpose_binding_id uuid NOT NULL, obligation_binding_id uuid NOT NULL,
+ protection_mode text NOT NULL CHECK(protection_mode IN ('DIRECT','INVENTORY')),
+ inventory_unit_id uuid,
+ command_id uuid NOT NULL,
+ PRIMARY KEY(org_id,adoption_id),
+ UNIQUE(org_id,owner_result_kind,owner_result_key,snapshot_unit_id,snapshot_digest,purpose_binding_id,obligation_binding_id),
+ FOREIGN KEY(org_id,snapshot_unit_id) REFERENCES public.retained_units(org_id,unit_id),
+ FOREIGN KEY(org_id,inventory_unit_id) REFERENCES public.retained_units(org_id,unit_id),
+ FOREIGN KEY(org_id,purpose_binding_id) REFERENCES public.retention_governed_bindings(org_id,binding_id),
+ FOREIGN KEY(org_id,obligation_binding_id) REFERENCES public.retention_governed_bindings(org_id,binding_id),
+ CHECK((protection_mode='INVENTORY')=(inventory_unit_id IS NOT NULL))
+ -- Source variant additionally reciprocates25 mandatory slot1 adoption,
+ -- not a second independently writable source adoption identity.
+);
+CREATE TABLE public.protected_inventory_headers (
+ org_id uuid NOT NULL, unit_id uuid NOT NULL,
+ preparation_command_id uuid NOT NULL,
+ plan_digest bytea NOT NULL CHECK(octet_length(plan_digest)=32),
+ action_binding_digest bytea NOT NULL CHECK(octet_length(action_binding_digest)=32),
+ owner_build_digest bytea NOT NULL CHECK(octet_length(owner_build_digest)=32),
+ slot_count integer NOT NULL CHECK(slot_count BETWEEN 1 AND 8192),
+ state text NOT NULL CHECK(state IN ('BUILDING','SEALED','RETIRING','RETIRED')),
+ revision bigint NOT NULL CHECK(revision>0),
+ seal_digest bytea CHECK(octet_length(seal_digest)=32),
+ depth smallint NOT NULL CHECK(depth BETWEEN 1 AND 8),
+ covered_nodes bigint NOT NULL CHECK(covered_nodes BETWEEN 0 AND 16777216),
+ covered_edges bigint NOT NULL CHECK(covered_edges BETWEEN 0 AND 67108864),
+ covered_bytes bigint NOT NULL CHECK(covered_bytes BETWEEN 0 AND 137438953472),
+ release_cursor integer NOT NULL DEFAULT 0 CHECK(release_cursor>=0),
+ PRIMARY KEY(org_id,unit_id),
+ FOREIGN KEY(org_id,unit_id) REFERENCES public.retained_units(org_id,unit_id),
+ CHECK(state<>'SEALED' OR seal_digest IS NOT NULL), CHECK(release_cursor<=slot_count)
+);
+CREATE TABLE public.protected_inventory_members (
+ org_id uuid NOT NULL, inventory_unit_id uuid NOT NULL,
+ ordinal integer NOT NULL CHECK(ordinal BETWEEN 0 AND 8191),
+ child_unit_id uuid NOT NULL, child_identity_digest bytea NOT NULL CHECK(octet_length(child_identity_digest)=32),
+ purpose_binding_id uuid NOT NULL, obligation_binding_id uuid NOT NULL,
+ materialization text NOT NULL CHECK(materialization IN ('EXISTING','FINAL_SUBMISSION','FINAL_GATE_DECISION','FINAL_GATE_CONSUMPTION')),
+ child_evidence_digest bytea CHECK(octet_length(child_evidence_digest)=32),
+ pin_id uuid,
+ PRIMARY KEY(org_id,inventory_unit_id,ordinal),
+ UNIQUE(org_id,inventory_unit_id,child_unit_id,purpose_binding_id,obligation_binding_id),
+ FOREIGN KEY(org_id,inventory_unit_id) REFERENCES public.protected_inventory_headers(org_id,unit_id),
+ FOREIGN KEY(org_id,child_unit_id,child_identity_digest) REFERENCES public.retained_units(org_id,unit_id,identity_digest),
+ FOREIGN KEY(org_id,pin_id,child_unit_id) REFERENCES public.content_pins(org_id,pin_id,unit_id) DEFERRABLE INITIALLY DEFERRED,
+ CHECK((pin_id IS NULL)=(child_evidence_digest IS NULL)), CHECK(child_unit_id<>inventory_unit_id)
+);
+CREATE TABLE public.disposal_jobs (
+ org_id uuid NOT NULL, job_id uuid NOT NULL, unit_id uuid NOT NULL,
+ revision bigint NOT NULL CHECK(revision>0),
+ manifest_digest bytea NOT NULL CHECK(octet_length(manifest_digest)=32),
+ state text NOT NULL CHECK(state IN ('PREPARED','JOURNALED','ACTIVE','STOP_PENDING','CANCEL_PENDING','CANCELLED','PARTIAL','COMPLETE','UNKNOWN')),
+ serving_generation bigint NOT NULL CHECK(serving_generation>0),
+ cancel_generation bigint NOT NULL CHECK(cancel_generation>0),
+ next_batch bigint NOT NULL CHECK(next_batch>=0),
+ intent_event_id uuid,
+ PRIMARY KEY(org_id,job_id), FOREIGN KEY(org_id,unit_id) REFERENCES public.retained_units(org_id,unit_id)
+);
+CREATE UNIQUE INDEX disposal_one_live_unit ON public.disposal_jobs(org_id,unit_id) WHERE state NOT IN ('CANCELLED','COMPLETE');
+CREATE TABLE public.disposal_manifest_items (
+ org_id uuid NOT NULL,job_id uuid NOT NULL,ordinal integer NOT NULL CHECK(ordinal>=0),
+ unit_id uuid NOT NULL,location_id uuid NOT NULL,inventory_revision bigint NOT NULL CHECK(inventory_revision>0),
+ exact_digest bytea NOT NULL CHECK(octet_length(exact_digest)=32),exact_bytes bigint NOT NULL CHECK(exact_bytes>=0),
+ step_id uuid NOT NULL,adapter_kind text NOT NULL CHECK(adapter_kind IN ('SQL_OWNER_ROWS','DOCS_EXACT_VERSION','INDEPENDENT_MANIFEST')),
+ PRIMARY KEY(org_id,job_id,ordinal),UNIQUE(org_id,step_id),
+ FOREIGN KEY(org_id,job_id) REFERENCES public.disposal_jobs(org_id,job_id),
+ FOREIGN KEY(org_id,unit_id,location_id) REFERENCES public.retained_payload_locations(org_id,unit_id,location_id)
+);
+CREATE TABLE public.disposal_batch_receipts (
+ org_id uuid NOT NULL,job_id uuid NOT NULL,batch_id uuid NOT NULL,
+ first_ordinal integer NOT NULL CHECK(first_ordinal>=0),end_ordinal integer NOT NULL,
+ effect_status text NOT NULL CHECK(effect_status IN ('SQL_COMMITTED','PROVIDER_REMOVED','PROVIDER_RETAINED','UNKNOWN','IDENTITY_MISMATCH')),
+ outcome_digest bytea NOT NULL CHECK(octet_length(outcome_digest)=32),
+ ledger_receipt_id uuid,committed_at timestamptz NOT NULL,
+ PRIMARY KEY(org_id,job_id,batch_id),FOREIGN KEY(org_id,job_id) REFERENCES public.disposal_jobs(org_id,job_id),
+ CHECK(end_ordinal>first_ordinal AND end_ordinal-first_ordinal<=500)
+);
+CREATE TABLE public.journal_acknowledgements (
+ org_id uuid NOT NULL,stream_id uuid NOT NULL,sequence bigint NOT NULL CHECK(sequence>=0),
+ event_id uuid NOT NULL,event_digest bytea NOT NULL CHECK(octet_length(event_digest)=32),
+ predecessor_hash bytea NOT NULL CHECK(octet_length(predecessor_hash)=32),
+ key_id uuid NOT NULL,signature bytea NOT NULL CHECK(octet_length(signature)=64),
+ accepted_head jsonb NOT NULL CHECK(jsonb_typeof(accepted_head)='object'),
+ PRIMARY KEY(org_id,stream_id,sequence),UNIQUE(org_id,event_id)
+);
+CREATE TABLE public.recovery_admission_receipts (
+ org_id uuid NOT NULL,recovery_id uuid NOT NULL,serving_generation bigint NOT NULL CHECK(serving_generation>0),
+ manifest_digest bytea NOT NULL CHECK(octet_length(manifest_digest)=32),
+ manifest_ref jsonb NOT NULL CHECK(jsonb_typeof(manifest_ref)='object'),
+ journal_head jsonb NOT NULL CHECK(jsonb_typeof(journal_head)='object'),
+ timeline bigint NOT NULL CHECK(timeline>0),complete_lsn pg_lsn NOT NULL,
+ authority_digest bytea NOT NULL CHECK(octet_length(authority_digest)=32),
+ unknown_scope_manifest_ref jsonb NOT NULL CHECK(jsonb_typeof(unknown_scope_manifest_ref)='object'),
+ PRIMARY KEY(org_id,recovery_id)
+);
+-- REQUIRED in same migration transaction for each table above:
+-- REVOKE inherited PUBLIC/runtime DML; fixed NOLOGIN owner; FORCE Company RLS
+-- with USING and WITH CHECK current Company; fixed owner function EXECUTE only.
+-- Per-table RLS/ACL declarations, triggers and source/native reciprocal ALTERs
+-- are governed by PH28 and required by actual migration test candidate.

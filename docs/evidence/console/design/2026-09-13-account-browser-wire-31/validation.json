@@ -1,0 +1,36 @@
+{
+  "candidate_sha": "5f9f3b15704deaf8e81a682e4475af489d164210",
+  "cwd": "/private/tmp/console-account-browser-design-20260913",
+  "commands": [
+    {
+      "argv": [
+        "/private/tmp/console-wire31-validator/bin/python",
+        "docs/evidence/console/design/2026-09-13-account-browser-wire-31/verify.py"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"PASS\",\n  \"validator\": \"jsonschema 4.25.1\",\n  \"valid_structural_examples\": 14,\n  \"invalid_structural_examples_rejected\": 9,\n  \"hashed_artifacts\": 3,\n  \"inherited_sources\": 8,\n  \"product_tests_executed\": 0,\n  \"claim\": \"Document/fixture consistency only; no crypto/runtime/load/formal or legal proof\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "counts": {
+    "valid_structural_examples": 14,
+    "invalid_examples_rejected": 9,
+    "artifact_hashes": 3,
+    "inherited_git_pins": 8,
+    "product_tests_discovered": 0,
+    "product_tests_executed": 0
+  },
+  "changed_path_count": 18,
+  "all_changes_within_allowlist": true,
+  "claims": "Document/fixture/source identity consistency only. No product,crypto,browser,load,formal,migration,rollout or legal proof."
+}

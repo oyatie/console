@@ -1,0 +1,2584 @@
+//! Test-only next-boundary candidate. Real startup, pool and legacy token owners.
+//! Does not establish Account-v1 sessions, concurrent cutover or stream revocation.
+use super::*;
+use futures::FutureExt;
+
+fn transport_pairs(pool: &PgPool) -> Vec<(&'static str, String)> {
+    let mut pairs = account_transport_config_pairs();
+    let transports = account_transport_urls(pool);
+    pairs.retain(|(key, _)| !transports.iter().any(|(transport, _)| key == transport));
+    pairs.extend(transports);
+    pairs
+}
+
+async fn assert_projection(pool: &PgPool, subject: UserId, expected: bool) {
+    let auth = console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Auth).await;
+    let found: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+        .bind(subject.as_uuid())
+        .fetch_one(&auth)
+        .await
+        .expect("real admitted projection prerequisite");
+    assert_eq!(found, expected);
+    auth.close().await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_transport_same_database_real_startup_control(pool: PgPool) {
+    prepare_http_database(&pool).await;
+    let subject = UserId::from_uuid(Uuid::new_v4());
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert_projection(&pool, subject, true).await;
+    let config =
+        AppConfig::from_pairs(transport_pairs(&pool)).expect("real transport configuration");
+    let state = AppState::from_config(config).await;
+    assert!(
+        state.is_ok(),
+        "same-database restricted transport must start"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_transport_other_database_cannot_silently_report_absence(pool: PgPool) {
+    prepare_http_database(&pool).await;
+    let subject = UserId::from_uuid(Uuid::new_v4());
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert_projection(&pool, subject, true).await;
+    // A valid business startup is required before the negative configuration.
+    assert!(
+        AppState::from_config(AppConfig::from_pairs(transport_pairs(&pool)).unwrap())
+            .await
+            .is_ok()
+    );
+    let unique = Uuid::new_v4().simple().to_string();
+    let database = format!("_sqlx_test_{unique}{}", &unique[..20]);
+    let outcome = std::panic::AssertUnwindSafe(async {
+        sqlx::query(sqlx::AssertSqlSafe(format!(
+            "CREATE DATABASE \"{database}\""
+        )))
+        .execute(&pool)
+        .await
+        .unwrap();
+        let other = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(4)
+            .connect_with(pool.connect_options().as_ref().clone().database(&database))
+            .await
+            .unwrap();
+        // Complete real migrations and routine admission in BOTH databases:
+        // missing schema/function must not manufacture the expected rejection.
+        prepare_http_database(&other).await;
+        assert_projection(&other, subject, false).await;
+        assert!(
+            AppState::from_config(AppConfig::from_pairs(transport_pairs(&other)).unwrap())
+                .await
+                .is_ok()
+        );
+        let mut pairs = transport_pairs(&pool);
+        for (key, value) in &mut pairs {
+            if *key == "AUTH_DATABASE_URL" {
+                *value = login_test_database_url(&other, TestDatabaseLogin::Auth);
+            }
+        }
+        // Static endpoint refusal and actual startup binding are both acceptable;
+        // this test mandates behavior, not a particular lock/identity mechanism.
+        let error = match AppConfig::from_pairs(pairs) {
+            Err(error) => error,
+            Ok(config) => match AppState::from_config(config).await {
+                Err(error) => error,
+                Ok(_) => {
+                    panic!("AUTH_DATABASE_BINDING: another valid database hid the persisted fence")
+                }
+            },
+        };
+        let message = error.to_string();
+        assert!(
+            message.contains("AUTH_DATABASE_URL"),
+            "binding diagnostic must identify auth transport"
+        );
+        let url = Url::parse(&login_test_database_url(&other, TestDatabaseLogin::Auth)).unwrap();
+        assert!(
+            !message.contains(url.password().unwrap()),
+            "binding errors cannot expose credentials"
+        );
+        other.close().await;
+    })
+    .catch_unwind()
+    .await;
+    // Pattern reused from account_custody_lifecycle: delete only the uniquely
+    // owned disposable DB even when a prerequisite or assertion panics.
+    sqlx::query(sqlx::AssertSqlSafe(format!(
+        "DROP DATABASE IF EXISTS \"{database}\" WITH (FORCE)"
+    )))
+    .execute(&pool)
+    .await
+    .unwrap();
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+}
+
+async fn refresh_issuance_snapshot(pool: &PgPool, subject: UserId) -> Value {
+    // Include every existing token/family identity and immutable issuance field.
+    // Terminal refusal may mark used/reuse/revocation metadata without issuing
+    // a replacement; those fields are deliberately outside this oracle. No hash or token
+    // bytes enter assertion output; equality is checked with a static message.
+    sqlx::query_scalar(r#"SELECT jsonb_build_object(
+        'families', COALESCE((SELECT jsonb_agg(jsonb_build_array(id,user_id,org_id,created_at) ORDER BY id)
+            FROM auth_refresh_token_families WHERE user_id=$1),'[]'::jsonb),
+        'tokens', COALESCE((SELECT jsonb_agg(jsonb_build_array(id,family_id,user_id,org_id,
+            encode(token_hash,'hex'),issued_at,expires_at,replaced_by) ORDER BY id)
+            FROM auth_refresh_tokens WHERE user_id=$1),'[]'::jsonb))"#)
+        .bind(subject.as_uuid()).fetch_one(pool).await.unwrap()
+}
+
+async fn refresh_response(fixture: &LegacyFenceFixture, cookie: bool) -> http::Response<Body> {
+    if cookie {
+        post_cookie_mode(
+            fixture.router.clone(),
+            "/api/v1/auth/token/refresh",
+            Some(&fixture.cookie_refresh),
+            json!({}),
+        )
+        .await
+    } else {
+        post_raw(
+            fixture.router.clone(),
+            "/api/v1/auth/token/refresh",
+            None,
+            json!({"refresh_token":fixture.body_refresh}),
+        )
+        .await
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_refresh_snapshot_detects_real_rotation_both_transports(pool: PgPool) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    for cookie in [false, true] {
+        let before = refresh_issuance_snapshot(&pool, fixture.subject).await;
+        let response = refresh_response(&fixture, cookie).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        let after = refresh_issuance_snapshot(&pool, fixture.subject).await;
+        assert!(
+            before != after,
+            "oracle must detect actual successful token rotation"
+        );
+        assert_eq!(
+            after["tokens"].as_array().unwrap().len(),
+            before["tokens"].as_array().unwrap().len() + 1
+        );
+        assert!(
+            before["families"] == after["families"],
+            "rotation retains family identity"
+        );
+    }
+}
+
+async fn assert_fenced_refresh_has_no_issuance(pool: &PgPool, cookie: bool) {
+    let fixture = legacy_fence_fixture(pool).await;
+    let before = refresh_issuance_snapshot(pool, fixture.subject).await;
+    assert!(
+        !before["tokens"].as_array().unwrap().is_empty(),
+        "real tokens must exist"
+    );
+    insert_account_fence(pool, fixture.subject, "ACTIVE").await;
+    assert_projection(pool, fixture.subject, true).await;
+    let response = refresh_response(&fixture, cookie).await;
+    let after = refresh_issuance_snapshot(pool, fixture.subject).await;
+    // Assert storage first: a401 obtained only AFTER committing a replacement
+    // must fail independently of an apparently safe HTTP refusal.
+    assert!(
+        before == after,
+        "FENCE_PREWRITE: refusal created, removed, rewrote or replaced refresh issuance material"
+    );
+    assert_legacy_denials([response], &fixture.known_secrets()).await;
+    assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_access).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_refresh_body_refuses_before_issuance(pool: PgPool) {
+    assert_fenced_refresh_has_no_issuance(&pool, false).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_refresh_cookie_refuses_before_issuance(pool: PgPool) {
+    assert_fenced_refresh_has_no_issuance(&pool, true).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_transport_startup_consumes_configured_auth_credential(pool: PgPool) {
+    prepare_http_database(&pool).await;
+    let subject = UserId::from_uuid(Uuid::new_v4());
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    // Prove the real restricted auth credential reads the installed projection.
+    // A missing role, routine or database cannot manufacture this refusal.
+    assert_projection(&pool, subject, true).await;
+    let mut pairs = transport_pairs(&pool);
+    let original_auth_url = pairs
+        .iter()
+        .find(|(key, _)| *key == "AUTH_DATABASE_URL")
+        .map(|(_, value)| value.as_str())
+        .expect("configured original auth URL");
+    let direct_auth = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(3))
+        .connect(original_auth_url)
+        .await
+        .expect("original configured auth credential must authenticate directly");
+    direct_auth.close().await;
+    let original = AppConfig::from_pairs(pairs.clone()).expect("valid configured transports");
+    assert!(
+        AppState::from_config(original).await.is_ok(),
+        "valid business and original auth transports must start"
+    );
+
+    // Change only the password at the same target and exact auth username.
+    // URL identity syntax, business credentials and database state stay valid.
+    let wrong_password = format!("TEST_ONLY_wrong_auth_{}", Uuid::new_v4().simple());
+    for (_, configured_url) in account_transport_urls(&pool) {
+        let configured = Url::parse(&configured_url).unwrap();
+        assert!(
+            configured.password() != Some(wrong_password.as_str()),
+            "negative credential must differ from every provisioned transport"
+        );
+    }
+    let auth_pair = pairs
+        .iter_mut()
+        .find(|(key, _)| *key == "AUTH_DATABASE_URL")
+        .expect("one configured auth transport");
+    let mut auth_url = Url::parse(&auth_pair.1).unwrap();
+    auth_url.set_password(Some(&wrong_password)).unwrap();
+    auth_pair.1 = auth_url.to_string();
+    let rejected_url = auth_pair.1.clone();
+    let config = AppConfig::from_pairs(pairs)
+        .expect("distinct wrong credential remains syntactically valid configuration");
+    // Require real password authentication, not trust-authenticated fixtures or
+    // a stopped database masquerading as an invalid credential refusal.
+    let wrong_login = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(3))
+        .connect(&rejected_url)
+        .await;
+    let direct_error = match wrong_login {
+        Err(error) => error,
+        Ok(unexpected) => {
+            unexpected.close().await;
+            panic!("AUTH_FIXTURE_PASSWORD: invalid credential authenticated directly");
+        }
+    };
+    assert!(
+        direct_error
+            .as_database_error()
+            .and_then(|error| error.code())
+            .as_deref()
+            == Some("28P01"),
+        "wrong auth credential must fail with PostgreSQL invalid_password"
+    );
+    let error = match AppState::from_config(config).await {
+        Err(error) => error,
+        Ok(_) => panic!("AUTH_POOL_CREDENTIAL: startup ignored the invalid auth credential"),
+    };
+    let message = error.to_string();
+    assert!(
+        message.contains("AUTH_DATABASE_URL"),
+        "startup refusal must identify the auth transport"
+    );
+    assert!(
+        !message.contains(&wrong_password) && !message.contains(&rejected_url),
+        "startup refusal must not expose auth credential or connection URL"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage(
+    pool: PgPool,
+) {
+    prepare_http_database(&pool).await;
+    let subject = UserId::from_uuid(Uuid::new_v4());
+    insert_account_fence(&pool, subject, "ACTIVE").await;
+    assert_projection(&pool, subject, true).await;
+    let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+    tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        loop {
+            let before_start: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            if before_start == 0 {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        }
+    })
+    .await
+    .expect("direct projection control must close its auth pool");
+    let original_role: Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(original_role["rolcanlogin"], true);
+    let state = AppState::from_config(
+        AppConfig::from_pairs(transport_pairs(&pool)).expect("valid configured transports"),
+    )
+    .await
+    .expect("real configured startup must succeed before outage");
+    let router = build_router(state.clone());
+    let ready = |router: axum::Router| async move {
+        router
+            .oneshot(
+                Request::builder()
+                    .uri("/readyz")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+            .status()
+    };
+    let outcome = std::panic::AssertUnwindSafe(async {
+        assert_eq!(ready(router.clone()).await, StatusCode::OK);
+        let retained: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt' \
+             AND backend_type='client backend'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(
+            retained > 0,
+            "AUTH_POOL_RETAINED: real startup must retain an authenticated auth backend"
+        );
+        let other_database_auth: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname<>current_database() AND usename='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            other_database_auth, 0,
+            "auth role fault requires exclusive fixture custody"
+        );
+        // Cluster-global role fault is permitted only inside this exclusive
+        // disposable SQLx harness. No credential, membership or grant changes.
+        // The outer cleanup restores LOGIN even when any assertion panics.
+        sqlx::query("ALTER ROLE console_auth_rt NOLOGIN")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let can_login: bool = sqlx::query_scalar(
+            "SELECT rolcanlogin FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(!can_login, "auth-only login fault must be installed");
+        let terminated: Vec<(i32, bool)> = sqlx::query_as(
+            "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt' \
+             AND backend_type='client backend'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert!(
+            !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+            "terminate only the retained auth backends in this disposable database"
+        );
+        let remaining: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            remaining, 0,
+            "terminated auth backends must actually be gone"
+        );
+        let direct = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3))
+            .connect(&auth_url)
+            .await;
+        let auth_error = match direct {
+            Err(error) => error,
+            Ok(unexpected) => {
+                unexpected.close().await;
+                panic!("AUTH_OUTAGE_FAULT: disabled auth LOGIN still authenticated");
+            }
+        };
+        assert!(
+            auth_error
+                .as_database_error()
+                .and_then(|error| error.code())
+                .as_deref()
+                == Some("28000"),
+            "outage must be PostgreSQL NOLOGIN refusal, not database/network failure"
+        );
+        // Every other serving role must still authenticate and execute work.
+        // This rules out the existing runtime/command health dependencies as
+        // the reason for a503 from the actual readyz handler.
+        for login in [
+            TestDatabaseLogin::Business,
+            TestDatabaseLogin::LeaveCommand,
+            TestDatabaseLogin::OntologyCommand,
+            TestDatabaseLogin::PlatformForceCommand,
+        ] {
+            let unaffected = console_platform_test_support::login_test_pool(&pool, login).await;
+            assert_eq!(
+                sqlx::query_scalar::<_, i32>("SELECT 1")
+                    .fetch_one(&unaffected)
+                    .await
+                    .unwrap(),
+                1
+            );
+            if matches!(login, TestDatabaseLogin::Business) {
+                // Same production custody SQL and transaction settings: NOLOGIN
+                // must not cause an unrelated catalog custody failure.
+                let mut tx = unaffected.begin().await.unwrap();
+                sqlx::query("SET TRANSACTION READ ONLY")
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+                sqlx::raw_sql(
+                    "SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='3s'",
+                )
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+                let verdict: String =
+                    sqlx::query_scalar(include_str!("../../src/account_custody_state.sql"))
+                        .fetch_one(&mut *tx)
+                        .await
+                        .unwrap();
+                tx.commit().await.unwrap();
+                assert_eq!(verdict, "account_custody.finalized");
+            }
+            unaffected.close().await;
+        }
+        assert_eq!(
+            ready(router.clone()).await,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "AUTH_READINESS: healthy business cannot hide unavailable retained auth transport"
+        );
+    })
+    .catch_unwind()
+    .await;
+    // This fixed restoration is outside the unwinding body. LOGIN was proved
+    // true before the fault; all other role attributes must remain identical.
+    let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+        .execute(&pool)
+        .await;
+    let restored: Result<Value, _> = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await;
+    if restore.is_err() || restored.as_ref().ok() != Some(&original_role) {
+        state.shutdown_realtime().await;
+        panic!("AUTH_OUTAGE_CLEANUP: exact original auth role was not restored");
+    }
+    if let Err(panic) = outcome {
+        state.shutdown_realtime().await;
+        std::panic::resume_unwind(panic);
+    }
+    // The same retained AppState/router must recover without reconstructing it.
+    let recovered = ready(router).await;
+    state.shutdown_realtime().await;
+    assert_eq!(
+        recovered,
+        StatusCode::OK,
+        "restored auth transport must recover readiness"
+    );
+}
+
+use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
+use sha2::{Digest, Sha256};
+
+async fn refresh_complete_snapshot(pool: &PgPool) -> Value {
+    // Whole isolated-fixture rosters catch wrong-subject and misattributed writes.
+    // Preserve terminal metadata too; never print this credential-bearing value.
+    sqlx::query_scalar(
+        r#"SELECT jsonb_build_object(
+            'families', COALESCE((SELECT jsonb_agg(to_jsonb(f) ORDER BY f.id)
+                FROM public.auth_refresh_token_families f),'[]'::jsonb),
+            'tokens', COALESCE((SELECT jsonb_agg(to_jsonb(t) ||
+                jsonb_build_object('token_hash', encode(t.token_hash,'hex')) ORDER BY t.id)
+                FROM public.auth_refresh_tokens t),'[]'::jsonb),
+            'audit', COALESCE((SELECT jsonb_agg(to_jsonb(a) ORDER BY a.id)
+                FROM public.audit_events a),'[]'::jsonb))"#,
+    )
+    .fetch_one(pool)
+    .await
+    .expect("complete refresh and audit readback must succeed")
+}
+
+fn assert_exact_refresh_delta(
+    before: &Value,
+    after: &Value,
+    subject: UserId,
+    presented: &str,
+    replacement: &str,
+) {
+    assert!(!presented.is_empty() && !replacement.is_empty());
+    assert!(
+        presented != replacement,
+        "rotation must replace token bytes"
+    );
+    let before_tokens = before["tokens"].as_array().unwrap();
+    let after_tokens = after["tokens"].as_array().unwrap();
+    let presented_hash = hex::encode(Sha256::digest(presented.as_bytes()));
+    let replacement_hash = hex::encode(Sha256::digest(replacement.as_bytes()));
+    let original = before_tokens
+        .iter()
+        .find(|row| row["token_hash"] == presented_hash)
+        .expect("positive token must correlate to an existing stored hash");
+    assert!(original["user_id"] == json!(subject));
+    assert!(original["used_at"].is_null() && original["replaced_by"].is_null());
+    assert!(original["revoked_at"].is_null());
+    assert_eq!(after_tokens.len(), before_tokens.len() + 1);
+    let added: Vec<_> = after_tokens
+        .iter()
+        .filter(|row| !before_tokens.iter().any(|old| old["id"] == row["id"]))
+        .collect();
+    assert_eq!(added.len(), 1, "exactly one replacement identity");
+    let replacement_row = added[0];
+    assert!(replacement_row["token_hash"] == replacement_hash);
+    assert!(replacement_row["user_id"] == original["user_id"]);
+    assert!(replacement_row["family_id"] == original["family_id"]);
+    assert!(replacement_row["org_id"] == original["org_id"]);
+    assert!(replacement_row["used_at"].is_null());
+    assert!(replacement_row["replaced_by"].is_null());
+    assert!(replacement_row["revoked_at"].is_null());
+    assert!(replacement_row["reuse_detected_at"].is_null());
+    assert!(
+        before["families"] == after["families"],
+        "family roster preserved"
+    );
+    for old in before_tokens {
+        let actual = after_tokens
+            .iter()
+            .find(|row| row["id"] == old["id"])
+            .expect("every previous token identity must remain");
+        let mut expected = old.clone();
+        if old["id"] == original["id"] {
+            expected["used_at"] = replacement_row["issued_at"].clone();
+            expected["replaced_by"] = replacement_row["id"].clone();
+        }
+        assert!(
+            &expected == actual,
+            "only presented token consumption may change"
+        );
+    }
+    let before_audit = before["audit"].as_array().unwrap();
+    let after_audit = after["audit"].as_array().unwrap();
+    assert_eq!(after_audit.len(), before_audit.len() + 1);
+    for old in before_audit {
+        assert!(
+            after_audit.contains(old),
+            "existing audit material must remain exact"
+        );
+    }
+    let added_audit: Vec<_> = after_audit
+        .iter()
+        .filter(|row| !before_audit.iter().any(|old| old["id"] == row["id"]))
+        .collect();
+    assert_eq!(
+        added_audit.len(),
+        1,
+        "rotation emits exactly one audit identity"
+    );
+    let audit = added_audit[0];
+    assert!(audit["action"] == "auth.refresh");
+    assert!(audit["actor"] == json!(subject));
+    assert!(audit["org_id"] == original["org_id"]);
+    assert!(audit["target_type"] == "auth_refresh_token_family");
+    assert!(audit["target_id"] == original["family_id"]);
+    assert!(audit["after_snap"]["used_token_id"] == original["id"]);
+    assert!(audit["after_snap"]["replacement_token_id"] == replacement_row["id"]);
+}
+
+async fn control_refresh_token(pool: &PgPool, fixture: &LegacyFenceFixture) -> String {
+    // Seed through the actual current owner, then prove HTTP rotation succeeds.
+    // This also calibrates the complete snapshot against a real one-effect write.
+    let business =
+        console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Business).await;
+    let auth = console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Auth).await;
+    let issued = RefreshTokenStore
+        .issue_family(
+            &business,
+            &auth,
+            *fixture.control.as_uuid(),
+            OrgId::knl(),
+            OffsetDateTime::now_utc(),
+            Duration::days(30),
+        )
+        .await
+        .expect("real control-subject token issuance prerequisite");
+    auth.close().await;
+    business.close().await;
+    assert_projection(pool, fixture.subject, false).await;
+    assert_projection(pool, fixture.control, false).await;
+    let before = refresh_complete_snapshot(pool).await;
+    let response = post_raw(
+        fixture.router.clone(),
+        "/api/v1/auth/token/refresh",
+        None,
+        json!({"refresh_token": issued.token.as_str()}),
+    )
+    .await;
+    let body: TokenPairResponse = response.into_json(StatusCode::OK).await;
+    let replacement = body
+        .refresh_token
+        .expect("body-mode positive returns refresh token");
+    assert_exact_refresh_delta(
+        &before,
+        &refresh_complete_snapshot(pool).await,
+        fixture.control,
+        issued.token.as_str(),
+        &replacement,
+    );
+    assert_legacy_reads(&fixture.router, fixture.control, &body.access_token).await;
+    replacement
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_refresh_canonical_writer_refuses_fenced_subject_and_rotates_control(
+    pool: PgPool,
+) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    let control = control_refresh_token(&pool, &fixture).await;
+    let business =
+        console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business).await;
+    let auth = console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+    insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+    for (subject, expected) in [(fixture.subject, true), (fixture.control, false)] {
+        let fenced: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+            .bind(subject.as_uuid())
+            .fetch_one(&auth)
+            .await
+            .expect("direct restricted projection prerequisite");
+        assert_eq!(fenced, expected);
+    }
+    let before_control = refresh_complete_snapshot(&pool).await;
+    let rotated = RefreshTokenStore
+        .rotate(
+            &business,
+            &auth,
+            &control,
+            OffsetDateTime::now_utc(),
+            Duration::days(30),
+            Duration::days(30),
+        )
+        .await
+        .expect("unfenced canonical writer must still rotate after another subject is fenced");
+    assert!(rotated.user_id == *fixture.control.as_uuid());
+    assert_exact_refresh_delta(
+        &before_control,
+        &refresh_complete_snapshot(&pool).await,
+        fixture.control,
+        &control,
+        rotated.token.as_str(),
+    );
+    for _ in 0..2 {
+        let before = refresh_complete_snapshot(&pool).await;
+        let denied = RefreshTokenStore
+            .rotate(
+                &business,
+                &auth,
+                &fixture.body_refresh,
+                OffsetDateTime::now_utc(),
+                Duration::days(30),
+                Duration::days(30),
+            )
+            .await;
+        assert!(
+            before == refresh_complete_snapshot(&pool).await,
+            "FENCE_CANONICAL_PREWRITE: direct owner changed refresh or audit material"
+        );
+        assert!(
+            matches!(denied, Err(RefreshTokenUseError::InvalidToken)),
+            "canonical owner must refuse a committed fence with existing InvalidToken"
+        );
+    }
+    auth.close().await;
+    business.close().await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_refresh_auth_only_outage_preserves_token_and_audit_then_recovers(
+    pool: PgPool,
+) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    let control = control_refresh_token(&pool, &fixture).await;
+    let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+    let auth_password = Url::parse(&auth_url)
+        .unwrap()
+        .password()
+        .unwrap()
+        .to_owned();
+    let original_role: Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(original_role["rolcanlogin"], true);
+    let before = refresh_complete_snapshot(&pool).await;
+    // The effective body token is the real fixture's unspent replacement.
+    // Prove its hash, subject and live family before introducing any fault.
+    let live_token: bool = sqlx::query_scalar(
+        "SELECT t.user_id=$2 AND t.used_at IS NULL AND t.revoked_at IS NULL \
+         AND t.replaced_by IS NULL AND t.expires_at>now() AND f.revoked_at IS NULL \
+         FROM public.auth_refresh_tokens t JOIN public.auth_refresh_token_families f \
+         ON f.id=t.family_id WHERE t.token_hash=$1",
+    )
+    .bind(Sha256::digest(fixture.body_refresh.as_bytes()).to_vec())
+    .bind(fixture.subject.as_uuid())
+    .fetch_one(&pool)
+    .await
+    .expect("effective token must exist before auth outage");
+    assert!(
+        live_token,
+        "effective token must be unused and live before auth outage"
+    );
+    let outcome = std::panic::AssertUnwindSafe(async {
+        let retained: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt' \
+             AND backend_type='client backend'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(
+            retained > 0,
+            "real router must retain authenticated auth transport"
+        );
+        let other_database_auth: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname<>current_database() AND usename='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            other_database_auth, 0,
+            "auth fault requires exclusive fixture custody"
+        );
+        // Root-owned disposable cluster only; no passwords, grants or schema change.
+        sqlx::query("ALTER ROLE console_auth_rt NOLOGIN")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let can_login: bool = sqlx::query_scalar(
+            "SELECT rolcanlogin FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(!can_login, "auth-only login fault must be installed");
+        let terminated: Vec<(i32, bool)> = sqlx::query_as(
+            "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt' \
+             AND backend_type='client backend'",
+        )
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+        assert!(
+            !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+            "bounded termination must stop actual retained auth backends"
+        );
+        let remaining: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+             WHERE datname=current_database() AND usename='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(remaining, 0, "terminated auth backends must be gone");
+        let direct = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3))
+            .connect(&auth_url)
+            .await;
+        let auth_error = match direct {
+            Err(error) => error,
+            Ok(unexpected) => {
+                unexpected.close().await;
+                panic!("REFRESH_OUTAGE_FAULT: disabled auth LOGIN still authenticated");
+            }
+        };
+        assert!(
+            auth_error
+                .as_database_error()
+                .and_then(|error| error.code())
+                .as_deref()
+                == Some("28000"),
+            "fault witness must be PostgreSQL NOLOGIN, not generic infrastructure failure"
+        );
+        for login in [
+            TestDatabaseLogin::Business,
+            TestDatabaseLogin::LeaveCommand,
+            TestDatabaseLogin::OntologyCommand,
+            TestDatabaseLogin::PlatformForceCommand,
+        ] {
+            let unaffected = console_platform_test_support::login_test_pool(&pool, login).await;
+            assert_eq!(
+                sqlx::query_scalar::<_, i32>("SELECT 1")
+                    .fetch_one(&unaffected)
+                    .await
+                    .unwrap(),
+                1
+            );
+            if matches!(login, TestDatabaseLogin::Business) {
+                let mut tx = unaffected.begin().await.unwrap();
+                sqlx::query("SELECT set_config('app.current_org', $1, true)")
+                    .bind(OrgId::knl().as_uuid().to_string())
+                    .execute(&mut *tx)
+                    .await
+                    .unwrap();
+                let available: i64 = sqlx::query_scalar(
+                    "SELECT count(*) FROM public.auth_refresh_tokens WHERE user_id=$1 \
+                     AND used_at IS NULL AND revoked_at IS NULL",
+                )
+                .bind(fixture.subject.as_uuid())
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+                assert!(
+                    available >= 2,
+                    "business can still read real unused subject tokens"
+                );
+                tx.rollback().await.unwrap();
+            }
+            unaffected.close().await;
+        }
+        let response = refresh_response(&fixture, false).await;
+        assert!(
+            before == refresh_complete_snapshot(&pool).await,
+            "FENCE_OUTAGE_PREWRITE: indeterminate auth consumed token or changed audit"
+        );
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        assert!(
+            set_cookie_values(&response).is_empty(),
+            "storage error must not issue cookies"
+        );
+        let secrets = [
+            fixture.access.as_str(),
+            fixture.body_refresh.as_str(),
+            fixture.cookie_refresh.as_str(),
+            control.as_str(),
+            auth_url.as_str(),
+            auth_password.as_str(),
+        ];
+        for value in response.headers().values() {
+            let text = value.to_str().expect("valid response header");
+            assert!(
+                secrets.iter().all(|secret| !text.contains(secret)),
+                "storage failure headers cannot echo known credentials"
+            );
+        }
+        let bytes = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+        let text = std::str::from_utf8(&bytes).unwrap();
+        assert!(
+            secrets.iter().all(|secret| !text.contains(secret)),
+            "storage failure body cannot echo known credentials"
+        );
+        let body: Value = serde_json::from_slice(&bytes).unwrap();
+        assert!(
+            body == json!({"error":{"code":"internal","message":"refresh token storage error"}}),
+            "existing constant Storage error only; no raw driver detail or token fields"
+        );
+    })
+    .catch_unwind()
+    .await;
+    // Outside caught unwinding: restore the proven original LOGIN flag and
+    // compare every public role attribute. Driver owns abort/kill cleanup.
+    let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+        .execute(&pool)
+        .await;
+    let restored: Result<Value, _> = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await;
+    assert!(
+        restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+        "REFRESH_OUTAGE_CLEANUP: original auth role must be restored exactly"
+    );
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+    assert_projection(&pool, fixture.subject, false).await;
+    let recovered = refresh_response(&fixture, false).await;
+    let body: TokenPairResponse = recovered.into_json(StatusCode::OK).await;
+    let replacement = body
+        .refresh_token
+        .expect("same body token must recover after restoration");
+    assert_exact_refresh_delta(
+        &before,
+        &refresh_complete_snapshot(&pool).await,
+        fixture.subject,
+        &fixture.body_refresh,
+        &replacement,
+    );
+    assert_legacy_reads(&fixture.router, fixture.subject, &body.access_token).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn account_fence_refresh_effective_cookie_subject_controls_conflicting_body(pool: PgPool) {
+    let fixture = legacy_fence_fixture(&pool).await;
+    let control = control_refresh_token(&pool, &fixture).await;
+    insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+    assert_projection(&pool, fixture.subject, true).await;
+    assert_projection(&pool, fixture.control, false).await;
+    let before = refresh_complete_snapshot(&pool).await;
+    let denied = post_cookie_mode(
+        fixture.router.clone(),
+        "/api/v1/auth/token/refresh",
+        Some(&fixture.cookie_refresh),
+        json!({"refresh_token": control}),
+    )
+    .await;
+    assert!(
+        before == refresh_complete_snapshot(&pool).await,
+        "FENCE_COOKIE_SUBJECT: fenced cookie must preserve both subjects despite valid body"
+    );
+    assert_legacy_denials(
+        [denied],
+        &[
+            &fixture.access,
+            &fixture.body_refresh,
+            &fixture.cookie_refresh,
+            &control,
+        ],
+    )
+    .await;
+    let accepted = post_cookie_mode(
+        fixture.router.clone(),
+        "/api/v1/auth/token/refresh",
+        Some(&control),
+        json!({"refresh_token": fixture.body_refresh}),
+    )
+    .await;
+    assert_eq!(accepted.status(), StatusCode::OK);
+    let cookie =
+        console_refresh_set_cookie(&accepted).expect("cookie mode returns rotating cookie");
+    assert!(cookie.contains("HttpOnly") && cookie.contains("SameSite=Strict"));
+    let replacement = cookie_token(&cookie).to_owned();
+    let body: TokenPairResponse = accepted.into_json(StatusCode::OK).await;
+    assert!(
+        body.refresh_token.is_none(),
+        "cookie mode must not return token in JSON"
+    );
+    assert_exact_refresh_delta(
+        &before,
+        &refresh_complete_snapshot(&pool).await,
+        fixture.control,
+        &control,
+        &replacement,
+    );
+    assert_legacy_reads(&fixture.router, fixture.control, &body.access_token).await;
+}
+
+mod issue_family_fence {
+    use super::*;
+    use console_platform_auth::{AuthError, RefreshTokenIssue};
+
+    async fn issue(
+        business: &PgPool,
+        auth: &PgPool,
+        subject: UserId,
+        now: OffsetDateTime,
+        ttl: Duration,
+    ) -> Result<RefreshTokenIssue, AuthError> {
+        RefreshTokenStore
+            .issue_family(business, auth, *subject.as_uuid(), OrgId::knl(), now, ttl)
+            .await
+    }
+
+    fn roster_counts(snapshot: &Value) -> [usize; 3] {
+        ["families", "tokens", "audit"].map(|key| snapshot[key].as_array().unwrap().len())
+    }
+
+    fn one_added_row<'a>(before: &Value, after: &'a Value, key: &str) -> &'a Value {
+        let old_rows = before[key].as_array().unwrap();
+        let new_rows = after[key].as_array().unwrap();
+        assert_eq!(new_rows.len(), old_rows.len() + 1, "one new roster entry");
+        for old in old_rows {
+            assert!(
+                new_rows.contains(old),
+                "every existing row across every subject must remain byte-exact in JSON"
+            );
+        }
+        let added: Vec<_> = new_rows
+            .iter()
+            .filter(|row| !old_rows.iter().any(|old| old["id"] == row["id"]))
+            .collect();
+        assert_eq!(added.len(), 1, "exactly one new identity in each roster");
+        added[0]
+    }
+
+    async fn assert_issue_delta(
+        pool: &PgPool,
+        before: &Value,
+        after: &Value,
+        issued: &RefreshTokenIssue,
+        subject: UserId,
+        now: OffsetDateTime,
+        ttl: Duration,
+    ) {
+        let family = one_added_row(before, after, "families");
+        let token = one_added_row(before, after, "tokens");
+        let audit = one_added_row(before, after, "audit");
+        assert!(
+            !issued.token.as_str().is_empty(),
+            "issued token must be nonempty"
+        );
+        assert!(issued.user_id == *subject.as_uuid());
+        assert!(issued.org_id == OrgId::knl());
+        assert!(issued.expires_at == now + ttl);
+        assert!(family["id"] == json!(issued.family_id));
+        assert!(family["user_id"] == json!(subject));
+        assert!(family["org_id"] == json!(OrgId::knl()));
+        assert!(family["revoked_at"].is_null() && family["revoked_reason"].is_null());
+        assert!(token["id"] == json!(issued.token_id));
+        assert!(token["family_id"] == family["id"]);
+        assert!(token["user_id"] == family["user_id"]);
+        assert!(token["org_id"] == family["org_id"]);
+        assert!(
+            token["token_hash"] == hex::encode(Sha256::digest(issued.token.as_str().as_bytes())),
+            "returned credential must correlate to the new stored token hash"
+        );
+        for key in ["used_at", "replaced_by", "revoked_at", "reuse_detected_at"] {
+            assert!(
+                token[key].is_null(),
+                "new token terminal metadata must be null"
+            );
+        }
+        assert!(audit["action"] == "auth.refresh.issue");
+        assert!(audit["actor"] == json!(subject));
+        assert!(audit["org_id"] == family["org_id"]);
+        assert!(audit["target_type"] == "auth_refresh_token_family");
+        assert!(audit["target_id"] == family["id"]);
+        assert!(audit["branch_id"].is_null() && audit["before_snap"].is_null());
+        assert!(
+            audit["after_snap"]
+                == json!({
+                    "family_id": issued.family_id,
+                    "token_id": issued.token_id,
+                    "user_id": subject,
+                    "expires_at": now + ttl,
+                }),
+            "issuance audit must have exactly the expected four snapshot fields"
+        );
+        let audit_id = Uuid::parse_str(audit["id"].as_str().unwrap()).unwrap();
+        let exact_times: bool = sqlx::query_scalar(
+            "SELECT f.created_at=$4 AND t.issued_at=$4 AND t.expires_at=$5 \
+             AND a.occurred_at=$4 FROM public.auth_refresh_token_families f \
+             JOIN public.auth_refresh_tokens t ON t.family_id=f.id \
+             JOIN public.audit_events a ON a.id=$3 WHERE f.id=$1 AND t.id=$2",
+        )
+        .bind(issued.family_id)
+        .bind(issued.token_id)
+        .bind(audit_id)
+        .bind(now)
+        .bind(now + ttl)
+        .fetch_one(pool)
+        .await
+        .expect("typed issuance time readback");
+        assert!(
+            exact_times,
+            "stored issuance and expiry times must match inputs"
+        );
+    }
+
+    fn assert_no_issue_delta(before: &Value, after: &Value) {
+        // Only counts may be printed: snapshots and returned tokens are sensitive.
+        assert!(
+            before == after,
+            "ISSUE_FENCE_PREWRITE: complete family/token/audit identities changed; counts {:?} -> {:?}",
+            roster_counts(before),
+            roster_counts(after)
+        );
+    }
+
+    async fn bounded_auth_pool(pool: &PgPool) -> PgPool {
+        let admitted =
+            console_platform_test_support::login_test_pool(pool, TestDatabaseLogin::Auth).await;
+        let auth = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3))
+            .connect_with(admitted.connect_options().as_ref().clone())
+            .await
+            .expect("real Auth connection with bounded outage wait");
+        admitted.close().await;
+        let identity: (String, String) =
+            sqlx::query_as("SELECT session_user::text,current_user::text")
+                .fetch_one(&auth)
+                .await
+                .unwrap();
+        assert_eq!(
+            identity,
+            ("console_auth_rt".to_owned(), "console_auth_rt".to_owned())
+        );
+        auth
+    }
+
+    async fn projection(auth: &PgPool, subject: UserId, expected: bool) {
+        let actual: bool = sqlx::query_scalar("SELECT public.account_legacy_fenced_v1($1)")
+            .bind(subject.as_uuid())
+            .fetch_one(auth)
+            .await
+            .expect("installed projection through actual retained Auth login");
+        assert_eq!(actual, expected);
+    }
+
+    fn issue_time() -> OffsetDateTime {
+        // PostgreSQL stores microseconds; whole seconds make exact readback portable.
+        OffsetDateTime::now_utc().replace_nanosecond(0).unwrap()
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn unmigrated_issuance_adds_exact_family_token_and_audit(pool: PgPool) {
+        let fixture = legacy_fence_fixture(&pool).await;
+        let business =
+            console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business)
+                .await;
+        let auth = bounded_auth_pool(&pool).await;
+        projection(&auth, fixture.subject, false).await;
+        projection(&auth, fixture.control, false).await;
+        let before = refresh_complete_snapshot(&pool).await;
+        let now = issue_time();
+        let ttl = Duration::days(30);
+        let issued = issue(&business, &auth, fixture.subject, now, ttl)
+            .await
+            .expect("unmigrated subject issuance prerequisite");
+        assert_issue_delta(
+            &pool,
+            &before,
+            &refresh_complete_snapshot(&pool).await,
+            &issued,
+            fixture.subject,
+            now,
+            ttl,
+        )
+        .await;
+        auth.close().await;
+        business.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn fenced_subject_is_refused_before_family_token_or_audit(pool: PgPool) {
+        let fixture = legacy_fence_fixture(&pool).await;
+        let business =
+            console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business)
+                .await;
+        let auth = bounded_auth_pool(&pool).await;
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        projection(&auth, fixture.subject, true).await;
+        projection(&auth, fixture.control, false).await;
+        let now = issue_time();
+        let ttl = Duration::days(30);
+        let before_control = refresh_complete_snapshot(&pool).await;
+        let control = issue(&business, &auth, fixture.control, now, ttl)
+            .await
+            .expect("unrelated unmigrated subject still issues after the target fence");
+        let before = refresh_complete_snapshot(&pool).await;
+        assert_issue_delta(
+            &pool,
+            &before_control,
+            &before,
+            &control,
+            fixture.control,
+            now,
+            ttl,
+        )
+        .await;
+        let result = issue(&business, &auth, fixture.subject, now, ttl).await;
+        let after = refresh_complete_snapshot(&pool).await;
+        // If the old owner succeeds, prove its exact unwanted effects before RED.
+        if let Ok(issued) = &result {
+            assert_issue_delta(&pool, &before, &after, issued, fixture.subject, now, ttl).await;
+        }
+        assert_no_issue_delta(&before, &after);
+        assert!(
+            matches!(
+                result,
+                Err(AuthError::Refresh(RefreshTokenUseError::InvalidToken))
+            ),
+            "committed fence must return the existing typed invalid-token refusal"
+        );
+        auth.close().await;
+        business.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_projection_outage_preserves_all_rows_and_recovers(pool: PgPool) {
+        let fixture = legacy_fence_fixture(&pool).await;
+        let business =
+            console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business)
+                .await;
+        let auth = bounded_auth_pool(&pool).await;
+        projection(&auth, fixture.subject, false).await;
+        let now = issue_time();
+        let ttl = Duration::days(30);
+        let initial = refresh_complete_snapshot(&pool).await;
+        let issued = issue(&business, &auth, fixture.subject, now, ttl)
+            .await
+            .expect("real issuance must work before Auth-only fault");
+        let before = refresh_complete_snapshot(&pool).await;
+        assert_issue_delta(&pool, &initial, &before, &issued, fixture.subject, now, ttl).await;
+        let original_role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(original_role["rolcanlogin"] == true);
+        let outcome = std::panic::AssertUnwindSafe(async {
+            let others: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname<>current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(others, 0, "Auth fault requires exclusive disposable-cluster custody");
+            sqlx::query("ALTER ROLE console_auth_rt NOLOGIN").execute(&pool).await.unwrap();
+            let terminated: Vec<(i32, bool)> = sqlx::query_as(
+                "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt' \
+                 AND backend_type='client backend'",
+            )
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+            assert!(
+                !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+                "bounded termination must stop retained authenticated Auth backends"
+            );
+            let remaining: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(remaining, 0, "all terminated Auth sessions must be gone");
+            let direct = sqlx::postgres::PgPoolOptions::new()
+                .max_connections(1)
+                .acquire_timeout(std::time::Duration::from_secs(3))
+                .connect_with(auth.connect_options().as_ref().clone())
+                .await;
+            let error = match direct {
+                Err(error) => error,
+                Ok(unexpected) => {
+                    unexpected.close().await;
+                    panic!("ISSUE_OUTAGE_FAULT: NOLOGIN Auth unexpectedly authenticated");
+                }
+            };
+            assert!(
+                error.as_database_error().and_then(|error| error.code()).as_deref() == Some("28000"),
+                "fault witness must be actual PostgreSQL NOLOGIN, not generic infrastructure failure"
+            );
+            let projection_failure = sqlx::query_scalar::<_, bool>("SELECT public.account_legacy_fenced_v1($1)")
+                .bind(fixture.subject.as_uuid())
+                .fetch_one(&auth)
+                .await;
+            assert!(projection_failure.is_err(), "the retained Auth pool must really lose its projection");
+            let mut tx = business.begin().await.expect("Business remains available during Auth outage");
+            sqlx::query("SELECT set_config('app.current_org', $1, true)")
+                .bind(OrgId::knl().as_uuid().to_string())
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let visible: i64 = sqlx::query_scalar("SELECT count(*) FROM public.auth_refresh_token_families WHERE user_id=$1")
+                .bind(fixture.subject.as_uuid())
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+            assert!(visible > 0, "Business still reads the actual subject's existing families");
+            tx.rollback().await.unwrap();
+            let result = issue(&business, &auth, fixture.subject, now, ttl).await;
+            let after = refresh_complete_snapshot(&pool).await;
+            if let Ok(issued) = &result {
+                assert_issue_delta(&pool, &before, &after, issued, fixture.subject, now, ttl).await;
+            }
+            assert_no_issue_delta(&before, &after);
+            assert!(matches!(result, Err(AuthError::Sqlx(_))), "indeterminate projection must stay a typed SQL storage error");
+        })
+        .catch_unwind()
+        .await;
+        // Restoration runs even on behavioral RED. Root owns abort/kill cleanup.
+        let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+            .execute(&pool)
+            .await;
+        let restored: Result<Value, _> = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await;
+        assert!(
+            restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+            "ISSUE_OUTAGE_CLEANUP: every public Auth role attribute must be restored"
+        );
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+        projection(&auth, fixture.subject, false).await;
+        let recovered = issue(&business, &auth, fixture.subject, now, ttl)
+            .await
+            .expect("same Auth and Business pools must recover after LOGIN restoration");
+        assert_issue_delta(
+            &pool,
+            &before,
+            &refresh_complete_snapshot(&pool).await,
+            &recovered,
+            fixture.subject,
+            now,
+            ttl,
+        )
+        .await;
+        auth.close().await;
+        business.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn http_otp_auth_outage_returns_sanitized_storage_without_session_then_recovers(
+        pool: PgPool,
+    ) {
+        async fn upstream_credentials(pool: &PgPool) -> Value {
+            sqlx::query_scalar(
+                "SELECT jsonb_build_object( \
+                 'bootstrap', COALESCE((SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) \
+                    FROM public.auth_bootstrap_credentials c),'[]'::jsonb), \
+                 'passkeys', COALESCE((SELECT jsonb_agg(to_jsonb(c) ORDER BY c.id) \
+                    FROM public.auth_webauthn_credentials c),'[]'::jsonb))",
+            )
+            .fetch_one(pool)
+            .await
+            .expect("complete upstream credential snapshot")
+        }
+
+        fn assert_redeem_audit(audit: &Value, subject: UserId, credential_id: Uuid) {
+            assert!(audit["action"] == "auth.otp.redeem");
+            assert!(audit["actor"] == json!(subject));
+            assert!(audit["org_id"] == json!(OrgId::knl()));
+            assert!(audit["target_type"] == "auth_bootstrap_credential");
+            assert!(audit["target_id"] == json!(credential_id));
+            assert!(audit["branch_id"].is_null() && audit["before_snap"].is_null());
+            assert!(
+                audit["after_snap"] == json!({"user_id": subject, "requires_passkey_setup": true})
+            );
+        }
+
+        let fixture = legacy_fence_fixture(&pool).await;
+        let branch = seed_branch(&pool, "HTTP Outage Region", "HTTP Outage Branch").await;
+        let subject = seed_user_with_branch(
+            &pool,
+            "HTTP Outage OTP",
+            "010-8900-0005",
+            "MECHANIC",
+            branch,
+        )
+        .await;
+        assert!(fence_credential_snapshot(&pool, subject).await.is_empty());
+        let otp = BootstrapCredentialStore
+            .issue_for_zero_credential_user(
+                &pool,
+                *subject.as_uuid(),
+                OrgId::knl(),
+                OffsetDateTime::now_utc(),
+                Duration::hours(24),
+            )
+            .await
+            .expect("real zero-passkey OTP prerequisite");
+        assert_projection(&pool, subject, false).await;
+        let live_otp: bool = sqlx::query_scalar(
+            "SELECT user_id=$2 AND org_id=$3 AND token_hash=$4 \
+             AND consumed_at IS NULL AND revoked_at IS NULL AND expires_at>now() \
+             FROM public.auth_bootstrap_credentials WHERE id=$1",
+        )
+        .bind(otp.credential_id)
+        .bind(subject.as_uuid())
+        .bind(OrgId::knl().as_uuid())
+        .bind(Sha256::digest(otp.token.as_str().as_bytes()).to_vec())
+        .fetch_one(&pool)
+        .await
+        .expect("stored OTP must correlate to the live subject and supplied secret");
+        assert!(live_otp);
+        let credentials_before = upstream_credentials(&pool).await;
+        let before = refresh_complete_snapshot(&pool).await;
+        let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+        let auth_password = Url::parse(&auth_url)
+            .unwrap()
+            .password()
+            .unwrap()
+            .to_owned();
+        let original_role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(original_role["rolcanlogin"] == true);
+
+        let outcome = std::panic::AssertUnwindSafe(async {
+            let others: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname<>current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(others, 0, "Auth fault requires exclusive disposable-cluster custody");
+            sqlx::query("ALTER ROLE console_auth_rt NOLOGIN")
+                .execute(&pool)
+                .await
+                .unwrap();
+            let terminated: Vec<(i32, bool)> = sqlx::query_as(
+                "SELECT pid, pg_terminate_backend(pid, 5000) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt' \
+                 AND backend_type='client backend'",
+            )
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+            assert!(
+                !terminated.is_empty() && terminated.iter().all(|(_, stopped)| *stopped),
+                "bounded termination must stop the real router's retained Auth backends"
+            );
+            let remaining: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM pg_catalog.pg_stat_activity \
+                 WHERE datname=current_database() AND usename='console_auth_rt'",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            assert_eq!(remaining, 0, "terminated Auth sessions must be gone");
+            let direct = sqlx::postgres::PgPoolOptions::new()
+                .max_connections(1)
+                .acquire_timeout(std::time::Duration::from_secs(3))
+                .connect(&auth_url)
+                .await;
+            let error = match direct {
+                Err(error) => error,
+                Ok(unexpected) => {
+                    unexpected.close().await;
+                    panic!("HTTP_ISSUE_OUTAGE_FAULT: NOLOGIN Auth unexpectedly authenticated");
+                }
+            };
+            assert!(
+                error.as_database_error().and_then(|error| error.code()).as_deref() == Some("28000"),
+                "fault witness must be actual PostgreSQL NOLOGIN, not generic infrastructure failure"
+            );
+            let business = console_platform_test_support::login_test_pool(
+                &pool,
+                TestDatabaseLogin::Business,
+            )
+            .await;
+            let mut tx = business.begin().await.expect("Business stays available during Auth outage");
+            sqlx::query("SELECT set_config('app.current_org', $1, true)")
+                .bind(OrgId::knl().as_uuid().to_string())
+                .execute(&mut *tx)
+                .await
+                .unwrap();
+            let visible: bool = sqlx::query_scalar(
+                "SELECT user_id=$2 AND consumed_at IS NULL AND revoked_at IS NULL \
+                 AND expires_at>now() FROM public.auth_bootstrap_credentials WHERE id=$1",
+            )
+            .bind(otp.credential_id)
+            .bind(subject.as_uuid())
+            .fetch_one(&mut *tx)
+            .await
+            .expect("Business must still read the actual live OTP");
+            assert!(visible);
+            tx.rollback().await.unwrap();
+            business.close().await;
+
+            // The real Auth pool waits at most 3s; the router's timeout is 30s.
+            // A timeout response cannot satisfy the exact Storage500 oracle below.
+            let response = tokio::time::timeout(
+                std::time::Duration::from_secs(40),
+                post_cookie_mode(
+                    fixture.router.clone(),
+                    "/api/v1/auth/otp/redeem",
+                    None,
+                    json!({"otp": otp.token.as_str()}),
+                ),
+            )
+            .await
+            .expect("HTTP issuer must finish within the outer request bound");
+            let after = refresh_complete_snapshot(&pool).await;
+            assert!(
+                before["families"] == after["families"] && before["tokens"] == after["tokens"],
+                "HTTP_ISSUE_OUTAGE_PREWRITE: global family/token rosters changed; counts {:?} -> {:?}",
+                roster_counts(&before),
+                roster_counts(&after)
+            );
+            assert!(
+                credentials_before == upstream_credentials(&pool).await,
+                "failed issuance must preserve every existing bootstrap and passkey credential"
+            );
+            // OTP redemption is verify-only and commits this one upstream audit.
+            // No family issuance or HTTP signin audit is allowed on the failed pair.
+            let redeem = one_added_row(&before, &after, "audit");
+            assert_redeem_audit(redeem, subject, otp.credential_id);
+            assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+            assert!(set_cookie_values(&response).is_empty(), "Storage error must not set a cookie");
+            let secrets = [
+                fixture.access.as_str(),
+                fixture.body_refresh.as_str(),
+                fixture.cookie_refresh.as_str(),
+                fixture.control_access.as_str(),
+                otp.token.as_str(),
+                auth_url.as_str(),
+                auth_password.as_str(),
+            ];
+            for value in response.headers().values() {
+                let text = value.to_str().expect("valid response header");
+                assert!(
+                    secrets.iter().all(|secret| !text.contains(secret)),
+                    "Storage failure headers cannot echo known credentials"
+                );
+            }
+            let bytes = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+            let text = std::str::from_utf8(&bytes).unwrap();
+            assert!(
+                secrets.iter().all(|secret| !text.contains(secret)),
+                "Storage failure body cannot echo known credentials"
+            );
+            let body: Value = serde_json::from_slice(&bytes).unwrap();
+            assert!(
+                body == json!({"error":{"code":"internal","message":"refresh token storage error"}}),
+                "constant Storage error only; no token fields or SQL/driver details"
+            );
+            after
+        })
+        .catch_unwind()
+        .await;
+
+        // Restore even on behavioral RED; root owns abort/kill cleanup.
+        let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+            .execute(&pool)
+            .await;
+        let restored: Result<Value, _> = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await;
+        assert!(
+            restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+            "HTTP_ISSUE_OUTAGE_CLEANUP: every public Auth role attribute must be restored"
+        );
+        let after_outage = match outcome {
+            Ok(snapshot) => snapshot,
+            Err(panic) => std::panic::resume_unwind(panic),
+        };
+        let recovered = tokio::time::timeout(
+            std::time::Duration::from_secs(40),
+            post_cookie_mode(
+                fixture.router.clone(),
+                "/api/v1/auth/otp/redeem",
+                None,
+                json!({"otp": otp.token.as_str()}),
+            ),
+        )
+        .await
+        .expect("same router and OTP must recover within the request bound");
+        assert_eq!(recovered.status(), StatusCode::OK);
+        assert_eq!(set_cookie_values(&recovered).len(), 1);
+        let cookie =
+            console_refresh_set_cookie(&recovered).expect("recovery must issue a real cookie");
+        let recovered_token = cookie_token(&cookie);
+        assert!(!recovered_token.is_empty());
+        let body: OtpRedeemResponse = recovered.into_json(StatusCode::OK).await;
+        assert!(!body.access_token.is_empty());
+        assert!(
+            body.refresh_token.is_none(),
+            "cookie transport must not expose the refresh token in JSON"
+        );
+        assert!(body.requires_passkey_setup);
+        let after_recovery = refresh_complete_snapshot(&pool).await;
+        let family = one_added_row(&after_outage, &after_recovery, "families");
+        let token = one_added_row(&after_outage, &after_recovery, "tokens");
+        assert!(family["user_id"] == json!(subject));
+        assert!(family["org_id"] == json!(OrgId::knl()));
+        assert!(family["revoked_at"].is_null() && family["revoked_reason"].is_null());
+        assert!(token["family_id"] == family["id"]);
+        assert!(token["user_id"] == family["user_id"] && token["org_id"] == family["org_id"]);
+        assert!(token["token_hash"] == hex::encode(Sha256::digest(recovered_token.as_bytes())));
+        for key in ["used_at", "replaced_by", "revoked_at", "reuse_detected_at"] {
+            assert!(
+                token[key].is_null(),
+                "new recovery token must be live and unused"
+            );
+        }
+        let old_audit = after_outage["audit"].as_array().unwrap();
+        let new_audit = after_recovery["audit"].as_array().unwrap();
+        assert_eq!(new_audit.len(), old_audit.len() + 3);
+        for old in old_audit {
+            assert!(
+                new_audit.contains(old),
+                "all pre-recovery audit rows must remain exact"
+            );
+        }
+        let added: Vec<_> = new_audit
+            .iter()
+            .filter(|row| !old_audit.iter().any(|old| old["id"] == row["id"]))
+            .collect();
+        assert_eq!(added.len(), 3);
+        for action in ["auth.otp.redeem", "auth.refresh.issue", "auth.otp.signin"] {
+            let matching: Vec<_> = added.iter().filter(|row| row["action"] == action).collect();
+            assert_eq!(
+                matching.len(),
+                1,
+                "exactly one recovery audit for each action"
+            );
+            let audit = matching[0];
+            assert!(audit["actor"] == json!(subject));
+            assert!(audit["org_id"] == json!(OrgId::knl()));
+            match action {
+                "auth.otp.redeem" => assert_redeem_audit(audit, subject, otp.credential_id),
+                "auth.refresh.issue" => {
+                    assert!(audit["target_type"] == "auth_refresh_token_family");
+                    assert!(audit["target_id"] == family["id"]);
+                    assert!(audit["after_snap"]["family_id"] == family["id"]);
+                    assert!(audit["after_snap"]["token_id"] == token["id"]);
+                    assert!(audit["after_snap"]["user_id"] == json!(subject));
+                }
+                "auth.otp.signin" => {
+                    assert!(audit["target_type"] == "users");
+                    assert!(audit["target_id"] == json!(subject));
+                    assert!(
+                        audit["after_snap"]
+                            == json!({
+                                "refresh_family_id": family["id"],
+                                "requires_passkey_setup": true,
+                            })
+                    );
+                }
+                _ => unreachable!(),
+            }
+        }
+        assert!(
+            credentials_before == upstream_credentials(&pool).await,
+            "same-OTP recovery must preserve every bootstrap and passkey credential"
+        );
+    }
+}
+
+// Verifier-only API dependency admission: actual public-key configuration and
+// existing restricted Auth transport; no signing/WebAuthn services or fake pool.
+fn verifier_only_pairs(pool: Option<&PgPool>) -> Vec<(&'static str, String)> {
+    let mut pairs = pool.map_or_else(account_transport_config_pairs, transport_pairs);
+    pairs.retain(|(key, _)| {
+        !key.starts_with("CONSOLE_WEBAUTHN_") && *key != "CONSOLE_JWT_PRIVATE_KEY_PEM"
+    });
+    pairs
+}
+
+async fn verifier_only_ready(router: &axum::Router) -> StatusCode {
+    tokio::time::timeout(
+        std::time::Duration::from_secs(40),
+        router.clone().oneshot(
+            Request::builder()
+                .uri("/readyz")
+                .body(Body::empty())
+                .unwrap(),
+        ),
+    )
+    .await
+    .expect("actual readiness completes within outer request bound")
+    .unwrap()
+    .status()
+}
+
+async fn verifier_only_prerequisites(pool: &PgPool) -> UserId {
+    prepare_http_database(pool).await;
+    let subject = UserId::new();
+    insert_account_fence(pool, subject, "ACTIVE").await;
+    assert_projection(pool, subject, true).await;
+    // The genuine direct Auth positive has closed. A later backend must belong
+    // to the actual application startup, not this prerequisite connection.
+    tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        loop {
+            let count: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt'")
+                .fetch_one(pool).await.unwrap();
+            if count == 0 { break; }
+            tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+        }
+    }).await.expect("direct restricted Auth connection must close before startup");
+    subject
+}
+
+#[test]
+fn verifier_only_api_requires_auth_configuration() {
+    for absent in [None, Some(""), Some("   ")] {
+        let mut pairs = verifier_only_pairs(None);
+        // Prove this is a valid public-key verifier without issuance services.
+        let mut positive = pairs.clone();
+        positive.push((
+            "AUTH_DATABASE_URL",
+            "postgresql://console_auth_rt:verifier-auth-canary@localhost:5544/console".into(),
+        ));
+        let configured = AppConfig::from_pairs(positive).unwrap();
+        assert!(configured.jwt.is_some() && configured.auth_rest.is_none());
+        if let Some(value) = absent {
+            pairs.push(("AUTH_DATABASE_URL", value.into()));
+        }
+        let message = match AppConfig::from_pairs(pairs) {
+            Ok(config) => {
+                assert!(config.jwt.is_some() && config.auth_rest.is_none());
+                panic!("VERIFIER_AUTH_CONFIG: missing Auth was accepted for public-key-only API");
+            }
+            Err(console_app::AppError::Config(message)) => message,
+            Err(_) => panic!("VERIFIER_AUTH_CONFIG_PREREQUISITE: unrelated non-config failure"),
+        };
+        assert!(
+            message
+                == "AUTH_DATABASE_URL is required for api authentication when DATABASE_URL is configured",
+            "VERIFIER_AUTH_CONFIG_MESSAGE: refusal must preserve the exact fixed required-Auth diagnostic"
+        );
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn verifier_only_api_startup_refuses_removed_auth_binding(pool: PgPool) {
+    verifier_only_prerequisites(&pool).await;
+    let mut config = AppConfig::from_pairs(verifier_only_pairs(Some(&pool))).unwrap();
+    assert!(config.jwt.is_some() && config.auth_rest.is_none());
+    assert!(config.auth_database_url.is_some());
+    let positive = AppState::from_config(config.clone())
+        .await
+        .expect("same real Business/command/Auth configuration starts");
+    assert_eq!(
+        verifier_only_ready(&build_router(positive.clone())).await,
+        StatusCode::OK
+    );
+    positive.shutdown_realtime().await;
+    drop(positive);
+    // Existing public AppConfig field deliberately bypasses only parser admission:
+    // startup must independently require the binding instead of JWT-only serving.
+    config.auth_database_url = None;
+    let attempt = AppState::from_config(config).await;
+    if let Ok(state) = &attempt {
+        state.shutdown_realtime().await;
+    }
+    let message = match attempt {
+        Ok(_) => {
+            panic!("VERIFIER_AUTH_STARTUP: actual startup accepted a removed required Auth binding")
+        }
+        Err(console_app::AppError::Config(message)) => message,
+        Err(_) => {
+            panic!("VERIFIER_AUTH_STARTUP_PREREQUISITE: unrelated non-config startup failure")
+        }
+    };
+    assert!(
+        message == "AUTH_DATABASE_URL is required for API authentication",
+        "VERIFIER_AUTH_STARTUP_MESSAGE: refusal must preserve the exact fixed required-Auth diagnostic"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn verifier_only_api_retains_genuine_auth_transport(pool: PgPool) {
+    verifier_only_prerequisites(&pool).await;
+    let config = AppConfig::from_pairs(verifier_only_pairs(Some(&pool))).unwrap();
+    assert!(config.jwt.is_some() && config.auth_rest.is_none());
+    let state = AppState::from_config(config)
+        .await
+        .expect("public-key-only actual API startup");
+    let router = build_router(state.clone());
+    let ready = verifier_only_ready(&router).await;
+    let retained: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt' AND backend_type='client backend'")
+        .fetch_one(&pool).await.unwrap();
+    state.shutdown_realtime().await;
+    assert_eq!(ready, StatusCode::OK);
+    assert!(
+        retained > 0,
+        "VERIFIER_AUTH_RETAINED: public-key-only startup must retain a genuinely authenticated Auth backend"
+    );
+}
+
+#[sqlx::test(migrations = false)]
+async fn verifier_only_api_readiness_tracks_auth_outage_and_no_jwt_stays_ready(pool: PgPool) {
+    let subject = verifier_only_prerequisites(&pool).await;
+    let config = AppConfig::from_pairs(verifier_only_pairs(Some(&pool))).unwrap();
+    assert!(config.jwt.is_some() && config.auth_rest.is_none());
+    let state = AppState::from_config(config)
+        .await
+        .expect("public-key-only positive startup");
+    let router = build_router(state.clone());
+    let mut no_jwt_pairs = verifier_only_pairs(Some(&pool));
+    no_jwt_pairs.retain(|(key, _)| !key.starts_with("CONSOLE_JWT_") && *key != "AUTH_DATABASE_URL");
+    let no_jwt_config = AppConfig::from_pairs(no_jwt_pairs).unwrap();
+    assert!(
+        no_jwt_config.jwt.is_none()
+            && no_jwt_config.auth_rest.is_none()
+            && no_jwt_config.auth_database_url.is_none()
+    );
+    let no_jwt_state = AppState::from_config(no_jwt_config)
+        .await
+        .expect("truly no-JWT API startup remains optional");
+    let no_jwt_router = build_router(no_jwt_state.clone());
+    let auth_url = login_test_database_url(&pool, TestDatabaseLogin::Auth);
+    let original_role: Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(original_role["rolcanlogin"] == true);
+    let original_limit = original_role["rolconnlimit"].as_i64().unwrap();
+    assert_ne!(
+        original_limit, 0,
+        "real Auth positive must permit connections"
+    );
+    let before = refresh_complete_snapshot(&pool).await;
+    let outcome = std::panic::AssertUnwindSafe(async {
+        assert_eq!(verifier_only_ready(&router).await, StatusCode::OK);
+        assert_eq!(verifier_only_ready(&no_jwt_router).await, StatusCode::OK);
+        let other_auth: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname<>current_database() AND usename='console_auth_rt'")
+            .fetch_one(&pool).await.unwrap();
+        assert_eq!(other_auth, 0, "Auth-only fault requires exclusive disposable-cluster custody");
+        sqlx::query("ALTER ROLE console_auth_rt NOLOGIN").execute(&pool).await.unwrap();
+        let faulted_role: Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'")
+            .fetch_one(&pool).await.unwrap();
+        let mut expected_role = original_role.clone();
+        expected_role["rolcanlogin"] = json!(false);
+        assert!(faulted_role == expected_role,"fault changes only actual Auth LOGIN availability");
+        let stopped: Vec<(i32, bool)> = sqlx::query_as("SELECT pid,pg_terminate_backend(pid,5000) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt' AND backend_type='client backend'")
+            .fetch_all(&pool).await.unwrap();
+        // Empty is intentional on the old JWT-only baseline. A separate test
+        // proves retention; this oracle must reach actual outage/readiness200.
+        assert!(stopped.iter().all(|(_, stopped)| *stopped));
+        let remaining: i64 = sqlx::query_scalar("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt'")
+            .fetch_one(&pool).await.unwrap();
+        assert_eq!(remaining, 0);
+        let login = sqlx::postgres::PgPoolOptions::new().max_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(3)).connect(&auth_url).await;
+        let error = match login {
+            Err(error) => error,
+            Ok(unexpected) => {
+                unexpected.close().await;
+                panic!("VERIFIER_AUTH_OUTAGE_FAULT: NOLOGIN Auth unexpectedly authenticated");
+            }
+        };
+        assert!(error.as_database_error().and_then(|error| error.code()).as_deref() == Some("28000"),
+            "fault witness must be actual PostgreSQL NOLOGIN, not network/setup failure");
+        for login in [TestDatabaseLogin::Business,TestDatabaseLogin::LeaveCommand,TestDatabaseLogin::OntologyCommand,TestDatabaseLogin::PlatformForceCommand] {
+            let unaffected = console_platform_test_support::login_test_pool(&pool,login).await;
+            assert_eq!(sqlx::query_scalar::<_,i32>("SELECT 1").fetch_one(&unaffected).await.unwrap(),1);
+            unaffected.close().await;
+        }
+        assert_eq!(verifier_only_ready(&no_jwt_router).await,StatusCode::OK,
+            "same Auth-only outage must preserve true no-JWT API readiness");
+        assert_eq!(verifier_only_ready(&router).await,StatusCode::SERVICE_UNAVAILABLE,
+            "VERIFIER_AUTH_READINESS: public-key-only readiness ignored actual Auth outage");
+        assert!(before == refresh_complete_snapshot(&pool).await,"readiness must preserve all family/token/audit rows");
+    }).catch_unwind().await;
+    // Restore exact role and both retained routers before rethrowing baseline RED.
+    // Readiness remains detection; it does not prove consumer/socket drain.
+    let restore = sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+        .execute(&pool)
+        .await;
+    let restored: Result<Value, _> = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+    )
+    .fetch_one(&pool)
+    .await;
+    let recovered = verifier_only_ready(&router).await;
+    let no_jwt_recovered = verifier_only_ready(&no_jwt_router).await;
+    let retained_rows = refresh_complete_snapshot(&pool).await;
+    let fence_present: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM public.account_security WHERE account_id=$1)",
+    )
+    .bind(subject.as_uuid())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    state.shutdown_realtime().await;
+    no_jwt_state.shutdown_realtime().await;
+    assert!(
+        restore.is_ok() && restored.as_ref().ok() == Some(&original_role),
+        "VERIFIER_AUTH_CLEANUP: exact original Auth role must be restored"
+    );
+    assert!(
+        recovered == StatusCode::OK && no_jwt_recovered == StatusCode::OK,
+        "VERIFIER_AUTH_CLEANUP: same verifier-only and no-JWT routers must recover"
+    );
+    assert!(
+        before == retained_rows && fence_present,
+        "VERIFIER_AUTH_CLEANUP: read-only probes preserve retained data"
+    );
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+}
+
+// Additive reader-boundary tests. The real production finalizer, JWT issuer,
+// startup and router supply every positive prerequisite. Faults mutate only
+// disposable database state and never supply a counterfeit successful reader.
+mod session_reader_contract {
+    use super::*;
+    use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
+    use std::time::Duration as StdDuration;
+
+    struct ReaderFixture {
+        router: axum::Router,
+        subject: UserId,
+        control: UserId,
+        tenant: String,
+        platform: String,
+        control_tenant: String,
+        control_platform: String,
+    }
+
+    impl ReaderFixture {
+        fn tokens(&self) -> [&str; 4] {
+            [
+                &self.tenant,
+                &self.platform,
+                &self.control_tenant,
+                &self.control_platform,
+            ]
+        }
+    }
+
+    fn reader_token(issuer: &JwtIssuer, subject: UserId, platform: bool) -> String {
+        issuer
+            .issue_access_token(AccessTokenInput {
+                subject,
+                org_id: if platform {
+                    OrgId::platform()
+                } else {
+                    OrgId::knl()
+                },
+                roles: vec!["SUPER_ADMIN".to_owned()],
+                branches: Vec::new(),
+                platform,
+                view_as: false,
+                read_only: false,
+                display_name: None,
+                feature_grants: Vec::new(),
+                authz_subject_version: 0,
+                authz_policy_version: 0,
+                session_generation: 0,
+                issued_at: OffsetDateTime::now_utc(),
+            })
+            .expect("production issuer must mint valid reader-control JWT")
+    }
+
+    async fn reader_fixture(pool: &PgPool) -> ReaderFixture {
+        prepare_http_database(pool).await;
+        let key = SigningKey::random(&mut OsRng);
+        let private = key.to_pkcs8_pem(LineEnding::LF).unwrap().to_string();
+        let public = key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+        let issuer = JwtIssuer::from_es256_pem(
+            JwtSettings {
+                issuer: TEST_ISSUER.to_owned(),
+                audience: TEST_AUDIENCE.to_owned(),
+                access_token_ttl: Duration::minutes(15),
+            },
+            private.as_bytes(),
+            public.as_bytes(),
+        )
+        .unwrap();
+        let branch = seed_branch(pool, "Reader Fence Region", "Reader Fence Branch").await;
+        let subject = seed_user_with_branch(
+            pool,
+            "Reader Fence Subject",
+            "010-8960-0001",
+            "SUPER_ADMIN",
+            branch,
+        )
+        .await;
+        let control = seed_user_with_branch(
+            pool,
+            "Reader Fence Control",
+            "010-8960-0002",
+            "SUPER_ADMIN",
+            branch,
+        )
+        .await;
+        let router = build_router(
+            app_state(pool.clone(), private, public)
+                .await
+                .expect("real restricted startup must precede reader assertions"),
+        );
+        assert_projection(pool, subject, false).await;
+        assert_projection(pool, control, false).await;
+        ReaderFixture {
+            router,
+            subject,
+            control,
+            tenant: reader_token(&issuer, subject, false),
+            platform: reader_token(&issuer, subject, true),
+            control_tenant: reader_token(&issuer, control, false),
+            control_platform: reader_token(&issuer, control, true),
+        }
+    }
+
+    async fn reader_rows(pool: &PgPool) -> Value {
+        sqlx::query_scalar(
+            r#"SELECT jsonb_build_object(
+              'users',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM users x),
+              'memberships',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.user_id,x.branch_id),'[]'::jsonb) FROM user_branches x),
+              'passkeys',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_webauthn_credentials x),
+              'bootstrap',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_bootstrap_credentials x),
+              'families',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_refresh_token_families x),
+              'tokens',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM auth_refresh_tokens x),
+              'accounts',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM accounts x),
+              'security',(SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.account_id),'[]'::jsonb) FROM account_security x)
+            )"#,
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    async fn reader_audits(pool: &PgPool) -> Value {
+        sqlx::query_scalar(
+            "SELECT COALESCE(jsonb_agg(to_jsonb(x) ORDER BY x.id),'[]'::jsonb) FROM audit_events x",
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap()
+    }
+
+    async fn assert_reader_error(
+        response: http::Response<Body>,
+        expected: StatusCode,
+        tokens: &[&str],
+    ) {
+        assert_reader_error_with_code(response, expected, tokens, "unavailable").await;
+    }
+
+    async fn assert_reader_error_with_code(
+        response: http::Response<Body>,
+        expected: StatusCode,
+        tokens: &[&str],
+        unavailable_code: &str,
+    ) {
+        assert_eq!(
+            response.status(),
+            expected,
+            "SESSION_READER_HTTP: wrong status"
+        );
+        assert!(
+            response
+                .headers()
+                .get_all(header::SET_COOKIE)
+                .iter()
+                .next()
+                .is_none()
+        );
+        for value in response.headers().values() {
+            if let Ok(value) = value.to_str() {
+                assert!(
+                    tokens.iter().all(|token| !value.contains(token)),
+                    "header token echo"
+                );
+            }
+        }
+        let bytes = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+        let body = std::str::from_utf8(&bytes).expect("fixed public error must be UTF8");
+        assert!(
+            tokens.iter().all(|token| !body.contains(token)),
+            "body token echo"
+        );
+        // Canonical request middleware already uses plain text; local REST
+        // adapters already use JSON. Preserve those transport shapes.
+        if let Ok(json) = serde_json::from_slice::<Value>(&bytes) {
+            assert!(json["error"]["code"].is_string());
+            assert!(json["error"]["message"].is_string());
+            assert!(json.get("access_token").is_none() && json.get("refresh_token").is_none());
+            if expected == StatusCode::SERVICE_UNAVAILABLE {
+                assert_eq!(json["error"]["code"], unavailable_code);
+                assert_eq!(json["error"]["message"], "session verification unavailable");
+            }
+        } else {
+            let message = match expected {
+                StatusCode::UNAUTHORIZED => "invalid bearer token",
+                StatusCode::FORBIDDEN => "token tier is not valid for this route",
+                StatusCode::SERVICE_UNAVAILABLE => "session verification unavailable",
+                _ => panic!("unreviewed reader error status"),
+            };
+            assert!(body == message, "fixed sanitized middleware error required");
+        }
+    }
+
+    async fn reader_html(router: &axum::Router, token: &str) -> String {
+        let response = get_legacy_raw(router, "/_ui/organization", token).await;
+        assert_eq!(response.status(), StatusCode::OK);
+        String::from_utf8(
+            to_bytes(response.into_body(), 256 * 1024)
+                .await
+                .unwrap()
+                .to_vec(),
+        )
+        .unwrap()
+    }
+
+    fn assert_reader_shell(html: &str) {
+        assert!(
+            html == console_payroll_ui::render_shell(),
+            "SSR_SESSION_FENCE: denied reader must return the existing omitted shell",
+        );
+    }
+
+    struct ReaderServer(Option<tokio::task::JoinHandle<std::io::Result<()>>>);
+
+    impl Drop for ReaderServer {
+        fn drop(&mut self) {
+            if let Some(server) = self.0.as_ref() {
+                server.abort();
+            }
+        }
+    }
+
+    async fn reader_server(router: axum::Router) -> (SocketAddr, ReaderServer) {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = tokio::spawn(async move { axum::serve(listener, router).await });
+        (address, ReaderServer(Some(server)))
+    }
+
+    async fn reader_handshake(
+        address: SocketAddr,
+        authorization: Option<&str>,
+        protocol: Option<&str>,
+    ) -> http::Response<Body> {
+        let client = reqwest::Client::builder()
+            .no_proxy()
+            .timeout(StdDuration::from_secs(40))
+            .build()
+            .unwrap();
+        let mut request = client
+            .get(format!("http://{address}/api/v1/ws"))
+            .header(header::CONNECTION, "Upgrade")
+            .header(header::UPGRADE, "websocket")
+            .header(header::SEC_WEBSOCKET_VERSION, "13")
+            .header(header::SEC_WEBSOCKET_KEY, "dGhlIHNhbXBsZSBub25jZQ==");
+        if let Some(token) = authorization {
+            request = request.header(header::AUTHORIZATION, format!("Bearer {token}"));
+        }
+        if let Some(token) = protocol {
+            request = request.header(header::SEC_WEBSOCKET_PROTOCOL, format!("bearer, {token}"));
+        }
+        let response = request
+            .send()
+            .await
+            .expect("real loopback WebSocket handshake");
+        let status = response.status();
+        let headers = response.headers().clone();
+        // This test proves admission only. Dropping the successful upgrade
+        // closes its client transport; it never claims existing-socket fencing.
+        let bytes = if status == StatusCode::SWITCHING_PROTOCOLS {
+            Vec::new()
+        } else {
+            response.bytes().await.unwrap().to_vec()
+        };
+        assert!(bytes.len() <= 64 * 1024);
+        let mut output = http::Response::new(Body::from(bytes));
+        *output.status_mut() = status;
+        *output.headers_mut() = headers;
+        output
+    }
+
+    async fn stop_reader_server(mut owned: ReaderServer) {
+        let server = owned.0.take().unwrap();
+        server.abort();
+        let _ = tokio::time::timeout(StdDuration::from_secs(5), server)
+            .await
+            .expect("owned loopback server shutdown must remain bounded");
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_rest_passkeys_fences_tenant_and_platform_subjects(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        for token in [&fixture.tenant, &fixture.platform] {
+            let keys: Value = get_legacy_raw(&fixture.router, "/api/v1/auth/passkeys", token)
+                .await
+                .into_json(StatusCode::OK)
+                .await;
+            assert!(
+                keys.is_array(),
+                "both existing token tiers reach real passkey reads"
+            );
+        }
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        assert_projection(&pool, fixture.subject, true).await;
+        let rows = reader_rows(&pool).await;
+        let audits = reader_audits(&pool).await;
+        for token in [&fixture.tenant, &fixture.platform] {
+            assert_reader_error(
+                get_legacy_raw(&fixture.router, "/api/v1/auth/passkeys", token).await,
+                StatusCode::UNAUTHORIZED,
+                &fixture.tokens(),
+            )
+            .await;
+        }
+        assert!(
+            rows == reader_rows(&pool).await,
+            "passkey refusal changes no identity/session rows"
+        );
+        assert!(
+            audits == reader_audits(&pool).await,
+            "passkey refusal performs no audit mutation"
+        );
+        assert_legacy_reads(&fixture.router, fixture.control, &fixture.control_tenant).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn platform_principal_fences_before_audited_tenant_list(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        let orgs: Value = get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform)
+            .await
+            .into_json(StatusCode::OK)
+            .await;
+        assert!(orgs.is_array(), "actual platform route positive control");
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        assert_projection(&pool, fixture.subject, true).await;
+        let rows = reader_rows(&pool).await;
+        let audits = reader_audits(&pool).await;
+        assert_reader_error(
+            get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform).await,
+            StatusCode::UNAUTHORIZED,
+            &fixture.tokens(),
+        )
+        .await;
+        assert!(
+            rows == reader_rows(&pool).await,
+            "platform refusal changes no identity/session rows"
+        );
+        assert!(
+            audits == reader_audits(&pool).await,
+            "fence precedes audited Business handler"
+        );
+        let control: Value = get_legacy_raw(
+            &fixture.router,
+            "/api/platform/orgs",
+            &fixture.control_platform,
+        )
+        .await
+        .into_json(StatusCode::OK)
+        .await;
+        assert!(control.is_array());
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn ssr_fence_omits_previously_authorized_screen_on_same_router(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        let before = reader_html(&fixture.router, &fixture.tenant).await;
+        assert!(
+            before.contains("data-screen=\"organization\""),
+            "real authorized SSR floor prerequisite"
+        );
+        insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+        assert_projection(&pool, fixture.subject, true).await;
+        let rows = reader_rows(&pool).await;
+        assert_reader_shell(&reader_html(&fixture.router, &fixture.tenant).await);
+        assert!(rows == reader_rows(&pool).await, "SSR denial is read-only");
+        let control = reader_html(&fixture.router, &fixture.control_tenant).await;
+        assert!(
+            control.contains("data-screen=\"organization\""),
+            "unfenced SSR control remains visible"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn realtime_fences_both_token_transports_before_upgrade(pool: PgPool) {
+        let fixture = reader_fixture(&pool).await;
+        let (address, server) = reader_server(fixture.router.clone()).await;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            for (authorization, protocol) in [
+                (Some(fixture.tenant.as_str()), None),
+                (None, Some(fixture.tenant.as_str())),
+            ] {
+                let response = reader_handshake(address, authorization, protocol).await;
+                assert_eq!(
+                    response.status(),
+                    StatusCode::SWITCHING_PROTOCOLS,
+                    "real unfenced handshake prerequisite"
+                );
+                if protocol.is_some() {
+                    assert_eq!(
+                        response
+                            .headers()
+                            .get(header::SEC_WEBSOCKET_PROTOCOL)
+                            .unwrap(),
+                        "bearer"
+                    );
+                }
+            }
+            insert_account_fence(&pool, fixture.subject, "ACTIVE").await;
+            assert_projection(&pool, fixture.subject, true).await;
+            let rows = reader_rows(&pool).await;
+            for (authorization, protocol) in [
+                (Some(fixture.tenant.as_str()), None),
+                (None, Some(fixture.tenant.as_str())),
+                (
+                    Some(fixture.tenant.as_str()),
+                    Some(fixture.control_tenant.as_str()),
+                ),
+            ] {
+                assert_reader_error(
+                    reader_handshake(address, authorization, protocol).await,
+                    StatusCode::UNAUTHORIZED,
+                    &fixture.tokens(),
+                )
+                .await;
+            }
+            assert!(
+                rows == reader_rows(&pool).await,
+                "failed handshake changes no identity/session rows"
+            );
+            let control = reader_handshake(
+                address,
+                Some(&fixture.control_tenant),
+                Some(&fixture.tenant),
+            )
+            .await;
+            assert_eq!(
+                control.status(),
+                StatusCode::SWITCHING_PROTOCOLS,
+                "Authorization still precedes protocol fallback"
+            );
+        })
+        .catch_unwind()
+        .await;
+        stop_reader_server(server).await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+    }
+
+    #[derive(Clone, Copy)]
+    enum ProjectionFault {
+        Null,
+        Missing,
+        AuthNoLogin,
+    }
+
+    async fn projection_catalog(pool: &PgPool) -> Value {
+        // All pg_proc fields, including OID, complete body/config and ACL.
+        // Committed fault/restoration changes MVCC xmin; xmin is not metadata
+        // equality and is deliberately not claimed to roll back here.
+        sqlx::query_scalar("SELECT to_jsonb(p) FROM pg_catalog.pg_proc p WHERE p.oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+            .fetch_one(pool).await.unwrap()
+    }
+
+    async fn terminate_reader_auth_backends(pool: &PgPool) {
+        sqlx::query("SELECT pg_catalog.pg_terminate_backend(pid) FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename='console_auth_rt' AND pid<>pg_backend_pid()")
+            .execute(pool).await.unwrap();
+    }
+
+    async fn reader_fault(pool: PgPool, fault: ProjectionFault) {
+        let fixture = reader_fixture(&pool).await;
+        assert_legacy_reads(&fixture.router, fixture.subject, &fixture.tenant).await;
+        let platform: Value =
+            get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform)
+                .await
+                .into_json(StatusCode::OK)
+                .await;
+        assert!(platform.is_array());
+        assert!(
+            reader_html(&fixture.router, &fixture.tenant)
+                .await
+                .contains("data-screen=\"organization\"")
+        );
+        let original = projection_catalog(&pool).await;
+        let role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(role["rolcanlogin"], true);
+        let rows = reader_rows(&pool).await;
+        let audits = reader_audits(&pool).await;
+        let (address, server) = reader_server(fixture.router.clone()).await;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            assert_eq!(reader_handshake(address, None, Some(&fixture.tenant)).await.status(), StatusCode::SWITCHING_PROTOCOLS);
+            match fault {
+                ProjectionFault::Null => {
+                    let changed = sqlx::query("UPDATE pg_catalog.pg_proc SET prosrc='BEGIN RETURN NULL; END;' WHERE oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+                        .execute(&pool).await.unwrap();
+                    assert_eq!(changed.rows_affected(), 1);
+                    let mut expected = original.clone();
+                    expected["prosrc"] = json!("BEGIN RETURN NULL; END;");
+                    assert!(projection_catalog(&pool).await == expected, "NULL fault changes only actual production function body");
+                }
+                ProjectionFault::Missing => {
+                    let absent: bool = sqlx::query_scalar("SELECT pg_catalog.to_regprocedure('public.reader_fixture_projection_renamed(uuid)') IS NULL")
+                        .fetch_one(&pool).await.unwrap();
+                    assert!(absent, "owned temporary function name must be unused");
+                    sqlx::query("ALTER FUNCTION public.account_legacy_fenced_v1(uuid) RENAME TO reader_fixture_projection_renamed")
+                        .execute(&pool).await.unwrap();
+                    let renamed: Value = sqlx::query_scalar("SELECT to_jsonb(p) FROM pg_catalog.pg_proc p WHERE p.oid='public.reader_fixture_projection_renamed(uuid)'::regprocedure")
+                        .fetch_one(&pool).await.unwrap();
+                    let mut expected = original.clone();
+                    expected["proname"] = json!("reader_fixture_projection_renamed");
+                    assert!(renamed == expected, "missing-name fault changes no other function/ACL metadata");
+                }
+                ProjectionFault::AuthNoLogin => {
+                    sqlx::query("ALTER ROLE console_auth_rt NOLOGIN").execute(&pool).await.unwrap();
+                    let stopped: Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'")
+                        .fetch_one(&pool).await.unwrap();
+                    let mut expected = role.clone();
+                    expected["rolcanlogin"] = json!(false);
+                    assert!(stopped == expected, "Auth outage changes only LOGIN availability");
+                }
+            }
+            // Clear cached sessions/plans so the observed fault is actual fresh
+            // Auth transport/query behavior, never an old function OID plan.
+            terminate_reader_auth_backends(&pool).await;
+            if matches!(fault, ProjectionFault::AuthNoLogin) {
+                let direct = sqlx::postgres::PgPoolOptions::new()
+                    .max_connections(1).acquire_timeout(StdDuration::from_secs(3))
+                    .connect(&login_test_database_url(&pool, TestDatabaseLogin::Auth)).await;
+                let error = match direct {
+                    Err(error) => error,
+                    Ok(unexpected) => { unexpected.close().await; panic!("Auth NOLOGIN fault did not refuse LOGIN"); }
+                };
+                assert!(error.as_database_error().and_then(|e| e.code()).as_deref() == Some("28000"), "real Auth-only PostgreSQL LOGIN refusal required");
+            } else {
+                let auth = console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+                let observed = sqlx::query_scalar::<_, Option<bool>>("SELECT public.account_legacy_fenced_v1($1)")
+                    .bind(fixture.subject.as_uuid()).fetch_one(&auth).await;
+                auth.close().await;
+                match fault {
+                    ProjectionFault::Null => assert!(matches!(observed, Ok(None)), "real Auth query must return SQL NULL"),
+                    ProjectionFault::Missing => assert!(observed.err().and_then(|e| e.as_database_error().and_then(|e| e.code()).map(|s| s.into_owned())).as_deref() == Some("42883"), "real Auth query must report missing function"),
+                    ProjectionFault::AuthNoLogin => unreachable!(),
+                }
+            }
+            let business = console_platform_test_support::login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            assert_eq!(sqlx::query_scalar::<_, i32>("SELECT 1").fetch_one(&business).await.unwrap(), 1);
+            let mut tx = business.begin().await.unwrap();
+            sqlx::query("SELECT set_config('app.current_org',$1,true)").bind(OrgId::knl().to_string()).execute(&mut *tx).await.unwrap();
+            let active: bool = sqlx::query_scalar("SELECT is_active FROM users WHERE id=$1").bind(fixture.subject.as_uuid()).fetch_one(&mut *tx).await.unwrap();
+            assert!(active, "healthy active Company row must not substitute for Auth lookup");
+            tx.rollback().await.unwrap();
+            business.close().await;
+
+            // Pure JWT/tier rejection must stay ahead of the unavailable Auth
+            // dependency. The passkey route deliberately supports both tiers.
+            for path in ["/api/v1/users/me", "/api/v1/auth/passkeys", "/api/platform/orgs"] {
+                assert_reader_error(get_legacy_raw(&fixture.router, path, "invalid-reader-token").await,
+                    StatusCode::UNAUTHORIZED, &fixture.tokens()).await;
+            }
+            assert_reader_error(get_legacy_raw(&fixture.router, "/api/v1/users/me", &fixture.platform).await,
+                StatusCode::FORBIDDEN, &fixture.tokens()).await;
+            assert_reader_error(get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.tenant).await,
+                StatusCode::FORBIDDEN, &fixture.tokens()).await;
+            assert_reader_error(reader_handshake(address, Some("invalid-reader-token"), Some(&fixture.tenant)).await,
+                StatusCode::UNAUTHORIZED, &fixture.tokens()).await;
+            for (path, token) in [
+                ("/api/v1/users/me", fixture.tenant.as_str()),
+                ("/api/v1/auth/passkeys", fixture.tenant.as_str()),
+                ("/api/v1/auth/passkeys", fixture.platform.as_str()),
+                ("/api/platform/orgs", fixture.platform.as_str()),
+            ] {
+                let unavailable_code = if path == "/api/v1/auth/passkeys" {
+                    "service_unavailable"
+                } else {
+                    "unavailable"
+                };
+                assert_reader_error_with_code(get_legacy_raw(&fixture.router, path, token).await,
+                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens(), unavailable_code).await;
+            }
+            for (authorization, protocol) in [(Some(fixture.tenant.as_str()), None), (None, Some(fixture.tenant.as_str()))] {
+                assert_reader_error(reader_handshake(address, authorization, protocol).await,
+                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens()).await;
+            }
+            assert_reader_shell(&reader_html(&fixture.router, &fixture.tenant).await);
+            assert!(rows == reader_rows(&pool).await, "indeterminate reader changes no identity/session rows");
+            assert!(audits == reader_audits(&pool).await, "indeterminate reader never reaches audited handler");
+        }).catch_unwind().await;
+
+        // Restore real catalog/LOGIN state outside the caught assertion body.
+        // No finalizer or new success function can conceal the fault.
+        match fault {
+            ProjectionFault::Null => {
+                sqlx::query("UPDATE pg_catalog.pg_proc SET prosrc=$1 WHERE oid='public.account_legacy_fenced_v1(uuid)'::regprocedure")
+                    .bind(original["prosrc"].as_str().unwrap()).execute(&pool).await.unwrap();
+            }
+            ProjectionFault::Missing => {
+                sqlx::query("ALTER FUNCTION public.reader_fixture_projection_renamed(uuid) RENAME TO account_legacy_fenced_v1")
+                    .execute(&pool).await.unwrap();
+            }
+            ProjectionFault::AuthNoLogin => {
+                sqlx::query("ALTER ROLE console_auth_rt LOGIN")
+                    .execute(&pool)
+                    .await
+                    .unwrap();
+            }
+        }
+        let restored_role: Value = sqlx::query_scalar(
+            "SELECT to_jsonb(r) FROM pg_catalog.pg_roles r WHERE rolname='console_auth_rt'",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(
+            restored_role == role && projection_catalog(&pool).await == original,
+            "every Auth role/function/ACL field must recover exactly"
+        );
+        assert!(
+            rows == reader_rows(&pool).await,
+            "reader fault/restoration preserves all identity/session rows"
+        );
+        assert_projection(&pool, fixture.subject, false).await;
+        assert_legacy_reads(&fixture.router, fixture.subject, &fixture.tenant).await;
+        let recovered: Value =
+            get_legacy_raw(&fixture.router, "/api/platform/orgs", &fixture.platform)
+                .await
+                .into_json(StatusCode::OK)
+                .await;
+        assert!(recovered.is_array());
+        assert!(
+            reader_html(&fixture.router, &fixture.tenant)
+                .await
+                .contains("data-screen=\"organization\"")
+        );
+        assert_eq!(
+            reader_handshake(address, None, Some(&fixture.tenant))
+                .await
+                .status(),
+            StatusCode::SWITCHING_PROTOCOLS
+        );
+        stop_reader_server(server).await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn null_projection_refuses_all_reader_boundaries_and_recovers(pool: PgPool) {
+        reader_fault(pool, ProjectionFault::Null).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn missing_projection_refuses_all_reader_boundaries_and_recovers(pool: PgPool) {
+        reader_fault(pool, ProjectionFault::Missing).await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn auth_only_outage_preserves_pure_rejections_and_refuses_readers(pool: PgPool) {
+        reader_fault(pool, ProjectionFault::AuthNoLogin).await;
+    }
+}

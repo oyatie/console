@@ -1,0 +1,119 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "review_identity": "Independent of root typed implementation and Capture typedV4 source authorship; author of separate ordinary Operation acceptance packet, not imported at this candidate.",
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "candidate_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "candidate_tree": "f8901b1d4c70686af0cdbbc578ca99b91e4fa1a8",
+  "candidate_diff_sha256": "befebeafebec7883262dc0b07c96f3d433a81dc5e80e75e144b840f8ee0f3cf9",
+  "design_sha256": "1ca5c188e600c036ba6309e29498cbc9aa58db5ae6956bcc80c7b72575ca2cbd",
+  "reviewed_compatibility_patch_sha256": "5f824ceec87f4d1bad7ec264041c3fd502a37f09a2abb153c7c60a6c9d54f72a",
+  "mechanical_sha256": "2d131394b27f60bc1c4d597384d89d128aa2df3e2c0e88452b9b5e4ad14086ff",
+  "verdict": "REQUEST_CHANGES: one public contract scope correction; no additional typed-code blocker found in the bounded source review.",
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P2",
+      "path": "backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "line": 6,
+      "title": "Scope receipt and canonical audit guarantees to canonical projected owners",
+      "fact": "New prose says projected owners persist immutable command receipts before separate canonical audits; lines 13-17 prescribe same-command replay/repair broadly, and line 36 repeats the transaction claim. The shared action route also registers registry.update_equipment through a non-canonical handler. That handler does not forward command_id and owns its existing audit/versioning, while the engine reads canonical receipts and emits canonical audits only for canonical targets.",
+      "evidence": [
+        "backend/app/src/lib.rs:2836 (non-roster UpdateEquipmentCommand construction ignores command_id)",
+        "backend/app/src/lib.rs:2976 (actual handler registration)",
+        "backend/crates/ontology/rest/src/lib.rs:325 (canonical-versus-handler routing)",
+        "backend/crates/ontology/rest/src/lib.rs:1734 (non-roster owns its audit)",
+        "backend/crates/ontology/rest/src/lib.rs:1762 (prior receipt read limited to canonical target)",
+        "backend/crates/ontology/rest/src/lib.rs:1927 (canonical success audit guard)"
+      ],
+      "impact": "Consumers of the generic action endpoint could infer an immutable receipt and repeat-safe audit repair for the non-canonical equipment handler, which this path does not provide.",
+      "requested_change": "Qualify canonical projected owners, transaction split, same-command reconciliation, and canonical audit repair in source OpenAPI and regenerated output; retain 408/disconnect/lost-response uncertainty caution for all requests. Root has acknowledged and is preparing the serialized correction."
+    }
+  ],
+  "conclusions": [
+    {
+      "topic": "Typed canonical classification",
+      "assessment": "Matches reviewed design. Default false on CanonicalPortError; only PayRunError adds a production override matching DurabilityUnknown. Dispatcher classifies before consuming into KernelError; no text-prefix or downcast branch. Existing validation/conflict/operation/JoinError mappings remain unchanged.",
+      "evidence": [
+        "backend/crates/ontology/canonical-domain/src/lib.rs:584",
+        "backend/crates/payroll/adapter-postgres/src/pay_run.rs:513",
+        "backend/crates/ontology/rest/src/lib.rs:499"
+      ]
+    },
+    {
+      "topic": "503 privacy and envelope",
+      "assessment": "Unit ActionError::CompletionUnknown carries no diagnostic. RestError assigns exact reviewed 503/code/fixed message and current=None, serialized into existing ErrorBody without an optional revision field. Changed private Display is explicitly covered by the approved typed positive control; ordinary prefix-looking Display remains 500/internal.",
+      "evidence": [
+        "backend/crates/ontology/rest/src/lib.rs:1632",
+        "backend/crates/ontology/rest/src/lib.rs:3156",
+        "backend/crates/ontology/rest/src/lib.rs:3258",
+        "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs:639"
+      ]
+    },
+    {
+      "topic": "Command and approval continuity",
+      "assessment": "No changes to actor/target/payload digest, current-authority checks, receipt ownership checks, consumed-approval gate, or append-only governance flow. Prior receipt takes the existing owner replay path and separate idempotent audit repair. Without a receipt, the spent approval can be refused and renewal can change only top-level four_eyes_request_ref while preserving owner business digest. Code does not claim Unknown means rollback.",
+      "evidence": [
+        "backend/crates/ontology/rest/src/lib.rs:1762",
+        "backend/crates/ontology/rest/src/lib.rs:1828",
+        "backend/crates/ontology/rest/src/lib.rs:1882",
+        "backend/crates/ontology/rest/src/lib.rs:2270",
+        "backend/crates/payroll/adapter-postgres/src/pay_run.rs:899"
+      ]
+    },
+    {
+      "topic": "Worker and owner staging",
+      "assessment": "Consumer-owned PayrollStageError distinguishes Operation(KernelError) and unit CompletionUnknown; narrow From preserves existing wrapper question-mark behavior, Display/source retain ordinary errors. Dedicated future keeps Send/lifetime/object safety; the general PortFuture and other workflow methods are unmodified. Actual owner maps CompletionError directly; actual drainer only queues successful stages for ACK. Unknown emits outcome/event/run/source, Operation retains ordinary error/event/run/source without an outcome field. No error arm edits the event status, attempt count, delivery, or audit; FAILED remains retryable.",
+      "evidence": [
+        "backend/crates/workflow/domain/src/lib.rs:581",
+        "backend/crates/payroll/adapter-postgres/src/pay_run.rs:826",
+        "backend/crates/workflow/adapter-postgres/src/lib.rs:881",
+        "backend/app/src/workflow_drain.rs:84"
+      ]
+    },
+    {
+      "topic": "Native completion and timeout",
+      "assessment": "Durability primitive and App workflow construction are byte-identical to c130. No native COMMIT cancellation, timer, local fallback, pool-capacity release, or completion-observer behavior was added. App outer TimeoutLayer returns 408; spawn_blocking is unchanged, so lost/timeout responses can remain uncertain independently of typed503.",
+      "evidence": [
+        "backend/crates/platform/db/src/durability.rs:313",
+        "backend/app/src/lib.rs:3823",
+        "backend/crates/ontology/rest/src/lib.rs:499"
+      ]
+    },
+    {
+      "topic": "Approved test amendments",
+      "assessment": "All three compatibility postimages match reviewed V4 after rustfmt. Exactly the two reviewed recovery error-boundary predicates change to typed Unknown; all native/capacity/identity/receipt/row assertions remain. LockAfterGate only changes import and signature. Original App7 source is byte-identical to c130.",
+      "evidence": [
+        "mechanical.json"
+      ]
+    }
+  ],
+  "counts": {
+    "changed_paths": 10,
+    "bound_source_files": 14,
+    "mechanical_commands_executed": 4,
+    "compatibility_postimages_compared": 3,
+    "runtime_tests_discovered": 0,
+    "runtime_tests_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "shared_repository_writes": 0
+  },
+  "validation_scope": "Immutable source and mechanical review only; 3 private rustfmt-to-stdout comparisons and git diff --check. Root reported rest11/workflow5 passing and runtime3 running; those reports are not independently classified or claimed as runtime proof in this receipt.",
+  "remaining_holds": [
+    "F1 source/generated OpenAPI scope correction and exact-commit re-review",
+    "Same admitted three runtime probes green with evidence",
+    "Ordinary Operation control independent approval, root integration and runtime",
+    "Preserved App3/owner9/period-lock execution at final candidate and required CI enrollment",
+    "Final exact-head review, production/legal/payment authority remains separate"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "shared_mutations": false
+}

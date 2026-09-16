@@ -33,8 +33,9 @@ const OTHER_ORG: Uuid = Uuid::from_u128(0x0b1e_0b1e_0b1e_0b1e_0b1e_0b1e_0b1e_0b1
 // Surface 1 — type registry: counts respect per-kind visibility.
 // ===========================================================================
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn type_registry_counts_respect_per_kind_visibility(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let (private_pem, public_pem) = keys();
     let branch_x = seed_branch(&owner_pool, "Region X", "Branch X").await;
     let branch_y = seed_branch(&owner_pool, "Region Y", "Branch Y").await;
@@ -122,8 +123,9 @@ async fn type_registry_counts_respect_per_kind_visibility(owner_pool: PgPool) {
 // Surface 2 — SR- series: create / attach / read / by-instance.
 // ===========================================================================
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn series_lifecycle_and_deny_by_omission(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let (private_pem, public_pem) = keys();
     let branch_x = seed_branch(&owner_pool, "Region X", "Branch X").await;
     let branch_y = seed_branch(&owner_pool, "Region Y", "Branch Y").await;
@@ -342,8 +344,9 @@ async fn series_cross_org_isolation_as_runtime_role(owner_pool: PgPool) {
 // Surface 3 — edge-type registry + link validation.
 // ===========================================================================
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn link_types_registry_and_link_validation(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let (private_pem, public_pem) = keys();
     let caller = UserId::new();
     let branch = seed_branch(&owner_pool, "Region L", "Branch L").await;
@@ -478,7 +481,11 @@ async fn post(
 }
 
 async fn request(pool: &PgPool, public_pem: &str, req: Request<Body>) -> (StatusCode, Value) {
-    let service = build_router(app_state(pool.clone(), public_pem.to_owned()).unwrap());
+    let service = build_router(
+        app_state(pool.clone(), public_pem.to_owned())
+            .await
+            .unwrap(),
+    );
     let response = service.oneshot(req).await.unwrap();
     let status = response.status();
     let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
@@ -609,8 +616,20 @@ fn issue_token(
         .unwrap()
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: PgPool,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -618,4 +637,5 @@ fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_a
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])?;
     AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
 }

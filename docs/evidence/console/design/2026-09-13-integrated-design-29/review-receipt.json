@@ -1,0 +1,77 @@
+{
+  "recorded_at": "2026-09-13T12:52:57.353269+00:00",
+  "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+  "status": "FOUR_INDEPENDENT_DESIGN_REVIEWS_ACCEPT",
+  "provenance": "Root-recorded summaries of independent collaboration-agent final verdicts; not cryptographic signatures",
+  "reviews": [
+    {
+      "reviewer": "/root/adversarial_security",
+      "lens": "Authorization and information flow",
+      "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+      "verdict": "ACCEPT",
+      "original_verdict": "ACCEPT",
+      "summary": "Full initial candidate review plus final four-file delta. Confirmed history metadata omission and safe fields-only view; both governance purposes constructible and editable tokens excluded; no material blocker.",
+      "method": "Read-only independent design review; root-recorded summary of received verdict",
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0,
+      "load_experiments_executed": 0,
+      "edits": 0
+    },
+    {
+      "reviewer": "/root/adversarial_workflows",
+      "lens": "User entry, object continuity and typed contracts",
+      "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+      "verdict": "ACCEPT",
+      "original_verdict": "ACCEPT",
+      "summary": "Full initial candidate review plus final delta. Case content producer, stable field addresses, typed claims and permitted history remain intact; governance correction valid; no material blocker.",
+      "method": "Read-only independent design review; root-recorded summary of received verdict",
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0,
+      "load_experiments_executed": 0,
+      "edits": 0
+    },
+    {
+      "reviewer": "/root/adversarial_operations",
+      "lens": "Concurrency, recovery and operability",
+      "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+      "verdict": "ACCEPT",
+      "original_verdict": "ACCEPT",
+      "summary": "Full initial candidate review plus complete final four-file delta. Purpose-specific bindings and deferred reciprocal checks preserve reserve/seal/bind; no new writer, transaction boundary, lock scope or replay identity. Runtime obligations remain.",
+      "method": "Read-only independent design review; root-recorded summary of received verdict",
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0,
+      "load_experiments_executed": 0,
+      "edits": 0
+    },
+    {
+      "reviewer": "/root/continuity_review",
+      "lens": "Integrated design consistency and constructive paths",
+      "candidate_sha": "e249e0a537d1246d770904a24326a75a61974418",
+      "verdict": "ACCEPT",
+      "original_verdict": "INTEGRATED_DESIGN_ACCEPT",
+      "summary": "Found the inherited public GateRequest/persisted governance mismatch on initial candidate; final correction closes it. Static packet: 956 refs, 218 source blobs, 55 owners, 33 UI bindings, 16 fixtures; whitespace pass; no remaining blocker.",
+      "method": "Read-only independent design review; root-recorded summary of received verdict",
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0,
+      "load_experiments_executed": 0,
+      "edits": 0
+    }
+  ],
+  "user_design_sha_approval": false,
+  "implementation_authorized": false,
+  "material_design_findings_remaining": [],
+  "review_history": [
+    {
+      "candidate_sha": "aa6e6abeebcb0233ab42dfedc7cd74d36e5d720e",
+      "security": "ACCEPT",
+      "workflows": "ACCEPT",
+      "operations": "ACCEPT",
+      "continuity": "CHANGES_REQUIRED",
+      "finding": "Persisted governance binding wrongly required public GateRequest for REVIEW_DECISION; corrected in final candidate"
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "sources": [
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/app/src/hr.rs",
+      "git_blob": "8292140d094d5455316babc5cd1a0fe629f0e282",
+      "sha256": "ec4a83eabb08833d5d5611237df86738d2262ec9abd67fb18fdc48e6b4ee910c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/attendance/adapter-postgres/src/lib.rs",
+      "git_blob": "420abe3d8e6b6780a080c3fc53013aa65e0805bd",
+      "sha256": "1b454467402583235f479e392a9ff2f993a62bce2d992add877dad578862d9b7"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/attendance/application/src/lib.rs",
+      "git_blob": "208e5f2647f712484f1f44f3bc499efbdbd6be5e",
+      "sha256": "dfa5f7cf9050301fa7b43ce5a7f9a4d3f624f640b27976b118eed87d8a0163cb"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/attendance/domain/src/lib.rs",
+      "git_blob": "c4509835195f2c16324281f252366b7eb0c38593",
+      "sha256": "8a75a0926672eac0104b2c3693642716158520a34884bf9fae145b2a903c5a45"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/docs/adapter-postgres/src/lib.rs",
+      "git_blob": "434a6124d69435c94f2693b14c00b1daa635b4e8",
+      "sha256": "dd10df5dd995eedb808246a9e208d4ec91f8d3e4f8c386e7296f20c5888e4d55"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/leave/adapter-postgres/src/lib.rs",
+      "git_blob": "12bca40523dd8488f8da110121446c1dd0517d77",
+      "sha256": "0deedc70242d6754e735cb6173e4a59f8658746412921aa54e6d840fb0af437a"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/leave/application/src/lib.rs",
+      "git_blob": "d88f915cc4fa025a2c334ee23d00812ff32df0c9",
+      "sha256": "c0c508ef7f082e1cd1904c3b9ed480fec801a2b4b18d65686256e1bba641c205"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs",
+      "git_blob": "e4dc45073be9e7a61e85244643ff021689715159",
+      "sha256": "914bf56b60182068a80c87f891f56740582352111eb81ab68077a8a7bb48da92"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/ontology/canonical-adapter-postgres/src/org_unit.rs",
+      "git_blob": "84ac477f7a1cff76f5052f06c3d7a45b23897799",
+      "sha256": "08ddf639038f0941ca0e53292c198f0be0846126d542ec6b9e0b5e46c34b649d"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+      "git_blob": "5d356d3479a3847506e976be86e360ef7a961f70",
+      "sha256": "070c1da569abd4dab31326f2d21953b480dd39d59b21cd5eed3df92b4aa401ae"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "git_blob": "e4f580c348aa2360985040d51e74994313e641df",
+      "sha256": "adfa4d1b1395f03af2853b412e9a65c64966f9a573f16e1b50e29cdaea2135e3"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/payslip_draft.rs",
+      "git_blob": "0c328148b9f099a965362d7c4978c44738da4514",
+      "sha256": "62de1465995b26f13724a6c2e3edc015db8d8b8390094944650eabaeebac6f48"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/domain/src/lib.rs",
+      "git_blob": "d2143ea831717fc307f23b2c04e17b637e6eb62c",
+      "sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/rest/src/payslip_draft.rs",
+      "git_blob": "d2d6db3a6f6e48f85da4a05908ea97eb04ebabdd",
+      "sha256": "783ebaa28d1a84244018700546db156204f009a5553361dad760da10561cd348"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0151_create_docs_evidence_objects.sql",
+      "git_blob": "1b087a3c2f710d81134aa9ab417c020459af10c9",
+      "sha256": "bd3373b7a047e9d13e22fabd9cb9cd62b88b6ef90b7fbbcf90da445834b060de"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0195_docs_gaps.sql",
+      "git_blob": "6c53644516fcaf2f5f9c204d9ecc01d997760c45",
+      "sha256": "352da20f2f881cee2cc15ea8e5e40492877c851a887c7ebf6440794d94f5c3ad"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0201_release_reserved_evidence_retention_slot.sql",
+      "git_blob": "42c2f034899ead18ebd7bc29ace7bee2e8f57939",
+      "sha256": "3487949cb3ae6813296b937f2f5b5c39f8e8d788be5bb8a7fd7e38b08e94ecc7"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0210_payroll_statutory_rates_and_contract_wages.sql",
+      "git_blob": "3a7d7cea0482a4c6793c226e140d1c73fdf970fd",
+      "sha256": "410e5015f96899235c5768a4aad708cf5c517d3ac38f7d18edfc11606511375e"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0214_create_canonical_employment_tables.sql",
+      "git_blob": "9ef02f5c24bb936c453f9c593bb4369f0e37a464",
+      "sha256": "0b61c28c004a23c96a53d5a242957458b90ce068dd72bfe4936cbaf2b52b2c42"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/erasure-ledger/src/lib.rs",
+      "git_blob": "74f529ec260c33b32f4af8186e29e69702bcfef0",
+      "sha256": "719b524b7afc6679599dee2e16b4ce76cc58b835f6619f0d07f075b537e122bf"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/storage/src/lib.rs",
+      "git_blob": "4bc39e991d67f9e10c8a3d17ccb6b394528fbfe8",
+      "sha256": "4da3d50595afaabcbe2b42bd3118656f1485560d814fee5085de44b80ababf69"
+    },
+    {
+      "commit": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/execution-contract.txt",
+      "git_blob": "eca5781d09b7b82c07926cc3ecf0b2fc1a923a43",
+      "sha256": "31bb997397930864df193de1021f0e7c480d4eb5e941d86cefcd5bffa3c1b17e"
+    },
+    {
+      "commit": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/wire-candidate.json",
+      "git_blob": "48069703d0a68566379153471ec604e0eed9413b",
+      "sha256": "28e16342cb0e3d05d77006a74a3696196bdda0fb4a08908731c734bed872c862"
+    },
+    {
+      "commit": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/account-contract.txt",
+      "git_blob": "09e0dca1ec52aff72bbea91e3af23e1af8bc342b",
+      "sha256": "e1eee7c38884e2d71290973fda97a4770f958899bd4023efa85774c28b9d4011"
+    },
+    {
+      "commit": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+      "path": "docs/evidence/console/design/2026-09-12-account-policy-technical-13/policy-contract.txt",
+      "git_blob": "ee07a8fd90c87e13d5b809fbfe08159d49ec1c89",
+      "sha256": "f6a0054d0f6adc220a433f587ca1897e7e9e4b90571fc16459ff298fb5b82692"
+    },
+    {
+      "commit": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "git_blob": "097b837bb42ce916d9e15777eadf5b5125a15d3d",
+      "sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe"
+    },
+    {
+      "commit": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "git_blob": "3a1b036ba3975b98550e5adfbd0c77c39374d6d4",
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83"
+    }
+  ]
+}

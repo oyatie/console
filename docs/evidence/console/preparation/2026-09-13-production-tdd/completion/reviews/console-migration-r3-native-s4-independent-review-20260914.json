@@ -1,0 +1,57 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "migration_r2_manifest": "d4342b0bcf0d543bccfc6f62b866b71cbf508186445ceeacd50186233ece918a",
+  "migration_r3_manifest": "44495caa2de5dfaabd5761cd2eb0336e5e25f63661b1a6d45d165d843f2ce414",
+  "verified_members": 14,
+  "verdict": "APPROVE_BOUNDED_SOURCE_AFTER_R3_CORRECTION",
+  "findings": [
+    {
+      "id": "MR1",
+      "state": "CLOSED_R3",
+      "problem": "Legacy transport attempted duplicate Company membership after immutable225 trigger already creates Group-of-one.",
+      "evidence": "seed_legacy runs_to225; seed_org_and_super_admin inserts organizations; migration0225 before/after insert triggers mint Group and membership.",
+      "correction": "R3 reads exact existing organization->Group->membership, asserts one match and two distinct Group scopes; only intended legacy input role grants/policy remain seeded."
+    }
+  ],
+  "checks": [
+    {
+      "command": "cargo test --offline --manifest-path /private/tmp/console-migration-remaining-s4-r2-20260914/machinery/Cargo.toml -- --nocapture",
+      "discovered": 3,
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "filtered": 0,
+      "doc_tests": 0,
+      "same_bounded_process_source_in_r3": true
+    }
+  ],
+  "assessment": [
+    "Actual retained cryptographic key proof rather than Account ID or employer role authorizes primary activation; wrong nonce/terms/ceremony/activation/key and RECOVERY_REQUIRED cases require classified InvalidProof and no protected authority/session/assent changes.",
+    "Related refresh-source mutation asserts unchanged users source keys plus actual dependent-row xmin/revocation and exact SourceChanged; this avoids users-only version oracle.",
+    "Batch process actual CLI binary digest checked, unread bounded output preserves unknown caller outcome while independent database receipt proves actual commit; direct child is killed/reaped, no process-tree or network loss theorem claimed.",
+    "Bounded output reader caps4MiB+1 and15s and reaps direct child; independently executed three machinery controls pass.",
+    "Migration/concurrency/activation tests use proposed ordinary owners; five authored business methods are not compiled/executed proof or meaningful RED admission.",
+    "Startup ledger rendezvous is bounded polling and actual table rename plus positive admission before/after; does not establish arbitrary concurrent migrations/rolling deploy correctness."
+  ],
+  "holds": [
+    "Consolidated adoption/review of proposed primary activation and migration owner interfaces",
+    "Actual owner compilation and behavioral execution at admitted boundaries",
+    "Production and recovery certification separate"
+  ],
+  "native_s4": {
+    "file": "/private/tmp/console-native28-owner-assertions-s4-20260914/native-lock-custody-tests.rs",
+    "sha256": "e403a7fba260b93e2339500514c9af4221b7beec40de69244150fd20e1fc0200",
+    "verdict": "APPROVE_BOUNDED_SOURCE",
+    "corrected": [
+      "actual app.current_org GUC",
+      "two dedicated ordinary runtime pools with actual exact PID readback",
+      "transitive wait graph permits valid upstream period/owner serialization while reaching held run barrier"
+    ],
+    "limits": [
+      "No freeze-manifest existed at start; approval binds named file SHA, not mutable directory.",
+      "No native Rust compile or actual contention execution in this review.",
+      "Arbitrary workload maximum/fairness/deadlock certification not implied."
+    ]
+  }
+}

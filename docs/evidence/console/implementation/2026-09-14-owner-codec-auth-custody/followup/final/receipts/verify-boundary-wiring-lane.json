@@ -1,0 +1,32 @@
+[
+  {
+    "lane": "VERIFY-new-rust-boundary-reachability",
+    "owner": "/root",
+    "base_sha": "7291dde331ad9a4df0767c86c30f9b6716abb311",
+    "worktree": "/private/tmp/console-production-tdd-preparation-20260913",
+    "allow": [
+      ".github/workflows/ci.yml",
+      "scripts/check-ci-preflight.mjs",
+      "scripts/verify.mjs"
+    ],
+    "probe": "node scripts/check-executed-tests.mjs > /private/tmp/verify-boundary-wiring-probe.log 2>&1",
+    "target": "Existing19tenant parser,17Leptos SSR composer andaudit signaturecompatibility integration tests are executable in CI/local mirror",
+    "guide": "Add three exact no-database Cargo test steps to existing backend job; preserve feature ssr on UI; add matching strict contract andfast mirror entries; no existing command/test removal. Rootserializes generatedfaces separately.",
+    "pre_mortem": "A compiled but unwired test neverfailsCI; wrong SSRfeature selectszero orfailscompile",
+    "blast_radius": "Three existing regression binary invocations in CI/local verification; no runtime behavior or deployment",
+    "detection": "Actualdark3RED\u2192zero unexpecteddark; matching strict contracts/mirror tests; execute exact new commands",
+    "rollback": "Revert wiring only; tests remain visible asdark",
+    "stop_conditions": [
+      "Removedtest or feature",
+      "Greenorunexecutableadmission",
+      "Unexpecteddeploymentmutation"
+    ],
+    "reviewers": [
+      "/root/review_completeness"
+    ],
+    "holds": [
+      "Production exposure",
+      "Existing known applicationRED"
+    ]
+  }
+]

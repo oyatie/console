@@ -1,0 +1,115 @@
+▶ CI preflight contract
+  ✔ ignores an inherited alternate Git index (127.734709ms)
+  ✔ isolates fixture Git from hostile external repository controls (108.974458ms)
+  ✔ classifies docs-only narrowly and keeps unmapped or product paths heavy (0.461666ms)
+  ✔ path-gates live Postgres like oyatie pg-gate (5.384333ms)
+  ✔ resolves a merge group's diff range, and fails closed without its SHAs (0.235459ms)
+  ✔ classifies only the complete release metadata shape as thin (0.168583ms)
+  ✔ empty successful changed-path list keeps runHeavy / non-docs-only (0.045375ms)
+  ✔ lists rename sources so product→docs rename is not docs-only (94.252166ms)
+  ✔ lists deletions so docs edit + product delete is mixed / runHeavy (82.173459ms)
+  ✔ preserves exact Git pathname bytes so whitespace cannot alias a release path (81.351958ms)
+  ✔ fails closed on malformed or non-UTF-8 NUL-delimited Git path output (0.183458ms)
+  ✔ invokes Git with an exact NUL-delimited no-helper path inventory (0.090958ms)
+  ✔ accepts the workflow's cheap preflight and protected expensive jobs (68.223084ms)
+  ✔ locks Required / CI to the oyatie-style presubmit proofs (245.716917ms)
+  ✔ keeps PostgreSQL reachability non-evaluated when preflight fails (57.237625ms)
+  ✖ rejects every run-step condition, soft-failure, and retained-text early-exit bypass (1864.691458ms)
+  ✔ rejects every setup-action condition and soft-failure bypass (1342.689833ms)
+  ✔ locks every setup action's identity, inputs, totality, and interleaving (4464.114083ms)
+  ✔ locks the candidate-controlled local free-runner-disk action body (34.125375ms)
+  ✔ locks every required job's complete execution envelope (368.112875ms)
+  ✔ locks the top-level trigger, permission, concurrency, and job-id envelope (68.580875ms)
+  ✔ forbids push and pull-request path filters so every required context is created (66.706833ms)
+  ✔ locks both reasoning-lens steps to one occurrence each, gated on npm ci (67.375917ms)
+  ✔ rejects Buck2 jobs that do not bootstrap pinned DotSlash before invocation (17.08875ms)
+  ✔ resolves the backend DotSlash bootstrap from its effective working directory (16.446416ms)
+  ✔ requires backend test runners to run from the repository root (67.884375ms)
+  ✔ rejects CONSOLE_APP_BIN anywhere in the text-only API contract job (66.039542ms)
+  ✔ rejects every GITHUB_ENV handoff surface in the API contract job (49.340209ms)
+  ✔ rejects any build or executable surface added to the text-only API contract job (137.056709ms)
+  ✔ rejects a duplicated platform contract drift gate (17.991583ms)
+  ✔ accepts the text-only API contract surface (17.141125ms)
+  ✔ rejects services and job-level environment on the text-only API contract (33.912125ms)
+  ✔ requires backend DotSlash bootstrap before any Buck or DotSlash invocation (33.974791ms)
+  ✔ rejects a generated-face authority job without the complete closure (16.943084ms)
+  ✔ requires the lock-sourced Reindeer toolchain before the full generated-face closure (103.22625ms)
+  ✔ requires the pinned Rust toolchain before Cargo-dependent preflight tests (17.725375ms)
+  ✔ requires a full-history checkout for fail-closed path classification (17.124625ms)
+  ✔ keeps authority regressions without live C/T/M admission in general CI (102.64925ms)
+  ✔ runs release metadata semantics, custody, and links on the exact thin boundary (118.028792ms)
+  ✔ rejects omission and comment-only reachability regressions (101.301084ms)
+  ✔ rejects conditional and continue-on-error reachability regressions (100.134167ms)
+  ✔ rejects a preflight that does not run npm and Cargo lock consistency gates (33.289083ms)
+  ✔ rejects a dependency missing from Cargo.lock while the clean lock passes (141.822208ms)
+  ✔ rejects a preflight command that appears only in a comment (17.467ms)
+  ✔ rejects a required preflight step guarded by a condition (17.312167ms)
+  ✔ rejects a required preflight step allowed to continue on error (16.662833ms)
+  ✔ rejects any expensive job without the preflight dependency (85.967708ms)
+  ✔ rejects failure-insensitive job-level conditions on protected jobs (184.775958ms)
+  ✔ rejects job-level preflight failure bypasses (67.2005ms)
+  ✔ rejects workflow-level environment and shell overrides (33.508667ms)
+  ✔ locks exact job-level environment and defaults metadata (84.229167ms)
+  ✔ rejects step environment injection across every protected proof class (154.886584ms)
+  ✔ locks post-preflight test reachability targets and disallows added run surfaces (2955.678542ms)
+  ✔ keeps both payroll release-gate halves reachable from domain-unit (113.57275ms)
+  ✔ rejects non-executing or non-gating domain-unit command surfaces (152.9965ms)
+  ✔ derives the ordered domain-unit integration inventory and checks its baseline (170.324208ms)
+  ✔ preserves fail-fast backend ordering (33.994459ms)
+  ✔ locks the company-conformance proof and its execution semantics (82.95425ms)
+  ✔ locks the Kubernetes production-hardening proof (68.08425ms)
+  ✔ fails closed when optimized gates or targets are commented, weakened, or duplicated (85.251041ms)
+  ✔ keeps protected backend steps fail-slow and runs PR 473 contract tests before topology (50.781875ms)
+  ✔ locks the documentation manifest gate and its doc-test to doc-link position (175.289792ms)
+  ✔ locks the undeclared-imports gate step in repo-gates (15.628ms)
+  ✔ locks the request-body-contract gate step in repo-gates (35.66725ms)
+  ✔ locks the console-app OpenAPI drift suite step in backend (50.397625ms)
+  ✔ locks app PostgreSQL source features and bootstrap identity in independent steps (135.931666ms)
+✖ CI preflight contract (15148.611459ms)
+✔ every mirrored CI run-step is classified (5.580541ms)
+✔ hosted hardening dependency bootstrap is explicit and lifecycle-script free (0.274708ms)
+✔ local verification mirrors release content proofs without deriving an authority train (0.188417ms)
+✔ a new CI step that nobody classified fails the guard (1.999292ms)
+✔ every CI job is declared mirrored or explicitly not mirrored (1.115542ms)
+✔ Required / CI is orchestration-only while every leaf proof remains classified (0.887292ms)
+✔ a whole new CI job that nobody declared fails the guard (1.038542ms)
+✔ a declared job that CI no longer runs fails the guard (0.774292ms)
+✔ a plan entry whose CI step disappeared fails the guard (0.828083ms)
+✔ domain-unit is part of the local mirror (0.964208ms)
+✔ the reasoning-lens manifest check is a fast-tier local gate (0.04275ms)
+✔ PostgreSQL provisioning keeps generated credentials out of Docker argv (0.264209ms)
+✔ secret-bearing temporary files are private at creation (0.60175ms)
+✔ topology env assembly requires pairwise-distinct role credentials (0.128292ms)
+✔ the topology script rejects duplicate role passwords before DB access (28.590334ms)
+✔ app Cargo runner preserves all four test selections (1.1965ms)
+ℹ tests 82
+ℹ suites 1
+ℹ pass 81
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15209.147958
+
+✖ failing tests:
+
+test at scripts/check-ci-preflight.test.mjs:935:3
+✖ rejects every run-step condition, soft-failure, and retained-text early-exit bypass (1864.691458ms)
+  AssertionError [ERR_ASSERTION]: backend exhaustive mutation inventory drifted
+  
+  29 !== 26
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-production-tdd-preparation-20260913/scripts/check-ci-preflight.test.mjs:968:14)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 29,
+    expected: 26,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

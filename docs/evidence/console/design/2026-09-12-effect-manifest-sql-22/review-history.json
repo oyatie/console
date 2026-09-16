@@ -1,0 +1,25 @@
+{
+  "initial_candidate_sha": "fda009187448ea2759dd183b12f950bc8bf102a8",
+  "initial_reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "verdict": "CHANGES_REQUIRED",
+      "finding": "Only custom RAISE messages are fixed; raw PostgreSQL constraint/cast diagnostics may expose private rows or keys."
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "verdict": "CHANGES_REQUIRED",
+      "finding": "Only custom RAISE messages are fixed; raw PostgreSQL constraint/cast diagnostics may expose private rows or keys."
+    }
+  ],
+  "root_additional_finding": "F01-F08 are W04 technical integration only; preserve W01-W03 and first implementation/pilot/full Console distinctions from08.",
+  "correction_commits": [
+    "9386af20a7fbd3c17f0608fc12e115668dc67136"
+  ],
+  "corrections": [
+    "Require typed error projections at response/log/trace sinks and DB diagnostic configuration before enrollment; F04 OPEN; proposed M19 negative case",
+    "Restore W01-W03 reconciliation and current-authority alignment; pin08 work-packages; distinguish first implementation from pilot/full suite"
+  ],
+  "final_candidate_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+  "counts_as_final_integrated_round": false
+}

@@ -1,0 +1,27 @@
+{
+  "owner": "/root",
+  "base_sha": "8a98aa1efc3b8d01cd2a1b0d1398fda4b95c3be6",
+  "immutable_target": "Elide one redundant explicit lifetime in OpenAPI test helper",
+  "allowed_paths": [
+    "backend/app/tests/openapi_drift.rs",
+    "docs/evidence/console/verification/2026-09-13-repair-01/openapi-lint-entry.json"
+  ],
+  "mechanical_guide": "Change only helper signature; preserve input/output reference relationship, body and all tests",
+  "probe": "RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo SQLX_OFFLINE=true cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --test openapi_drift -- -D warnings > /private/tmp/console-repair30-checks/openapi-lint-198-probe.log 2>&1",
+  "admission": "fanout.py admit exit0; needless_lifetimes under pinned Rust1.98.1",
+  "pre_mortem": "Accidental helper or assertion changes weaken route inventory checks",
+  "blast_radius": "One test-only function signature; no product or contract bytes",
+  "detection": "Exact signature-only diff, Clippy same probe, existing15 OpenAPI tests",
+  "rollback": "Reverse equivalent signature change; restores known lint failure",
+  "stop_conditions": [
+    "Any body/assertion/test membership change",
+    "Independent review rejection"
+  ],
+  "reviewer": "/root/fresh29_security prospective equivalence ACCEPT; final SHA review pending",
+  "non_authoritative_attempt": "Initial narrow admission accidentally used shell-default1.100.0-nightly. Preserved separately; repeated explicitly with1.98.1 before edit. No claimed pin evidence from nightly.",
+  "remaining_holds": [
+    "Final verify and exact review",
+    "Authority adoption and hosted readback",
+    "Complete Account test candidate and approval; no Account implementation"
+  ]
+}

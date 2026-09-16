@@ -1,0 +1,20 @@
+{
+  "status": "INDEPENDENTLY_APPROVED_PENDING_EXPLICIT_USER_APPROVAL_AUTO_REVIEW",
+  "authorized_by": "root under existing user batch preparation/fix/review directive; no new product permission",
+  "user_instruction": "하나씩 승인받지 말고 실행까지 필요한 모든 준비를 마치고 독립검증까지 마친후 알려줘",
+  "scope": "Only new uncommitted storage candidate; all previously approved53tests unchanged",
+  "reviewer": "/root/fresh29_security",
+  "reviewed_original_sha256": "c67fd57848e1f000af6fa9ce238865bab29c278d544504e6029f60b5fa9d36f4",
+  "preserved_precorrection_sha256": "c1f55760ee3f146c0e96b227077ad0e173f0a4f6dbacbcdd01eb32992e5c3c0a",
+  "intervening_change": "Only include_str path moved to identical hash-bound local actor-migration.csv fixture for declared build closure",
+  "independent_verdict": "APPROVED exact validated public.auth_webauthn_ceremony_bindings(ceremony_id)->public.auth_webauthn_ceremonies(id) DELETE CASCADE and UPDATE NOACTION/RESTRICT. Require presence; preserve every other destructive-edge assertion. Keep MEMBER/SET/USAGE prior approved topology unchanged. Final frozenSHA review required.",
+  "authority": [
+    "approvedBW31 storage-refinement.json retention.ceremonies permits expired/consumed cleanup",
+    "migration0144_auth_webauthn_ceremony_bindings.sql exact ephemeral FK",
+    "approvedAS1 retain ceremony proof/nonce/single-use",
+    "existing rls_isolation.rs company_runtime_cannot_assume_account_custody_roles"
+  ],
+  "automatic_review": "Earlier broader narrowing rejected for absent approval/review receipt; not applied and not retried. This is a safer exact-edge correction with explicit independent approval and preserved historical bytes.",
+  "runtime_claim": "Catalog-only; no cleanup execution proof",
+  "automatic_review_second_rejection": "Exact-edge correction also rejected: agent-reported approval insufficient; trusted user/developer must explicitly approve. No patch applied. Preserve candidate as known-design-conflicting HOLD and include precise correction in final consolidated approval."
+}

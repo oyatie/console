@@ -1,0 +1,24 @@
+{
+  "status": "proposed_pending_independent_review",
+  "target": "Candidate05 retention/pin/recovery design gap",
+  "evidence_base_sha": "5688c8fde92cb78fd57995a168c631041927aa85",
+  "scenarios": 39,
+  "screen_states": 13,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "remaining_gaps": [
+    "Exact restricted SQL/ACL migration and runtime proof",
+    "Independent journal provider/credentials/custody/fencing conformance",
+    "Qualified retention/hold policy and actual backup inventory/prune/restore evidence",
+    "B03 durable Group operation",
+    "B04 general autonomous assignment",
+    "B07 remaining screen matrix",
+    "B08 monetary publication/disputes"
+  ],
+  "non_claims": [
+    "35d manifest is not verified destruction deadline",
+    "Hash witness detects but does not reconstruct missing data",
+    "Scoped design acceptance is not production or implementation approval"
+  ]
+}

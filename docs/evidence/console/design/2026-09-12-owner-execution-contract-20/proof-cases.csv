@@ -1,0 +1,35 @@
+id,surface,trigger,expected,status
+O20-01,receipt,old success with now revoked source,historical projected success; no source refusal before replay,PROPOSED_NOT_EXECUTED
+O20-02,receipt,missing visible receipt but bound unknown attempt,reconcile; never new direct command,PROPOSED_NOT_EXECUTED
+O20-03,receipt,binding found after command lock,rollback/replan earlier controls,PROPOSED_NOT_EXECUTED
+O20-04,transaction,gate consume then owner rejects,one transaction rollback includes consumption,PROPOSED_NOT_EXECUTED
+O20-05,transaction,pin participant fails,no domain/receipt/work partial commit,PROPOSED_NOT_EXECUTED
+O20-06,transaction,commit response lost,UNKNOWN same command retained,PROPOSED_NOT_EXECUTED
+O20-07,transaction,private helper opens pool,enrollment fails; never successful participant,PROPOSED_NOT_EXECUTED
+O20-08,credential,cmd tries direct governance INSERT,DB privilege denied,PROPOSED_NOT_EXECUTED
+O20-09,credential,generic writer invokes source helper,EXECUTE denied,PROPOSED_NOT_EXECUTED
+O20-10,credential,another holder has shared cmd credential,trusted blast radius declared; incompatible holder blocks enrollment,PROPOSED_NOT_EXECUTED
+O20-11,type,generic revision/lifecycle/link targets owner-bound source,DB and registered dispatch refusal,PROPOSED_NOT_EXECUTED
+O20-12,type,client sets protocol LEGACY,server target enrollment controls,PROPOSED_NOT_EXECUTED
+O20-13,lock,close still takes month before period,alias not enrolled,PROPOSED_NOT_EXECUTED
+O20-14,lock,leave trigger discovers a new earlier employee/day key,rollback/replan; no late acquisition,PROPOSED_NOT_EXECUTED
+O20-15,lock,family read upgraded after source resolution,refuse/replan modes,PROPOSED_NOT_EXECUTED
+O20-16,lock,missing or exhausted source generation,unavailable; not lazy zero,PROPOSED_NOT_EXECUTED
+O20-17,source,same amount different source revision,changed basis; reprepare/review,PROPOSED_NOT_EXECUTED
+O20-18,source,unrelated family epoch changed,exact re-resolution may return SAME_BASIS,PROPOSED_NOT_EXECUTED
+O20-19,artifact,key-only HEAD or optional version,cannot produce READY attestation,PROPOSED_NOT_EXECUTED
+O20-20,artifact,upload succeeded but source changed before finalization,staged retained/reconciled; no current source publish,PROPOSED_NOT_EXECUTED
+O20-21,artifact,seal before exact package refs exist,cannot silently attach refs after fingerprint,PROPOSED_NOT_EXECUTED
+O20-22,adoption,draft pin released but domain copy not independently readable,entire publication rejected,PROPOSED_NOT_EXECUTED
+O20-23,leave,v1 missing expected version reaches enrolled request,428 precondition_required; no latest version guess,PROPOSED_NOT_EXECUTED
+O20-24,leave,current decision commits but response read denied,historical receipt lookup; no repeat decision,PROPOSED_NOT_EXECUTED
+O20-25,input,wrong draft/owner/schema in SourcePayloadRef20,reject despite real revision UUID,PROPOSED_NOT_EXECUTED
+O20-26,input,patch arbitrary path or hidden coupled field,refuse; preserve permitted acknowledged head,PROPOSED_NOT_EXECUTED
+O20-27,native,late native result child append,sealed membership+DB boundary refuses,PROPOSED_NOT_EXECUTED
+O20-28,formal,external_body wraps arithmetic under proof,not accepted as proof of that algorithm,PROPOSED_NOT_EXECUTED
+O20-29,formal,unchecked Rust caller violates requires,total checked facade or proved construction required,PROPOSED_NOT_EXECUTED
+O20-30,formal,only focus or zero verified targets passes,not full proof acceptance,PROPOSED_NOT_EXECUTED
+O20-31,formal,cfg proof and executable behavior differ,reject proof claim,PROPOSED_NOT_EXECUTED
+O20-32,formal,formal arithmetic passes with unqualified tax source,legal/source/kernel eligibility remains blocked,PROPOSED_NOT_EXECUTED
+O20-33,receipt/network,matching success with disposed source or unavailable storage; or concurrent success during failed unlocked preload,receipt/provenance before external reads and after preload failure; current disclosure only; no new effect or staging,PROPOSED_NOT_EXECUTED
+O20-34,close basis,wage source correction races attendance.close_basis.publish,predeclared WAGE SHARE fences correction through current native input basis validation; no late guard acquisition,PROPOSED_NOT_EXECUTED

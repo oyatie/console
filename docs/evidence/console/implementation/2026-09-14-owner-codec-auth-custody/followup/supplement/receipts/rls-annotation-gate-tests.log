@@ -1,0 +1,30 @@
+   Compiling console-gate-rls-arming v0.1.0 (/private/tmp/console-rls-catalog-annotation-20260914/backend/ci/gates/rls-arming)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.61s
+     Running unittests src/lib.rs (/private/tmp/console-rls-annotation-target/debug/deps/console_gate_rls_arming-9d0b67748007fa41)
+
+running 10 tests
+test tests::ignores_compound_cfg_test_modules ... ok
+test tests::handles_multiline_arg ... ok
+test tests::allows_marked_global_read ... ok
+test tests::allows_tx_executor ... ok
+test tests::fails_closed_when_app_src_yields_zero_files ... ok
+test tests::flags_bare_self_pool_fetch ... ok
+test tests::flags_self_pool_accessor ... ok
+test tests::ignores_test_modules ... ok
+test tests::allows_marked_global_read_under_app_src ... ok
+test tests::flags_bare_pool_under_app_src ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/private/tmp/console-rls-annotation-target/debug/deps/console_gate_rls_arming-cd096e3b00ea1b77)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests console_gate_rls_arming
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

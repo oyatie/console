@@ -1,0 +1,15 @@
+screen,state,trigger,render,next,focus
+선택,loading/partial,Company별owner조회,성공rows유지; 허용unavailable별도,재시도/대상선택,목록heading
+선택,blocked,필수input/source미준비,필수linked정보와수정경로,해당ownerform/명시subset,첫blockingfield
+확인,ready,exactselectedmanifest검토,대상·Action·basis·범위허용summary,선택실행,확인heading
+준비,preparing,일부childstaged,저장된선택과준비진행; effect아직없음,재개/취소,statuslive
+실행,active,parentACTIVE,Company별확인된상태·timestamp,결과조회/중단,focus유지
+실행,waitingcontext,session/grant문제,입력보존·재확인필요,로그인후동일actor명시재개,안내heading
+실행,unknown,commit/receipt불명,처리결과확인중; 새명령권유없음,samebinding조회,statuslive
+실행,retrypaused,budget소진,허용원인·현재lastknown,동일명령재시도/진단,안내heading
+실행,partial,일부성공일부blocked/fail,권한범위별독립결과,실패target수정,failedrow
+중단,stopped,cancelbarriercommit,새실행중단; 성공/unknown별도,결과확인/owner정정,summaryheading
+정정,successor,changedinput검토완료,영향target만후속작업; 원결과보존,후속선택확인,변경summary
+결과,success,모든선택receipt확인+전체status권한,선택범위계산완료; paid/approved아님,현재준비도/다음owneraction,결과heading
+결과,partialvisibility,일부slot/field권한없음,항상허용범위표시; hidden수량없음,허용targetdetail,목록heading
+접근,revoked,currentpolicy변경,managedsensitivepropsclear; 비공개안내,허용workspace로,안내heading

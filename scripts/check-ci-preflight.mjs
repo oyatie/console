@@ -157,6 +157,8 @@ export function isLivePostgresPath(path) {
   if (path === "backend/crates/payroll/ui" || path.startsWith("backend/crates/payroll/ui/")) {
     return true;
   }
+  if (path.startsWith("tools/lanes/recovery/")) return true;
+  if (path === "backend/crates/payroll/adapter-postgres/tests/recovery.rs") return true;
   if (
     path.startsWith("backend/ci/gates/writer-ownership/")
     || path.startsWith("backend/ci/gates/rls-arming/")

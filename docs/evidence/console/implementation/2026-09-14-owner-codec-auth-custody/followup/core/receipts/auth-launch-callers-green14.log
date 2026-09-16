@@ -1,0 +1,22 @@
+✔ actual dev credential definitions reuse canonical override and distinct local fallback (2.977834ms)
+✔ actual dev URL helpers preserve reserved credentials for owner runtime and narrow roles (2.064542ms)
+✔ actual shared dev URL helper preserves a database name with reserved characters (1.03475ms)
+✔ actual dev api receives only its required auth transport and no inherited password (1.665125ms)
+✔ actual dev worker receives only its required auth transport and no inherited password (1.73975ms)
+✔ actual dev migrate receives only its required auth transport and no inherited password (1.148167ms)
+✔ actual dev bringUpDeps passes same auth credential and container target to Compose model (1.917875ms)
+✔ actual dev reconcileDatabaseTopology passes same auth credential and container target to Compose model (1.231292ms)
+✔ actual dev finalizeDatabaseCustody passes same auth credential and container target to Compose model (1.1895ms)
+✔ actual dev cmdDown passes same auth credential and container target to Compose model (2.172792ms)
+✔ actual Compose render binds explicit AUTH URL only to API and raw credential only to topology (436.905084ms)
+✔ CI actual boot step provisions and delivers the same distinct auth credential (source guard) (5.660333ms)
+✔ image release actual provisioning and boot preserve one auth credential (source guard) (2.195333ms)
+✔ workflow guard positive controls reject omitted delivery wrong-role reuse and regenerated auth (1.663416ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 545.048834

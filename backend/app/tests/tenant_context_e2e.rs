@@ -42,8 +42,9 @@ fn tenant_org() -> OrgId {
     OrgId::knl()
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn list_users_round_trips_under_console_rt_with_org_from_jwt(super_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&super_pool).await;
     // --- keys + token (org = the seeded tenant) -------------------------------
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -74,7 +75,7 @@ async fn list_users_round_trips_under_console_rt_with_org_from_jwt(super_pool: P
         vec!["SUPER_ADMIN".to_owned()],
     );
 
-    let service = build_router(app_state(runtime_pool.clone(), public_key_pem.clone()));
+    let service = build_router(app_state(runtime_pool.clone(), public_key_pem.clone()).await);
 
     // (1) Authenticated read returns the tenant's seeded user (NOT empty). -----
     let response = service
@@ -204,8 +205,17 @@ async fn seed_tenant(pool: &PgPool, org: OrgId, admin_id: UserId) {
     .unwrap();
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+async fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -213,7 +223,9 @@ fn app_state(pool: PgPool, public_key_pem: String) -> AppState {
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
     ])
     .unwrap();
-    AppState::new(config, DatabaseDependency::Postgres(pool)).unwrap()
+    AppState::new(config, DatabaseDependency::Postgres(pool))
+        .map(|state| state.with_auth_database(auth_database))
+        .unwrap()
 }
 
 fn issue_token(

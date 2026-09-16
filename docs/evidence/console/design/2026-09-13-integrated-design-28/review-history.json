@@ -1,0 +1,63 @@
+{
+  "recorded_by": "/root",
+  "source": "Independent collaboration review responses; root-maintained finding summaries, not cryptographic reviewer signatures",
+  "history": [
+    {
+      "candidate_sha": "5040215ff1ff0573dd0e1b85f828a6d5a2772ca8",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review",
+        "/root/design_round3",
+        "/root/design_round4"
+      ],
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Future gate decision/digest cycle",
+        "Scoped review required hidden global head",
+        "Native preparation had no producing input path",
+        "Nested container creation and row error targeting absent",
+        "UNKNOWN required an FD1 attempt",
+        "Publication256 silently narrowed2000 atomic contract",
+        "Unsupported correction manual fallback absent",
+        "Blocked calculation retention required monetary result",
+        "Group receipt required Company-only references",
+        "Participant type signatures missing",
+        "Dispatch outcomes lacked exact dispatch CAS and closed proof bodies",
+        "Adoption obligation mapping and snapshot uniqueness disagreed",
+        "Publication control storage had competing layouts",
+        "No-send outcome required nonexistent provider proof",
+        "Transfer required existing reason object"
+      ]
+    },
+    {
+      "candidate_sha": "e1542ac7f44bd7ac787b37d07d8791623efaf7aa",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review",
+        "/root/design_round3",
+        "/root/design_round4"
+      ],
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Generic adoption used source-only preparation alias/producer",
+        "Nested editor lacked structural reload/history projection",
+        "Publication registry/storage exception and output continuation incomplete",
+        "Group public view/control path Company-only",
+        "Routine sent-dispatch completion required full issuer fence"
+      ]
+    },
+    {
+      "candidate_sha": "e9e7a70d48f51b0d88fb7859b803a04cc69b2a7f",
+      "reviewers": [
+        "/root/continuity_review",
+        "/root/payroll_contract_review",
+        "/root/design_round3"
+      ],
+      "verdict": "CHANGES_REQUIRED",
+      "findings": [
+        "Generic publisher required attempt seal for direct commands",
+        "ProtectionPlan constructor needed fixed common intent extraction"
+      ]
+    }
+  ]
+}

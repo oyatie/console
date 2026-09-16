@@ -1,0 +1,68 @@
+▶ hasLiveCfgTestAttribute — false-dark controls
+  ✔ documents the RED substring defect the durable fix replaces (0.369541ms)
+  ✔ does not treat doc-comment-only #[cfg(test)] as live (0.150875ms)
+  ✔ does not treat line- or block-comment-only #[cfg(test)] as live (0.064708ms)
+  ✔ does not treat string-literal-only #[cfg(test)] as live (0.05025ms)
+  ✔ still detects a real #[cfg(test)] attribute (fails closed on live tests) (0.052792ms)
+  ✔ still detects live attribute when a doc comment also mentions it (0.060625ms)
+✔ hasLiveCfgTestAttribute — false-dark controls (1.327917ms)
+▶ unitTestedCrateSrcRoots — inventory + examined-zero
+  ✔ excludes crates whose only hit is a doc comment (0.125708ms)
+  ✔ includes crates with a live #[cfg(test)] under src/ (0.734583ms)
+  ✔ fails closed when examined src inventory is empty (0.242208ms)
+✔ unitTestedCrateSrcRoots — inventory + examined-zero (1.226834ms)
+▶ cargoTestKind — cargo metadata lib aliases
+  ✔ maps default lib and explicit rlib/cdylib to cargo test --lib (0.127625ms)
+  ✔ keeps integration tests and drops bins (0.047833ms)
+✔ cargoTestKind — cargo metadata lib aliases (0.248792ms)
+▶ gate wiring
+  ✔ routes definedBinaries through the comment-aware helper, not raw includes (0.314625ms)
+✔ gate wiring (0.354083ms)
+▶ reachable Rust source inventory
+  ✔ follows path and ordinary modules recursively without counting orphan sources (369.458625ms)
+  ✔ rejects loss of a referenced child test even when an orphan gains a replacement (363.123083ms)
+  ✔ ignores test attributes and module declarations in comments and strings (305.012958ms)
+✔ reachable Rust source inventory (1037.695417ms)
+▶ evaluateBaseline
+  ✔ passes when the measured dark set equals the named set (0.530542ms)
+  ✔ is order-independent across buckets (0.104417ms)
+  ✔ fails a newly dark file that is not named (0.112542ms)
+  ✔ fails substitution even when the count is unchanged (0.066666ms)
+  ✔ fails closed when a named binary starts executing until the baseline is updated (0.074292ms)
+  ✔ rejects a count that disagrees with the named set (0.073667ms)
+  ✔ rejects a baseline that names nothing, rather than falling back to a count (0.100709ms)
+  ✔ ignores unrelated arrays of non-strings (0.084459ms)
+  ✔ does not treat defined feature variants as accepted-dark binaries (0.110416ms)
+  ✔ rejects a malformed deferred bucket rather than ignoring it (0.155416ms)
+  ▶ the derived count is mandatory
+    ✔ rejects a missing dark_baseline (0.120083ms)
+    ✔ rejects a non-numeric dark_baseline (0.047625ms)
+  ✔ the derived count is mandatory (0.263625ms)
+✔ evaluateBaseline (2.668625ms)
+▶ countDeclaredTestAttributes
+  ✔ is explicitly cfg- and ignore-unaware static source evidence (0.273166ms)
+✔ countDeclaredTestAttributes (0.316125ms)
+▶ evaluateTestAttributeBaseline
+  ✔ passes only an exact static-attribute baseline (0.511917ms)
+  ✔ fails closed on a gain until --update locks it (0.082083ms)
+  ✔ fails closed on a newly reachable source until --update locks it (0.055708ms)
+✔ evaluateTestAttributeBaseline (0.701167ms)
+▶ workflow executable command extraction
+  ✔ admits a direct assignment-prefixed cargo test (0.799167ms)
+  ✔ does not truncate a run block at an empty line (0.19625ms)
+  ✔ scans every block-scalar indicator, not only run: | (0.152917ms)
+  ✔ extracts steps when the steps key carries a YAML comment (0.047792ms)
+  ✔ preserves commands after a here-document redirection (0.076ms)
+  ✔ does not mistake echo text for an executable cargo test (0.0425ms)
+  ✔ drops literal-false and continue-on-error steps (0.073333ms)
+  ✔ stops at an unconditional exit before command-shaped text (0.03575ms)
+  ✔ marks shell masks and disabled errexit as non-gating control flow (0.122666ms)
+✔ workflow executable command extraction (1.730292ms)
+ℹ tests 40
+ℹ suites 10
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1079.922042

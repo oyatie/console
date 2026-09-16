@@ -1,0 +1,28 @@
+{
+  "status": "PROPOSED_PENDING_INDEPENDENT_REVIEW",
+  "scope": "W04b-03 source/evidence/temporal technical proposal",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "6626c3976f4a668b11dda2f67c3ec1945f065781",
+  "proposed_tables": 15,
+  "source_families": 10,
+  "source_definitions": 22,
+  "np1_commands": 10,
+  "source_actions": 12,
+  "writer_surfaces": 14,
+  "nonexecutable_proof_cases": 47,
+  "encoding_witnesses": 10,
+  "temporal_witnesses": 6,
+  "source_blobs": 27,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "w04_complete": false,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "remaining": [
+    "W04b-04 workflow/capacity/Group/PC1/AC1/PR1 physical ports and Account navigation",
+    "W04b-05 consolidated DDL/ACL/migration/retention/adoption/recovery/harness/workload proposal",
+    "W05 authority alignment plus four final integrated design reviews and explicit design SHA approval",
+    "W06 executable tests / independent review / explicit test SHA approval / RED admission",
+    "Qualified production source-supply and legal/payment/production authority remain separate"
+  ]
+}

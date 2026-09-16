@@ -1,0 +1,2212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "console:design28:types",
+  "title": "Closed integrated additions; candidate not implemented",
+  "$defs": {
+    "UUID": {
+      "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UUID"
+    },
+    "Digest": {
+      "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Sha256"
+    },
+    "Positive": {
+      "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/PositiveRevision"
+    },
+    "Time": {
+      "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/UnixMicroseconds"
+    },
+    "Count": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]*)$",
+      "x-decimal-min": 0,
+      "x-decimal-max": 9223372036854775807
+    },
+    "Note": {
+      "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Note"
+    },
+    "GovernedRevision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "object_type_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "instance_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "version": {
+          "$ref": "#/$defs/Positive"
+        },
+        "row_hash": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "org_id",
+        "object_type_id",
+        "instance_id",
+        "revision_id",
+        "version",
+        "row_hash"
+      ]
+    },
+    "UnitRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "unit_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "identity_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "org_id",
+        "unit_id",
+        "identity_digest"
+      ]
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "unit": {
+          "$ref": "#/$defs/UnitRef"
+        },
+        "evidence_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "encoded_size": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "unit",
+        "evidence_digest",
+        "encoded_size"
+      ]
+    },
+    "CommandRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "command_id": {
+          "$ref": "#/$defs/UUID"
+        }
+      },
+      "required": [
+        "org_id",
+        "command_id"
+      ]
+    },
+    "SourceRevisionRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "root_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "command_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "custody_digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "org_id",
+        "root_id",
+        "revision",
+        "command_id",
+        "custody_digest"
+      ]
+    },
+    "NativeInputRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "input_revision": {
+          "$ref": "#/$defs/Positive"
+        }
+      },
+      "required": [
+        "org_id",
+        "run_id",
+        "input_revision"
+      ]
+    },
+    "NativeBatchRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "calculation_revision": {
+          "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/CalculationRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "run_id",
+        "calculation_revision"
+      ]
+    },
+    "OwnerResultRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "SOURCE_EFFECT"
+            },
+            "command": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "effect_ordinal": {
+              "type": "string",
+              "pattern": "^(0|-?[1-9][0-9]*)$",
+              "x-decimal-min": 0,
+              "x-decimal-max": 1023
+            }
+          },
+          "required": [
+            "kind",
+            "command",
+            "effect_ordinal"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "NATIVE_INPUT"
+            },
+            "input": {
+              "$ref": "#/$defs/NativeInputRef"
+            }
+          },
+          "required": [
+            "kind",
+            "input"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "NATIVE_BATCH"
+            },
+            "batch": {
+              "$ref": "#/$defs/NativeBatchRef"
+            }
+          },
+          "required": [
+            "kind",
+            "batch"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "NATIVE_RESULT"
+            },
+            "result": {
+              "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/ResultRef"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "result",
+            "org_id"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "COMMON_RECEIPT"
+            },
+            "command": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "receipt_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "command",
+            "receipt_id"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "WAGE_FACT"
+            },
+            "fact": {
+              "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/WageFactRef"
+            }
+          },
+          "required": [
+            "kind",
+            "fact"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "LEAVE_DECISION"
+            },
+            "org_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "request_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "request_revision": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            },
+            "witness_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "request_id",
+            "request_revision",
+            "witness_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "DOCS_ATTESTATION"
+            },
+            "org_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "attestation_id": {
+              "$ref": "types.schema.json#/$defs/UUID"
+            },
+            "revision": {
+              "$ref": "types.schema.json#/$defs/Positive"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "attestation_id",
+            "revision"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RetainedSelector": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "DRAFT_CHAIN"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "instance_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "object_type_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "instance_id",
+            "object_type_id"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "SOURCE_SUBMISSION"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "preparation_unit_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "preparation_digest": {
+              "$ref": "#/$defs/Digest"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "preparation_unit_id",
+            "preparation_digest"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "DOCS_COPY"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "object_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "copy_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "attestation_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "provider_binding_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "immutable_version_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "object_id",
+            "copy_id",
+            "attestation_id",
+            "provider_binding_id",
+            "immutable_version_id"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CALENDAR"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CALENDAR_ASSIGNMENT"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "ATTENDANCE_COVERAGE"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CLOSE_BASIS"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "QUALIFICATION"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "ELIGIBILITY"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "TAX_EVIDENCE"
+            },
+            "source": {
+              "$ref": "#/$defs/SourceRevisionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "ATTENDANCE_EVENT"
+            },
+            "source": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/EventRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "EXCEPTION_RESOLUTION"
+            },
+            "source": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/ExceptionResolutionRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "OPERATIONAL_CLOSE"
+            },
+            "source": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/OperationalCloseRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "EMPLOYMENT_SEGMENT"
+            },
+            "source": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/EmploymentSegmentRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "WAGE_BASIS"
+            },
+            "source": {
+              "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/WageFactRef"
+            }
+          },
+          "required": [
+            "kind",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "NATIVE_INPUT_UNIT"
+            },
+            "input": {
+              "$ref": "#/$defs/NativeInputRef"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "input",
+            "employee_id"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "NATIVE_CALCULATION_UNIT"
+            },
+            "batch": {
+              "$ref": "#/$defs/NativeBatchRef"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "batch",
+            "employee_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "OWNER_WITNESS"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "witness_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "witness_kind": {
+              "enum": [
+                "LEAVE_DECISION",
+                "SOURCE_SELECTION",
+                "AUTHORITY_DECISION",
+                "HUMAN_BINDING",
+                "GATE_DECISION",
+                "GATE_CONSUMPTION",
+                "SOURCE_UNAVAILABLE"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "witness_id",
+            "witness_kind"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "PROTECTED_INVENTORY"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "inventory_unit_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "inventory_unit_id"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "OWNER_SUBMISSION"
+            },
+            "command": {
+              "$ref": "#/$defs/CommandRef"
+            }
+          },
+          "required": [
+            "kind",
+            "command"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "DecisionAttribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "$ref": "#/$defs/CommandRef"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "human_witness_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "policy_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "occurred_at": {
+          "$ref": "#/$defs/Time"
+        }
+      },
+      "required": [
+        "command",
+        "attempt_id",
+        "account_id",
+        "human_witness_id",
+        "policy_revision",
+        "occurred_at"
+      ]
+    },
+    "GateExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "decision_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "approved_command_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Time"
+        }
+      },
+      "required": [
+        "org_id",
+        "request_id",
+        "request_revision",
+        "decision_id",
+        "approved_command_digest",
+        "expires_at"
+      ]
+    },
+    "LeaveDecisionWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_before_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "request_after_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "charge_resolution": {
+          "anyOf": [
+            {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/LeaveChargeRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "before_status": {
+          "enum": [
+            "PENDING"
+          ]
+        },
+        "after_status": {
+          "enum": [
+            "APPROVED",
+            "TIME_CHANGE_CONSULT"
+          ]
+        },
+        "decision_audit": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/AuditEventRef"
+        },
+        "attribution": {
+          "$ref": "#/$defs/DecisionAttribution"
+        },
+        "invalidated_assignment_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 256
+        },
+        "reassignment_task_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 256
+        },
+        "ledger_before_units": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,8})(\\.[0-9]{1,6})?$"
+        },
+        "ledger_after_units": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,8})(\\.[0-9]{1,6})?$"
+        },
+        "charged_units": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,8})(\\.[0-9]{1,6})?$"
+        }
+      },
+      "required": [
+        "org_id",
+        "request_id",
+        "request_before_revision",
+        "request_after_revision",
+        "charge_resolution",
+        "before_status",
+        "after_status",
+        "ledger_before_units",
+        "ledger_after_units",
+        "charged_units",
+        "decision_audit",
+        "attribution",
+        "invalidated_assignment_ids",
+        "reassignment_task_ids"
+      ]
+    },
+    "SelectionPredicate": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CALENDAR_AT"
+            },
+            "employment_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "date": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Date"
+            }
+          },
+          "required": [
+            "kind",
+            "employment_id",
+            "date"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "EMPLOYMENT_PERIOD"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            }
+          },
+          "required": [
+            "kind",
+            "employee_id",
+            "period"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "WAGE_AT"
+            },
+            "employment_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "date": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Date"
+            }
+          },
+          "required": [
+            "kind",
+            "employment_id",
+            "date"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "ATTENDANCE_PERIOD"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            }
+          },
+          "required": [
+            "kind",
+            "employee_id",
+            "period"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "ELIGIBILITY_PERIOD"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            }
+          },
+          "required": [
+            "kind",
+            "employee_id",
+            "period"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "TAX_PERIOD"
+            },
+            "employee_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            }
+          },
+          "required": [
+            "kind",
+            "employee_id",
+            "period"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "QUALIFICATION_PURPOSE"
+            },
+            "qualification": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/QualificationRef"
+            },
+            "purpose": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/RulePurpose"
+            }
+          },
+          "required": [
+            "kind",
+            "qualification",
+            "purpose"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "PAYROLL_POPULATION"
+            },
+            "scope": {
+              "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/ScopeBasisRef"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            }
+          },
+          "required": [
+            "kind",
+            "scope",
+            "period"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "LEAVE_BRANCH_COVERAGE"
+            },
+            "branch_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            }
+          },
+          "required": [
+            "kind",
+            "branch_id",
+            "period"
+          ]
+        }
+      ]
+    },
+    "SelectionWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "predicate": {
+          "$ref": "#/$defs/SelectionPredicate"
+        },
+        "observed_revision_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "complete_member_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "members_evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "result": {
+          "enum": [
+            "COMPLETE",
+            "OVERFLOW",
+            "UNRESOLVED"
+          ]
+        },
+        "observed_at": {
+          "$ref": "#/$defs/Time"
+        },
+        "owner_receipt": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "predicate",
+        "observed_revision_digest",
+        "complete_member_count",
+        "members_evidence",
+        "result",
+        "observed_at",
+        "owner_receipt"
+      ]
+    },
+    "AuthorityWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "assurance_receipt_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "policy_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "action_registration": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "resource_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "field_group_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "maxItems": 256
+        },
+        "purpose_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "sink": {
+          "enum": [
+            "SSR",
+            "JSON_RESPONSE",
+            "LIVE_UPDATE",
+            "AUTHORIZED_AUDIT",
+            "OPERATIONAL_EVENT",
+            "BOUND_OBJECT_EXPORT"
+          ]
+        },
+        "decision": {
+          "enum": [
+            "PERMIT",
+            "DENY",
+            "UNRESOLVED"
+          ]
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/Time"
+        },
+        "command": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "account_id",
+        "assurance_receipt_id",
+        "policy_revision",
+        "action_registration",
+        "resource_id",
+        "field_group_ids",
+        "purpose_revision",
+        "sink",
+        "decision",
+        "evaluated_at",
+        "command"
+      ]
+    },
+    "HumanWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "scoped_binding_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "binding_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "assurance_receipt_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "comparison_receipt_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "command": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "account_id",
+        "scoped_binding_id",
+        "binding_revision",
+        "assurance_receipt_id",
+        "comparison_receipt_id",
+        "command"
+      ]
+    },
+    "GateDecisionWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gate": {
+          "$ref": "#/$defs/GateExpectation"
+        },
+        "attribution": {
+          "$ref": "#/$defs/DecisionAttribution"
+        },
+        "decision": {
+          "enum": [
+            "APPROVED",
+            "REFUSED"
+          ]
+        }
+      },
+      "required": [
+        "gate",
+        "attribution",
+        "decision"
+      ]
+    },
+    "GateConsumptionWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "gate": {
+          "$ref": "#/$defs/GateExpectation"
+        },
+        "consumption_command": {
+          "$ref": "#/$defs/CommandRef"
+        },
+        "attempt_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "decision_witness_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attribution": {
+          "$ref": "#/$defs/DecisionAttribution"
+        }
+      },
+      "required": [
+        "gate",
+        "consumption_command",
+        "attempt_id",
+        "decision_witness_id",
+        "attribution"
+      ]
+    },
+    "UnavailableWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "selector": {
+          "$ref": "#/$defs/RetainedSelector"
+        },
+        "observed_at": {
+          "$ref": "#/$defs/Time"
+        },
+        "reason": {
+          "enum": [
+            "DISPOSED",
+            "REVOKED",
+            "EXPIRED",
+            "MISSING",
+            "CUSTODY_UNCONFIRMED"
+          ]
+        },
+        "command": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "selector",
+        "observed_at",
+        "reason",
+        "command"
+      ]
+    },
+    "OwnerWitness": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "LEAVE_DECISION"
+            },
+            "body": {
+              "$ref": "#/$defs/LeaveDecisionWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "SOURCE_SELECTION"
+            },
+            "body": {
+              "$ref": "#/$defs/SelectionWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "AUTHORITY_DECISION"
+            },
+            "body": {
+              "$ref": "#/$defs/AuthorityWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "HUMAN_BINDING"
+            },
+            "body": {
+              "$ref": "#/$defs/HumanWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "GATE_DECISION"
+            },
+            "body": {
+              "$ref": "#/$defs/GateDecisionWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "GATE_CONSUMPTION"
+            },
+            "body": {
+              "$ref": "#/$defs/GateConsumptionWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "SOURCE_UNAVAILABLE"
+            },
+            "body": {
+              "$ref": "#/$defs/UnavailableWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "body"
+          ]
+        }
+      ]
+    },
+    "RetentionDuration": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "FIXED_SECONDS"
+            },
+            "seconds": {
+              "type": "string",
+              "pattern": "^(0|-?[1-9][0-9]*)$",
+              "x-decimal-min": 0,
+              "x-decimal-max": 3155760000
+            }
+          },
+          "required": [
+            "kind",
+            "seconds"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CALENDAR_MONTHS"
+            },
+            "months": {
+              "type": "string",
+              "pattern": "^(0|-?[1-9][0-9]*)$",
+              "x-decimal-min": 0,
+              "x-decimal-max": 1200
+            },
+            "zone": {
+              "const": "Asia/Seoul"
+            }
+          },
+          "required": [
+            "kind",
+            "months",
+            "zone"
+          ]
+        }
+      ]
+    },
+    "RetentionTrigger": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "OWNER_TERMINAL"
+            },
+            "result": {
+              "$ref": "#/$defs/OwnerResultRef"
+            },
+            "terminal_receipt": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "occurred_at": {
+              "$ref": "#/$defs/Time"
+            }
+          },
+          "required": [
+            "kind",
+            "result",
+            "terminal_receipt",
+            "occurred_at"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "PERIOD_END"
+            },
+            "period": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/InclusivePeriod"
+            },
+            "source": {
+              "$ref": "#/$defs/EvidenceRef"
+            }
+          },
+          "required": [
+            "kind",
+            "period",
+            "source"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "GOVERNED_CASE_CLOSED"
+            },
+            "case_revision": {
+              "$ref": "#/$defs/GovernedRevision"
+            },
+            "close_receipt": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "occurred_at": {
+              "$ref": "#/$defs/Time"
+            }
+          },
+          "required": [
+            "kind",
+            "case_revision",
+            "close_receipt",
+            "occurred_at"
+          ]
+        }
+      ]
+    },
+    "RetentionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "purpose_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "evaluator": {
+          "const": "MAX_HORIZON_V1"
+        },
+        "duration": {
+          "$ref": "#/$defs/RetentionDuration"
+        },
+        "qualified_basis": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "status": {
+          "enum": [
+            "ADMITTED",
+            "SUSPENDED",
+            "REVOKED"
+          ]
+        }
+      },
+      "required": [
+        "revision",
+        "purpose_revision",
+        "evaluator",
+        "duration",
+        "qualified_basis",
+        "status"
+      ]
+    },
+    "Obligation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "purpose_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "policy_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "subject": {
+          "$ref": "#/$defs/OwnerResultRef"
+        },
+        "trigger": {
+          "$ref": "#/$defs/RetentionTrigger"
+        }
+      },
+      "required": [
+        "revision",
+        "purpose_revision",
+        "policy_revision",
+        "subject",
+        "trigger"
+      ]
+    },
+    "RetentionEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "evaluation_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "unit": {
+          "$ref": "#/$defs/UnitRef"
+        },
+        "obligation_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "current_policy_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "trigger": {
+          "$ref": "#/$defs/RetentionTrigger"
+        },
+        "evaluated_at": {
+          "$ref": "#/$defs/Time"
+        },
+        "not_before": {
+          "$ref": "#/$defs/Time"
+        },
+        "hold_revision_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "open_dependency_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "unknown_dependency_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "result": {
+          "enum": [
+            "RETAIN",
+            "RELEASE_ELIGIBLE",
+            "UNRESOLVED"
+          ]
+        },
+        "command": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "evaluation_id",
+        "unit",
+        "obligation_revision",
+        "current_policy_revision",
+        "trigger",
+        "evaluated_at",
+        "not_before",
+        "hold_revision_digest",
+        "open_dependency_count",
+        "unknown_dependency_count",
+        "result",
+        "command"
+      ]
+    },
+    "ProtectionRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "purpose_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        },
+        "obligation_revision": {
+          "$ref": "#/$defs/GovernedRevision"
+        }
+      },
+      "required": [
+        "evidence",
+        "purpose_revision",
+        "obligation_revision"
+      ]
+    },
+    "LateEvidence": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "SUBMISSION"
+            },
+            "unit": {
+              "$ref": "#/$defs/UnitRef"
+            },
+            "command": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "attempt_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "unit",
+            "command",
+            "attempt_id"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "GATE_DECISION"
+            },
+            "unit": {
+              "$ref": "#/$defs/UnitRef"
+            },
+            "command": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "attempt_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "unit",
+            "command",
+            "attempt_id"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "GATE_CONSUMPTION"
+            },
+            "unit": {
+              "$ref": "#/$defs/UnitRef"
+            },
+            "command": {
+              "$ref": "#/$defs/CommandRef"
+            },
+            "attempt_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "unit",
+            "command",
+            "attempt_id"
+          ]
+        }
+      ]
+    },
+    "CurrentLeaveDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "request_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "expected_request_revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "charge_resolution": {
+          "anyOf": [
+            {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/LeaveChargeRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "decision": {
+          "enum": [
+            "APPROVE",
+            "TIME_CHANGE_CONSULT"
+          ]
+        },
+        "reason": {
+          "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/ShortText"
+        },
+        "consultation_proposal_dates": {
+          "type": "array",
+          "items": {
+            "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/Date"
+          },
+          "maxItems": 31
+        },
+        "supporting_evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/ArtifactRef"
+          },
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "request_id",
+        "expected_request_revision",
+        "charge_resolution",
+        "decision",
+        "reason",
+        "consultation_proposal_dates",
+        "supporting_evidence"
+      ]
+    },
+    "PreparedNativeInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "header": {
+          "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/InputHeader"
+        },
+        "unit_count": {
+          "type": "string",
+          "pattern": "^(0|-?[1-9][0-9]*)$",
+          "x-decimal-min": 1,
+          "x-decimal-max": 2000
+        },
+        "semantic_manifest": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "custody_manifest": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "manifest_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "preparation_command": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "header",
+        "unit_count",
+        "semantic_manifest",
+        "custody_manifest",
+        "manifest_digest",
+        "preparation_command"
+      ]
+    },
+    "PreparedNativeCalculation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "header": {
+          "$ref": "../2026-09-12-native-manifest-contract-18/native-types.schema.json#/$defs/BatchHeader"
+        },
+        "input": {
+          "$ref": "#/$defs/NativeInputRef"
+        },
+        "unit_count": {
+          "type": "string",
+          "pattern": "^(0|-?[1-9][0-9]*)$",
+          "x-decimal-min": 1,
+          "x-decimal-max": 2000
+        },
+        "outcome_manifest": {
+          "$ref": "#/$defs/EvidenceRef"
+        },
+        "manifest_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "preparation_command": {
+          "$ref": "#/$defs/CommandRef"
+        }
+      },
+      "required": [
+        "header",
+        "input",
+        "unit_count",
+        "outcome_manifest",
+        "manifest_digest",
+        "preparation_command"
+      ]
+    },
+    "OwnerPreparedInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CALENDAR"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/CalendarPayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "ASSIGNMENT"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/CalendarAssignmentPayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "COVERAGE"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/CoveragePayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "CLOSE_BASIS"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/ClosePayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "PROPOSE_SOURCE"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/AdmissionPayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "VERIFY_SOURCE"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/VerifyPayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "REVOKE_SOURCE"
+            },
+            "payload": {
+              "$ref": "../2026-09-12-source-payload-contract-19/source-types.schema.json#/$defs/RevokePayload"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "LEAVE_DECISION"
+            },
+            "payload": {
+              "$ref": "#/$defs/CurrentLeaveDecision"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "NATIVE_INPUT"
+            },
+            "payload": {
+              "$ref": "#/$defs/PreparedNativeInput"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "NATIVE_CALCULATION"
+            },
+            "payload": {
+              "$ref": "#/$defs/PreparedNativeCalculation"
+            }
+          },
+          "required": [
+            "kind",
+            "payload"
+          ]
+        }
+      ]
+    },
+    "DocsAttestation": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attestation_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/Positive"
+        },
+        "object_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "copy_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "provider_binding_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "immutable_version_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "readback_sha256": {
+          "$ref": "#/$defs/Digest"
+        },
+        "readback_bytes": {
+          "$ref": "#/$defs/Count"
+        },
+        "mime_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "verification_job_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "verification_receipt": {
+          "$ref": "#/$defs/CommandRef"
+        },
+        "state": {
+          "enum": [
+            "VERIFIED",
+            "FAILED",
+            "REVOKED",
+            "UNRESOLVED"
+          ]
+        },
+        "observed_at": {
+          "$ref": "#/$defs/Time"
+        },
+        "retention_until": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "org_id",
+        "attestation_id",
+        "revision",
+        "object_id",
+        "copy_id",
+        "provider_binding_id",
+        "immutable_version_id",
+        "readback_sha256",
+        "readback_bytes",
+        "mime_type",
+        "verification_job_id",
+        "verification_receipt",
+        "state",
+        "observed_at",
+        "retention_until"
+      ],
+      "additionalProperties": false
+    },
+    "DirectIntentWitness": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "$ref": "#/$defs/CommandRef"
+        },
+        "account_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "command_fingerprint": {
+          "$ref": "#/$defs/Digest"
+        },
+        "normalized_input_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "action": {
+          "$ref": "action-types.schema.json#/$defs/ActionRef"
+        },
+        "schema": {
+          "$ref": "action-types.schema.json#/$defs/InputSchemaRef"
+        }
+      },
+      "required": [
+        "command",
+        "account_id",
+        "command_fingerprint",
+        "normalized_input_digest",
+        "action",
+        "schema"
+      ],
+      "additionalProperties": false,
+      "description": "Private owning-transaction witness from common.admit_direct_intent and actual immutable command custody row. Neither public DTO nor authority by caller assertion. No final receipt/attempt/future snapshot digest required."
+    },
+    "SealedOwnerIntent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ATTEMPT"
+            },
+            "seal": {
+              "$ref": "action-types.schema.json#/$defs/SealResult"
+            }
+          },
+          "required": [
+            "kind",
+            "seal"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "DIRECT"
+            },
+            "intent": {
+              "$ref": "#/$defs/DirectIntentWitness"
+            }
+          },
+          "required": [
+            "kind",
+            "intent"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$comment": "Schemas describe strictly decoded internal typed values. CCF1 command/journal wire encodes every integer as a canonical decimal string, rejects JSON numeric values and duplicate/unknown fields, sorts ASCII object keys, preserves text without NFC/NFKC normalization. Numeric bounds apply after exact integer decoding. Existing18/19/24 codecs retain their explicitly distinct formats. These are design schemas, not generated OpenAPI or executed codecs."
+}

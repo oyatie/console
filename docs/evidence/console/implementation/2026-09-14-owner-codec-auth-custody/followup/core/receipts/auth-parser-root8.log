@@ -1,0 +1,280 @@
+   Compiling hashbrown v0.17.1
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.150
+   Compiling indexmap v2.14.0
+   Compiling num-bigint v0.4.8
+   Compiling regex-automata v0.4.18
+   Compiling h2 v0.4.16
+   Compiling console-kernel-core v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/kernel/core)
+   Compiling sqlx-core v0.9.0
+   Compiling tower v0.5.3
+   Compiling hyper v1.10.1
+   Compiling sqlx-postgres v0.9.0
+   Compiling hyper-util v0.1.20
+   Compiling num-iter v0.1.45
+   Compiling petgraph v0.7.1
+   Compiling regex v1.12.4
+   Compiling lalrpop-util v0.22.2
+   Compiling lalrpop v0.22.2
+   Compiling sqlx-macros-core v0.9.0
+   Compiling der-parser v9.0.0
+   Compiling sqlx-macros v0.9.0
+   Compiling logos-codegen v0.16.1
+   Compiling sqlx v0.9.0
+   Compiling console-platform-db v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/db)
+   Compiling logos-derive v0.16.1
+   Compiling x509-parser v0.16.0
+   Compiling serde_with v3.21.0
+   Compiling num-bigint-dig v0.8.6
+   Compiling webauthn-rs-proto v0.5.5
+   Compiling rsa v0.9.10
+   Compiling logos v0.16.1
+   Compiling webauthn-rs-core v0.5.5
+   Compiling simple_asn1 v0.6.4
+   Compiling jsonwebtoken v10.4.0
+   Compiling cedar-policy-core v4.11.2
+   Compiling webauthn-rs v0.5.5
+   Compiling axum v0.8.9
+   Compiling console-platform-auth v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/auth)
+   Compiling console-platform-group v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/group)
+   Compiling console-workorder-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workorder/domain)
+   Compiling tower-http v0.6.11
+   Compiling reqwest v0.13.4
+   Compiling console-notifications-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/domain)
+   Compiling sqlx-core v0.8.6
+   Compiling console-notifications-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/application)
+   Compiling sqlx-postgres v0.8.6
+   Compiling console-governance-domain v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/governance/domain)
+   Compiling email_address v0.2.9
+   Compiling console-workorder-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workorder/application)
+   Compiling sqlx-macros-core v0.8.6
+   Compiling quick-xml v0.41.0 (/private/tmp/console-production-tdd-preparation-20260913/third-party/rust/vendor/quick-xml-0.41.0-compat)
+   Compiling console-comms-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/domain)
+   Compiling ahash v0.8.12
+   Compiling reactive_graph v0.3.0-beta2
+   Compiling console-comms-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/application)
+   Compiling sqlx-macros v0.8.6
+   Compiling console-ontology-canonical-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/canonical-domain)
+   Compiling console-inbox-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inbox/domain)
+   Compiling num-rational v0.4.2
+   Compiling num-complex v0.4.6
+   Compiling num v0.4.3
+   Compiling console-inbox-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inbox/application)
+   Compiling reactive_stores v0.5.0-beta
+   Compiling sqlx v0.8.6
+   Compiling apalis-codec v0.1.0-rc.9
+   Compiling apalis-sql v1.0.0-rc.9
+   Compiling gloo-utils v0.3.0
+   Compiling hyper-timeout v0.5.2
+   Compiling console-workflow-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/domain)
+   Compiling borrow-or-share v0.2.4
+   Compiling unicode-general-category v1.1.0
+   Compiling tachys v0.3.0-beta2
+   Compiling lettre v0.11.22
+   Compiling apalis-postgres v1.0.0-rc.8
+   Compiling fluent-uri v0.4.1
+   Compiling tonic v0.14.6
+   Compiling gloo-net v0.7.0
+   Compiling html_parser v0.7.0
+   Compiling fraction v0.17.0
+   Compiling console-governance-application v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/governance/application)
+   Compiling cedar-policy-formatter v4.11.2
+   Compiling apalis v1.0.0-rc.9
+   Compiling zip v8.6.0
+   Compiling cedar-policy v4.11.2
+   Compiling fancy-regex v0.14.0
+   Compiling console-dispatch-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/dispatch/domain)
+   Compiling console-messenger-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/messenger/domain)
+   Compiling strum_macros v0.28.0
+   Compiling vsimd v0.8.0
+   Compiling outref v0.5.2
+   Compiling bytecount v0.6.9
+   Compiling micromap v0.3.0
+   Compiling num-cmp v0.1.0
+   Compiling umya-spreadsheet v3.0.0 (/private/tmp/console-production-tdd-preparation-20260913/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)
+   Compiling console-platform-authz v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/authz)
+   Compiling console-platform-request-context v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/request-context)
+   Compiling strum v0.28.0
+   Compiling console-platform-storage v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/storage)
+   Compiling console-governance-adapter-postgres v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/governance/adapter-postgres)
+   Compiling jsonschema-value v0.56.0
+   Compiling referencing v0.56.0
+   Compiling server_fn v0.9.0-beta
+   Compiling uuid-simd v0.8.0
+   Compiling console-messenger-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/messenger/application)
+   Compiling console-dispatch-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/dispatch/application)
+   Compiling console-platform-jobs v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/jobs)
+   Compiling leptos_hot_reload v0.9.0-beta
+   Compiling zip v7.2.0
+   Compiling console-platform-push v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/push)
+   Compiling fancy-regex v0.19.2
+   Compiling console-leave-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/leave/domain)
+   Compiling console-recruiting-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/recruiting/domain)
+   Compiling console-identity-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/domain)
+   Compiling console-ontology-domain v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/domain)
+   Compiling console-support-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/support/domain)
+   Compiling console-todos-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/todos/domain)
+   Compiling console-sales-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/sales/domain)
+   Compiling console-notices-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notices/domain)
+   Compiling console-compliance-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/compliance/domain)
+   Compiling console-reporting-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/reporting/domain)
+   Compiling console-evaluation-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/evaluation/domain)
+   Compiling console-financial-domain v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/financial/domain)
+   Compiling console-inventory-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inventory/domain)
+   Compiling console-benefit-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/benefit/domain)
+   Compiling console-registry-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/registry/domain)
+   Compiling console-inspection-domain v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inspection/domain)
+   Compiling console-finance-gl-domain v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/finance-gl/domain)
+   Compiling console-docs-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/docs/domain)
+   Compiling codee v0.3.5
+   Compiling jsonschema-regex v0.56.0
+   Compiling hashify v0.2.9
+   Compiling calamine v0.35.0 (/private/tmp/console-production-tdd-preparation-20260913/third-party/rust/vendor/calamine-0.35.0-quickxml41)
+   Compiling console-attendance-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/attendance/application)
+   Compiling console-docs-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/docs/application)
+   Compiling mail-parser v0.11.4
+   Compiling jsonschema v0.56.0
+   Compiling leptos_server v0.9.0-beta2
+   Compiling console-finance-gl-application v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/finance-gl/application)
+   Compiling console-reporting-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/reporting/application)
+   Compiling console-inspection-application v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inspection/application)
+   Compiling console-registry-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/registry/application)
+   Compiling console-benefit-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/benefit/application)
+   Compiling console-compliance-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/compliance/application)
+   Compiling console-inventory-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inventory/application)
+   Compiling console-financial-application v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/financial/application)
+   Compiling console-evaluation-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/evaluation/application)
+   Compiling console-notices-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notices/application)
+   Compiling console-sales-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/sales/application)
+   Compiling console-support-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/support/application)
+   Compiling console-todos-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/todos/application)
+   Compiling console-identity-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/application)
+   Compiling console-recruiting-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/recruiting/application)
+   Compiling console-leave-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/leave/application)
+   Compiling leptos_macro v0.9.0-beta
+   Compiling console-dispatch-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/dispatch/adapter-postgres)
+   Compiling console-platform-excel v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/excel)
+   Compiling console-inbox-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inbox/adapter-postgres)
+   Compiling leptos_dom v0.9.0-beta
+   Compiling tonic-prost v0.14.6
+   Compiling console-platform-provisioning v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/provisioning)
+   Compiling console-equipment-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/equipment/application)
+   Compiling console-logistics-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/logistics/domain)
+   Compiling console-orgchange-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/orgchange/domain)
+   Compiling console-equipment-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/equipment/domain)
+   Compiling console-payroll-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/domain)
+   Compiling matchers v0.2.0
+   Compiling tracing-subscriber v0.3.23
+   Compiling console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/adapter-postgres)
+   Compiling console-orgchange-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/orgchange/adapter-postgres)
+   Compiling console-equipment-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/equipment/adapter-postgres)
+   Compiling console-logistics-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/logistics/adapter-postgres)
+   Compiling opentelemetry-proto v0.32.0
+   Compiling tonic-types v0.14.6
+   Compiling leptos v0.9.0-beta
+   Compiling console-reporting-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/reporting/adapter-postgres)
+   Compiling console-identity-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/adapter-postgres)
+   Compiling console-leave-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/leave/adapter-postgres)
+   Compiling console-support-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/support/adapter-postgres)
+   Compiling console-ontology-application v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/application)
+   Compiling console-recruiting-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/recruiting/adapter-postgres)
+   Compiling console-todos-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/todos/adapter-postgres)
+   Compiling console-evaluation-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/evaluation/adapter-postgres)
+   Compiling console-sales-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/sales/adapter-postgres)
+   Compiling console-notices-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notices/adapter-postgres)
+   Compiling console-inventory-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inventory/adapter-postgres)
+   Compiling console-financial-adapter-postgres v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/financial/adapter-postgres)
+   Compiling console-registry-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/registry/adapter-postgres)
+   Compiling console-compliance-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/compliance/adapter-postgres)
+   Compiling console-benefit-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/benefit/adapter-postgres)
+   Compiling console-inspection-adapter-postgres v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inspection/adapter-postgres)
+   Compiling console-finance-gl-adapter-postgres v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/finance-gl/adapter-postgres)
+   Compiling console-comms-adapter-imap v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/adapter-imap)
+   Compiling console-docs-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/docs/adapter-postgres)
+   Compiling console-attendance-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/attendance/adapter-postgres)
+   Compiling console-comms-credential-cipher v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/credential-cipher)
+   Compiling console-ontology-adapter-postgres v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/adapter-postgres)
+   Compiling console-messenger-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/messenger/adapter-postgres)
+   Compiling console-comms-adapter-smtp v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/adapter-smtp)
+   Compiling console-workorder-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workorder/adapter-postgres)
+   Compiling console-comms-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/adapter-postgres)
+   Compiling console-notifications-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/adapter-postgres)
+   Compiling console-platform-authz-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/authz-rest)
+   Compiling console-workflow-runtime v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/runtime)
+   Compiling console-platform-email v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/email)
+   Compiling opentelemetry-http v0.32.0
+   Compiling console-workflow-runtime-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workflow/adapter-postgres)
+   Compiling console-comms-adapter-mox v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/adapter-mox)
+   Compiling console-analytics-quant-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/analytics-quant/rest)
+   Compiling console-comms-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/comms/rest)
+   Compiling console-ontology-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/rest)
+   Compiling console-workorder-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/workorder/rest)
+   Compiling opentelemetry-otlp v0.32.0
+   Compiling console-platform-auth-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/auth-rest)
+   Compiling console-notifications-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notifications/rest)
+   Compiling console-messenger-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/messenger/rest)
+   Compiling console-attendance-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/attendance/rest)
+   Compiling console-docs-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/docs/rest)
+   Compiling console-finance-gl-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/finance-gl/rest)
+   Compiling console-benefit-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/benefit/rest)
+   Compiling console-registry-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/registry/rest)
+   Compiling console-inspection-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inspection/rest)
+   Compiling console-compliance-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/compliance/rest)
+   Compiling console-financial-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/financial/rest)
+   Compiling console-inventory-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inventory/rest)
+   Compiling console-evaluation-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/evaluation/rest)
+   Compiling console-notices-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/notices/rest)
+   Compiling console-sales-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/sales/rest)
+   Compiling console-recruiting-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/recruiting/rest)
+   Compiling console-todos-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/todos/rest)
+   Compiling console-support-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/support/rest)
+   Compiling console-payroll-ui v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/ui)
+   Compiling console-leave-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/leave/rest)
+   Compiling console-identity-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/identity/rest)
+   Compiling console-reporting-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/reporting/rest)
+   Compiling console-logistics-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/logistics/rest)
+   Compiling console-payroll-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/payroll/rest)
+   Compiling console-orgchange-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/orgchange/rest)
+   Compiling console-equipment-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/equipment/rest)
+   Compiling tracing-opentelemetry v0.33.0
+   Compiling metrics-exporter-prometheus v0.18.3
+   Compiling console-platform-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/platform-rest)
+   Compiling console-inbox-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/inbox/rest)
+   Compiling console-dispatch-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/dispatch/rest)
+   Compiling console-dispatch-worker v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/dispatch/worker)
+   Compiling console-platform-realtime v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/realtime)
+   Compiling console-governance-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/governance/rest)
+   Compiling console-consulting-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/consulting/rest)
+   Compiling console-facilities-rest v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/facilities/rest)
+   Compiling console-production-rest v0.0.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/production/rest)
+   Compiling console-ontology-canonical-adapter-postgres v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/ontology/canonical-adapter-postgres)
+   Compiling console-integrity v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/compliance/integrity)
+   Compiling console-platform-audit-chain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/audit-chain)
+   Compiling console-erp-domain v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/erp/domain)
+   Compiling console-action-inbox-application v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/action-inbox/application)
+   Compiling console-app v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/app)
+   Compiling webauthn-authenticator-rs v0.5.5
+   Compiling console-platform-test-support v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/crates/platform/test-support)
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2m 37s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-auth-parser-cargo/debug/deps/auth_rest-1c2af398acf7d944)
+
+running 8 tests
+test auth_target_parser::account_target_accepts_existing_tcp_tls_and_operational_queries ... ok
+test auth_target_parser::account_target_ambient_pgoptions_cannot_smuggle_role_or_gucs ... ok
+test auth_target_parser::account_target_effective_query_password_preserves_distinctness ... ok
+test auth_target_parser::account_target_rejection_prevents_sqlx_unknown_parameter_secret_logging ... ok
+test auth_target_parser::account_target_rejects_malformed_percent_and_invalid_allowed_values ... ok
+test auth_target_parser::account_target_rejects_sqlx_destination_and_startup_overrides ... ok
+test auth_target_parser::account_target_rejects_unknown_and_duplicate_decoded_query_keys ... ok
+test auth_target_parser::account_target_requires_explicit_tcp_host_database_and_no_fragment ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 138 filtered out; finished in 0.59s
+

@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/review_completeness",
+  "verdict": "APPROVED_DIAGNOSTIC_ONLY_SOURCE_AND_DRIVER",
+  "commit": "e1f184fa19bd9a34569ef8bf1bc760e1f0144a50",
+  "test_file": "backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+  "test_sha256": "9543211d466783ec5d09bea6ff41166fec877efa9608b164da6de23a3bc0a7ee",
+  "test_diff": "Same complete_successful_requests predicate, expected identities and second_outcome.is_ok; only adds SQLx finalizer-result Debug diagnostic. Timeout, cleanup, successful-state/replay expectations unchanged.",
+  "driver": "/private/tmp/account-finalizer-diagnostic-driver.sh",
+  "driver_sha256": "890b91fb1e22d7e9357ed5b7f0d92555e073f9f319b07b1d7e0d5f335ec58028",
+  "parent_driver_sha256": "ce4dc9671c85147ac75439f46ab81fa45eba62cc99cfd6af04c51ed95b423a4b",
+  "driver_diff": "Only unique labelprefix and full module-qualified target filter; inverse replacements recover parent bytes exactly; bash-n PASS. No --exact flag added, so actual discovered1 count must be checked.",
+  "limits": [
+    "No execution by reviewer; failure reason remains unproven until actual diagnostic run.",
+    "Diagnostic is fixed operator SQL result over synthetic fixture; does not include configured credential URLs.",
+    "Same1GiB isolated tmpfs cleanup, no durability or production proof."
+  ]
+}

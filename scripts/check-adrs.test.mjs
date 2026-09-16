@@ -550,3 +550,29 @@ describe("ADR governance gate", () => {
     assertFailure(evaluateAdrGovernance(root), "ADR-0013 is reserved and must never be issued");
   });
 });
+
+
+describe("immutable execution evidence scope", () => {
+  it("retains recorded rejected ADR inputs in machine evidence logs", () => {
+    const root = createFixture();
+    mkdirSync(join(root, "docs", "evidence", "run"), { recursive: true });
+    writeFileSync(join(root, "docs", "evidence", "run", "probe.log"),
+      "✔ rejects stale cross-repository references that still use ADR-0022 for portability\n# Governed by ADR-0022-bare-metal-portability-and-ha.\n");
+    assert.deepEqual(evaluateAdrGovernance(root).failures, []);
+  });
+
+  for (const [directory, name] of [
+    [["docs", "evidence"], "stale.md"],
+    [["deploy"], "stale.log"],
+    [["docs", "evidence-other"], "stale.log"],
+  ]) {
+    it(`still rejects retired authority in ${[...directory, name].join("/")}`, () => {
+      const root = createFixture();
+      mkdirSync(join(root, ...directory), { recursive: true });
+      writeFileSync(join(root, ...directory, name),
+        "# Governed by ADR-0022-bare-metal-portability-and-ha.\n");
+      assertFailure(evaluateAdrGovernance(root),
+        "ADR-0022 is the local-identity decision, not the portability/HA decision");
+    });
+  }
+});

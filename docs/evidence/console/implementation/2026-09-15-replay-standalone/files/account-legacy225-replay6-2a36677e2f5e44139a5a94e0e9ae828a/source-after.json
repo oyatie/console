@@ -1,0 +1,29 @@
+{
+  "files": {
+    "backend/Cargo.lock": "2e5586b55b6eab8d797dcdf00ff7d26a82400340dcbc81c338822aac15944bc6",
+    "backend/Cargo.toml": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+    "backend/app/Cargo.toml": "e8c85e4df469d998ef31874aa09f4e2556e459bcc3fa086b2fd79117af3c17a5",
+    "backend/app/src/account_custody_state.sql": "bbaa00932e808745070ebb866c7050d5f5544961a3e7158d0aa1da58be7c8899",
+    "backend/app/src/lib.rs": "19ff33ff11d79d936872e188198c78c23efbc531e78f14d3322e66222b670742",
+    "backend/app/tests/account_migration.rs": "84475ea347514e617a0ba5a0d7a2bdd11521e6c4d098b2e6d3b59fe1c88d629d",
+    "backend/app/tests/auth_rest.rs": "f2fdfd3916ec1dd35576ff4acc9962141f3f439c03c8e2f6a235fc49dd84f954",
+    "backend/app/tests/auth_rest/account_fence_projection.rs": "82510bc9ac573be671efeac769d97d144a8ed256539909a12dd34178502fd9bc",
+    "backend/app/tests/auth_rest/account_fence_transport.rs": "7cd8143272d266b9b2a4abd9087b4075dee3d20432b4c278417e6235fe069ea7",
+    "backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql": "84e356b88be8762726c26df03a4990a19e98c0fcda3d48a73389d1d2a087559a",
+    "backend/app/tests/fixtures/account-legacy225-owner-output-v1.json": "bc0c8a562d54866f892706a0a0b6a6723d8874922f58635f3db6f78685889ce4",
+    "backend/crates/platform/auth-rest/src/lib.rs": "935f4306bafc964ff9a7d430a033ee1706d57a4db51f721a79f058d757bd1ec4",
+    "backend/crates/platform/auth/src/refresh.rs": "c8bfbded8732dfdba3a06798179d78987679c20db7062882e7ed6212c7bbf1e0",
+    "backend/rust-toolchain.toml": "c91677902069dfe54d5d4895372aecaa296dd15c36679f7aab8442a0ae02bad7",
+    "ops/account-custody-migrations.sha384": "adc836e55749bb1775631289deb3e39566f98d4848e67d837a486c59ebf99c96",
+    "ops/generate-account-custody.py": "f0b61cc8e7fb6aef7ba2494e7c983103f62d89b674ea7ab45a9a40e7cbdb2558",
+    "ops/postgres-finalize-account-custody.sh": "e064c08f8cc5141f8c99c17b750e5c1714eb7337fedf2a957ff429dbb6e08c47",
+    "ops/postgres-finalize-account-custody.sql": "eea1ef091ebdacf3fe537bee293a0e0eedf077ab0033bb87f37d617fe6e75c5c",
+    "ops/postgres-reconcile-topology.sh": "9a8156858d5b00a14e1f2e4a7dacdd754d968b146b4d16d3ff897fff323a0acd",
+    "tools/ci/cargo-test-runner.sh": "7d2ea01b5921e045ab468ed0a99671ae15512cd418cf0f10512ddb7cb641853e",
+    "tools/ci/cargo_needs_postgres.sh": "d75b1877eb24a4f16168d7e26294677c5711de95444ff7484fffc8b1a2f08a29",
+    "tools/ci/postgres-cargo-map.json": "2b41e0b864e3e053bd1f6ff2ea380dce0683659297b4ee5ac88a6e06273afc54",
+    "tools/ci/postgres-partition.mjs": "99cab75623ac358c3cebbf8edc22a0164060796716362017f3bab33c7b02d5c3"
+  },
+  "head": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "status_porcelain": ""
+}

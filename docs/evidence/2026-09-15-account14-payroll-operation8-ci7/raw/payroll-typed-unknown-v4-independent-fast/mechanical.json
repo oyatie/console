@@ -1,0 +1,166 @@
+{
+  "status": "PASS_PRIVATE_SOURCE_MECHANICS_ONLY",
+  "manifest_sha256": "e14dfe66a20403ef23bba7136403000b950edfbac4f90e1b31f9cdec5ef670b0",
+  "manifest_files_verified": 32,
+  "primary_sha256": "8e54f40d01161cde6d826a14d453be7dbdab8d8ae7f72fc5e1d846494a1dc081",
+  "compatibility_sha256": "5f824ceec87f4d1bad7ec264041c3fd502a37f09a2abb153c7c60a6c9d54f72a",
+  "current_head": "796173fc484279dbb9cca103caa57e026719ffaf",
+  "four_preimages_match": true,
+  "trait_bound_sources_match": 31,
+  "primary_existing_bytes_preserved": true,
+  "primary_app_source_names": [
+    "required_app_startup_admits_only_the_installed_observer",
+    "required_api_projected_payroll_dispatch_waits_for_remote_apply",
+    "required_workflow_spawn_keeps_unknown_staging_pending_until_retry",
+    "required_api_completion_unknown_reconciles_same_command_after_replay",
+    "required_api_receipt_absent_unknown_renews_approval_with_same_command",
+    "required_api_confirmed_owner_audit_failure_replays_and_repairs",
+    "required_workflow_typed_unknown_preserves_pending_and_failed_events"
+  ],
+  "primary_sqlx_added": 4,
+  "primary_rest_added": 1,
+  "primary_contains_no_future_interface": true,
+  "workflow_tags_distinct_schema_valid": [
+    "org-typed-unknown-pending",
+    "org-typed-unknown-failed"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch"
+      ],
+      "cwd": "/private/tmp/typed-unknown-v4-review-apply-0uazoif3",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch"
+      ],
+      "cwd": "/private/tmp/typed-unknown-v4-review-apply-0uazoif3",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch"
+      ],
+      "cwd": "/private/tmp/typed-unknown-v4-review-apply-0uazoif3",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch"
+      ],
+      "cwd": "/private/tmp/typed-unknown-v4-review-apply-0uazoif3",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility.patch"
+      ],
+      "cwd": "/private/tmp/typed-unknown-v4-review-apply-0uazoif3",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/primary.patch"
+      ],
+      "cwd": "/private/tmp/typed-unknown-v4-review-apply-0uazoif3",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/post/backend/app/src/durability_composition_tests.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "sh",
+        "-n",
+        "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/run-primary.sh"
+      ],
+      "exit": 0,
+      "stderr": ""
+    }
+  ],
+  "cargo_invocations": 0,
+  "compiler_discovered": 0,
+  "runtime_executed": 0,
+  "repository_writes": 0
+}

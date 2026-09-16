@@ -1,0 +1,27 @@
+{
+  "status": "SCOPED_OWNER_EXECUTION_CONTRACT_PENDING_REVIEW",
+  "settled": [
+    "Single async domain-owned transaction with fixed restricted SQL finalizer and trusted Rust semantics",
+    "Shared command credential compromise scope explicit; no raw-DML borrowed helper fiction",
+    "Source owner binding/guard control table proposal and physical enforcement responsibilities",
+    "Source payload reference with bounded common draft item patch",
+    "Exact alias/caller census, source lock normalization and staged-byte/adoption protocol"
+  ],
+  "f01": "PARTIAL: full source/current Account/workflow/adoption nested wire and all command codecs remain",
+  "f02": "PARTIAL: two control DDL shapes and exact responsibility mapping; full helper/trigger/participant SQL and13-19 FK graph remain",
+  "f03_f08": "OPEN: retention provider issuance, actual credential/process/source supply, migration/enrollment, independent journal/current-authority recovery, execution/load harness",
+  "next_bounded_artifact": "Complete physical source/native/common participant schema and fixed finalizer signatures/bodies over the chosen boundary; retain real provider/credential prerequisites separately",
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "w04_complete": false,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "final_integrated_rounds_counted": 0,
+  "approval_sequence": [
+    "all W04 contracts coherent",
+    "authority-aligned integrated design independent4rounds and exact design SHA approval",
+    "test candidate independent review and exact test SHA approval",
+    "actual executable named RED probe admission via fanout.py"
+  ],
+  "verification_tool_assessment": "Verus conditionally recommended for actual pure Rust exec rounding/conversion and caller bounds; no Verus proof run/adoption in20; separate Rust1.98.1 configuration lane recorded; complementary DB/Cedar/storage evidence remains required"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "APPROVED_FIXTURE_CORRECTION_PENDING_FINAL_SOURCE_REVIEW",
+  "approved_by": "/root under current batch preparation instruction",
+  "independent_reviewer": "/root/preparation_recovery",
+  "before_sha256": "8d1e930fc75a60171a6af5b6356a08e3f433f95821714c95117a9d72ba51af3d",
+  "finding": "Actual PG18.6 original live SyncRep hides committed xid in procarray; receipt read returns RowNotFound. Not a product RED.",
+  "independent_source": "Official REL_18_6 xact.c1553-1557 and2365-2389; syncrep.c288-308 as reviewed by preparation_recovery",
+  "correction": "Retain same no-premature-ACK invariant. First assert receipt absent during live SyncRep, terminate exact PID+backend_start+database+application-name while waiting, await original transport error and backend disappearance, assert standby paused/receipt absent and primary receipt present, then invoke real same-command replay. Preserve existing progress witness, full Company effect count, positive after-resume control and exact result equality.",
+  "preservation": "Original source compressed here; run4 retained as falsified fixture premise. No tests skipped/deleted; no relaxed success/uniqueness/authorization expectation.",
+  "scope": "Synthetic local administrator failure injection only; not permission to terminate any external or production backend."
+}

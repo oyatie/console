@@ -1,0 +1,103 @@
+{
+  "status": "PROPOSED_STRUCTURAL_CONTRACT",
+  "families": [
+    {
+      "family_code": 1,
+      "family": "CALENDAR",
+      "native_table": "work_calendar_revisions",
+      "root_column": "calendar_id",
+      "head_table": null,
+      "revision_effect_kind": 1,
+      "claim_effect_kind": null,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    },
+    {
+      "family_code": 2,
+      "family": "ASSIGNMENT",
+      "native_table": "work_calendar_assignment_revisions",
+      "root_column": "assignment_id",
+      "head_table": null,
+      "revision_effect_kind": 1,
+      "claim_effect_kind": null,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    },
+    {
+      "family_code": 3,
+      "family": "COVERAGE",
+      "native_table": "attendance_coverage_revisions",
+      "root_column": "coverage_id",
+      "head_table": null,
+      "revision_effect_kind": 1,
+      "claim_effect_kind": null,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    },
+    {
+      "family_code": 4,
+      "family": "CLOSE_BASIS",
+      "native_table": "attendance_native_close_bases",
+      "root_column": "close_basis_id",
+      "head_table": null,
+      "revision_effect_kind": 1,
+      "claim_effect_kind": null,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    },
+    {
+      "family_code": 5,
+      "family": "QUALIFICATION",
+      "native_table": "payroll_source_qualification_revisions",
+      "root_column": "qualification_id",
+      "head_table": "payroll_source_qualification_heads",
+      "revision_effect_kind": 1,
+      "claim_effect_kind": 2,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    },
+    {
+      "family_code": 6,
+      "family": "ELIGIBILITY",
+      "native_table": "payroll_eligibility_assessment_revisions",
+      "root_column": "assessment_id",
+      "head_table": "payroll_eligibility_assessment_heads",
+      "revision_effect_kind": 1,
+      "claim_effect_kind": 2,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    },
+    {
+      "family_code": 7,
+      "family": "TAX_EVIDENCE",
+      "native_table": "payroll_tax_evidence_revisions",
+      "root_column": "evidence_id",
+      "head_table": "payroll_tax_evidence_heads",
+      "revision_effect_kind": 1,
+      "claim_effect_kind": 2,
+      "authority": "native domain owner; generated fields are structural projections, never permission"
+    }
+  ],
+  "new_tables": 0,
+  "frame_protocol_unchanged": "SOURCE_EFFECTS21",
+  "source19_event_paths": [
+    [
+      "PROPOSE@1"
+    ],
+    [
+      "PROPOSE@1",
+      "VERIFY@2"
+    ],
+    [
+      "PROPOSE@1",
+      "REVOKE@2"
+    ],
+    [
+      "PROPOSE@1",
+      "VERIFY@2",
+      "REVOKE@3"
+    ],
+    [
+      "PROPOSE@1",
+      "VERIFY@2",
+      "SUPERSEDE@3"
+    ]
+  ],
+  "claim_predecessor": "REVOKE@3, self-FK proves VERIFY@2 and PROPOSE@1 with identical admission digest",
+  "claim_successor": "exact historical VERIFY@2 created by claim command; current eligibility checked at publication separately",
+  "head_storage_refinement": "Existing proposed activated_successor_ref becomes a read projection. Store only successor_claim_command_id for revoked path; resolve successor tuple from immutable claim. SUPERSEDE path resolves native event successor tuple. No claim table."
+}

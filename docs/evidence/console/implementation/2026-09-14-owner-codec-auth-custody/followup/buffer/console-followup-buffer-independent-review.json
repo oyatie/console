@@ -1,0 +1,65 @@
+{
+  "reviewer": "/root/followup_custody_review",
+  "reviewed_at_utc": "2026-09-15T03:48:35.731512+00:00",
+  "status": "APPROVE_EXACT_SOURCE_AND_TESTS",
+  "base_sha": "3f0c4e17b661eedc0bea76e8dda649aef958aa88",
+  "finding": "Generator and link-checker execFileSync Git helpers omit maxBuffer; Node default1MiB can prevent complete index listing after evidence grows. Root observed ENOBUFS; this reviewer independently confirmed both responsible call sites and existing32MiB archive-validator precedent.",
+  "scope": [
+    "scripts/console/generate-documentation-manifest.mjs Git helper",
+    "scripts/check-doc-links.mjs Git helper",
+    "scripts/check-doc-links.test.mjs shared exact-index regression fixtures"
+  ],
+  "recommended_change": "Explicit finite32MiB maxBuffer in both existing helpers. Keep complete stdout, immutable index/blob reads, environment filtering and failures. No truncation, exclusion, catch-and-continue, or unbounded buffer.",
+  "regression_design": [
+    "Use real isolated Git repository fixture, seed sufficient non-Markdown index records referencing existing blob to produce measured ls-tree output greater than1MiB.",
+    "Separately require generator write/check and link checker success on valid large fixture.",
+    "Then add unclassified Markdown sorting after padding; require exact path admission failures from both scripts, proving tail entries still processed.",
+    "Run existing doc suite unchanged to preserve environment, blob custody, symlink, missing-record and archive rejection controls."
+  ],
+  "limits": [
+    "32MiB finite ceiling remains fail-closed; no scalability claim beyond measured fixture.",
+    "No application, security or production behavior change.",
+    "Staged evidence import still requires separate exact-tree review."
+  ],
+  "writes": "Only this review receipt.",
+  "test_design_review": {
+    "test_file_sha256": "67115c848fdd4a7f33310bd1b53b895d8ddd7812d9323d07d4aef1c72cccbff5",
+    "red_log_sha256": "96bcfb116d2bbe4b9c9b762605dfd3b4a8adf67812076b83b7ad93760ccc3e6e",
+    "observed_tests": 2,
+    "passed": 0,
+    "failed": 2,
+    "findings": [],
+    "assessment": [
+      "6000 real index entries reference a real blob; measured listing exceeds1MiB and all padding entries are counted.",
+      "Each consumer is tested independently; generator also covers write and regenerated check.",
+      "Tail Markdown is physically present and staged and must trigger exact missing-record rejection after large listing; malformed or absent path errors cannot satisfy the oracle.",
+      "RED failures occur in actual consumers at buffer/custody boundary; tail checks are currently blocked by intended earlier RED.",
+      "Existing assertions unchanged; added fixture requires no services or mock implementations."
+    ],
+    "test_commit": "c619ca0579ac0297380d2f55bb1b18a4d9315c09"
+  },
+  "source_review": {
+    "head": "5746830175803f10fbc5867278da84f0a3377728",
+    "findings": [],
+    "change": "Only explicit32MiB maxBuffer additions in both responsible Git helpers; all parse, custody, environment and failure handling unchanged.",
+    "independent_execution": {
+      "command": "node --test --test-name-pattern='large Git index' scripts/check-doc-links.test.mjs",
+      "cwd": "/private/tmp/console-documentation-buffer-20260914",
+      "exit_code": 0,
+      "executed": 2,
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "root_full_suite_evidence": {
+      "path": "/private/tmp/console-documentation-buffer-full.log",
+      "sha256": "90283010ffaab65596f7fecee557879b0c8e1e48c14e0d9040564b67d289eb3c",
+      "executed": 56,
+      "passed": 56,
+      "failed": 0,
+      "scope": "Reviewed log; not independently rerun whole suite."
+    },
+    "admission": "Reviewed lane named command against test-only clean c619ca0579ac0297380d2f55bb1b18a4d9315c09; admission receipt states all named probes RED; same probe is GREEN2.",
+    "integration_constraint": "Root may copy exact three reviewed blobs and path-specific commit while preserving staged evidence; compare staged evidence before/after and source import against5746830175803f10fbc5867278da84f0a3377728."
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "kind": "independent-auth-transport-design-review",
+  "reviewer": "/root/finish_browser",
+  "author": "/root/next_auth_context design; /root test and driver",
+  "status": "PASS_FOR_BOUNDED_TRANSPORT_READINESS_IMPLEMENTATION_AFTER_MEANINGFUL_RED_NOT_AUTHORIZATION_OR_PRODUCTION_APPROVAL",
+  "requested_source_base": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+  "observed_head": "a2aa1ff712d882a639f2be504336223a0486c3a2",
+  "source_bindings": [
+    {
+      "path": "backend/app/src/lib.rs",
+      "base_sha256": "e57e5601742b72837fd6bad174e63e396eaa6e6b6ebe0d8b516bc69286a49acd",
+      "current_sha256": "e57e5601742b72837fd6bad174e63e396eaa6e6b6ebe0d8b516bc69286a49acd",
+      "current_equal_requested_base": true
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/lib.rs",
+      "base_sha256": "b5baedb7f5e349863a02620ab1b595fb0ee4310f266ea6f484e0d272475afd82",
+      "current_sha256": "b5baedb7f5e349863a02620ab1b595fb0ee4310f266ea6f484e0d272475afd82",
+      "current_equal_requested_base": true
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/private/tmp/account-auth-pool-mechanical-guide.json",
+      "sha256": "e70d9f92f9195e9c1939edb9aa103440baf407362ef7461207ff5ce026321be8",
+      "bytes": 7112
+    },
+    {
+      "path": "/private/tmp/account-auth-pool-retention-refinement.json",
+      "sha256": "cfcfc9bfc3c5d7c8d8f7fb05ef747cb6943bc9cc0e0ff3cc74a9dec14d05219c",
+      "bytes": 4684
+    },
+    {
+      "path": "/private/tmp/account-auth-transport-readiness-candidate.rs",
+      "sha256": "ea61a10fbce81689afdbf5b3e5bf3b77ccb5e5d2e278a41ca52b28c2d00078bf",
+      "bytes": 20491
+    },
+    {
+      "path": "/private/tmp/account-auth-transport3-driver.sh",
+      "sha256": "bac6c8b4563cd58793adcf93b7fa47d2c02b737983bf0f37fad33d4faf03d27d",
+      "bytes": 8454
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-driver.sh",
+      "sha256": "612b5907632d090023dfa5320c59fbbbcb2709579f0d05f6c409e5c47805beb2",
+      "bytes": 8454
+    },
+    {
+      "path": "/private/tmp/account-auth-transport3-probe.py",
+      "sha256": "6e25fc7aaad1692b6fda64f95c4771bae4131ff2cfb93fa15d717df75e064c2d",
+      "bytes": 393
+    },
+    {
+      "path": "/private/tmp/account-auth-transport4-probe.py",
+      "sha256": "b207a90053d3b227345df8a7e7d9d7569744b8baa1e877600d9c5bd1f02f4875",
+      "bytes": 393
+    },
+    {
+      "path": "/private/tmp/account-auth-transport3-driver-independent-review.json",
+      "sha256": "88caca1fbd031fb660989b492f511e1df1eae5db7aa77e1f4c65e61f6040ddc4",
+      "bytes": 4809
+    }
+  ],
+  "decision": {
+    "retention": "Approve refinement superseding duplicate AppState field. AuthRestState owns private Option<PgPool>; existing AppState ownership and router clones retain same actual pool. Preserve legacy business pool and existing constructor signatures. Builder and immediate readyz accessor have actual consumers.",
+    "admission": "AppState::from_config is the actual API/configured-business/enabled-auth admission point before background work. Reuse connect_command_pool for existing authenticated-role/reset/timeout checks. Fixed AUTH_DATABASE_URL errors must not stringify secret-bearing driver details.",
+    "readiness": "Reuse readiness_dependency_status with existing DatabaseDependency view and require configured AND ready for required auth. NotConfigured.healthy() alone is insufficient. Preserve nonrequired mode behavior. No response schema expansion required.",
+    "target_check": "Approve equality of live current_database/name, pg_database OID, non-null inet_server_addr and inet_server_port as same-observed-target STARTUP check only; errors/null/difference refuse. This intentionally preserves aliases reaching the same reported endpoint while refusing some valid alternate endpoints."
+  },
+  "adversarial_limits": [
+    {
+      "finding": "Endpoint/name/OID is not globally unique physical authority. Independent cloned clusters can share private server address, port, database name and OID. Proxy/NAT routing can hide distinct upstreams.",
+      "disposition": "Accepted bounded limitation only. Do not describe equality as proof of physical same database or tenant/fence authorization."
+    },
+    {
+      "finding": "Startup metadata readback does not bind later pool reconnects, prevent DNS/proxy retargeting, or prove primary status, timeline, replay freshness or serving generation. SELECT 1 readiness only proves transport availability.",
+      "disposition": "Explicit HOLD for actual authoritative fence-consumer and production topology/HA guarantee. No migration/privilege/nonce mechanism added merely to overclaim this lane."
+    },
+    {
+      "finding": "Same logical database accessed through IPv4/IPv6/listener differences can report unequal server addresses.",
+      "disposition": "Intentional fail-closed support boundary; deployment must use admitted compatible routing. Do not claim arbitrary alias/proxy support."
+    },
+    {
+      "finding": "AppState::new remains synchronous composition and can construct enabled auth with missing retained pool.",
+      "disposition": "Required-mode readyz must return503; production entrypoint remains from_config. No claim every synthetic constructor independently admits serving credentials."
+    }
+  ],
+  "test_review": {
+    "candidate_selected_names": [
+      "account_fence_transport_same_database_real_startup_control",
+      "account_fence_transport_other_database_cannot_silently_report_absence",
+      "account_fence_transport_startup_consumes_configured_auth_credential",
+      "account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_outage"
+    ],
+    "static_selected_count": 4,
+    "other_refresh_tests": 3,
+    "compiler_discovered": null,
+    "executed_by_reviewer": 0,
+    "assessment": "Readiness regression has genuine healthy startup, retained session witness, auth-only NOLOGIN plus exact backend termination, SQLSTATE28000 positive fault witness, all other serving-role controls and exact custody verdict,503 on same router, full role restoration and200 recovery on same state. Stronger than presence-only field assertions.",
+    "conditions": [
+      "Use exclusively owned disposable cluster with serial filter; cluster-global role mutation must never target shared cluster. Existing reviewed driver retains this setup.",
+      "Inspect actual4 discovered/executed cases and failure location; selected filter is not itself a count oracle.",
+      "Test does not cover missing-required-pool, reconnect target changes, authority freshness, session fencing, field policy or HA. Preserve existing mode/parser/identity tests as regressions.",
+      "Panic restoration is present; process death is contained by disposable cluster cleanup, not guaranteed SQL restoration."
+    ]
+  },
+  "driver_review": {
+    "exact3_to4_substitution_only": true,
+    "driver_label_replacements": 1,
+    "probe_name_prefix_replacements": 2,
+    "bash_syntax_exit": 0,
+    "python_ast": "PASS",
+    "inherited_review": "/private/tmp/account-auth-transport3-driver-independent-review.json",
+    "unchanged": "Filter, serial runner, pinned image,4GiB tmpfs, actual source snapshot, cleanup and Cargo behavior byte-preserved. No services executed by reviewer."
+  },
+  "smallest_fit_alternatives": {
+    "chosen": "Single retained auth pool in AuthRestState using existing connect and readiness helpers.",
+    "rejected": [
+      "Duplicate AppState.auth_database retention creates needless state synchronization.",
+      "Raw DSN string equality conflates deliberately different credentials and host spellings.",
+      "Name/OID alone is weaker than observed endpoint comparison.",
+      "New pg_control_system grants, nonce tables or advisory handshake exceed bounded lane and still require authority/topology design."
+    ]
+  },
+  "remaining_holds": [
+    "Actual Account fence request-context/prewrite activation requires its own meaningful RED and authority review.",
+    "Physical cluster/serving generation/restore/failover/current-authority and production exposure remain unproved.",
+    "Behavioral RED/GREEN and actual counts must be supplied by root run."
+  ],
+  "blocking_findings_for_bounded_design": [],
+  "performed": [
+    "Read exact requested base AppState::from_config, connect_command_pool, readyz and AuthRestState source.",
+    "Read guide, refinement and readiness candidate; compare source hashes with moving HEAD.",
+    "Verify exact whole-file driver/probe substitution and syntax only.",
+    "No repository source, DB, grants, Docker or Cargo execution/mutation."
+  ]
+}

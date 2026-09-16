@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/followup_custody_review",
+  "reviewed_at_utc": "2026-09-15T03:45:29.851337+00:00",
+  "decision": "APPROVE_FROZEN_HISTORICAL_EVIDENCE_RETENTION_ONLY",
+  "candidate": "/private/tmp/console-followup-final-evidence-candidate",
+  "manifest_sha256": "5f9766b4dcd3c232580a57866dbec2a5408f6bcf4ad7f5e181d01db2ea8a8373",
+  "source_candidate": "3f0c4e17b661eedc0bea76e8dda649aef958aa88",
+  "counts": {
+    "indexed_payloads": 74,
+    "filesystem_sources": 54,
+    "exact_git_blob_sources": 20,
+    "payload_bytes": 2636857,
+    "files_including_manifest": 75
+  },
+  "checks": [
+    "Every retained payload has the indexed hash and size and exact source bytes; 20 Git snapshots independently compared with git show.",
+    "No duplicate retained paths, unindexed files, symlinks, or path escapes.",
+    "Retained original69 manifest hashes to 3a1c140502c89103dd44dd80147406240075ca62fbd17e8870f0147774df1fbf; first69 records and payloads remain unchanged.",
+    "Core166 manifest remains 18a1791a9527b8f76e488c5ca889f4bdeebead0a7c9eaae0b0338538b452bf62 and supplement109 remains 5357c82c0a248b405580f6b09f65cd87aa2e515fb780f519b309564692270cba; all their retained hashes, sizes, and closure rechecked.",
+    "Completed log exact hash a460258f5dd22bff53c382930de9ef6fa87e1bfd3b952c5a3d09475f3b62ee3b and 602665 bytes; footer supports fast local PASS.",
+    "Fresh independent root HEAD readback is 3f0c4e17b661eedc0bea76e8dda649aef958aa88 with clean porcelain status.",
+    "Approval proposal remains explicitly pending/not applied; three source file hashes and sizes match exact base Git blobs."
+  ],
+  "verification_interpretation": {
+    "fast_command_groups": 78,
+    "hosted_steps_not_mirrored": 21,
+    "raw_node_summary_lines": 182,
+    "raw_rust_summary_lines": 323,
+    "rust_summaries_with_ignored_cases": 3,
+    "aggregate_unique_tests": "Not inferred; repeated commands, nested reports, filtered and ignored cases do not establish unique executed coverage.",
+    "process_exit": "Root execution receipt attributes exit0 to earlier tool-session observation; this reviewer independently reads final log, not that terminated tool session.",
+    "limits": [
+      "No actual database, recovery-service, browser E2E, HA, release, legal or production certification inferred.",
+      "Historical Account36 after-order run remains33PASS3FAIL and projection37 remains4PASS33FAIL at their own historical heads.",
+      "Receipt raw summaries are byte-present in log; this does not mean independent rerunning of tests.",
+      "Fixture-collision diagnosis remains supported hypothesis, not instrumented causal proof."
+    ]
+  },
+  "secret_and_custody_review": {
+    "approach": "Bounded pattern inspection across indexed text payloads and contextual source-path/URL-host examination; not exhaustive secret certification.",
+    "findings": "No private-key blocks, AWS access-key markers, GitHub PAT markers, or long Bearer literals matched. Credential-bearing URLs occur in retained source fixtures/workflow declarations, with db, localhost or127.0.0.1 hosts; no credential URL found in final full-verification log.",
+    "limits": "Internal filesystem paths, workflow configuration and fixture credentials remain historical source evidence; approval is for local repository retention, not publication."
+  },
+  "import_constraints": [
+    "Copy three trees byte-for-byte and preserve their manifests.",
+    "Place this review outside indexed trees.",
+    "Register sole actual Markdown retained payload as frozen evidence before documentation projection checks.",
+    "Retain failed logs even when filenames misleadingly contain green.",
+    "Keep pending privilege request, production HOLDs and whole-Console incompleteness explicit.",
+    "Perform independent staged import diff review before final custody commit."
+  ],
+  "blocking_findings": [],
+  "writes": "Only this detached review receipt; no source or candidate changes."
+}

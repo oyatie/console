@@ -1,0 +1,85 @@
+{
+  "owner": "/root/finish_migration",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "approved_design_test_sha": "4655c084071999a3f2c2d49c9d361f9011ccaa61",
+  "status": "DIFF_READY_FOR_ROOT_COMMIT_AND_INDEPENDENT_REVIEW",
+  "user_override": "User explicitly authorized native subagent implementation without fanout.py; no product/interface/FK exception authority inferred.",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "changed_paths": [
+    "backend/crates/platform/authz/src/cedar_pbac/authoring.rs",
+    "backend/crates/platform/authz/src/cedar_pbac/engine.rs"
+  ],
+  "patch_sha256": "5586b00d4461fa4660251dccc1e6c2c08b39b97527f9e8da8db0e047daf2ecbc",
+  "callers": "engine evaluate -> runtime parity boundary; authoring simulate -> authz-rest store simulate/live authorize and row/field helpers. Shared diagnostic guard covers both runtime and authorized what-if outputs; retains errors and determining IDs.",
+  "commands": [
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_diagnostic_fail_closed",
+      "phase": "RED",
+      "log": "red.log",
+      "exit_code": 101,
+      "discovered": 5,
+      "executed": 5,
+      "passed": 2,
+      "behavioral_failed": 3
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-authz --test cedar_diagnostic_fail_closed",
+      "phase": "GREEN",
+      "log": "green.log",
+      "exit_code": 0,
+      "discovered": 5,
+      "executed": 5,
+      "passed": 5
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-authz",
+      "log": "package.log",
+      "exit_code": 101,
+      "discovered": 153,
+      "runner_executed": 153,
+      "passed": 144,
+      "prerequisite_failed": 9,
+      "failed_domain_bodies_executed": 0,
+      "reason": "9SQLx tests require DATABASE_URL; not present. 96lib+5diagnostic+5legacy+2readiness+36nonDBpolicy passed. No tests deleted/changed/ignored/filtered."
+    },
+    {
+      "command": "rustup run 1.98.1 rustfmt --edition 2024 --check backend/crates/platform/authz/src/cedar_pbac/engine.rs backend/crates/platform/authz/src/cedar_pbac/authoring.rs",
+      "log": "fmt.log",
+      "exit_code": 0
+    },
+    {
+      "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo clippy --locked --manifest-path backend/Cargo.toml -p console-platform-authz --all-targets -- -D warnings",
+      "log": "clippy.log",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "pre_mortem": "Another matching permit masks failing Cedar policy, or tightening runtime decisions destroys authorized simulator explanation. Existing diagnostic tests and96library tests verify refusal and retained clean decisions/explanations.",
+  "blast_radius": "Both shared Cedar evaluators and all actual callers; no grants, source schema, DB or public interface changed.",
+  "rollback": "Scoped revert of two owner changes; no data effects.",
+  "stop_conditions": "Unexpected contract/interface requirement, changed tests or outside-owned paths; none encountered.",
+  "holds": [
+    "Independent exact committed candidate review by root-designated reviewer.",
+    "9DB-backed policy cases not behaviorally executed due absent DATABASE_URL; no full DB/runtime deployment claim.",
+    "Full native slice, formal proof/production/legal acceptance remain separate.",
+    "FK exception unapplied."
+  ],
+  "artifacts": {
+    "fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "candidate.patch": "5586b00d4461fa4660251dccc1e6c2c08b39b97527f9e8da8db0e047daf2ecbc",
+    "red.log": "e2bf1675f4d8ae754086ead5d3e913c00d04fc603de0b509e93633e5e5accee2",
+    "green.log": "1307b5d0b254c4f5c326925aeaf1824fe96ff7da7e1f3ca819a05c5cae65f989",
+    "clippy.log": "b9f0d08033c7c048b9722b306a31d3efe5dfd738fd41bbc0de0bb8cca04d4eca",
+    "dispatch-contract.json": "918dd44c24a7dc3d7eda5480bb324576450011a0db66d43ef259380bf40bb2dd",
+    "package.log": "02ab089dddc452a7619f5c81369a535f0e4e7ba4746459002f6e76e54193c01e"
+  }
+}

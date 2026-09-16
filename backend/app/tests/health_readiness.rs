@@ -34,7 +34,9 @@ async fn readyz_is_ready_without_configured_dependencies() -> Result<(), Box<dyn
 #[tokio::test]
 async fn readyz_returns_503_when_configured_database_is_unreachable()
 -> Result<(), Box<dyn std::error::Error>> {
-    let config = app_config(AppRole::Api)?;
+    let mut config = app_config(AppRole::Api)?;
+    config.database_durability =
+        Some(console_platform_db::durability::DurabilityPolicy::local_development());
     let pool = PgPoolOptions::new()
         .max_connections(1)
         .acquire_timeout(Duration::from_millis(100))
@@ -271,8 +273,17 @@ mod authorized {
             .unwrap()
     }
 
-    fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
+    async fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &runtime_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let config = AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
             ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
@@ -280,7 +291,9 @@ mod authorized {
             ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
         ])
         .unwrap();
-        AppState::new(config, DatabaseDependency::Postgres(runtime_pool)).unwrap()
+        AppState::new(config, DatabaseDependency::Postgres(runtime_pool))
+            .map(|state| state.with_auth_database(auth_database))
+            .unwrap()
     }
 
     async fn seed_user(pool: &PgPool, org: OrgId, user: UserId, role: &str) {
@@ -298,6 +311,7 @@ mod authorized {
         let pay_run = PgPayRunPort::new(
             runtime_role_pool(pool).await,
             tokio::runtime::Handle::current(),
+            console_platform_db::durability::DurabilityPolicy::local_development(),
         );
         let created = {
             let port = pay_run.clone();
@@ -549,8 +563,9 @@ mod authorized {
         (status, String::from_utf8(bytes.to_vec()).unwrap())
     }
 
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_shell_omits_runs_unless_payroll_run_read(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let super_admin = UserId::new();
@@ -559,10 +574,9 @@ mod authorized {
         seed_user(&pool, org, member, "MEMBER").await;
         let run = seed_run(&pool, org, super_admin).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(
+            jwt_app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await,
+        );
 
         let (status, unauth) = get_ui(service.clone(), None).await;
         assert_eq!(status, StatusCode::OK, "{unauth}");
@@ -621,8 +635,9 @@ mod authorized {
         .unwrap();
     }
 
-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+    #[sqlx::test(migrations = false)]
     async fn ui_shipping_screens_deny_by_omission(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let super_admin = UserId::new();
@@ -633,10 +648,9 @@ mod authorized {
         let run = seed_run(&pool, org, super_admin).await;
         let heads = seed_heads(&pool, org, super_admin).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(
+            jwt_app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await,
+        );
         let admin = bearer(&keys, org, super_admin, "SUPER_ADMIN");
         let member_tok = bearer(&keys, org, member, "MEMBER");
 
@@ -754,6 +768,7 @@ mod authorized {
     /// ADR-0025 §4 persona real-backend E2E on `/`, `/organization`, `/hr`, `/payroll`.
     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
     async fn ui_persona_e2e(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
         let keys = keys();
         let org = OrgId::knl();
         let member = UserId::new();
@@ -782,10 +797,9 @@ mod authorized {
         seed_user(&pool, other_org, foreign, "SUPER_ADMIN").await;
         grant_group_viewer(&pool, other_org, foreign).await;
 
-        let service = build_router(jwt_app_state(
-            runtime_role_pool(&pool).await,
-            keys.public_pem.clone(),
-        ));
+        let service = build_router(
+            jwt_app_state(runtime_role_pool(&pool).await, keys.public_pem.clone()).await,
+        );
         let member_tok = bearer(&keys, org, member, "MEMBER");
         let admin_tok = bearer(&keys, org, admin, "ADMIN");
         let exec_tok = bearer(&keys, org, executive, "EXECUTIVE");
@@ -951,5 +965,166 @@ mod authorized {
             "SUPER_ADMIN must see the same authorized contract rows: {super_html}"
         );
         assert_ui_invariants(&super_html);
+    }
+
+    mod tenant_observation {
+        // Paired production SSR observations. Authenticated inputs remain
+        // fixed while only a separate customer Group's records change.
+        use super::*;
+        use console_platform_test_support::{
+            TestDatabaseLogin, login_test_pool, seed_org_and_super_admin,
+        };
+
+        async fn observe(
+            service: axum::Router,
+            path: &str,
+            token: &str,
+        ) -> (StatusCode, http::HeaderMap, Vec<u8>) {
+            let response = service
+                .oneshot(
+                    Request::builder()
+                        .uri(path)
+                        .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                        .header(
+                            "traceparent",
+                            "00-11111111111111111111111111111111-2222222222222222-01",
+                        )
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let status = response.status();
+            let headers = response.headers().clone();
+            let bytes = to_bytes(response.into_body(), 1024 * 1024)
+                .await
+                .unwrap()
+                .to_vec();
+            (status, headers, bytes)
+        }
+
+        #[sqlx::test(migrations = false)]
+        async fn foreign_group_mutations_do_not_influence_authorized_ssr_bytes(pool: PgPool) {
+            console_platform_test_support::prepare_account_test_database(&pool).await;
+            let keys = keys();
+            let a = OrgId::knl();
+            let actor_a = UserId::new();
+            seed_user(&pool, a, actor_a, "SUPER_ADMIN").await;
+            grant_group_viewer(&pool, a, actor_a).await;
+            let run_a = seed_run(&pool, a, actor_a).await;
+            let b = OrgId::new();
+            let actor_b = seed_org_and_super_admin(&pool, *b.as_uuid(), "PRIVATE-GROUP-B").await;
+            grant_group_viewer(&pool, b, actor_b).await;
+            let group_a: Uuid =
+                sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
+                    .bind(a.as_uuid())
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap();
+            let group_b: Uuid =
+                sqlx::query_scalar("SELECT group_id FROM organizations WHERE id=$1")
+                    .bind(b.as_uuid())
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap();
+            assert_ne!(
+                group_a, group_b,
+                "this is cross-tenant, not intra-Group Company separation"
+            );
+            let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            let service =
+                build_router(jwt_app_state(runtime.clone(), keys.public_pem.clone()).await);
+            let token_a = bearer(&keys, a, actor_a, "SUPER_ADMIN");
+            let token_b = bearer(&keys, b, actor_b, "SUPER_ADMIN");
+            let paths = ["/_ui", "/_ui/organization", "/_ui/hr", "/_ui/payroll"];
+            let mut baseline = Vec::new();
+            for path in paths {
+                let first = observe(service.clone(), path, &token_a).await;
+                assert_eq!(first.0, StatusCode::OK);
+                let html = std::str::from_utf8(&first.2).unwrap();
+                assert_ne!(
+                    html,
+                    console_payroll_ui::render_shell(),
+                    "authorized nonempty control at {path}"
+                );
+                if path == "/_ui" || path == "/_ui/organization" {
+                    assert!(
+                        html.contains(&format!("data-org-id=\"{}\"", a.as_uuid())),
+                        "own organization row must be visible"
+                    );
+                }
+                if path == "/_ui" || path == "/_ui/hr" {
+                    assert!(
+                        html.contains(&format!("data-person-id=\"{}\"", actor_a.as_uuid())),
+                        "own person row must be visible"
+                    );
+                }
+                for hidden in [
+                    b.as_uuid().to_string(),
+                    actor_b.as_uuid().to_string(),
+                    "PRIVATE-GROUP-B".to_owned(),
+                ] {
+                    assert!(
+                        !html.contains(&hidden),
+                        "foreign baseline identifier/name must be omitted"
+                    );
+                }
+                if path == "/_ui" || path == "/_ui/payroll" {
+                    assert!(
+                        html.contains(&format!("data-run-id=\"{run_a}\"")),
+                        "own run must be visible"
+                    );
+                }
+                assert_eq!(
+                    first,
+                    observe(service.clone(), path, &token_a).await,
+                    "identical authorized baseline must be stable at {path}"
+                );
+                baseline.push(first);
+            }
+            // Two native-owner writes exercise change of foreign listing rows,
+            // IDs/counts/order, including data serialized into island props.
+            for phase in 0..2 {
+                let run_b = seed_run(&pool, b, actor_b).await;
+                let changed =
+                    sqlx::query("UPDATE users SET display_name=$1 WHERE id=$2 AND org_id=$3")
+                        .bind(format!("PRIVATE-B-DIAGNOSTIC-{phase}-급여"))
+                        .bind(actor_b.as_uuid())
+                        .bind(b.as_uuid())
+                        .execute(&pool)
+                        .await
+                        .unwrap();
+                assert_eq!(
+                    changed.rows_affected(),
+                    1,
+                    "foreign name mutation must reach one actual row"
+                );
+                let b_control = observe(service.clone(), "/_ui", &token_b).await;
+                assert_eq!(b_control.0, StatusCode::OK);
+                assert!(
+                    std::str::from_utf8(&b_control.2)
+                        .unwrap()
+                        .contains(&format!("PRIVATE-B-DIAGNOSTIC-{phase}-급여")),
+                    "foreign changed name visible to its own authorized principal"
+                );
+                assert!(
+                    std::str::from_utf8(&b_control.2)
+                        .unwrap()
+                        .contains(&format!("data-run-id=\"{run_b}\"")),
+                    "foreign fixture is visible to its own authorized principal"
+                );
+                for (index, path) in paths.into_iter().enumerate() {
+                    let after = observe(service.clone(), path, &token_a).await;
+                    assert_eq!(after.0, baseline[index].0, "status at {path}");
+                    assert_eq!(after.1, baseline[index].1, "all headers at {path}");
+                    assert!(
+                        after.2 == baseline[index].2,
+                        "foreign-only mutation must not influence complete SSR bytes at {path}"
+                    );
+                }
+            }
+            drop(service);
+            runtime.close().await;
+        }
     }
 }

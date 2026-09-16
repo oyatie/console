@@ -1,0 +1,62 @@
+{
+  "base": "58b6f758ac2a49b28589b9506628a43b6158e925",
+  "authored_test_bodies": [
+    "native_owner_chain_produces_complete_nonpayable_review",
+    "native_first_prepare_is_durable_pending_before_terminal_effects",
+    "native_prepare_replay_returns_same_receipt_without_second_input",
+    "native_calculation_replay_returns_same_money_and_receipt",
+    "native_same_draft_control_command_changed_input_refuses",
+    "native_owner_wage_change_after_building_prevents_old_activation",
+    "native_blocked_population_cannot_close",
+    "native_two_original_calculate_intents_have_one_current_winner",
+    "review_partial_approvals_do_not_produce_completion",
+    "review_second_account_of_same_human_cannot_self_approve",
+    "native_expected_run_id_is_not_defaulted",
+    "native_expected_run_revision_is_not_defaulted",
+    "native_expected_input_revision_is_not_defaulted",
+    "native_expected_input_revision_null_is_not_defaulted",
+    "native_expected_calculation_revision_is_not_defaulted",
+    "native_expected_close_basis_null_is_not_defaulted",
+    "native_expected_review_cycle_id_is_not_defaulted"
+  ],
+  "authored_count": 17,
+  "cargo_discovered": 0,
+  "executed": 0,
+  "rust_compiled": false,
+  "classification": "AUTHORED_SOURCE_INTERFACE_BLOCKED_NOT_PRODUCT_RED",
+  "OWNER_IMPLEMENTATION_PREREQUISITE": [
+    "R2 exact proposed account/session/context/serving/worker/binder/owner modules and DTOs",
+    "Native18 physical schema and fixed actual owners; SQL readback queries are authored here",
+    "Approved closed owner no-effect observations and exact stale/blocked error variants",
+    "Actual owner read_current_reviewer_identity and read_review_decision_history fixed authenticated reads",
+    "Native retained writer/codec/source and protection integration",
+    "Cargo target and admitted clean-tree RED probe only after source/API independent review"
+  ],
+  "SOURCE_NOT_AUTHORED": [
+    {
+      "scope": "Initial Account/Company/Human/Employment/current profile/scope/issuer/docs/source19+24 authority bootstrap",
+      "boundary": "Subsequent fixture-bootstrap lane; this seed loader is NOT an implementation of bootstrap and cannot certify fake refs."
+    },
+    {
+      "scope": "All four nullable RunExpected old/current reference transitions after real reopen/reprepare/review history, including nonnull review_cycle_id\u2192null legal transition",
+      "boundary": "Subsequent native-control-history lane; S1 has all-six isolated changes plus input_revision null, complete current reads and positive native workflow. R2 both-nullable wording was wrong: there are four nullable fields."
+    },
+    {
+      "scope": "Deterministic lock rendezvous and unknown-COMMIT fault injection for native28 actual owner protocols",
+      "boundary": "Subsequent native recovery lane; S1 two-intent concurrency body is authored but does not establish deterministic scheduler rendezvous."
+    },
+    {
+      "scope": "Native protected retention two distinct obligations, late-hold and disposal owner fixtures/assertion bodies",
+      "boundary": "Subsequent protection/native integration lane; R2 alias byte assertions do not cover physical protections."
+    },
+    {
+      "scope": "Non-native registrations remaining assertion dimensions",
+      "boundary": "Exact55 assignment in registration-coverage.json; JSON payloads are schema examples only."
+    },
+    {
+      "scope": "Actual Rust native28 retained writer/decoder assertions against independent goldens, hostile DB custody mutation and streaming budgets",
+      "boundary": "Subsequent native-codec integration lane; R2 Python decoder reference results do not substitute for owner Rust evidence."
+    }
+  ],
+  "fixture_isolation": "Each scenario requires distinct actual authenticated Company/population from seed index;0 bootstrap execution claimed."
+}

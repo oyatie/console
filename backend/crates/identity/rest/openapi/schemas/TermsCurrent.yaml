@@ -1,0 +1,19 @@
+type: object
+additionalProperties: false
+required:
+- terms_version
+- terms_revision
+- manifest_url
+properties:
+  terms_version:
+    type: string
+    pattern: '^[0-9a-f]{64}$'
+    description: SHA-256 digest of the exact current manifest bytes.
+  terms_revision:
+    type: string
+    pattern: '^[1-9][0-9]*$'
+    description: Positive current terms revision encoded as a decimal string.
+  manifest_url:
+    type: string
+    pattern: '^/api/v2/auth/terms/manifests/[0-9a-f]{64}$'
+    description: Canonical relative manifest URL whose final segment equals terms_version.

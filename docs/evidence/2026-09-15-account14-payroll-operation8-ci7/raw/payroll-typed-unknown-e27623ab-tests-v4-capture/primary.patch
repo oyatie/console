@@ -1,0 +1,746 @@
+diff --git a/backend/app/src/durability_composition_tests.rs b/backend/app/src/durability_composition_tests.rs
+--- a/backend/app/src/durability_composition_tests.rs
++++ b/backend/app/src/durability_composition_tests.rs
+@@ -1020,3 +1020,671 @@
+     replica.close().await;
+     println!("durability-composition: actual_workflow_spawn_unknown_retry PASS");
+ }
++
++async fn publish_unknown_payroll_type(
++    router: &axum::Router,
++    author: &str,
++    approver: &str,
++    actor: UserId,
++    control_points: Value,
++) -> Value {
++    // Reuse the existing real HTTP author/review/approval/publish sequence.
++    // No owner UPDATE of lifecycle, forged approval, or manual port registry.
++    let created = request(router.clone(), "POST", "/api/v1/ontology/object-types", author, None, json!({
++        "stable_key":"canonical.pay_run", "title":"Payroll composition fixture",
++        "title_property_key":"label", "backing_kind":"projected",
++        "backing_table":"payroll_draft_runs", "primary_key_property":"id",
++        "properties":[{"key":"label","title":"Label","field_type":"text","config":{},"required":true}],
++        "links":[], "analytics":[], "actions":[{
++            "stable_key":"create_run","title":"Create blocked draft","params_schema":{},
++            "edits":[],"submission_criteria":[],"side_effects":[],
++            "dispatch":"projected_usecase","dispatch_target":"payroll.create_run",
++            "control_points":control_points
++        }]
++    })).await;
++    assert_eq!(
++        created.status,
++        StatusCode::CREATED,
++        "actual authoring prerequisite: {:?}",
++        created.body
++    );
++    let id = created.body["id"].clone();
++    assert!(id.as_str().and_then(|s| Uuid::parse_str(s).ok()).is_some());
++    let reviewed = request(
++        router.clone(),
++        "POST",
++        "/api/v1/ontology/object-types/canonical.pay_run/lifecycle",
++        author,
++        Some(created.etag.as_deref().unwrap()),
++        json!({"to_state":"review_pending"}),
++    )
++    .await;
++    assert_eq!(
++        reviewed.status,
++        StatusCode::OK,
++        "real review transition prerequisite: {:?}",
++        reviewed.body
++    );
++    let revision = reviewed.body["key_write_revision"].as_i64().unwrap();
++    let request_ref = Uuid::new_v4();
++    let requested = request(
++        router.clone(),
++        "POST",
++        "/api/v1/governance/approvals",
++        author,
++        None,
++        json!({
++            "request_ref":request_ref,"kind":"ontology.schema.publish","target_ref":id,
++            "payload_summary":{"key_revision":revision}
++        }),
++    )
++    .await;
++    assert_eq!(
++        requested.status,
++        StatusCode::CREATED,
++        "real approval request: {:?}",
++        requested.body
++    );
++    let decided = request(
++        router.clone(),
++        "POST",
++        "/api/v1/governance/approvals/decide",
++        approver,
++        None,
++        json!({
++            "request_ref":request_ref,"kind":"ontology.schema.publish",
++            "requested_by":actor.as_uuid(),"decision":"approved"
++        }),
++    )
++    .await;
++    assert_eq!(
++        decided.status,
++        StatusCode::CREATED,
++        "distinct principal approval: {:?}",
++        decided.body
++    );
++    let published = request(
++        router.clone(),
++        "POST",
++        "/api/v1/ontology/object-types/canonical.pay_run/lifecycle",
++        author,
++        Some(reviewed.etag.as_deref().unwrap()),
++        json!({"to_state":"published"}),
++    )
++    .await;
++    assert_eq!(
++        published.status,
++        StatusCode::OK,
++        "real publication prerequisite: {:?}",
++        published.body
++    );
++    assert_eq!(published.body["lifecycle_state"], "published");
++    id
++}
++
++async fn unknown_staging_observer(
++    owner: &PgPool,
++    org: OrgId,
++    event: Uuid,
++    run: Uuid,
++    not_before: OffsetDateTime,
++    prior_status: &str,
++) -> Backend {
++    tokio::time::timeout(Duration::from_secs(4), async {
++        loop {
++            if let Some(backend) = confirmation_backend(owner, not_before).await {
++                return backend;
++            }
++            let snapshot = workflow_snapshot(owner, org, event, run).await;
++            assert_eq!(
++                snapshot["event"]["status"], prior_status,
++                "DURABILITY_COMPOSITION_WORKER_PREMATURE_ACK: no Required observer before delivery"
++            );
++            tokio::time::sleep(Duration::from_millis(10)).await;
++        }
++    })
++    .await
++    .expect("actual staging owner's native confirmation query")
++}
++
++// Next reviewed boundary slice. Existing three composition cases above remain unchanged.
++const COMPLETION_UNKNOWN_MESSAGE: &str = "Completion could not be confirmed. Retry after service recovery with the original command_id and unchanged business input. A consumed approval may need renewal for the same action and target.";
++
++struct UnknownApi {
++    state: AppState,
++    router: axum::Router,
++    org: OrgId,
++    author: String,
++    actor: UserId,
++    approver: String,
++    payload: Value,
++    command: Uuid,
++    run: Uuid,
++}
++
++async fn unknown_api(owner: &PgPool, timeout_ms: u64, four_eyes: bool) -> UnknownApi {
++    let descriptor = setup(owner, timeout_ms).await;
++    let org = OrgId::from_uuid(Uuid::new_v4());
++    let actor = seed_org_and_super_admin(owner, *org.as_uuid(), "unknown-author").await;
++    let approver = seed_org_and_super_admin(owner, *org.as_uuid(), "unknown-approver").await;
++    assert_ne!(actor, approver);
++    let auth = login_test_pool(owner, TestDatabaseLogin::Auth).await;
++    for subject in [actor, approver] {
++        assert!(
++            !sqlx::query_scalar::<_, bool>("SELECT public.account_legacy_fenced_v1($1)")
++                .bind(subject.as_uuid())
++                .fetch_one(&auth)
++                .await
++                .unwrap()
++        );
++    }
++    auth.close().await;
++    let key = SigningKey::random(&mut OsRng);
++    let private_key = key.to_pkcs8_pem(LineEnding::LF).unwrap();
++    let public_key = key
++        .verifying_key()
++        .to_public_key_pem(LineEnding::LF)
++        .unwrap();
++    let issuer = JwtIssuer::from_es256_pem(
++        JwtSettings {
++            issuer: ISSUER.into(),
++            audience: AUDIENCE.into(),
++            access_token_ttl: time::Duration::minutes(15),
++        },
++        private_key.as_bytes(),
++        public_key.as_bytes(),
++    )
++    .unwrap();
++    let author_token = issue(&issuer, actor, org);
++    let approver_token = issue(&issuer, approver, org);
++    let state = start(config(owner, AppRole::Api, &descriptor, Some(&public_key))).await;
++    let router = build_router(state.clone());
++    let object_type = publish_unknown_payroll_type(
++        &router,
++        &author_token,
++        &approver_token,
++        actor,
++        if four_eyes {
++            json!(["authority", "four_eyes"])
++        } else {
++            json!(["authority"])
++        },
++    )
++    .await;
++    let command = Uuid::new_v4();
++    let run = Uuid::new_v4();
++    let payload = json!({
++        "object_type_id":object_type,"instance_id":run,"command_id":command,
++        "reason":"typed completion boundary","valid_from":"2026-06-01T00:00:00Z",
++        "params":{"run_id":run,"period_start":[2026,152],"period_end":[2026,181],"connector":"m2","job":"payroll_draft"}
++    });
++    UnknownApi {
++        state,
++        router,
++        org,
++        author: author_token,
++        actor,
++        approver: approver_token,
++        payload,
++        command,
++        run,
++    }
++}
++
++async fn unknown_execute(api: &UnknownApi, payload: Value) -> HttpResult {
++    tokio::time::timeout(
++        Duration::from_secs(8),
++        request(
++            api.router.clone(),
++            "POST",
++            "/api/v1/ontology/actions/create_run/execute",
++            &api.author,
++            None,
++            payload,
++        ),
++    )
++    .await
++    .expect("bounded actual action response")
++}
++
++fn assert_completion_unknown(response: &HttpResult) {
++    assert_eq!(
++        response.status,
++        StatusCode::SERVICE_UNAVAILABLE,
++        "typed owner uncertainty must have its public outcome: {:?}",
++        response.body
++    );
++    assert_eq!(
++        response.body,
++        json!({"error": {
++            "code":"completion_unknown", "message":COMPLETION_UNKNOWN_MESSAGE
++        }}),
++        "existing error envelope only; no diagnostics or invented command field"
++    );
++}
++
++async fn unknown_native_waiter(owner: &PgPool, boundary: OffsetDateTime) -> Backend {
++    tokio::time::timeout(Duration::from_secs(2), async {
++        loop {
++            // Relation locks distinguish the actual payroll owner transaction
++            // from authentication/governance/audit COMMITs on the same app pool.
++            let rows: Vec<(i32, OffsetDateTime, String, OffsetDateTime)> = sqlx::query_as(
++                "SELECT a.pid,a.backend_start,a.application_name,a.query_start FROM pg_stat_activity a \
++                 WHERE a.datname=current_database() AND a.usename='console_rt' AND a.query_start >= $1 \
++                   AND a.state='active' AND a.wait_event_type='IPC' AND a.wait_event='SyncRep' \
++                   AND EXISTS(SELECT 1 FROM pg_locks l WHERE l.pid=a.pid AND l.granted \
++                     AND l.relation='public.payroll_draft_runs'::regclass AND l.mode='RowExclusiveLock') \
++                   AND EXISTS(SELECT 1 FROM pg_locks l WHERE l.pid=a.pid AND l.granted \
++                     AND l.relation='public.ont_action_command_receipts'::regclass AND l.mode='RowExclusiveLock')",
++            ).bind(boundary).fetch_all(owner).await.unwrap();
++            assert!(rows.len() <= 1, "one isolated native payroll transaction");
++            if let Some((pid, started, application_name, query_started)) = rows.into_iter().next() {
++                return Backend { pid, started, application_name, query_started };
++            }
++            tokio::time::sleep(Duration::from_millis(10)).await;
++        }
++    }).await.expect("positive active native payroll SyncRep witness")
++}
++
++#[sqlx::test(migrations = false)]
++async fn required_api_completion_unknown_reconciles_same_command_after_replay(owner: PgPool) {
++    let api = unknown_api(&owner, 3_000, false).await;
++    let replica = standby(&owner).await;
++    let original = api.payload.clone();
++    control("pause-replay");
++    let restore = RestoreReplication;
++    let boundary = database_now(&owner).await;
++    let route = api.router.clone();
++    let token = api.author.clone();
++    let sent = original.clone();
++    let call = tokio::spawn(async move {
++        request(
++            route,
++            "POST",
++            "/api/v1/ontology/actions/create_run/execute",
++            &token,
++            None,
++            sent,
++        )
++        .await
++    });
++    let backend = unknown_native_waiter(&owner, boundary).await;
++    let response = tokio::time::timeout(Duration::from_secs(5), call)
++        .await
++        .unwrap()
++        .unwrap();
++    assert_completion_unknown(&response);
++    assert_eq!(
++        canonical_snapshot(&owner, api.org, api.command).await,
++        json!({"receipts":[],"drafts":[],"audits":[]}),
++        "native incomplete COMMIT is not snapshot-visible or a success acknowledgment"
++    );
++    let still_waiting: bool = sqlx::query_scalar(
++        "SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE pid=$1 AND backend_start=$2 \
++         AND datname=current_database() AND state='active' AND wait_event_type='IPC' AND wait_event='SyncRep')")
++        .bind(backend.pid).bind(backend.started).fetch_one(&owner).await.unwrap();
++    assert!(
++        still_waiting,
++        "UNKNOWN must not claim cancellation or rollback"
++    );
++    control("resume-replay");
++    drop(restore);
++    backend_gone(&owner, &backend).await;
++    let committed = canonical_snapshot(&owner, api.org, api.command).await;
++    assert_eq!(committed["receipts"].as_array().unwrap().len(), 1);
++    assert_eq!(committed["drafts"].as_array().unwrap().len(), 1);
++    assert_eq!(committed["audits"], json!([]));
++    let replay = unknown_execute(&api, original.clone()).await;
++    assert_eq!(replay.status, StatusCode::OK, "{:?}", replay.body);
++    assert_eq!(replay.body["projected"]["command_id"], json!(api.command));
++    let complete = canonical_snapshot(&owner, api.org, api.command).await;
++    assert_eq!(complete["receipts"], committed["receipts"]);
++    assert_eq!(complete["drafts"], committed["drafts"]);
++    assert_eq!(complete["audits"].as_array().unwrap().len(), 1);
++    assert_eq!(unknown_execute(&api, original).await.body, replay.body);
++    assert_eq!(
++        canonical_snapshot(&owner, api.org, api.command).await,
++        complete
++    );
++    assert_eq!(
++        canonical_snapshot(&replica, api.org, api.command).await,
++        complete
++    );
++    replica.close().await;
++    close_state(api.state).await;
++}
++
++async fn unknown_approval(api: &UnknownApi, request_ref: Uuid) {
++    let requested = request(
++        api.router.clone(),
++        "POST",
++        "/api/v1/governance/approvals",
++        &api.author,
++        None,
++        json!({"request_ref":request_ref,"kind":"create_run",
++            "target_ref":api.run,"payload_summary":{"command_id":api.command}}),
++    )
++    .await;
++    assert_eq!(
++        requested.status,
++        StatusCode::CREATED,
++        "{:?}",
++        requested.body
++    );
++    let decided = request(api.router.clone(), "POST", "/api/v1/governance/approvals/decide",
++        &api.approver, None, json!({"request_ref":request_ref,"kind":"create_run","requested_by":api.actor.as_uuid(),"decision":"approved"})).await;
++    assert_eq!(decided.status, StatusCode::CREATED, "{:?}", decided.body);
++}
++
++async fn unknown_approval_history(owner: &PgPool, org: OrgId, first: Uuid, second: Uuid) -> Value {
++    sqlx::query_scalar(
++        "SELECT jsonb_build_object( \
++         'decisions',(SELECT coalesce(jsonb_agg(to_jsonb(a) ORDER BY request_ref),'[]') FROM gov_approvals a \
++           WHERE org_id=$1 AND request_ref IN ($2,$3)), \
++         'consumptions',(SELECT coalesce(jsonb_agg(to_jsonb(c) ORDER BY c.id),'[]') FROM gov_approval_consumptions c \
++           JOIN gov_approvals a ON (a.id,a.org_id)=(c.approval_id,c.org_id) \
++           WHERE a.org_id=$1 AND a.request_ref IN ($2,$3)))")
++        .bind(org.as_uuid()).bind(first).bind(second).fetch_one(owner).await.unwrap()
++}
++
++#[sqlx::test(migrations = false)]
++async fn required_api_receipt_absent_unknown_renews_approval_with_same_command(owner: PgPool) {
++    let mut api = unknown_api(&owner, 3_000, true).await;
++    let first = Uuid::new_v4();
++    let second = Uuid::new_v4();
++    unknown_approval(&api, first).await;
++    api.payload["four_eyes_request_ref"] = json!(first);
++    let original = api.payload.clone();
++    let observer_before = observer_identity(&owner).await;
++    // Actual admission failure after the route's committed approval consumption;
++    // the real observer function remains installed and its body is never forged.
++    sqlx::raw_sql("REVOKE EXECUTE ON FUNCTION public.console_durability_observation_v1(name,oid) FROM console_rt")
++        .execute(&owner).await.unwrap();
++    assert!(!sqlx::query_scalar::<_, bool>("SELECT has_function_privilege('console_rt','public.console_durability_observation_v1(name,oid)','EXECUTE')")
++        .fetch_one(&owner).await.unwrap());
++    let response = unknown_execute(&api, original.clone()).await;
++    sqlx::raw_sql("GRANT EXECUTE ON FUNCTION public.console_durability_observation_v1(name,oid) TO console_rt")
++        .execute(&owner).await.unwrap();
++    assert_eq!(observer_identity(&owner).await, observer_before);
++    assert_completion_unknown(&response);
++    let absent = canonical_snapshot(&owner, api.org, api.command).await;
++    assert_eq!(absent, json!({"receipts":[],"drafts":[],"audits":[]}));
++    let spent = unknown_approval_history(&owner, api.org, first, second).await;
++    assert_eq!(spent["decisions"].as_array().unwrap().len(), 1);
++    assert_eq!(spent["consumptions"].as_array().unwrap().len(), 1);
++    let refusal = unknown_execute(&api, original.clone()).await;
++    assert_eq!(refusal.status, StatusCode::FORBIDDEN);
++    assert_eq!(refusal.body["error"]["code"], "gate_denied");
++    assert_eq!(
++        canonical_snapshot(&owner, api.org, api.command).await,
++        absent
++    );
++    unknown_approval(&api, second).await;
++    let mut renewed = original.clone();
++    renewed["four_eyes_request_ref"] = json!(second);
++    let mut business_before = original.clone();
++    let mut business_after = renewed.clone();
++    business_before
++        .as_object_mut()
++        .unwrap()
++        .remove("four_eyes_request_ref");
++    business_after
++        .as_object_mut()
++        .unwrap()
++        .remove("four_eyes_request_ref");
++    assert_eq!(
++        business_before, business_after,
++        "only the approval witness changes"
++    );
++    let accepted = unknown_execute(&api, renewed.clone()).await;
++    assert_eq!(accepted.status, StatusCode::OK, "{:?}", accepted.body);
++    let complete = canonical_snapshot(&owner, api.org, api.command).await;
++    for key in ["receipts", "drafts", "audits"] {
++        assert_eq!(complete[key].as_array().unwrap().len(), 1);
++    }
++    let history = unknown_approval_history(&owner, api.org, first, second).await;
++    assert_eq!(history["decisions"].as_array().unwrap().len(), 2);
++    assert_eq!(history["consumptions"].as_array().unwrap().len(), 2);
++    assert!(
++        history["decisions"]
++            .as_array()
++            .unwrap()
++            .contains(&spent["decisions"][0])
++    );
++    assert!(
++        history["consumptions"]
++            .as_array()
++            .unwrap()
++            .contains(&spent["consumptions"][0])
++    );
++    let replay = unknown_execute(&api, renewed).await;
++    assert_eq!(replay.status, StatusCode::OK);
++    assert_eq!(replay.body["projected"], accepted.body["projected"]);
++    assert_eq!(
++        canonical_snapshot(&owner, api.org, api.command).await,
++        complete
++    );
++    assert_eq!(
++        unknown_approval_history(&owner, api.org, first, second).await,
++        history
++    );
++    let replica = standby(&owner).await;
++    assert_eq!(
++        canonical_snapshot(&replica, api.org, api.command).await,
++        complete
++    );
++    assert_eq!(
++        unknown_approval_history(&replica, api.org, first, second).await,
++        history
++    );
++    replica.close().await;
++    close_state(api.state).await;
++}
++
++#[sqlx::test(migrations = false)]
++async fn required_api_confirmed_owner_audit_failure_replays_and_repairs(owner: PgPool) {
++    let api = unknown_api(&owner, 3_000, false).await;
++    let acl: String = sqlx::query_scalar(
++        "SELECT relacl::text FROM pg_class WHERE oid='public.audit_events'::regclass",
++    )
++    .fetch_one(&owner)
++    .await
++    .unwrap();
++    sqlx::raw_sql("REVOKE INSERT ON public.audit_events FROM console_rt")
++        .execute(&owner)
++        .await
++        .unwrap();
++    assert!(
++        !sqlx::query_scalar::<_, bool>(
++            "SELECT has_table_privilege('console_rt','public.audit_events','INSERT')"
++        )
++        .fetch_one(&owner)
++        .await
++        .unwrap()
++    );
++    let response = unknown_execute(&api, api.payload.clone()).await;
++    sqlx::raw_sql("GRANT INSERT ON public.audit_events TO console_rt")
++        .execute(&owner)
++        .await
++        .unwrap();
++    assert_eq!(
++        sqlx::query_scalar::<_, String>(
++            "SELECT relacl::text FROM pg_class WHERE oid='public.audit_events'::regclass"
++        )
++        .fetch_one(&owner)
++        .await
++        .unwrap(),
++        acl
++    );
++    assert_eq!(response.status, StatusCode::INTERNAL_SERVER_ERROR);
++    assert_eq!(
++        response.body["error"]["code"], "internal",
++        "audit failure after confirmed owner success is not owner completion_unknown"
++    );
++    let committed = canonical_snapshot(&owner, api.org, api.command).await;
++    assert_eq!(committed["receipts"].as_array().unwrap().len(), 1);
++    assert_eq!(committed["drafts"].as_array().unwrap().len(), 1);
++    assert_eq!(committed["audits"], json!([]));
++    let replica = standby(&owner).await;
++    assert_eq!(
++        canonical_snapshot(&replica, api.org, api.command).await,
++        committed,
++        "ordinary HTTP failure can follow a remotely confirmed owner effect"
++    );
++    let replay = unknown_execute(&api, api.payload.clone()).await;
++    assert_eq!(replay.status, StatusCode::OK, "{:?}", replay.body);
++    let repaired = canonical_snapshot(&owner, api.org, api.command).await;
++    assert_eq!(repaired["receipts"], committed["receipts"]);
++    assert_eq!(repaired["drafts"], committed["drafts"]);
++    assert_eq!(repaired["audits"].as_array().unwrap().len(), 1);
++    assert_eq!(
++        unknown_execute(&api, api.payload.clone()).await.body,
++        replay.body
++    );
++    assert_eq!(
++        canonical_snapshot(&owner, api.org, api.command).await,
++        repaired
++    );
++    assert_eq!(
++        canonical_snapshot(&replica, api.org, api.command).await,
++        repaired
++    );
++    replica.close().await;
++    close_state(api.state).await;
++}
++
++#[derive(Clone, Default)]
++struct UnknownOutcomes(
++    std::sync::Arc<std::sync::Mutex<Vec<std::collections::BTreeMap<String, String>>>>,
++);
++
++impl<S: tracing::Subscriber> tracing_subscriber::Layer<S> for UnknownOutcomes {
++    fn on_event(
++        &self,
++        event: &tracing::Event<'_>,
++        _ctx: tracing_subscriber::layer::Context<'_, S>,
++    ) {
++        #[derive(Default)]
++        struct Fields(std::collections::BTreeMap<String, String>);
++        impl tracing::field::Visit for Fields {
++            fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
++                self.0.insert(field.name().to_owned(), value.to_owned());
++            }
++            fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
++                self.0.insert(field.name().to_owned(), format!("{value:?}"));
++            }
++        }
++        let mut fields = Fields::default();
++        event.record(&mut fields);
++        if fields.0.contains_key("outcome") {
++            self.0.lock().unwrap().push(fields.0);
++        }
++    }
++}
++
++impl UnknownOutcomes {
++    fn saw_unknown(&self, event: Uuid, run: Uuid) -> bool {
++        self.0.lock().unwrap().iter().any(|fields| {
++            fields.get("outcome").map(String::as_str) == Some("unknown")
++                && fields.get("event_id") == Some(&event.to_string())
++                && fields.get("run_id") == Some(&run.to_string())
++                && fields.get("source_label") == Some(&format!("workflow_runtime_m2:run:{run}"))
++        })
++    }
++}
++
++#[sqlx::test(migrations = false)]
++async fn required_workflow_typed_unknown_preserves_pending_and_failed_events(owner: PgPool) {
++    use tracing_subscriber::prelude::*;
++    let outcomes = UnknownOutcomes::default();
++    tracing::subscriber::set_global_default(tracing_subscriber::registry().with(outcomes.clone()))
++        .expect("one exact case in a fresh supervised process");
++    let descriptor = setup(&owner, 3_000).await;
++    for prior_status in ["PENDING", "FAILED"] {
++        let org = OrgId::from_uuid(Uuid::new_v4());
++        let tag = format!("typed-unknown-{}", prior_status.to_lowercase());
++        seed_org_rls_off(&owner, *org.as_uuid(), &tag).await;
++        let state = start(config(&owner, AppRole::Worker, &descriptor, None)).await;
++        let pool = business(&state);
++        let (event, run) = seed_completion(&pool, org).await;
++        if prior_status == "FAILED" {
++            // Explicit input history fixture; the real engine emitted the event.
++            // No staging result, ACK or audit is supplied by this preparation.
++            sqlx::query("UPDATE workflow_outbox_events SET status='FAILED',attempt_count=2 WHERE id=$1 AND org_id=$2")
++                .bind(event).bind(org.as_uuid()).execute(&owner).await.unwrap();
++        }
++        let before = workflow_snapshot(&owner, org, event, run).await;
++        assert_eq!(before["event"]["status"], prior_status);
++        let replica = standby(&owner).await;
++        control("pause-replay");
++        let restore = RestoreReplication;
++        control("clear-sync-policy");
++        let boundary = database_now(&owner).await;
++        let drain = super::workflow_drain::spawn(pool.clone(), state.postgres_durability());
++        let backend =
++            unknown_staging_observer(&owner, org, event, run, boundary, prior_status).await;
++        let local = workflow_snapshot(&owner, org, event, run).await;
++        assert_eq!(local["event"], before["event"]);
++        assert_eq!(local["drafts"].as_array().unwrap().len(), 1);
++        assert_eq!(local["audits"], json!([]));
++        assert_eq!(local["receipts"], json!([]));
++        assert_paused_below(&owner, &replica).await;
++        backend_gone(&owner, &backend).await;
++        tokio::time::timeout(Duration::from_secs(2), async {
++            while !outcomes.saw_unknown(event, run) {
++                tokio::time::sleep(Duration::from_millis(10)).await;
++            }
++        })
++        .await
++        .expect("typed stage Unknown must be distinguished at the real drainer boundary");
++        assert_eq!(workflow_snapshot(&owner, org, event, run).await, local);
++        drain.shutdown();
++        close_state(state).await;
++        drop(pool);
++        control("resume-replay");
++        control("restore-sync-policy");
++        drop(restore);
++        let retry_state = start(config(&owner, AppRole::Worker, &descriptor, None)).await;
++        let retry_pool = business(&retry_state);
++        let retry =
++            super::workflow_drain::spawn(retry_pool.clone(), retry_state.postgres_durability());
++        let delivered = tokio::time::timeout(Duration::from_secs(15), async {
++            loop {
++                let rows = workflow_snapshot(&owner, org, event, run).await;
++                if rows["event"]["status"] == "DELIVERED" {
++                    break rows;
++                }
++                tokio::time::sleep(Duration::from_millis(10)).await;
++            }
++        })
++        .await
++        .unwrap();
++        retry.shutdown();
++        close_state(retry_state).await;
++        drop(retry_pool);
++        assert_eq!(delivered["drafts"], local["drafts"]);
++        assert_eq!(delivered["runs"], before["runs"]);
++        assert_eq!(delivered["nodes"], before["nodes"]);
++        assert_eq!(delivered["receipts"], json!([]));
++        assert_eq!(delivered["audits"].as_array().unwrap().len(), 1);
++        assert_eq!(
++            delivered["event"]["attempt_count"].as_i64().unwrap(),
++            before["event"]["attempt_count"].as_i64().unwrap() + 1
++        );
++        let mut old_event = before["event"].clone();
++        let mut new_event = delivered["event"].clone();
++        for key in ["status", "attempt_count", "delivered_at", "updated_at"] {
++            old_event.as_object_mut().unwrap().remove(key);
++            new_event.as_object_mut().unwrap().remove(key);
++        }
++        assert_eq!(
++            old_event, new_event,
++            "same event identity and business input after retry"
++        );
++        assert_eq!(
++            workflow_snapshot(&replica, org, event, run).await,
++            delivered
++        );
++        replica.close().await;
++    }
++}
+diff --git a/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs b/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs
+--- a/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs
++++ b/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs
+@@ -527,3 +527,67 @@
+         other => panic!("expected Store(Domain(Conflict)), got {other:?}"),
+     }
+ }
++
++// Diagnostic text must never opt an ordinary error into a typed outcome.
++#[derive(Debug)]
++struct UnknownLookingOperation;
++
++impl std::fmt::Display for UnknownLookingOperation {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        f.write_str("database durability UNKNOWN: ordinary operation control")
++    }
++}
++
++impl CanonicalPortError for UnknownLookingOperation {
++    fn into_kernel_error(self) -> KernelError {
++        KernelError::internal(self.to_string())
++    }
++}
++
++struct UnknownLookingOperationPort;
++
++impl CanonicalPort for UnknownLookingOperationPort {
++    type Object = Company;
++    type Query = EchoQuery;
++    type Command = (OrgId, CommandId, UserId, DispatchTarget);
++    type Error = UnknownLookingOperation;
++
++    fn preflight(_query: &Self::Query) -> Preflight {
++        Preflight::ok()
++    }
++
++    fn command(
++        org_id: OrgId,
++        command_id: CommandId,
++        actor_id: UserId,
++        query: Self::Query,
++        _action_key: &str,
++        _object_type_id: Uuid,
++    ) -> Self::Command {
++        (org_id, command_id, actor_id, query.dispatch_target())
++    }
++
++    fn execute(&self, _command: &Self::Command) -> Result<CanonicalReceipt, Self::Error> {
++        Err(UnknownLookingOperation)
++    }
++}
++
++#[tokio::test]
++async fn diagnostic_unknown_prefix_does_not_classify_an_operation_error() {
++    let registry = ProjectedDispatchRegistry::new().register_port(UnknownLookingOperationPort);
++    let error = registry
++        .dispatch(input(
++            "company.revise",
++            json!({"attributes": {}}),
++            Some(Uuid::nil()),
++        ))
++        .await
++        .expect_err("ordinary operation fails");
++    let response = super::RestError::from_action(error);
++    assert_eq!(response.status, axum::http::StatusCode::INTERNAL_SERVER_ERROR);
++    assert_eq!(response.code, "internal");
++    assert_eq!(
++        response.message,
++        "database durability UNKNOWN: ordinary operation control"
++    );
++}

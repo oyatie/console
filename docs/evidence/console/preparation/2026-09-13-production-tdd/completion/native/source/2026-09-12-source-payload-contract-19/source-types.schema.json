@@ -1,0 +1,2909 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:console:evidence:source19-v1",
+  "$comment": "Proposed source shapes. Inherited native18 definitions pinned; source19 semantic/scalar/dependency constraints mandatory. Not generated OpenAPI or proof of qualified sources.",
+  "$defs": {
+    "UUID": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "not": {
+        "const": "00000000-0000-0000-0000-000000000000"
+      }
+    },
+    "PositiveRevision": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,18}$"
+    },
+    "RevisionOrZero": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,18})$"
+    },
+    "PositiveWon": {
+      "$ref": "#/$defs/PositiveRevision"
+    },
+    "NonnegativeWon": {
+      "$ref": "#/$defs/RevisionOrZero"
+    },
+    "UnixMicroseconds": {
+      "type": "string",
+      "pattern": "^(0|-?[1-9][0-9]{0,18})$"
+    },
+    "Count": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,3})$"
+    },
+    "Date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "Sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "RegisteredAsciiId": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "Note": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^[^\u0000]*$"
+    },
+    "SourceFamily": {
+      "enum": [
+        "POPULATION",
+        "EMPLOYMENT",
+        "WAGE",
+        "ATTENDANCE",
+        "CALENDAR",
+        "LEAVE",
+        "ELIGIBILITY",
+        "TAX_EVIDENCE",
+        "QUALIFICATION",
+        "ARTIFACT"
+      ]
+    },
+    "InclusivePeriod": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/Date"
+        },
+        "end": {
+          "$ref": "#/$defs/Date"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false
+    },
+    "RuleBundleRef": {
+      "type": "object",
+      "properties": {
+        "bundle_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "kernel_build_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "citation_set_sha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "kernel_build_sha256",
+        "citation_set_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "ProfileRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "profile_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "rule_bundle": {
+          "$ref": "#/$defs/RuleBundleRef"
+        }
+      },
+      "required": [
+        "org_id",
+        "profile_id",
+        "revision",
+        "rule_bundle"
+      ],
+      "additionalProperties": false
+    },
+    "ScopeBasisRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "scope_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "scope_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "EligibilityRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "assessment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "assessment_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "TaxEvidenceRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "evidence_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "evidence_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "AttendanceCoverageRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "coverage_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "coverage_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "WageFactRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "base_wage_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "correction_revision": {
+          "$ref": "#/$defs/RevisionOrZero"
+        }
+      },
+      "required": [
+        "org_id",
+        "base_wage_id",
+        "correction_revision"
+      ],
+      "additionalProperties": false
+    },
+    "EmploymentSegmentRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "from_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "to_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        }
+      },
+      "required": [
+        "org_id",
+        "employment_id",
+        "revision_id",
+        "revision",
+        "from_us",
+        "to_us"
+      ],
+      "additionalProperties": false
+    },
+    "ArtifactRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "evidence_object_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "copy_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attestation_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attestation_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "evidence_object_id",
+        "copy_id",
+        "attestation_id",
+        "attestation_revision"
+      ],
+      "additionalProperties": false
+    },
+    "Blocker": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "enum": [
+            "MISSING_SOURCE",
+            "AMBIGUOUS_SOURCE",
+            "SOURCE_BOUND_EXCEEDED",
+            "SOURCE_INVALID",
+            "INCOMPLETE_EMPLOYMENT",
+            "INCOMPLETE_ATTENDANCE",
+            "UNRESOLVED_OBLIGATION",
+            "UNSUPPORTED_PROFILE",
+            "UNSUPPORTED_ROUNDING",
+            "ARITHMETIC_OVERFLOW",
+            "UNSUPPORTED_NEGATIVE_NET"
+          ]
+        },
+        "family": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceFamily"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceRepairRef"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "code",
+        "family",
+        "source_refs"
+      ],
+      "additionalProperties": false
+    },
+    "Minute": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,3})$"
+    },
+    "BoundedCount": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,6})$"
+    },
+    "ShortText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[^\u0000]*$"
+    },
+    "DateInterval": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/Date"
+        },
+        "to_exclusive": {
+          "$ref": "#/$defs/Date"
+        }
+      },
+      "required": [
+        "from",
+        "to_exclusive"
+      ],
+      "additionalProperties": false
+    },
+    "QualificationRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "qualification_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "qualification_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "calendar_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "calendar_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarAssignmentRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "assignment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "assignment_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "DispositionRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "disposition_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        }
+      },
+      "required": [
+        "org_id",
+        "disposition_id",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "IssuerProfileRef": {
+      "type": "object",
+      "properties": {
+        "profile_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "profile_id",
+        "revision",
+        "content_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "NormalizerRef": {
+      "type": "object",
+      "properties": {
+        "normalizer_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "version": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "build_sha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "normalizer_id",
+        "version",
+        "build_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "RulePurpose": {
+      "enum": [
+        "TAXABLE_INCOME_DEFINITION",
+        "INSURANCE_APPLICABILITY",
+        "NO_ADJUSTMENT_COVERAGE",
+        "PAID_ABSENCE_TREATMENT",
+        "CALENDAR_PAID_TIME",
+        "TAX_ROW_SELECTION",
+        "PENSION_BASIS_DEFINITION",
+        "INSURANCE_REMUNERATION_DEFINITION"
+      ]
+    },
+    "CommonSourceCitation": {
+      "type": "object",
+      "properties": {
+        "instrument": {
+          "$ref": "#/$defs/ShortText"
+        },
+        "edition": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 2048
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "artifact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "qualified_review_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "applicability": {
+          "$ref": "#/$defs/DateInterval"
+        }
+      },
+      "required": [
+        "instrument",
+        "edition",
+        "source_url",
+        "artifact_refs",
+        "qualified_review_refs",
+        "applicability"
+      ],
+      "additionalProperties": false
+    },
+    "RuleBinding": {
+      "type": "object",
+      "properties": {
+        "purpose": {
+          "$ref": "#/$defs/RulePurpose"
+        },
+        "compiled_rule_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "compiled_rule_version": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "rule_body_sha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "purpose",
+        "compiled_rule_id",
+        "compiled_rule_version",
+        "rule_body_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "CsvColumn": {
+      "type": "object",
+      "properties": {
+        "alias": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "header_text": {
+          "$ref": "#/$defs/ShortText"
+        },
+        "role": {
+          "enum": [
+            "LOWER_INCOME",
+            "UPPER_INCOME",
+            "DEPENDENT",
+            "ELIGIBLE_CHILD",
+            "WITHHOLDING_OPTION",
+            "INCOME_TAX",
+            "LOCAL_TAX",
+            "NOTE_KEY"
+          ]
+        }
+      },
+      "required": [
+        "alias",
+        "header_text",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "CsvLayout": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "CSV_RFC4180_UTF8_V1"
+        },
+        "has_header": {
+          "const": true
+        },
+        "delimiter": {
+          "const": ","
+        },
+        "bom": {
+          "enum": [
+            "ABSENT",
+            "UTF8_ALLOWED_ONCE"
+          ]
+        },
+        "line_ending": {
+          "enum": [
+            "CRLF",
+            "LF"
+          ]
+        },
+        "blank_records": {
+          "const": "REJECT"
+        },
+        "duplicate_headers": {
+          "const": "REJECT"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CsvColumn"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "unit_won_multiplier": {
+          "enum": [
+            "1",
+            "1000"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "has_header",
+        "delimiter",
+        "bom",
+        "line_ending",
+        "blank_records",
+        "duplicate_headers",
+        "columns",
+        "unit_won_multiplier"
+      ],
+      "additionalProperties": false
+    },
+    "PdfLayout": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "PDF_REVIEWED_LOCATOR_MAP_V1"
+        },
+        "map_artifact_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "unit_won_multiplier": {
+          "enum": [
+            "1",
+            "1000"
+          ]
+        },
+        "page_index_base": {
+          "const": "1"
+        },
+        "table_index_base": {
+          "const": "1"
+        },
+        "row_index_base": {
+          "const": "1"
+        },
+        "column_index_base": {
+          "const": "1"
+        }
+      },
+      "required": [
+        "kind",
+        "map_artifact_ref",
+        "unit_won_multiplier",
+        "page_index_base",
+        "table_index_base",
+        "row_index_base",
+        "column_index_base"
+      ],
+      "additionalProperties": false
+    },
+    "LocatorLayout": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CsvLayout"
+        },
+        {
+          "$ref": "#/$defs/PdfLayout"
+        }
+      ]
+    },
+    "TaxSupport": {
+      "type": "object",
+      "properties": {
+        "dependent_counts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PositiveRevision"
+          },
+          "minItems": 1,
+          "maxItems": 99
+        },
+        "eligible_child_counts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RevisionOrZero"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "withholding_options": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "P80",
+              "P100",
+              "P120"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 3
+        },
+        "combination_rule": {
+          "$ref": "#/$defs/RuleBinding"
+        },
+        "note_map_artifact_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "normalizer_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NormalizerRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "dependent_counts",
+        "eligible_child_counts",
+        "withholding_options",
+        "combination_rule",
+        "note_map_artifact_ref",
+        "normalizer_ref"
+      ],
+      "additionalProperties": false
+    },
+    "TaxQualification": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "TAX_TABLE"
+        },
+        "citation": {
+          "$ref": "#/$defs/CommonSourceCitation"
+        },
+        "layout": {
+          "$ref": "#/$defs/LocatorLayout"
+        },
+        "support": {
+          "$ref": "#/$defs/TaxSupport"
+        },
+        "selection_rule": {
+          "$ref": "#/$defs/RuleBinding"
+        }
+      },
+      "required": [
+        "kind",
+        "citation",
+        "layout",
+        "support",
+        "selection_rule"
+      ],
+      "additionalProperties": false
+    },
+    "ApplicabilityQualification": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "APPLICABILITY_RULE"
+        },
+        "citation": {
+          "$ref": "#/$defs/CommonSourceCitation"
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuleBinding"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "kind",
+        "citation",
+        "bindings"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarQualification": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "WORK_CALENDAR_RULE"
+        },
+        "citation": {
+          "$ref": "#/$defs/CommonSourceCitation"
+        },
+        "time_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RuleBinding"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "kind",
+        "citation",
+        "time_rules"
+      ],
+      "additionalProperties": false
+    },
+    "BundleQualification": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "RULE_BUNDLE"
+        },
+        "citation": {
+          "$ref": "#/$defs/CommonSourceCitation"
+        },
+        "bundle_ref": {
+          "$ref": "#/$defs/RuleBundleRef"
+        },
+        "source_qualification_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/QualificationRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "kind",
+        "citation",
+        "bundle_ref",
+        "source_qualification_refs"
+      ],
+      "additionalProperties": false
+    },
+    "CredentialPayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "REVIEWER_CREDENTIAL"
+        },
+        "subject_person_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "issuer_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "issuer_credential_id": {
+          "$ref": "#/$defs/ShortText"
+        },
+        "profession_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "jurisdiction_id": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "purpose_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RegisteredAsciiId"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "scope_basis_ref": {
+          "$ref": "#/$defs/ScopeBasisRef"
+        },
+        "valid_from_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "valid_to_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "issuer_trust_profile_ref": {
+          "$ref": "#/$defs/IssuerProfileRef"
+        },
+        "verification_method": {
+          "enum": [
+            "SIGNED_ISSUER_RESPONSE",
+            "INDEPENDENT_ISSUER_CHECK"
+          ]
+        },
+        "issuer_evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "kind",
+        "subject_person_id",
+        "issuer_id",
+        "issuer_credential_id",
+        "profession_id",
+        "jurisdiction_id",
+        "purpose_ids",
+        "scope_basis_ref",
+        "valid_from_us",
+        "valid_to_us",
+        "issuer_trust_profile_ref",
+        "verification_method",
+        "issuer_evidence_refs"
+      ],
+      "additionalProperties": false
+    },
+    "QualificationPayload": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/TaxQualification"
+        },
+        {
+          "$ref": "#/$defs/ApplicabilityQualification"
+        },
+        {
+          "$ref": "#/$defs/CalendarQualification"
+        },
+        {
+          "$ref": "#/$defs/BundleQualification"
+        },
+        {
+          "$ref": "#/$defs/CredentialPayload"
+        }
+      ]
+    },
+    "BreakPlan": {
+      "type": "object",
+      "properties": {
+        "start_minute": {
+          "$ref": "#/$defs/Minute"
+        },
+        "end_minute": {
+          "$ref": "#/$defs/Minute"
+        },
+        "treatment": {
+          "enum": [
+            "PAID",
+            "UNPAID"
+          ]
+        }
+      },
+      "required": [
+        "start_minute",
+        "end_minute",
+        "treatment"
+      ],
+      "additionalProperties": false
+    },
+    "DutyPlan": {
+      "type": "object",
+      "properties": {
+        "start_minute": {
+          "$ref": "#/$defs/Minute"
+        },
+        "end_minute": {
+          "$ref": "#/$defs/Minute"
+        },
+        "breaks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BreakPlan"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "start_minute",
+        "end_minute",
+        "breaks"
+      ],
+      "additionalProperties": false
+    },
+    "WeeklyDay": {
+      "type": "object",
+      "properties": {
+        "iso_weekday": {
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ]
+        },
+        "day_kind": {
+          "enum": [
+            "WORK_DUTY",
+            "PAID_REST",
+            "PAID_HOLIDAY",
+            "NONWORKING"
+          ]
+        },
+        "duties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DutyPlan"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "expected_work_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "expected_paid_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "rule_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        }
+      },
+      "required": [
+        "iso_weekday",
+        "day_kind",
+        "duties",
+        "expected_work_minutes",
+        "expected_paid_minutes",
+        "rule_ref"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarOverride": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "$ref": "#/$defs/Date"
+        },
+        "day_kind": {
+          "enum": [
+            "WORK_DUTY",
+            "PAID_REST",
+            "PAID_HOLIDAY",
+            "NONWORKING"
+          ]
+        },
+        "duties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DutyPlan"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "expected_work_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "expected_paid_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "rule_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        }
+      },
+      "required": [
+        "date",
+        "day_kind",
+        "duties",
+        "expected_work_minutes",
+        "expected_paid_minutes",
+        "rule_ref"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarPayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "WORK_CALENDAR"
+        },
+        "covered_dates": {
+          "$ref": "#/$defs/DateInterval"
+        },
+        "zone": {
+          "const": "Asia/Seoul"
+        },
+        "weekly": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WeeklyDay"
+          },
+          "minItems": 7,
+          "maxItems": 7
+        },
+        "overrides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CalendarOverride"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "rule_qualification_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        }
+      },
+      "required": [
+        "kind",
+        "covered_dates",
+        "zone",
+        "weekly",
+        "overrides",
+        "rule_qualification_ref"
+      ],
+      "additionalProperties": false
+    },
+    "CalendarAssignmentPayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "CALENDAR_ASSIGNMENT"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "calendar_ref": {
+          "$ref": "#/$defs/CalendarRef"
+        },
+        "from_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "to_date_exclusive": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "ACTIVE",
+            "REVOKED"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "employment_id",
+        "calendar_ref",
+        "from_date",
+        "to_date_exclusive",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "EventRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "attendance_record_id": {
+          "$ref": "#/$defs/UUID"
+        }
+      },
+      "required": [
+        "org_id",
+        "attendance_record_id"
+      ],
+      "additionalProperties": false
+    },
+    "LeaveChargeRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "resolution_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "charge_version": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "server_digest": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "org_id",
+        "request_id",
+        "resolution_id",
+        "charge_version",
+        "server_digest"
+      ],
+      "additionalProperties": false
+    },
+    "LeaveDispositionPayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "LEAVE_PAYROLL_DISPOSITION"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "request_version": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "charge_ref": {
+          "$ref": "#/$defs/LeaveChargeRef"
+        },
+        "interval": {
+          "type": "object",
+          "properties": {
+            "from_us": {
+              "$ref": "#/$defs/UnixMicroseconds"
+            },
+            "to_us": {
+              "$ref": "#/$defs/UnixMicroseconds"
+            }
+          },
+          "required": [
+            "from_us",
+            "to_us"
+          ],
+          "additionalProperties": false
+        },
+        "pay_treatment": {
+          "enum": [
+            "PAID",
+            "UNPAID",
+            "UNRESOLVED"
+          ]
+        },
+        "qualification_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "decision_audit_ref": {
+          "$ref": "#/$defs/AuditEventRef"
+        },
+        "request_snapshot_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "charge_encoding": {
+          "enum": [
+            "LEGACY_PG_JSONB_TEXT_V1",
+            "SOURCE19_V1"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "employee_id",
+        "employment_id",
+        "request_id",
+        "request_version",
+        "charge_ref",
+        "interval",
+        "pay_treatment",
+        "qualification_ref",
+        "evidence_refs",
+        "decision_audit_ref",
+        "request_snapshot_sha256",
+        "charge_encoding"
+      ],
+      "additionalProperties": false
+    },
+    "EventWitness": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ATTENDANCE_EVENT"
+        },
+        "ref": {
+          "$ref": "#/$defs/EventRef"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "occurred_at_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "work_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "event_kind": {
+          "enum": [
+            "CLOCK_IN",
+            "OUT_FOR_WORK",
+            "BUSINESS_TRIP",
+            "RETURNED",
+            "CLOCK_OUT"
+          ]
+        },
+        "state_after": {
+          "enum": [
+            "CLOCKED_IN",
+            "OUT_FOR_WORK",
+            "BUSINESS_TRIP",
+            "OFF_DUTY"
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Note"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "$ref": "#/$defs/ActorAttribution"
+        }
+      },
+      "required": [
+        "kind",
+        "ref",
+        "employee_id",
+        "occurred_at_us",
+        "work_date",
+        "event_kind",
+        "state_after",
+        "note",
+        "actor"
+      ],
+      "additionalProperties": false
+    },
+    "SourcePackageRef": {
+      "type": "object",
+      "properties": {
+        "artifact_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "format": {
+          "const": "SOURCE19_NDJSON_V1"
+        },
+        "event_count": {
+          "$ref": "#/$defs/BoundedCount"
+        },
+        "event_set_digest": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "format",
+        "event_count",
+        "event_set_digest"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageInterval": {
+      "type": "object",
+      "properties": {
+        "from_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "to_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "classification": {
+          "enum": [
+            "WORK",
+            "PAID_BREAK",
+            "UNPAID_BREAK",
+            "PAID_ABSENCE",
+            "OFF_DUTY",
+            "UNRESOLVED"
+          ]
+        },
+        "event_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EventRef"
+          },
+          "minItems": 0,
+          "maxItems": 4
+        },
+        "leave_disposition_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DispositionRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rule_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        },
+        "plan_anchor_date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "from_us",
+        "to_us",
+        "classification",
+        "event_refs",
+        "leave_disposition_ref",
+        "rule_ref",
+        "plan_anchor_date"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageDay": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "$ref": "#/$defs/Date"
+        },
+        "intervals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CoverageInterval"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "expected_work_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "covered_work_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "expected_paid_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "covered_paid_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Blocker"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "plan_contributions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CoveragePlanContribution"
+          },
+          "minItems": 0,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "date",
+        "intervals",
+        "expected_work_minutes",
+        "covered_work_minutes",
+        "expected_paid_minutes",
+        "covered_paid_minutes",
+        "blockers",
+        "plan_contributions"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageBoundary": {
+      "type": "object",
+      "properties": {
+        "prior_anchor_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EventRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "opening_state": {
+          "enum": [
+            "OFF_DUTY",
+            "CLOCKED_IN",
+            "OUT_FOR_WORK",
+            "BUSINESS_TRIP",
+            "UNKNOWN"
+          ]
+        },
+        "query_from_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "query_to_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "basis_rule_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        }
+      },
+      "required": [
+        "prior_anchor_ref",
+        "opening_state",
+        "query_from_us",
+        "query_to_us",
+        "basis_rule_ref"
+      ],
+      "additionalProperties": false
+    },
+    "EmploymentCoverage": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "binding_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "binding_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "earning_start_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "earning_end_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EmploymentSegmentRef"
+          },
+          "minItems": 1,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "org_id",
+        "employee_id",
+        "employment_id",
+        "binding_id",
+        "binding_revision",
+        "earning_start_us",
+        "earning_end_us",
+        "segments"
+      ],
+      "additionalProperties": false
+    },
+    "CoveragePayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ATTENDANCE_COVERAGE"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "source_package_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourcePackageRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "boundary": {
+          "$ref": "#/$defs/CoverageBoundary"
+        },
+        "outcome": {
+          "enum": [
+            "COMPLETE",
+            "BLOCKED"
+          ]
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Blocker"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "exception_resolution_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExceptionResolutionRef"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "coverage_days_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CoverageDaysRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "employee_id",
+        "employment_id",
+        "period",
+        "source_package_ref",
+        "boundary",
+        "outcome",
+        "blockers",
+        "exception_resolution_refs",
+        "coverage_days_ref"
+      ],
+      "additionalProperties": false
+    },
+    "OperationalCloseRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "close_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "amendment_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/UUID"
+          },
+          "minItems": 0,
+          "maxItems": 256
+        },
+        "amendment_set_digest": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "period_lock_id": {
+          "$ref": "#/$defs/UUID"
+        }
+      },
+      "required": [
+        "org_id",
+        "close_id",
+        "amendment_ids",
+        "amendment_set_digest",
+        "period_lock_id"
+      ],
+      "additionalProperties": false
+    },
+    "CloseMember": {
+      "type": "object",
+      "properties": {
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "coverage_ref": {
+          "$ref": "#/$defs/AttendanceCoverageRef"
+        },
+        "coverage_semantic_digest": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "employee_id",
+        "coverage_ref",
+        "coverage_semantic_digest"
+      ],
+      "additionalProperties": false
+    },
+    "ClosePayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ATTENDANCE_CLOSE_BASIS"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "scope_basis_ref": {
+          "$ref": "#/$defs/ScopeBasisRef"
+        },
+        "operational_close_ref": {
+          "$ref": "#/$defs/OperationalCloseRef"
+        },
+        "member_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "member_set_digest": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "coverage_members_artifact_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "attestation": {
+          "const": true
+        }
+      },
+      "required": [
+        "kind",
+        "period",
+        "scope_basis_ref",
+        "operational_close_ref",
+        "member_count",
+        "member_set_digest",
+        "coverage_members_artifact_ref",
+        "attestation"
+      ],
+      "additionalProperties": false
+    },
+    "InsuranceFact": {
+      "type": "object",
+      "properties": {
+        "scheme": {
+          "enum": [
+            "NATIONAL_PENSION",
+            "HEALTH",
+            "LONG_TERM_CARE",
+            "EMPLOYMENT"
+          ]
+        },
+        "status": {
+          "enum": [
+            "APPLIES",
+            "NOT_APPLICABLE",
+            "UNKNOWN"
+          ]
+        },
+        "qualification_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "scheme",
+        "status",
+        "qualification_ref",
+        "evidence_refs"
+      ],
+      "additionalProperties": false
+    },
+    "AssessedAmount": {
+      "type": "object",
+      "properties": {
+        "amount_won": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonnegativeWon"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "definition_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "amount_won",
+        "definition_ref",
+        "evidence_refs"
+      ],
+      "additionalProperties": false
+    },
+    "ObligationFact": {
+      "type": "object",
+      "properties": {
+        "family": {
+          "enum": [
+            "PRORATION",
+            "OVERTIME",
+            "NIGHT",
+            "HOLIDAY_PREMIUM",
+            "UNPAID_REDUCTION",
+            "RETRO_ADJUSTMENT",
+            "LATE_ABSENCE_EARLY_LEAVE"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "NONE_DUE",
+            "DUE",
+            "UNRESOLVED"
+          ]
+        },
+        "qualification_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        },
+        "coverage_ref": {
+          "$ref": "#/$defs/AttendanceCoverageRef"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "family",
+        "outcome",
+        "qualification_ref",
+        "coverage_ref",
+        "evidence_refs"
+      ],
+      "additionalProperties": false
+    },
+    "TaxSelection": {
+      "type": "object",
+      "properties": {
+        "taxable_monthly_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "dependent_count_including_self": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "eligible_child_count": {
+          "$ref": "#/$defs/RevisionOrZero"
+        },
+        "withholding_option": {
+          "enum": [
+            "P80",
+            "P100",
+            "P120"
+          ]
+        },
+        "selection_fact_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "income_definition_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        }
+      },
+      "required": [
+        "taxable_monthly_won",
+        "dependent_count_including_self",
+        "eligible_child_count",
+        "withholding_option",
+        "selection_fact_refs",
+        "income_definition_ref"
+      ],
+      "additionalProperties": false
+    },
+    "EligibilityPayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "PAYROLL_ELIGIBILITY"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_coverage": {
+          "$ref": "#/$defs/EmploymentCoverage"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "pay_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "profile_ref": {
+          "$ref": "#/$defs/ProfileRef"
+        },
+        "wage_ref": {
+          "$ref": "#/$defs/WageFactRef"
+        },
+        "coverage_ref": {
+          "$ref": "#/$defs/AttendanceCoverageRef"
+        },
+        "insurance": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InsuranceFact"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "pension_basis": {
+          "$ref": "#/$defs/AssessedAmount"
+        },
+        "remuneration_basis": {
+          "$ref": "#/$defs/AssessedAmount"
+        },
+        "taxable_basis": {
+          "$ref": "#/$defs/AssessedAmount"
+        },
+        "obligations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ObligationFact"
+          },
+          "minItems": 7,
+          "maxItems": 7
+        },
+        "selection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TaxSelection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "SUPPORTED",
+            "BLOCKED"
+          ]
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Blocker"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "kind",
+        "employee_id",
+        "employment_coverage",
+        "period",
+        "pay_date",
+        "profile_ref",
+        "wage_ref",
+        "coverage_ref",
+        "insurance",
+        "pension_basis",
+        "remuneration_basis",
+        "taxable_basis",
+        "obligations",
+        "selection",
+        "outcome",
+        "blockers"
+      ],
+      "additionalProperties": false
+    },
+    "TaxLocator": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "PDF_TABLE_CELL"
+            },
+            "page": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "table": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "row": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "column": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "locator_schema_ref": {
+              "$ref": "#/$defs/QualificationRef"
+            }
+          },
+          "required": [
+            "kind",
+            "page",
+            "table",
+            "row",
+            "column",
+            "locator_schema_ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CSV_RECORD"
+            },
+            "record_ordinal": {
+              "$ref": "#/$defs/PositiveRevision"
+            },
+            "column_name": {
+              "$ref": "#/$defs/RegisteredAsciiId"
+            },
+            "locator_schema_ref": {
+              "$ref": "#/$defs/QualificationRef"
+            }
+          },
+          "required": [
+            "kind",
+            "record_ordinal",
+            "column_name",
+            "locator_schema_ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TaxAmounts": {
+      "type": "object",
+      "properties": {
+        "amount_stage": {
+          "const": "FINAL_WITHHOLDING"
+        },
+        "income_tax_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "local_tax_won": {
+          "$ref": "#/$defs/NonnegativeWon"
+        },
+        "income_locator": {
+          "$ref": "#/$defs/TaxLocator"
+        },
+        "local_locator": {
+          "$ref": "#/$defs/TaxLocator"
+        },
+        "rule_note_locators": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TaxLocator"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "amount_stage",
+        "income_tax_won",
+        "local_tax_won",
+        "income_locator",
+        "local_locator",
+        "rule_note_locators"
+      ],
+      "additionalProperties": false
+    },
+    "TaxPayload": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "TAX_EVIDENCE"
+        },
+        "source_qualification_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        },
+        "artifact_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "table_edition": {
+          "$ref": "#/$defs/RegisteredAsciiId"
+        },
+        "assessment_ref": {
+          "$ref": "#/$defs/EligibilityRef"
+        },
+        "employment_coverage": {
+          "$ref": "#/$defs/EmploymentCoverage"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "pay_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "income_band": {
+          "type": "object",
+          "properties": {
+            "lower_inclusive_won": {
+              "$ref": "#/$defs/NonnegativeWon"
+            },
+            "upper_exclusive_won": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/PositiveWon"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "lower_inclusive_won",
+            "upper_exclusive_won"
+          ],
+          "additionalProperties": false
+        },
+        "selection": {
+          "$ref": "#/$defs/TaxSelection"
+        },
+        "amounts": {
+          "$ref": "#/$defs/TaxAmounts"
+        }
+      },
+      "required": [
+        "kind",
+        "source_qualification_ref",
+        "artifact_ref",
+        "table_edition",
+        "assessment_ref",
+        "employment_coverage",
+        "period",
+        "pay_date",
+        "income_band",
+        "selection",
+        "amounts"
+      ],
+      "additionalProperties": false
+    },
+    "AdmissionRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "family": {
+              "const": "QUALIFICATION"
+            },
+            "ref": {
+              "$ref": "#/$defs/QualificationRef"
+            }
+          },
+          "required": [
+            "family",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "family": {
+              "const": "ELIGIBILITY"
+            },
+            "ref": {
+              "$ref": "#/$defs/EligibilityRef"
+            }
+          },
+          "required": [
+            "family",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "family": {
+              "const": "TAX_EVIDENCE"
+            },
+            "ref": {
+              "$ref": "#/$defs/TaxEvidenceRef"
+            }
+          },
+          "required": [
+            "family",
+            "ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AdmissionPayload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "family": {
+              "const": "QUALIFICATION"
+            },
+            "payload": {
+              "$ref": "#/$defs/QualificationPayload"
+            },
+            "supersedes_ref": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/QualificationRef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "family",
+            "payload",
+            "supersedes_ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "family": {
+              "const": "ELIGIBILITY"
+            },
+            "payload": {
+              "$ref": "#/$defs/EligibilityPayload"
+            },
+            "supersedes_ref": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EligibilityRef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "family",
+            "payload",
+            "supersedes_ref"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "family": {
+              "const": "TAX_EVIDENCE"
+            },
+            "payload": {
+              "$ref": "#/$defs/TaxPayload"
+            },
+            "supersedes_ref": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/TaxEvidenceRef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "family",
+            "payload",
+            "supersedes_ref"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "VerifyPayload": {
+      "type": "object",
+      "properties": {
+        "admission_ref": {
+          "$ref": "#/$defs/AdmissionRef"
+        },
+        "admission_digest": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "expected_head_revision": {
+          "$ref": "#/$defs/PositiveRevision"
+        },
+        "reviewer_credential_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QualificationRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attestation": {
+          "const": true
+        }
+      },
+      "required": [
+        "admission_ref",
+        "admission_digest",
+        "expected_head_revision",
+        "reviewer_credential_ref",
+        "attestation"
+      ],
+      "additionalProperties": false
+    },
+    "RevokePayload": {
+      "type": "object",
+      "properties": {
+        "head_ref": {
+          "$ref": "#/$defs/AdmissionRef"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ArtifactRef"
+          },
+          "minItems": 0,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "head_ref",
+        "evidence_refs"
+      ],
+      "additionalProperties": false
+    },
+    "ActorAttribution": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "LEGACY_COMPANY_USER"
+            },
+            "user_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "user_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ACCOUNT"
+            },
+            "account_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "account_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AuditEventRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "audit_event_id": {
+          "$ref": "#/$defs/UUID"
+        }
+      },
+      "required": [
+        "org_id",
+        "audit_event_id"
+      ],
+      "additionalProperties": false
+    },
+    "EventPackageHeader": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "ATTENDANCE_EVENT_PACKAGE"
+        },
+        "format": {
+          "const": "SOURCE19_NDJSON_V1"
+        },
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "query_from_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "query_to_us": {
+          "$ref": "#/$defs/UnixMicroseconds"
+        },
+        "prior_anchor_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EventRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "event_count": {
+          "$ref": "#/$defs/BoundedCount"
+        },
+        "selection_contract": {
+          "const": "source19-v1"
+        }
+      },
+      "required": [
+        "kind",
+        "format",
+        "org_id",
+        "employee_id",
+        "period",
+        "query_from_us",
+        "query_to_us",
+        "prior_anchor_ref",
+        "event_count",
+        "selection_contract"
+      ],
+      "additionalProperties": false
+    },
+    "ExceptionResolutionRef": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "resolution_id": {
+          "$ref": "#/$defs/UUID"
+        }
+      },
+      "required": [
+        "org_id",
+        "resolution_id"
+      ],
+      "additionalProperties": false
+    },
+    "SourceRepairRef": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "EVENT"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "attendance_record_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "attendance_record_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "LEAVE_REQUEST"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "request_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "request_version": {
+              "$ref": "#/$defs/PositiveRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "request_id",
+            "request_version"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "QUALIFICATION"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "qualification_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "revision": {
+              "$ref": "#/$defs/PositiveRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "qualification_id",
+            "revision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "CALENDAR_ASSIGNMENT"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "assignment_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "revision": {
+              "$ref": "#/$defs/PositiveRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "assignment_id",
+            "revision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "DISPOSITION"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "disposition_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "revision": {
+              "$ref": "#/$defs/PositiveRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "disposition_id",
+            "revision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ARTIFACT"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "evidence_object_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "copy_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "attestation_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "attestation_revision": {
+              "$ref": "#/$defs/PositiveRevision"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "evidence_object_id",
+            "copy_id",
+            "attestation_id",
+            "attestation_revision"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "EXCEPTION_RESOLUTION"
+            },
+            "org_id": {
+              "$ref": "#/$defs/UUID"
+            },
+            "resolution_id": {
+              "$ref": "#/$defs/UUID"
+            }
+          },
+          "required": [
+            "kind",
+            "org_id",
+            "resolution_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CloseMemberPackageHeader": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "SOURCE19_CLOSE_MEMBERS_V1"
+        },
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "scope_basis_ref": {
+          "$ref": "#/$defs/ScopeBasisRef"
+        },
+        "member_count": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "format",
+        "org_id",
+        "period",
+        "scope_basis_ref",
+        "member_count"
+      ],
+      "additionalProperties": false
+    },
+    "ResolvedDayPlan": {
+      "type": "object",
+      "properties": {
+        "day_kind": {
+          "enum": [
+            "WORK_DUTY",
+            "PAID_REST",
+            "PAID_HOLIDAY",
+            "NONWORKING"
+          ]
+        },
+        "duties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DutyPlan"
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "expected_work_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "expected_paid_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "rule_ref": {
+          "$ref": "#/$defs/QualificationRef"
+        }
+      },
+      "required": [
+        "day_kind",
+        "duties",
+        "expected_work_minutes",
+        "expected_paid_minutes",
+        "rule_ref"
+      ],
+      "additionalProperties": false
+    },
+    "EffectiveDayPlan": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "anchor_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "calendar_assignment_ref": {
+          "$ref": "#/$defs/CalendarAssignmentRef"
+        },
+        "calendar_ref": {
+          "$ref": "#/$defs/CalendarRef"
+        },
+        "plan": {
+          "$ref": "#/$defs/ResolvedDayPlan"
+        }
+      },
+      "required": [
+        "org_id",
+        "anchor_date",
+        "calendar_assignment_ref",
+        "calendar_ref",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "CoveragePlanContribution": {
+      "type": "object",
+      "properties": {
+        "anchor_date": {
+          "$ref": "#/$defs/Date"
+        },
+        "calendar_assignment_ref": {
+          "$ref": "#/$defs/CalendarAssignmentRef"
+        },
+        "plan_digest": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "expected_work_minutes": {
+          "$ref": "#/$defs/Minute"
+        },
+        "expected_paid_minutes": {
+          "$ref": "#/$defs/Minute"
+        }
+      },
+      "required": [
+        "anchor_date",
+        "calendar_assignment_ref",
+        "plan_digest",
+        "expected_work_minutes",
+        "expected_paid_minutes"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageDaysRef": {
+      "type": "object",
+      "properties": {
+        "artifact_ref": {
+          "$ref": "#/$defs/ArtifactRef"
+        },
+        "format": {
+          "const": "SOURCE19_COVERAGE_DAYS_V1"
+        },
+        "day_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "day_set_digest": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "artifact_ref",
+        "format",
+        "day_count",
+        "day_set_digest"
+      ],
+      "additionalProperties": false
+    },
+    "CoverageDayPackageHeader": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "SOURCE19_COVERAGE_DAYS_V1"
+        },
+        "org_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employee_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "employment_id": {
+          "$ref": "#/$defs/UUID"
+        },
+        "period": {
+          "$ref": "#/$defs/InclusivePeriod"
+        },
+        "day_count": {
+          "$ref": "#/$defs/Count"
+        },
+        "event_set_digest": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "required": [
+        "format",
+        "org_id",
+        "employee_id",
+        "employment_id",
+        "period",
+        "day_count",
+        "event_set_digest"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/AdmissionPayload"
+    },
+    {
+      "$ref": "#/$defs/VerifyPayload"
+    },
+    {
+      "$ref": "#/$defs/RevokePayload"
+    },
+    {
+      "$ref": "#/$defs/CalendarPayload"
+    },
+    {
+      "$ref": "#/$defs/CalendarAssignmentPayload"
+    },
+    {
+      "$ref": "#/$defs/CoveragePayload"
+    },
+    {
+      "$ref": "#/$defs/LeaveDispositionPayload"
+    },
+    {
+      "$ref": "#/$defs/ClosePayload"
+    },
+    {
+      "$ref": "#/$defs/EventWitness"
+    },
+    {
+      "$ref": "#/$defs/CloseMember"
+    },
+    {
+      "$ref": "#/$defs/EventPackageHeader"
+    },
+    {
+      "$ref": "#/$defs/CloseMemberPackageHeader"
+    },
+    {
+      "$ref": "#/$defs/CoverageDay"
+    },
+    {
+      "$ref": "#/$defs/CoverageDayPackageHeader"
+    },
+    {
+      "$ref": "#/$defs/EffectiveDayPlan"
+    }
+  ]
+}

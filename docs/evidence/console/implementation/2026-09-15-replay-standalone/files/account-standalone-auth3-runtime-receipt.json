@@ -1,0 +1,35 @@
+{
+  "kind": "standalone-refresh-caller-runtime",
+  "candidate_sha": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "tests_executed": 11,
+  "passed": 8,
+  "failed": 3,
+  "ignored": 0,
+  "by_target": {
+    "dev_auth_session": {
+      "passed": 7,
+      "failed": 0,
+      "features": [
+        "dev-auth"
+      ]
+    },
+    "deactivate_revokes_credentials": {
+      "passed": 1,
+      "failed": 0
+    },
+    "refresh_tokens": {
+      "passed": 0,
+      "failed": 3,
+      "boundary": "issue_family cannot INSERT auth_refresh_token_families through restricted console_auth_rt; rotation assertions unexecuted"
+    }
+  },
+  "driver_receipt": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5/driver-receipt.json",
+  "driver_receipt_sha256": "e6b3cda2e543db3d5584846146fee978c053429e227a795079754063b00e1de3",
+  "source_pre_post": "exactly equal",
+  "cleanup": "confirmed owned container absent via successful bounded docker ps -a",
+  "limits": [
+    "No broader legacy credential conversion claimed",
+    "No privileges broadened or failing assertions weakened",
+    "Dev-auth selected via reviewed private map; no CI wiring claim"
+  ]
+}

@@ -161,6 +161,7 @@ export function partitionTargetsByMetadata(targets, metadata) {
   const normal = [], postgres = [];
   for (const target of targets) {
     const labels = observed.get(target);
+    if (labels.includes('resource.postgres-recovery')) fail('Recovery requires the dedicated supervised two-node topology; use its CI recovery executor');
     if (labels.includes('needs-postgres')) {
       if (!POSTGRES_WRAPPER.test(target)) fail('needs-postgres target is not a credential-safe PostgreSQL wrapper');
       postgres.push(target);

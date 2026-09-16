@@ -1,0 +1,309 @@
+{
+  "kind": "eligibility.propose",
+  "body": {
+    "family": "ELIGIBILITY",
+    "payload": {
+      "kind": "PAYROLL_ELIGIBILITY",
+      "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+      "employment_coverage": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "employee_id": "d4350801-44d4-54f8-a9a8-fb2867fbe19a",
+        "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+        "binding_id": "2dc2bbb5-c5d3-5ef5-abac-95c7a396f090",
+        "binding_revision": "1",
+        "earning_start_us": "1788188400000000",
+        "earning_end_us": "1790780400000000",
+        "segments": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "employment_id": "abc17824-a202-5ffc-b25c-79d53ff52fb4",
+            "revision_id": "a1f866da-4ae9-5b04-92e4-6bdba70e3040",
+            "revision": "1",
+            "from_us": "1788188400000000",
+            "to_us": "1790780400000000"
+          }
+        ]
+      },
+      "period": {
+        "start": "2026-09-01",
+        "end": "2026-09-30"
+      },
+      "pay_date": "2026-10-05",
+      "profile_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "profile_id": "f11fadcd-2a07-5380-8181-0dda1ea667ed",
+        "revision": "1",
+        "rule_bundle": {
+          "bundle_id": "NONPRODUCTION_FIXTURE_V1",
+          "kernel_build_sha256": "2dd9c3e4540870098da4d51004421431ed910a0a307c7c54004f1bd2ea13401a",
+          "citation_set_sha256": "0ee7c36c624393147e6782f608b7096fba9b0c45503bd763acda24fe12146e06"
+        }
+      },
+      "wage_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "base_wage_id": "669a4952-0622-58ff-95e1-af6656433e9b",
+        "correction_revision": "1"
+      },
+      "coverage_ref": {
+        "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+        "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+        "revision": "1"
+      },
+      "insurance": [
+        {
+          "scheme": "NATIONAL_PENSION",
+          "status": "APPLIES",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "evidence_refs": [
+            {
+              "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+              "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+              "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+              "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+              "attestation_revision": "1"
+            }
+          ]
+        },
+        {
+          "scheme": "HEALTH",
+          "status": "APPLIES",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "evidence_refs": [
+            {
+              "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+              "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+              "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+              "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+              "attestation_revision": "1"
+            }
+          ]
+        },
+        {
+          "scheme": "LONG_TERM_CARE",
+          "status": "APPLIES",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "evidence_refs": [
+            {
+              "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+              "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+              "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+              "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+              "attestation_revision": "1"
+            }
+          ]
+        },
+        {
+          "scheme": "EMPLOYMENT",
+          "status": "APPLIES",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "evidence_refs": [
+            {
+              "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+              "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+              "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+              "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+              "attestation_revision": "1"
+            }
+          ]
+        }
+      ],
+      "pension_basis": {
+        "amount_won": "2000000",
+        "definition_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+          "revision": "1"
+        },
+        "evidence_refs": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+            "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+            "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+            "attestation_revision": "1"
+          }
+        ]
+      },
+      "remuneration_basis": {
+        "amount_won": "3000000",
+        "definition_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+          "revision": "1"
+        },
+        "evidence_refs": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+            "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+            "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+            "attestation_revision": "1"
+          }
+        ]
+      },
+      "taxable_basis": {
+        "amount_won": "3000000",
+        "definition_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+          "revision": "1"
+        },
+        "evidence_refs": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+            "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+            "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+            "attestation_revision": "1"
+          }
+        ]
+      },
+      "obligations": [
+        {
+          "family": "PRORATION",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        },
+        {
+          "family": "OVERTIME",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        },
+        {
+          "family": "NIGHT",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        },
+        {
+          "family": "HOLIDAY_PREMIUM",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        },
+        {
+          "family": "UNPAID_REDUCTION",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        },
+        {
+          "family": "RETRO_ADJUSTMENT",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        },
+        {
+          "family": "LATE_ABSENCE_EARLY_LEAVE",
+          "outcome": "NONE_DUE",
+          "qualification_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+            "revision": "1"
+          },
+          "coverage_ref": {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "coverage_id": "de54eb1c-af81-5d4c-a2c8-7e9d5d3eab62",
+            "revision": "1"
+          },
+          "evidence_refs": []
+        }
+      ],
+      "selection": {
+        "taxable_monthly_won": "3000000",
+        "dependent_count_including_self": "1",
+        "eligible_child_count": "0",
+        "withholding_option": "P100",
+        "selection_fact_refs": [
+          {
+            "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+            "evidence_object_id": "26b202fd-02e7-59f7-a981-c62f5fd80b08",
+            "copy_id": "5ff2ed60-4bad-520b-9662-7ecc51635cbd",
+            "attestation_id": "1a0aedba-2a2c-5ec7-b251-c380228fd64d",
+            "attestation_revision": "1"
+          }
+        ],
+        "income_definition_ref": {
+          "org_id": "aa143136-c207-5c3e-a89d-2c05128a576f",
+          "qualification_id": "e52472b0-826a-53c2-a815-8f4a01454825",
+          "revision": "1"
+        }
+      },
+      "outcome": "SUPPORTED",
+      "blockers": []
+    },
+    "supersedes_ref": null
+  }
+}

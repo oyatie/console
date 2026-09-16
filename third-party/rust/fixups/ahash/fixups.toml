@@ -1,0 +1,3 @@
+# Preserve the upstream architecture-dependent hashing cfgs.
+[buildscript]
+run = true

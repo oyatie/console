@@ -1,0 +1,27 @@
+{
+  "head": "23fa277133e83916d094f9b2423b48fd5af65ce4",
+  "gates": [
+    {
+      "name": "audit-coverage",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "-p",
+        "console-gate-audit-coverage"
+      ],
+      "exit": 0
+    },
+    {
+      "name": "rls-arming",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "-p",
+        "console-gate-rls-arming"
+      ],
+      "exit": 0
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "importer": "/root",
+  "source_candidate": "0d6fa31656ec9051cecd3b0da767a9174d4dee94",
+  "import_base": "c76ebaf6cc4418e5d9be0ed3b0aa3ab52b244163",
+  "payloads": 75,
+  "bytes": 1238269,
+  "retention_manifest_sha256": "dceb2eb7bf07bc614f2bacc2ab22467d6e63af3f3ca5f73de7822abc6308de9c",
+  "all_payload_hashes_rechecked": true,
+  "no_new_markdown": true,
+  "completion": "Approved owner profile37GREEN,36regressions33PASS3historicalFAIL; broaderAccount/Console and production remain incomplete"
+}

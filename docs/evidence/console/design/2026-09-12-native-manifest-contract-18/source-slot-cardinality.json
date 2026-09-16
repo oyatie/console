@@ -1,0 +1,202 @@
+{
+  "status": "PROPOSED_NATIVE_BOUNDARY",
+  "kinds": [
+    {
+      "kind": "EMPLOYMENT_BINDING",
+      "wire_type": "EmploymentBindingRef",
+      "selected_resolved_min": 1,
+      "selected_resolved_max": 1,
+      "selected_ordinals": "0",
+      "candidate_max": 32,
+      "candidates": "BLOCKED only;1..N canonical-ref order",
+      "owner_transitive_dependencies": "retained and verified through owning source record, not flattened here",
+      "sql_mapping": {
+        "reference_id": "ref.binding_id",
+        "reference_revision": "ref.binding_revision",
+        "org_id": "ref.org_id must equal parent org_id",
+        "employee_id": "parent employee_id; EMPLOYMENT_BINDING also requires ref.employee_id equality",
+        "employment_id": "ref.employment_id",
+        "from_us": "SQL NULL",
+        "to_us": "SQL NULL",
+        "source_kind": "kind",
+        "selection": "selection",
+        "ordinal": "parsed ordinal"
+      }
+    },
+    {
+      "kind": "EMPLOYMENT_REVISION",
+      "wire_type": "EmploymentSegmentRef",
+      "selected_resolved_min": 1,
+      "selected_resolved_max": 128,
+      "selected_ordinals": "1..N in effective-time order",
+      "candidate_max": 32,
+      "candidates": "BLOCKED only;1..N canonical-ref order",
+      "owner_transitive_dependencies": "retained and verified through owning source record, not flattened here",
+      "sql_mapping": {
+        "reference_id": "ref.revision_id",
+        "reference_revision": "ref.revision",
+        "org_id": "ref.org_id must equal parent org_id",
+        "employee_id": "parent employee_id; EMPLOYMENT_BINDING also requires ref.employee_id equality",
+        "employment_id": "ref.employment_id",
+        "from_us": "ref.from_us",
+        "to_us": "ref.to_us",
+        "source_kind": "kind",
+        "selection": "selection",
+        "ordinal": "parsed ordinal"
+      }
+    },
+    {
+      "kind": "WAGE",
+      "wire_type": "WageFactRef",
+      "selected_resolved_min": 1,
+      "selected_resolved_max": 1,
+      "selected_ordinals": "0",
+      "candidate_max": 32,
+      "candidates": "BLOCKED only;1..N canonical-ref order",
+      "owner_transitive_dependencies": "retained and verified through owning source record, not flattened here",
+      "sql_mapping": {
+        "reference_id": "ref.base_wage_id",
+        "reference_revision": "ref.correction_revision",
+        "org_id": "ref.org_id must equal parent org_id",
+        "employee_id": "parent employee_id; EMPLOYMENT_BINDING also requires ref.employee_id equality",
+        "employment_id": "SQL NULL",
+        "from_us": "SQL NULL",
+        "to_us": "SQL NULL",
+        "source_kind": "kind",
+        "selection": "selection",
+        "ordinal": "parsed ordinal"
+      }
+    },
+    {
+      "kind": "ATTENDANCE_COVERAGE",
+      "wire_type": "AttendanceCoverageRef",
+      "selected_resolved_min": 1,
+      "selected_resolved_max": 1,
+      "selected_ordinals": "0",
+      "candidate_max": 32,
+      "candidates": "BLOCKED only;1..N canonical-ref order",
+      "owner_transitive_dependencies": "retained and verified through owning source record, not flattened here",
+      "sql_mapping": {
+        "reference_id": "ref.coverage_id",
+        "reference_revision": "ref.revision",
+        "org_id": "ref.org_id must equal parent org_id",
+        "employee_id": "parent employee_id; EMPLOYMENT_BINDING also requires ref.employee_id equality",
+        "employment_id": "SQL NULL",
+        "from_us": "SQL NULL",
+        "to_us": "SQL NULL",
+        "source_kind": "kind",
+        "selection": "selection",
+        "ordinal": "parsed ordinal"
+      }
+    },
+    {
+      "kind": "ELIGIBILITY",
+      "wire_type": "EligibilityRef",
+      "selected_resolved_min": 1,
+      "selected_resolved_max": 1,
+      "selected_ordinals": "0",
+      "candidate_max": 32,
+      "candidates": "BLOCKED only;1..N canonical-ref order",
+      "owner_transitive_dependencies": "retained and verified through owning source record, not flattened here",
+      "sql_mapping": {
+        "reference_id": "ref.assessment_id",
+        "reference_revision": "ref.revision",
+        "org_id": "ref.org_id must equal parent org_id",
+        "employee_id": "parent employee_id; EMPLOYMENT_BINDING also requires ref.employee_id equality",
+        "employment_id": "SQL NULL",
+        "from_us": "SQL NULL",
+        "to_us": "SQL NULL",
+        "source_kind": "kind",
+        "selection": "selection",
+        "ordinal": "parsed ordinal"
+      }
+    },
+    {
+      "kind": "TAX_EVIDENCE",
+      "wire_type": "TaxEvidenceRef",
+      "selected_resolved_min": 1,
+      "selected_resolved_max": 1,
+      "selected_ordinals": "0",
+      "candidate_max": 32,
+      "candidates": "BLOCKED only;1..N canonical-ref order",
+      "owner_transitive_dependencies": "retained and verified through owning source record, not flattened here",
+      "sql_mapping": {
+        "reference_id": "ref.evidence_id",
+        "reference_revision": "ref.revision",
+        "org_id": "ref.org_id must equal parent org_id",
+        "employee_id": "parent employee_id; EMPLOYMENT_BINDING also requires ref.employee_id equality",
+        "employment_id": "SQL NULL",
+        "from_us": "SQL NULL",
+        "to_us": "SQL NULL",
+        "source_kind": "kind",
+        "selection": "selection",
+        "ordinal": "parsed ordinal"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "NM-V01",
+      "rule": "All refs exact Company and kind; source owners check employee/Employment/period/profile and current state, not only UUID FK."
+    },
+    {
+      "id": "NM-V02",
+      "rule": "RESOLVED has each selected singleton once and1..128 selected Employment segments; no candidates; BLOCKED may have partial known refs but no arithmetic."
+    },
+    {
+      "id": "NM-V03",
+      "rule": "Segments sorted by effective interval, exact revision/Employment lookup and clipping, no gap/overlap, cover header earning interval with eligible states."
+    },
+    {
+      "id": "NM-V04",
+      "rule": "Base wage + correction0 selects original row; positive correction selects same-root exact revision. Selected wage stable through month and pay_date applicability window; amount/hours/profile checks exact."
+    },
+    {
+      "id": "NM-V05",
+      "rule": "Eligibility verified for exact basis; arithmetic taxable/pension/status/hours facts match. Tax verified for exact assessment/selection/edition/pay_date and amounts; no circular assessment->tax dependency."
+    },
+    {
+      "id": "NM-V06",
+      "rule": "Header population complete under POPULATION/EMPLOYMENT and scope guards, including hidden/blocked members. membership_basis_digest binds canonical selected employee IDs and source query basis defined below."
+    },
+    {
+      "id": "NM-V07",
+      "rule": "Source refs max256, candidates max32 perkind; normalized leaf<=64KiB. Over-limit family omitted wholly with explicit blocker; never pretend truncated list complete."
+    },
+    {
+      "id": "NM-V08",
+      "rule": "Input membership equals all input units; batch membership equals input units and outcomes exactly; successes biject immutable money rows with matching identities; counts exact."
+    },
+    {
+      "id": "NM-V09",
+      "rule": "Close requires nonempty resolved input/current sources; blocked prepare cannot calculate. Kernel blockers create outcome evidence without rewriting input or manufacturing money."
+    },
+    {
+      "id": "NM-V10",
+      "rule": "Source-reference rowset is the sole stored slot list; canonical unit basis rebuilt from native columns and this ordered rowset. No second authoritative JSON list."
+    },
+    {
+      "id": "NM-V11",
+      "rule": "All ten guards required once/sorted for current NP1 profile; exact current semantic re-resolution may preserve unaffected approval despite unrelated generation advance."
+    },
+    {
+      "id": "NM-V12",
+      "rule": "Missing/null, source-slot refs in blockers, candidate/selected duplicates and scalar/date bounds validated before insert; no raw manifest serialized to unauthorized caller."
+    }
+  ],
+  "membership_basis": "H(console.payroll.native18.population-basis,{org_id,period,scope_basis_ref,employee_set_digest,selection_contract:\"native18-v1\"}); employee_set_digest=SHA256(UTF8(\"console.payroll.native18.employee-set\")||0x00||U32BE(count)||sorted unique employee UUID raw16 bytes). Actual population query/source history semantics remain HT1 and source-owner F01/F02; hash never substitutes their proof.",
+  "blocker_registry": [
+    "MISSING_SOURCE",
+    "AMBIGUOUS_SOURCE",
+    "SOURCE_BOUND_EXCEEDED",
+    "SOURCE_INVALID",
+    "INCOMPLETE_EMPLOYMENT",
+    "INCOMPLETE_ATTENDANCE",
+    "UNRESOLVED_OBLIGATION",
+    "UNSUPPORTED_PROFILE",
+    "UNSUPPORTED_ROUNDING",
+    "ARITHMETIC_OVERFLOW",
+    "UNSUPPORTED_NEGATIVE_NET"
+  ],
+  "semantic_registry": "These closed codes express outcomes, never authority, role, action subtype or transfer reason. An added code requires versioned registered decoder and accessible owner repair projection."
+}

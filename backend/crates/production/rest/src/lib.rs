@@ -19,7 +19,7 @@ use base64::Engine as _;
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, ErrorKind, KernelError, OrgId, TraceContext, UserId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, Feature, Principal, ServicePrincipal, authorize, authorize_service,
 };
@@ -59,15 +59,15 @@ pub const PRODUCTION_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct ProductionRestState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     service_principal_hmac_key: Option<[u8; 32]>,
 }
 impl ProductionRestState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
         Self {
             pool,
-            jwt_verifier,
+            session_verification,
             service_principal_hmac_key: None,
         }
     }
@@ -80,7 +80,7 @@ impl ProductionRestState {
 }
 
 pub fn router(state: ProductionRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let human_router = Router::new()
         .route(PRODUCTION_PLANS_PATH, get(list_plans).post(create_plan))
@@ -1466,12 +1466,19 @@ async fn principal(
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
     let verifier = state
-        .jwt_verifier
+        .session_verification
         .as_ref()
         .ok_or_else(|| RestError::internal("JWT verification is not configured"))?;
     console_platform_request_context::resolve_principal(verifier, &state.pool, headers)
         .await
-        .map_err(|_| RestError::unauthorized("missing, invalid, or unauthorized bearer token"))
+        .map_err(|err| match err {
+            console_platform_request_context::RequestContextError::SessionVerificationUnavailable => RestError {
+                status: StatusCode::SERVICE_UNAVAILABLE,
+                kind: ErrorKind::Internal,
+                message: "session verification unavailable".to_owned(),
+            },
+            _ => RestError::unauthorized("missing, invalid, or unauthorized bearer token"),
+        })
 }
 fn authorize_daily_plan_read(principal: &Principal, branch_id: BranchId) -> Result<(), RestError> {
     authorize(

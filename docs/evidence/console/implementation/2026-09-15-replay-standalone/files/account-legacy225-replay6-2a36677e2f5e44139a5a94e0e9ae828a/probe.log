@@ -1,0 +1,77 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_81388" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_81388, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+SELECT 27
+SELECT 5
+SELECT 415
+DO
+ALTER ROLE
+DO
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[92m   Compiling[0m console-app v0.1.0 (/private/tmp/console-production-tdd-preparation-20260913/backend/app)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 6.78s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m tests/account_migration.rs (/private/tmp/console-account30-cargo/debug/deps/account_migration-e6a8a2ce91e7bfbb)
+cargo-postgres: === app-account-migration-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test account_migration -- --test-threads=1
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.48s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/account_migration.rs (/private/tmp/console-account30-cargo/debug/deps/account_migration-e6a8a2ce91e7bfbb)
+
+running 6 tests
+test historical225_fixture_corrupt_digest_refuses_before_replay_write ... ok
+test historical225_fixture_membership_key_rejects_and_rolls_back ... ok
+test historical225_fixture_omitted_row_rejects_and_rolls_back ... ok
+test historical225_fixture_token_correlation_rejects_and_rolls_back ... ok
+test populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits ... FAILED
+test populated_225_to_current_preserves_preexisting_family_and_token_revocations ... FAILED
+
+failures:
+
+---- populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits stdout ----
+
+thread 'populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits' (32691133) panicked at app/tests/account_migration.rs:385:5:
+ACCOUNT_CATALOG_PREREQUISITE: legacy fixture seeded with2 subjects/2 credentials/7 audit rows and current migrator completed; preservation assertions not reached; missing=["company_actors"]
+
+---- populated_225_to_current_preserves_preexisting_family_and_token_revocations stdout ----
+
+thread 'populated_225_to_current_preserves_preexisting_family_and_token_revocations' (32691470) panicked at app/tests/account_migration.rs:385:5:
+ACCOUNT_CATALOG_PREREQUISITE: legacy fixture seeded with2 subjects/2 credentials/7 audit rows and current migrator completed; preservation assertions not reached; missing=["company_actors"]
+
+
+failures:
+    populated_225_to_current_preserves_credential_bytes_token_correlations_and_original_audits
+    populated_225_to_current_preserves_preexisting_family_and_token_revocations
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.76s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test account_migration`
+cargo-postgres-timing: {"name": "app-account-migration-pg", "package": "console-app", "seconds": 19.939, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  app-account-migration-pg
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

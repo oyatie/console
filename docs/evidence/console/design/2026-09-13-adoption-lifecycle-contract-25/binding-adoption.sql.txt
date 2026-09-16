@@ -1,0 +1,198 @@
+-- PROPOSED INTEGRATION FRAGMENT; no applied migration or source enrollment.
+-- Requires full17 retained_units/domain_adoptions and24 source submissions,
+-- 14 attempts and22/23 effect relation. Existing common records are not recreated.
+-- Assumed17 domain_adoptions: PK(org_id,adoption_id), snapshot_unit_id UUID,
+-- obligation_ref exact registered governed reference; full decoder/schema remains F03.
+BEGIN;
+ALTER TABLE public.retained_units
+ ADD CONSTRAINT adoption25_unit_identity UNIQUE(org_id,unit_id,identity_digest);
+CREATE TABLE public.ont_source_submission_bindings (
+ org_id uuid NOT NULL,
+ unit_id uuid NOT NULL,
+ preparation_command_id uuid NOT NULL,
+ preparation_bytes bytea NOT NULL CHECK(pg_catalog.octet_length(preparation_bytes) BETWEEN 1 AND 16384),
+ preparation_digest bytea NOT NULL CHECK(pg_catalog.octet_length(preparation_digest)=32),
+ source_input_digest bytea NOT NULL CHECK(pg_catalog.octet_length(source_input_digest)=32),
+ attempt_id uuid,
+ command_id uuid,
+ actor_account_id uuid,
+ command_fingerprint bytea,
+ snapshot_digest bytea,
+ snapshot_size integer,
+ PRIMARY KEY(org_id,unit_id),
+ UNIQUE(org_id,attempt_id),
+ UNIQUE(org_id,command_id),
+ UNIQUE(org_id,unit_id,attempt_id,command_id,actor_account_id,command_fingerprint,source_input_digest),
+ UNIQUE(org_id,unit_id,command_id,snapshot_digest),
+ CHECK(preparation_digest=pg_catalog.sha256(pg_catalog.convert_to('console.source24.preparation','UTF8')||pg_catalog.decode('00','hex')||preparation_bytes)),
+ CHECK((attempt_id IS NULL AND command_id IS NULL AND actor_account_id IS NULL AND command_fingerprint IS NULL)
+    OR (attempt_id IS NOT NULL AND command_id IS NOT NULL AND actor_account_id IS NOT NULL AND command_fingerprint IS NOT NULL
+        AND pg_catalog.octet_length(command_fingerprint)=32)),
+ CHECK((snapshot_digest IS NULL AND snapshot_size IS NULL)
+    OR (snapshot_digest IS NOT NULL AND snapshot_size IS NOT NULL AND command_id IS NOT NULL
+        AND pg_catalog.octet_length(snapshot_digest)=32 AND snapshot_size BETWEEN 46 AND 147499)),
+ FOREIGN KEY(org_id,unit_id,preparation_digest) REFERENCES public.retained_units(org_id,unit_id,identity_digest)
+    ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ FOREIGN KEY(org_id,preparation_command_id) REFERENCES public.ont_action_command_receipts(org_id,command_id)
+    ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ FOREIGN KEY(org_id,attempt_id,command_id,actor_account_id,command_fingerprint)
+    REFERENCES public.ont_draft_submission_attempts(org_id,attempt_id,domain_command_id,original_account_id,command_fingerprint)
+    MATCH SIMPLE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED
+);
+ALTER TABLE public.ont_source_submission_bindings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ont_source_submission_bindings FORCE ROW LEVEL SECURITY;
+CREATE POLICY adoption25_binding_company ON public.ont_source_submission_bindings
+ USING(org_id=NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid)
+ WITH CHECK(org_id=NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid);
+REVOKE ALL ON public.ont_source_submission_bindings
+ FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+GRANT SELECT,INSERT,UPDATE ON public.ont_source_submission_bindings TO console_owner_commit_writer;
+REVOKE DELETE,TRUNCATE ON public.ont_source_submission_bindings FROM console_owner_commit_writer;
+
+CREATE FUNCTION public.adoption25_binding_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog SET row_security=on AS $$
+BEGIN
+ IF TG_OP='DELETE' THEN
+  RAISE EXCEPTION 'submission identity removal refused' USING ERRCODE='55000';
+ END IF;
+ IF current_user<>'console_owner_commit_writer'
+    OR NEW.org_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid THEN
+  RAISE EXCEPTION 'submission identity writer refused' USING ERRCODE='42501';
+ END IF;
+ IF TG_OP='INSERT' THEN
+  IF NEW.attempt_id IS NOT NULL OR NEW.command_id IS NOT NULL OR NEW.actor_account_id IS NOT NULL
+     OR NEW.command_fingerprint IS NOT NULL OR NEW.snapshot_digest IS NOT NULL OR NEW.snapshot_size IS NOT NULL THEN
+   RAISE EXCEPTION 'prebound submission refused' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+ END IF;
+ IF ROW(NEW.org_id,NEW.unit_id,NEW.preparation_command_id,NEW.preparation_bytes,NEW.preparation_digest,NEW.source_input_digest)
+    IS DISTINCT FROM ROW(OLD.org_id,OLD.unit_id,OLD.preparation_command_id,OLD.preparation_bytes,OLD.preparation_digest,OLD.source_input_digest) THEN
+  RAISE EXCEPTION 'submission preparation changed' USING ERRCODE='55000';
+ END IF;
+ IF OLD.command_id IS NULL THEN
+  IF NEW.command_id IS NULL OR NEW.snapshot_digest IS NOT NULL OR NEW.snapshot_size IS NOT NULL THEN
+   RAISE EXCEPTION 'submission seal transition refused' USING ERRCODE='23514';
+  END IF;
+ ELSE
+  IF ROW(NEW.attempt_id,NEW.command_id,NEW.actor_account_id,NEW.command_fingerprint)
+     IS DISTINCT FROM ROW(OLD.attempt_id,OLD.command_id,OLD.actor_account_id,OLD.command_fingerprint)
+     OR OLD.snapshot_digest IS NOT NULL OR NEW.snapshot_digest IS NULL THEN
+   RAISE EXCEPTION 'submission publication transition refused' USING ERRCODE='55000';
+  END IF;
+ END IF;
+ RETURN NEW;
+END;
+$$;
+CREATE TRIGGER adoption25_binding_guard BEFORE INSERT OR UPDATE OR DELETE ON public.ont_source_submission_bindings
+ FOR EACH ROW EXECUTE FUNCTION public.adoption25_binding_guard();
+
+-- Payload points to identity; identities never hold a permanent FK to removable bytes.
+ALTER TABLE public.ont_source_submissions
+ ADD CONSTRAINT adoption25_payload_binding FOREIGN KEY(org_id,unit_id,attempt_id,command_id,actor_account_id,command_fingerprint,source_input_digest)
+   REFERENCES public.ont_source_submission_bindings(org_id,unit_id,attempt_id,command_id,actor_account_id,command_fingerprint,source_input_digest)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ ADD CONSTRAINT adoption25_payload_publication FOREIGN KEY(org_id,unit_id,command_id,snapshot_digest)
+   REFERENCES public.ont_source_submission_bindings(org_id,unit_id,command_id,snapshot_digest)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE public.ont_action_source_effects
+ ADD COLUMN submission_unit_id uuid NOT NULL,
+ ADD COLUMN submission_snapshot_digest bytea NOT NULL CHECK(pg_catalog.octet_length(submission_snapshot_digest)=32),
+ ADD COLUMN submitted_intent_slot smallint GENERATED ALWAYS AS (1::smallint) STORED,
+ ADD CONSTRAINT adoption25_effect_unit FOREIGN KEY(org_id,submission_unit_id,command_id,submission_snapshot_digest)
+   REFERENCES public.ont_source_submission_bindings(org_id,unit_id,command_id,snapshot_digest)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ ADD CONSTRAINT adoption25_effect_exact UNIQUE(org_id,command_id,ordinal,submission_unit_id,submission_snapshot_digest);
+-- Source-submission slot1 is a protocol relationship, not the actual policy/obligation.
+-- Other adoption variants retain their existing owner contracts; no generic optional-source bypass.
+ALTER TABLE public.domain_adoptions
+ ADD COLUMN source_command_id uuid,
+ ADD COLUMN source_effect_ordinal smallint,
+ ADD COLUMN source_snapshot_digest bytea,
+ ADD COLUMN source_submission_slot smallint GENERATED ALWAYS AS (CASE WHEN source_command_id IS NOT NULL THEN 1::smallint END) STORED,
+ ADD CONSTRAINT adoption25_source_presence CHECK(
+   (source_command_id IS NULL AND source_effect_ordinal IS NULL AND source_snapshot_digest IS NULL)
+   OR (source_command_id IS NOT NULL AND source_effect_ordinal IS NOT NULL AND source_snapshot_digest IS NOT NULL
+       AND snapshot_unit_id IS NOT NULL AND obligation_ref IS NOT NULL
+       AND source_effect_ordinal BETWEEN 0 AND 1023 AND pg_catalog.octet_length(source_snapshot_digest)=32)),
+ ADD CONSTRAINT adoption25_source_exact UNIQUE(org_id,source_command_id,source_effect_ordinal,source_submission_slot,snapshot_unit_id,source_snapshot_digest),
+ ADD CONSTRAINT adoption25_source_one UNIQUE(org_id,source_command_id,source_effect_ordinal,source_submission_slot),
+ ADD CONSTRAINT adoption25_adoption_effect FOREIGN KEY(org_id,source_command_id,source_effect_ordinal,snapshot_unit_id,source_snapshot_digest)
+   REFERENCES public.ont_action_source_effects(org_id,command_id,ordinal,submission_unit_id,submission_snapshot_digest)
+   MATCH SIMPLE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED,
+ ADD CONSTRAINT adoption25_adoption_binding FOREIGN KEY(org_id,snapshot_unit_id,source_command_id,source_snapshot_digest)
+   REFERENCES public.ont_source_submission_bindings(org_id,unit_id,command_id,snapshot_digest)
+   MATCH SIMPLE ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE public.ont_action_source_effects
+ ADD CONSTRAINT adoption25_effect_adoption FOREIGN KEY(org_id,command_id,ordinal,submitted_intent_slot,submission_unit_id,submission_snapshot_digest)
+   REFERENCES public.domain_adoptions(org_id,source_command_id,source_effect_ordinal,source_submission_slot,snapshot_unit_id,source_snapshot_digest)
+   ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED;
+
+CREATE FUNCTION public.adoption25_source_adoption_guard() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog SET row_security=on AS $$
+BEGIN
+ IF TG_OP='INSERT' THEN
+  IF NEW.source_command_id IS NOT NULL AND (current_user<>'console_owner_commit_writer'
+       OR NEW.org_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid) THEN
+   RAISE EXCEPTION 'source adoption writer refused' USING ERRCODE='42501';
+  END IF;
+  RETURN NEW;
+ END IF;
+ IF OLD.source_command_id IS NOT NULL THEN
+  RAISE EXCEPTION 'source adoption is immutable' USING ERRCODE='55000';
+ END IF;
+ IF TG_OP='UPDATE' THEN
+  IF NEW.source_command_id IS NOT NULL THEN
+   RAISE EXCEPTION 'adoption variant conversion refused' USING ERRCODE='55000';
+  END IF;
+  RETURN NEW;
+ END IF;
+ RETURN OLD;
+END;
+$$;
+CREATE TRIGGER adoption25_source_adoption_guard BEFORE INSERT OR UPDATE OR DELETE ON public.domain_adoptions
+ FOR EACH ROW EXECUTE FUNCTION public.adoption25_source_adoption_guard();
+
+-- A once-at-publication live-byte check, not a perpetual content FK.
+CREATE FUNCTION public.adoption25_publication_bytes() RETURNS trigger
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog SET row_security=on AS $$
+DECLARE
+ v public.ont_source_submissions%ROWTYPE;
+ v_protocol text;
+BEGIN
+ IF NEW.org_id IS DISTINCT FROM NULLIF(pg_catalog.current_setting('app.current_org',true),'')::uuid THEN
+  RAISE EXCEPTION 'submission publication scope refused' USING ERRCODE='42501';
+ END IF;
+ SELECT r.source_effect_protocol INTO v_protocol FROM public.ont_action_command_receipts r
+  WHERE r.org_id=NEW.org_id AND r.command_id=NEW.command_id;
+ IF NOT FOUND OR v_protocol IS DISTINCT FROM 'SOURCE_EFFECTS21' THEN
+  RAISE EXCEPTION 'submission source receipt unavailable' USING ERRCODE='23514';
+ END IF;
+ SELECT s.* INTO v FROM public.ont_source_submissions s WHERE s.org_id=NEW.org_id AND s.unit_id=NEW.unit_id;
+ IF NOT FOUND THEN
+  RAISE EXCEPTION 'submission bytes unavailable' USING ERRCODE='23514';
+ END IF;
+ IF ROW(v.attempt_id,v.command_id,v.actor_account_id,v.command_fingerprint,v.source_input_digest,v.snapshot_digest)
+    IS DISTINCT FROM ROW(NEW.attempt_id,NEW.command_id,NEW.actor_account_id,NEW.command_fingerprint,NEW.source_input_digest,NEW.snapshot_digest)
+    OR NEW.snapshot_size IS DISTINCT FROM (43+pg_catalog.octet_length(v.metadata_bytes)+pg_catalog.octet_length(v.command_bytes)+pg_catalog.octet_length(v.input_bytes)) THEN
+  RAISE EXCEPTION 'submission bytes binding refused' USING ERRCODE='23514';
+ END IF;
+ RETURN NULL;
+END;
+$$;
+ALTER FUNCTION public.adoption25_publication_bytes() OWNER TO console_owner_commit_writer;
+CREATE CONSTRAINT TRIGGER adoption25_publication_bytes AFTER UPDATE ON public.ont_source_submission_bindings
+ DEFERRABLE INITIALLY DEFERRED FOR EACH ROW
+ WHEN(OLD.snapshot_digest IS NULL AND NEW.snapshot_digest IS NOT NULL)
+ EXECUTE FUNCTION public.adoption25_publication_bytes();
+REVOKE ALL ON FUNCTION public.adoption25_binding_guard(),public.adoption25_source_adoption_guard(),public.adoption25_publication_bytes()
+ FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,console_leave_cmd,console_platform_force_cmd;
+REVOKE TRUNCATE ON public.domain_adoptions FROM PUBLIC,console_rt,console_ontology_cmd,console_ontology_writer,
+ console_leave_cmd,console_platform_force_cmd,console_owner_commit_writer;
+COMMIT;
+-- No deletion/cleanup escape is created;24 byte-row immutability remains.
+-- Complete unit discriminator/state, canonical metadata/command parsing, action/actor/receipt
+-- provenance, actual governed obligation type, protection inventory and every lifecycle writer
+-- require the common owners and finalizer before enrollment. This byte check alone is insufficient.
+-- Default/inherited grants, source_adoption INSERT permission and forced17RLS must be catalog-proved.

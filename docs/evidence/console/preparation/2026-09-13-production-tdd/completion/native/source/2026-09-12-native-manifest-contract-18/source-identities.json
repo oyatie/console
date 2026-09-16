@@ -1,0 +1,244 @@
+{
+  "sources": [
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/native-contract.txt",
+      "git_blob": "58ea22fc435d8890cdaa8a5ab7a419e8c2b87077",
+      "sha256": "cd579d50ca833015cfc69e0e1bc353deae5f3e81300a44c2108c494bfd339049"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/execution-contract.txt",
+      "git_blob": "eca5781d09b7b82c07926cc3ecf0b2fc1a923a43",
+      "sha256": "31bb997397930864df193de1021f0e7c480d4eb5e941d86cefcd5bffa3c1b17e"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/wire-candidate.json",
+      "git_blob": "48069703d0a68566379153471ec604e0eed9413b",
+      "sha256": "28e16342cb0e3d05d77006a74a3696196bdda0fb4a08908731c734bed872c862"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-native-payroll-technical-12/migration-and-proof.txt",
+      "git_blob": "aff340c2dfde3b58bb5c05ef44e8640e33f291ed",
+      "sha256": "eb3a9d21cfe9fa111f47f7f30ddaf410da515aa2902ef4d18c76e156e425b60a"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/encoding-contract.txt",
+      "git_blob": "097b837bb42ce916d9e15777eadf5b5125a15d3d",
+      "sha256": "02e5afb1a706892e571eb39f954e14c4c232feb2a4f69da9ddf147f2a278fefe"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/draft-attempt-contract.txt",
+      "git_blob": "3a1b036ba3975b98550e5adfbd0c77c39374d6d4",
+      "sha256": "347cd09acb93cfc907bfa855f24496b2d4689dd73ed72c3c865bcf075ed0ac83"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-common-action-technical-14/schema-candidate.json",
+      "git_blob": "5ca655e24b73882cbb14943af37697fa46373150",
+      "sha256": "531b300818f5328de6b47b3e1ab04761784f5c087824c36f984fef3d3ed9d928"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/wire-types.json",
+      "git_blob": "6db92ae3a5a8c33021e75c828f076e99e742ed6f",
+      "sha256": "1889da14b09dfb040581da37c12ec28d4d25d26e46ea15b8eeaeba86f26fc96f"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/schema-candidate.json",
+      "git_blob": "53eae8f5184e890b06ba91d7131c25a2dcd3299f",
+      "sha256": "3198b1380551e1103afb4bcb8c2805b000944ffcc004ffd337fa5b46b03921a7"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/historical-attendance-contract.txt",
+      "git_blob": "ba91e5f2c9fb69b919f9a56147a27a0248ab6b85",
+      "sha256": "8167e8928f4817823f23c30b747c4f75502c5f28db8ba8acb14b9dbc14a66191"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/evidence-assessment-contract.txt",
+      "git_blob": "5fd38acf5c97dc491c10580097bbf9bfcadc025e",
+      "sha256": "e5f4c504633276feb841bca1515444bf85a80e518a6c43bcf8f48ff2d00badee"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-source-temporal-technical-15/source-guard-contract.txt",
+      "git_blob": "47c92a19d4b7c50416787289647208ba1c62c715",
+      "sha256": "636d7cb67f76115947eecc225b77177135bed6e7ac05801650e3c005c9414dd0"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/review-and-publication.txt",
+      "git_blob": "2dadc097bec3e5fd1e5aec97fcf99338b4c96fd7",
+      "sha256": "7a05edb7b8ea62a8707fa4e65b346ba0d8e0ce08e7117e02d1eb55c0f0d8629c"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/work-and-capacity.txt",
+      "git_blob": "6446044da5e7594c433c9e852c93d448be1a03ca",
+      "sha256": "0131548013bd6bb98baee6fbaa48ecc167961957aef0f9d4af0a01562e236ffd"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-workflow-group-technical-16/schema-candidate.json",
+      "git_blob": "dbebca11200d0f01862e10a391c91b0efe47fdcb",
+      "sha256": "cfbf02b629e719cc884e668e1e7755abee10cac35f1e182975bbf0a873a77813"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/integration-contract.txt",
+      "git_blob": "74fa75a5d20da640aff982b63f2cbecdd4f86cc1",
+      "sha256": "1310129b0bbd5bc8455075197d47ce639b33b4420d2c8d6816a089d2cac3716c"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/constraints.csv",
+      "git_blob": "087435e7f5cfdc00175da070a8e2a2d54f48c3b3",
+      "sha256": "c147707df53fde08e54ed2a2b4c3688cd50d823c5d63d3c40ca061c56c312cc3"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/roles-and-migration.txt",
+      "git_blob": "5e257f111884186c3cd9bb90a914494116f4a0e8",
+      "sha256": "03f7632da712e6259d2d0ee884e0d47d2041d9c4db12ec8f82038e53899e85f5"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/retention-and-recovery.txt",
+      "git_blob": "e6d179ea1b93c1d07171654e8c140269cae946ed",
+      "sha256": "b66bdeac58be1dcca57e74af0b889d1e1c6afe3f0900849bc6e7ec780ece18c3"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/closure-register.json",
+      "git_blob": "ff57cbb8521a78dd89f534d1d1cc24adcc9de795",
+      "sha256": "89aab9b3678686e2baa484358204649dcedf1c5a3290a28b47bf86c98b07ead1"
+    },
+    {
+      "commit": "8575461bae72c4242e76d11a79deefdedaf67f86",
+      "path": "docs/evidence/console/design/2026-09-12-integrated-admission-17/record.json",
+      "git_blob": "c9294ab81e30516d425686a380b2db17a02ad79d",
+      "sha256": "01ac180f925f1a0ab91c5e1c73175fc65184071ee1d53c92b345b55c1adc3c16"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "README.md",
+      "git_blob": "8a50185d68f400007c39ef3f31fe752a50847aed",
+      "sha256": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/PRODUCT.md",
+      "git_blob": "6a3992e258d7eecf4d2cd11422ee01d521a01017",
+      "sha256": "d9740519950695c0b09bcd173b3a8bac2ff52f41f16eee9cb6984f3ca67e3979"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/ROADMAP.md",
+      "git_blob": "a9167cee191dd79304086027b05523b675f7fbbe",
+      "sha256": "eccba4cb8f0ea3a684ab125967eddc20c98be5807f24b6905e4bad8599adcc57"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "docs/current/DELIVERY.md",
+      "git_blob": "a6d75a86ff1a2869122626aef438551aceb82f07",
+      "sha256": "e3780e08d2afac370f729d9b9b45f8582a860595283240d37b9a3d277520ecf4"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0074_create_payroll_readiness.sql",
+      "git_blob": "4296448129dc541f0d6db05193fa8f0014b55609",
+      "sha256": "50a50931fbb9a71d3e5c6122d29f2271a441be23756752bf6b96bd250d6c4a6c"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql",
+      "git_blob": "333c2ab95a06d8df22a6a62c2c3a0c717b4a04de",
+      "sha256": "3d58043039d7512a6790bc5f57a81bb59ace27d886c4114f28197d51becb3143"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0210_payroll_statutory_rates_and_contract_wages.sql",
+      "git_blob": "3a7d7cea0482a4c6793c226e140d1c73fdf970fd",
+      "sha256": "410e5015f96899235c5768a4aad708cf5c517d3ac38f7d18edfc11606511375e"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0214_create_canonical_employment_tables.sql",
+      "git_blob": "9ef02f5c24bb936c453f9c593bb4369f0e37a464",
+      "sha256": "0b61c28c004a23c96a53d5a242957458b90ce068dd72bfe4936cbaf2b52b2c42"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0155_create_ontology_instances.sql",
+      "git_blob": "fa789dcba967c1af10cb6076879c30a7bdff770a",
+      "sha256": "bed9b9af5592814d5008cd8e06236b5ee57dfd604a8ed399cc9f0aff0078e1cf"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql",
+      "git_blob": "477fbc4fe47c7e9374cffa6fd117e2a98d397c19",
+      "sha256": "c4ef36f24582b1d3034c7212877103bb72724138bef1d66dabbef24410fa40ba"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0222_payroll_payable_runtime_write_revoked.sql",
+      "git_blob": "76bb7bccef43edcad97ca8f9fcacb0e1a8bfdfb2",
+      "sha256": "d213a5785208b4522a5e19427917cf522bc5db88a5fbfac62009f85ffa6524c2"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/payslip_draft.rs",
+      "git_blob": "0c328148b9f099a965362d7c4978c44738da4514",
+      "sha256": "62de1465995b26f13724a6c2e3edc015db8d8b8390094944650eabaeebac6f48"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+      "git_blob": "5d356d3479a3847506e976be86e360ef7a961f70",
+      "sha256": "070c1da569abd4dab31326f2d21953b480dd39d59b21cd5eed3df92b4aa401ae"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/roster.rs",
+      "git_blob": "54d6cbbb6c1711e65afd57a27134a527ecf8f374",
+      "sha256": "26a04d1aad4bb59cfeab1ee5545e89cd7f06dd90f82c3efb0fbb3f7821b2009f"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "git_blob": "e4f580c348aa2360985040d51e74994313e641df",
+      "sha256": "adfa4d1b1395f03af2853b412e9a65c64966f9a573f16e1b50e29cdaea2135e3"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/adapter-postgres/src/lib.rs",
+      "git_blob": "31577036b6d781676fa119e5786963ce8aad8b74",
+      "sha256": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/rest/src/payslip_draft.rs",
+      "git_blob": "d2d6db3a6f6e48f85da4a05908ea97eb04ebabdd",
+      "sha256": "783ebaa28d1a84244018700546db156204f009a5553361dad760da10561cd348"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/payroll/domain/src/lib.rs",
+      "git_blob": "d2143ea831717fc307f23b2c04e17b637e6eb62c",
+      "sha256": "34176ef3b404ee744edf1da8ea233e5a7fa909192707143356df2ef65adb4a92"
+    },
+    {
+      "commit": "05200e43af13b527ce031b04369e05852862f1d6",
+      "path": "backend/crates/platform/db/migrations/0196_platform_force_command_and_fk_closure.sql",
+      "git_blob": "4d6136c907296c35c51254a35bbaacbbfff5b0cb",
+      "sha256": "63088204bcbfcd1922674e0f0a9eec3eb6518a26edcf0a9bdc2a6448201b7f9c"
+    }
+  ]
+}

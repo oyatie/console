@@ -1,0 +1,56 @@
+{
+  "kind": "auth-launch-caller-test-candidate",
+  "base": "783b5cac7dbcca150f906aceb433e9be00ce01c9",
+  "head": "fb0d50d296c815f6aa25023aad2a1f1d81a5e924",
+  "worktree": "/private/tmp/console-auth-callers-tests-20260914",
+  "author": "/root/finish_migration",
+  "review": "pending /root/review_completeness",
+  "sources": {
+    "scripts/auth-launch-callers.test.mjs": "95dae2c4f53760678885ea1ddabf9516178bc73b5300540422903ab2731c77a3",
+    "scripts/account-custody-orchestration.test.mjs": "79791a09cef17de69be73e97110cd044136951e8083faf63c8d06d971a5ebfa2",
+    "scripts/dev-up-compose.test.mjs": "2bee9d2efe001724f90dda2fb469aff45dac42829c477e0b3282e6748fbc1ce1"
+  },
+  "commands": [
+    {
+      "command": "NODE_PATH=/private/tmp/console-production-tdd-preparation-20260913/node_modules node --test scripts/auth-launch-callers.test.mjs",
+      "discovered": 14,
+      "executed": 14,
+      "pass": 1,
+      "fail": 13,
+      "skip": 0
+    },
+    {
+      "command": "NODE_PATH=/private/tmp/console-production-tdd-preparation-20260913/node_modules node --test scripts/account-custody-orchestration.test.mjs",
+      "discovered": 51,
+      "executed": 51,
+      "pass": 51,
+      "fail": 0,
+      "skip": 0
+    }
+  ],
+  "logs": {
+    "/private/tmp/auth-callers-candidate-red.log": "1cfb4744fc9a955a35fff4df383c3edbc56c00322fbc78b6010f219335b3e918",
+    "/private/tmp/auth-callers-orchestration-baseline.log": "f0d2c15154d413f27e74614788ef83bb5709e5b81d6f6abc2d164257d16599a7"
+  },
+  "limits": [
+    "Compose render never reached: declared AUTH URL required interpolation absent; actual render becomes root GREEN obligation.",
+    "Workflow assertions are parsed step source guards and mutation controls, not executed credentials/provisioning/boot.",
+    "Application role assertions stop at inherited raw credential on baseline; computed URL and inherited URL removal execute after implementation repair.",
+    "Reserved role password test stops at owner helper baseline; sibling helper checks remain blocked until owner encoding repair.",
+    "No authentication, physical database binding, auth pool, grants, TLS, runtime revocation or HA proof.",
+    "No Docker or Cargo invoked. Existing dev-up-compose full suite not executed here; only synthetic fixture variables added."
+  ],
+  "premortem": "Wrong endpoint would hand container loopback to postgres; inherited secrets cross child boundary; raw reserved bytes corrupt URL; workflow can rotate or forget credential.",
+  "blast_radius": "Tests and fixture inputs only. Root owns four production callers and documentation.",
+  "detection": "Exact same 14-test probe must pass after root admitted implementation; existing orchestration51 must remain green.",
+  "rollback": "Revert isolated test-only commits if rejected; preserve review evidence.",
+  "stop_conditions": [
+    "Independent review blocker",
+    "Root base changed incompatibly",
+    "Product or authority edit required outside ownership"
+  ],
+  "review_corrections": [
+    "Rejected ordinary workflow credential reassignment in setup and boot; seven negative controls.",
+    "Removed decoded slash from database helper fixture: no unsupported AppConfig target claim."
+  ]
+}

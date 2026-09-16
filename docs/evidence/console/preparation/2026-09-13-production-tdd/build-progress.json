@@ -1,0 +1,57 @@
+{
+  "base": "193075e0fdeee81a8f953068e5f8add66bb99ff1",
+  "status": "CANDIDATE_PENDING_EXACT_HEAD_GENERATED_GATE_AND_INDEPENDENT_REVIEW",
+  "logs": [
+    {
+      "name": "build-admission",
+      "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "bytes": 48
+    },
+    {
+      "name": "build-red",
+      "sha256": "024e929f67d7a2a9a31e6d0ec9ac9dacaba805b1c77667c4a98237b92410100f",
+      "bytes": 18678
+    },
+    {
+      "name": "buckify",
+      "sha256": "ef2000527e18587c86f19721eff5aff7f5136a4687090696274b5c5940b3d7bf",
+      "bytes": 13204
+    },
+    {
+      "name": "buildscript-targets",
+      "sha256": "d87a25124f2267c163306b592d6e35d20cd690e9f3d87ec56f3382533007f4e5",
+      "bytes": 1208
+    },
+    {
+      "name": "buildscript-targets-executed",
+      "sha256": "f63f0b24a40e269d27da3df3957df5198d28449a6fd83c93d8051db85f03717d",
+      "bytes": 878
+    },
+    {
+      "name": "buildscript-host",
+      "sha256": "5daf40468c67fd911f80b3e15a8240d46a05be82d8ff5ba785dfd0ab924375b7",
+      "bytes": 1183
+    },
+    {
+      "name": "buildscript-all",
+      "sha256": "37517f55e689580a0d43eb388afb126332c3e2de2d32300f8903f35d07223d93",
+      "bytes": 3587
+    }
+  ],
+  "results": {
+    "missing_fixups": 12,
+    "buildscript_output_targets_executed": 12,
+    "host_metadata_closures": [
+      "camino",
+      "wasm-bindgen-shared",
+      "leptos"
+    ],
+    "controls": 3,
+    "wasm_runtime_executed": false
+  },
+  "known_probe_corrections": [
+    "Default buildscript targets have no default outputs and prove no actions; corrected to rustc_flags subtarget",
+    "rustc_env is not an available subtarget; corrected to rustc_flags and host compile"
+  ],
+  "generated_diff": "Reindeer emits complete closure of unchanged existing Cargo.lock, including previously absent Leptos transitive rules; no dependency version or lockfile edits."
+}

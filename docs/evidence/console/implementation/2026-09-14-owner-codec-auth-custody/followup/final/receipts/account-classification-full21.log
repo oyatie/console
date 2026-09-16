@@ -1,0 +1,41 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.17s
+     Running unittests src/lib.rs (/private/tmp/console-account-classification-cargo/debug/deps/console_gate_tenant_isolation-9d964ce1cbf42c6a)
+
+running 21 tests
+test tests::non_local_set_config_is_flagged ... ok
+test tests::alter_set_org_column_not_null_passes ... ok
+test tests::pre_auth_device_login_handoff_is_classified_global ... ok
+test tests::global_allowlisted_table_is_not_unclassified ... ok
+test tests::dynamic_array_rls_credits_each_table ... ok
+test tests::org_id_primary_key_is_treated_as_not_null ... ok
+test tests::alter_add_org_column_not_null_passes ... ok
+test tests::rls_without_force_is_flagged ... ok
+test tests::owner_only_table_is_classified_but_direct_runtime_grant_is_forbidden ... ok
+test tests::local_set_config_passes_guc_check ... ok
+test tests::audit_events_nullable_org_is_allowed_without_not_null ... ok
+test tests::sanitize_sql_is_char_boundary_safe_on_multibyte_comment ... ok
+test tests::nullable_org_column_tenant_table_is_flagged_even_with_rls ... ok
+test tests::clean_tenant_table_passes ... ok
+test tests::org_column_without_rls_is_flagged ... ok
+test tests::em_dash_inside_dollar_quoted_body_does_not_panic ... ok
+test tests::builtin_catalog_allowlist_is_owner_only_and_rejects_runtime_grants ... ok
+test tests::unclassified_table_is_flagged ... ok
+test tests::rls_without_policy_is_flagged ... ok
+test tests::account_catalog_tables_are_owner_only ... ok
+test tests::account_catalog_rejects_direct_runtime_and_public_grants ... FAILED
+
+failures:
+
+---- tests::account_catalog_rejects_direct_runtime_and_public_grants stdout ----
+
+thread 'tests::account_catalog_rejects_direct_runtime_and_public_grants' (29864521) panicked at ci/gates/tenant-isolation/src/lib.rs:1264:9:
+direct Account catalog grants escaped classification: [("accounts", "console_rt", [])]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::account_catalog_rejects_direct_runtime_and_public_grants
+
+test result: FAILED. 20 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p console-gate-tenant-isolation --lib`

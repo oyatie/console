@@ -1,0 +1,124 @@
+{
+  "reviewer": "/root/capture_review",
+  "runtime_operator_and_repository_writer": "/root",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "reviewer_actions": {
+    "cargo_commands": 0,
+    "database_commands": 0,
+    "docker_commands": 0,
+    "root_edits": 0
+  },
+  "findings": [],
+  "pre_mortem": "False completion from counted build selections, stale or changed source, vacuous controls, swallowed suite errors or empty Docker output after a failed listing.",
+  "detection": "Exact native test rows and summaries match bound source; all artifact hashes and clean immutable source snapshots match; reviewed driver only reports cleanup after two successful bounded listings.",
+  "rollback": "Retain immutable run and proposal artifacts. Failed suites remain failed; no test or implementation mutation belongs to this review.",
+  "stop_conditions": [
+    "Any cited digest or immutable source mismatch",
+    "Any test result hidden or reclassified as pass",
+    "Compiler prerequisite counted as native execution",
+    "Still-running full151 evidence mixed into completed runs"
+  ],
+  "cleanup_limit": "Recorded successful owned-container absence is verified through exact reviewed driver and artifacts; reviewer did not query Docker again.",
+  "publication_limit": "Evidence-only allowlist, not production, deployment, legal, migration-admission or implementation approval.",
+  "kind": "independent_standalone3_completed_runtime_review",
+  "status": "ACCEPT_ACCURATE_COMPLETED_EVIDENCE_8_PASS_3_AUTH_DML_PREREQUISITE_FAIL",
+  "run": "/private/tmp/account-standalone-auth3-v2-20e05b51ef0f4ba5b352b70b67c9cab5",
+  "head": "dd95a8d00a3aed179ef8fb17c998ddf7ad92abef",
+  "driver_receipt_sha256": "e6b3cda2e543db3d5584846146fee978c053429e227a795079754063b00e1de3",
+  "driver_sha256": "fd686b9907d10663f101828763b1749efa1dd61695da675f1a6fef220170b224",
+  "artifact_hashes_verified": 14,
+  "source_snapshot_paths_verified_against_git": 36,
+  "source_pre_post_exact_clean": true,
+  "tests": [
+    {
+      "name": "cookie_refresh_keeps_synthetic_dev_persona_out_of_passkey_onboarding",
+      "result": "ok"
+    },
+    {
+      "name": "cookie_refresh_still_requires_passkey_for_ordinary_zero_passkey_user",
+      "result": "ok"
+    },
+    {
+      "name": "mints_a_real_session_and_backs_it_with_a_real_user",
+      "result": "ok"
+    },
+    {
+      "name": "rejects_a_branch_that_does_not_belong_to_the_org",
+      "result": "ok"
+    },
+    {
+      "name": "rejects_an_org_that_does_not_exist",
+      "result": "ok"
+    },
+    {
+      "name": "rejects_an_unknown_role",
+      "result": "ok"
+    },
+    {
+      "name": "rejects_the_platform_sentinel_org",
+      "result": "ok"
+    },
+    {
+      "name": "deactivate_revokes_passkeys_and_sessions_as_runtime_role",
+      "result": "ok"
+    },
+    {
+      "name": "refresh_token_reuse_revokes_the_whole_family",
+      "result": "FAILED"
+    },
+    {
+      "name": "rotate_audit_row_is_visible_to_tenant_scoped_read_as_runtime_role",
+      "result": "FAILED"
+    },
+    {
+      "name": "rotation_past_family_absolute_ttl_revokes_the_family",
+      "result": "FAILED"
+    }
+  ],
+  "native_counts": {
+    "executed": 11,
+    "passed": 8,
+    "failed": 3,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "native_commands": [
+    "cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth-rest --test dev_auth_session --features dev-auth -- --test-threads=1",
+    "cargo test --locked --manifest-path backend/Cargo.toml -p console-identity-adapter-postgres --test deactivate_revokes_credentials -- --test-threads=1",
+    "cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth --test refresh_tokens -- --test-threads=1"
+  ],
+  "probe_exit": 1,
+  "recorded_owned_container_absence": true,
+  "reviewer_live_docker_check": false,
+  "by_target": {
+    "dev_auth_session": {
+      "discovered_executed": 7,
+      "passed": 7,
+      "failed": 0,
+      "feature": "dev-auth"
+    },
+    "deactivate_revokes_credentials": {
+      "discovered_executed": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "refresh_tokens": {
+      "discovered_executed": 3,
+      "passed": 0,
+      "failed": 3
+    }
+  },
+  "actual_failure_boundary": "Three refresh_tokens tests authenticate real console_auth_rt, then fail issue_family INSERT auth_refresh_token_families with PostgreSQL42501 at source38,95,183. rotate and later audit/reuse/absolute-TTL assertions are unexecuted.",
+  "map_proof": "Whole private map equals immutable base map after reversing only reviewed dev-auth feature and local-selection Boolean. All three whole targets execute; no test filters, ignore controls or test weakening.",
+  "remaining_holds": [
+    "No broader restricted-auth legacy DML conversion or refresh rotation pass",
+    "Local dev-auth map does not prove CI wiring",
+    "No AccountV1 current-context, production or durability claim"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "status": "proposed_pending_independent_review",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "0c2e1541c91d1c5f6f5bed740114b44c16006135",
+  "scope": "B08/W03 own nonpayable monetary review publication/correction; WA2 workload/instruction handover steering",
+  "scenarios": 67,
+  "screen_states": 17,
+  "product_tests_written": 0,
+  "product_tests_executed": 0,
+  "whole_design_approved": false,
+  "implementation_authorized": false,
+  "remaining": [
+    "W02 integrated V01\u2013V10/input recovery matrix",
+    "W04 exact APIs/DTO/SQL/ACL/migration/lock and numeric/runtime proof",
+    "Current authority scope alignment; whole-design consensus and explicit design/test SHA approvals",
+    "Legal issuance/payment/export/external sharing and production authority remain separate"
+  ]
+}

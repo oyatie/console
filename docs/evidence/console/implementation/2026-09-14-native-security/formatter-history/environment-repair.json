@@ -1,0 +1,7 @@
+{
+  "observed": "fanout _build_env sets RUSTC_WRAPPER=sccache by default; child rustc -vV failed Operation not permitted, zero tests, no source edits",
+  "repair": "Use supported preexisting env override RUSTC_WRAPPER empty; CARGO_INCREMENTAL=1 preserves existing Cargo default and warmed build cache",
+  "no_tooling_change": true,
+  "same_probe": true,
+  "rerun_from_same_clean_approved_base": true
+}

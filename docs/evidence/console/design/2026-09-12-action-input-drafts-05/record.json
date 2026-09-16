@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "class": "evidence",
+  "status": "frozen_scoped_design_candidate",
+  "recorded_at": "2026-09-12T14:00:03.783381+00:00",
+  "recorded_by": "/root",
+  "source_base_sha": "05200e43af13b527ce031b04369e05852862f1d6",
+  "evidence_base_sha": "b0569a87ea63d6686fd8e884411cc7f07c0f406d",
+  "reviewed_contract_sha": "ff914047e1ff163297f6a6fff30bf1315086241a",
+  "predecessor_record": "../2026-09-12-partial-review-coverage-04/record.json",
+  "predecessor_record_sha256": "b8c3ef9b74de3d610caa66dba8cf3c0728a844fec6d770479be77e85a9933848",
+  "whole_design_approved": false,
+  "files": [
+    {
+      "path": "acceptance-plan.csv",
+      "bytes": 9955,
+      "sha256": "fb8b87a06e4a33481c5114d3f6ea87f0296b3609d86619a19d11cf5586de4738"
+    },
+    {
+      "path": "doc-link-diagnostic.json",
+      "bytes": 1318,
+      "sha256": "f2d72729119d133646467cfa80745b14206c2b2bc539ba98a063046263bc779a"
+    },
+    {
+      "path": "draft-contract.txt",
+      "bytes": 28194,
+      "sha256": "24b4d0ba93484f5cc65e362c70fdc7f25db653a4039d4e57ae25baeb791b7bc1"
+    },
+    {
+      "path": "entity-revision-contract.txt",
+      "bytes": 17333,
+      "sha256": "7227e966b01fd82c42e712d9ccf16e060227388df4128eddb752eea15a8e4236"
+    },
+    {
+      "path": "entity-versioning-direction.txt",
+      "bytes": 5267,
+      "sha256": "6956413171ce9c5af5cefe23eff94696a12bd223a5bd397fe3b0091a8fb16265"
+    },
+    {
+      "path": "entry.txt",
+      "bytes": 2238,
+      "sha256": "78c4c616c529813d1adad7cf16a108da217d37806d1b1ac0aaaddcb4fad2e882"
+    },
+    {
+      "path": "review-history.json",
+      "bytes": 1244,
+      "sha256": "08cdcf47ca35a47220b8baf2e1e0b7d8a887332ff0e705030ca1488767d9a49d"
+    },
+    {
+      "path": "review-receipt.json",
+      "bytes": 1549,
+      "sha256": "a2423570573745a987f66d72cdd1b6033c8d22dc471e4ec7ca2c26deb73ce757"
+    },
+    {
+      "path": "review.html",
+      "bytes": 7432,
+      "sha256": "d1b1e22985cb23de7f6584645566b3a8d2d2d4bdae582cd57b1bf029dae8e5cd"
+    },
+    {
+      "path": "scope.json",
+      "bytes": 1248,
+      "sha256": "0155e4f01c58e07b2769275ade78cd7374451e1384eb6eb8a713773445e1f475"
+    },
+    {
+      "path": "screen-states.csv",
+      "bytes": 2438,
+      "sha256": "bb813d934a4ab6b7f98eb77b82bf70e318f5e4b69de2b96b747774508147df0f"
+    },
+    {
+      "path": "source-identities.json",
+      "bytes": 2585,
+      "sha256": "710d302d6481b92cbe510e5494e8c81b8841a87755fd1b9b8712b4a2930b6ddd"
+    },
+    {
+      "path": "validation.json",
+      "bytes": 1907,
+      "sha256": "3b5eabcfd5118ec792826397e1e60763e5e78f7f9eba2a9efd661be08e85b8df"
+    },
+    {
+      "path": "verify-packet.py",
+      "bytes": 3470,
+      "sha256": "9310e1d71f81ce4120cc3c4d87b136772d1e5fd9e2ae6e08443ff3c7341e3d2f"
+    }
+  ],
+  "remaining_holds": [
+    "B03 durable Group operation",
+    "B04 general autonomous assignment and unknown distributed actor takeover",
+    "B07 rest of application screen state matrix",
+    "B08 monetary publication/disputes",
+    "Common-owner private draft physical-retention migration/operation",
+    "Independent integrity anchor and repair/backup operational detail",
+    "Whole design consensus and explicit design/test SHA approvals",
+    "Runtime/migration/performance proof",
+    "Current authority amendment; payment/legal/production authority",
+    "Existing repository doc-link failures"
+  ]
+}

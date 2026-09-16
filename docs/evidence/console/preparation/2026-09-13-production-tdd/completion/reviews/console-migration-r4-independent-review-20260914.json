@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/review_completeness",
+  "base_sha": "fd94667fb9133f1ecb55831f43192bdc46776dc0",
+  "candidate_manifest_sha256": "e8c0a5547c11b57525197d532d0854f5cd02dd4861013c67036dfc14074138e7",
+  "verified_member_hashes_and_sizes": 15,
+  "verdict": "APPROVE_BOUNDED_SOURCE",
+  "scope": "R4 delta from independently reviewed R3; retained-primary actual ceremony expiry and consumed assertion replay, no full runtime/production claim.",
+  "findings": [],
+  "closed_obligations": [
+    {
+      "id": "FI5-expiry",
+      "evidence": "Actual newly issued activation with known retained key; read authoritative expires_at and current DB clock, assert future expiration within configured5minute policy; real wall/database wait bounded360s; finish original proof must InvalidProof and preserve security/assent/family/token snapshot. No artificial expiry row or clock mutation."
+    },
+    {
+      "id": "FI5-replay",
+      "evidence": "Retain exact successful assertion/activation/ceremony/nonce/terms, replay after verified issued Account session; require InvalidProof and no additional protected state. Subsequent new ordinary Account login succeeds and creates separate actual family."
+    }
+  ],
+  "checks": [
+    {
+      "command": "rustfmt --edition 2024 --emit stdout /private/tmp/console-migration-remaining-s4-r4-20260914/migrated-primary-producer.rs",
+      "exit_code": 0,
+      "kind": "parser_only",
+      "rust_compile_count": 0,
+      "rust_runtime_count": 0
+    }
+  ],
+  "limits": [
+    "No bound that Account ID alone provides activation authority; prior actual retained-key/invalid-proof source contract retained.",
+    "360s wait is deliberate real expiry acceptance source; actual owner execution has not run. Existing fixture credential lifetimes must remain sufficient during execution.",
+    "No whole auth protocol/clock-skew or deployment guarantee implied; exact accepted owner source/behavior gates remain."
+  ],
+  "remaining_holds": [
+    "Consolidated design/test approval for ordinary primary activation interface",
+    "Actual owner-boundary compilation/execution and final exact-candidate review",
+    "Separate production/payment/legal authority"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "user_instruction": "정확한 FK 테스트 수정 승인",
+  "quoted_scope": "Validated public.auth_webauthn_ceremony_bindings(ceremony_id) -> public.auth_webauthn_ceremonies(id) DELETE CASCADE only; require edge, preserve UPDATE constraints and all other custody assertions; no DB schema change",
+  "patch_sha256": "f450999524242cbe0f036b93e77fe17c2c33fc1351b26f0562a344b305fd44ce",
+  "original_source_sha256": "6f847ee8a957809a5b7b1a8ca7a62cc0649a94acc4fa1527cd22a55d674289e5",
+  "applied_source_sha256": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+  "timestamp": "2026-09-14T16:37:05.789196+00:00",
+  "applied": true,
+  "prior_rejections_preserved": true
+}

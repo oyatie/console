@@ -1,0 +1,16 @@
+{
+  "candidate_sha": "363f85fb8cbba6fd05bf9847ae8bf0f4a7567172",
+  "clean_before_and_after": true,
+  "command": "RUSTUP_TOOLCHAIN=1.98.1 cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-request-context --lib",
+  "environment": {
+    "CARGO_TARGET_DIR": "/private/tmp/console-account30-cargo"
+  },
+  "exit_code": 101,
+  "executed": 20,
+  "passed": 16,
+  "failed": 4,
+  "filtered": 0,
+  "failure_class": "diagnostic-independent public response body equality",
+  "log": "request-context-363f85fb.log.gz",
+  "uncompressed_sha256": "cf0efccebde250ca09f3deb0372d863b5e1be29a74fe667927b28232f3d2500a"
+}

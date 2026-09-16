@@ -1,0 +1,147 @@
+[
+  {
+    "id": "A01",
+    "name": "전사/법인 읽기",
+    "status": "existing seams + new composition",
+    "entry": "group_member_orgs → company-specific authorization → consolidated_read / owning read",
+    "owner": "console-platform-group + original read owners",
+    "inputs": "group_id, selected company_ids, period, paging",
+    "authorization": "membership visibility AND each feature/field policy; resolver alone is not payroll permission",
+    "replay": "read; as_of and partial/error semantics explicit",
+    "gap": "existing helper fails a combined read on member error; per-company result envelope is a reviewed extension, not existing behavior",
+    "sources": [
+      "T11",
+      "T12",
+      "T14"
+    ]
+  },
+  {
+    "id": "A02",
+    "name": "급여 run 생성",
+    "status": "existing canonical action",
+    "entry": "POST /api/v1/ontology/actions/{action_key}/preflight and /execute; action_key is configured per object_type_id, not assumed equal to dispatch_target",
+    "owner": "PgPayRunPort; payroll.create_run",
+    "inputs": "object_type_id, title when required, command_id; params run_id/period_start/period_end/optional connector/job; checklist/four_eyes witnesses only as configured",
+    "authorization": "existing ontology gate + typed canonical query; current actor/scope; no direct port call from untrusted client",
+    "replay": "command_id+payload digest, same actor/action/type/current authority; navigate projected.draft_run_id",
+    "gap": "native roster source and source provenance adapter; changing correlation run_id per retry creates different natural key",
+    "sources": [
+      "T01",
+      "T02",
+      "T03",
+      "T09",
+      "T10"
+    ]
+  },
+  {
+    "id": "A03",
+    "name": "계약급여 원 사실 저장",
+    "status": "existing REST write, extension needed for stronger contract",
+    "entry": "POST /api/v1/payroll/employees/{employee_id}/contract-wages",
+    "owner": "payroll adapter insert_contract_wage_in_tx + atomic audit",
+    "inputs": "effective_from,wage_kind,amount_won,monthly_standard_hours,source_note",
+    "authorization": "authorize_org_wide PayrollRunManage; employee belongs to armed org; future reference validation at owner",
+    "replay": "idempotency key not established on this route; response-loss reconciliation required",
+    "gap": "typed evidence/contract refs; consistent same-date revision and replay protection; avoid duplicating existing wage writer",
+    "sources": [
+      "T05",
+      "T18"
+    ]
+  },
+  {
+    "id": "A04",
+    "name": "공식 계산 입력 고정/정정",
+    "status": "new behavior required; proposed payroll.prepare_inputs",
+    "entry": "canonical action extension, path not yet published",
+    "owner": "existing payroll owner, not import or UI writer",
+    "inputs": "draft_run_id,expected_input_revision,typed immutable source refs; derived amounts verified server-side",
+    "authorization": "same tenant/company + manage + evidence-specific authorization; source verification is governed, not client boolean",
+    "replay": "canonical command receipt; immutable input revision; reject changed payload or stale version",
+    "gap": "native input manifest→roster→LineCalculationInput; imported and native facts normalize to same typed basis without fake import rows; exact schema migration needs reviewed test candidate",
+    "sources": [
+      "T03",
+      "T04",
+      "T05",
+      "T06"
+    ]
+  },
+  {
+    "id": "A05",
+    "name": "근태 마감",
+    "status": "existing REST behavior",
+    "entry": "GET /api/v1/payroll/runs/{id}/close-preflight; POST .../close-attendance {attest:true}",
+    "owner": "payroll lifecycle close_attendance_in_tx",
+    "inputs": "draft_run_id,attest",
+    "authorization": "read/manage gates respectively; execution rechecks current state/roster/period lock",
+    "replay": "existing state guards; repeated POST may 409; no fabricated shared idempotency claim",
+    "gap": "new immutable input revision must be bound at owner; source amendment/reopen policy requires explicit extension",
+    "sources": [
+      "T07",
+      "T17"
+    ]
+  },
+  {
+    "id": "A06",
+    "name": "급여 계산",
+    "status": "existing REST calculation; common-action extension candidate",
+    "entry": "POST /api/v1/payroll/runs/{id}/calculate",
+    "owner": "payroll lifecycle calculate_run_in_tx; same writer if canonical wrapper added",
+    "inputs": "existing bodyless draft_run_id; proposed expected input revision belongs in versioned extension",
+    "authorization": "current org-wide PayrollRunManage, locked current run state; future common-action policy cannot be bypassed by old route",
+    "replay": "existing duplicate uses typed 409; canonical create/submit/decide already differ; preserve compatibility intentionally",
+    "gap": "native sources + checked snapshot + authorization parity across entry paths; long job UI must use persisted job evidence if added",
+    "sources": [
+      "T04",
+      "T09",
+      "T14"
+    ]
+  },
+  {
+    "id": "A07",
+    "name": "상신",
+    "status": "existing REST and canonical SubmitRun",
+    "entry": "canonical payroll.submit_run; existing POST .../submit",
+    "owner": "submit_run_in_tx once, port wraps receipts",
+    "inputs": "draft_run_id; proposed reviewed input/calculation/evidence digest",
+    "authorization": "same permissions and SoD binding across both adapters; CALCULATED and no open exceptions",
+    "replay": "canonical receipt vs direct REST state guard; documented compatibility convergence",
+    "gap": "exact snapshot/digest binding and common natural-person policy across every writable adapter",
+    "sources": [
+      "T01",
+      "T08",
+      "T10"
+    ]
+  },
+  {
+    "id": "A08",
+    "name": "급여안 결정",
+    "status": "existing REST and canonical DecideRun",
+    "entry": "canonical payroll.decide_run; existing POST .../decision",
+    "owner": "decide_run_in_tx once, port wraps receipts",
+    "inputs": "draft_run_id,decision APPROVE|REJECT,reason required for REJECT; proposed exact submission revision",
+    "authorization": "SUBMITTED; current lifecycle compares user UUID; enforce current PRODUCT natural-person SoD across direct and wrapper paths",
+    "replay": "same command can replay accepted receipt when current authority permits; first projected failure may spend approval",
+    "gap": "account-level check is not proof of distinct natural people; release unchanged; no copying REJECT into leave law",
+    "sources": [
+      "T08",
+      "T10"
+    ]
+  },
+  {
+    "id": "A09",
+    "name": "전사 묶음 실행",
+    "status": "new behavior required; not an existing group-wide write API",
+    "entry": "operation request → frozen company/target set → existing authorized child actions",
+    "owner": "existing durable workflow orchestration if semantics fit; no business SQL in coordinator",
+    "inputs": "group_id,company_ids,target_ids,action,per-target expected revisions and child command IDs",
+    "authorization": "membership + current feature + evidence policy per target at execution; request actor never SUPER_ADMIN by convenience",
+    "replay": "persist operation intent before enqueue; deterministic/persisted child command IDs; recover from receipts and current authorization",
+    "gap": "durable operation state, policy version/target freeze, per-company errors, queue bounds, compensation rules; workflow reuse must be proven before schema choice",
+    "sources": [
+      "T02",
+      "T10",
+      "T11",
+      "T12"
+    ]
+  }
+]

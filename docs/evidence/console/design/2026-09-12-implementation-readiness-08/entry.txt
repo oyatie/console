@@ -1,0 +1,9 @@
+Candidate08 — Implementation readiness assessment and next assignment design brief
+Writer: /root only. Clean evidence base: 8bd6a37d9d295adaac62a8358a4b18dfcd060ffb. Product source base: 05200e43af13b527ce031b04369e05852862f1d6.
+Immutable target: new packet committed in /private/tmp/console-design-review-20260912; independent read-only review binds to that exact commit. This is orchestrator design evidence, not an implementation lane.
+Allowed: this packet only. Forbidden: prior frozen evidence, current authority, application code, tests, migrations, lockfiles, generated files, deployment and remote mutations. Main receives regular blobs from the frozen evidence commit only.
+Mechanical guide: README -> three current authorities -> original G/P/B gaps -> scoped review receipts03–07 -> current workflow owner trace -> readiness levels and dependencies -> bounded B04 next brief -> exact-SHA independent review -> evidence validation.
+Lenses: Systems Thinking, Essentialism, Red Team, Operability / Day-2, Blast-radius / cell-based, Zero-trust / defense-in-depth, FinOps / unit-cost.
+Pre-mortem: scoped acceptance mistaken for whole-design approval; HR first slice mistaken for entire Console; expanding evidence hides unfinished positive journeys; production proofs demanded before code exists; unsupported performance assumptions become SLA; task ownership creates implicit privilege.
+Blast radius: planning and evidence only. Detection: explicit evidence/status/exit criteria and independent readiness review. Rollback: supersede this proposal in later evidence; preserve historical records. Stop: deliver a reviewable remaining-work map and source-grounded B04 brief, without claiming B04 behavior complete or opening implementation.
+Review identities: /root/continuity_review and /root/payroll_contract_review (read-only). No fan-out implementers. Prior document-link diagnostic remains unresolved; no current full-repository green claim.

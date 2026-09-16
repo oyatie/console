@@ -1,0 +1,45 @@
+{
+  "lane": "UI01-business-composer-accessible-name",
+  "owner": "/root/finish_browser",
+  "base_sha": "66b3ee87a4db11056d99a956cc7f1ff24dd383b4",
+  "candidate_sha": "07fa1ab8e2703e2582966ca110f02ad52104b54c",
+  "source_sha256": "5a141b0075ff6efafd0de4984b90216e5e821f17dc3f91a966f225223681faae",
+  "test_sha256": "189a7e99708f0d0e5478ed104c903d55751022ae4c4cedcc0056c688c2a15c8d",
+  "admission": "Actual tools/lanes/fanout.py admit --spec /private/tmp/ui-accessible-lane.json onclean66b3ee87",
+  "red": {
+    "executed": 1,
+    "failed": 1,
+    "filtered": 16,
+    "reason": "aria-label None rather than Some(업무 입력); actual rendered form count+POST assertions passed first"
+  },
+  "same_probe_green": {
+    "executed": 1,
+    "passed": 1,
+    "filtered": 16
+  },
+  "full_suite": {
+    "executed": 17,
+    "passed": 17,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "logs": {
+    "/private/tmp/ui-accessible-admit.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/ui-accessible-probe-red.log": "dc3abe7bba67714c18181148b6ee2fd6a120dcf4c67a466b311fc84562ddd1e9",
+    "/private/tmp/ui-accessible-probe-green.log": "a37238e00492bfe92e861998f359127b06174d78e704db243050d8de24388ea6",
+    "/private/tmp/ui-accessible-full17.log": "d83daa40619afa74adb251bed881b3110ca29411c09a5f45105c1b75bc9810b1"
+  },
+  "preservation": "Test file exact approved hash; original16tests byte prefix retained; onlyone production form attribute changed",
+  "independent_review": {
+    "reviewer": "/root/review_completeness",
+    "decision": "approved",
+    "receipt": "/private/tmp/ui01-accessible-name-implementation-independent-review.json",
+    "sha256": "7a3922b64f1a2ece8e8794d3f5d5c47f8c7c8a4d464d8c3256156222fd25375d"
+  },
+  "holds": [
+    "SSR serialization test is not actual browser accessibility tree or mountedroute acceptance",
+    "CSRF/button-label alignment remains distinct",
+    "Production exposure"
+  ],
+  "lease": "Released sharedCargo target; no runningCargo byowner"
+}

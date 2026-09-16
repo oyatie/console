@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-09-13T04:03:01.580952+00:00",
+  "status": "SCOPED_STRUCTURAL_EFFECT_MANIFEST_SQL_SPEC_ACCEPTANCE_ONLY",
+  "reviewed_candidate_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+  "reviews": [
+    {
+      "reviewer": "/root/continuity_review",
+      "candidate_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Reviewed seven corrected files retaining prior SQL review; error-disclosure finding resolved; W01-W03 and first-implementation/pilot/full Console boundaries retained.",
+      "independently_verified_static_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    },
+    {
+      "reviewer": "/root/payroll_contract_review",
+      "candidate_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+      "verdict": "SCOPED_ACCEPT",
+      "conclusion": "Reviewed seven corrected files retaining prior SQL review; error-disclosure finding resolved; W01-W03 and first-implementation/pilot/full Console boundaries retained.",
+      "independently_verified_static_sha": "9386af20a7fbd3c17f0608fc12e115668dc67136",
+      "product_tests_discovered": 0,
+      "product_tests_executed": 0,
+      "sql_executed": false,
+      "verus_proofs_executed": 0
+    }
+  ],
+  "whole_design_consensus": false,
+  "w04_complete": false,
+  "implementation_authorized": false,
+  "design_sha_approval": null,
+  "test_sha_approval": null,
+  "counts_as_final_integrated_round": false,
+  "remaining_holds": [
+    "W01-W03 final workflow/input-screen/self-disclosure reconciliation and current PRODUCT/ROADMAP scope alignment",
+    "F01-F08 full technical contracts;22 closes only structural effect-manifest SQL specification",
+    "Source action/Account/CCF1 provenance, legacy-shape refusal, reciprocal source/head/claim integrity and all adoption/gate/attempt/work participants",
+    "F04 sanitized errors/logs/DB diagnostics and actual cross-customer information-flow boundaries; no executed Verus proof",
+    "Migration/enrollment, independent journal/custody provider choice and current-authority recovery contracts",
+    "Four independent integrated design reviews and explicit exact design SHA approval, then independently reviewed and approved executable test SHA and named RED lane admission",
+    "Runtime measurements, actual provider deployment, release/production/payment/legal authority remain later separate evidence"
+  ]
+}

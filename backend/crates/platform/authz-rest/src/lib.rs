@@ -25,7 +25,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use console_kernel_core::{ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::cedar_pbac::authoring::{
     AuthoredPolicy, NoCodeBlocks, ReviewDecision, SimRequest, SimResource, SimSubject,
     SimulationOutcome, simulate as simulate_policies,
@@ -39,15 +39,18 @@ use uuid::Uuid;
 #[derive(Clone)]
 pub struct CedarPolicyRestState {
     store: PgCedarPolicyStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl CedarPolicyRestState {
     #[must_use]
-    pub fn new(store: PgCedarPolicyStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(
+        store: PgCedarPolicyStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
@@ -81,7 +84,7 @@ pub const CEDAR_POLICY_ROUTE_PATHS: &[&str] = &[
 const DECISION_FEED_LIMIT: i64 = 200;
 
 pub fn router(state: CedarPolicyRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(POLICY_CATALOG_PATH, get(list_catalog))
@@ -471,7 +474,7 @@ async fn authorize_admin(
     state: &CedarPolicyRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for policy API")
     })?;
     let principal =
@@ -584,6 +587,9 @@ fn rest_error_from_request_context(
 ) -> RestError {
     use console_platform_request_context::RequestContextError as E;
     match err {
+        E::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         E::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for policy API")
         }
@@ -594,7 +600,9 @@ fn rest_error_from_request_context(
         E::BranchScope(message) | E::EffectivePolicy(message) => RestError::internal(message),
         E::MissingOrg => RestError::internal("no tenant context is bound to the current request"),
         E::MissingBearer => RestError::unauthorized("missing or malformed bearer token"),
-        E::InvalidToken => RestError::unauthorized("invalid bearer token"),
+        E::InvalidToken | E::LegacySessionRejected => {
+            RestError::unauthorized("invalid bearer token")
+        }
         E::InvalidClaim(message) => {
             RestError::unauthorized(format!("token claim is invalid: {message}"))
         }

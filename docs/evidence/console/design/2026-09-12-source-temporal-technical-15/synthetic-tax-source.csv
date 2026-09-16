@@ -1,0 +1,3 @@
+lower_won,upper_exclusive_won,dependents,children,withholding,income_tax_won,local_tax_won
+3000000,3010000,1,0,P100,80000,8000
+3400000,3410000,1,0,P100,100000,10000

@@ -1,0 +1,61 @@
+{
+  "base_sha": "cca76fee191c3e8e64b4ac823fccf893830204a1",
+  "status": "SOURCE_DRAFT_NOT_READY_ROLE_PHASE_CONFLICT",
+  "writer": "/root/finish_migration",
+  "allowed_changed_paths": [
+    "ops/postgres-reconcile-topology.sh",
+    "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql"
+  ],
+  "tests_changed": false,
+  "findings": [
+    {
+      "id": "ACCOUNT-TOPOLOGY-PHASE-01",
+      "severity": "blocking",
+      "evidence": "terms-catalog-attempt2.log",
+      "cause": "Unchanged historical0165 checks console_app has exactly2membership edges globally. Preinstalled newSET-only owner edges cause ontology_role_topology.membership_drift before new0226 executes.",
+      "citations": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql:67",
+        "backend/app/src/lib.rs:2170",
+        "backend/app/src/lib.rs:2191"
+      ],
+      "required_resolution": "Actual migration/topology phase refinement needed, not old migration modification, fake fixture role changes, or test weakening."
+    }
+  ],
+  "executions": [
+    {
+      "log": "terms-catalog-attempt1.log",
+      "classification": "SANDBOX Docker socket permission;0tests"
+    },
+    {
+      "log": "terms-catalog-attempt2.log",
+      "classification": "ACTUAL_CANONICAL_MIGRATION_PREREQUISITE_FAILURE0165;0selectedtests; new0226unreached"
+    },
+    {
+      "log": "dev-up-tests.log",
+      "exit_code": 0,
+      "executed": 12,
+      "passed": 12
+    },
+    {
+      "command": "bash -n ops/postgres-reconcile-topology.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "draft_limits": [
+    "0226SQL has not executed; no success claim. Six newrelations empty by construction, noINSERT/backfill/fence activation.",
+    "Newtopology2roles plus4membership expectations drafted but not deployment-usable until phase conflict resolved.",
+    "Local typedshape/tuple checks drafted; registry/evidence authority,CAS,immutable transition controls and full BW31approval semantics remain owner gates before any grants or enrollment.",
+    "Unapplied topology-test patch remains outside repo pending independent review; proposal cannot override underlying migration prerequisite."
+  ],
+  "files": {
+    "topology-test.proposed.patch": "d1a89ae1fefc207b535fe9586c92278ec943be22910520f4665398552c0131f6",
+    "terms-catalog-attempt1.log": "c28388fd76ca9447344f36062658d6d216679428836c26c39f984c949547eb02",
+    "terms-catalog-attempt2.log": "c81c1183290e7157a407fbdba722f1fbb6bbd4852274629e2cd1c4a284ce9e11",
+    "topology-test.proposal.json": "b74a5fa257f0e40512de5e8f487ca95b54be3efd5ff7e97aae67673d5c15436f",
+    "dev-up-tests.log": "d57cfcda2654cb4e49e7e3967a8ec978721bf1c4b529954b5db3cad434b6f25a"
+  }
+}

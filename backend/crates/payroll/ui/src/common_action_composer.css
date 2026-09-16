@@ -1,0 +1,32 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; line-height: 1.55; color: #192335; background: #f4f6fa; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.composer { max-width: 48rem; margin: 3rem auto; padding: 2rem; border: 1px solid #dce1e9; border-radius: 1rem; background: #fff; }
+.composer-eyebrow { color: #526078; font-size: .875rem; font-weight: 650; letter-spacing: .04em; }
+h1 { font-size: clamp(1.5rem, 4vw, 2rem); margin: .5rem 0 2rem; overflow-wrap: anywhere; }
+h2 { font-size: 1rem; margin: 0; }
+.composer-field { margin: 1.5rem 0; }
+label, dt { display: block; margin-bottom: .5rem; font-weight: 600; }
+input:not([type="hidden"]), select { width: 100%; min-height: 2.75rem; padding: .7rem .85rem; border: 1px solid #8490a3; border-radius: .5rem; color: inherit; background: transparent; font: inherit; }
+dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+button { min-height: 2.75rem; padding: .7rem 1.25rem; border: 1px solid #8490a3; border-radius: .5rem; font: inherit; font-weight: 600; color: inherit; background: transparent; cursor: pointer; }
+.primary { color: #fff; background: #234fbe; border-color: #234fbe; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.composer-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 2rem; }
+.composer-notice { padding: 1rem; margin: 1rem 0; border: 1px solid #b14a26; border-radius: .5rem; background: #fff6ed; overflow-wrap: anywhere; }
+.field-error { color: #a52620; margin: .4rem 0; }
+[aria-invalid="true"] { border-color: #a52620; }
+a { color: #214fab; text-underline-offset: .2em; }
+.composer-hint { color: #526078; font-size: .9rem; }
+:focus-visible { outline: 3px solid #2867d5; outline-offset: 3px; }
+@media (max-width: 40rem) { .composer { margin: 0; padding: 1.25rem; border: 0; border-radius: 0; min-height: 100vh; } .composer-actions > button { flex: 1; } }
+@media (prefers-color-scheme: dark) {
+  :root { color: #e4eaf4; background: #111723; }
+  .composer { background: #192231; border-color: #37445a; }
+  .composer-eyebrow, .composer-hint { color: #bbc6d8; }
+  .composer-notice { background: #342820; border-color: #d49569; }
+  .field-error { color: #ffaca6; }
+  [aria-invalid="true"] { border-color: #ffaca6; }
+  a { color: #9fc0ff; }
+  select option { color: #e4eaf4; background: #192231; }
+}

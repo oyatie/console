@@ -1,0 +1,193 @@
+{
+  "base_sha": "c13016282540c49546af1c0c75db45faef7fc466",
+  "candidate_sha": "59c38d607745e00c8e8e89d9d6e15ed163688aa3",
+  "candidate_tree": "f8901b1d4c70686af0cdbbc578ca99b91e4fa1a8",
+  "candidate_diff_sha256": "befebeafebec7883262dc0b07c96f3d433a81dc5e80e75e144b840f8ee0f3cf9",
+  "changed_paths": [
+    "backend/crates/ontology/canonical-domain/src/lib.rs",
+    "backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+    "backend/crates/ontology/rest/src/lib.rs",
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+    "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+    "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+    "backend/crates/workflow/adapter-postgres/src/lib.rs",
+    "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+    "backend/crates/workflow/domain/src/lib.rs",
+    "backend/openapi/openapi.yaml"
+  ],
+  "sources": [
+    {
+      "path": "backend/crates/ontology/canonical-domain/src/lib.rs",
+      "candidate_git_blob": "c874b3a71f7ce7e0d1e3530d60541530278932ea",
+      "candidate_sha256": "39e099b0b0a941eecba0af50892df28611a81aedd79f4695f28c07b4f7108892",
+      "base_sha256": "1dcca76fcdd0888251926185e1dc830f21ce40d65cd83026383e3c428d1156be",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/ontology/rest/openapi/paths/api__v1__ontology__actions__action_key__execute.post.yaml",
+      "candidate_git_blob": "21ccbfd9753ec43b60f45162d6c0d6073e249643",
+      "candidate_sha256": "0ca1c472cdf3711981d28155b7b7611dbb2040661d8de7b76ed484f0cfe3924c",
+      "base_sha256": "dd9830a7f9519ed57cb977b373277d705cb0e9e5f5315c5dbde2c031f90b2a1d",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/ontology/rest/src/lib.rs",
+      "candidate_git_blob": "bd3f528ac9d05fa2b0ee244e71329b78d8837d35",
+      "candidate_sha256": "5a4177be846b37c5b1720ad1bf7ab968fd81aaa48c5c6e9f0bc2dd2e966e26e0",
+      "base_sha256": "bb18fab3163f17fc31f48017b0e846c500f113969bc99d23ee2c9c17952631fc",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "candidate_git_blob": "1e355b4e5b36476a4e8f91b3008e4c990a6a233b",
+      "candidate_sha256": "0e436f1ec3936c67ad423e2b61c7199dfebdb4c87c16a4657d592611adb0169c",
+      "base_sha256": "5fb47e80467e54dd243d2db788333ecdcdb6c450a4e003b7c70d676908fb3329",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/src/pay_run.rs",
+      "candidate_git_blob": "20bf09da0c7c164c36dbd984b6e2ff1b047d4b09",
+      "candidate_sha256": "5e7de7a0f65be90c60ff07a2f33c96e6363940a97c78d50558152b70a0082bfc",
+      "base_sha256": "c24816b44ae5af9f2d33d48d3d6e93059732bb88b171cdb9470bde79aff8b197",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "candidate_git_blob": "1fa369d8bd8d7d35cc549fc9222554ec72d801d0",
+      "candidate_sha256": "a5365bf77e1b1c12dac8f33575e464e8b13b64c4295eb685d9f056dbb6652e8c",
+      "base_sha256": "4440c53f96708c965c6ae15ded946b6b815dead05637e6472bc991fb08222e36",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/src/lib.rs",
+      "candidate_git_blob": "dbaf6d206e03d9d98293cb2c0255bb5f38aa9c3a",
+      "candidate_sha256": "c679720840e232ecb1eeaf5df7e3b40c4d3ab647171c90b4f6c4341b39b66b3b",
+      "base_sha256": "4b22816b36ae67a0aea4ab68e7cce1ba2e8be8c8fc61c7aa8bd82ce5f8423df5",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "candidate_git_blob": "067cd504c5bdbe9979d8ed79084ffdb20400f147",
+      "candidate_sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+      "base_sha256": "2ccced8a2b4431fb00257de2554a3002f4c56e3f26ce3df8b47cf9b4d593e0cb",
+      "changed": true
+    },
+    {
+      "path": "backend/crates/workflow/domain/src/lib.rs",
+      "candidate_git_blob": "c8cbea46c85de26a1838c20f2cea215c606600ae",
+      "candidate_sha256": "a287e83061ad22cec1b470bb85a8f548a5bebf89fb5adf49748620232b2f136b",
+      "base_sha256": "4915f68f4b0a9818abe89a9fdea61c043a3e92a0011943a6488853057163244a",
+      "changed": true
+    },
+    {
+      "path": "backend/openapi/openapi.yaml",
+      "candidate_git_blob": "a8a7ecee91d61b2f8dc5eb3e91e107069e41e552",
+      "candidate_sha256": "47f6985551d34feb9b470af109d179cf6a37b365a707b524702e25cf4f85b185",
+      "base_sha256": "3196cc75fafc29d78a19ae7be26460c374bcdaf476ab0dd5610f2357d8541576",
+      "changed": true
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "candidate_git_blob": "4d536b6666df6dae783ce73b1890d1518ab8ef59",
+      "candidate_sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "base_sha256": "6deaa1dea2dd9b9a04b0576569fde641c9b674c1ef5f8a1a75a9f391bbcd64f4",
+      "changed": false
+    },
+    {
+      "path": "backend/app/src/workflow_drain.rs",
+      "candidate_git_blob": "ef37b66726c8cb756f5bcdde4efeb16e752fde45",
+      "candidate_sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "base_sha256": "4bc308edafd9f6eaf983ab08e826456a0e9682ddd1658193c14426fa3552ed54",
+      "changed": false
+    },
+    {
+      "path": "backend/app/src/durability_composition_tests.rs",
+      "candidate_git_blob": "f497fb61744f50bb75d65780aaf36257d3e6f5e9",
+      "candidate_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "base_sha256": "28100825e0cdbf3519fe70de8e1fb63ba10c5207007c67c66882ac6abd90a8a7",
+      "changed": false
+    },
+    {
+      "path": "backend/crates/platform/db/src/durability.rs",
+      "candidate_git_blob": "2a54acd0c0f865017c917117e81659cf3d4466fa",
+      "candidate_sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "base_sha256": "db992203fe23b22501dd7c6cea73263c5cb507d88ae4b659c301e3d46d0c2634",
+      "changed": false
+    }
+  ],
+  "compatibility_postimages_match_after_rustfmt": [
+    "backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+    "backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+    "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs"
+  ],
+  "preserved_app7_and_durability_primitive": true,
+  "commands": [
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/ontology/rest/src/projected_dispatch_derivation.rs",
+      "stdin_sha256": "91a9eb54ea3628e4a7370d7e09fea445da13ba574a174fffb520527568afbed4",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout_sha256": "0e436f1ec3936c67ad423e2b61c7199dfebdb4c87c16a4657d592611adb0169c"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/payroll/adapter-postgres/tests/recovery.rs",
+      "stdin_sha256": "a36ed33caf2e95274c4e7f0fb00720d9e0cce920646710c5c3fc74f2ef13103f",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout_sha256": "a5365bf77e1b1c12dac8f33575e464e8b13b64c4295eb685d9f056dbb6652e8c"
+    },
+    {
+      "argv": [
+        "rustfmt",
+        "--edition",
+        "2024",
+        "--emit",
+        "stdout"
+      ],
+      "stdin_source": "/private/tmp/payroll-typed-unknown-e27623ab-tests-v4-capture/compatibility-post/backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs",
+      "stdin_sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c",
+      "exit_code": 0,
+      "stderr": "",
+      "stdout_sha256": "a1f6b08f62dd0acd089fa0fc7cdbe58de1e1d0c6bf32f4f923727fd115dd480c"
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/private/tmp/console-production-tdd-preparation-20260913",
+        "diff",
+        "--check",
+        "c13016282540c49546af1c0c75db45faef7fc466",
+        "59c38d607745e00c8e8e89d9d6e15ed163688aa3"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "counts": {
+    "changed_paths": 10,
+    "bound_source_files": 14,
+    "mechanical_commands_executed": 4,
+    "compatibility_postimages_compared": 3,
+    "runtime_tests_discovered": 0,
+    "runtime_tests_executed": 0,
+    "cargo_invocations": 0,
+    "database_commands": 0,
+    "shared_repository_writes": 0
+  }
+}

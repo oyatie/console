@@ -1,0 +1,66 @@
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.00s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (/private/tmp/console-auth-parser-cargo/debug/deps/auth_rest-f873fd8f3e88bd5e)
+
+running 8 tests
+test auth_target_parser::account_target_accepts_existing_tcp_tls_and_operational_queries ... ok
+test auth_target_parser::account_target_ambient_pgoptions_cannot_smuggle_role_or_gucs ... FAILED
+test auth_target_parser::account_target_effective_query_password_preserves_distinctness ... ok
+test auth_target_parser::account_target_rejection_prevents_sqlx_unknown_parameter_secret_logging ... FAILED
+test auth_target_parser::account_target_rejects_malformed_percent_and_invalid_allowed_values ... FAILED
+test auth_target_parser::account_target_rejects_sqlx_destination_and_startup_overrides ... FAILED
+test auth_target_parser::account_target_rejects_unknown_and_duplicate_decoded_query_keys ... FAILED
+test auth_target_parser::account_target_requires_explicit_tcp_host_database_and_no_fragment ... FAILED
+
+failures:
+
+---- auth_target_parser::account_target_ambient_pgoptions_cannot_smuggle_role_or_gucs stdout ----
+
+thread 'auth_target_parser::account_target_ambient_pgoptions_cannot_smuggle_role_or_gucs' (28243673) panicked at app/tests/auth_rest/auth_target_parser.rs:358:5:
+isolated configuration assertion failed; no child output is echoed because it may contain canaries
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- auth_target_parser::account_target_rejection_prevents_sqlx_unknown_parameter_secret_logging stdout ----
+
+thread 'auth_target_parser::account_target_rejection_prevents_sqlx_unknown_parameter_secret_logging' (28243677) panicked at app/tests/auth_rest/auth_target_parser.rs:63:5:
+STRICT_TARGET: invalid target must fail at real config boundary
+
+---- auth_target_parser::account_target_rejects_malformed_percent_and_invalid_allowed_values stdout ----
+
+thread 'auth_target_parser::account_target_rejects_malformed_percent_and_invalid_allowed_values' (28243678) panicked at app/tests/auth_rest/auth_target_parser.rs:63:5:
+STRICT_TARGET: invalid target must fail at real config boundary
+
+---- auth_target_parser::account_target_rejects_sqlx_destination_and_startup_overrides stdout ----
+
+thread 'auth_target_parser::account_target_rejects_sqlx_destination_and_startup_overrides' (28243679) panicked at app/tests/auth_rest/auth_target_parser.rs:63:5:
+STRICT_TARGET: invalid target must fail at real config boundary
+
+---- auth_target_parser::account_target_rejects_unknown_and_duplicate_decoded_query_keys stdout ----
+
+thread 'auth_target_parser::account_target_rejects_unknown_and_duplicate_decoded_query_keys' (28243680) panicked at app/tests/auth_rest/auth_target_parser.rs:63:5:
+STRICT_TARGET: invalid target must fail at real config boundary
+
+---- auth_target_parser::account_target_requires_explicit_tcp_host_database_and_no_fragment stdout ----
+
+thread 'auth_target_parser::account_target_requires_explicit_tcp_host_database_and_no_fragment' (28243682) panicked at app/tests/auth_rest/auth_target_parser.rs:63:5:
+STRICT_TARGET: invalid target must fail at real config boundary
+
+
+failures:
+    auth_target_parser::account_target_ambient_pgoptions_cannot_smuggle_role_or_gucs
+    auth_target_parser::account_target_rejection_prevents_sqlx_unknown_parameter_secret_logging
+    auth_target_parser::account_target_rejects_malformed_percent_and_invalid_allowed_values
+    auth_target_parser::account_target_rejects_sqlx_destination_and_startup_overrides
+    auth_target_parser::account_target_rejects_unknown_and_duplicate_decoded_query_keys
+    auth_target_parser::account_target_requires_explicit_tcp_host_database_and_no_fragment
+
+test result: FAILED. 2 passed; 6 failed; 0 ignored; 0 measured; 96 filtered out; finished in 0.14s
+
+error: test failed, to rerun pass `-p console-app --test auth_rest`

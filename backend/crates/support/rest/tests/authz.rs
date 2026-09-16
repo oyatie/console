@@ -29,8 +29,14 @@ const TEST_AUDIENCE: &str = "console-api";
 /// (DB) membership is a different branch that holds a ticket. After the fix the
 /// list endpoint resolves the scope from the DB, so the user sees their real
 /// branch's ticket and the spoofed claim is ignored.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn list_tickets_resolves_branch_scope_from_db_not_token_claim(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -78,7 +84,10 @@ async fn list_tickets_resolves_branch_scope_from_db_not_token_claim(pool: PgPool
         .unwrap();
         let service = router(SupportRestState::new(
             PgSupportStore::new(runtime_role_pool(&pool).await),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
             None,
         ));
 

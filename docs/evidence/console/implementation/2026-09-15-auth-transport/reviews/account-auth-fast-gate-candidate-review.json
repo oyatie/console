@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/fast_gate_review",
+  "base_sha": "202d5e1e6bb7083190c8ea7d7451742df9f8c788",
+  "review_type": "Independent static approval of exact immutable candidate bytes",
+  "result": "approved",
+  "artifacts": [
+    {
+      "target": "scripts/check-adrs.test.mjs",
+      "candidate_path": "/private/tmp/account-adr-logscope-test-candidate.mjs",
+      "base_sha256": "c9c0860b7f2afb2ae4cedd6df7e5899365cfb8b105a79835ecd2466a137e4806",
+      "candidate_sha256": "33ab4e00ea6f2cff42dce640d38060adb31f80c60bb26da7a51f1a359bbb3b7a",
+      "decision": "Approve: 4 additive regression cases; correct evaluateAdrGovernance(root).failures shape. One evidence-log acceptance and three real stale-reference positive controls; no existing tests removed or skipped."
+    },
+    {
+      "target": "scripts/check-adrs.mjs",
+      "candidate_path": "/private/tmp/account-adr-logscope-source-candidate.mjs",
+      "base_sha256": "ce2f834007cd53a779e2e65183ca7e9cc7ed90a1ca1fc159f123446c17115d7b",
+      "candidate_sha256": "4cb253e8a437a3ae57cda97f0a0138e78fec0cfb8ea67390f771462e8b7c5702",
+      "decision": "Approve: only retired-reference scan scope changes. Uses existing path-boundary helper and exact lowercase .log suffix under docs/evidence. Markdown and external logs remain scanned."
+    },
+    {
+      "target": "scripts/check-command-database-wiring.test.mjs",
+      "candidate_path": "/private/tmp/account-command-drain-test-candidate.mjs",
+      "base_sha256": "86cbf4c5b2e4522c9b7eaaf8f83fecbb0e5590356f7720740a426b94166dcabd",
+      "candidate_sha256": "a09323f7a7b43f0cdbf17ef982bd0a236f3cd999ba229aa1667e5a302d6076fe",
+      "decision": "Approve: exact five-role drain expression preserves all incumbent roles, self-PID exclusion, and ordering. Adds mandatory auth-login-readback assertion; every other test unchanged."
+    },
+    {
+      "target": "scripts/console/converge-release-please-doc-custody.test.mjs",
+      "candidate_path": "/private/tmp/account-issuer-closure-test-candidate.mjs",
+      "base_sha256": "096d706a2805d8678714647bfd07093650be4befbfc1752fe3391f9fb04a3478",
+      "candidate_sha256": "1e018d2f2d212e5dd39ed55e88ecf09659d6e47377e5862153225f94036f2de5",
+      "decision": "Approve: exactly one reviewed literal digest replaced. All eight closure entries, byte comparisons, authority tests, and mutation rejection logic remain unchanged."
+    }
+  ],
+  "required_validation": [
+    "ADR regression suite: expected 33 cases, with 4 additive cases; obtain real discovered/executed counts.",
+    "ADR real gate green on installed bytes while historical receipt hashes remain unchanged.",
+    "Command database wiring suite: all 10 cases green.",
+    "Complete Console PR authority bootstrap regression: retain and run all existing authority/mutation cases."
+  ],
+  "test_execution": "No additional candidate tests executed during parent database snapshot; static review only. Earlier baseline and large-index validation remains recorded separately.",
+  "authority_limit": "Approval covers only these exact source/test bytes as a local correction. It does not authorize shipping, release, credentials, data changes, production exposure, or weaker gates.",
+  "stop_condition": "Any candidate SHA-256 change requires checking the new delta before using this approval."
+}

@@ -26,8 +26,9 @@ const POSTINGS: &str = "/api/v1/recruiting/postings";
 const APPLICANTS: &str = "/api/v1/recruiting/applicants";
 const OFFERS: &str = "/api/v1/recruiting/offers";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn recruiting_pipeline_publish_offer_hire_with_full_audit_lineage(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let _ = tracing_subscriber::fmt()
         .with_env_filter("error")
         .try_init();
@@ -42,6 +43,7 @@ async fn recruiting_pipeline_publish_offer_hire_with_full_audit_lineage(pool: Pg
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let token = keys.token(admin, org, &["SUPER_ADMIN"]);
@@ -467,8 +469,9 @@ async fn recruiting_pipeline_publish_offer_hire_with_full_audit_lineage(pool: Pg
     assert_eq!(closed["status"], "CLOSED");
 }
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn recruiting_denies_without_leakage_and_conceals_other_tenants(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let org = OrgId::knl();
     let admin = UserId::new();
@@ -483,6 +486,7 @@ async fn recruiting_denies_without_leakage_and_conceals_other_tenants(pool: PgPo
             leave_command_role_pool(&pool).await,
             keys.public_pem.clone(),
         )
+        .await
         .unwrap(),
     );
     let admin_token = keys.token(admin, org, &["SUPER_ADMIN"]);
@@ -738,13 +742,22 @@ async fn role_pool(owner: &PgPool, set_role: &'static str) -> PgPool {
         .unwrap()
 }
 
-fn app_state(
+async fn app_state(
     pool: PgPool,
     leave_command_pool: PgPool,
     public_key: String,
 ) -> Result<AppState, console_app::AppError> {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     Ok(AppState::new(
         AppConfig::from_pairs([
+            (
+                "CONSOLE_DATABASE_DURABILITY",
+                r#"{"mode":"local_development"}"#.to_owned(),
+            ),
             ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
             ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".into()),
             ("CONSOLE_JWT_ISSUER", ISSUER.into()),
@@ -752,7 +765,8 @@ fn app_state(
             ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key),
         ])?,
         DatabaseDependency::Postgres(pool),
-    )?
+    )
+    .map(|state| state.with_auth_database(auth_database))?
     .with_leave_command_database(leave_command_pool))
 }
 

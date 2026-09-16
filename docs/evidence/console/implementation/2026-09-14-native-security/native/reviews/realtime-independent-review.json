@@ -1,0 +1,37 @@
+{
+  "reviewer": "/root/finish_migration",
+  "candidate_sha": "7d9f7f466e88d01d364d7a99d96bd55adeb5f67c",
+  "base_sha": "5dd6708ee08c293a2bfdc8d2f9fb28e5c9f06ced",
+  "disposition": "ACCEPT_BOUNDED_COMPANY_ROUTING_FIX",
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "independent_execution": {
+    "command": "RUSTUP_TOOLCHAIN=1.98.1 RUSTC_WRAPPER='' CARGO_INCREMENTAL=1 CARGO_TARGET_DIR=/private/tmp/console-account30-cargo cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-realtime --lib --test hub --test notify_payload",
+    "exit_code": 0,
+    "executed": 9,
+    "passed": 9,
+    "failed": 0,
+    "filtered": 0,
+    "log": "/private/tmp/realtime-independent-check.log",
+    "log_sha256": "773a816c35d2697a609bf9cc6e6d489e4c85fc80a7dbb7f65e8c21bca52cec5b"
+  },
+  "assessment": [
+    "Exact candidate clean; diff consists solely of two org_id equality filters in shared dispatch_event. Tests unchanged.",
+    "Message and ACK payload handlers both retain source org through RLS source fetch and shared dispatch. Candidate-user restriction avoids querying irrelevant connection identities; final per-connection filter independently protects same Account in different active Companies, including supplied authorized-user and no-pool branches.",
+    "Filter precedes Live queue insertion and Replaying buffer admission; other-Company event cannot overflow/disconnect that connection.",
+    "Connection principal copied once into private slot at fresh random UUID insertion and never rebound. Between target snapshot and dispatch lock, disconnect removes slot; reconnect gets fresh UUID. Queue-drain transition does not alter principal. No new Company-switch race introduced.",
+    "Replay uses original immutable principal org for source reads; no modification to replay pipeline inferred.",
+    "Source-contextless notifications dispatch separately by recipient and remain unenrolled for protected Company-event claims.",
+    "Company/OrgId boundary is within-tenant active Company protection under current Console contracts, not evidence of global cross-tenant or current Cedar policy noninterference."
+  ],
+  "remaining_limits": [
+    "No DB bridge or replay integration executed by this reviewer.",
+    "Dynamic policy/session revocation and previously queued event disclosure remain separately gated; this patch does not assert final-policy emission fence implemented.",
+    "Root must bind integration evidence to integrated SHA; this exact local candidate is not merged/released/production certified."
+  ]
+}
