@@ -12369,7 +12369,15 @@ paths:
       tags:
       - payroll
       operationId: calculatePayrollRun
-      summary: Per-line draft calculation (ATTENDANCE_CLOSED only); a line without a verified gross + NTS source row stays blocked with truthful blockers, income tax is never estimated
+      summary: Per-line draft calculation; ATTENDANCE_CLOSED writes a version, a later POST of the same stored version replays 200 without writing
+      description: >
+        A first calculate requires ATTENDANCE_CLOSED. A line without a verified gross
+        + NTS source row stays blocked with truthful blockers; income tax is never
+        estimated. Duplicate POST of an already CALCULATED run with a stored version
+        returns 200 and the same version; it does not insert another
+        payroll_line_calculations version. Other statuses, including CALCULATED with
+        no stored version, remain 409 invalid_state. Stored rows stay drafts
+        (payable remains false).
       security:
       - bearerAuth: []
       parameters:
@@ -12380,7 +12388,10 @@ paths:
           $ref: '#/components/schemas/Uuid'
       responses:
         '200':
-          description: The run detail after the calculation, including the latest calculation summary.
+          description: >
+            The run detail after the first calculation or after an idempotent replay
+            of the same stored version, including the latest calculation summary.
+            payable remains false.
           content:
             application/json:
               schema:

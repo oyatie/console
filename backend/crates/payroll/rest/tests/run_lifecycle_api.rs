@@ -164,6 +164,46 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
         calculated["exceptions_open"], 1,
         "overtime hours raise 예외"
     );
+    let first_version = calc["version"].clone();
+    let calc_rows_after_first: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM payroll_line_calculations WHERE run_id = $1")
+            .bind(run)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert!(
+        calc_rows_after_first >= 1,
+        "first calculate must persist line calculations"
+    );
+
+    // Duplicate POST of the same stored version is a 200 replay, not 409.
+    let (status, replayed) = send(
+        &rt,
+        &keys,
+        "POST",
+        &format!("/api/v1/payroll/runs/{run}/calculate"),
+        &submitter_token,
+        None,
+    )
+    .await;
+    assert_eq!(
+        status,
+        StatusCode::OK,
+        "duplicate calculate must replay 200, not 409: {replayed}"
+    );
+    assert_eq!(replayed["run"]["status"], "CALCULATED");
+    assert_eq!(replayed["calculation"]["version"], first_version);
+    assert_eq!(replayed["calculation"]["payable"], false);
+    let calc_rows_after_replay: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM payroll_line_calculations WHERE run_id = $1")
+            .bind(run)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        calc_rows_after_replay, calc_rows_after_first,
+        "duplicate calculate must not insert another calculation version"
+    );
 
     // ---- Submit is fail-closed while exceptions are open.
     let (status, refused) = send(
