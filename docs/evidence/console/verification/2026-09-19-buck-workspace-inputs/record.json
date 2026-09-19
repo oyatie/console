@@ -1,0 +1,691 @@
+{
+  "kind": "buck-workspace-input-repair-evidence",
+  "recorded_at_utc": "2026-09-19T20:04:55.742127+00:00",
+  "status": "bounded repair locally verified and independently reviewed; unpublished; milestone 0 remains incomplete",
+  "base_sha": "debdcf0b3cb43b9984e4874a52c68616a0e609aa",
+  "candidate_sha": "e84abb4f10cb8d16048ac825ba52d3eeb2929c4b",
+  "candidate_tree": "1960e94ab11e6fb8f1e9914e89f64d95d6ff8c24",
+  "lane": {
+    "lane": "buck-layer-workspace-inputs",
+    "base_sha": "debdcf0b3cb43b9984e4874a52c68616a0e609aa",
+    "owner": "root sole writer",
+    "root": "/private/tmp/console-client-release-20260919",
+    "probe": "tools/buck2 test //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation",
+    "outcome": "Same 25 existing tests pass with real workspace metadata available in declared Buck inputs.",
+    "allow": [
+      "tools/buck/gen_first_party.py",
+      "tools/buck/test_gen_first_party.py",
+      "backend/BUCK",
+      "generated member BUCK files",
+      "explicit Cargo patch resource exports only if demonstrated necessary",
+      "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/"
+    ],
+    "forbid": [
+      "runtime product code",
+      "Rust test assertions",
+      "architecture ratchets",
+      "Cargo.lock",
+      "migrations",
+      "CI",
+      "authority records"
+    ],
+    "mechanical_guide": "Reuse RESOURCE_CONFIG and mapped_srcs. Export only actual declared workspace metadata input files/source directories; derive member set from repository manifests; serialize regeneration. No absolute host path, stale metadata fixture, source blanket export or test skip.",
+    "premortem": "Incomplete member set or alternate metadata can yield false GREEN; broad exports could capture generated/secret files.",
+    "detection": "Unchanged existing full suite; compare workspace membership/architecture fields to Cargo; input closure regressions and omission mutation.",
+    "rollback": "Revert dedicated repair commit; no data/external changes.",
+    "stop": "Wrong failure/non-executable/green probe, test behavior change, unexplained generated drift or unresolved review finding.",
+    "reviews": [
+      "baseline_audit diagnosis",
+      "release_review independent design/diff/evidence review"
+    ],
+    "holds": [
+      "Full release and integration remain incomplete; no exposure authority."
+    ]
+  },
+  "scope": {
+    "changed_paths": 179,
+    "generated_member_exports": 176,
+    "source_owner": "tools/buck/gen_first_party.py",
+    "root_workspace_export": "backend/BUCK",
+    "preserved": "Rust assertions, architecture ratchets, runtime source, migrations, lockfiles, CI and authority records unchanged"
+  },
+  "verification_binding": "Targeted tests ran against staged candidate bytes; full verify began on base with those bytes and completed after their unchanged commit. Its HEAD-archiving generated-face step tested the old base. That step was separately rerun successfully against committed e84abb4f10cb8d16048ac825ba52d3eeb2929c4b. The74-step result is not a claim that all steps uniformly executed on that HEAD. No source edits occurred during the run.",
+  "admission": {
+    "command": "python3 tools/lanes/fanout.py admit --probe 'tools/buck2 test //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation'",
+    "result": "admitted on clean exact base",
+    "named_probe": "tools/buck2 test //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation",
+    "red": {
+      "discovered": 25,
+      "executed": 25,
+      "passed": 24,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "cause": "compile-time CARGO_MANIFEST_DIR points into Buck mapped_srcs without Cargo workspace metadata inputs"
+  },
+  "targeted_verification": [
+    {
+      "command": "tools/buck2 test //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation",
+      "phase": "repair GREEN",
+      "exit_code": 0,
+      "discovered": 25,
+      "executed": 25,
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "tools/buck2 test //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation",
+      "phase": "negative control: remove only root manifest input mapping temporarily",
+      "result": "expected failure: missing Cargo.toml",
+      "discovered": 25,
+      "executed": 25,
+      "passed": 24,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "tools/buck2 test //backend/ci/gates/layer-boundary:console-gate-layer-boundary-itest-gate_detects_violation",
+      "phase": "after restoring exact generated file",
+      "exit_code": 0,
+      "discovered": 25,
+      "executed": 25,
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "python3 tools/buck/test_gen_first_party.py",
+      "phase": "explicit local generator suite",
+      "exit_code": 0,
+      "discovered": 46,
+      "executed": 46,
+      "passed": 46,
+      "failed": 0,
+      "note": "Requires Cargo; this Python suite is local evidence, not a claim of hosted coverage."
+    },
+    {
+      "command": "git diff --cached --check",
+      "phase": "staged candidate",
+      "exit_code": 0
+    },
+    {
+      "command": "git status --porcelain",
+      "phase": "after repair commit",
+      "result": "empty"
+    },
+    {
+      "command": "export PATH=\"${TMPDIR:-/tmp}/console-dotslash/bin:$PATH\"\ntools/buck/preflight.sh",
+      "phase": "rerun HEAD-archiving generated-file admission on committed repair",
+      "candidate_sha": "e84abb4f10cb8d16048ac825ba52d3eeb2929c4b",
+      "exit_code": 0,
+      "rust_test_targets_enumerated": 379,
+      "generated_first_party_members": 176,
+      "selected_generated_faces": 1,
+      "passed_generated_faces": 1,
+      "deferred_generated_faces": 1,
+      "limit": "Third-party Reindeer expensive generation is unchanged and remains deferred to full pre-merge gate; no merge claim."
+    }
+  ],
+  "full_verification": {
+    "command": "export PATH=\"${TMPDIR:-/tmp}/console-dotslash/bin:$PATH\"\nnpm run verify > /private/tmp/console-buck-workspace-verify.log 2>&1",
+    "exit_code": 0,
+    "tier": "fast",
+    "steps_discovered": 74,
+    "steps_executed": 74,
+    "steps_passed": 74,
+    "steps_failed": 0,
+    "counts_note": "Per-step reported counts below are executions, not deduplicated test identities. Zero-execution Rust binaries and existing ignored/filtered tests are counted separately; no test selection was changed. Database/hosted-only omissions of the existing fast tier remain in the full log.",
+    "steps": [
+      {
+        "step": "Release metadata semantic regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          8
+        ]
+      },
+      {
+        "step": "Release metadata documentation link tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          54
+        ]
+      },
+      {
+        "step": "Release metadata documentation manifest gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Release metadata documentation local-link gate  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          6
+        ]
+      },
+      {
+        "step": "Cheap Buck2 generated-face admission  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Foundation gate contract  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Reasoning lens manifest regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          12
+        ]
+      },
+      {
+        "step": "Reasoning lens manifest drift  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "CI preflight contract tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          66
+        ]
+      },
+      {
+        "step": "Buck impact planner regression  (cwd: .)",
+        "result": "passed",
+        "python_reported_test_totals": [
+          13
+        ]
+      },
+      {
+        "step": "Console route inventory regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          13
+        ]
+      },
+      {
+        "step": "Console authority-train regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          3
+        ]
+      },
+      {
+        "step": "Console lane-receipt validator regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          22
+        ]
+      },
+      {
+        "step": "Console PR authority bootstrap regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          86
+        ]
+      },
+      {
+        "step": "Executed-tests baseline set regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          26
+        ]
+      },
+      {
+        "step": "Local CI mirror contract  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          15
+        ]
+      },
+      {
+        "step": "Console truth-ledger validator exact-M regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          25
+        ]
+      },
+      {
+        "step": "Console fanout planner exact-M regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          29
+        ]
+      },
+      {
+        "step": "Buck PostgreSQL environment wrapper regression  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Buck disposable PostgreSQL harness regression  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "CI preflight contract  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Canonical npm lockfile  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Cargo.lock consistency  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Executed-tests ratchet \u2014 a test binary must have a path from a workflow step  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          12
+        ]
+      },
+      {
+        "step": "JavaScript test reachability ratchet  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "JavaScript test reachability unit tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          2
+        ]
+      },
+      {
+        "step": "Lane fan-out harness preflight  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Workflow test-runner credential literals  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          6
+        ]
+      },
+      {
+        "step": "rustfmt check  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "clippy -D warnings  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Layer-boundary gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Audit-coverage gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Migration-safety gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Tenant-isolation gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "PII-no-logs gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "RLS-arming gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Dev-auth-absence gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "IaC tier-discipline gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Fabricated-branch gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Personal-data-classification gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Writer-ownership gate  (cwd: backend)",
+        "result": "passed"
+      },
+      {
+        "step": "Buck2 CI-gate mutation suites \u2014 every gate proven to still reject  (cwd: .)",
+        "result": "passed",
+        "rust_reported": {
+          "binaries": 8,
+          "zero_executed_binaries": 0,
+          "passed": 120,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      },
+      {
+        "step": "PR 473 migration operational contract tests  (cwd: .)",
+        "result": "passed",
+        "python_reported_test_totals": [
+          19
+        ]
+      },
+      {
+        "step": "Buck2 platform-authz unit suite  (cwd: .)",
+        "result": "passed",
+        "rust_reported": {
+          "binaries": 1,
+          "zero_executed_binaries": 0,
+          "passed": 96,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      },
+      {
+        "step": "Buck2 console-app unit suite  (cwd: .)",
+        "result": "passed",
+        "rust_reported": {
+          "binaries": 1,
+          "zero_executed_binaries": 0,
+          "passed": 164,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      },
+      {
+        "step": "Buck2 console-app OpenAPI drift suite  (cwd: .)",
+        "result": "passed",
+        "rust_reported": {
+          "binaries": 1,
+          "zero_executed_binaries": 0,
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered": 0
+        }
+      },
+      {
+        "step": "ADR governance tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          29
+        ]
+      },
+      {
+        "step": "ADR governance gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Doc citations \u2014 every code citation must resolve  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Shared text gate unit tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          7
+        ]
+      },
+      {
+        "step": "Gate-input provenance instrument  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Gate-input provenance unit tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          13
+        ]
+      },
+      {
+        "step": "G004 identity group org people policy foundation gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "G005 workflow approval Work Hub lifecycle gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Workflow runtime spine gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Workflow runtime M2 strangler dark-landing gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Workflow runtime M2 Cedar-guard observe-and-record gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Workflow runtime M2 flag-ON runtime gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Workflow runtime M2 outbox-drainer transactional-idempotency gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "G006 asset equipment dispatch lifecycle gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "G007 collaboration mail calendar poll mobile lifecycle gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "G008 import HR payroll readiness gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "People HR lifecycle maturity gate  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Payroll release-gate contract  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Undeclared imports \u2014 every bare specifier must be declared  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          20
+        ]
+      },
+      {
+        "step": "Request-body contract \u2014 spec fields must exist on the handler  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          562
+        ]
+      },
+      {
+        "step": "Governed command-database DARK wiring regression  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          10
+        ]
+      },
+      {
+        "step": "Render manifests and NetworkPolicy enforcement preflight  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Production hardening contract  (cwd: .)",
+        "result": "passed"
+      },
+      {
+        "step": "Production hardening regression tests  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          160
+        ],
+        "python_reported_test_totals": [
+          19,
+          16
+        ]
+      },
+      {
+        "step": "Domain crate unit tests  (cwd: .)",
+        "result": "passed",
+        "rust_reported": {
+          "binaries": 318,
+          "zero_executed_binaries": 175,
+          "passed": 1286,
+          "failed": 0,
+          "ignored": 5,
+          "measured": 0,
+          "filtered": 0
+        }
+      },
+      {
+        "step": "Platform contract drift gate  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          6
+        ]
+      },
+      {
+        "step": "Employee import replay contract  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          2
+        ]
+      },
+      {
+        "step": "Ontology write precondition contract  (cwd: .)",
+        "result": "passed",
+        "node_reported_test_totals": [
+          4
+        ]
+      }
+    ],
+    "binding_limit": "HEAD-archiving generated-face step used base commit; successful exact-repair rerun is separately recorded."
+  },
+  "independent_review": {
+    "identity": "/root/release_review",
+    "candidate_sha": "e84abb4f10cb8d16048ac825ba52d3eeb2929c4b",
+    "candidate_tree": "1960e94ab11e6fb8f1e9914e89f64d95d6ff8c24",
+    "verdict": "approve bounded implementation; no remaining findings",
+    "verified": "Exact179 paths,176 generated members, unchanged Rust tests and retained46/46 generator result; prior independent new-regression execution1/1",
+    "limit": "Implementation approval preceded full verifier completion; final corrected evidence is separately approved in evidence_review. No release or exposure acceptance."
+  },
+  "independent_input_audit": {
+    "identity": "/root/baseline_audit",
+    "workspace_members": 176,
+    "dependency_entries": 1795,
+    "manifest_bytes_match": true,
+    "gate_consumed_metadata_fields_match": true,
+    "limit": "Not full Cargo target metadata equivalence; test/example/bench inventory is not consumed by this gate."
+  },
+  "artifacts": [
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/admission.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "uncompressed_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "uncompressed_bytes": 48
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/boundary-red.log.gz",
+      "sha256": "b7e6c9ef8d07164cfede31301270d90f6cd3ed1e8e0cb2304f060be8c37dd71f",
+      "uncompressed_sha256": "be81cf97a9e8e07b7970b7e75ed661d9da7a1f478590ea28db0bef50e0cbe47f",
+      "uncompressed_bytes": 3797
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/generator-red.log.gz",
+      "sha256": "809be8b4cdad471d13e50e3996e5a480f6dbbd433c03f16dce8fb4f403c1da8c",
+      "uncompressed_sha256": "c3dc4409d131478b79ec5347805a54a430830eb10e39a026b5e3e54d97c80684",
+      "uncompressed_bytes": 737343
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/generator-green.log.gz",
+      "sha256": "6793a8693eedce0c79b7b4743fa94257e8d160b31628216474100ca897d8976c",
+      "uncompressed_sha256": "abd01fe3a7e4129f4567b7e5f309f07b680a0354a85c64d7f2663059bc258ac5",
+      "uncompressed_bytes": 145
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/boundary-green.log.gz",
+      "sha256": "dc50e5d710773d3e866185c61aee5b02462fb5ee26dcd482494feb5fd9d5037d",
+      "uncompressed_sha256": "a52c5307f859b7aac81e1aae3f0def46784d8a76dcdba51a2f5eb595a8bbc08d",
+      "uncompressed_bytes": 3397
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/omission-negative-control.log.gz",
+      "sha256": "049eeb78a2952c0cabd95eee77c40bcc67ce6948f2e9efb50975e73d4d3e71fa",
+      "uncompressed_sha256": "e39a4a27cfb9e2a95286fc9e5d954b01e70617b6f8f5e4335499550e62da9e6d",
+      "uncompressed_bytes": 4399
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/boundary-restored-green.log.gz",
+      "sha256": "17e8122ffe0c11259541cdce8929b3abe29ff33da006e6ae3587fbf66ef1c9db",
+      "uncompressed_sha256": "bd3b89c654d6ccd4f2d91ad5aada7d04231928857030d211e35a92236e4c0d57",
+      "uncompressed_bytes": 3186
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/verify.log.gz",
+      "sha256": "3ef66f9c38648d6d1acaacfe9072132fe3b5776e9aad28227d8765c92338f710",
+      "uncompressed_sha256": "65fcb656dca4a23b15cbefc95f750f039379d1ad495fb433caab73e5ff998308",
+      "uncompressed_bytes": 759827
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/metadata-input-closure-audit.log.gz",
+      "sha256": "a10077bb192a0f7c715680bc15d33095e96a9718f52977e09bb41b30681e1114",
+      "uncompressed_sha256": "acfe19303748faf2f6c2632dd7c2c365f36334f80c121a9be1cb650bc9cd25b3",
+      "uncompressed_bytes": 443
+    },
+    {
+      "path": "docs/evidence/console/verification/2026-09-19-buck-workspace-inputs/committed-preflight.log.gz",
+      "sha256": "507a945d98c27a197dbe7135a9ea323e73a6f888f2529539eed6238f288ec770",
+      "uncompressed_sha256": "a8c4668a05b3bcf976dd0dc5149459fb65dc7cb274f91be1f9df83fdd56ddfdb",
+      "uncompressed_bytes": 1472
+    }
+  ],
+  "environment": {
+    "platform": "macOS aarch64",
+    "node": "v26.7.0",
+    "python": "3.14.7",
+    "repository_rust_pin": "nightly-2026-09-10",
+    "original_checkout": "Untouched; all writes in isolated worktree or new temporary evidence."
+  },
+  "remaining_holds": [
+    "Milestone0 integration and complete release inventory remain incomplete.",
+    "Account/session and Company candidate require integrated design/test review and current-boundary evidence; prior approvals do not automatically rebind.",
+    "42 retained merge-preview conflicts; preserve this repair, current strict inputs/canonical views/error envelopes, historical migrations/custody and both test inventories.",
+    "Rust1.98.1 release target remains to reconcile with repository pin.",
+    "No product journey acceptance, deployment qualification, merge, push or production exposure."
+  ],
+  "next_dependency_audit": {
+    "identity": "/root/baseline_audit",
+    "accepted_session_sha": "8ab9a7fc9bdb4dc657a6f4a31809fd0c673c6b6b",
+    "company_journey_test_sha": "01e73daed4385643ac14cf15ec829fdfd7681573",
+    "company_eligibility_test_sha": "b9d43c444b7341d7c328a13d418f84815c9d8dda",
+    "next": "Prepare and independently review an Account/session integration design-and-test candidate; reconcile actual dependency closure rather than wholesale old-branch selection.",
+    "probe": "account_browser::native_business_session::business_transaction_resolves_real_native_session_without_credential_access",
+    "prerequisites": [
+      "real Account enrollment",
+      "finalized exact custody profiles",
+      "restricted Auth/Business database logins",
+      "functioning PostgreSQL harness"
+    ],
+    "admission_limit": "Source branch probe is accepted GREEN and absent from current dev inventory; neither historical fact admits an implementation lane on the new candidate."
+  },
+  "evidence_review": {
+    "identity": "/root/release_review",
+    "status": "approved corrected evidence accuracy; no remaining findings",
+    "verified": "All10 artifact hashes/lengths;74/74 step summaries and detailed counts;46 generator tests;25-test GREEN/restoration;24+1 omission control; committed-candidate rerun379 targets/176 generated members/1 passed face/1 explicitly deferred face.",
+    "finding": "Original verification_binding overstated candidate coverage because generated-face gate archives HEAD.",
+    "correction": "Recorded original binding accurately and reran the HEAD-dependent gate on the committed repair with exit0; retained separately hashed log.",
+    "limit": "Bounded local repair evidence only; no merge, release or exposure acceptance."
+  }
+}
