@@ -3,6 +3,7 @@
 
 import importlib.util
 import inspect
+import json
 import re
 import shutil
 import subprocess
@@ -20,6 +21,34 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_layer_ratchet_receives_current_workspace_manifests_and_sources(self) -> None:
+        """The real-workspace ratchet must not run against an empty Buck input tree."""
+        external = GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/gate_detects_violation.rs", ""
+        )
+        expected = {"//backend:Cargo.toml": "backend/Cargo.toml"}
+        backend = Path(GENERATOR.REPO, "backend")
+        # Cargo also admits implicit path-dependency members outside its globs.
+        # Ask Cargo, independently of the generator's directory scan.
+        metadata = json.loads(subprocess.check_output(
+            ["cargo", "metadata", "--no-deps", "--format-version", "1", "--offline"],
+            cwd=backend, text=True,
+        ))
+        directories = {Path(package["manifest_path"]).parent
+                       for package in metadata["packages"]
+                       if package["id"] in metadata["workspace_members"]}
+        self.assertTrue(directories)
+        for directory in directories:
+            package = Path(directory).relative_to(GENERATOR.REPO).as_posix()
+            expected[f"//{package}:Cargo.toml"] = f"{package}/Cargo.toml"
+            expected[f"//{package}:crate-source-tree"] = f"{package}/src"
+            buck = Path(directory, "BUCK").read_text(encoding="utf-8")
+            self.assertIn('name = "Cargo.toml",', buck, package)
+        self.assertEqual(expected, external)
+        self.assertEqual({}, GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/unrelated.rs", ""
+        ))
+
     def test_no_workspace_member_is_skipped(self) -> None:
         """`-ui` members were skipped while Leptos was unvendored.
 

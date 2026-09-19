@@ -1619,6 +1619,19 @@ def integration_resource_config(name, test_file):
 
 def integration_external_resources(name, test_file, contents):
     external = dict(integration_resource_config(name, test_file)["external"])
+    if (name, test_file) == (
+        "console-gate-layer-boundary", "tests/gate_detects_violation.rs"
+    ):
+        # This ratchet reads the real workspace through cargo metadata --no-deps.
+        # Buck's CARGO_MANIFEST_DIR is inside mapped_srcs, not the checkout.
+        # Reuse the discovered members and source exports so workspace globs
+        # cannot silently shrink when a new member is added. The gate reads
+        # manifests/dependencies, not Cargo's test/example target inventory.
+        external["//backend:Cargo.toml"] = "backend/Cargo.toml"
+        for directory in find_members():
+            package = os.path.relpath(directory, REPO).replace(os.sep, "/")
+            external["//{}:Cargo.toml".format(package)] = package + "/Cargo.toml"
+            external[source_tree_label(package)] = package + "/src"
     if "#[sqlx::test" in contents:
         external.update(MIGRATION_TREE)
     return external
@@ -1800,6 +1813,11 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
     out = [
         header,
         'load("//tools/buck:rust_source_layout.bzl", "repo_mapped_srcs")',
+        "",
+        "export_file(",
+        '    name = "Cargo.toml",',
+        '    visibility = ["PUBLIC"],',
+        ")",
         "",
         "export_file(",
         '    name = "crate-source-tree",',
