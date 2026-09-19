@@ -1,0 +1,39 @@
+{
+  "kind": "additive-reference-inventory-record",
+  "observed_head_sha": "01e069883b998d9c430500c85a6d464c263d4ae3",
+  "base_registry_sha256": "9a02dd4e421462b65fa418322a949da6892e0b65f96b68aa3218d5e974816731",
+  "proposal_sha256": "322bfa90adcf8f13c881314daee80abdd68b883c41b1ddea7b5fd5428d90254c",
+  "candidate_path": "/private/tmp/console-capability-registry-20260919-reference-candidate.json",
+  "candidate_sha256": "fc0fead61c306d63a9f16094e934313693f6ac0221cd66246e4e1b7836d143e1",
+  "diff_path": "/private/tmp/console-capability-registry-20260919-reference-candidate.diff",
+  "diff_sha256": "b5407941e434d9978c1b1266d4ad49c2cc69638adb0fc92b7bdfcbaa6cad3d2c",
+  "counts": {
+    "leaves_before": 103,
+    "leaves_after": 131,
+    "connectors_before": 213,
+    "connectors_after": 245,
+    "runtimes_before": 9,
+    "runtimes_after": 17,
+    "sdks_unchanged": 4,
+    "source_binding_records": 69,
+    "functions_matrix_cells": 51,
+    "runtime_qualifications": 6
+  },
+  "assertions": [
+    "All old values preserved recursively; only array appends and new fields",
+    "Every top-level field outside release_inventory unchanged",
+    "All18 existing source records unchanged",
+    "Unique leaf IDs and no dangling dependencies",
+    "All28 new leaves planned only with null acceptance and not_bound status",
+    "Reference freeze remains partial_snapshot"
+  ],
+  "release_acceptance": "not established; temporary candidate only",
+  "status": "applied to single release inventory; exhaustive freeze incomplete",
+  "independent_review": {
+    "reviewer": "integration_security",
+    "candidate_sha256": "fc0fead61c306d63a9f16094e934313693f6ac0221cd66246e4e1b7836d143e1",
+    "verdict": "approved additive records;126source bindings and51matrix cells checked; existing values retained; no release acceptance"
+  },
+  "validator_limit": "Existing validate-console-truth-ledger.mjs does not validate release_inventory; removing that section still passes its structural evaluator. Dedicated release inventory validation remains required.",
+  "acceptance": "All28newleaves planned only; no implementation/integration/qualification/release state advanced."
+}

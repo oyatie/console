@@ -7691,6 +7691,755 @@
         "Ontology-as-code/SuperRepo and compute modules",
         "Exact analytical/formula/format capability leaves",
         "Legacy application successor equivalence"
+      ],
+      "source_bindings": {
+        "F01.outbound": [
+          {
+            "source_id": "data-connection-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-connection-overview.html.gz",
+            "artifact_uncompressed_sha256": "d832e1dd3acd0e0794b871c5bac39a02b71e6cbcda03190676ca9be0c24d8668",
+            "quote": "outbound connections to enable writeback to external systems via webhooks and data exports.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F01.enrollment-sync": [
+          {
+            "source_id": "data-connection-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-connection-overview.html.gz",
+            "artifact_uncompressed_sha256": "d832e1dd3acd0e0794b871c5bac39a02b71e6cbcda03190676ca9be0c24d8668",
+            "quote": "one Foundry instance can be treated as a source on another, supporting batch and streaming syncs with incremental options.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F02.function-sidecar": [
+          {
+            "source_id": "functions-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-overview.html.gz",
+            "artifact_uncompressed_sha256": "daa4fadaa1fbb39c380750573aa063af7cc8fccf67fba238e04497cbddaacb0b",
+            "quote": "Using Python functions as a sidecar container in Pipeline Builder.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F06.function-staged-writes": [
+          {
+            "source_id": "functions-language-feature-support",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+            "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+            "quote": "read-after-write guarantees within the function and allows nested calls to other staged-write functions.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.workspace-ides": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "Code Workspaces currently supports three environments: JupyterLab®, RStudio®, and VS Code.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.workspace-app-runtimes": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "supports Dash ↗ and Streamlit ↗ for Python applications and Shiny® ↗ for R applications.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.workspace-r-transforms": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "Code Workspaces supports both R transforms and Python/Jupyter® transforms.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.workspace-profiles": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "define custom environment profiles and increase or decrease the compute resources of their workspace as desired.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.code-viewer": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "browsing, searching, comparing, and sharing the committed state of a repository without starting an editor workspace.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.workspace-external-sources": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "manage secrets, egress, and export controls for interactive workflows and published applications.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.sdk-scoped-generation": [
+          {
+            "source_id": "sdk-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/sdk-overview.html.gz",
+            "artifact_uncompressed_sha256": "0c8101ab685abdfcf59028bb925237c5d7388a867b4ef31b487041753d1873d4",
+            "quote": "The functions and types generated for the OSDK are based on just the subset of the Ontology relevant to you.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.sdk-dual-authority": [
+          {
+            "source_id": "sdk-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/sdk-overview.html.gz",
+            "artifact_uncompressed_sha256": "0c8101ab685abdfcf59028bb925237c5d7388a867b4ef31b487041753d1873d4",
+            "quote": "The OSDK uses a token that is scoped only to the ontological entities you want your application to access, in addition to the user's own permissions to the data.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.sdk-subscriptions": [
+          {
+            "source_id": "sdk-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/sdk-overview.html.gz",
+            "artifact_uncompressed_sha256": "0c8101ab685abdfcf59028bb925237c5d7388a867b4ef31b487041753d1873d4",
+            "quote": "Subscribe to Ontology changes with the TypeScript OSDK",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          },
+          {
+            "source_id": "sdk-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/sdk-overview.html.gz",
+            "artifact_uncompressed_sha256": "0c8101ab685abdfcf59028bb925237c5d7388a867b4ef31b487041753d1873d4",
+            "quote": "Subscribe to Ontology changes via WebSocket",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F11.ontology-as-code": [
+          {
+            "source_id": "sdk-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/sdk-overview.html.gz",
+            "artifact_uncompressed_sha256": "0c8101ab685abdfcf59028bb925237c5d7388a867b4ef31b487041753d1873d4",
+            "quote": "your object types, links, and actions are declared with Ontology-as-code in the same repository as your functions and frontend.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.interactive-cells": [
+          {
+            "source_id": "fusion-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/fusion-overview.html.gz",
+            "artifact_uncompressed_sha256": "a11144814df54194631fae0d4ca7581e4a6066ee84b6fca7833de454f08a2f30",
+            "quote": "Build interactive spreadsheets using dropdowns and linked cells",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.dataset-writeback": [
+          {
+            "source_id": "fusion-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/fusion-overview.html.gz",
+            "artifact_uncompressed_sha256": "a11144814df54194631fae0d4ca7581e4a6066ee84b6fca7833de454f08a2f30",
+            "quote": "Submit results and write back datasets to Foundry for downstream usage",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.presence": [
+          {
+            "source_id": "fusion-sheets-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/fusion-sheets-overview.html.gz",
+            "artifact_uncompressed_sha256": "dd53e829078e075b3223920b574177a9381d0cf5f66ec1ca9cc8146c725ce721",
+            "quote": "see each others’ cursors with their respective usernames.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.sheet-types": [
+          {
+            "source_id": "fusion-sheets-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/fusion-sheets-overview.html.gz",
+            "artifact_uncompressed_sha256": "dd53e829078e075b3223920b574177a9381d0cf5f66ec1ca9cc8146c725ce721",
+            "quote": "String (e.g. Fusion or ='Fusion') Number (e.g. 12 or =12) Date (e.g. 2013-02-18 or =date(2013, 2, 18)) Timestamp (e.g. 2013-02-18 00:00:00) Boolean (e.g. =true) Array (e.g. =array(1, 2) or =array('StringOne', 'StringTwo')) Null (e.g. =null)",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.sheet-fill": [
+          {
+            "source_id": "fusion-sheets-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/fusion-sheets-overview.html.gz",
+            "artifact_uncompressed_sha256": "dd53e829078e075b3223920b574177a9381d0cf5f66ec1ca9cc8146c725ce721",
+            "quote": "you can quickly fill cells with the contents of another cell by using copy/paste. Or, you can drag the cell’s fill handle.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.document-embeds": [
+          {
+            "source_id": "notepad-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/notepad-overview.html.gz",
+            "artifact_uncompressed_sha256": "2c81132795098dc60ca35823147f8c66d281a42d396c05f782a3a96c519652e6",
+            "quote": "Embed charts, tables, and graphs from other Foundry applications.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.document-snapshots": [
+          {
+            "source_id": "notepad-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/notepad-overview.html.gz",
+            "artifact_uncompressed_sha256": "2c81132795098dc60ca35823147f8c66d281a42d396c05f782a3a96c519652e6",
+            "quote": "Freeze content to capture point-in-time context.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.document-templates": [
+          {
+            "source_id": "notepad-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/notepad-overview.html.gz",
+            "artifact_uncompressed_sha256": "2c81132795098dc60ca35823147f8c66d281a42d396c05f782a3a96c519652e6",
+            "quote": "Templatize documents to easily create report versions based on new inputs.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F09.document-export": [
+          {
+            "source_id": "notepad-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/notepad-overview.html.gz",
+            "artifact_uncompressed_sha256": "2c81132795098dc60ca35823147f8c66d281a42d396c05f782a3a96c519652e6",
+            "quote": "Export and print all Notepad documents with granular control over export presentation (embed appearance, page breaks, etc.).",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F12.external-api-models": [
+          {
+            "source_id": "model-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/model-overview.html.gz",
+            "artifact_uncompressed_sha256": "62e9425bdd7e8faeb2837f2e691045835f17a0623b9bab005f158f4f9227f1f9",
+            "quote": "configured as externally hosted APIs.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F12.objectives": [
+          {
+            "source_id": "model-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/model-overview.html.gz",
+            "artifact_uncompressed_sha256": "62e9425bdd7e8faeb2837f2e691045835f17a0623b9bab005f158f4f9227f1f9",
+            "quote": "a governance and permissions layer, an automation layer (e.g. uniform evaluation of model candidates), and a CI/CD layer for continuous and downtime-free deployment for models.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F12.feedback": [
+          {
+            "source_id": "model-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/model-overview.html.gz",
+            "artifact_uncompressed_sha256": "62e9425bdd7e8faeb2837f2e691045835f17a0623b9bab005f158f4f9227f1f9",
+            "quote": "ML feedback loops from production data, outcomes, applications, and user actions.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F12.chained-scenarios": [
+          {
+            "source_id": "vertex-chained-models",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/vertex-chained-models.html.gz",
+            "artifact_uncompressed_sha256": "7b23f66f4680b79fa0a7716a305c3ee748de64fedc120efd1afbaed8cfe8e647",
+            "quote": "Any value produced for a model output that is mapped to a parameter and used as input to a later model will propagate as the input value to that model.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "F07.timeseries-intervals": [
+          {
+            "source_id": "foundry-rules-timeseries-concepts",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/foundry-rules-timeseries-concepts.html.gz",
+            "artifact_uncompressed_sha256": "4b3d0c52053fd5b24f167b6899ef22fec2c650622067bf2076ea2a1285ac3ccf",
+            "quote": "For every root object in the input, a set of matching intervals will be present in the output dataset as a series of columns containing the interval data: start time, end time, and duration.",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Amazon Athena": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Amazon Athena",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Informix": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Informix",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:MariaDB": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "MariaDB",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:MySQL": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "MySQL",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:SQLite": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "SQLite",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Sybase": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Sybase",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Vertica": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Vertica",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Netezza": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Netezza",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Teradata": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Teradata",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:SAP": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "SAP",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:ActiveMQ": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "ActiveMQ",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Amazon SNS": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Amazon SNS",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Amazon SQS": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Amazon SQS",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:MQTT": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "MQTT",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:RabbitMQ": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "RabbitMQ",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Solace": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Solace",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Elasticsearch": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Elasticsearch",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:InfluxDB": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "InfluxDB",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:MongoDB": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "MongoDB",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Neo4j": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Neo4j",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:OrientDB": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "OrientDB",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Amazon IoT Core": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Amazon IoT Core",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Azure Event Hub": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Azure Event Hub",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Google IoT Core": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Google IoT Core",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:OPC-UA": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "OPC-UA",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:ESRI / ArcGIS": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "ESRI / ArcGIS",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:PostGIS": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "PostGIS",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Oracle Spatial DBs": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Oracle Spatial DBs",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:Artifactory": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "Artifactory",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:JIRA": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "JIRA",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:PagerDuty": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "PagerDuty",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "connector:ServiceNOW": [
+          {
+            "source_id": "data-integration-source-type-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/data-integration-source-type-overview.html.gz",
+            "artifact_uncompressed_sha256": "b0c648c9853cacb3d02fe290c52d402fe9b31bdd5c7d9359fcc5cbe89a16390b",
+            "quote": "ServiceNOW",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:JupyterLab workspace": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "JupyterLab®",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:RStudio workspace": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "RStudio®",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:VS Code workspace": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "VS Code",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:Dash Python application": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "Dash ↗",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:Streamlit Python application": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "Streamlit ↗",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:Shiny R application": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "Shiny® ↗",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:R workspace transforms": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "R transforms",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ],
+        "runtime:Python/Jupyter workspace transforms": [
+          {
+            "source_id": "code-workspaces-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/code-workspaces-overview.html.gz",
+            "artifact_uncompressed_sha256": "75e6246aec1218b383e59c5ac683ae4bc40659275d93f6e6a157b0f0d403a2d2",
+            "quote": "Python/Jupyter® transforms",
+            "quote_matching": "exact text after HTML whitespace normalization",
+            "scope": "public reference only; not Console implementation or acceptance"
+          }
+        ]
+      },
+      "runtime_qualifications": [
+        {
+          "source_id": "functions-language-feature-support",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+          "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+          "quote": "TypeScript v2 and Python require ontology-bound model functions.",
+          "quote_matching": "exact text after HTML whitespace normalization",
+          "scope": "public reference only; not Console implementation or acceptance"
+        },
+        {
+          "source_id": "functions-language-feature-support",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+          "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+          "quote": "TypeScript v2 and Python require publishing the webhook as a webhook function, which is currently in beta.",
+          "quote_matching": "exact text after HTML whitespace normalization",
+          "scope": "public reference only; not Console implementation or acceptance"
+        },
+        {
+          "source_id": "functions-language-feature-support",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+          "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+          "quote": "TypeScript v2 and Python support media uploads via Ontology edits and basic operations on media properties, but do not support document-specific or audio-specific operations.",
+          "quote_matching": "exact text after HTML whitespace normalization",
+          "scope": "public reference only; not Console implementation or acceptance"
+        },
+        {
+          "source_id": "functions-language-feature-support",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+          "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+          "quote": "TypeScript v2 functions run in a Node.js environment, supporting core modules like fs, child_process, and crypto.",
+          "quote_matching": "exact text after HTML whitespace normalization",
+          "scope": "public reference only; not Console implementation or acceptance"
+        },
+        {
+          "source_id": "functions-language-feature-support",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+          "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+          "quote": "TypeScript v2 functions allow you to request up to 8 vCPUs and 5GB of memory",
+          "quote_matching": "exact text after HTML whitespace normalization",
+          "scope": "public reference only; not Console implementation or acceptance"
+        },
+        {
+          "source_id": "functions-language-feature-support",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+          "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+          "quote": "With deployed functions, you can only run a single function version at a time.",
+          "quote_matching": "exact text after HTML whitespace normalization",
+          "scope": "public reference only; not Console implementation or acceptance"
+        }
+      ],
+      "completion_limitations": [
+        "18 snapshots are incomplete and mutable vendor documentation; retrieval metadata lacks effective URLs and HTTP headers.",
+        "Overview named connector membership is not per-connector lifecycle/mode compatibility evidence; Google IoT Core especially requires lifecycle reconciliation.",
+        "Functions language matrix includes beta and legacy capabilities; successor implementation may satisfy behavior but cannot erase explicit requirements.",
+        "Subscription source evidence consists of reference link labels only; protocol semantics remain unverified.",
+        "No Console acceptance commands invented; all implementation and later states remain false.",
+        "No proposed test or implementation admission.",
+        "The existing validateConsoleTruthLedger validator does not inspect release_inventory; source, dependency and state checks below are local candidate-construction assertions, not an admitted release-qualification gate."
       ]
     },
     "population": {
@@ -9109,6 +9858,198 @@
             "status": "discovered documentation link; support/modes/lifecycle not verified",
             "console_acceptance": "not established",
             "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Amazon Athena under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Informix under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names MariaDB under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names MySQL under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names SQLite under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Sybase under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Vertica under Databases; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Netezza under Data warehouses; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Teradata under Data warehouses; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/sap/install-sap/",
+            "status": "Overview explicitly names SAP under ERP and CRM; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names ActiveMQ under Streaming sources; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Amazon SNS under Streaming sources; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Amazon SQS under Streaming sources; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names MQTT under Streaming sources; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names RabbitMQ under Streaming sources; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Solace under Streaming sources; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Elasticsearch under NoSQL stores; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names InfluxDB under NoSQL stores; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names MongoDB under NoSQL stores; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Neo4j under NoSQL stores; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names OrientDB under NoSQL stores; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Amazon IoT Core under IOT / IIOT; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Azure Event Hub under IOT / IIOT; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Google IoT Core under IOT / IIOT; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names OPC-UA under IOT / IIOT; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names ESRI / ArcGIS under Geospatial systems; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names PostGIS under Geospatial systems; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Oracle Spatial DBs under Geospatial systems; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names Artifactory under Productivity tools; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names JIRA under Productivity tools; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names PagerDuty under Productivity tools; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "reference_path": "/docs/foundry/data-integration/source-type-overview/",
+            "status": "Overview explicitly names ServiceNOW under Productivity tools; individual support/modes/lifecycle not verified",
+            "console_acceptance": "not established",
+            "command": null
           }
         ],
         "required_dimensions": [
@@ -9177,19 +10118,846 @@
             "reference_status": "documented; capabilities differ by language/version",
             "source": "functions-language-feature-support",
             "console_acceptance": "not established",
-            "command": null
+            "command": null,
+            "reference_capabilities": [
+              {
+                "name": "Ontology object support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology object support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Ontology interfaces support",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology interfaces support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Ontology edits support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology edits support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Media handling support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Media handling support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Queryable in Workshop",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Queryable in Workshop",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Usable in Pipeline Builder",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Usable in Pipeline Builder",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Functions on models support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Functions on models support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Language model integration",
+                "reference_support": "No",
+                "release_scope": "excluded AIP",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Language model integration",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Semantic search support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Semantic search support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Webhook support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Webhook support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "External API call support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "External API call support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Serverless execution support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Serverless execution support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Deployed execution support",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Deployed execution support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Staged writes support [Beta]",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Staged writes support [Beta]",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Call function from API gateway",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Call function from API gateway",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Marketplace support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Marketplace support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Bring-your-own-model",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Bring-your-own-model",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              }
+            ]
           },
           {
             "runtime": "TypeScript functions v2",
             "reference_status": "documented; capabilities differ by language/version",
             "source": "functions-language-feature-support",
             "console_acceptance": "not established",
-            "command": null
+            "command": null,
+            "reference_capabilities": [
+              {
+                "name": "Ontology object support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology object support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Ontology interfaces support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology interfaces support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Ontology edits support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology edits support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Media handling support",
+                "reference_support": "Partial",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Media handling support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Queryable in Workshop",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Queryable in Workshop",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Usable in Pipeline Builder",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Usable in Pipeline Builder",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Functions on models support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Functions on models support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Language model integration",
+                "reference_support": "Yes",
+                "release_scope": "excluded AIP",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Language model integration",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Semantic search support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Semantic search support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Webhook support",
+                "reference_support": "Partial",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Webhook support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "External API call support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "External API call support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Serverless execution support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Serverless execution support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Deployed execution support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Deployed execution support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Staged writes support [Beta]",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Staged writes support [Beta]",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Call function from API gateway",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Call function from API gateway",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Marketplace support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Marketplace support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Bring-your-own-model",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Bring-your-own-model",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              }
+            ]
           },
           {
             "runtime": "Python functions",
             "reference_status": "documented; capabilities differ by language/version",
             "source": "functions-language-feature-support",
+            "console_acceptance": "not established",
+            "command": null,
+            "reference_capabilities": [
+              {
+                "name": "Ontology object support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology object support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Ontology interfaces support",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology interfaces support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Ontology edits support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Ontology edits support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Media handling support",
+                "reference_support": "Partial",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Media handling support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Queryable in Workshop",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Queryable in Workshop",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Usable in Pipeline Builder",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Usable in Pipeline Builder",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Functions on models support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Functions on models support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Language model integration",
+                "reference_support": "Yes",
+                "release_scope": "excluded AIP",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Language model integration",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Semantic search support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Semantic search support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Webhook support",
+                "reference_support": "Partial",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Webhook support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "External API call support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "External API call support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Serverless execution support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Serverless execution support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Deployed execution support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Deployed execution support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Staged writes support [Beta]",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Staged writes support [Beta]",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Call function from API gateway",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Call function from API gateway",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Marketplace support",
+                "reference_support": "Yes",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Marketplace support",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              },
+              {
+                "name": "Bring-your-own-model",
+                "reference_support": "No",
+                "release_scope": "reference matrix dimension; No does not impose a missing-feature requirement",
+                "source_evidence": {
+                  "source_id": "functions-language-feature-support",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-reference/functions-language-feature-support.html.gz",
+                  "artifact_uncompressed_sha256": "fb9548dab6e7a653bf39109e5eaee32128bc4884c333b9f1126dca2f157c706c",
+                  "quote": "Bring-your-own-model",
+                  "quote_matching": "exact text after HTML whitespace normalization",
+                  "scope": "public reference only; not Console implementation or acceptance"
+                },
+                "console_acceptance": "not established",
+                "command": null
+              }
+            ]
+          },
+          {
+            "runtime": "JupyterLab workspace",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "RStudio workspace",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "VS Code workspace",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "Dash Python application",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "Streamlit Python application",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "Shiny R application",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "R workspace transforms",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "runtime": "Python/Jupyter workspace transforms",
+            "reference_status": "documented environment; exact runtime/dependency versions not established",
+            "source": "code-workspaces-overview",
             "console_acceptance": "not established",
             "command": null
           }
@@ -12372,6 +14140,870 @@
           "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F01.outbound",
+        "milestone": 6,
+        "required": true,
+        "owner": "integration",
+        "dependencies": [
+          "F06.typed",
+          "F16.policy",
+          "F03.datasets"
+        ],
+        "journey": "Configure governed outbound webhooks and dataset exports with attributed delivery outcomes",
+        "acceptance": {
+          "outcome": "Configure governed outbound webhooks and dataset exports with attributed delivery outcomes",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F01.enrollment-sync",
+        "milestone": 6,
+        "required": true,
+        "owner": "integration",
+        "dependencies": [
+          "F01.batch",
+          "F01.stream",
+          "F01.cdc",
+          "F17.federation"
+        ],
+        "journey": "Synchronize resources between governed instances with batch, streaming and incremental recovery",
+        "acceptance": {
+          "outcome": "Synchronize resources between governed instances with batch, streaming and incremental recovery",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F02.function-sidecar",
+        "milestone": 6,
+        "required": true,
+        "owner": "data execution",
+        "dependencies": [
+          "F02.visual",
+          "F02.code",
+          "F16.policy"
+        ],
+        "journey": "Invoke isolated Python function sidecars from visual pipelines with pinned inputs and durable outputs",
+        "acceptance": {
+          "outcome": "Invoke isolated Python function sidecars from visual pipelines with pinned inputs and durable outputs",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F06.function-staged-writes",
+        "milestone": 7,
+        "required": true,
+        "owner": "actions application",
+        "dependencies": [
+          "F06.typed",
+          "F06.effects",
+          "F02.code"
+        ],
+        "journey": "Execute nested staged-write functions with read-after-write consistency and atomic authorized publication",
+        "acceptance": {
+          "outcome": "Execute nested staged-write functions with read-after-write consistency and atomic authorized publication",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.workspace-ides",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F11.workspace",
+          "F16.policy",
+          "F17.resources"
+        ],
+        "journey": "Develop in governed JupyterLab, RStudio and VS Code environments with current data permissions",
+        "acceptance": {
+          "outcome": "Develop in governed JupyterLab, RStudio and VS Code environments with current data permissions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.workspace-app-runtimes",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F11.workspace",
+          "F10.publication",
+          "F16.policy"
+        ],
+        "journey": "Publish isolated Python Dash/Streamlit and R Shiny applications with versioned dependencies and current data permissions",
+        "acceptance": {
+          "outcome": "Publish isolated Python Dash/Streamlit and R Shiny applications with versioned dependencies and current data permissions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.workspace-r-transforms",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F02.code",
+          "F02.schedule",
+          "F03.lineage"
+        ],
+        "journey": "Publish R and Python/Jupyter workspace transforms into scheduled lineage-tracked pipelines",
+        "acceptance": {
+          "outcome": "Publish R and Python/Jupyter workspace transforms into scheduled lineage-tracked pipelines",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.workspace-profiles",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F11.workspace",
+          "F17.resources"
+        ],
+        "journey": "Select pinned custom workspace environments and adjust compute within authorized quotas",
+        "acceptance": {
+          "outcome": "Select pinned custom workspace environments and adjust compute within authorized quotas",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.code-viewer",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F11.workspace",
+          "F16.sharing"
+        ],
+        "journey": "Browse, search, compare and share authorized committed code without starting a workspace runtime",
+        "acceptance": {
+          "outcome": "Browse, search, compare and share authorized committed code without starting a workspace runtime",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.workspace-external-sources",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F01.outbound",
+          "F16.policy",
+          "F11.workspace"
+        ],
+        "journey": "Use external systems from workspaces and published applications through scoped secrets, egress and export controls",
+        "acceptance": {
+          "outcome": "Use external systems from workspaces and published applications through scoped secrets, egress and export controls",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.sdk-scoped-generation",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F05.schema",
+          "F11.sdk",
+          "F16.policy"
+        ],
+        "journey": "Generate application-specific typed SDKs from the selected authorized Ontology subset",
+        "acceptance": {
+          "outcome": "Generate application-specific typed SDKs from the selected authorized Ontology subset",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.sdk-dual-authority",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F11.sdk",
+          "F16.identity",
+          "F16.policy"
+        ],
+        "journey": "Enforce both application token scope and current user authority for SDK reads and writes",
+        "acceptance": {
+          "outcome": "Enforce both application token scope and current user authority for SDK reads and writes",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.sdk-subscriptions",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F11.sdk",
+          "F16.policy"
+        ],
+        "journey": "Subscribe to governed Ontology changes through TypeScript SDK and WebSocket with release-required resumption and current disclosure rechecks",
+        "acceptance": {
+          "outcome": "Subscribe to governed Ontology changes through TypeScript SDK and WebSocket with release-required resumption and current disclosure rechecks",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F11.ontology-as-code",
+        "milestone": 8,
+        "required": true,
+        "owner": "developer tools",
+        "dependencies": [
+          "F05.schema",
+          "F11.sdk",
+          "F10.publication"
+        ],
+        "journey": "Version Ontology definitions, functions and application code together and regenerate local SDKs after schema edits",
+        "acceptance": {
+          "outcome": "Version Ontology definitions, functions and application code together and regenerate local SDKs after schema edits",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.interactive-cells",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.cells",
+          "F09.formulas",
+          "F16.policy"
+        ],
+        "journey": "Build interactive sheets with dropdowns and linked cells while retaining typed values and permissions",
+        "acceptance": {
+          "outcome": "Build interactive sheets with dropdowns and linked cells while retaining typed values and permissions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.dataset-writeback",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.cells",
+          "F03.datasets",
+          "F16.policy"
+        ],
+        "journey": "Submit spreadsheet results as governed dataset versions for downstream consumers",
+        "acceptance": {
+          "outcome": "Submit spreadsheet results as governed dataset versions for downstream consumers",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.presence",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.cells",
+          "F09.conflicts",
+          "F16.policy"
+        ],
+        "journey": "See authorized collaborators and their cursors without disclosing revoked or unauthorized content",
+        "acceptance": {
+          "outcome": "See authorized collaborators and their cursors without disclosing revoked or unauthorized content",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.sheet-types",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.cells",
+          "F09.formulas"
+        ],
+        "journey": "Enter and round-trip string, number, date, timestamp, boolean, array and null cells with explicit type semantics",
+        "acceptance": {
+          "outcome": "Enter and round-trip string, number, date, timestamp, boolean, array and null cells with explicit type semantics",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.sheet-fill",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.cells",
+          "F09.formulas"
+        ],
+        "journey": "Copy, paste and fill cells or ranges with predictable formula references and keyboard access",
+        "acceptance": {
+          "outcome": "Copy, paste and fill cells or ranges with predictable formula references and keyboard access",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.document-embeds",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.documents",
+          "F08.bi",
+          "F16.derived"
+        ],
+        "journey": "Embed charts, tables and graphs in documents while preserving source versions and disclosure restrictions",
+        "acceptance": {
+          "outcome": "Embed charts, tables and graphs in documents while preserving source versions and disclosure restrictions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.document-snapshots",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.documents",
+          "F03.datasets",
+          "F16.derived"
+        ],
+        "journey": "Freeze document text and embedded resources as an authorized point-in-time snapshot",
+        "acceptance": {
+          "outcome": "Freeze document text and embedded resources as an authorized point-in-time snapshot",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.document-templates",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.documents",
+          "F05.sets",
+          "F16.policy"
+        ],
+        "journey": "Generate new governed document versions from templates and selected object inputs",
+        "acceptance": {
+          "outcome": "Generate new governed document versions from templates and selected object inputs",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F09.document-export",
+        "milestone": 8,
+        "required": true,
+        "owner": "sheets and documents",
+        "dependencies": [
+          "F09.documents",
+          "F16.sharing",
+          "F16.derived"
+        ],
+        "journey": "Export and print documents with controlled embed presentation and page breaks after current authorization",
+        "acceptance": {
+          "outcome": "Export and print documents with controlled embed presentation and page breaks after current authorization",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.external-api-models",
+        "milestone": 9,
+        "required": true,
+        "owner": "models application",
+        "dependencies": [
+          "F12.import",
+          "F01.outbound",
+          "F16.policy"
+        ],
+        "journey": "Register and invoke external model APIs with version identity, controlled credentials and governed lineage",
+        "acceptance": {
+          "outcome": "Register and invoke external model APIs with version identity, controlled credentials and governed lineage",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.objectives",
+        "milestone": 9,
+        "required": true,
+        "owner": "models application",
+        "dependencies": [
+          "F12.experiments",
+          "F12.promotion",
+          "F12.inference"
+        ],
+        "journey": "Manage modeling objectives with comparable candidate evaluation, permissioned review and continuous safe deployment",
+        "acceptance": {
+          "outcome": "Manage modeling objectives with comparable candidate evaluation, permissioned review and continuous safe deployment",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.feedback",
+        "milestone": 9,
+        "required": true,
+        "owner": "models application",
+        "dependencies": [
+          "F12.inference",
+          "F03.lineage",
+          "F16.derived"
+        ],
+        "journey": "Associate production model outcomes and authorized user actions with monitoring and future evaluation inputs",
+        "acceptance": {
+          "outcome": "Associate production model outcomes and authorized user actions with monitoring and future evaluation inputs",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.chained-scenarios",
+        "milestone": 9,
+        "required": true,
+        "owner": "models application",
+        "dependencies": [
+          "F12.simulation",
+          "F12.inference",
+          "F06.effects"
+        ],
+        "journey": "Propagate model outputs into dependent scenario inputs and reproduce baseline versus override simulations",
+        "acceptance": {
+          "outcome": "Propagate model outputs into dependent scenario inputs and reproduce baseline versus override simulations",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F07.timeseries-intervals",
+        "milestone": 7,
+        "required": true,
+        "owner": "automation application",
+        "dependencies": [
+          "F04.timeseries",
+          "F07.conditions",
+          "F03.datasets"
+        ],
+        "journey": "Transform time series and emit matching per-object intervals with start, end and duration for downstream decisions",
+        "acceptance": {
+          "outcome": "Transform time series and emit matching per-object intervals with start, end and duration for downstream decisions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       }
     ],
     "cross_product_acceptance": [
@@ -12387,7 +15019,9 @@
       "Public reference freeze, leaf completeness and support matrices are incomplete.",
       "No release leaf has candidate-bound acceptance established here.",
       "Deployment-equivalent Korean-rule, UX, security, performance and recovery qualification remain pending.",
-      "Dependencies are an initial graph, not an executable dispatch order; exact version-before-execution contracts and owner paths require binding."
+      "Dependencies are an initial graph, not an executable dispatch order; exact version-before-execution contracts and owner paths require binding.",
+      "Detailed public-reference decomposition is additive and incomplete; 18 retained snapshots do not establish exhaustive capability or connector/runtime/SDK compatibility coverage.",
+      "No dedicated release_inventory validation boundary is established by the existing truth-ledger validator."
     ]
   }
 }
