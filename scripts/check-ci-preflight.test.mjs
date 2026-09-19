@@ -2226,7 +2226,7 @@ describe("CI preflight contract", () => {
     // silently returns its tests to executing nowhere.
     expectFailure(
       workflow.replace(" -p console-platform-audit-chain", ""),
-      "domain-unit must run -p console-platform-audit-chain",
+      "domain-unit must execute the locked Cargo test commands directly when run_heavy",
     );
     expectFailure(
       workflow.replace(" --test location_consent_fsm", ""),

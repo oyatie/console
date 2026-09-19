@@ -1918,7 +1918,7 @@ rust_test(
     crate_root = "backend/app/tests/auth_rest.rs",
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/app", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
-    labels = ["owner.backend.app", "domain.app", "test.integration", "resource.postgres", "needs-postgres"],
+    labels = ["owner.backend.app", "domain.app", "test.integration", "resource.postgres", "needs-postgres", "generated"],
     deps = [
         "//backend/crates/action-inbox/application:console-action-inbox-application",
         "//backend/crates/analytics-quant/rest:console-analytics-quant-rest",

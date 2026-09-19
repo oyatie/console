@@ -53,7 +53,7 @@
     "check:g008-payroll-readiness": "node scripts/check-g008-payroll-readiness.mjs",
     "check:workflow-runtime-spine": "node scripts/check-workflow-runtime-spine.mjs",
     "check:workflow-runtime-m2-strangler": "node scripts/check-workflow-runtime-m2-strangler.mjs",
-    "check:workflow-runtime-m2-cedar-guards": "node scripts/check-workflow-runtime-m2-cedar-guards.mjs",
+    "check:workflow-runtime-m2-cedar-guards": "node --test scripts/check-workflow-runtime-m2-cedar-guards.test.mjs && node scripts/check-workflow-runtime-m2-cedar-guards.mjs",
     "check:workflow-runtime-m2-runtime": "node scripts/check-workflow-runtime-m2-runtime.mjs",
     "check:workflow-runtime-m2-drainer": "node scripts/check-workflow-runtime-m2-drainer.mjs",
     "check:korean-institutional-connectivity": "node scripts/check-korean-institutional-connectivity.mjs",

@@ -18081,6 +18081,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -18375,6 +18376,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -18694,6 +18696,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -18753,6 +18756,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -18772,6 +18780,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -19054,6 +19063,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -19113,6 +19123,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -19132,6 +19147,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -19409,6 +19425,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -19468,6 +19485,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -19487,6 +19509,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -19756,6 +19779,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -19815,6 +19839,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -19834,6 +19863,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -20156,6 +20186,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -20215,6 +20246,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -20234,6 +20270,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -20554,6 +20591,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -20613,6 +20651,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -20632,6 +20675,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -21144,6 +21188,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object
@@ -21203,6 +21248,11 @@ paths:
         '429':
           description: 'Applicable native error codes: rate_limited.'
           headers:
+            Retry-After:
+              description: Conservative delay in seconds for the one-minute rate-limit window.
+              schema:
+                type: string
+                const: '60'
             Cache-Control:
               schema:
                 type: string
@@ -21222,6 +21272,7 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ErrorBody'
                 allOf:
                 - $ref: '#/components/schemas/NativeAccountError'
                 - type: object

@@ -10,6 +10,17 @@ mod native_business_session {
     use sqlx::{Connection, PgConnection, Postgres, Transaction};
     use std::time::Duration as Wait;
 
+    type PersistedSession = (
+        Uuid,
+        String,
+        Option<i64>,
+        Option<OffsetDateTime>,
+        Option<String>,
+        OffsetDateTime,
+        Option<OffsetDateTime>,
+        Option<Uuid>,
+    );
+
     const EXTRA_TABLES: &[&str] = &[
         "users",
         "organizations",
@@ -210,7 +221,7 @@ mod native_business_session {
                 && actual.expires_at == expected.expires_at
                 && actual.family_expires_at == expected.family_expires_at
         );
-        let persisted: (Uuid, String, Option<i64>, Option<OffsetDateTime>, Option<String>, OffsetDateTime, Option<OffsetDateTime>, Option<Uuid>) = sqlx::query_as("SELECT user_id,protocol,account_security_generation,auth_time,assurance,created_at,revoked_at,org_id FROM public.auth_refresh_token_families WHERE id=$1")
+        let persisted: PersistedSession = sqlx::query_as("SELECT user_id,protocol,account_security_generation,auth_time,assurance,created_at,revoked_at,org_id FROM public.auth_refresh_token_families WHERE id=$1")
             .bind(actual.session_id).fetch_one(&pool).await.unwrap();
         assert!(
             persisted.0 == actual.account_id

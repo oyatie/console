@@ -150,6 +150,18 @@ while IFS= read -r envfile; do [[ ! -e "${envfile}" ]]; done <"${log}.envfiles"
 exact_log="${scratch}/exact.log"
 PATH="${fake_bin}:${PATH}" HARNESS_LOG="${exact_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one_exact_test "${harness}" //tools/buck:pr473-ontology-key-revision-postgres
 grep -Fq 'CONSOLE_BUCK_RUST_TEST_EXACT=one_exact_test' "${exact_log}"
+! grep -Fq -- '--timeout' "${exact_log}"
+account_log="${scratch}/account-full.log"
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${account_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" "${harness}" //tools/buck:app-auth-rest-pg
+grep '^buck test ' "${account_log}" | grep -Fq -- '--timeout 21600'
+! grep '^buck build ' "${account_log}" | grep -Fq -- '--timeout'
+! grep -Fq 'CONSOLE_BUCK_RUST_TEST_EXACT=' "${account_log}"
+account_exact_log="${scratch}/account-exact.log"
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${account_exact_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=one_exact_test "${harness}" //tools/buck:app-auth-rest-pg
+! grep -Fq -- '--timeout' "${account_exact_log}"
+mixed_log="${scratch}/account-mixed.log"
+PATH="${fake_bin}:${PATH}" HARNESS_LOG="${mixed_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" "${harness}" //tools/buck:app-auth-rest-pg //tools/buck:pr473-ontology-key-revision-postgres
+! grep -Fq -- '--timeout' "${mixed_log}"
 ! grep -Fq -- 'secret-' "${exact_log}"
 isolation_log="${scratch}/isolation.log"
 PATH="${fake_bin}:${PATH}" HARNESS_LOG="${isolation_log}" CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK="${scratch}/buck" CONSOLE_BUCK_NEEDS_POSTGRES_ISOLATION_DIR=postgres-proof "${harness}" //tools/buck:pr473-ontology-key-revision-postgres

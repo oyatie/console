@@ -1832,3 +1832,19 @@ sh_test(
     deps = ["//backend/crates/platform/db:console-platform-db-itest-feature_catalog_covers_every_feature"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+sh_test(
+    name = "app-account-migration-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-account_migration)"],
+    deps = ["//backend/app:console-app-itest-account_migration"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth-auth7-legacy-projection-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth:console-platform-auth-itest-auth7_legacy_projection)"],
+    deps = ["//backend/crates/platform/auth:console-platform-auth-itest-auth7_legacy_projection"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)

@@ -2055,6 +2055,10 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
                 "test.integration",
                 requires_postgres(name, "test.integration", tf),
             )
+            if name == "console-app" and tf == "tests/auth_rest.rs":
+                # The pinned prelude copies this generated source layout instead
+                # of symlinking it: custody tests require regular declared SQL inputs.
+                labels.append("generated")
             config = integration_resource_config(name, tf)
             srcs_expr = listsrcs(sorted(set([tf] + helpers)))
             if config["srcs"]:

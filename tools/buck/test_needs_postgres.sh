@@ -177,6 +177,16 @@ for arg in "$@"; do
     //*|root//*) build_targets+=("${arg}") ;;
   esac
 done
+# The complete Account suite includes hundreds of serial populated-custody
+# histories (one seven-relation ACL case alone takes 150s locally). Keep SQL
+# deadlines and serial execution; give only this full binary a six-hour budget.
+if [[ -z "${exact_test}" && "${#build_targets[@]}" == 1 ]]; then
+  case "${build_targets[0]}" in
+    //tools/buck:app-auth-rest-pg|root//tools/buck:app-auth-rest-pg)
+      test_executor_args+=(--timeout 21600)
+      ;;
+  esac
+fi
 if ((${#build_targets[@]} > 0)); then
   if [[ -n "${isolation_name}" ]]; then
     BUCK_ISOLATION_DIR="${isolation_name}" "${buck_bin}" build --local-only "${build_targets[@]}"

@@ -5336,6 +5336,332 @@ export type NamedEntity = {
   name: string;
 };
 
+export type NativeAccountActionRef = {
+  action_key: string;
+  registration_revision: string;
+};
+
+/**
+ * Current owner returns only a proven empty list. Candidate contexts or unknown provenance fail with navigation_unavailable; they are never fabricated or mapped to an empty success.
+ */
+export type NativeAccountContexts = {
+  contexts: Array<never>;
+};
+
+export type NativeAccountCsrfProof = {
+  csrf_proof: string;
+  expires_at: string;
+};
+
+/**
+ * Exactly an empty JSON object. An absent body, null or positional array is rejected.
+ */
+export type NativeAccountEmptyInput = Record<string, never>;
+
+/**
+ * Exact native Account refusal envelope with fixed safe messages; no token or raw diagnostic fields. Per-operation response descriptions list the applicable codes.
+ */
+export type NativeAccountError = {
+  error: {
+    code: "ambiguous_credentials";
+    message: "Credential transport is ambiguous.";
+  } | {
+    code: "authentication_invalid";
+    message: "Authentication is invalid.";
+  } | {
+    code: "enrollment_invalid";
+    message: "Enrollment is invalid.";
+  } | {
+    code: "request_origin_denied";
+    message: "Request origin is denied.";
+  } | {
+    code: "csrf_invalid";
+    message: "Request proof is invalid.";
+  } | {
+    code: "already_authenticated";
+    message: "Account is already authenticated.";
+  } | {
+    code: "terms_acceptance_required";
+    message: "Terms acceptance is required.";
+  } | {
+    code: "terms_changed";
+    message: "Terms have changed.";
+  } | {
+    code: "request_too_large";
+    message: "Request exceeds the supported size.";
+  } | {
+    code: "invalid_request";
+    message: "Request is invalid.";
+  } | {
+    code: "rate_limited";
+    message: "Request rate is exceeded.";
+  } | {
+    code: "authority_unavailable";
+    message: "Account authority is unavailable.";
+  } | {
+    code: "navigation_unavailable";
+    message: "Navigation authority is unavailable.";
+  };
+};
+
+export type NativeAccountEstablished = {
+  account: NativeAccountProjection;
+};
+
+export type NativeAccountLoginFinishInput = {
+  ceremony_id: string;
+  assertion: NativeWebAuthnAuthenticationCredential;
+};
+
+/**
+ * Complete request-options wrapper, including mediation; there is no top-level expires_at field.
+ */
+export type NativeAccountLoginStart = {
+  ceremony_id: string;
+  public_key_options: NativeWebAuthnRequestChallengeResponse;
+};
+
+export type NativeAccountLogout = {
+  outcome: "COMMITTED";
+};
+
+export type NativeAccountProjection = {
+  account_id: string;
+  session: NativeAccountSession;
+  permitted_self_actions: Array<NativeAccountActionRef>;
+};
+
+export type NativeAccountRegistrationFinishInput = {
+  ceremony_id: string;
+  credential: NativeWebAuthnRegistrationCredential;
+  accept_terms_version: string;
+  accept_items: Array<NativeAccountTermsAcknowledgment>;
+};
+
+/**
+ * Complete creation-options wrapper; there is no top-level expires_at field.
+ */
+export type NativeAccountRegistrationStart = {
+  ceremony_id: string;
+  public_key_options: NativeWebAuthnCreationChallengeResponse;
+};
+
+export type NativeAccountRegistrationStartInput = {
+  terms_version: string;
+};
+
+export type NativeAccountSession = {
+  assurance: "PASSKEY_PRIMARY";
+  expires_at: string;
+};
+
+/**
+ * An object acknowledgment; positional arrays, unknown or duplicate fields, and accepted=false are rejected.
+ */
+export type NativeAccountTermsAcknowledgment = {
+  terms_kind: string;
+  accepted: true;
+};
+
+/**
+ * Decoder accepts omitted/null userHandle; Native Account verification additionally requires its exact bytes to equal the stored Account UUID. Original signed bytes go to the pinned verifier; parsing is not authentication.
+ */
+export type NativeWebAuthnAssertionResponse = {
+  authenticatorData: NativeWebAuthnInputBytes;
+  clientDataJSON: NativeWebAuthnInputBytes;
+  signature: NativeWebAuthnInputBytes;
+  userHandle?: NativeWebAuthnInputBytes | null;
+};
+
+/**
+ * Canonical object representation. Decoder also inherits serde positional-struct acceptance; not an object-only parser guarantee. Attestation is CBOR bytes, clientDataJSON is original JSON bytes; do not inline or reserialize those signed payloads.
+ */
+export type NativeWebAuthnAttestationResponse = {
+  attestationObject: NativeWebAuthnInputBytes;
+  clientDataJSON: NativeWebAuthnInputBytes;
+  transports?: Array<NativeWebAuthnInputTransport> | null;
+};
+
+/**
+ * Pinned type has NO rename_all: hmac_get_secret is the recognized wire key. hmacGetSecret is unknown and ignored, not an alias. Both known fields default None and serialize as null when absent.
+ */
+export type NativeWebAuthnAuthenticationClientExtensions = {
+  appid?: boolean | null;
+  hmac_get_secret?: NativeWebAuthnHmacSecretOutput | null;
+};
+
+/**
+ * Canonical PublicKeyCredential object. extensions defaults to empty outputs; clientExtensionResults alias accepted, both names together rejected as duplicate. Unknown fields ignored; positional-struct forms are also decoder variants, documented separately.
+ */
+export type NativeWebAuthnAuthenticationCredential = {
+  id: string;
+  rawId: NativeWebAuthnInputBytes;
+  response: NativeWebAuthnAssertionResponse;
+  "type": string;
+  extensions?: NativeWebAuthnAuthenticationClientExtensions;
+  clientExtensionResults?: NativeWebAuthnAuthenticationClientExtensions;
+};
+
+export type NativeWebAuthnAuthenticationRequestExtensions = {
+  appid?: string;
+  uvm?: boolean;
+  hmacGetSecret?: NativeWebAuthnHmacSecretInput;
+};
+
+export type NativeWebAuthnAuthenticatorSelection = {
+  authenticatorAttachment?: "platform" | "cross-platform";
+  residentKey?: NativeWebAuthnResidentKeyRequirement;
+  requireResidentKey: boolean;
+  userVerification: NativeWebAuthnUserVerificationPolicy;
+};
+
+/**
+ * Complete CreationChallengeResponse from webauthn-rs-proto 0.5.5; serialized intact as public_key_options. Native Account additionally requires authenticatorSelection, residentKey=required, requireResidentKey=true and userVerification=required; user.id encodes the new Account UUID's 16 bytes. No expires_at appears in the HTTP wrapper.
+ */
+export type NativeWebAuthnCreationChallengeResponse = {
+  publicKey: NativeWebAuthnCreationOptions;
+};
+
+export type NativeWebAuthnCreationOptions = {
+  rp: NativeWebAuthnRelyingParty;
+  user: NativeWebAuthnUser;
+  challenge: NativeWebAuthnOutputBytes;
+  pubKeyCredParams: Array<NativeWebAuthnPublicKeyParameter>;
+  timeout?: number;
+  excludeCredentials?: Array<NativeWebAuthnDescriptor>;
+  authenticatorSelection?: NativeWebAuthnAuthenticatorSelection;
+  hints?: Array<NativeWebAuthnHint>;
+  attestation?: "none" | "indirect" | "direct";
+  attestationFormats?: Array<"packed" | "tpm" | "android-key" | "android-safetynet" | "fido-u2f" | "apple" | "none">;
+  extensions?: NativeWebAuthnRegistrationRequestExtensions;
+};
+
+/**
+ * Unsigned browser hint. Missing/null rk is accepted; it does not prove authenticator resident-key state.
+ */
+export type NativeWebAuthnCredentialPropertiesOutput = {
+  rk?: boolean | null;
+};
+
+/**
+ * Pinned serde representation is a camelCase string. Rust repr(u8) does not make this JSON an integer.
+ */
+export type NativeWebAuthnCredentialProtectionPolicy = "userVerificationOptional" | "userVerificationOptionalWithCredentialIDList" | "userVerificationRequired";
+
+export type NativeWebAuthnDescriptor = {
+  "type": string;
+  id: NativeWebAuthnOutputBytes;
+  transports?: Array<NativeWebAuthnOutputTransport>;
+};
+
+export type NativeWebAuthnHint = "security-key" | "client-device" | "hybrid";
+
+/**
+ * Pinned request-option type uses output1/output2 names. output2 has no skip_serializing_if, so server emits null when absent.
+ */
+export type NativeWebAuthnHmacSecretInput = {
+  output1: NativeWebAuthnOutputBytes;
+  output2: NativeWebAuthnOutputBytes | null;
+};
+
+/**
+ * Decoder accepts missing/null output2. Normal serialization includes output2:null when absent.
+ */
+export type NativeWebAuthnHmacSecretOutput = {
+  output1: NativeWebAuthnInputBytes;
+  output2?: NativeWebAuthnInputBytes | null;
+};
+
+/**
+ * Actual JSON decoder alternatives for Base64UrlSafeData. Empty values parse; cryptographic and native-flow validation may reject them later.
+ */
+export type NativeWebAuthnInputBytes = string | Array<number>;
+
+/**
+ * Known values usb,nfc,ble,internal,hybrid,test; every other JSON string deserializes to Unknown through serde(other). Do not close this request field to an enum.
+ */
+export type NativeWebAuthnInputTransport = string;
+
+/**
+ * Server serialization of base64urlsafedata 0.5.5: URL-safe base64 without padding. No generic format:byte assertion, which would suggest standard base64.
+ */
+export type NativeWebAuthnOutputBytes = string;
+
+export type NativeWebAuthnOutputTransport = "usb" | "nfc" | "ble" | "internal" | "hybrid" | "test" | "unknown";
+
+export type NativeWebAuthnPublicKeyParameter = {
+  "type": string;
+  alg: number;
+};
+
+/**
+ * All fields default to None; unknown fields ignored by the pinned library. These client outputs are unsigned. Canonical serialization omits None fields.
+ */
+export type NativeWebAuthnRegistrationClientExtensions = {
+  appid?: boolean | null;
+  credProps?: NativeWebAuthnCredentialPropertiesOutput | null;
+  hmacSecret?: boolean | null;
+  credProtect?: NativeWebAuthnCredentialProtectionPolicy | null;
+  minPinLength?: number | null;
+};
+
+/**
+ * Canonical RegisterPublicKeyCredential object. extensions may be omitted and defaults to empty outputs; clientExtensionResults is an accepted alias, never both. Explicit null for the outer extensions object is rejected. Unknown nested fields accepted. Serde also accepts positional structs; this published canonical object schema is not a complete accepted-language grammar.
+ */
+export type NativeWebAuthnRegistrationCredential = {
+  id: string;
+  rawId: NativeWebAuthnInputBytes;
+  response: NativeWebAuthnAttestationResponse;
+  "type": string;
+  extensions?: NativeWebAuthnRegistrationClientExtensions;
+  clientExtensionResults?: NativeWebAuthnRegistrationClientExtensions;
+};
+
+/**
+ * Server creation-option extensions. CredProtect is flattened; there is no credProtect wrapper here. Option fields absent rather than null on serialization.
+ */
+export type NativeWebAuthnRegistrationRequestExtensions = {
+  credentialProtectionPolicy?: NativeWebAuthnCredentialProtectionPolicy;
+  enforceCredentialProtectionPolicy?: boolean;
+  uvm?: boolean;
+  credProps?: boolean;
+  minPinLength?: boolean;
+  hmacCreateSecret?: boolean;
+};
+
+export type NativeWebAuthnRelyingParty = {
+  name: string;
+  id: string;
+};
+
+/**
+ * Full pinned RequestChallengeResponse. Mediation is optional in the generic Rust type and omitted for None; this Native Account flow uses start_discoverable_authentication, which always returns mediation=conditional, empty allowCredentials and required userVerification.
+ */
+export type NativeWebAuthnRequestChallengeResponse = {
+  publicKey: NativeWebAuthnRequestOptions;
+  mediation?: "conditional";
+};
+
+export type NativeWebAuthnRequestOptions = {
+  challenge: NativeWebAuthnOutputBytes;
+  timeout?: number;
+  rpId: string;
+  allowCredentials: Array<NativeWebAuthnDescriptor>;
+  userVerification: NativeWebAuthnUserVerificationPolicy;
+  hints?: Array<NativeWebAuthnHint>;
+  extensions?: NativeWebAuthnAuthenticationRequestExtensions;
+};
+
+export type NativeWebAuthnResidentKeyRequirement = "discouraged" | "preferred" | "required";
+
+export type NativeWebAuthnUser = {
+  id: NativeWebAuthnOutputBytes;
+  name: string;
+  displayName: string;
+};
+
+export type NativeWebAuthnUserVerificationPolicy = "required" | "preferred" | "discouraged";
+
 export type NoticeAudienceInput = {
   scope: "org" | "branches";
   branch_ids?: Array<Uuid>;
@@ -8004,6 +8330,24 @@ export type TargetChangeRequestSummary = {
 };
 
 export type Team = "MAINTENANCE" | "PREVENTION" | "MANAGEMENT" | "RECEPTION";
+
+export type TermsCurrent = {
+  terms_version: string;
+  terms_revision: string;
+  manifest_url: string;
+};
+
+export type TermsManifest = {
+  format_version: 1;
+  fixture_only: boolean;
+  items: Array<{
+    terms_kind: string;
+    title: string;
+    locale: string;
+    content_sha256: string;
+    required: true;
+  }>;
+};
 
 export type TimeChangeCoverageEvidence = {
   headcount: number;

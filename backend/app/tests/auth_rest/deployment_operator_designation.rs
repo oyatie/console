@@ -6,6 +6,8 @@ mod deployment_operator_designation {
     use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
     use sqlx::{Connection, Executor, Row};
 
+    type ForeignKeyShape = (Vec<String>, Vec<String>, String, String, bool, bool);
+
     const DESIGNATE: &str =
         "public.deployment_operator_designate_v1(text,text,bigint,uuid,uuid,bigint,bigint)";
     const REVOKE: &str =
@@ -356,7 +358,7 @@ mod deployment_operator_designation {
                 }]
             );
         }
-        let account_fk: Vec<(Vec<String>,Vec<String>,String,String,bool,bool)> = sqlx::query_as("SELECT ARRAY(SELECT a.attname::text FROM unnest(c.conkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=k.attnum ORDER BY k.n),ARRAY(SELECT a.attname::text FROM unnest(c.confkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.confrelid AND a.attnum=k.attnum ORDER BY k.n),c.confupdtype::text,c.confdeltype::text,c.convalidated,c.condeferrable FROM pg_catalog.pg_constraint c WHERE c.conrelid='public.deployment_operator_receipts'::regclass AND c.confrelid='public.accounts'::regclass AND c.contype='f'")
+        let account_fk: Vec<ForeignKeyShape> = sqlx::query_as("SELECT ARRAY(SELECT a.attname::text FROM unnest(c.conkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=k.attnum ORDER BY k.n),ARRAY(SELECT a.attname::text FROM unnest(c.confkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.confrelid AND a.attnum=k.attnum ORDER BY k.n),c.confupdtype::text,c.confdeltype::text,c.convalidated,c.condeferrable FROM pg_catalog.pg_constraint c WHERE c.conrelid='public.deployment_operator_receipts'::regclass AND c.confrelid='public.accounts'::regclass AND c.contype='f'")
             .fetch_all(&pool).await.unwrap();
         assert_eq!(
             account_fk,
@@ -369,7 +371,7 @@ mod deployment_operator_designation {
                 false
             )]
         );
-        let head_fk: Vec<(Vec<String>,Vec<String>,String,String,bool,bool)> = sqlx::query_as("SELECT ARRAY(SELECT a.attname::text FROM unnest(c.conkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=k.attnum ORDER BY k.n),ARRAY(SELECT a.attname::text FROM unnest(c.confkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.confrelid AND a.attnum=k.attnum ORDER BY k.n),c.confupdtype::text,c.confdeltype::text,c.convalidated,c.condeferrable FROM pg_catalog.pg_constraint c WHERE c.conrelid='public.deployment_operator_head'::regclass AND c.confrelid='public.deployment_operator_receipts'::regclass AND c.contype='f'")
+        let head_fk: Vec<ForeignKeyShape> = sqlx::query_as("SELECT ARRAY(SELECT a.attname::text FROM unnest(c.conkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.conrelid AND a.attnum=k.attnum ORDER BY k.n),ARRAY(SELECT a.attname::text FROM unnest(c.confkey) WITH ORDINALITY k(attnum,n) JOIN pg_catalog.pg_attribute a ON a.attrelid=c.confrelid AND a.attnum=k.attnum ORDER BY k.n),c.confupdtype::text,c.confdeltype::text,c.convalidated,c.condeferrable FROM pg_catalog.pg_constraint c WHERE c.conrelid='public.deployment_operator_head'::regclass AND c.confrelid='public.deployment_operator_receipts'::regclass AND c.contype='f'")
             .fetch_all(&pool).await.unwrap();
         let tuple: Vec<String> = [
             "receipt_id",

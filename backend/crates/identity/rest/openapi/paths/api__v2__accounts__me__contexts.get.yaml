@@ -195,6 +195,7 @@ responses:
     content:
       application/json:
         schema:
+          $ref: '#/components/schemas/ErrorBody'
           allOf:
           - $ref: '#/components/schemas/NativeAccountError'
           - type: object

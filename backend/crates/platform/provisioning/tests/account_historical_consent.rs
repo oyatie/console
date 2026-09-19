@@ -2,7 +2,8 @@ use console_platform_auth::account::{AccountHistoricalConsent, AccountOperationE
 use console_platform_provisioning::{AccountTermsArtifacts, AccountTermsItem};
 
 #[test]
-fn historical_consent_requires_exact_registered_manifest_and_complete_item_set() {
+fn historical_consent_requires_exact_registered_manifest_and_complete_item_set()
+-> Result<(), AccountOperationError> {
     let service = ("test.account.service".to_owned(), [2; 32]);
     let privacy = ("test.account.privacy".to_owned(), [3; 32]);
     let artifacts = AccountTermsArtifacts::new(
@@ -17,8 +18,7 @@ fn historical_consent_requires_exact_registered_manifest_and_complete_item_set()
                 content_sha256: privacy.1,
             },
         ],
-    )
-    .unwrap();
+    )?;
     // Pure typed-boundary test. This does not fabricate database consent,
     // verify signatures, select release authority, or simulate an owner helper.
     for items in [
@@ -68,4 +68,5 @@ fn historical_consent_requires_exact_registered_manifest_and_complete_item_set()
         }),
         Err(AccountOperationError::AuthorityUnavailable)
     ));
+    Ok(())
 }

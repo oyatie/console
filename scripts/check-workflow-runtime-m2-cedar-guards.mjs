@@ -195,7 +195,13 @@ requireMatches(
   /pub async fn with_audits<F, T, E>\(pool: &PgPool, org: OrgId, f: F\)/,
   "with_audits(pool, org, closure) is the same-transaction audited-write helper the guard uses",
 );
-const withAudits = fnBody(auditTx, /pub async fn with_audits<F, T, E>/);
+const withAuditsEntry = fnBody(auditTx, /pub async fn with_audits<F, T, E>/);
+assert(
+  /^\{\s*let tx = pool\.begin\(\)\.await\.map_err\(\|e\| E::from\(DbError::Sqlx\(e\)\)\)\?;\s*with_audits_in_tx\(tx, org, f\)\.await\s*\}$/.test(withAuditsEntry),
+  "with_audits delegates its opened transaction, tenant and closure to the shared owner",
+  `${AUDIT_TX}: with_audits must delegate its opened transaction, org and closure to with_audits_in_tx`,
+);
+const withAudits = fnBody(auditTx, /async fn with_audits_in_tx<F, T, E>/);
 assert(withAudits.length > 0, "with_audits body is present", `${AUDIT_TX}: missing with_audits body`);
 assert(
   /set_current_org\(&mut tx, org\)/.test(withAudits),
@@ -321,7 +327,7 @@ requireIncludes(
 );
 requireIncludes(
   "package.json",
-  '"check:workflow-runtime-m2-cedar-guards": "node scripts/check-workflow-runtime-m2-cedar-guards.mjs"',
+  '"check:workflow-runtime-m2-cedar-guards": "node --test scripts/check-workflow-runtime-m2-cedar-guards.test.mjs && node scripts/check-workflow-runtime-m2-cedar-guards.mjs"',
   "package script check:workflow-runtime-m2-cedar-guards is wired",
 );
 requireIncludes(
