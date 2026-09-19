@@ -33,6 +33,49 @@ const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 const TEST_ORIGIN: &str = "https://auth.example.com";
 
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn native_account_entry_is_actionable(pool: PgPool) {
+    let key = SigningKey::random(&mut OsRng);
+    let private = key.to_pkcs8_pem(LineEnding::LF).unwrap().to_string();
+    let public = key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let service = build_router(app_state(pool, private, public).unwrap());
+    let mut request = Request::builder()
+        .uri("/account")
+        .header("Sec-Fetch-Site", "none")
+        .header("Sec-Fetch-Mode", "navigate")
+        .header("Sec-Fetch-Dest", "document")
+        .body(Body::empty())
+        .unwrap();
+    request.extensions_mut().insert(ConnectInfo(
+        "127.0.0.1:41000".parse::<SocketAddr>().unwrap(),
+    ));
+    let response = service.oneshot(request).await.unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(
+        response.headers()[header::CONTENT_TYPE]
+            .to_str()
+            .unwrap()
+            .starts_with("text/html")
+    );
+    assert!(!response.headers().contains_key(header::SET_COOKIE));
+    let body = to_bytes(response.into_body(), 256 * 1024).await.unwrap();
+    let html = std::str::from_utf8(&body).unwrap();
+    for required in [
+        "<main",
+        "lang=\"ko\"",
+        "data-account-state=\"anonymous\"",
+        "패스키로 로그인",
+        "href=\"/account/register\"",
+    ] {
+        assert!(html.contains(required), "missing native entry: {required}");
+    }
+    assert!(!html.contains("data-account-state=\"active\""));
+    assert!(!html.contains("data-context-state=\"empty\""));
+}
+
 #[derive(Debug, Deserialize)]
 struct RegisterStartResponse {
     ceremony_id: Uuid,
