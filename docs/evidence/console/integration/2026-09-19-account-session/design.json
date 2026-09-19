@@ -1,7 +1,7 @@
 {
   "kind": "account-session-integration-design",
   "status": "proposed for independent review; no implementation admitted",
-  "revision": 1,
+  "revision": 2,
   "goal_source": "docs/evidence/console/plans/2026-09-19-first-client-release.txt",
   "owner": "root sole writer",
   "worktree": "/private/tmp/console-client-release-20260919",
@@ -73,7 +73,7 @@
     "tools/ui/build-payroll-wasm.sh"
   ],
   "reconciliation": {
-    "request_context": "Preserve current ErrorBody and outer408/413 normalization and429 Retry-After. Add accepted SessionVerification consumers, current role/branch/group/policy resolution and fenced legacy subject rejection. LegacySessionRejected maps to sanitized401 invalid bearer token; SessionVerificationUnavailable maps to sanitized503. Cookie-only requests never authorize JSON API.",
+    "request_context": "Preserve current ErrorBody and outer408/413 normalization and429 Retry-After. Add accepted SessionVerification consumers, current role/branch/group/policy resolution and fenced legacy subject rejection. LegacySessionRejected maps to sanitized401 invalid bearer token; SessionVerificationUnavailable maps to sanitized503. Cookie-only requests do not authorize existing Bearer-authenticated Business/platform JSON routes. Native Account JSON routes deliberately retain their separately owned Account cookie transport, current-session verification, Origin/Fetch Metadata admission and mutation CSRF checks; do not remove that transport.",
     "auth_pool": "Bind one server-created verification handle from genuine console_auth_rt with distinct effective Auth/Business credentials and same observed database target. Refuse substitution and ambient PGOPTIONS; retain outage/readiness and redaction behavior. Never fall back from missing Auth to Business.",
     "native_guard": "Reuse live_account_session_in_tx locks through owning Business transactions, including expiry recheck after lock wait. Legacy request snapshot is not transaction-long revocation exclusion; do not claim otherwise.",
     "identity": "Preserve all current deny_unknown_fields attributes, ownership-before-last-key checks, atomic passkey deletion/audit, and strict wire contracts. Use the admitted Auth owner for step-up and credential mutations.",
@@ -99,7 +99,7 @@
     "probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=native_account_entry_is_actionable tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
     "fixture_rebind": "Accepted integration makes app_state async and uses production run_migrations/Apalis initialization, custody finalization and distinct restricted LOGIN pools. Preserve all response assertions; fixture adaptation must receive exact test review before execution. The initial smoke test cannot accept a bypass of that custody.",
     "semantic_rebinds": [
-      "Replace the obsolete proposed_ssr_session_cookie_is_not_minted_or_consumed_yet HTML expectation with actual native document behavior while retaining JSON cookie refusal; retain original test/history in Git and explicit reviewed receipt.",
+      "Replace the obsolete proposed_ssr_session_cookie_is_not_minted_or_consumed_yet HTML expectation with actual native document behavior while retaining cookie refusal on existing Bearer-authenticated Business/platform routes and preserving native Account cookie-authorized APIs with their own admission/CSRF. Retain original test/history in Git and explicit reviewed receipt.",
       "Rebind accepted legacy UI assertions to current canonical DTO fixtures and normal routes; preserve independent authorization, empty/error state and nondisclosure assertions.",
       "Retain strict current decoding/error tests and accepted session nondisclosure tests together."
     ],
@@ -109,7 +109,7 @@
     "Baseline existing authentication test through supported disposable PostgreSQL wrapper; record exact1-body discovery/execution and fixture prerequisites.",
     "Compile/discover retained source and current test inventories; compare identities and document reviewed semantic replacements. Zero tests is not a pass.",
     "Run unchanged initial HTTP probe RED before implementation and GREEN after. Exercise anonymous/registration/active/outage/revoked/expired document states and fetch/origin/cookie ambiguity.",
-    "Run OTP/passkey/refresh/mobile/financial step-up plus native Account enrollment/currentness/logout/cookie-only API refusal; genuine restricted Login identities, no test superuser runtime bypass.",
+    "Run OTP/passkey/refresh/mobile/financial step-up plus native Account enrollment/currentness/logout. Verify cookie-only refusal on existing Bearer Business/platform APIs and successful/denied native Account cookie APIs under their own current-session/origin/Fetch Metadata/mutation-CSRF admission. Use genuine restricted Login identities, no test superuser runtime bypass.",
     "Run historical populated migrations, custody startup/privilege/owner drift, same-observed-database and distinct-password controls, Auth-only outage/recovery, fenced refresh no-issuance and Account/family lock/expiry tests.",
     "Run current canonical Head rendering, persona isolation, route compatibility, private-document headers, request-body/OpenAPI conformance, router middleware and architectural ownership tests.",
     "Run real browser feature suite with realistic data and restricted policy; capture screenshots, independent usability critique and effect/history corruption controls. SoftPasskey-only HTTP evidence is not browser evidence.",
@@ -139,5 +139,14 @@
     "Live subscription revocation and qualification remain open.",
     "No push/merge, production exposure, direct payment execution or legal compliance claim authorized by this record."
   ],
-  "review_rounds": []
+  "review_rounds": [
+    {
+      "round": 1,
+      "reviewer": "/root/integration_security",
+      "candidate_sha": "7e185ef038707a104ea650c1dec79d4147542dea",
+      "verdict": "correction required",
+      "finding": "JSON cookie refusal must distinguish existing Bearer Business/platform APIs from native Account cookie APIs.",
+      "resolution": "revision2 scopes refusal and expressly retains native Account cookie/admission/CSRF boundaries."
+    }
+  ]
 }
