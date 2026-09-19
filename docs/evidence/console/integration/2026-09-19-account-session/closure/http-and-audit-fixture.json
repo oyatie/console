@@ -1,0 +1,81 @@
+{
+  "kind": "reviewed-account-http-and-audit-fixture-verification",
+  "base_sha": "b14d38a0ce5eb58c9d5664dccc6224954fa16882",
+  "status": "targeted verification only; full integration and release incomplete",
+  "owner": "root sole repository writer",
+  "source_sha256": {
+    "backend/app/tests/auth_rest.rs": "fdcd288718591a0ba7bf8c3b23af7acf9f4a604416e1366a93e438f9f7f6245d",
+    "backend/app/tests/audit_api.rs": "12ed1bf6eb97fa70b1740e18c5f8da984bf0204c65603d09dd30eec37a38f031",
+    "docs/program/executed-tests-baseline.json": "dfcff1d4846d94f9496798fefd924e2dfdb488c4f0d40d072b85831e0b76990d"
+  },
+  "reviews": [
+    {
+      "reviewer": "integration_tests",
+      "scope": "audit fixture rebind; five existing test oracles preserved",
+      "approved_candidate_sha256": "12ed1bf6eb97fa70b1740e18c5f8da984bf0204c65603d09dd30eec37a38f031",
+      "subsequent_change": "rustfmt only"
+    },
+    {
+      "reviewer": "integration_security",
+      "scope": "native HTTP test authored by integration_tests",
+      "approved_draft_sha256": "a36601478148927ed2a51b970ce779aa61c87e07cb68a297ea555da03ec6e3cb"
+    }
+  ],
+  "results": [
+    {
+      "command": "tools/ci/cargo_needs_postgres.sh --only app-audit-api-pg --runner cargo",
+      "passed": 5,
+      "failed": 0,
+      "filtered": 0,
+      "seconds": 164.58
+    },
+    {
+      "command": "tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-http-envelope-test-map.json --only app-auth-rest-pg --runner cargo",
+      "exact_filter": "account_browser::native_login_start_413_429_envelopes_preserve_identity",
+      "passed": 1,
+      "failed": 0,
+      "filtered": 325,
+      "seconds": 42.34,
+      "limit": "Seeds current/next minute counters and bounds setup/request to 30 seconds; does not prove natural rate accumulation."
+    },
+    {
+      "command": "python3 -m unittest tools.buck.test_gen_first_party",
+      "passed": 59,
+      "failed": 0,
+      "candidate": "3aae851e"
+    },
+    {
+      "command": "npm run check:request-body-contract",
+      "passed": 622,
+      "failed": 0,
+      "candidate": "3aae851e"
+    },
+    {
+      "command": "node scripts/check-executed-tests.mjs",
+      "status": "pass",
+      "static_attributes": 3046,
+      "limit": "Static count, not test execution; one existing SeaweedFS dark baseline retained."
+    }
+  ],
+  "log_uncompressed_sha256": {
+    "native-http-envelope-green": "0cda3b7d2f1d696d260d178fe1073ac4b1bb3772dc6853be99e1443a66ba5bf7",
+    "audit-api-fixture-green": "b4edc3f38451eba751bca3321801ab15f57c9d26b59072d14ccc2f984e952301",
+    "generator-after-commit": "670548f921a57ed6e2da052ccc9ea59361b416d8d8725c3cdb363cf3c00b1dc8",
+    "contract-after-commit": "98205a9c60258252ad5f78d597b933b0f9581dc4e9b76ea15fe9db9a6a3dc333"
+  },
+  "premortem": "Fixture privilege or counter seeding masks a production-boundary refusal.",
+  "blast_radius": "Two integration-test fixtures and one additive static test baseline; no production code or migration changed.",
+  "detection": "Actual restricted Business/Auth logins, positive HTTP control, exact refusal envelopes, unchanged identity/history snapshots and all five retained audit assertions.",
+  "rollback": "Revert bounded test/evidence commit; only disposable database effects.",
+  "stop_conditions": [
+    "Any weakened assertion",
+    "Any historical migration or custody byte edit",
+    "Claiming fixture setup failure is product RED"
+  ],
+  "remaining_holds": [
+    "Full 325-test Account run pending; new 326th test executed separately.",
+    "Audit stale-JWT authority regression and repair pending.",
+    "Full verify and milestones 0\u201310 remain incomplete.",
+    "Production exposure, payment execution and Korean compliance claims require separate authority/evidence."
+  ]
+}

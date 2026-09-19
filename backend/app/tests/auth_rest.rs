@@ -4571,6 +4571,120 @@ mod account_browser {
         }
     }
 
+    // Candidate insertion inside auth_rest.rs::account_browser. Reuses the real
+    // fixture/router and the existing complete native identity/history row oracle.
+    #[sqlx::test(migrations = false)]
+    async fn native_login_start_413_429_envelopes_preserve_identity(pool: PgPool) {
+        let app = fixture(&pool).await;
+        let path = "/api/v2/auth/passkey/login/start";
+        let positive = request(
+            &app,
+            "POST",
+            path,
+            &Cookies::default(),
+            Some(json!({})),
+            &[],
+        )
+        .await;
+        let wire = positive.json(StatusCode::OK);
+        positive.private();
+        exact_keys(&wire, &["ceremony_id", "public_key_options"]);
+        assert_eq!(wire["public_key_options"]["mediation"], "conditional");
+        assert_eq!(
+            wire["public_key_options"]["publicKey"]["allowCredentials"],
+            json!([])
+        );
+        let ceremony_id = Uuid::parse_str(wire["ceremony_id"].as_str().unwrap()).unwrap();
+        let persisted: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM public.auth_webauthn_ceremonies WHERE id=$1 AND consumed_at IS NULL)",
+        )
+        .bind(ceremony_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(
+            persisted,
+            "positive response names an actual durable ceremony"
+        );
+        let mut cookies = Cookies::default();
+        cookies.absorb(&positive.headers);
+        assert!(cookies.0.len() == 1 && cookies.0.contains_key(LOGIN));
+        let before = native_extension_rows(&pool).await;
+
+        // Above native START_BODY_LIMIT (4 KiB), below the 2 MiB ingress cap.
+        let oversized = json!({"padding": "x".repeat(4096)});
+        assert!((4097..8192).contains(&serde_json::to_vec(&oversized).unwrap().len()));
+        let too_large = request(&app, "POST", path, &cookies, Some(oversized), &[]).await;
+        too_large.error(StatusCode::PAYLOAD_TOO_LARGE, "request_too_large");
+        assert_eq!(
+            too_large.json(StatusCode::PAYLOAD_TOO_LARGE)["error"]["message"],
+            "Request exceeds the supported size."
+        );
+        assert!(native_extension_rows_equal(
+            &before,
+            &native_extension_rows(&pool).await
+        ));
+
+        // HTTP has no injected clock. Seed only the fixture's IP counter at cap10
+        // for this minute and the next; bound setup+request to30s so a minute
+        // rollover cannot evade the cap. This verifies real HTTP enforcement and
+        // serialization, not ten naturally accumulated requests or clock recovery.
+        let limited = tokio::time::timeout(std::time::Duration::from_secs(30), async {
+            let now = OffsetDateTime::now_utc().unix_timestamp();
+            let window = OffsetDateTime::from_unix_timestamp(now - now.rem_euclid(60)).unwrap();
+            sqlx::query(
+                "INSERT INTO public.auth_rate_limit(client_key,endpoint,window_start,attempts)
+                 VALUES ('ip:127.0.0.1','account_login_start',$1,10),
+                        ('ip:127.0.0.1','account_login_start',$2,10)
+                 ON CONFLICT(client_key,endpoint,window_start) DO UPDATE SET attempts=10",
+            )
+            .bind(window)
+            .bind(window + time::Duration::minutes(1))
+            .execute(&pool)
+            .await
+            .unwrap();
+            request(&app, "POST", path, &cookies, Some(json!({})), &[]).await
+        })
+        .await
+        .expect("bounded counter setup and HTTP request");
+        limited.error(StatusCode::TOO_MANY_REQUESTS, "rate_limited");
+        assert_eq!(
+            limited.json(StatusCode::TOO_MANY_REQUESTS)["error"]["message"],
+            "Request rate is exceeded."
+        );
+        assert_eq!(limited.headers.get(header::RETRY_AFTER).unwrap(), "60");
+        assert!(native_extension_rows_equal(
+            &before,
+            &native_extension_rows(&pool).await
+        ));
+
+        for response in [&positive, &too_large, &limited] {
+            assert_eq!(
+                response.headers.get(header::CACHE_CONTROL).unwrap(),
+                "no-store"
+            );
+            assert_eq!(
+                response.headers.get(header::CONTENT_TYPE).unwrap(),
+                "application/json"
+            );
+            assert_eq!(
+                response
+                    .headers
+                    .get(header::X_CONTENT_TYPE_OPTIONS)
+                    .unwrap(),
+                "nosniff"
+            );
+            let vary: BTreeSet<_> = response
+                .headers
+                .get_all(header::VARY)
+                .iter()
+                .flat_map(|value| value.to_str().unwrap().split(','))
+                .map(str::trim)
+                .collect();
+            assert!(vary.contains("Cookie") && vary.contains("Origin"));
+        }
+    }
+
     struct Attempt {
         account: Uuid,
         ceremony: Uuid,
