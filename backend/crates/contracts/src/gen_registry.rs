@@ -29,6 +29,22 @@ const SHARED_SECURITY_SCHEMES: &[NamedYaml] = &[
         body: include_str!("../../../openapi/shared/securitySchemes/bearerAuth.yaml"),
     },
     NamedYaml {
+        name: "nativeAccountEnrollment",
+        body: include_str!("../../../openapi/shared/securitySchemes/nativeAccountEnrollment.yaml"),
+    },
+    NamedYaml {
+        name: "nativeAccountLogin",
+        body: include_str!("../../../openapi/shared/securitySchemes/nativeAccountLogin.yaml"),
+    },
+    NamedYaml {
+        name: "nativeAccountRefresh",
+        body: include_str!("../../../openapi/shared/securitySchemes/nativeAccountRefresh.yaml"),
+    },
+    NamedYaml {
+        name: "nativeAccountSession",
+        body: include_str!("../../../openapi/shared/securitySchemes/nativeAccountSession.yaml"),
+    },
+    NamedYaml {
         name: "officeCallbackToken",
         body: include_str!("../../../openapi/shared/securitySchemes/officeCallbackToken.yaml"),
     },
@@ -4204,6 +4220,106 @@ const IDENTITY_FRAGMENT_PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v2/accounts/me",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../identity/rest/openapi/paths/api__v2__accounts__me.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/accounts/me/contexts",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__accounts__me__contexts.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/csrf",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../identity/rest/openapi/paths/api__v2__auth__csrf.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/logout",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!("../../identity/rest/openapi/paths/api__v2__auth__logout.post.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/passkey/login/finish",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__passkey__login__finish.post.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/passkey/login/start",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__passkey__login__start.post.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/registration/finish",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__registration__finish.post.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/registration/start",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__registration__start.post.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/terms",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../../identity/rest/openapi/paths/api__v2__auth__terms.get.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/terms/content/{sha256}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__terms__content__sha256.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/terms/manifests/{sha256}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__terms__manifests__sha256.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/auth/token/refresh",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!(
+                "../../identity/rest/openapi/paths/api__v2__auth__token__refresh.post.yaml"
+            ),
+        }],
+    },
+    PathItem {
         path: "/healthz",
         operations: &[Operation {
             method: "get",
@@ -4447,6 +4563,228 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "MyWorkbenchResponse",
         body: include_str!("../../identity/rest/openapi/schemas/MyWorkbenchResponse.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountActionRef",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountActionRef.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountContexts",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountContexts.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountCsrfProof",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountCsrfProof.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountEmptyInput",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountEmptyInput.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountError",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountError.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountEstablished",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountEstablished.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountLoginFinishInput",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeAccountLoginFinishInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeAccountLoginStart",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountLoginStart.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountLogout",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountLogout.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountProjection",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountProjection.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountRegistrationFinishInput",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeAccountRegistrationFinishInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeAccountRegistrationStart",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeAccountRegistrationStart.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeAccountRegistrationStartInput",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeAccountRegistrationStartInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeAccountSession",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeAccountSession.yaml"),
+    },
+    NamedYaml {
+        name: "NativeAccountTermsAcknowledgment",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeAccountTermsAcknowledgment.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnAssertionResponse",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnAssertionResponse.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnAttestationResponse",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnAttestationResponse.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnAuthenticationClientExtensions",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnAuthenticationClientExtensions.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnAuthenticationCredential",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnAuthenticationCredential.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnAuthenticationRequestExtensions",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnAuthenticationRequestExtensions.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnAuthenticatorSelection",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnAuthenticatorSelection.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnCreationChallengeResponse",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnCreationChallengeResponse.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnCreationOptions",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnCreationOptions.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnCredentialPropertiesOutput",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnCredentialPropertiesOutput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnCredentialProtectionPolicy",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnCredentialProtectionPolicy.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnDescriptor",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnDescriptor.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnHint",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnHint.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnHmacSecretInput",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnHmacSecretInput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnHmacSecretOutput",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnHmacSecretOutput.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnInputBytes",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnInputBytes.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnInputTransport",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnInputTransport.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnOutputBytes",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnOutputBytes.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnOutputTransport",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnOutputTransport.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnPublicKeyParameter",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnPublicKeyParameter.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnRegistrationClientExtensions",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnRegistrationClientExtensions.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnRegistrationCredential",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnRegistrationCredential.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnRegistrationRequestExtensions",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnRegistrationRequestExtensions.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnRelyingParty",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnRelyingParty.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnRequestChallengeResponse",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnRequestChallengeResponse.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnRequestOptions",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnRequestOptions.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnResidentKeyRequirement",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnResidentKeyRequirement.yaml"
+        ),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnUser",
+        body: include_str!("../../identity/rest/openapi/schemas/NativeWebAuthnUser.yaml"),
+    },
+    NamedYaml {
+        name: "NativeWebAuthnUserVerificationPolicy",
+        body: include_str!(
+            "../../identity/rest/openapi/schemas/NativeWebAuthnUserVerificationPolicy.yaml"
+        ),
     },
     NamedYaml {
         name: "OtpRedeemRequest",
@@ -4717,6 +5055,14 @@ const IDENTITY_FRAGMENT_SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "Team",
         body: include_str!("../../identity/rest/openapi/schemas/Team.yaml"),
+    },
+    NamedYaml {
+        name: "TermsCurrent",
+        body: include_str!("../../identity/rest/openapi/schemas/TermsCurrent.yaml"),
+    },
+    NamedYaml {
+        name: "TermsManifest",
+        body: include_str!("../../identity/rest/openapi/schemas/TermsManifest.yaml"),
     },
     NamedYaml {
         name: "TokenPairResponse",

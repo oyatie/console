@@ -18,7 +18,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Extension, Json, Router};
 use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{
     DbError, PeriodLockDomain, lifecycle as lifecycle_db, lock_period_lock_key, with_audit,
@@ -51,18 +51,21 @@ const DEFAULT_LIST_LIMIT: i64 = 50;
 #[derive(Debug, Clone)]
 pub struct LifecycleState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl LifecycleState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: LifecycleState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(

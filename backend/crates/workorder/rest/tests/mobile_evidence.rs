@@ -121,8 +121,14 @@ impl S3ObjectStore for StaticObjectStore {
     }
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn evidence_presign_confirm_flow_is_authorized_and_audited(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -166,7 +172,7 @@ async fn evidence_presign_confirm_flow_is_authorized_and_audited(pool: PgPool) {
         let service = mobile_router(MobileRestState::new(
             rt_pool.clone(),
             PgWorkOrderStore::new(rt_pool),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(verifier, auth_database.clone())),
             Some(evidence),
         ));
 
@@ -249,8 +255,14 @@ async fn evidence_presign_confirm_flow_is_authorized_and_audited(pool: PgPool) {
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn evidence_confirm_fails_when_post_replication_media_reload_fails(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -292,7 +304,10 @@ async fn evidence_confirm_fails_when_post_replication_media_reload_fails(pool: P
         let service = mobile_router(MobileRestState::new(
             pool.clone(),
             PgWorkOrderStore::new(pool.clone()),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
             Some(evidence),
         ));
 
@@ -337,8 +352,14 @@ async fn evidence_confirm_fails_when_post_replication_media_reload_fails(pool: P
 
 // FIX 3 (REST layer): a presign request for AFTER evidence on a terminal work
 // order is rejected with a 409-class error and no evidence/audit rows persist.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn presign_after_evidence_rejected_on_final_completed_work_order(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -388,7 +409,10 @@ async fn presign_after_evidence_rejected_on_final_completed_work_order(pool: PgP
         let service = mobile_router(MobileRestState::new(
             rt_pool.clone(),
             PgWorkOrderStore::new(rt_pool),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
             Some(evidence),
         ));
 
@@ -585,8 +609,14 @@ impl JobQueue for RecordingQueue {
     }
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn evidence_staging_presign_creates_processing_row_and_enqueues_transcode(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -642,7 +672,10 @@ async fn evidence_staging_presign_creates_processing_row_and_enqueues_transcode(
             MobileRestState::new(
                 rt_pool.clone(),
                 PgWorkOrderStore::new(rt_pool),
-                Some(verifier),
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
                 Some(evidence),
             )
             .with_job_queue(Some(Arc::new(queue.clone()))),

@@ -50,7 +50,12 @@ impl Harness {
         }
     }
 
-    fn service(&self) -> Router {
+    async fn service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -62,7 +67,10 @@ impl Harness {
         .unwrap();
         router(PlatformRestState::new(
             self.pool.clone(),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
             PlatformProvisioner::new(Duration::minutes(15)),
         ))
     }
@@ -154,13 +162,14 @@ async fn seed_tenant(pool: &PgPool, slug: &str) -> Uuid {
         .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_token_is_rejected_with_403(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone());
     // A normal TENANT token (platform = false) under a real tenant org.
     let tenant_token = harness.token(UserId::new(), OrgId::knl(), false);
 
-    let (status, _body) = get(&harness.service(), PLATFORM_OPS_PATH, &tenant_token).await;
+    let (status, _body) = get(&harness.service().await, PLATFORM_OPS_PATH, &tenant_token).await;
     assert_eq!(
         status,
         StatusCode::FORBIDDEN,
@@ -168,8 +177,9 @@ async fn tenant_token_is_rejected_with_403(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn platform_token_aggregates_tenant_health_and_audits_the_read(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(pool.clone());
     let admin = seed_platform_admin(&pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
@@ -178,7 +188,7 @@ async fn platform_token_aggregates_tenant_health_and_audits_the_read(pool: PgPoo
     seed_tenant(&pool, "alpha").await;
     seed_tenant(&pool, "beta").await;
 
-    let (status, body) = get(&harness.service(), PLATFORM_OPS_PATH, &platform_token).await;
+    let (status, body) = get(&harness.service().await, PLATFORM_OPS_PATH, &platform_token).await;
     assert_eq!(status, StatusCode::OK, "{body:?}");
 
     let tenants = body["tenants"].as_array().expect("tenants array");

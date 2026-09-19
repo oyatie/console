@@ -1,0 +1,11 @@
+anyOf:
+- type: string
+  description: Valid standard or URL-safe base64, padded or unpadded; exact decoding is owned by base64urlsafedata
+    0.5.5. Canonical browser clients send URL-safe unpadded strings.
+- type: array
+  items:
+    type: integer
+    minimum: 0
+    maximum: 255
+description: Actual JSON decoder alternatives for Base64UrlSafeData. Empty values parse; cryptographic
+  and native-flow validation may reject them later.

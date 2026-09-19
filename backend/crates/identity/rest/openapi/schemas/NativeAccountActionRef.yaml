@@ -1,0 +1,15 @@
+type: object
+additionalProperties: false
+required:
+- action_key
+- registration_revision
+properties:
+  action_key:
+    type: string
+    pattern: ^[a-z][a-z0-9_.-]{0,63}$
+  registration_revision:
+    type: string
+    pattern: ^[1-9][0-9]*$
+    maxLength: 19
+    description: Canonical positive signed 64-bit integer represented as a decimal string, at most
+      9223372036854775807.

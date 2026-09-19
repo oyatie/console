@@ -20,7 +20,7 @@ use console_equipment_application::{
     QuoteCase, RegisterUnit,
 };
 use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize, authorize_org_wide};
 use console_platform_request_context::RequestContextError;
 use serde::Deserialize;
@@ -66,17 +66,23 @@ pub const EQUIPMENT_3R_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct EquipmentRestState {
     store: PgEquipment3rStore,
-    jwt: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 impl EquipmentRestState {
     #[must_use]
-    pub fn new(store: PgEquipment3rStore, jwt: Option<JwtVerifier>) -> Self {
-        Self { store, jwt }
+    pub fn new(
+        store: PgEquipment3rStore,
+        session_verification: Option<SessionVerification>,
+    ) -> Self {
+        Self {
+            store,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: EquipmentRestState) -> Router {
-    let verifier = state.jwt.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let r = Router::new()
         .route(EQUIPMENT_3R_UNITS_PATH, get(list_units).post(register_unit))
@@ -460,7 +466,7 @@ async fn complete_disposition(
 }
 
 async fn principal(s: &EquipmentRestState, h: &HeaderMap) -> Result<Principal, RestError> {
-    let verifier = s.jwt.as_ref().ok_or_else(|| {
+    let verifier = s.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -472,6 +478,7 @@ async fn principal(s: &EquipmentRestState, h: &HeaderMap) -> Result<Principal, R
         .map_err(|e| match e {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",
@@ -482,6 +489,11 @@ async fn principal(s: &EquipmentRestState, h: &HeaderMap) -> Result<Principal, R
                     "token is not authorized for equipment operations",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

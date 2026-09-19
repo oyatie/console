@@ -1,0 +1,4 @@
+type: object
+additionalProperties: false
+properties: {}
+description: Exactly an empty JSON object. An absent body, null or positional array is rejected.

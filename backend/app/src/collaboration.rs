@@ -7,8 +7,8 @@ use console_kernel_core::{
     AuditAction, AuditEvent, BranchScope, ErrorKind, KernelError, TraceContext,
 };
 use console_platform_auth::{
-    JwtVerifier, MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope,
-    MobilePasskeyStepUpVerificationError, PasskeyService,
+    MobilePasskeyStepUpBinding, MobilePasskeyStepUpEnvelope, MobilePasskeyStepUpVerificationError,
+    PasskeyService, SessionVerification,
 };
 use console_platform_authz::{Feature, PermissionLevel, Principal, permission_for};
 use console_platform_db::{DbError, with_audit, with_org_conn};
@@ -38,16 +38,16 @@ const MAX_POLL_OPTIONS: usize = 20;
 #[derive(Clone)]
 pub struct CollaborationState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
 }
 
 impl CollaborationState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
         Self {
             pool,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
         }
     }
@@ -60,7 +60,7 @@ impl CollaborationState {
 }
 
 pub fn router(state: CollaborationState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(
@@ -923,7 +923,13 @@ async fn verify_mobile_poll_step_up(
     })?;
     verifier
         .verify_mobile_step_up_for_user(
-            &state.pool,
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| {
+                    CollaborationError::unavailable("authentication storage unavailable")
+                })?
+                .auth_pool(),
             step_up,
             *principal.user_id.as_uuid(),
             &expected_binding,

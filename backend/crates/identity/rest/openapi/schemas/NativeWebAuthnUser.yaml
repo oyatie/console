@@ -1,0 +1,12 @@
+type: object
+required:
+- id
+- name
+- displayName
+properties:
+  id:
+    $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+  name:
+    type: string
+  displayName:
+    type: string

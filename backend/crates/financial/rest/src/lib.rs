@@ -27,7 +27,7 @@ use console_kernel_core::{
     TraceContext, WorkOrderId,
 };
 use console_platform_auth::{
-    AuthError, JwtVerifier, PasskeyAuthenticationCredential, PasskeyService,
+    AuthError, PasskeyAuthenticationCredential, PasskeyService, SessionVerification,
 };
 use console_platform_authz::{Action, Feature, Principal, authorize};
 use console_platform_db::{DbError, with_audit};
@@ -41,17 +41,17 @@ use std::time::Duration;
 #[derive(Clone)]
 pub struct FinancialRestState {
     store: PgFinancialStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     passkey_step_up: Option<PasskeyService>,
     purchase_attachment_storage: Option<(SeaweedS3Storage, String)>,
 }
 
 impl FinancialRestState {
     #[must_use]
-    pub fn new(store: PgFinancialStore, jwt_verifier: Option<JwtVerifier>) -> Self {
+    pub fn new(store: PgFinancialStore, session_verification: Option<SessionVerification>) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             passkey_step_up: None,
             purchase_attachment_storage: None,
         }
@@ -129,7 +129,7 @@ pub const FINANCIAL_ROUTE_PATHS: &[&str] = &[
 ];
 
 pub fn router(state: FinancialRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let router = Router::new()
         .route(FINANCIAL_RENTAL_QUOTES_COMPUTE_PATH, post(compute_quote))
@@ -1251,7 +1251,11 @@ async fn verify_financial_step_up(
 
     if let Err(err) = verifier
         .verify_step_up_for_user(
-            state.store.pool(),
+            state
+                .session_verification
+                .as_ref()
+                .ok_or_else(|| RestError::unavailable("authentication storage unavailable"))?
+                .auth_pool(),
             step_up.ceremony_id,
             step_up.credential,
             *principal.user_id.as_uuid(),
@@ -1445,7 +1449,7 @@ async fn principal_from_headers(
     state: &FinancialRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for financial API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.store.pool(), headers)
@@ -1457,6 +1461,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for financial API")
         }
@@ -1478,7 +1485,8 @@ fn rest_error_from_request_context(
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        console_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken
+        | console_platform_request_context::RequestContextError::LegacySessionRejected => {
             RestError::unauthorized("invalid bearer token")
         }
         console_platform_request_context::RequestContextError::InvalidClaim(message) => {

@@ -28,7 +28,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::{get, patch, put};
 use axum::{Extension, Json, Router};
 use console_kernel_core::{OrgId, UserId};
-use console_platform_auth::{JwtIssuer, JwtVerifier};
+use console_platform_auth::{JwtIssuer, SessionVerification};
 use console_platform_authz::{PlatformFeature, PlatformPrincipal};
 use console_platform_provisioning::{
     GroupAccountOnboarding, GroupAccountSummary, GroupMemberSummary, GroupSummary,
@@ -173,7 +173,7 @@ pub struct PlatformRestState {
     /// Destructive tenant removal is executed only through this isolated
     /// capability pool; `pool` remains the general runtime/read path.
     force_remove_command_pool: Option<PgPool>,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     /// Issuer used only by platform START paths that mint short-lived tenant
     /// context tokens (read-only view-as and writable tenant management).
     /// `None` disables those START endpoints (503), so token issuance is opt-in.
@@ -188,13 +188,13 @@ impl PlatformRestState {
     #[must_use]
     pub fn new(
         pool: PgPool,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
         provisioner: PlatformProvisioner,
     ) -> Self {
         Self {
             pool,
             force_remove_command_pool: None,
-            jwt_verifier,
+            session_verification,
             view_as_issuer: None,
             provisioner,
             tenant_config_seeder: None,
@@ -230,7 +230,7 @@ impl PlatformRestState {
 
 /// Build the `/api/platform/*` router behind the PLATFORM extractor.
 pub fn router(state: PlatformRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let router = Router::new()
         .route(PLATFORM_ORGS_PATH, get(list_orgs).post(create_org))
         .route(

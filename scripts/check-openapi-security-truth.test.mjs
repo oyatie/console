@@ -72,10 +72,29 @@ ${HOLD_RESET}`,
 });
 
 describe("openapi security-truth gate", () => {
-  it("keeps the public-operation set closed at the audited 18", () => {
-    assert.equal(PUBLIC_OPERATIONS.length, 18);
-    assert.equal(new Set(PUBLIC_OPERATIONS.map(([m, p]) => `${m} ${p}`)).size, 18);
+  it("keeps the public-operation set closed at the audited 23", () => {
+    assert.equal(PUBLIC_OPERATIONS.length, 23);
+    assert.equal(new Set(PUBLIC_OPERATIONS.map(([m, p]) => `${m} ${p}`)).size, 23);
   });
+
+  it("limits native public entry to the five reviewed operations", () => {
+    assert.deepEqual(PUBLIC_OPERATIONS.filter(([, path]) => path.startsWith("/api/v2/")), [["post", "/api/v2/auth/passkey/login/start"], ["post", "/api/v2/auth/registration/start"], ["get", "/api/v2/auth/terms"], ["get", "/api/v2/auth/terms/content/{sha256}"], ["get", "/api/v2/auth/terms/manifests/{sha256}"]]);
+  });
+
+  for (const [method, path] of [
+    ["get", "/api/v2/accounts/me"],
+    ["post", "/api/v2/auth/registration/finish"],
+    ["post", "/api/v2/auth/passkey/login/finish"],
+  ]) {
+    it(`rejects anonymous disclosure for ${method} ${path}`, () => {
+      const root = fixture(spec({ security: "security:\n- bearerAuth: []\n", paths:
+        `${PUBLIC_PATHS}\n${HOLD_RESET}\n  ${path}:\n    ${method}:\n      security: []\n      responses:\n        '200': { description: wrong anonymous access }`,
+      }));
+      const { findings } = evaluateOpenapiSecurityTruth({ repoRoot: root });
+      assert.ok(findings.some((finding) => finding.location === `#/paths/${path}/${method}`
+        && /public-operation set/.test(finding.message)), JSON.stringify(findings));
+    });
+  }
 
   it("reports a document with no top-level bearer security", () => {
     const root = fixture(spec({
@@ -198,7 +217,7 @@ ${HOLD_RESET}`,
     const root = fixture(HONEST);
     const { findings, publicDeclared } = evaluateOpenapiSecurityTruth({ repoRoot: root });
     assert.deepEqual(findings, [], JSON.stringify(findings, null, 2));
-    assert.equal(publicDeclared, 18);
+    assert.equal(publicDeclared, 23);
   });
 
   it("accepts a protected operation that omits security once document-level bearer exists", () => {

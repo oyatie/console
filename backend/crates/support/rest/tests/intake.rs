@@ -94,8 +94,14 @@ async fn intake_writes_under_configured_public_org(pool: PgPool) {
     assert_ne!(persisted_org, *OrgId::knl().as_uuid());
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn intake_written_to_configured_org_is_visible_only_to_same_org_staff(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let public_org = OrgId::new();
     let other_org = OrgId::new();
     seed_org(&pool, public_org).await;
@@ -128,8 +134,15 @@ async fn intake_written_to_configured_org_is_visible_only_to_same_org_staff(pool
     // BYPASSRLS test owner, proves tenant visibility at the REST surface.
     let rt_pool = runtime_role_pool(&pool).await;
     let app = router(
-        SupportRestState::new(PgSupportStore::new(rt_pool), Some(verifier), None)
-            .with_storefront_org(public_org),
+        SupportRestState::new(
+            PgSupportStore::new(rt_pool),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
+            None,
+        )
+        .with_storefront_org(public_org),
     );
 
     let response = app

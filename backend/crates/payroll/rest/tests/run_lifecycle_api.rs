@@ -45,7 +45,6 @@ use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::{Value, json};
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use std::collections::BTreeMap;
 use time::format_description::well_known::Rfc3339;
 use time::macros::date;
@@ -57,8 +56,9 @@ const ISSUER: &str = "console-platform-auth";
 const AUDIENCE: &str = "console-api";
 const SHA256_FIXTURE: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -609,8 +609,9 @@ async fn executive_drives_full_lifecycle_with_audit_readback(pool: PgPool) {
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org_a = OrgId::knl();
@@ -699,8 +700,9 @@ async fn lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible(poo
 /// write first. `audit_events` is checked row by row rather than as one digest,
 /// because it is itself a readable table: a verdict parked in a snapshot column
 /// there would be the same TOCTOU cache as one parked on the run.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn close_preflight_persists_no_verdict_only_its_read_audit(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -881,8 +883,9 @@ fn assert_only_the_read_audit_changed(
 /// Close must RECOMPUTE the preflight in its own transaction, never trust a
 /// verdict computed earlier. The verdict the caller was shown said `can_close`;
 /// the state it checked then changed; close must refuse.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn close_recomputes_the_preflight_after_the_read_verdict_goes_stale(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&pool).await;
     let org = OrgId::knl();
@@ -947,8 +950,9 @@ async fn close_recomputes_the_preflight_after_the_read_verdict_goes_stale(pool: 
 
 /// HTTP close-preflight against a draft minted by `payroll.create_run` after
 /// Company → OrgUnit → JobPosition → Person → hr.appoint. No calculate, no won.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn empty_tenant_run_close_preflight_sits_on_canonical_org_tree(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let tree = provision_empty_tenant_appointed_run(&owner_pool).await;
     let keys = Keys::generate();
     let rt = runtime_role_pool(&owner_pool).await;
@@ -1152,20 +1156,19 @@ impl Keys {
 }
 
 async fn runtime_role_pool(owner: &PgPool) -> PgPool {
-    PgPoolOptions::new()
-        .max_connections(8)
-        .after_connect(|conn, _| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE console_rt").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with(owner.connect_options().as_ref().clone())
-        .await
-        .unwrap()
+    console_platform_test_support::login_test_pool(
+        owner,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    )
+    .await
 }
 
-fn app(pool: PgPool, public_key: &str) -> axum::Router {
+async fn app(pool: PgPool, public_key: &str) -> axum::Router {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let verifier = JwtVerifier::from_es256_public_pem(
         JwtSettings {
             issuer: ISSUER.into(),
@@ -1177,7 +1180,10 @@ fn app(pool: PgPool, public_key: &str) -> axum::Router {
     .unwrap();
     router(PayrollRestState::new(
         PgPayrollStore::new(pool),
-        Some(verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database.clone(),
+        )),
     ))
 }
 
@@ -1200,6 +1206,7 @@ async fn send(
         )
         .unwrap();
     let response = app(pool.clone(), &keys.public_pem)
+        .await
         .oneshot(request)
         .await
         .unwrap();

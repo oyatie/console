@@ -27,7 +27,7 @@ use console_kernel_core::{
     BranchId, BranchScope, CustomerId, ErrorKind, KernelError, OrgId, SiteId, SupportTicketId,
     TraceContext, UserId, WorkOrderId,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize, authorize_capability};
 use console_platform_push::{FcmPushMessage, PushNotifier};
 use console_platform_request_context::TrustedClientIp;
@@ -90,7 +90,7 @@ const RATE_LIMIT_ENDPOINT: &str = "support_intake";
 #[derive(Clone)]
 pub struct SupportRestState {
     store: PgSupportStore,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     push_notifier: Option<Arc<dyn PushNotifier>>,
     /// Tenant that owns unauthenticated public support intake. It defaults to
     /// KNL for legacy/local deployments, but the app composition root overrides
@@ -108,12 +108,12 @@ impl SupportRestState {
     #[must_use]
     pub fn new(
         store: PgSupportStore,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
         push_notifier: Option<Arc<dyn PushNotifier>>,
     ) -> Self {
         Self {
             store,
-            jwt_verifier,
+            session_verification,
             push_notifier,
             public_intake_org: OrgId::knl(),
         }
@@ -133,7 +133,7 @@ impl SupportRestState {
 }
 
 pub fn router(state: SupportRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool().clone();
     // Authenticated routes — every handler here requires a resolved Principal.
     let authed = Router::new()
@@ -798,7 +798,7 @@ async fn principal_from_headers(
     state: &SupportRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for support API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.pool(), headers)
@@ -810,6 +810,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for support API")
         }
@@ -833,7 +836,8 @@ fn rest_error_from_request_context(
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        console_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken
+        | console_platform_request_context::RequestContextError::LegacySessionRejected => {
             RestError::unauthorized("invalid bearer token")
         }
         console_platform_request_context::RequestContextError::InvalidClaim(message) => {

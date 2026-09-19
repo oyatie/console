@@ -4,6 +4,7 @@
 // operation, binding metadata, and reason byte-for-byte.
 
 import { readFileSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import {
   basename,
   dirname,
@@ -92,8 +93,8 @@ const INERT_MODULE_ATTRIBUTES = new Set([
 const CONST_PATH = /pub const ([A-Z0-9_]+): &str =\s*"([^"]+)"/g;
 const ROUTE = /\.route\(\s*([A-Z0-9_]+)\s*,([\s\S]*?)\)\s*,?\s*\)/g;
 const LITERAL_ROUTE = /\.route\(\s*"([^"]+)"\s*,([\s\S]*?)\)\s*,?\s*\)/g;
-const METHOD = /\b(get|post|put|patch|delete)\(\s*([a-z0-9_]+)/g;
-const HANDLER = /async fn ([a-z0-9_]+)\s*\(([\s\S]*?)\)\s*->/g;
+const METHOD = /\b(get|post|put|patch|delete)\(\s*((?:[a-z0-9_]+::)*[a-z0-9_]+)/g;
+const FUNCTION = /((?:#\[[^\]]*\]\s*)*)(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?fn\s+([A-Za-z_][A-Za-z0-9_]*)[^;{}]*\{/g;
 const JSON_BODY = /Json\(\s*\w+\s*\)\s*:\s*Json<\s*((?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*)\s*>/;
 const ITEM = /((?:#\[[^\]]*\]\s*)*)(?:pub(?:\([^)]*\))?\s+)?(struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*<[^>{;]*>)?\s*\{/g;
 const USE = /\b(?:pub(?:\([^)]*\))?\s+)?use\s+([\s\S]*?);/g;
@@ -791,6 +792,7 @@ function parseEnum(attributes, body) {
 function parseItems(source, file, absoluteFile, backendRoot, identity) {
   const structs = [];
   const enums = [];
+  const functions = [];
   const prelude = rustFilePrelude(source);
   const projected = scanRustSyntax(prelude.maskedSource, { projectCode: true });
   if (!projected.valid) {
@@ -827,6 +829,7 @@ function parseItems(source, file, absoluteFile, backendRoot, identity) {
         modulePath: scope.modulePath,
         imports: scope.imports,
         crateQualifier: identity.crateQualifier,
+        graphRoot: identity.graphRoot,
         conditional: scope.conditional || /#\s*\[\s*cfg(?:_attr)?\s*\(/.test(attributes),
         name: match[3],
       };
@@ -842,9 +845,34 @@ function parseItems(source, file, absoluteFile, backendRoot, identity) {
         enums.push({ ...common, ...parseEnum(attributes, body) });
       }
     }
+    for (const match of scope.surface.matchAll(FUNCTION)) {
+      const start = scope.start + match.index;
+      const opening = start + match[0].length - 1;
+      const group = scanRustSyntax(source, { start: opening, rootDelimiter: "{" });
+      if (!group.valid || group.closing > scope.end) {
+        throw new Error(`cannot scan Rust function ${file}::${match[2]}`);
+      }
+      const attributes = source.slice(start, start + match[1].length);
+      const head = source.slice(start + match[1].length, opening);
+      const signature = head.match(/\bfn\s+[A-Za-z_][A-Za-z0-9_]*(?:<[^(){};]*>)?\s*(\([\s\S]*)/);
+      functions.push({
+        file, graphRoot: identity.graphRoot, modulePath: scope.modulePath,
+        imports: scope.imports, crateQualifier: identity.crateQualifier,
+        conditional: scope.conditional || /#\s*\[\s*cfg(?:_attr)?\s*\(/.test(attributes),
+        name: match[2], attributes,
+        signature: signature ? projected.projection.slice(
+          start + match[1].length + head.length - signature[1].length, opening,
+        ) : "",
+        generic: new RegExp(`\\bfn\\s+${match[2]}\\s*<`).test(head),
+        declaration: `${source.slice(start, group.closing + 1).trim()}\n`,
+        body: projected.projection.slice(opening + 1, group.closing),
+        authoredBody: source.slice(opening + 1, group.closing),
+        scopeSurface: scope.surface,
+      });
+    }
   }
   const rootImports = scopes.find((scope) => sameModule(scope.modulePath, identity.modulePath))?.imports ?? [];
-  return { structs, enums, rootImports, outlined };
+  return { structs, enums, functions, scopes, rootImports, outlined };
 }
 
 function rustCrateRoot(file) {
@@ -966,70 +994,185 @@ function collectRustSourceIdentities(repoRoot) {
   return results;
 }
 
+const NATIVE_JSON_READER_SHA256 = "540b5ef8da8dbf25e1359fe3e9110d0e63cf38c774833e4c267c33a744060f77";
+
+function maskGroup(source, start) {
+  const group = scanRustSyntax(source, { start, rootDelimiter: source[start] });
+  if (!group.valid) throw new Error(`cannot scan Rust function group: ${group.error}`);
+  return { end: group.closing + 1, blank: " ".repeat(group.closing + 1 - start) };
+}
+
+function functionCode(body, topLevel = false) {
+  let code = body;
+  // Function-local items are not mounted handlers or executed parser calls.
+  for (const match of [...code.matchAll(FUNCTION)].reverse()) {
+    const opening = match.index + match[0].length - 1;
+    const group = maskGroup(code, opening);
+    code = code.slice(0, match.index) + " ".repeat(group.end - match.index) + code.slice(group.end);
+  }
+  for (let index = 0; index < code.length; index += 1) {
+    const macro = code[index] === "!" ? code.slice(index).match(/^!\s*([({[])/) : null;
+    const opening = macro ? index + macro[0].length - 1 : index;
+    if (!macro && (!topLevel || code[index] !== "{")) continue;
+    const group = maskGroup(code, opening);
+    code = code.slice(0, opening) + group.blank + code.slice(group.end);
+    index = group.end - 1;
+  }
+  return code;
+}
+
+function nativeJsonReader(functions, scopes, handler) {
+  if (handler.file !== "backend/crates/platform/auth-rest/src/account_browser.rs"
+      || !sameModule(handler.modulePath, ["account_browser"])) return false;
+  const readers = functions.filter((item) => item.graphRoot === handler.graphRoot
+    && item.crateQualifier === handler.crateQualifier
+    && sameModule(item.modulePath, handler.modulePath) && item.name === "read_json");
+  if (readers.length !== 1 || readers[0].conditional) return false;
+  const reader = readers[0];
+  if (createHash("sha256").update(reader.declaration).digest("hex") !== NATIVE_JSON_READER_SHA256) return false;
+  // Root extern-crate aliases also populate the descendant's extern prelude.
+  if (scopes.some((scope) => scope.graphRoot === handler.graphRoot
+      && scope.modulePath.every((name, index) => handler.modulePath[index] === name)
+      && /\bextern\s+crate\b/.test(scope.surface))) return false;
+  const imports = { Body: ["axum", "body", "Body"], to_bytes: ["axum", "body", "to_bytes"], de: ["serde", "de"] };
+  for (const [name, path] of Object.entries(imports)) {
+    const bindings = reader.imports.filter((binding) => binding.name === name);
+    if (bindings.length !== 1 || !sameModule(bindings[0].path, path)) return false;
+  }
+  // Unknown glob/conditional bindings or local namespace replacement invalidate
+  // the reviewed helper even if its function body itself has not changed.
+  if (/\buse\b[^;]*\*/.test(reader.scopeSurface)
+      || /\bextern\s+crate\b/.test(reader.scopeSurface)
+      || /!\s*[({[]/.test(reader.scopeSurface)
+      || /#\s*\[\s*\]\s*(?:pub(?:\([^)]*\))?\s+)?use\b/.test(reader.scopeSurface)
+      || reader.imports.some((binding) => ["axum", "serde", "serde_json", "read_json", "START_BODY_LIMIT", "FINISH_BODY_LIMIT"].includes(binding.name))
+      || /\b(?:mod|struct|enum|type|trait|union|const|static|fn)\s+(?:axum|serde|serde_json|Body|to_bytes|de)\b/.test(reader.scopeSurface)) return false;
+  for (const [name, value] of [["START_BODY_LIMIT", "4 * 1024"], ["FINISH_BODY_LIMIT", "64 * 1024"]]) {
+    const declarations = [...reader.scopeSurface.matchAll(new RegExp(
+      `((?:#\\s*\\[[^\\]]*\\]\\s*)*)(?:pub(?:\\s*\\([^)]*\\))?\\s+)?const\\s+${name}\\s*:\\s*([^;]+);`, "g",
+    ))];
+    if (declarations.length !== 1 || declarations[0][1].trim()
+        || declarations[0][2].trim() !== `usize = ${value}`) return false;
+  }
+  return true;
+}
+
+function qualifiedHandlerShadowed(owner, handler) {
+  if (!handler.includes("::")) return false;
+  if (owner.generic) return true;
+  // Local item bindings have whole-function scope, even when written after the
+  // route. Do not resolve through module imports when a local namespace can win.
+  if (/\buse\b|\bextern\s+crate\b|\b[A-Za-z_][A-Za-z0-9_]*\s*!/.test(owner.body)) return true;
+  const name = handler.split("::")[0];
+  return new RegExp(`\\b(?:fn|type|struct|enum|union|mod|const|static|trait)\\s+(?:r#)?${name}\\b`).test(owner.body);
+}
+
+function nativeBodyType(functions, scopes, handler) {
+  if (handler.conditional || handler.generic || handler.attributes.trim()
+      || !nativeJsonReader(functions, scopes, handler)) return null;
+  const bodyParameters = [...handler.signature.matchAll(/\b([A-Za-z_][A-Za-z0-9_]*)\s*:\s*Body\b/g)];
+  if (bodyParameters.length !== 1) return null;
+  const bodyName = bodyParameters[0][1];
+  if (/\bread_json\s*:/.test(handler.signature)
+      || new RegExp(`\\bmut\\s+${bodyName}\\s*:`).test(handler.signature)) return null;
+  const topLevel = functionCode(handler.body, true);
+  // functionCode blanks macro arguments, not the invocation name and '!'. A
+  // same-scope macro may emit bindings even after the read. Nested-block macros
+  // cannot inject outer bindings; the supported read must itself be top-level.
+  if (/\b[A-Za-z_][A-Za-z0-9_]*\s*!/.test(topLevel)) return null;
+  if ([...topLevel.matchAll(/\bread_json\s*\(/g)].length !== 1) return null;
+  const reads = [...topLevel.matchAll(/\blet\s+(?:[A-Za-z_][A-Za-z0-9_]*|_)\s*:\s*((?:[A-Za-z_][A-Za-z0-9_]*::)*[A-Za-z_][A-Za-z0-9_]*)\s*=\s*read_json\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*,\s*(START_BODY_LIMIT|FINISH_BODY_LIMIT)\s*\)\s*\.await\s*\?\s*;/g)];
+  if (reads.length !== 1 || reads[0][2] !== bodyName) return null;
+  const read = reads[0];
+  const protectedNames = new Set([bodyName, "read_json", read[1].split("::")[0], read[3]]);
+  if (/\buse\b|#\s*\[/.test(handler.body)) return null;
+  // Rust function-scope items are visible before their textual declaration.
+  for (const match of handler.body.matchAll(/\b(?:fn|type|struct|enum|union|mod|const|static)\s+([A-Za-z_][A-Za-z0-9_]*)/g)) {
+    if (protectedNames.has(match[1])) return null;
+  }
+  for (const match of topLevel.slice(0, read.index).matchAll(/\blet\s+([^=;]+)=/g)) {
+    if ([...match[1].matchAll(/[A-Za-z_][A-Za-z0-9_]*/g)].some((word) => protectedNames.has(word[0]))) return null;
+  }
+  return read[1];
+}
+
 function collectSources(repoRoot) {
   const consts = new Map();
   const structs = [];
   const enums = [];
-  const handlers = new Map();
+  const functions = [];
+  const scopes = [];
   const rawRoutes = [];
   const sourceIdentities = collectRustSourceIdentities(repoRoot);
 
   for (const { identity, source, items } of sourceIdentities) {
     const { file } = identity;
     const identityKey = sourceIdentityKey(identity);
-    for (const match of source.matchAll(CONST_PATH)) {
-      const candidates = consts.get(match[1]) ?? [];
-      candidates.push({ file, identityKey, path: match[2] });
-      consts.set(match[1], candidates);
+    scopes.push(...items.scopes.map((scope) => ({ ...scope, graphRoot: identity.graphRoot })));
+    for (const scope of items.scopes) {
+      for (const match of source.matchAll(CONST_PATH)) {
+        const offset = match.index - scope.start;
+        if (offset < 0 || scope.surface.slice(offset, offset + 9) !== "pub const") continue;
+        const candidates = consts.get(match[1]) ?? [];
+        candidates.push({ file, identityKey, path: match[2] });
+        consts.set(match[1], candidates);
+      }
     }
     structs.push(...items.structs);
     enums.push(...items.enums);
-    for (const match of source.matchAll(HANDLER)) {
-      handlers.set(`${identityKey}::${match[1]}`, match[2].match(JSON_BODY)?.[1] ?? null);
-    }
-    for (const match of source.matchAll(ROUTE)) {
-      for (const method of match[2].matchAll(METHOD)) {
-        rawRoutes.push({
-          file,
-          identityKey,
-          modulePath: identity.modulePath,
-          crateQualifier: identity.crateQualifier,
-          imports: items.rootImports,
-          constName: match[1],
-          literalPath: null,
-          method: method[1],
-          handler: method[2],
-        });
+    functions.push(...items.functions);
+    for (const owner of items.functions) {
+      const code = functionCode(owner.body);
+      for (const match of owner.authoredBody.matchAll(LITERAL_ROUTE)) {
+        if (code.slice(match.index, match.index + 7) !== ".route(") continue;
+        const argumentOffset = match.index + match[0].indexOf(match[2]);
+        const argumentsCode = code.slice(argumentOffset, argumentOffset + match[2].length);
+        for (const method of argumentsCode.matchAll(METHOD)) {
+          rawRoutes.push({
+            file, identityKey, graphRoot: identity.graphRoot,
+            modulePath: owner.modulePath, crateQualifier: identity.crateQualifier,
+            imports: owner.imports, conditional: owner.conditional,
+            handlerShadowed: qualifiedHandlerShadowed(owner, method[2]),
+            literalPath: match[1], constName: null, method: method[1], handler: method[2],
+          });
+        }
       }
-    }
-    for (const match of source.matchAll(LITERAL_ROUTE)) {
-      for (const method of match[2].matchAll(METHOD)) {
-        rawRoutes.push({
-          file,
-          identityKey,
-          modulePath: identity.modulePath,
-          crateQualifier: identity.crateQualifier,
-          imports: items.rootImports,
-          constName: null,
-          literalPath: match[1],
-          method: method[1],
-          handler: method[2],
-        });
+      for (const match of code.matchAll(ROUTE)) {
+        for (const method of match[2].matchAll(METHOD)) {
+          rawRoutes.push({
+            file, identityKey, graphRoot: identity.graphRoot,
+            modulePath: owner.modulePath, crateQualifier: identity.crateQualifier,
+            imports: owner.imports, conditional: owner.conditional,
+            handlerShadowed: qualifiedHandlerShadowed(owner, method[2]),
+            constName: match[1], method: method[1], handler: method[2],
+          });
+        }
       }
     }
   }
 
   const routes = rawRoutes.map((route) => {
-    let path = route.literalPath;
-    if (path == null) {
-      const candidates = consts.get(route.constName) ?? [];
-      const local = candidates.filter((candidate) => candidate.identityKey === route.identityKey);
-      path = local.length === 1 ? local[0].path : candidates.length === 1 ? candidates[0].path : null;
-    }
+    const candidates = consts.get(route.constName) ?? [];
+    const local = candidates.filter((candidate) => candidate.identityKey === route.identityKey);
+    const path = route.literalPath ?? (local.length === 1 ? local[0].path : candidates.length === 1 ? candidates[0].path : null);
+    const namespace = functions.filter((item) => item.graphRoot === route.graphRoot);
+    const handler = route.conditional || route.handlerShadowed
+      ? null : resolveNamed(namespace, route, namedType(route.handler), true).value;
+    // A conditional declaration still contributes a missing-contract census
+    // entry, never a resolved comparison. Do not silently drop dev-only routes.
+    const declaration = route.handlerShadowed ? null : handler ?? resolveNamed(
+      namespace.map((item) => ({ ...item, conditional: false })), route, namedType(route.handler), true,
+    ).value;
+    const direct = handler && !handler.generic ? handler.signature.match(JSON_BODY)?.[1] ?? null : null;
+    const raw = handler && !direct ? nativeBodyType(functions, scopes, handler) : null;
     return {
       ...route,
       path,
-      bodyType: handlers.get(`${route.identityKey}::${route.handler}`) ?? null,
+      bodyType: direct ?? raw,
+      declaredBodyType: declaration && !declaration.generic
+        ? declaration.signature.match(JSON_BODY)?.[1] ?? null : null,
+      bodyContext: handler,
+      strictBodyContext: raw !== null || route.handler.includes("::"),
     };
   });
   return { structs, enums, routes };
@@ -1087,7 +1230,7 @@ function localModulePath(contextPath, path) {
   return [...base, ...remaining];
 }
 
-function resolvePath(items, context, path) {
+function resolvePath(items, context, path, strict = false) {
   const name = path.at(-1);
   const prefix = path.slice(0, -1);
   if (!name) return { value: null, status: "missing" };
@@ -1096,6 +1239,7 @@ function resolvePath(items, context, path) {
   const relativePath = localModulePath(context.modulePath, prefix);
   const local = relativePath === null ? [] : items.filter((candidate) => (
     candidate.crateQualifier === context.crateQualifier
+    && (!strict || candidate.graphRoot === context.graphRoot)
     && candidate.name === name
     && sameModule(candidate.modulePath, relativePath)
   ));
@@ -1111,7 +1255,7 @@ function resolvePath(items, context, path) {
     : [];
   if (qualified.length > 0) return decideResolution(qualified);
 
-  if (prefix.length > 0) return { value: null, status: "missing" };
+  if (prefix.length > 0 || strict) return { value: null, status: "missing" };
 
   return decideResolution(items.filter((candidate) => (
     (
@@ -1122,18 +1266,19 @@ function resolvePath(items, context, path) {
   )));
 }
 
-function resolveNamed(items, context, named) {
+function resolveNamed(items, context, named, strict = false) {
   if (named.pieces.length > 1) {
     const aliases = context.imports.filter((binding) => binding.name === named.pieces[0]);
     if (aliases.length > 1) return { value: null, status: "ambiguous" };
     if (aliases.length === 1) {
-      return resolvePath(items, context, [...aliases[0].path, ...named.pieces.slice(1)]);
+      return resolvePath(items, context, [...aliases[0].path, ...named.pieces.slice(1)], strict);
     }
-    return resolvePath(items, context, named.pieces);
+    return resolvePath(items, context, named.pieces, strict);
   }
 
   const local = items.filter((candidate) => (
     candidate.crateQualifier === context.crateQualifier
+    && (!strict || candidate.graphRoot === context.graphRoot)
     && candidate.name === named.name
     && sameModule(candidate.modulePath, context.modulePath)
   ));
@@ -1141,7 +1286,8 @@ function resolveNamed(items, context, named) {
   if (local.length > 0 && imports.length > 0) return { value: null, status: "ambiguous" };
   if (local.length > 0) return decideResolution(local);
   if (imports.length > 1) return { value: null, status: "ambiguous" };
-  if (imports.length === 1) return resolvePath(items, context, imports[0].path);
+  if (imports.length === 1) return resolvePath(items, context, imports[0].path, strict);
+  if (strict) return { value: null, status: "missing" };
 
   return decideResolution(items.filter((candidate) => (
     (
@@ -1518,12 +1664,12 @@ export function evaluateRequestBodyContract({ repoRoot }) {
     }
     const bodyNamed = namedType(route.bodyType);
     const structResolution = bodyNamed
-      ? resolveNamed(structs, {
+      ? resolveNamed(structs, route.bodyContext ?? {
         file: route.file,
         modulePath: route.modulePath,
         crateQualifier: route.crateQualifier,
         imports: route.imports,
-      }, bodyNamed)
+      }, bodyNamed, route.strictBodyContext)
       : { value: null, status: "missing" };
     const struct = structResolution.value;
     if (!struct || !struct.denyUnknown || !compareBody({
@@ -1551,8 +1697,9 @@ export function evaluateRequestBodyContract({ repoRoot }) {
   }
 
   const routeOnly = new Map();
-  for (const route of routes) {
-    if (!route.path || !route.bodyType) continue;
+  for (const candidate of routes) {
+    if (!candidate.path || !(candidate.bodyType ?? candidate.declaredBodyType)) continue;
+    const route = candidate.bodyType ? candidate : { ...candidate, bodyType: candidate.declaredBodyType };
     const key = operationKey(route.method, route.path);
     if (!key || specKeys.has(key)) continue;
     const operation = `${route.method.toUpperCase()} ${route.path}`;

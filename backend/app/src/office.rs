@@ -146,7 +146,7 @@ pub fn office_config_from_vars(
 #[derive(Clone)]
 pub struct OfficeState {
     pool: PgPool,
-    jwt_verifier: Option<console_platform_auth::JwtVerifier>,
+    session_verification: Option<console_platform_auth::SessionVerification>,
     config: Option<OfficeConfig>,
     blobs: Option<Arc<dyn OfficeBlobStore>>,
 }
@@ -155,13 +155,13 @@ impl OfficeState {
     #[must_use]
     pub fn new(
         pool: PgPool,
-        jwt_verifier: Option<console_platform_auth::JwtVerifier>,
+        session_verification: Option<console_platform_auth::SessionVerification>,
         config: Option<OfficeConfig>,
         blobs: Option<Arc<dyn OfficeBlobStore>>,
     ) -> Self {
         Self {
             pool,
-            jwt_verifier,
+            session_verification,
             config,
             blobs,
         }
@@ -195,7 +195,7 @@ impl OfficeState {
 }
 
 pub fn router(state: OfficeState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     // Authenticated (user principal) surface — session issuance, version list,
     // restore. Wrapped in the per-request org middleware exactly like every

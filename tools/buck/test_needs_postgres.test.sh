@@ -68,6 +68,10 @@ grep -Fq 'DATABASE_URL=postgres://console_buck_admin:' "${env_file}"
 grep -Fq 'CONSOLE_APALIS_OWNER_DATABASE_URL=postgres://console_app:' "${env_file}"
 grep -Fq 'CONSOLE_APALIS_RUNTIME_DATABASE_URL=postgres://console_rt:' "${env_file}"
 grep -Fq 'CONSOLE_APALIS_ADMIN_DATABASE_URL=postgres://console_buck_admin:' "${env_file}"
+grep -Fq 'CONSOLE_TEST_AUTH_DATABASE_URL=postgres://console_auth_rt:' "${env_file}"
+grep -Fq 'CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:' "${env_file}"
+grep -Fq 'CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:' "${env_file}"
+grep -Fq 'CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:' "${env_file}"
 printf '%s\n' "${env_file}" >>"${HARNESS_LOG}.envfiles"
 if [[ "${FAKE_BUCK_SLEEP:-0}" == 1 ]]; then printf "%s\n" "$$" >"${HARNESS_LOG}.childpid"; exec sleep 30; fi
 exit "${FAKE_BUCK_STATUS:-0}"
@@ -128,6 +132,7 @@ grep -Fq -- 'CONSOLE_BUCK_POSTGRES_ENV_FILE=' <<<"${buck_calls}"
 ! grep -Fq -- 'secret-' <<<"${calls}"
 ! grep -Fq -- 'postgres://' <<<"${calls}"
 expected_topology_env_keys='CONSOLE_APP_POSTGRES_PASSWORD
+CONSOLE_AUTH_POSTGRES_PASSWORD
 CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD
 CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD
 CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD

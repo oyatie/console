@@ -43,4 +43,15 @@ chmod 755 "${scratch}/test-binary"
 CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" CONSOLE_BUCK_RUST_TEST_EXACT=one_exact_test EXACT_LOG="${exact_log}" "${wrapper}" "${scratch}/test-binary"
 [[ "$(cat "${exact_log}")" == $'--exact\none_exact_test' ]]
 if CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" CONSOLE_BUCK_RUST_TEST_EXACT='bad test' "${wrapper}" /usr/bin/true; then exit 1; fi
+# The restricted Account/command transports remain data, with duplicate refusal.
+for binding in AUTH:auth_rt LEAVE_COMMAND:leave_cmd ONTOLOGY_COMMAND:ontology_cmd PLATFORM_FORCE_COMMAND:platform_force_cmd; do
+  key="CONSOLE_TEST_${binding%%:*}_DATABASE_URL"
+  value="postgres://console_${binding#*:}:secret@localhost/db"
+  printf '%s=%s\n' "${key}" "${value}" >>"${valid}"
+  CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" "${wrapper}" /usr/bin/env | grep -Fqx "${key}=${value}"
+  cp "${valid}" "${scratch}/duplicate.env"
+  printf '%s=%s\n' "${key}" "${value}" >>"${scratch}/duplicate.env"
+  chmod 600 "${scratch}/duplicate.env"
+  if CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/duplicate.env" "${wrapper}" /usr/bin/true; then exit 1; fi
+done
 echo 'run_test_with_postgres_env: PASS'

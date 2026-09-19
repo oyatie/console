@@ -12,7 +12,7 @@ use axum::{
     routing::post,
 };
 use console_kernel_core::{ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{DbError, with_audits};
 use console_recruiting_adapter_postgres::{
@@ -30,13 +30,21 @@ use crate::hr;
 #[derive(Clone)]
 pub(crate) struct RecruitingHireState {
     pool: PgPool,
-    jwt: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
     hr: hr::HrState,
 }
 
 impl RecruitingHireState {
-    pub(crate) fn new(pool: PgPool, jwt: Option<JwtVerifier>, hr: hr::HrState) -> Self {
-        Self { pool, jwt, hr }
+    pub(crate) fn new(
+        pool: PgPool,
+        session_verification: Option<SessionVerification>,
+        hr: hr::HrState,
+    ) -> Self {
+        Self {
+            pool,
+            session_verification,
+            hr,
+        }
     }
 }
 
@@ -44,7 +52,7 @@ pub const RECRUITING_HIRE_PATH: &str = "/api/v1/recruiting/applicants/{applicant
 pub const RECRUITING_HIRE_ROUTE_PATHS: &[&str] = &[RECRUITING_HIRE_PATH];
 
 pub(crate) fn router(state: RecruitingHireState) -> Router {
-    let verifier = state.jwt.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(RECRUITING_HIRE_PATH, post(hire))

@@ -1,0 +1,51 @@
+type: object
+required:
+- rp
+- user
+- challenge
+- pubKeyCredParams
+properties:
+  rp:
+    $ref: '#/components/schemas/NativeWebAuthnRelyingParty'
+  user:
+    $ref: '#/components/schemas/NativeWebAuthnUser'
+  challenge:
+    $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+  pubKeyCredParams:
+    type: array
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnPublicKeyParameter'
+  timeout:
+    type: integer
+    minimum: 0
+    maximum: 4294967295
+  excludeCredentials:
+    type: array
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnDescriptor'
+  authenticatorSelection:
+    $ref: '#/components/schemas/NativeWebAuthnAuthenticatorSelection'
+  hints:
+    type: array
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnHint'
+  attestation:
+    type: string
+    enum:
+    - none
+    - indirect
+    - direct
+  attestationFormats:
+    type: array
+    items:
+      type: string
+      enum:
+      - packed
+      - tpm
+      - android-key
+      - android-safetynet
+      - fido-u2f
+      - apple
+      - none
+  extensions:
+    $ref: '#/components/schemas/NativeWebAuthnRegistrationRequestExtensions'

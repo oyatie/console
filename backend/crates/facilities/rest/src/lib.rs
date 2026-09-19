@@ -15,7 +15,7 @@ use axum::{
 use console_kernel_core::{
     AuditAction, AuditEvent, BranchId, BranchScope, KernelError, OrgId, TraceContext,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize, authorize_capability};
 use console_platform_db::{DbError, with_audit, with_audits, with_org_conn};
 use console_platform_request_context::{RequestContextError, resolve_principal};
@@ -46,12 +46,15 @@ pub const FACILITIES_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct FacilitiesRestState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 impl FacilitiesRestState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
@@ -107,7 +110,7 @@ pub async fn poll_scheduled_hvac(pool: &PgPool) -> Result<u64, DbError> {
     Ok(created)
 }
 pub fn router(state: FacilitiesRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     console_platform_request_context::with_request_context(
         Router::new()
@@ -186,7 +189,7 @@ struct ObservationBody {
 }
 
 async fn principal(s: &FacilitiesRestState, h: &HeaderMap) -> Result<Principal, RestError> {
-    let v = s.jwt_verifier.as_ref().ok_or_else(|| {
+    let v = s.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -194,8 +197,14 @@ async fn principal(s: &FacilitiesRestState, h: &HeaderMap) -> Result<Principal, 
         )
     })?;
     resolve_principal(v, &s.pool, h).await.map_err(|e| match e {
+        RequestContextError::SessionVerificationUnavailable => RestError::new(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "unavailable",
+            "session verification unavailable",
+        ),
         RequestContextError::MissingBearer
         | RequestContextError::InvalidToken
+        | RequestContextError::LegacySessionRejected
         | RequestContextError::InvalidClaim(_) => RestError::new(
             StatusCode::UNAUTHORIZED,
             "unauthorized",

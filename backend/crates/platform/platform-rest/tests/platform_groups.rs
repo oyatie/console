@@ -50,7 +50,12 @@ impl Harness {
         }
     }
 
-    fn service(&self) -> Router {
+    async fn service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let verifier = JwtVerifier::from_es256_public_pem(
             JwtSettings {
                 issuer: TEST_ISSUER.to_owned(),
@@ -62,7 +67,10 @@ impl Harness {
         .unwrap();
         router(PlatformRestState::new(
             self.rt_pool.clone(),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
             PlatformProvisioner::new(Duration::minutes(15)),
         ))
     }
@@ -179,14 +187,15 @@ async fn seed_tenant(pool: &PgPool, slug: &str) -> Uuid {
         .unwrap()
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn platform_group_crud_assigns_subsidiaries_and_audits(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     let harness = Harness::new(&pool).await;
     let admin = seed_platform_admin(&pool).await;
     let platform_token = harness.token(admin, OrgId::platform(), true);
     let tenant_a = seed_tenant(&pool, "alpha").await;
     let _tenant_b = seed_tenant(&pool, "beta").await;
-    let service = harness.service();
+    let service = harness.service().await;
 
     let (status, created) = request(
         &service,

@@ -489,3 +489,197 @@ async fn with_org_conn_sets_the_current_org_guc(pool: PgPool) {
         "with_org_conn must set app.current_org"
     );
 }
+
+// AS1.2, approved design 7b6e4c6836750a23fc5fc38bdd37ac391e970215.
+// These are custody prerequisites, not complete Account-flow acceptance.
+// Keep actual auth continuity targets mandatory; an ACL-only outage is failure.
+#[sqlx::test(migrations = "./migrations")]
+async fn account_material_is_not_directly_accessible_to_company_runtime(pool: PgPool) {
+    let seeded_a = seed_org(&pool, ORG_A, "A").await;
+    seed_org(&pool, ORG_B, "B").await;
+    let mut tx = pool.begin().await.unwrap();
+    set_role_and_org(&mut tx, Some(ORG_A)).await;
+    let visible: Vec<Uuid> = sqlx::query_scalar("SELECT id FROM regions ORDER BY id")
+        .fetch_all(&mut *tx)
+        .await
+        .unwrap();
+    assert_eq!(
+        visible,
+        vec![seeded_a.region],
+        "Company reads must still work and isolate B"
+    );
+    tx.rollback().await.unwrap();
+
+    // No rows are read or written: these statements test table/column privilege,
+    // which must fail before an RLS filter can disguise access as an empty set.
+    let statements = [
+        "SELECT passkey_json FROM auth_webauthn_credentials LIMIT 0",
+        "INSERT INTO auth_webauthn_credentials (id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_webauthn_credentials SET id = id WHERE false",
+        "DELETE FROM auth_webauthn_credentials WHERE false",
+        "SELECT state_json FROM auth_webauthn_ceremonies LIMIT 0",
+        "INSERT INTO auth_webauthn_ceremonies (id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_webauthn_ceremonies SET id = id WHERE false",
+        "DELETE FROM auth_webauthn_ceremonies WHERE false",
+        "SELECT user_id FROM auth_refresh_token_families LIMIT 0",
+        "INSERT INTO auth_refresh_token_families (id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_refresh_token_families SET id = id WHERE false",
+        "DELETE FROM auth_refresh_token_families WHERE false",
+        "SELECT token_hash FROM auth_refresh_tokens LIMIT 0",
+        "INSERT INTO auth_refresh_tokens (id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_refresh_tokens SET id = id WHERE false",
+        "DELETE FROM auth_refresh_tokens WHERE false",
+        "SELECT token_hash FROM auth_bootstrap_credentials LIMIT 0",
+        "INSERT INTO auth_bootstrap_credentials (id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_bootstrap_credentials SET id = id WHERE false",
+        "DELETE FROM auth_bootstrap_credentials WHERE false",
+        "SELECT object_id FROM auth_webauthn_ceremony_bindings LIMIT 0",
+        "INSERT INTO auth_webauthn_ceremony_bindings (ceremony_id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_webauthn_ceremony_bindings SET ceremony_id = ceremony_id WHERE false",
+        "DELETE FROM auth_webauthn_ceremony_bindings WHERE false",
+        "SELECT id FROM auth_device_login_handoffs LIMIT 0",
+        "INSERT INTO auth_device_login_handoffs (id) SELECT NULL::uuid WHERE false",
+        "UPDATE auth_device_login_handoffs SET id = id WHERE false",
+        "DELETE FROM auth_device_login_handoffs WHERE false",
+    ];
+    let material_grants: Vec<(String, bool, bool)> = sqlx::query_as(
+        r#"SELECT c.relname::text,
+                  pg_catalog.has_table_privilege(r.oid, c.oid, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER'),
+                  pg_catalog.has_any_column_privilege(r.oid, c.oid, 'SELECT, INSERT, UPDATE, REFERENCES')
+           FROM pg_catalog.pg_class c CROSS JOIN pg_catalog.pg_roles r
+           WHERE r.rolname = 'console_rt' AND c.oid IN ('public.auth_webauthn_credentials'::regclass, 'public.auth_webauthn_ceremonies'::regclass, 'public.auth_refresh_token_families'::regclass, 'public.auth_refresh_tokens'::regclass, 'public.auth_bootstrap_credentials'::regclass, 'public.auth_webauthn_ceremony_bindings'::regclass, 'public.auth_device_login_handoffs'::regclass)"#
+    ).fetch_all(&pool).await.unwrap();
+    assert_eq!(
+        material_grants.len(),
+        7,
+        "all custody relations must be present"
+    );
+    let mut violations = Vec::new();
+    for (relation, table, column) in material_grants {
+        if table || column {
+            violations.push(format!(
+                "{relation}: effective table={table}, column={column} privilege remains"
+            ));
+        }
+    }
+    for statement in statements {
+        let mut tx = pool.begin().await.unwrap();
+        set_role_and_org(&mut tx, Some(ORG_A)).await;
+        let result = sqlx::query(statement).execute(&mut *tx).await;
+        match result {
+            Err(sqlx::Error::Database(error)) if error.code().as_deref() == Some("42501") => {}
+            Err(error) => violations.push(format!("{statement}: wrong failure {error}")),
+            Ok(_) => violations.push(format!("{statement}: unexpectedly permitted")),
+        }
+        tx.rollback().await.unwrap();
+    }
+    assert!(violations.is_empty(), "{}", violations.join("\n"));
+}
+
+#[sqlx::test(migrations = "./migrations")]
+async fn company_runtime_cannot_assume_account_custody_roles(pool: PgPool) {
+    let auth = sqlx::query("SELECT oid, rolsuper, rolbypassrls FROM pg_catalog.pg_roles WHERE rolname = 'console_auth_rt'")
+        .fetch_optional(&pool).await.unwrap()
+        .expect("AS1.2 requires a distinct console_auth_rt role supplied by real migrations/topology");
+    assert!(
+        !auth.get::<bool, _>("rolsuper"),
+        "auth runtime must not be superuser"
+    );
+    assert!(
+        !auth.get::<bool, _>("rolbypassrls"),
+        "auth runtime must not bypass RLS"
+    );
+    // Explicit principal OIDs are essential: session_user remains the SQLx
+    // migration owner even after SET ROLE and could otherwise mask escalation.
+    let capabilities: Vec<(String, bool, bool, bool)> = sqlx::query_as(
+        r#"SELECT target.rolname::text,
+                  pg_catalog.pg_has_role(b.oid, target.oid, 'SET'),
+                  pg_catalog.pg_has_role(b.oid, target.oid, 'USAGE'),
+                  pg_catalog.pg_has_role(b.oid, target.oid, 'MEMBER')
+           FROM pg_catalog.pg_roles b CROSS JOIN pg_catalog.pg_roles target
+           WHERE b.rolname = 'console_rt' AND (target.rolname = 'console_auth_rt'
+           OR target.oid IN (SELECT relowner FROM pg_catalog.pg_class WHERE oid IN ('public.auth_webauthn_credentials'::regclass, 'public.auth_webauthn_ceremonies'::regclass, 'public.auth_refresh_token_families'::regclass, 'public.auth_refresh_tokens'::regclass, 'public.auth_bootstrap_credentials'::regclass, 'public.auth_webauthn_ceremony_bindings'::regclass, 'public.auth_device_login_handoffs'::regclass)))"#
+    ).fetch_all(&pool).await.unwrap();
+    assert!(
+        capabilities.len() >= 2,
+        "auth runtime and actual custody owners must be distinct"
+    );
+    assert!(
+        capabilities
+            .iter()
+            .all(|(_, set, usage, member)| !set && !usage && !member),
+        "Company runtime must neither assume nor inherit any custody role: {capabilities:?}"
+    );
+    let owners: Vec<(String, bool, bool)> = sqlx::query_as(
+        r#"SELECT c.relname::text, r.rolcanlogin, r.rolname = 'console_auth_rt'
+           FROM pg_catalog.pg_roles r JOIN pg_catalog.pg_class c ON c.relowner = r.oid
+           WHERE c.oid IN ('public.auth_webauthn_credentials'::regclass, 'public.auth_webauthn_ceremonies'::regclass, 'public.auth_refresh_token_families'::regclass, 'public.auth_refresh_tokens'::regclass, 'public.auth_bootstrap_credentials'::regclass, 'public.auth_webauthn_ceremony_bindings'::regclass, 'public.auth_device_login_handoffs'::regclass)"#
+    ).fetch_all(&pool).await.unwrap();
+    assert_eq!(
+        owners.len(),
+        7,
+        "every custody table must have an actual owner"
+    );
+    assert!(
+        owners.iter().all(|(_, login, runtime)| !login && !runtime),
+        "All custody owners must be non-login and distinct from auth runtime: {owners:?}"
+    );
+}
+
+#[sqlx::test(migrations = "./migrations")]
+async fn account_runtime_cannot_read_unrelated_company_business_data(pool: PgPool) {
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = 'console_auth_rt')",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(
+        exists,
+        "AS1.2 auth runtime is absent; this is a missing boundary, not a connection failure"
+    );
+    let business_grants: Vec<(String, bool, bool)> = sqlx::query_as(
+        "SELECT c.relname::text, \
+                pg_catalog.has_table_privilege(r.oid, c.oid, 'SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER'), \
+                pg_catalog.has_any_column_privilege(r.oid, c.oid, 'SELECT, INSERT, UPDATE, REFERENCES') \
+         FROM pg_catalog.pg_class c CROSS JOIN pg_catalog.pg_roles r \
+         WHERE r.rolname = 'console_auth_rt' AND c.oid IN \
+         ('public.employees'::regclass, 'public.payroll_draft_runs'::regclass, 'public.payroll_line_calculations'::regclass)"
+    ).fetch_all(&pool).await.unwrap();
+    assert_eq!(business_grants.len(), 3);
+    assert!(
+        business_grants
+            .iter()
+            .all(|(_, table, column)| !table && !column),
+        "No effective table or partial-column grants on unrelated Company data: {business_grants:?}"
+    );
+    for statement in [
+        "SELECT * FROM employees LIMIT 0",
+        "SELECT * FROM payroll_draft_runs LIMIT 0",
+        "SELECT * FROM payroll_line_calculations LIMIT 0",
+    ] {
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::query("SET LOCAL ROLE console_auth_rt")
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(ORG_A.to_string())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let error = sqlx::query(statement)
+            .execute(&mut *tx)
+            .await
+            .expect_err("auth runtime must not read Company business data");
+        assert_eq!(
+            error
+                .as_database_error()
+                .and_then(|error| error.code())
+                .as_deref(),
+            Some("42501"),
+            "must deny by privilege, not return empty RLS results: {statement}: {error}"
+        );
+        tx.rollback().await.unwrap();
+    }
+}

@@ -1,0 +1,8 @@
+type: object
+properties:
+  appid:
+    type: string
+  uvm:
+    type: boolean
+  hmacGetSecret:
+    $ref: '#/components/schemas/NativeWebAuthnHmacSecretInput'

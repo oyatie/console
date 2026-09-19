@@ -62,7 +62,12 @@ fn settings() -> JwtSettings {
 
 /// Build the auth-rest state from an explicit keypair, so the test can mint an
 /// actor token the built router verifies with the SAME key.
-fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
+async fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     AuthRestState::new(
         pool,
         AuthRestConfig {
@@ -80,6 +85,7 @@ fn state_with_keys(pool: PgPool, keys: &Keys) -> AuthRestState {
         },
     )
     .unwrap()
+    .with_auth_database(auth_database)
 }
 
 async fn runtime_role_pool(owner_pool: &PgPool) -> PgPool {
@@ -226,8 +232,9 @@ async fn post_tenant_context(app: axum::Router, token: &str, org_id: Uuid) -> (S
     (status, body)
 }
 
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn handler_mints_token_with_real_subject_freshness(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     // A group with the target subsidiary as member and a CROSS-ORG actor (home in
     // a different org, so no `users` row in the target → absent-0 subject/session).
     let target = seed_org(&owner_pool, "acme").await;
@@ -249,7 +256,7 @@ async fn handler_mints_token_with_real_subject_freshness(owner_pool: PgPool) {
     .unwrap();
     let verifier =
         JwtVerifier::from_es256_public_pem(settings(), keys.public_pem.as_bytes()).unwrap();
-    let app = router(state_with_keys(rt_pool, &keys));
+    let app = router(state_with_keys(rt_pool, &keys).await);
     let actor_token = mint_actor_token(&issuer, actor, OrgId::from_uuid(parent));
 
     // Drive the REAL handler.
@@ -287,4 +294,181 @@ async fn handler_mints_token_with_real_subject_freshness(owner_pool: PgPool) {
         claims.authz_policy_version, 8,
         "handler must read the bumped policy_version live on the next mint"
     );
+}
+
+// Additive common-resolver controls using this file's existing GroupAdmin
+// issuance, group membership and grant fixture owners.
+mod live_authority_regressions {
+    use super::*;
+    use console_kernel_core::{AccessScope, BranchScope, ErrorKind};
+    use console_platform_auth::SessionVerification;
+    use console_platform_authz::{Principal, Role};
+    use console_platform_request_context::{
+        RequestContextError, resolve_principal_from_bearer_token,
+    };
+    use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
+    use std::collections::BTreeSet;
+
+    async fn delegated_fixture(
+        owner: &PgPool,
+    ) -> (SessionVerification, PgPool, UserId, OrgId, Uuid, String) {
+        console_platform_test_support::prepare_account_test_database(owner).await;
+        let target = seed_org(owner, "live-subsidiary").await;
+        let home = seed_org(owner, "live-home").await;
+        let actor = seed_user(owner, home).await;
+        let group = seed_group(owner).await;
+        seed_group_membership(owner, group, target).await;
+        seed_group_admin_grant(owner, group, actor).await;
+        let business = login_test_pool(owner, TestDatabaseLogin::Business).await;
+        let auth = login_test_pool(owner, TestDatabaseLogin::Auth).await;
+        for (pool, expected) in [(&auth, "console_auth_rt"), (&business, "console_rt")] {
+            let identity: (String, String) =
+                sqlx::query_as("SELECT session_user::text,current_user::text")
+                    .fetch_one(pool)
+                    .await
+                    .unwrap();
+            assert_eq!(identity, (expected.into(), expected.into()));
+        }
+        let keys = keypair();
+        let issuer = JwtIssuer::from_es256_pem(
+            settings(),
+            keys.private_pem.as_bytes(),
+            keys.public_pem.as_bytes(),
+        )
+        .unwrap();
+        let verifier =
+            JwtVerifier::from_es256_public_pem(settings(), keys.public_pem.as_bytes()).unwrap();
+        let app = router(state_with_keys(business.clone(), &keys).await);
+        let actor_token = mint_actor_token(&issuer, actor, OrgId::from_uuid(home));
+        let (status, body) = post_tenant_context(app, &actor_token, target).await;
+        assert_eq!(status, StatusCode::OK);
+        let token = body["access_token"].as_str().unwrap().to_owned();
+        let claims = verifier.verify_access_token(&token).unwrap();
+        assert_eq!(claims.roles, vec!["ADMIN"]);
+        assert_eq!(claims.actor_home_org, Some(home.to_string()));
+        let target_rows: i64 =
+            sqlx::query_scalar("SELECT count(*) FROM users WHERE id=$1 AND org_id=$2")
+                .bind(actor.as_uuid())
+                .bind(target)
+                .fetch_one(owner)
+                .await
+                .unwrap();
+        assert_eq!(
+            target_rows, 0,
+            "delegation does not create a target-company user"
+        );
+        (
+            SessionVerification::new(verifier, auth),
+            business,
+            actor,
+            OrgId::from_uuid(target),
+            group,
+            token,
+        )
+    }
+
+    fn assert_target(principal: Principal, actor: UserId, target: OrgId) {
+        assert_eq!(principal.user_id, actor);
+        assert_eq!(principal.org_id, target);
+        assert_eq!(principal.roles, BTreeSet::from([Role::Admin]));
+        assert_eq!(principal.branch_scope, BranchScope::All);
+        assert_eq!(principal.access_scope, AccessScope::legacy_org(target));
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_group_admin_retains_signed_acting_role_after_home_role_change(
+        owner: PgPool,
+    ) {
+        let (session, business, actor, target, _group, token) = delegated_fixture(&owner).await;
+        assert_target(
+            resolve_principal_from_bearer_token(&session, &business, &token)
+                .await
+                .unwrap(),
+            actor,
+            target,
+        );
+        let changed = sqlx::query("UPDATE users SET roles=ARRAY['SUPER_ADMIN'] WHERE id=$1")
+            .bind(actor.as_uuid())
+            .execute(&owner)
+            .await
+            .unwrap();
+        assert_eq!(changed.rows_affected(), 1);
+        let roles: Vec<String> = sqlx::query_scalar("SELECT roles FROM users WHERE id=$1")
+            .bind(actor.as_uuid())
+            .fetch_one(&owner)
+            .await
+            .unwrap();
+        assert_eq!(roles, vec!["SUPER_ADMIN"]);
+        assert_target(
+            resolve_principal_from_bearer_token(&session, &business, &token)
+                .await
+                .unwrap(),
+            actor,
+            target,
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_group_admin_same_bearer_refused_after_actor_deactivation(
+        owner: PgPool,
+    ) {
+        let (session, business, actor, target, _group, token) = delegated_fixture(&owner).await;
+        assert_target(
+            resolve_principal_from_bearer_token(&session, &business, &token)
+                .await
+                .unwrap(),
+            actor,
+            target,
+        );
+        let changed = sqlx::query("UPDATE users SET is_active=false WHERE id=$1")
+            .bind(actor.as_uuid())
+            .execute(&owner)
+            .await
+            .unwrap();
+        assert_eq!(changed.rows_affected(), 1);
+        let active: bool = sqlx::query_scalar("SELECT is_active FROM users WHERE id=$1")
+            .bind(actor.as_uuid())
+            .fetch_one(&owner)
+            .await
+            .unwrap();
+        assert!(!active);
+        assert!(
+            matches!(
+                resolve_principal_from_bearer_token(&session, &business, &token).await,
+                Err(RequestContextError::AccessScope(error)) if error.kind == ErrorKind::Forbidden
+            ),
+            "live group owner must reject inactive actors"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_group_admin_same_bearer_refused_after_grant_downgrade(owner: PgPool) {
+        let (session, business, actor, target, group, token) = delegated_fixture(&owner).await;
+        assert_target(
+            resolve_principal_from_bearer_token(&session, &business, &token)
+                .await
+                .unwrap(),
+            actor,
+            target,
+        );
+        let changed = sqlx::query("UPDATE group_role_grants SET group_role='GROUP_VIEWER' WHERE group_id=$1 AND user_id=$2 AND group_role='GROUP_ADMIN'")
+            .bind(group).bind(actor.as_uuid()).execute(&owner).await.unwrap();
+        assert_eq!(changed.rows_affected(), 1);
+        let role: String = sqlx::query_scalar(
+            "SELECT group_role FROM group_role_grants WHERE group_id=$1 AND user_id=$2",
+        )
+        .bind(group)
+        .bind(actor.as_uuid())
+        .fetch_one(&owner)
+        .await
+        .unwrap();
+        assert_eq!(role, "GROUP_VIEWER");
+        assert!(
+            matches!(
+                resolve_principal_from_bearer_token(&session, &business, &token).await,
+                Err(RequestContextError::AccessScope(error)) if error.kind == ErrorKind::Forbidden
+            ),
+            "live group owner must reject downgraded grant"
+        );
+    }
 }

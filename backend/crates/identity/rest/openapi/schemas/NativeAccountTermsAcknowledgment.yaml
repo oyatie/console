@@ -1,0 +1,14 @@
+type: object
+additionalProperties: false
+required:
+- terms_kind
+- accepted
+properties:
+  terms_kind:
+    type: string
+    pattern: ^[a-z][a-z0-9_.-]{0,63}$
+  accepted:
+    type: boolean
+    const: true
+description: An object acknowledgment; positional arrays, unknown or duplicate fields, and accepted=false
+  are rejected.

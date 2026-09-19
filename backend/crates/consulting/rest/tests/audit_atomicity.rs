@@ -80,6 +80,11 @@ struct Harness {
 
 impl Harness {
     async fn new(owner_pool: &PgPool) -> Self {
+        let auth_database = console_platform_test_support::login_test_pool(
+            owner_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let keys = keys();
         let org = OrgId::new();
         let branch = seed_org_actor_customer(owner_pool, org).await;
@@ -104,7 +109,13 @@ impl Harness {
         .unwrap();
 
         Self {
-            app: router(ConsultingRestState::new(runtime_pool, Some(verifier))),
+            app: router(ConsultingRestState::new(
+                runtime_pool,
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
+            )),
             token,
             org,
             customer_id,
@@ -298,8 +309,9 @@ async fn seed_actor(owner_pool: &PgPool, org: OrgId, branch: BranchId) -> UserId
     actor
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn first_create_writes_one_org_bound_request_correlated_audit(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let (status, response) = harness
         .create(
@@ -343,8 +355,9 @@ async fn first_create_writes_one_org_bound_request_correlated_audit(owner_pool: 
     assert_eq!(row.try_get::<String, _>("device").unwrap(), DEVICE_ID);
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn sequential_and_concurrent_replay_leave_one_domain_history_and_audit(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let body = harness.body("consulting-audit-replay");
     let (first_status, first) = harness.create(body.clone(), DEFAULT_REQUEST_METADATA).await;
@@ -403,8 +416,9 @@ async fn sequential_and_concurrent_replay_leave_one_domain_history_and_audit(own
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn concurrent_creates_retain_independent_request_contexts(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let create_a = harness.create(
         harness.body("consulting-audit-concurrent-a"),
@@ -457,8 +471,9 @@ async fn concurrent_creates_retain_independent_request_contexts(owner_pool: PgPo
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn audit_insert_failure_rolls_back_engagement_and_history(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     sqlx::query(
         r#"

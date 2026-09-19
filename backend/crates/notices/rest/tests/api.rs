@@ -26,8 +26,14 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -66,7 +72,13 @@ async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPo
         let notifications = PgNotificationStore::new(rt_pool.clone());
         let store =
             PgNoticeStore::new(rt_pool.clone()).with_notification_sink(Arc::new(notifications));
-        let service = router(NoticeRestState::new(store, Some(verifier)));
+        let service = router(NoticeRestState::new(
+            store,
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
+        ));
 
         let manager_token = issue_token(
             private_pem.as_bytes(),
@@ -190,8 +202,14 @@ async fn notice_board_rest_is_publish_tier_gated_and_recipient_scoped(pool: PgPo
     .await;
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn notice_board_rest_scoped_audience_draft_edit_and_receipts(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -237,7 +255,13 @@ async fn notice_board_rest_scoped_audience_draft_edit_and_receipts(pool: PgPool)
         let notifications = PgNotificationStore::new(rt_pool.clone());
         let store =
             PgNoticeStore::new(rt_pool.clone()).with_notification_sink(Arc::new(notifications));
-        let service = router(NoticeRestState::new(store, Some(verifier)));
+        let service = router(NoticeRestState::new(
+            store,
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
+        ));
 
         let manager_token = issue_token(
             private_pem.as_bytes(),

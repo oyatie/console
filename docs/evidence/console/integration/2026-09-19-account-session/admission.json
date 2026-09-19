@@ -1,0 +1,35 @@
+{
+  "lane": "account-session-integrated-entry",
+  "base_sha": "67a6af236dae76c100b06c92241ce99651bc123f",
+  "design_sha": "796947bdeeb9e9c89dbeb1dd0ad7c5f69ddccdc3",
+  "test_sha": "67a6af236dae76c100b06c92241ce99651bc123f",
+  "owner": "root sole writer",
+  "root": "/private/tmp/console-client-release-20260919",
+  "probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=native_account_entry_is_actionable tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
+  "outcome": "Real native Account HTTP entry through admitted Auth owner and unchanged assertions, preserving current Business contracts; necessary integration dependency, not complete release.",
+  "immutable_source": "8ab9a7fc9bdb4dc657a6f4a31809fd0c673c6b6b",
+  "scope": "Only actual native Account/session dependency closure, source-referenced exact custody inputs, its current SessionVerification consumers, declared build/test dependencies and reviewed fixture adaptation. Whole source branch and unrelated payroll/ontology/UI features are not automatically admitted.",
+  "guide": "Reuse accepted Auth/Account code. Preserve current canonical DTOs, request strictness/error envelopes and architecture. Track exact adopted blobs and manual semantic resolutions. Exclude unrelated clean-merge features until independently admitted. Serialize shared/generated owners.",
+  "premortem": "Whole-branch import loses current contracts or admits unrelated work; smoke test masks missing native authority.",
+  "blast_radius": "Shared authentication constructors affect all consuming REST routes; separate Auth and Business roles and fail-closed errors required.",
+  "detection": "Actual404 before edit; current canonical/strict API checks; exact accepted Account custody/security suites and no bypass fixtures; independent review.",
+  "rollback": "Revert bounded new integration commits; base/source remain immutable; disposable DB only.",
+  "stop": [
+    "nonbehavioral RED",
+    "historical bytes changed",
+    "unknown custody origin",
+    "unreviewed semantic test changes",
+    "credential fallback",
+    "required test or current contract failure"
+  ],
+  "reviewers": [
+    "integration_security",
+    "integration_tests",
+    "reference_inventory"
+  ],
+  "test_review": "integration_tests explicitly approved initial body and exact3-line successor fixture adaptation on67a6af23",
+  "remaining_holds": [
+    "Full integrated baseline and all product/release acceptance remain incomplete.",
+    "No source-wide implementation admission from one HTTP probe."
+  ]
+}

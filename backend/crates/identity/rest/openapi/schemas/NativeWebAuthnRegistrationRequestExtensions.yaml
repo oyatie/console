@@ -1,0 +1,19 @@
+type: object
+description: Server creation-option extensions. CredProtect is flattened; there is no credProtect
+  wrapper here. Option fields absent rather than null on serialization.
+properties:
+  credentialProtectionPolicy:
+    $ref: '#/components/schemas/NativeWebAuthnCredentialProtectionPolicy'
+  enforceCredentialProtectionPolicy:
+    type: boolean
+  uvm:
+    type: boolean
+  credProps:
+    type: boolean
+  minPinLength:
+    type: boolean
+  hmacCreateSecret:
+    type: boolean
+dependentRequired:
+  enforceCredentialProtectionPolicy:
+  - credentialProtectionPolicy

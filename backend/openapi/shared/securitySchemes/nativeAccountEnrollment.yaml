@@ -1,0 +1,7 @@
+type: apiKey
+in: cookie
+name: __Host-console_account_enrollment
+description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Strict; no Domain.
+  Pending registration browser nonce; Max-Age uses the ceremony expiry, capped at 300 seconds. Browser
+  credentials are not returned in JSON. Any Authorization header is refused; legacy console_refresh
+  is not native Account authority.

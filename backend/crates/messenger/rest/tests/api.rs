@@ -23,8 +23,14 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn messenger_rest_polling_send_read_and_search_are_authorized(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -80,7 +86,10 @@ async fn messenger_rest_polling_send_read_and_search_are_authorized(pool: PgPool
         .unwrap();
         let service = router(MessengerRestState::new(
             PgMessengerStore::new(runtime_role_pool(&pool).await),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ));
 
         let members = get_json(
@@ -223,8 +232,14 @@ async fn messenger_rest_polling_send_read_and_search_are_authorized(pool: PgPool
 // full history to anyone who joined even though the caller supplied a
 // curated `member_ids` list. Omitting `visibility` must now yield `direct`;
 // the caller must explicitly pass `visibility: "channel"` to opt in.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn create_thread_named_team_thread_defaults_to_direct_via_rest(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let signing_key = SigningKey::random(&mut OsRng);
         let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
@@ -256,7 +271,10 @@ async fn create_thread_named_team_thread_defaults_to_direct_via_rest(pool: PgPoo
         .unwrap();
         let service = router(MessengerRestState::new(
             PgMessengerStore::new(runtime_role_pool(&pool).await),
-            Some(verifier),
+            Some(console_platform_auth::SessionVerification::new(
+                verifier,
+                auth_database.clone(),
+            )),
         ));
 
         // No `visibility` in the request body -> direct, not channel.

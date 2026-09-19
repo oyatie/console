@@ -46,7 +46,7 @@ use console_comms_application::{
 use console_comms_credential_cipher::EnvelopeCredentialCipher;
 use console_comms_domain::{FolderRole, MailSecurity, MessageAddress, normalize_subject};
 use console_kernel_core::{ErrorKind, KernelError, OrgId, TraceContext};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_capability};
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
@@ -149,7 +149,7 @@ pub struct CommsRestState {
     /// on the delivery webhook. `None` disables the webhook (503) — it is never
     /// hardcoded and never defaulted.
     mox_webhook_secret: Option<SecretString>,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl CommsRestState {
@@ -157,7 +157,7 @@ impl CommsRestState {
     pub fn new(
         store: PgMailStore,
         cipher: Option<Arc<EnvelopeCredentialCipher>>,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
     ) -> Self {
         Self {
             store,
@@ -166,7 +166,7 @@ impl CommsRestState {
             cipher,
             attachments: None,
             mox_webhook_secret: None,
-            jwt_verifier,
+            session_verification,
         }
     }
 
@@ -203,7 +203,7 @@ impl CommsRestState {
 }
 
 pub fn router(state: CommsRestState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool().clone();
     // JWT-authed console API. Wrapped in the request-context layer, which REQUIRES
     // a valid tenant bearer on every route it covers.
@@ -898,7 +898,7 @@ async fn principal_from_headers(
     state: &CommsRestState,
     headers: &HeaderMap,
 ) -> Result<Principal, RestError> {
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
+    let verifier = state.session_verification.as_ref().ok_or_else(|| {
         RestError::unavailable("JWT verification is not configured for the mail API")
     })?;
     console_platform_request_context::resolve_principal(verifier, state.pool(), headers)
@@ -910,6 +910,9 @@ fn rest_error_from_request_context(
     err: console_platform_request_context::RequestContextError,
 ) -> RestError {
     match err {
+        console_platform_request_context::RequestContextError::SessionVerificationUnavailable => {
+            RestError::unavailable("session verification unavailable")
+        }
         console_platform_request_context::RequestContextError::VerifierUnavailable => {
             RestError::unavailable("JWT verification is not configured for the mail API")
         }
@@ -929,7 +932,8 @@ fn rest_error_from_request_context(
         console_platform_request_context::RequestContextError::MissingBearer => {
             RestError::unauthorized("missing or malformed bearer token")
         }
-        console_platform_request_context::RequestContextError::InvalidToken => {
+        console_platform_request_context::RequestContextError::InvalidToken
+        | console_platform_request_context::RequestContextError::LegacySessionRejected => {
             RestError::unauthorized("invalid bearer token")
         }
         console_platform_request_context::RequestContextError::InvalidClaim(message) => {

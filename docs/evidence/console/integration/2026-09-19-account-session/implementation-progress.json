@@ -1,0 +1,165 @@
+{
+  "kind": "account-session-integration-progress",
+  "status": "implementation in progress; no integration or release acceptance",
+  "base_sha": "67a6af236dae76c100b06c92241ce99651bc123f",
+  "accepted_source_sha": "8ab9a7fc9bdb4dc657a6f4a31809fd0c673c6b6b",
+  "owner": "root sole writer",
+  "admission": "account-session-integrated-entry",
+  "probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=native_account_entry_is_actionable tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
+  "results": [
+    {
+      "command": "cargo check --manifest-path backend/Cargo.toml --workspace --tests --offline",
+      "result": "pass",
+      "executed_tests": 0,
+      "qualification": "compilation only"
+    },
+    {
+      "command": "admitted probe",
+      "result": "pass",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 324
+    },
+    {
+      "command": "bash tools/buck/run_test_with_postgres_env.test.sh",
+      "result": "pass",
+      "qualification": "shell behavior checks, not libtest test count"
+    },
+    {
+      "command": "bash tools/buck/test_needs_postgres.test.sh",
+      "result": "pass",
+      "qualification": "shell behavior checks; existing fake build emits missing-env grep diagnostics before actual test phase"
+    },
+    {
+      "command": "python3 -m unittest tools.buck.test_gen_first_party",
+      "executed": 59,
+      "passed": 58,
+      "failed": 1,
+      "qualification": "remaining check requires committed generated files; no full green claim"
+    },
+    {
+      "command": "node --test scripts/check-request-body-contract.test.mjs scripts/check-request-body-native.test.mjs",
+      "result": "pass",
+      "executed": 137,
+      "passed": 137,
+      "failed": 0
+    },
+    {
+      "command": "node --test scripts/check-openapi-security-truth.test.mjs",
+      "result": "pass",
+      "executed": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    {
+      "command": "node scripts/check-request-body-contract.mjs",
+      "result": "pass",
+      "population": 297,
+      "resolved": 122,
+      "unresolved": 175,
+      "findings": 0
+    },
+    {
+      "command": "node scripts/check-openapi-security-truth.mjs",
+      "result": "pass",
+      "operations": 609,
+      "explicit_public": 23,
+      "omitted_security": 0,
+      "findings": 0
+    }
+  ],
+  "reviews": [
+    {
+      "reviewer": "integration_security",
+      "scope": "evaluation genuine restricted LOGIN fixture preserving991",
+      "sha256": "4c15af001f0334efb20893f15108d870596bac20e47b816eed2883a50813575e",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_tests",
+      "scope": "nine REST fixtures preserving1004 assertion invocations",
+      "manifest_sha256": "ba496be10da902c4e34d3b5265ed88017d6040d7866c99bc9af9ddd72cfcc95d",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_tests",
+      "scope": "Auth/command credential harness4files",
+      "manifest_sha256": "a52c0463b2b70cbfa9a78ee10ccf65c3da05d51343323c936dbeb8009c6914c5",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_tests",
+      "scope": "Account generator discovery, explicit binaries, exact fixtures,11 rerun-only buildscript fixups and exact accepted AWS fixups",
+      "verdict": "approved; build/runtime evidence still required"
+    },
+    {
+      "reviewer": "integration_security",
+      "scope": "native JSON reader and literal/qualified handler parser, commented-handler regression",
+      "implementation_sha256": "f1cc8692804c1c86f751b0183a44989052a1fb41467cff48232e6798dbdaba00",
+      "test_sha256": "b191a1b0072decb509d8c5a4e25f153a73abab0ceccb154848d97a5e9297e478",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_tests",
+      "scope": "existing body census6 substitutions and5 payroll qualified metadata refinements; no rows or thresholds removed",
+      "test_sha256": "f6e02319857c801330ae141368fa6c56d3847088ee9abeb1a275947aa0f57bed",
+      "register_sha256": "7be3cba4991191def9f203d96f28be01b6e384e26f2e1487a958281a3e918577",
+      "verdict": "approved"
+    },
+    {
+      "reviewer": "integration_security and integration_tests",
+      "scope": "five native public operations and protected operation corruption controls",
+      "implementation_sha256": "48bf69364c1a4d96aee5ab7b27e99f80a2e77a3e5aeecb6da801abceb5ccc782",
+      "test_sha256": "f1e06481928f2ded413e0631702c00ed3678a4e6880d54998d400f47886c16a7",
+      "verdict": "approved"
+    }
+  ],
+  "preservation": {
+    "historical_migrations_unchanged": 225,
+    "new_migrations_exact_source": [
+      "0226",
+      "0227",
+      "0228"
+    ],
+    "identity_strict_decoders": "no existing deny_unknown_fields removed",
+    "canonical_ui_structs": "CompanyView/OrgUnitView/PersonView/EmploymentView unchanged",
+    "error_contracts": "current ErrorBody408413429 retained"
+  },
+  "remaining": [
+    "Full325-test Account suite running, results pending; browser/recovery feature suites not executed.",
+    "All integrated workflow/security/UX/recovery/load acceptance and milestones0\u201310 remain open.",
+    "Existing audit HTTP handlers use stale JWT authority after current middleware validation; needs real-boundary RED and owning fix.",
+    "Payroll/canonical SSR listings still conflate storage failure with authorized empty; typed outcomes remain required.",
+    "Native Account login alone does not establish usable current-context/workspace access.",
+    "Realtime verification remains handshake-only; live disclosure revocation unproven.",
+    "No production exposure/direct payments or legal qualification claimed."
+  ],
+  "logs": {
+    "entry-green.log.gz": {
+      "uncompressed_sha256": "03bfccc1415a26b315c5a9f1d5d1df58d13bb01f0140210e65fb7293cabaccc2"
+    },
+    "entry-harness-missing-auth.log.gz": {
+      "uncompressed_sha256": "8e74d5762e4d15b17ac53fa379d83fa82ab0e6831e5ae0dcdf2986e9024ebfc2"
+    },
+    "workspace-check.log.gz": {
+      "uncompressed_sha256": "1db663dfcfe087603cc4de8de44321e57fc722524d1ed28e9aaa2171c06cfc28"
+    },
+    "generator-tests-progress.log.gz": {
+      "uncompressed_sha256": "b6240313d1b08ec29be75e4677ec9c1f1392d2914678e4bff8ddd0c86ecffbe7"
+    },
+    "env-loader-tests.log.gz": {
+      "uncompressed_sha256": "adf3af0ca26b6b4717d79b4a1ed25663bea8ca5cee09f2677852b9045be0915d"
+    },
+    "postgres-harness-tests.log.gz": {
+      "uncompressed_sha256": "794c4ab260f7b22a6d3b28fb8513b581f71d3835707e0a4c69fe05d321b3efed"
+    },
+    "body-contract-tests.log.gz": {
+      "uncompressed_sha256": "5f01bf47256df1e167fc049ca9094e08c24b2cca6dd5aac387adb1bf2507f7b9"
+    },
+    "security-contract-tests.log.gz": {
+      "uncompressed_sha256": "b601a23fc6204c9b7cb4465cebbdf371b569685e949e16294ac76e05e444e6f5"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+type: object
+additionalProperties: false
+required:
+- ceremony_id
+- credential
+- accept_terms_version
+- accept_items
+properties:
+  ceremony_id:
+    type: string
+    format: uuid
+    pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+    not:
+      const: 00000000-0000-0000-0000-000000000000
+    description: Canonical lowercase hyphenated, non-nil UUID.
+  credential:
+    $ref: '#/components/schemas/NativeWebAuthnRegistrationCredential'
+  accept_terms_version:
+    type: string
+    pattern: ^[0-9a-f]{64}$
+  accept_items:
+    type: array
+    minItems: 1
+    maxItems: 8
+    uniqueItems: true
+    items:
+      $ref: '#/components/schemas/NativeAccountTermsAcknowledgment'
+    description: Unique terms_kind values; the exact set must match the real required manifest. Each
+      accepted value must be true.

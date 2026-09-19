@@ -16,7 +16,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Json, Router};
 use console_kernel_core::{BranchId, BranchScope};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::Principal;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -53,7 +53,7 @@ pub trait WorkbenchReaders: Send + Sync + 'static {
 pub struct WorkbenchState {
     readers: Arc<dyn WorkbenchReaders>,
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl WorkbenchState {
@@ -61,12 +61,12 @@ impl WorkbenchState {
     pub fn new(
         readers: Arc<dyn WorkbenchReaders>,
         pool: PgPool,
-        jwt_verifier: Option<JwtVerifier>,
+        session_verification: Option<SessionVerification>,
     ) -> Self {
         Self {
             readers,
             pool,
-            jwt_verifier,
+            session_verification,
         }
     }
 }
@@ -74,7 +74,7 @@ impl WorkbenchState {
 /// Router is wrapped in the same verified request-context layer as the native
 /// source routes, so a missing/invalid session is rejected before composition.
 pub fn router(state: WorkbenchState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(ME_WORKBENCH_PATH, get(get_my_workbench))

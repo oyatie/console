@@ -13,7 +13,7 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Json, Router};
 use console_kernel_core::{BranchId, BranchScope, ErrorKind, KernelError};
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{
     Action, Feature, PermissionLevel, Principal, authorize, authorize_org_wide, permission_for,
 };
@@ -39,13 +39,16 @@ const MAX_LIMIT: i64 = 100;
 #[derive(Clone)]
 pub struct WorkflowObjectContextState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl WorkflowObjectContextState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
@@ -55,7 +58,7 @@ impl WorkflowObjectContextState {
 /// authenticated [`Principal`] extension and arms no database state itself;
 /// every database read below is still wrapped by `with_org_conn`.
 pub fn router(state: WorkflowObjectContextState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(

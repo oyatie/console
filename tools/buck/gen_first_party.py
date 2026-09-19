@@ -26,6 +26,7 @@ Test targets:
   - owner.* and domain.* labels are derived from package paths, never a central
     hand-maintained exception table.
 """
+import ast
 import os
 import re
 import sys
@@ -110,7 +111,7 @@ RESOURCE_CONFIG = {
         # `include_bytes!` so the SSR server can serve /pkg out of the binary.
         # All three live inside this Buck package, so a glob reaches them; a
         # `src/**/*.rs` glob alone leaves rustc unable to read any of them.
-        "srcs": ["src/**/*.js", "pkg/*.js", "pkg/*.wasm"],
+        "srcs": ["src/**/*.js", "src/native_account.css", "pkg/*.js", "pkg/*.wasm"],
         # The unit tests `include_str!` two schema files from outside this
         # package: the payroll REST fragment they check contract keys against,
         # and the composed document.
@@ -143,11 +144,14 @@ RESOURCE_CONFIG = {
         "srcs": ["src/**/*.json"],
     },
     "console-app": {
+        "srcs": ['src/account_custody_session.sql', 'src/account_custody_state.sql', 'src/account_credential_custody_state.sql'],
         "external": {
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
             **MIGRATION_TREE,
         },
         "itests": {
+            "tests/auth_rest.rs": {"srcs": ['src/account_custody_session.sql', 'src/account_custody_state.sql', 'src/account_credential_custody_state.sql', 'tests/auth_rest/actor-migration.csv', 'tests/auth_rest/fixtures/account-audit228-credential-state-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-credentials-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-root-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-root-state-20aafabb.sql', 'tests/auth_rest/fixtures/account-audit228-verify-20aafabb.sql', 'tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql', 'tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql', 'tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql', 'tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql', 'tests/auth_rest/fixtures/account-native-deployment228-credentials-6c884418.sql', 'tests/auth_rest/fixtures/account-native-deployment228-observer-6c884418.sql', 'tests/auth_rest/fixtures/account-native-deployment228-root-6c884418.sql', 'tests/auth_rest/fixtures/account-native-deployment228-verify-6c884418.sql', 'tests/auth_rest/fixtures/account-native-extended227-credentials-17fba595.sql', 'tests/auth_rest/fixtures/account-native-extended227-root-17fba595.sql', 'tests/auth_rest/fixtures/account-native-extended227-verify-17fba595.sql', 'tests/auth_rest/fixtures/account-native-extension-metadata.sql', 'tests/auth_rest/fixtures/account-native-final9-credentials-9de5c767.sql', 'tests/auth_rest/fixtures/account-native-final9-root-9de5c767.sql', 'tests/auth_rest/fixtures/account_credential_custody_state-deployment228-6c884418.sql', 'tests/auth_rest/fixtures/account_custody_state-deployment228-6c884418.sql', 'tests/auth_rest/fixtures/historical-migrations227-9de5c767.json'], "external": {'//ops:postgres-finalize-account-custody.sql': 'ops/postgres-finalize-account-custody.sql', '//ops:postgres-finalize-account-credentials.sql': 'ops/postgres-finalize-account-credentials.sql', '//ops:postgres-verify-account-native.sql': 'ops/postgres-verify-account-native.sql', '//ops:postgres-install-durability-observer.sql': 'ops/postgres-install-durability-observer.sql'}},
+            "tests/account_migration.rs": {"srcs": ["tests/fixtures/account-legacy225-owner-output-v1.json"]},
             "tests/openapi_drift.rs": {
                 "srcs": ["src/**/*.rs", "Cargo.toml"],
                 "external": OPENAPI_DRIFT_EXTERNAL,
@@ -175,6 +179,7 @@ RESOURCE_CONFIG = {
     "console-intelligence-application": {
         "srcs": ["Cargo.toml"],
     },
+    "console-platform-test-support": {"external": {'//ops:postgres-finalize-account-custody.sql': 'ops/postgres-finalize-account-custody.sql', '//ops:postgres-finalize-account-credentials.sql': 'ops/postgres-finalize-account-credentials.sql'}},
     "console-platform-authz": {
         "external": {
             "//docs/specs:cedar-pbac-map":
@@ -277,6 +282,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-app': {
         'unit': 'none',
         'integration': {
+            'tests/account_migration.rs': 'postgres',
             'tests/action_inbox_api.rs': 'postgres',
             'tests/attendance_persona_api.rs': 'postgres',
             'tests/audit_api.rs': 'postgres',
@@ -845,12 +851,14 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-audit-chain': {
         'unit': 'none',
         'integration': {
+            'tests/ed25519_compatibility.rs': 'none',
             'tests/audit_chain_rls.rs': 'postgres',
         },
     },
     'console-platform-auth': {
         'unit': 'none',
         'integration': {
+            'tests/auth7_legacy_projection.rs': 'postgres',
             'tests/jwt_es256.rs': 'none',
             'tests/jwt_verifier.rs': 'none',
             'tests/refresh_tokens.rs': 'postgres',
@@ -871,6 +879,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     'console-platform-authz': {
         'unit': 'none',
         'integration': {
+            'tests/cedar_diagnostic_fail_closed.rs': 'none',
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
             'tests/cedar_pbac_readiness_cases.rs': 'none',
             'tests/policy.rs': 'postgres',
@@ -937,6 +946,7 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-platform-provisioning': {
         'integration': {
+            'tests/account_historical_consent.rs': 'none',
             'tests/bootstrap_passkey.rs': 'postgres',
             'tests/bootstrap_passkey_replay.rs': 'postgres',
             'tests/dev_principal_upsert_race.rs': 'postgres',
@@ -1250,20 +1260,70 @@ def requires_postgres(package_name, test_type, test_file=None):
     return resource_requirement(package_name, test_type, test_file) == "postgres"
 
 
+def integration_test_sources(d):
+    """Use Cargo automatic crate roots; nested modules stay source inputs.
+
+    A module can contain test attributes without being a standalone test crate.
+    Explicit declarations may annotate these same roots with required features;
+    unsupported target shapes remain a refusal rather than guessed coverage.
+    """
+    manifest = {}
+    manifest_path = os.path.join(d, "Cargo.toml")
+    if os.path.isfile(manifest_path):
+        with open(manifest_path, "rb") as manifest_file:
+            manifest = tomllib.load(manifest_file)
+        if "autotests" in manifest.get("package", {}):
+            raise ValueError("custom Cargo test discovery needs reviewed support: " + d)
+    testsdir = os.path.join(d, "tests")
+    all_rs = []
+    roots = []
+    if os.path.isdir(testsdir):
+        for dp, _, files in os.walk(testsdir):
+            for filename in files:
+                if not filename.endswith(".rs"):
+                    continue
+                source = os.path.relpath(os.path.join(dp, filename), d)
+                all_rs.append(source)
+                relative = os.path.relpath(os.path.join(dp, filename), testsdir).split(os.sep)
+                if len(relative) == 1 or (len(relative) == 2 and filename == "main.rs"):
+                    roots.append(source)
+    names = [integration_test_name(root) for root in roots]
+    if len(names) != len(set(names)):
+        raise ValueError("colliding Cargo integration test names: " + d)
+    declared_names = set()
+    for target in manifest.get("test", []):
+        name, path = target.get("name"), target.get("path")
+        if (set(target) - {"name", "path", "required-features"}
+                or not isinstance(name, str) or not isinstance(path, str)
+                or path not in roots or name != integration_test_name(path)):
+            raise ValueError("custom Cargo test discovery needs reviewed support: " + d)
+        if name in declared_names:
+            raise ValueError("duplicate explicit Cargo test identity: " + name)
+        declared_names.add(name)
+        required = target.get("required-features", [])
+        if (not isinstance(required, list)
+                or not all(isinstance(feature, str) and feature in manifest.get("features", {})
+                           for feature in required)
+                or len(required) != len(set(required))):
+            raise ValueError("invalid required features for Cargo test: " + name)
+    return sorted(roots), sorted(set(all_rs) - set(roots))
+
+
+def integration_test_name(source):
+    basename = os.path.basename(source)
+    stem = os.path.basename(os.path.dirname(source)) if basename == "main.rs" and os.path.dirname(source) != "tests" else os.path.splitext(basename)[0]
+    return crate_ident(stem)
+
+
 def discovered_test_resource_keys(d, package_name):
     """Return resource keys for targets this generator will emit."""
     keys = set()
     src = os.path.join(d, "src")
     if tree_has(src, "#[cfg(test)]"):
         keys.add((package_name, "test.unit", None))
-    testsdir = os.path.join(d, "tests")
-    if os.path.isdir(testsdir):
-        for dp, _, files in os.walk(testsdir):
-            for filename in files:
-                if filename.endswith(".rs"):
-                    test_file = os.path.relpath(os.path.join(dp, filename), d)
-                    if file_has(os.path.join(d, test_file), *TEST_MARKERS):
-                        keys.add((package_name, "test.integration", test_file))
+    roots, _ = integration_test_sources(d)
+    for test_file in roots:
+        keys.add((package_name, "test.integration", test_file))
     return keys
 
 
@@ -1451,11 +1511,8 @@ def openapi_dotfile_srcs(package_dir):
 def map_deps(dep_table, first_party):
     """Map a [dependencies]/[dev-dependencies] table to (deps_list, named_dict).
 
-    Every workspace member is first-party, so a member dependency always maps
-    to its `//backend/...` target. The `skipped` branch this used to carry --
-    omit a `-ui` member rather than rewrite it as `//third-party/rust:<name>` --
-    was removed with `skip_workspace_member` once #1079 vendored Leptos and
-    nothing was excluded any more.
+    Local paths must resolve to actual first-party members. Package naming
+    never authorizes an omitted dependency or a third-party substitute.
     """
     deps, named = [], {}
     for key, spec in (dep_table or {}).items():
@@ -1463,6 +1520,8 @@ def map_deps(dep_table, first_party):
         version = spec.get("version", "") if isinstance(spec, dict) else spec
         if pkg in first_party:
             target = first_party[pkg]
+        elif isinstance(spec, dict) and "path" in spec:
+            raise ValueError("local path dependency has no first-party target: " + pkg)
         elif pkg == "sqlx" and str(version).lstrip("=").startswith("0.8"):
             target = "//third-party/rust:sqlx-0_8"  # buckify.sh renames the 0.8 alias
         else:
@@ -1734,7 +1793,43 @@ def main():
     print("generated {} first-party BUCK files".format(generated))
 
 
+def explicit_binary_targets(d, package_name, manifest):
+    """Validate declared extra binaries; do not infer feature activation."""
+    targets = []
+    seen = set()
+    source_root = os.path.realpath(os.path.join(d, "src"))
+    for target in manifest.get("bin", []):
+        binary = target.get("name")
+        path = target.get("path")
+        if not isinstance(binary, str) or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_-]*", binary):
+            raise ValueError("{}: declared binary requires a valid name".format(package_name))
+        if binary in seen:
+            raise ValueError("{}: duplicate declared binary {}".format(package_name, binary))
+        seen.add(binary)
+        if target.get("required-features"):
+            raise ValueError(
+                "{}: binary {} requires explicit Buck feature-gate modeling: {}".format(
+                    package_name, binary, target["required-features"]
+                )
+            )
+        if not isinstance(path, str) or not path or os.path.isabs(path):
+            raise ValueError("{}: binary {} requires an explicit relative path".format(package_name, binary))
+        normalized = os.path.normpath(path)
+        resolved = os.path.realpath(os.path.join(d, normalized))
+        if not normalized.startswith("src/") or os.path.commonpath([source_root, resolved]) != source_root:
+            raise ValueError("{}: binary {} requires an explicit source mapping outside src/".format(package_name, binary))
+        if not os.path.isfile(resolved):
+            raise ValueError("{}: binary {} entrypoint is missing: {}".format(package_name, binary, path))
+        if binary == package_name and normalized == "src/main.rs":
+            continue
+        targets.append((binary, normalized))
+    return targets
+
+
+
 def emit(d, name, deps, named, dev_deps, dev_named, version=None):
+    manifest = load(d) if os.path.isfile(os.path.join(d, "Cargo.toml")) else {}
+    declared_binaries = explicit_binary_targets(d, name, manifest)
     header = "# @generated by tools/buck/gen_first_party.py from Cargo.toml — do not edit by hand."
     ident = crate_ident(name)
     has_main = os.path.isfile(os.path.join(d, "src", "main.rs"))
@@ -1896,6 +1991,16 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
                           external=lib_external, features=with_default_features([feature], lib_features))
         lib_target, unit_root, unit_excl = ":" + name, "src/lib.rs", None
 
+    for binary_name, binary_path in declared_binaries:
+        out.append("")
+        binary_deps = sorted(set(deps + ([lib_target] if has_lib else [])))
+        out += _block(
+            "rust_binary", binary_name, _lib_srcs(), crate_ident(binary_name),
+            binary_deps, named, env, package=package,
+            crate_root=package + "/" + binary_path, external=lib_external,
+            features=lib_features,
+        )
+
     test_deps = sorted(set(deps + dev_deps))
     test_named = {**named, **dev_named}
 
@@ -1940,17 +2045,11 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
     # `mod` declarations resolve (unreferenced ones are ignored by rustc).
     testsdir = os.path.join(d, "tests")
     if os.path.isdir(testsdir):
-        all_rs = []
-        for dp, _, files in os.walk(testsdir):
-            for f in files:
-                if f.endswith(".rs"):
-                    all_rs.append(os.path.relpath(os.path.join(dp, f), d))
-        test_files = sorted(p for p in all_rs if file_has(os.path.join(d, p), *TEST_MARKERS))
-        helpers = sorted(p for p in all_rs if p not in test_files)
+        test_files, helpers = integration_test_sources(d)
         for tf in test_files:
             test_path = os.path.join(d, tf)
             contents = file_text(test_path)
-            stem = crate_ident(os.path.splitext(os.path.basename(tf))[0])
+            stem = integration_test_name(tf)
             labels = test_labels(
                 package,
                 "test.integration",
@@ -1992,8 +2091,19 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
                           package=package, crate_root=package + "/" + tf,
                           external=external, labels=labels, features=features)
 
+    rendered = "\n".join(out) + "\n"
+    target_names = set()
+    for statement in ast.parse(rendered).body:
+        if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+            continue
+        for field in statement.value.keywords:
+            if field.arg == "name":
+                target_name = ast.literal_eval(field.value)
+                if target_name in target_names:
+                    raise ValueError("{}: duplicate generated target {}".format(name, target_name))
+                target_names.add(target_name)
     with open(os.path.join(d, "BUCK"), "w") as f:
-        f.write("\n".join(out) + "\n")
+        f.write(rendered)
 
 
 if __name__ == "__main__":

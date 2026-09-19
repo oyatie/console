@@ -1,0 +1,11 @@
+{
+  "backend/crates/payroll/rest/tests/api.rs": "59d33056822f5cb9f85b810cf8945574546f1c65042f50c6fb78134aa77310f1",
+  "backend/crates/payroll/rest/tests/payslip_draft_api.rs": "18848f403f759fde872b67a2eaf17a08d4aade04f1daf86fd2766c94d8aea854",
+  "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": "a9210b7ffd434333c99e3bfa6ae5b76aab29a6e15a570c6bfecfe8b09b4604e4",
+  "backend/crates/ontology/rest/tests/company_conformance.rs": "9d309b38153915585e0b7e9243f87bc561dbac047243ed068b3516371650ba10",
+  "backend/crates/ontology/rest/tests/company_conformance/harness.rs": "5348dfcc97a5747919ee8f3628bb6fc2abb9f92b625970b348e8244b71b2eb9e",
+  "backend/crates/ontology/rest/tests/object_type_cas_as_runtime_role.rs": "a094152840729db35078853ac7b4add01fcc7743d42b9436de7835ab4f293db2",
+  "backend/crates/ontology/rest/tests/object_type_lifecycle_over_http.rs": "799fba09d9e17308dffbb23f8fd5c6a98921e1476a1ab551dca980b395d2bdcc",
+  "backend/crates/ontology/rest/tests/object_policy_attach_as_runtime_role.rs": "973d58e339e76d529e4e95e42b2ea45dffa9050139dc33f63717f52030388e67",
+  "backend/crates/identity/rest/tests/org_setup.rs": "36775274b8305d4f5cd67187c9021ec5d59655b3598e17b494a92f7470cd2707"
+}

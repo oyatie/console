@@ -1,0 +1,20 @@
+# Exact production SQL inputs used by Account custody tests.
+export_file(
+    name = "postgres-finalize-account-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-finalize-account-credentials.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-verify-account-native.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-install-durability-observer.sql",
+    visibility = ["PUBLIC"],
+)

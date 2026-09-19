@@ -1,0 +1,16 @@
+type: object
+required:
+- requireResidentKey
+- userVerification
+properties:
+  authenticatorAttachment:
+    type: string
+    enum:
+    - platform
+    - cross-platform
+  residentKey:
+    $ref: '#/components/schemas/NativeWebAuthnResidentKeyRequirement'
+  requireResidentKey:
+    type: boolean
+  userVerification:
+    $ref: '#/components/schemas/NativeWebAuthnUserVerificationPolicy'

@@ -120,6 +120,11 @@ struct Harness {
 }
 
 async fn harness(pool: PgPool) -> Harness {
+    let auth_database = console_platform_test_support::login_test_pool(
+        &pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -161,7 +166,10 @@ async fn harness(pool: PgPool) -> Harness {
     let service = mobile_router(MobileRestState::new(
         rt_pool.clone(),
         PgWorkOrderStore::new(rt_pool),
-        Some(verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            verifier,
+            auth_database.clone(),
+        )),
         Some(evidence),
     ));
     Harness {
@@ -173,8 +181,9 @@ async fn harness(pool: PgPool) -> Harness {
 }
 
 // FIX 1: same request_id + same payload returns the cached (idempotent) response.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replay_same_payload_returns_cached_response(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let body = json!({
@@ -215,8 +224,9 @@ async fn replay_same_payload_returns_cached_response(pool: PgPool) {
 }
 
 // FIX 1: same request_id with a DIFFERENT payload is rejected (no stale return).
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn replay_different_payload_is_rejected(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let other_wo = uuid::Uuid::new_v4();
@@ -268,8 +278,9 @@ async fn replay_different_payload_is_rejected(pool: PgPool) {
 }
 
 // FIX 1: a duplicate request_id within a single batch is rejected.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn duplicate_request_id_in_batch_is_rejected(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let resp = post_sync(
@@ -317,8 +328,9 @@ async fn duplicate_request_id_in_batch_is_rejected(pool: PgPool) {
 
 // An over-large /sync batch is rejected (422) before any allocation/replay so a
 // single principal cannot monopolize a pooled DB connection.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn oversized_sync_batch_is_rejected(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let operations: Vec<Value> = (0..201)
@@ -367,8 +379,9 @@ async fn oversized_sync_batch_is_rejected(pool: PgPool) {
 // FIX 2: a crash between the business mutation commit and the completion mark
 // leaves an IN_PROGRESS sync row; a retry must reconcile it to the correct final
 // response without double-mutating.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn crash_between_mutate_and_complete_reconciles_on_retry(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
     console_platform_request_context::scope_org(console_kernel_core::OrgId::knl(), async move {
         let h = harness(pool).await;
         let store = PgWorkOrderStore::new(h.pool.clone());

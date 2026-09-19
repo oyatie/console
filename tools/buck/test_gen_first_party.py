@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Behavior locks for the first-party Rust BUCK graph generator."""
 
+import ast
+from unittest.mock import patch
 import importlib.util
 import inspect
 import json
@@ -821,7 +823,7 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             source_text,
             re.MULTILINE,
         )
-        self.assertEqual(164, len(ordinary_tests))
+        self.assertEqual(166, len(ordinary_tests))
         self.assertEqual(len(ordinary_tests), len(ordinary_gates))
         self.assertEqual(23, len(sqlx_tests))
         self.assertEqual(len(sqlx_tests), len(sqlx_gates))
@@ -869,6 +871,42 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
             GENERATOR.validate_inline_test_variants(
                 {"console-app": {"features": {}}}
             )
+
+
+    def test_native_cargo_roots_include_module_only_and_directory_main(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            (crate / "Cargo.toml").write_text('[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n')
+            (crate / "tests/cases").mkdir(parents=True)
+            (crate / "tests/native").mkdir()
+            (crate / "tests/suite.rs").write_text('#[path="cases/scenarios.rs"] mod scenarios;\n')
+            (crate / "tests/cases/scenarios.rs").write_text('#[test] fn nested_case() {}\n')
+            (crate / "tests/native/main.rs").write_text('#[test] fn directory_case() {}\n')
+            roots = GENERATOR.discovered_test_resource_keys(str(crate), "fixture")
+            self.assertEqual(roots, {
+                ("fixture", "test.integration", "tests/suite.rs"),
+                ("fixture", "test.integration", "tests/native/main.rs"),
+            })
+            _, helpers = GENERATOR.integration_test_sources(str(crate))
+            self.assertEqual(helpers, ["tests/cases/scenarios.rs"])
+            self.assertEqual(GENERATOR.integration_test_name("tests/native/main.rs"), "native")
+
+
+    def test_custom_cargo_test_discovery_and_name_collisions_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            crate = Path(directory)
+            base = '[package]\nname="fixture"\nversion="0.0.0"\nedition="2024"\n'
+            for override in ('autotests=false\n', 'autotests=true\n', '\n[[test]]\nname="custom"\npath="custom.rs"\n'):
+                (crate / "Cargo.toml").write_text(base + override)
+                with self.subTest(override=override), self.assertRaisesRegex(ValueError, "custom Cargo test discovery"):
+                    GENERATOR.integration_test_sources(str(crate))
+            (crate / "Cargo.toml").write_text(base)
+            (crate / "tests/same").mkdir(parents=True)
+            (crate / "tests/same.rs").write_text('#[test] fn file_case() {}\n')
+            (crate / "tests/same/main.rs").write_text('#[test] fn directory_case() {}\n')
+            with self.assertRaisesRegex(ValueError, "colliding Cargo integration test names"):
+                GENERATOR.integration_test_sources(str(crate))
+
 
 
 class TestTaxonomy(unittest.TestCase):
@@ -1195,6 +1233,169 @@ class FeatureAndEnvPropagationTests(unittest.TestCase):
         # The fence: integration tests must NOT inherit the declaration.
         itest = blocks["probe-envmain-itest-it"]
         self.assertNotIn("CARGO_PKG_NAME", itest, itest)
+
+
+class ExplicitBinaryTargetTests(unittest.TestCase):
+    def render(self, manifest, files, package_path="backend/app", deps=None, named=None):
+        temporary = tempfile.TemporaryDirectory(prefix="explicit-bin-generator-")
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        package = root / package_path
+        package.mkdir(parents=True)
+        (package / "Cargo.toml").write_text(manifest)
+        for relative, contents in files.items():
+            destination = package / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(contents)
+        self.last_fixture_package = package
+        package_name = GENERATOR.load(package)["package"]["name"]
+        with patch.object(GENERATOR, "REPO", str(root)):
+            # Use the established interface: RED must be an omitted target,
+            # never a missing new helper or a changed call signature.
+            GENERATOR.emit(str(package), package_name, deps or [], named or {}, [], {})
+        generated = (package / "BUCK").read_text()
+        parsed = ast.parse(generated)
+        rules = []
+        for statement in parsed.body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            if isinstance(call.func, ast.Name):
+                values = {keyword.arg: keyword.value for keyword in call.keywords}
+                if "name" in values:
+                    rules.append((call.func.id, values))
+        all_names = [ast.literal_eval(values["name"]) for _, values in rules]
+        self.assertEqual(len(all_names), len(set(all_names)), "duplicate generated target names")
+        return package, rules
+
+    def binary_rules(self, rules):
+        return {ast.literal_eval(values["name"]): values
+                for kind, values in rules if kind == "rust_binary"}
+
+    def assert_binary(self, values, package, relative_root, crate, library_target):
+        self.assertEqual(ast.literal_eval(values["crate"]), crate)
+        relative_package = "backend/" + str(package).split("/backend/", 1)[1]
+        self.assertEqual(ast.literal_eval(values["crate_root"]),
+                         relative_package + "/" + relative_root)
+        self.assertIn(library_target, ast.literal_eval(values["deps"]))
+        mapping = values["mapped_srcs"]
+        self.assertIsInstance(mapping, ast.Call)
+        self.assertEqual(mapping.func.id, "repo_mapped_srcs")
+        self.assertEqual(ast.literal_eval(mapping.args[0]), relative_package)
+        source_glob = mapping.args[1]
+        self.assertIsInstance(source_glob, ast.Call)
+        self.assertEqual(source_glob.func.id, "glob")
+        mapped = {str(path.relative_to(package))
+                  for pattern in ast.literal_eval(source_glob.args[0])
+                  for path in package.glob(pattern) if path.is_file()}
+        self.assertIn(relative_root, mapped, "binary entrypoint is not mapped into the action")
+
+    def test_real_application_declared_tools_preserve_roots_library_and_renamed_dependencies(self):
+        manifest = (Path(GENERATOR.REPO) / "backend/app/Cargo.toml").read_text()
+        files = {
+            "src/lib.rs": "pub fn reusable() {}\n",
+            "src/main.rs": "fn main() {}\n",
+            "src/bin/console_cedar_parity_report.rs": "fn main() {}\n",
+            "src/bin/console_deployment_operator.rs": "fn main() {}\n",
+        }
+        renamed = {"pg_transport": "//third-party/rust:tokio-postgres"}
+        package, rules = self.render(manifest, files,
+                                     deps=["//third-party/rust:tokio"], named=renamed)
+        binaries = self.binary_rules(rules)
+        self.assertEqual(set(binaries), {
+            "console-app", "console-app-dev-auth", "console-cedar-parity-report", "console-deployment-operator",
+        })
+        for binary, source in (
+            ("console-cedar-parity-report", "src/bin/console_cedar_parity_report.rs"),
+            ("console-deployment-operator", "src/bin/console_deployment_operator.rs"),
+        ):
+            self.assert_binary(binaries[binary], package, source,
+                               binary.replace("-", "_"), ":console-app-lib")
+            self.assertEqual(ast.literal_eval(binaries[binary]["named_deps"]), renamed)
+            self.assertEqual(ast.literal_eval(binaries[binary]["deps"]),
+                             ["//third-party/rust:tokio", ":console-app-lib"])
+
+    def test_real_contracts_declared_tool_links_library_without_default_main(self):
+        manifest = (Path(GENERATOR.REPO) / "backend/crates/contracts/Cargo.toml").read_text()
+        package, rules = self.render(manifest, {
+            "src/lib.rs": "pub fn compose() {}\n",
+            "src/bin/console_openapi_gen.rs": "fn main() {}\n",
+        }, package_path="backend/crates/contracts")
+        binaries = self.binary_rules(rules)
+        self.assertEqual(set(binaries), {"console-openapi-gen"})
+        self.assert_binary(binaries["console-openapi-gen"], package,
+                           "src/bin/console_openapi_gen.rs", "console_openapi_gen",
+                           ":console-contracts")
+
+    def test_explicit_default_main_is_not_duplicated(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture"\npath="src/main.rs"\n')
+        _, rules = self.render(manifest, {
+            "src/lib.rs": "pub fn value() {}\n", "src/main.rs": "fn main() {}\n",
+        })
+        self.assertEqual(set(self.binary_rules(rules)), {"fixture"})
+
+    def test_required_features_cannot_be_silently_enabled_or_omitted(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[features]\noperator-tools=[]\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/operator.rs"\n'
+                    'required-features=["operator-tools"]\n')
+        with self.assertRaisesRegex(ValueError, "operator.*feature-gate modeling"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+
+    def test_duplicate_declared_names_are_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/first.rs"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/second.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate declared binary operator"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/first.rs": "",
+                                   "src/bin/second.rs": ""})
+
+    def test_missing_declared_entrypoint_is_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="src/bin/missing.rs"\n')
+        with self.assertRaisesRegex(ValueError, "operator entrypoint is missing"):
+            self.render(manifest, {"src/lib.rs": ""})
+
+    def test_unmapped_outside_source_entrypoint_is_rejected(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="operator"\npath="tools/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "explicit source mapping outside src"):
+            self.render(manifest, {"src/lib.rs": "", "tools/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_library_target(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture"\npath="src/bin/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate generated target"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_generated_feature_targets(self):
+        for target in ("fixture-mode", "fixture-lib-mode"):
+            with self.subTest(target=target):
+                manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                            '[[bin]]\nname="' + target + '"\npath="src/bin/operator.rs"\n')
+                with patch.dict(GENERATOR.FEATURE_LIBRARY_VARIANTS,
+                                {"fixture": {"mode": {"deps": {}}}}):
+                    with self.assertRaisesRegex(ValueError, "duplicate generated target"):
+                        self.render(manifest, {"src/lib.rs": "", "src/main.rs": "fn main() {}",
+                                               "src/bin/operator.rs": "fn main() {}"})
+
+    def test_declared_tool_cannot_shadow_export_target_and_no_file_is_written(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="crate-source-tree"\npath="src/bin/operator.rs"\n')
+        with self.assertRaisesRegex(ValueError, "duplicate generated target crate-source-tree"):
+            self.render(manifest, {"src/lib.rs": "", "src/bin/operator.rs": "fn main() {}"})
+        self.assertFalse((self.last_fixture_package / "BUCK").exists())
+
+    def test_declared_tool_cannot_shadow_unit_target_and_no_file_is_written(self):
+        manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
+                    '[[bin]]\nname="fixture-unit"\npath="src/bin/operator.rs"\n')
+        with patch.dict(GENERATOR.TEST_RESOURCE_REQUIREMENTS, {"fixture": {"unit": "none"}}):
+            with self.assertRaisesRegex(ValueError, "duplicate generated target fixture-unit"):
+                self.render(manifest, {"src/lib.rs": "#[cfg(test)] mod tests {}",
+                                       "src/bin/operator.rs": "fn main() {}"})
+        self.assertFalse((self.last_fixture_package / "BUCK").exists())
+
 
 
 if __name__ == "__main__":

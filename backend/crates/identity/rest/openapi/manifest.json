@@ -252,6 +252,42 @@
     "/api/v1/users/{id}/deactivate": [
       "post"
     ],
+    "/api/v2/accounts/me": [
+      "get"
+    ],
+    "/api/v2/accounts/me/contexts": [
+      "get"
+    ],
+    "/api/v2/auth/csrf": [
+      "get"
+    ],
+    "/api/v2/auth/logout": [
+      "post"
+    ],
+    "/api/v2/auth/passkey/login/finish": [
+      "post"
+    ],
+    "/api/v2/auth/passkey/login/start": [
+      "post"
+    ],
+    "/api/v2/auth/registration/finish": [
+      "post"
+    ],
+    "/api/v2/auth/registration/start": [
+      "post"
+    ],
+    "/api/v2/auth/terms": [
+      "get"
+    ],
+    "/api/v2/auth/terms/content/{sha256}": [
+      "get"
+    ],
+    "/api/v2/auth/terms/manifests/{sha256}": [
+      "get"
+    ],
+    "/api/v2/auth/token/refresh": [
+      "post"
+    ],
     "/healthz": [
       "get"
     ],
@@ -313,6 +349,49 @@
     "MobilePasskeyStepUpStartRequest",
     "MobilePasskeyStepUpStartResponse",
     "MyWorkbenchResponse",
+    "NativeAccountActionRef",
+    "NativeAccountContexts",
+    "NativeAccountCsrfProof",
+    "NativeAccountEmptyInput",
+    "NativeAccountError",
+    "NativeAccountEstablished",
+    "NativeAccountLoginFinishInput",
+    "NativeAccountLoginStart",
+    "NativeAccountLogout",
+    "NativeAccountProjection",
+    "NativeAccountRegistrationFinishInput",
+    "NativeAccountRegistrationStart",
+    "NativeAccountRegistrationStartInput",
+    "NativeAccountSession",
+    "NativeAccountTermsAcknowledgment",
+    "NativeWebAuthnAssertionResponse",
+    "NativeWebAuthnAttestationResponse",
+    "NativeWebAuthnAuthenticationClientExtensions",
+    "NativeWebAuthnAuthenticationCredential",
+    "NativeWebAuthnAuthenticationRequestExtensions",
+    "NativeWebAuthnAuthenticatorSelection",
+    "NativeWebAuthnCreationChallengeResponse",
+    "NativeWebAuthnCreationOptions",
+    "NativeWebAuthnCredentialPropertiesOutput",
+    "NativeWebAuthnCredentialProtectionPolicy",
+    "NativeWebAuthnDescriptor",
+    "NativeWebAuthnHint",
+    "NativeWebAuthnHmacSecretInput",
+    "NativeWebAuthnHmacSecretOutput",
+    "NativeWebAuthnInputBytes",
+    "NativeWebAuthnInputTransport",
+    "NativeWebAuthnOutputBytes",
+    "NativeWebAuthnOutputTransport",
+    "NativeWebAuthnPublicKeyParameter",
+    "NativeWebAuthnRegistrationClientExtensions",
+    "NativeWebAuthnRegistrationCredential",
+    "NativeWebAuthnRegistrationRequestExtensions",
+    "NativeWebAuthnRelyingParty",
+    "NativeWebAuthnRequestChallengeResponse",
+    "NativeWebAuthnRequestOptions",
+    "NativeWebAuthnResidentKeyRequirement",
+    "NativeWebAuthnUser",
+    "NativeWebAuthnUserVerificationPolicy",
     "OtpRedeemRequest",
     "OtpRedeemResponse",
     "PasskeyLoginFinishRequest",
@@ -375,6 +454,8 @@
     "SimulationOutcome",
     "SystemPolicyRoleResponse",
     "Team",
+    "TermsCurrent",
+    "TermsManifest",
     "TokenPairResponse",
     "UpdateBranchRequest",
     "UpdatePlatformGroupRequest",

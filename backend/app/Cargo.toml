@@ -19,6 +19,10 @@ path = "src/main.rs"
 name = "console-cedar-parity-report"
 path = "src/bin/console_cedar_parity_report.rs"
 
+[[bin]]
+name = "console-deployment-operator"
+path = "src/bin/console_deployment_operator.rs"
+
 [lib]
 name = "console_app"
 path = "src/lib.rs"
@@ -27,6 +31,14 @@ path = "src/lib.rs"
 # Enables the inline PostgreSQL integration suite. This is intentionally inert
 # by default so normal unit tests need no database topology.
 test-postgres = []
+# Explicit real browser prerequisites; never silently skipped in ordinary HTTP tests.
+test-browser = []
+# Dedicated real subprocess/TLS operator suite; requires owned TLS topology and binary.
+# Its exact lane invocation is separate from ordinary auth_rest prerequisites.
+test-operator-transport = ["test-postgres"]
+# Existing integration-test executable may produce an owned historical227 fixture.
+# No code outside tests reads this feature or exposes a downgrade setting.
+test-historical227-producer = []
 # Local role-switch dev-auth endpoint. NOT in `default` (there is no `default`
 # key here, so cargo's implicit default feature set is empty) and MUST NEVER be
 # added to one — `console-gate-dev-auth-absence` asserts this via `cargo metadata`
@@ -34,6 +46,13 @@ test-postgres = []
 dev-auth = ["console-platform-auth-rest/dev-auth"]
 
 [dependencies]
+# One-shot operational transport requires an exclusive private CA trust store.
+# SQLx's selected TLS feature adds public roots and cannot express that scope.
+tokio-postgres = { version = "=0.7.18", default-features = false, features = ["runtime", "with-uuid-1"] }
+tokio-postgres-rustls = { version = "=0.14.0", default-features = false, features = ["aws-lc-rs"] }
+rustls = { workspace = true }
+rustix = { version = "1.1.4", features = ["fs", "process"] }
+zeroize = { workspace = true }
 axum = { workspace = true }
 base64 = { workspace = true }
 calamine = { workspace = true }
@@ -172,6 +191,9 @@ url = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
+# Browser history oracle compares lossless PostgreSQL-rendered row JSON.
+serde_json = { workspace = true, features = ["raw_value"] }
+console-platform-test-support = { workspace = true }
 console-financial-application = { workspace = true }
 console-financial-domain = { workspace = true }
 console-governance-application = { workspace = true }
@@ -179,7 +201,7 @@ console-notifications-domain = { workspace = true }
 # Dev-only: the coverage test asks `DispatchTarget::ALL` what the roster holds.
 console-ontology-canonical-domain = { path = "../crates/ontology/canonical-domain" }
 p256 = { version = "0.13.2", features = ["ecdsa", "pkcs8", "pem"] }
-tokio = { workspace = true, features = ["io-util", "net", "macros", "rt-multi-thread"] }
+tokio = { workspace = true, features = ["io-util", "net", "macros", "rt-multi-thread", "process"] }
 tower = { workspace = true, features = ["util"] }
 webauthn-authenticator-rs = { version = "0.5.5", features = ["softpasskey"] }
 webauthn-rs = { version = "0.5.5", features = ["danger-allow-state-serialisation"] }

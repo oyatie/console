@@ -1,0 +1,13 @@
+type: object
+required:
+- publicKey
+properties:
+  publicKey:
+    $ref: '#/components/schemas/NativeWebAuthnRequestOptions'
+  mediation:
+    type: string
+    enum:
+    - conditional
+description: Full pinned RequestChallengeResponse. Mediation is optional in the generic Rust type
+  and omitted for None; this Native Account flow uses start_discoverable_authentication, which always
+  returns mediation=conditional, empty allowCredentials and required userVerification.

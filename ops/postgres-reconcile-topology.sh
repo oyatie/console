@@ -35,6 +35,33 @@ if [[ "${POSTGRES_ADMIN_USER}" == "console_app" ]]; then
   exit 1
 fi
 
+# Auth transport is staged independently of Account activation. Omission keeps
+# existing credentials unchanged; a newly created role has no password. HBA
+# remains responsible for the accepted authentication methods.
+CONSOLE_AUTH_PASSWORD_SUPPLIED=0
+if [[ "${CONSOLE_AUTH_POSTGRES_PASSWORD+x}" == x ]]; then
+  [[ -n "${CONSOLE_AUTH_POSTGRES_PASSWORD}" ]] || {
+    echo "topology: an explicitly supplied auth password must not be empty" >&2
+    exit 1
+  }
+  CONSOLE_AUTH_PASSWORD_SUPPLIED=1
+fi
+export CONSOLE_AUTH_PASSWORD_SUPPLIED
+export CONSOLE_AUTH_POSTGRES_PASSWORD="${CONSOLE_AUTH_POSTGRES_PASSWORD-}"
+
+# Deployment authority is a distinct non-serving transport. Omission keeps an
+# existing secret unchanged; new roles start without any password or owner grant.
+CONSOLE_STARTUP_AUTH_PASSWORD_SUPPLIED=0
+if [[ "${CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD+x}" == x ]]; then
+  [[ -n "${CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD}" ]] || {
+    echo "topology: an explicitly supplied startup auth password must not be empty" >&2
+    exit 1
+  }
+  CONSOLE_STARTUP_AUTH_PASSWORD_SUPPLIED=1
+fi
+export CONSOLE_STARTUP_AUTH_PASSWORD_SUPPLIED
+export CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD="${CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD-}"
+
 passwords=(
   "${POSTGRES_ADMIN_PASSWORD}"
   "${CONSOLE_APP_POSTGRES_PASSWORD}"
@@ -43,6 +70,12 @@ passwords=(
   "${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD}"
   "${CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD}"
 )
+if [[ "${CONSOLE_AUTH_PASSWORD_SUPPLIED}" == 1 ]]; then
+  passwords+=("${CONSOLE_AUTH_POSTGRES_PASSWORD}")
+fi
+if [[ "${CONSOLE_STARTUP_AUTH_PASSWORD_SUPPLIED}" == 1 ]]; then
+  passwords+=("${CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD}")
+fi
 for ((i = 0; i < ${#passwords[@]}; i++)); do
   for ((j = i + 1; j < ${#passwords[@]}; j++)); do
     if [[ "${passwords[i]}" == "${passwords[j]}" ]]; then
@@ -307,6 +340,58 @@ SET LOCAL log_min_error_statement = 'panic';
 -- interpolated inside a dollar-quoted body, so it travels as a GUC.
 SET LOCAL console.canonical_require_tables = :'canonical_require';
 
+\getenv auth_password CONSOLE_AUTH_POSTGRES_PASSWORD
+\getenv auth_password_supplied CONSOLE_AUTH_PASSWORD_SUPPLIED
+-- Check the independent auth boundary before the legacy membership repair can
+-- hide an inbound or outbound authority edge. Drift rolls back this transaction.
+SELECT 'CREATE ROLE console_auth_rt LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD NULL'
+WHERE NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_rt') \gexec
+DO $auth_transport$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles
+    WHERE rolname='console_auth_rt' AND rolcanlogin AND NOT rolsuper
+      AND NOT rolbypassrls AND NOT rolinherit AND NOT rolcreatedb
+      AND NOT rolcreaterole AND NOT rolreplication
+  ) OR EXISTS (
+    SELECT 1 FROM pg_catalog.pg_auth_members membership
+    JOIN pg_catalog.pg_roles role ON role.oid=membership.member OR role.oid=membership.roleid
+    WHERE role.rolname='console_auth_rt'
+  ) THEN
+    RAISE EXCEPTION 'account_auth.topology_mismatch';
+  END IF;
+END
+$auth_transport$;
+\if :auth_password_supplied
+SELECT format('ALTER ROLE console_auth_rt PASSWORD %L', :'auth_password') \gexec
+\endif
+
+\getenv startup_password CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD
+\getenv startup_password_supplied CONSOLE_STARTUP_AUTH_PASSWORD_SUPPLIED
+-- Check the independent deployment boundary before the legacy membership repair can
+-- hide an inbound or outbound authority edge. Drift rolls back this transaction.
+SELECT 'CREATE ROLE console_auth_startup LOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD NULL'
+WHERE NOT EXISTS (SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_auth_startup') \gexec
+DO $startup_transport$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_roles
+    WHERE rolname='console_auth_startup' AND rolcanlogin AND NOT rolsuper
+      AND NOT rolbypassrls AND NOT rolinherit AND NOT rolcreatedb
+      AND NOT rolcreaterole AND NOT rolreplication
+  ) OR EXISTS (
+    SELECT 1 FROM pg_catalog.pg_auth_members membership
+    JOIN pg_catalog.pg_roles role ON role.oid=membership.member OR role.oid=membership.roleid
+    WHERE role.rolname='console_auth_startup'
+  ) THEN
+    RAISE EXCEPTION 'deployment_operator.topology_mismatch';
+  END IF;
+END
+$startup_transport$;
+\if :startup_password_supplied
+SELECT format('ALTER ROLE console_auth_startup PASSWORD %L', :'startup_password') \gexec
+\endif
+
 SELECT format(
   'CREATE ROLE console_app LOGIN NOSUPERUSER BYPASSRLS INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD %L',
   :'app_password'
@@ -356,6 +441,12 @@ SELECT format(
 -- Database-specific settings outrank global role defaults, so remove only the
 -- three managed keys from every database override and preserve all unrelated
 -- role settings.
+ALTER ROLE console_auth_startup SET statement_timeout = '30s';
+ALTER ROLE console_auth_startup SET idle_in_transaction_session_timeout = '30s';
+ALTER ROLE console_auth_startup SET transaction_timeout = '45s';
+ALTER ROLE console_auth_rt SET statement_timeout = '30s';
+ALTER ROLE console_auth_rt SET idle_in_transaction_session_timeout = '30s';
+ALTER ROLE console_auth_rt SET transaction_timeout = '45s';
 ALTER ROLE console_rt SET statement_timeout = '30s';
 ALTER ROLE console_rt SET idle_in_transaction_session_timeout = '30s';
 ALTER ROLE console_rt SET transaction_timeout = '45s';
@@ -372,21 +463,21 @@ SELECT format('ALTER ROLE %I IN DATABASE %I RESET statement_timeout', role.rolna
 FROM pg_db_role_setting settings
 JOIN pg_roles role ON role.oid = settings.setrole
 JOIN pg_database database ON database.oid = settings.setdatabase
-WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+WHERE role.rolname IN ('console_auth_startup', 'console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
   AND EXISTS (SELECT 1 FROM unnest(settings.setconfig) setting WHERE setting LIKE 'statement_timeout=%')
 \gexec
 SELECT format('ALTER ROLE %I IN DATABASE %I RESET idle_in_transaction_session_timeout', role.rolname, database.datname)
 FROM pg_db_role_setting settings
 JOIN pg_roles role ON role.oid = settings.setrole
 JOIN pg_database database ON database.oid = settings.setdatabase
-WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+WHERE role.rolname IN ('console_auth_startup', 'console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
   AND EXISTS (SELECT 1 FROM unnest(settings.setconfig) setting WHERE setting LIKE 'idle_in_transaction_session_timeout=%')
 \gexec
 SELECT format('ALTER ROLE %I IN DATABASE %I RESET transaction_timeout', role.rolname, database.datname)
 FROM pg_db_role_setting settings
 JOIN pg_roles role ON role.oid = settings.setrole
 JOIN pg_database database ON database.oid = settings.setdatabase
-WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+WHERE role.rolname IN ('console_auth_startup', 'console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
   AND EXISTS (SELECT 1 FROM unnest(settings.setconfig) setting WHERE setting LIKE 'transaction_timeout=%')
 \gexec
 
@@ -399,6 +490,33 @@ SELECT format(
   'CREATE ROLE console_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'
 ) WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_ontology_writer') \gexec
 ALTER ROLE console_ontology_writer NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION;
+
+
+-- Global Account and terms custody has no role membership edges. Keep the
+-- historical two-edge migration topology unchanged, including for other DBs.
+SELECT 'CREATE ROLE console_account_owner NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_account_owner') \gexec
+SELECT 'CREATE ROLE console_terms_owner NOLOGIN NOSUPERUSER NOBYPASSRLS NOINHERIT NOCREATEDB NOCREATEROLE NOREPLICATION'
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'console_terms_owner') \gexec
+DO $account_owners$
+BEGIN
+  IF (SELECT count(*) FROM pg_catalog.pg_roles
+      WHERE rolname IN ('console_account_owner', 'console_terms_owner')
+        AND NOT rolcanlogin AND NOT rolsuper AND NOT rolbypassrls
+        AND NOT rolinherit AND NOT rolcreatedb AND NOT rolcreaterole
+        AND NOT rolreplication) <> 2
+     OR EXISTS (
+       SELECT 1 FROM pg_catalog.pg_auth_members membership
+       JOIN pg_catalog.pg_roles member ON member.oid = membership.member
+       JOIN pg_catalog.pg_roles granted ON granted.oid = membership.roleid
+       WHERE member.rolname IN ('console_account_owner', 'console_terms_owner')
+          OR granted.rolname IN ('console_account_owner', 'console_terms_owner')
+     ) THEN
+    -- Refuse drift before existing topology reconciliation can conceal it.
+    RAISE EXCEPTION 'account_custody.owner_topology_mismatch';
+  END IF;
+END
+$account_owners$;
 
 -- Migration 0031 owns fresh-database timing. A guarded legacy rename may leave
 -- its table default ACL attached to the renamed bootstrap administrator OID.
@@ -629,7 +747,7 @@ BEGIN
 
     SELECT count(*) INTO bad_runtime_defaults
     FROM (VALUES
-      ('console_rt'), ('console_leave_cmd'), ('console_ontology_cmd'), ('console_platform_force_cmd')
+      ('console_auth_startup'), ('console_auth_rt'), ('console_rt'), ('console_leave_cmd'), ('console_ontology_cmd'), ('console_platform_force_cmd')
     ) expected(role_name)
     WHERE NOT EXISTS (
       SELECT 1
@@ -648,7 +766,7 @@ BEGIN
       FROM pg_db_role_setting settings
       JOIN pg_roles role ON role.oid = settings.setrole
       CROSS JOIN LATERAL unnest(settings.setconfig) setting
-      WHERE role.rolname IN ('console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
+      WHERE role.rolname IN ('console_auth_startup', 'console_auth_rt', 'console_rt', 'console_leave_cmd', 'console_ontology_cmd', 'console_platform_force_cmd')
         AND settings.setdatabase <> 0
         AND split_part(setting, '=', 1) IN (
           'statement_timeout', 'idle_in_transaction_session_timeout', 'transaction_timeout'
@@ -1108,11 +1226,11 @@ WHERE :'legacy_reassign' = '1' \gexec
 COMMIT;
 SQL
 
-# Role defaults affect only new sessions. Capture every extant serving-role
+# Role defaults affect only new sessions. Capture every extant bounded-role
 # backend after commit, synchronously terminate each one with a positive timeout,
 # and prove that exact captured set is absent before returning.
 serving_backend_pid_output="$(psql "${admin_psql_args[@]}" -Atqc \
-  "SELECT pid FROM pg_stat_activity WHERE usename IN ('console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd') AND pid <> pg_backend_pid() ORDER BY pid")"
+  "SELECT pid FROM pg_stat_activity WHERE usename IN ('console_auth_startup','console_auth_rt','console_rt','console_leave_cmd','console_ontology_cmd','console_platform_force_cmd') AND pid <> pg_backend_pid() ORDER BY pid")"
 if [[ -n "${serving_backend_pid_output}" ]]; then
   while IFS= read -r pid; do
     terminated="$(psql "${admin_psql_args[@]}" -Atqc \
@@ -1144,6 +1262,12 @@ verify_serving_login() {
     exit 1
   fi
 }
+if [[ "${CONSOLE_AUTH_PASSWORD_SUPPLIED}" == 1 ]]; then
+  verify_serving_login console_auth_rt "${CONSOLE_AUTH_POSTGRES_PASSWORD}"
+fi
+if [[ "${CONSOLE_STARTUP_AUTH_PASSWORD_SUPPLIED}" == 1 ]]; then
+  verify_serving_login console_auth_startup "${CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD}"
+fi
 verify_serving_login console_rt "${CONSOLE_RT_POSTGRES_PASSWORD}"
 verify_serving_login console_leave_cmd "${CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD}"
 verify_serving_login console_ontology_cmd "${CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD}"

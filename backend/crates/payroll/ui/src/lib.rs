@@ -1,4 +1,6 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
+pub mod native_account;
+
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -755,11 +757,35 @@ mod ssr {
         )
     }
 
+    async fn native_account_js() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/javascript; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_str!("native_account.js"),
+        )
+    }
+
+    async fn native_account_css() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/css; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            include_str!("native_account.css"),
+        )
+    }
+
     pub fn pkg_router<S>() -> Router<S>
     where
         S: Clone + Send + Sync + 'static,
     {
         Router::new()
+            .route("/assets/native-account.js", get(native_account_js))
+            .route("/assets/native-account.css", get(native_account_css))
             .route("/pkg/console_payroll_ui.js", get(pkg_js))
             .route("/pkg/console_payroll_ui_bg.wasm", get(pkg_wasm))
     }

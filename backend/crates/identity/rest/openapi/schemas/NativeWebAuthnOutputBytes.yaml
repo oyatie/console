@@ -1,0 +1,4 @@
+type: string
+pattern: ^[A-Za-z0-9_-]*$
+description: 'Server serialization of base64urlsafedata 0.5.5: URL-safe base64 without padding. No
+  generic format:byte assertion, which would suggest standard base64.'

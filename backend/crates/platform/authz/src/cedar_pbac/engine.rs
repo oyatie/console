@@ -458,26 +458,25 @@ fn evaluate_inner(
     .map_err(|err| format!("cedar request failed: {err}"))?;
 
     let response = Authorizer::new().is_authorized(&cedar_request, &bundle.policies, &entities);
+    let errors = response
+        .diagnostics()
+        .errors()
+        .map(ToString::to_string)
+        .collect::<Vec<_>>();
+    if !errors.is_empty() {
+        return Ok(CedarEvaluation::Deny {
+            bundle_key: bundle.key.clone(),
+            reason: format!("cedar denied with evaluation errors: {}", errors.join("; ")),
+        });
+    }
     match response.decision() {
         Decision::Allow => Ok(CedarEvaluation::Allow {
             bundle_key: bundle.key.clone(),
         }),
-        Decision::Deny => {
-            let errors = response
-                .diagnostics()
-                .errors()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>();
-            let reason = if errors.is_empty() {
-                "cedar denied: no matching permit".to_owned()
-            } else {
-                format!("cedar denied with evaluation errors: {}", errors.join("; "))
-            };
-            Ok(CedarEvaluation::Deny {
-                bundle_key: bundle.key.clone(),
-                reason,
-            })
-        }
+        Decision::Deny => Ok(CedarEvaluation::Deny {
+            bundle_key: bundle.key.clone(),
+            reason: "cedar denied: no matching permit".to_owned(),
+        }),
     }
 }
 

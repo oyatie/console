@@ -1,0 +1,7 @@
+type: apiKey
+in: cookie
+name: __Host-console_account_refresh
+description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Strict; no Domain.
+  Max-Age uses the actual token expiry bounded by the family absolute expiry. Browser credentials
+  are not returned in JSON. Any Authorization header is refused; legacy console_refresh is not native
+  Account authority.

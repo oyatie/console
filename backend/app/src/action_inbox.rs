@@ -20,7 +20,7 @@ use console_dispatch_adapter_postgres::PgDispatchStore;
 use console_governance_adapter_postgres::PgGovernanceStore;
 use console_kernel_core::{ErrorKind, KernelError};
 use console_payroll_adapter_postgres::PgPayrollStore;
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_support_adapter_postgres::PgSupportStore;
 use console_workorder_adapter_postgres::PgWorkOrderStore;
@@ -42,18 +42,21 @@ pub const ME_ACTION_INBOX_PATH: &str = "/api/v1/me/action-inbox";
 #[derive(Clone)]
 pub struct ActionInboxState {
     pool: PgPool,
-    jwt_verifier: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl ActionInboxState {
     #[must_use]
-    pub fn new(pool: PgPool, jwt_verifier: Option<JwtVerifier>) -> Self {
-        Self { pool, jwt_verifier }
+    pub fn new(pool: PgPool, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            pool,
+            session_verification,
+        }
     }
 }
 
 pub fn router(state: ActionInboxState) -> Router {
-    let verifier = state.jwt_verifier.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.pool.clone();
     let router = Router::new()
         .route(ME_ACTION_INBOX_PATH, get(list_action_inbox))

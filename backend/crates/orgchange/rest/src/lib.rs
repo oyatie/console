@@ -30,7 +30,7 @@ use console_orgchange_adapter_postgres::{
 use console_orgchange_domain::{
     OrgChangeKind, OrgChangeStatus, OrgChangeTarget, OrgProposalOp, TargetKind,
 };
-use console_platform_auth::JwtVerifier;
+use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, Role, authorize_capability};
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
@@ -62,23 +62,31 @@ pub const ORG_CHANGE_ROUTE_PATHS: &[&str] = &[
 #[derive(Clone)]
 pub struct OrgChangeRestState {
     store: PgOrgChangeStore,
-    jwt: Option<JwtVerifier>,
+    session_verification: Option<SessionVerification>,
 }
 
 impl OrgChangeRestState {
     #[must_use]
-    pub fn new(store: PgOrgChangeStore, jwt: Option<JwtVerifier>) -> Self {
-        Self { store, jwt }
+    pub fn new(store: PgOrgChangeStore, session_verification: Option<SessionVerification>) -> Self {
+        Self {
+            store,
+            session_verification,
+        }
     }
 
-    /// SSR composition helper: the same org-entity listing as GET
-    /// `/org-entities`, or empty (omit) when unauthenticated, unauthorized,
-    /// or the listing fails.
-    pub async fn visible_org_entities(&self, headers: &HeaderMap) -> Vec<VisibleOrgEntity> {
-        list_visible_org_entities(self, headers)
-            .await
-            .unwrap_or_default()
+    /// SSR listing with authority failures distinct from authorized read failures.
+    pub async fn visible_org_entities(
+        &self,
+        headers: &HeaderMap,
+    ) -> Result<Vec<VisibleOrgEntity>, OrgListingFailure> {
+        list_visible_org_entities(self, headers).await
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OrgListingFailure {
+    AuthorityUnestablished,
+    Unavailable,
 }
 
 /// Org entity already authorized for SSR. Required `OrgEntitySummary` keys.
@@ -91,7 +99,7 @@ pub struct VisibleOrgEntity {
 }
 
 pub fn router(state: OrgChangeRestState) -> Router {
-    let verifier = state.jwt.clone();
+    let verifier = state.session_verification.clone();
     let pool = state.store.pool().clone();
     let r = Router::new()
         // Legacy org-setup mutations remain at their established URLs, but the
@@ -680,14 +688,16 @@ async fn org_entities(
 async fn list_visible_org_entities(
     state: &OrgChangeRestState,
     headers: &HeaderMap,
-) -> Result<Vec<VisibleOrgEntity>, RestError> {
-    let principal = principal(state, headers).await?;
-    allow_read(&principal)?;
+) -> Result<Vec<VisibleOrgEntity>, OrgListingFailure> {
+    let principal = principal(state, headers)
+        .await
+        .map_err(|_| OrgListingFailure::AuthorityUnestablished)?;
+    allow_read(&principal).map_err(|_| OrgListingFailure::AuthorityUnestablished)?;
     let entities = state
         .store
         .org_entities(principal.user_id)
         .await
-        .map_err(RestError::store)?;
+        .map_err(|_| OrgListingFailure::Unavailable)?;
     Ok(entities
         .into_iter()
         .map(|entity| VisibleOrgEntity {
@@ -767,7 +777,7 @@ fn idem_header(h: &HeaderMap) -> Result<String, RestError> {
 }
 
 async fn principal(s: &OrgChangeRestState, h: &HeaderMap) -> Result<Principal, RestError> {
-    let verifier = s.jwt.as_ref().ok_or_else(|| {
+    let verifier = s.session_verification.as_ref().ok_or_else(|| {
         RestError::new(
             StatusCode::SERVICE_UNAVAILABLE,
             "unavailable",
@@ -779,6 +789,7 @@ async fn principal(s: &OrgChangeRestState, h: &HeaderMap) -> Result<Principal, R
         .map_err(|e| match e {
             RequestContextError::MissingBearer
             | RequestContextError::InvalidToken
+            | RequestContextError::LegacySessionRejected
             | RequestContextError::InvalidClaim(_) => RestError::new(
                 StatusCode::UNAUTHORIZED,
                 "unauthorized",
@@ -789,6 +800,11 @@ async fn principal(s: &OrgChangeRestState, h: &HeaderMap) -> Result<Principal, R
                     "token is not authorized for org changes",
                 ))
             }
+            RequestContextError::SessionVerificationUnavailable => RestError::new(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "unavailable",
+                "session verification unavailable",
+            ),
             RequestContextError::VerifierUnavailable => RestError::new(
                 StatusCode::SERVICE_UNAVAILABLE,
                 "unavailable",

@@ -117,7 +117,41 @@ where
     >,
     E: From<DbError>,
 {
-    let mut tx = pool.begin().await.map_err(|e| E::from(DbError::Sqlx(e)))?;
+    let tx = pool.begin().await.map_err(|e| E::from(DbError::Sqlx(e)))?;
+    with_audits_in_tx(tx, org, f).await
+}
+
+/// Compose audited reads from one database snapshot. Audit writes remain atomic;
+/// this does not fence authorization resolved before the transaction.
+pub async fn with_repeatable_read_audits<F, T, E>(pool: &PgPool, org: OrgId, f: F) -> Result<T, E>
+where
+    F: for<'tx> FnOnce(
+        &'tx mut Transaction<'_, Postgres>,
+    ) -> std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<(T, Vec<AuditEvent>), E>> + Send + 'tx>,
+    >,
+    E: From<DbError>,
+{
+    let tx = pool
+        .begin_with("BEGIN ISOLATION LEVEL REPEATABLE READ")
+        .await
+        .map_err(|e| E::from(DbError::Sqlx(e)))?;
+    with_audits_in_tx(tx, org, f).await
+}
+
+async fn with_audits_in_tx<F, T, E>(
+    mut tx: Transaction<'_, Postgres>,
+    org: OrgId,
+    f: F,
+) -> Result<T, E>
+where
+    F: for<'tx> FnOnce(
+        &'tx mut Transaction<'_, Postgres>,
+    ) -> std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<(T, Vec<AuditEvent>), E>> + Send + 'tx>,
+    >,
+    E: From<DbError>,
+{
     set_current_org(&mut tx, org).await.map_err(E::from)?;
     let result = f(&mut tx).await;
 

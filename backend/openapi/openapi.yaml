@@ -17883,6 +17883,3409 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '503':
           description: Realtime is unavailable.
+  /api/v2/accounts/me:
+    get:
+      tags:
+      - auth
+      operationId: nativeAccountMe
+      summary: Read current native Account
+      description: 'Requires a valid session cookie and rechecks live authority/freshness. Returns the bare
+        Account projection, not an account wrapper. This handler has no per-operation rate limiter. Cookie-only
+        native Account transport. Any Authorization header or duplicate recognized Account cookie is refused
+        as ambiguous_credentials. Combined Cookie header bytes, including separators, are bounded to 16
+        KiB. Legacy console_refresh is never Account authority. Only cookie values consumed by the operation
+        are validated as credentials. Responses are JSON with Cache-Control: no-store, Pragma: no-cache,
+        X-Content-Type-Options: nosniff and Vary: Cookie, Origin. Owner transactions complete before success
+        responses/cookies are released. A commit transport failure returns authority_unavailable and may
+        leave outcome uncertain; blind mutation replay is not safe. Origin may be absent; a supplied Origin
+        must equal the configured HTTPS origin exactly. Sec-Fetch-Site may be absent; if supplied it must
+        be same-origin.'
+      security:
+      - nativeAccountSession: []
+      parameters:
+      - name: Origin
+        in: header
+        required: false
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      responses:
+        '200':
+          description: Validated live native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountProjection'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+  /api/v2/accounts/me/contexts:
+    get:
+      tags:
+      - auth
+      operationId: nativeAccountContexts
+      summary: Read proven native Account context absence
+      description: 'Rejects any query string, including a bare question-mark delimiter, with invalid_request.
+        Current implementation returns exactly contexts: [] only after proving native Account birth/generation/source-writer
+        closure and actual absence. Candidate contexts or unknown provenance produce navigation_unavailable.
+        This handler has no per-operation rate limiter. Cookie-only native Account transport. Any Authorization
+        header or duplicate recognized Account cookie is refused as ambiguous_credentials. Combined Cookie
+        header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh is never Account
+        authority. Only cookie values consumed by the operation are validated as credentials. Responses
+        are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff and Vary:
+        Cookie, Origin. Owner transactions complete before success responses/cookies are released. A commit
+        transport failure returns authority_unavailable and may leave outcome uncertain; blind mutation
+        replay is not safe. Origin may be absent; a supplied Origin must equal the configured HTTPS origin
+        exactly. Sec-Fetch-Site may be absent; if supplied it must be same-origin.'
+      security:
+      - nativeAccountSession: []
+      parameters:
+      - name: Origin
+        in: header
+        required: false
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      responses:
+        '200':
+          description: Validated live native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountContexts'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable, navigation_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+                          - navigation_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+                navigation_unavailable:
+                  value:
+                    error:
+                      code: navigation_unavailable
+                      message: Navigation authority is unavailable.
+  /api/v2/auth/csrf:
+    get:
+      tags:
+      - auth
+      operationId: nativeAccountCsrf
+      summary: Fetch native Account CSRF proof
+      description: 'Requires X-Console-CSRF: fetch. The proof is opaque, short-lived and bound to live Account/family/generation.
+        Its creation does not extend session lifetime. At least one current native session or refresh authority
+        is required. If both cookies are supplied their live Account/family/generation authority must agree.
+        A correctly signed but expired access cookie may accompany a current same-family refresh token.
+        Malformed, signature-invalid, kind-invalid, otherwise time-invalid or mismatched access authority
+        is refused; it never downgrades to refresh. Cookie-only native Account transport. Any Authorization
+        header or duplicate recognized Account cookie is refused as ambiguous_credentials. Combined Cookie
+        header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh is never Account
+        authority. Only cookie values consumed by the operation are validated as credentials. Responses
+        are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff and Vary:
+        Cookie, Origin. Owner transactions complete before success responses/cookies are released. A commit
+        transport failure returns authority_unavailable and may leave outcome uncertain; blind mutation
+        replay is not safe. Origin may be absent; a supplied Origin must equal the configured HTTPS origin
+        exactly. Sec-Fetch-Site may be absent; if supplied it must be same-origin.'
+      security:
+      - nativeAccountSession: []
+      - nativeAccountRefresh: []
+      parameters:
+      - name: Origin
+        in: header
+        required: false
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      - name: X-Console-CSRF
+        in: header
+        required: true
+        description: Single header value; total header bytes bounded to 4096. For mutations Auth verifies
+          signature/time and live Account/family/generation binding.
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          const: fetch
+      responses:
+        '200':
+          description: Validated live native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountCsrfProof'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied, csrf_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+                          - csrf_invalid
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+                csrf_invalid:
+                  value:
+                    error:
+                      code: csrf_invalid
+                      message: Request proof is invalid.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+  /api/v2/auth/logout:
+    post:
+      tags:
+      - auth
+      operationId: nativeAccountLogout
+      summary: Commit native Account session logout
+      description: 'Takes exactly an empty object and a verified X-Console-CSRF proof. Revokes the validated
+        family and clears the browser authority after commit. At least one current native session or refresh
+        authority is required. If both cookies are supplied their live Account/family/generation authority
+        must agree. A correctly signed but expired access cookie may accompany a current same-family refresh
+        token. Malformed, signature-invalid, kind-invalid, otherwise time-invalid or mismatched access authority
+        is refused; it never downgrades to refresh. Cookie-only native Account transport. Any Authorization
+        header or duplicate recognized Account cookie is refused as ambiguous_credentials. Combined Cookie
+        header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh is never Account
+        authority. Only cookie values consumed by the operation are validated as credentials. Responses
+        are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff and Vary:
+        Cookie, Origin. Owner transactions complete before success responses/cookies are released. A commit
+        transport failure returns authority_unavailable and may leave outcome uncertain; blind mutation
+        replay is not safe. Required Origin must equal the configured HTTPS origin exactly. Content-Type
+        must be exactly application/json, without parameters. Sec-Fetch-Site may be absent; if supplied
+        it must be same-origin. Top-level request must be a JSON object with no unknown or duplicate app-owned
+        fields. The entire body is bounded even without Content-Length; lexical JSON nesting is at most
+        32. Nested WebAuthn types use the pinned library decoder; see their schema descriptions.'
+      security:
+      - nativeAccountSession: []
+      - nativeAccountRefresh: []
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      - name: X-Console-CSRF
+        in: header
+        required: true
+        description: Single header value; total header bytes bounded to 4096. For mutations Auth verifies
+          signature/time and live Account/family/generation binding.
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 4096
+      responses:
+        '200':
+          description: Committed native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+            Set-Cookie:
+              description: Repeated Set-Cookie field lines clear native session and refresh cookies using
+                Max-Age=0 with their normal Secure; HttpOnly; Path=/ and SameSite attributes. Never comma-fold
+                Set-Cookie lines.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountLogout'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied, csrf_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+                          - csrf_invalid
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+                csrf_invalid:
+                  value:
+                    error:
+                      code: csrf_invalid
+                      message: Request proof is invalid.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+      requestBody:
+        required: true
+        description: Exact application/json Content-Type; maximum 4096 body bytes and JSON nesting depth
+          32.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NativeAccountEmptyInput'
+  /api/v2/auth/passkey/login/finish:
+    post:
+      tags:
+      - auth
+      operationId: nativeAccountPasskeyLoginFinish
+      summary: Complete native Account passkey login
+      description: 'Verifies the login nonce and original WebAuthn assertion, plus complete historical consent
+        artifacts. Fresh login may replace browser cookies; it never merges Accounts, creates Company identity
+        or revokes unrelated session families. Cookie-only native Account transport. Any Authorization header
+        or duplicate recognized Account cookie is refused as ambiguous_credentials. Combined Cookie header
+        bytes, including separators, are bounded to 16 KiB. Legacy console_refresh is never Account authority.
+        Only cookie values consumed by the operation are validated as credentials. Responses are JSON with
+        Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff and Vary: Cookie, Origin.
+        Owner transactions complete before success responses/cookies are released. A commit transport failure
+        returns authority_unavailable and may leave outcome uncertain; blind mutation replay is not safe.
+        Required Origin must equal the configured HTTPS origin exactly. Content-Type must be exactly application/json,
+        without parameters. Sec-Fetch-Site may be absent; if supplied it must be same-origin. Top-level
+        request must be a JSON object with no unknown or duplicate app-owned fields. The entire body is
+        bounded even without Content-Length; lexical JSON nesting is at most 32. Nested WebAuthn types use
+        the pinned library decoder; see their schema descriptions.'
+      security:
+      - nativeAccountLogin: []
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      responses:
+        '200':
+          description: Committed native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+            Set-Cookie:
+              description: Repeated Set-Cookie field lines issue native session and refresh cookies and
+                clear enrollment/login cookies. All have Secure, HttpOnly, Path=/ and no Domain; session
+                is SameSite=Lax, others SameSite=Strict. Never comma-fold Set-Cookie lines.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountEstablished'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied, terms_acceptance_required.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+                          - terms_acceptance_required
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+                terms_acceptance_required:
+                  value:
+                    error:
+                      code: terms_acceptance_required
+                      message: Terms acceptance is required.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+      requestBody:
+        required: true
+        description: Exact application/json Content-Type; maximum 65536 body bytes and JSON nesting depth
+          32.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NativeAccountLoginFinishInput'
+  /api/v2/auth/passkey/login/start:
+    post:
+      tags:
+      - auth
+      operationId: nativeAccountPasskeyLoginStart
+      summary: Start discoverable native Account login
+      description: 'Takes exactly an empty object and creates a discoverable passkey ceremony with conditional
+        mediation. This operation does not require an anonymous Account. The start owner can refuse expired
+        or invalid-origin authority as authentication_invalid. Cookie-only native Account transport. Any
+        Authorization header or duplicate recognized Account cookie is refused as ambiguous_credentials.
+        Combined Cookie header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh
+        is never Account authority. Only cookie values consumed by the operation are validated as credentials.
+        Responses are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff
+        and Vary: Cookie, Origin. Owner transactions complete before success responses/cookies are released.
+        A commit transport failure returns authority_unavailable and may leave outcome uncertain; blind
+        mutation replay is not safe. Required Origin must equal the configured HTTPS origin exactly. Content-Type
+        must be exactly application/json, without parameters. Sec-Fetch-Site may be absent; if supplied
+        it must be same-origin. Top-level request must be a JSON object with no unknown or duplicate app-owned
+        fields. The entire body is bounded even without Content-Length; lexical JSON nesting is at most
+        32. Nested WebAuthn types use the pinned library decoder; see their schema descriptions.'
+      security: []
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      responses:
+        '200':
+          description: Committed native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+            Set-Cookie:
+              description: Issues the __Host-console_account_login nonce cookie with Secure; HttpOnly; Path=/;
+                SameSite=Strict and a Max-Age bounded by ceremony expiry and 300 seconds.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountLoginStart'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+      requestBody:
+        required: true
+        description: Exact application/json Content-Type; maximum 4096 body bytes and JSON nesting depth
+          32.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NativeAccountEmptyInput'
+  /api/v2/auth/registration/finish:
+    post:
+      tags:
+      - auth
+      operationId: nativeAccountRegistrationFinish
+      summary: Complete native Account registration
+      description: 'Verifies the enrollment nonce, ceremony, passkey and the exact current terms manifest/acknowledgment
+        set before activating the persistent Account. Existing valid Account authority returns already_authenticated.
+        No Company membership or employment is created by this response. Cookie-only native Account transport.
+        Any Authorization header or duplicate recognized Account cookie is refused as ambiguous_credentials.
+        Combined Cookie header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh
+        is never Account authority. Only cookie values consumed by the operation are validated as credentials.
+        Responses are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff
+        and Vary: Cookie, Origin. Owner transactions complete before success responses/cookies are released.
+        A commit transport failure returns authority_unavailable and may leave outcome uncertain; blind
+        mutation replay is not safe. Required Origin must equal the configured HTTPS origin exactly. Content-Type
+        must be exactly application/json, without parameters. Sec-Fetch-Site may be absent; if supplied
+        it must be same-origin. Top-level request must be a JSON object with no unknown or duplicate app-owned
+        fields. The entire body is bounded even without Content-Length; lexical JSON nesting is at most
+        32. Nested WebAuthn types use the pinned library decoder; see their schema descriptions.'
+      security:
+      - nativeAccountEnrollment: []
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      responses:
+        '201':
+          description: Committed native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+            Set-Cookie:
+              description: Repeated Set-Cookie field lines issue native session and refresh cookies and
+                clear enrollment/login cookies. All have Secure, HttpOnly, Path=/ and no Domain; session
+                is SameSite=Lax, others SameSite=Strict. Never comma-fold Set-Cookie lines.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountEstablished'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: enrollment_invalid, authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - enrollment_invalid
+                          - authentication_invalid
+              examples:
+                enrollment_invalid:
+                  value:
+                    error:
+                      code: enrollment_invalid
+                      message: Enrollment is invalid.
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+        '409':
+          description: 'Applicable native error codes: already_authenticated, terms_changed.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - already_authenticated
+                          - terms_changed
+              examples:
+                already_authenticated:
+                  value:
+                    error:
+                      code: already_authenticated
+                      message: Account is already authenticated.
+                terms_changed:
+                  value:
+                    error:
+                      code: terms_changed
+                      message: Terms have changed.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+      requestBody:
+        required: true
+        description: Exact application/json Content-Type; maximum 65536 body bytes and JSON nesting depth
+          32.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NativeAccountRegistrationFinishInput'
+  /api/v2/auth/registration/start:
+    post:
+      tags:
+      - auth
+      operationId: nativeAccountRegistrationStart
+      summary: Start native Account registration
+      description: 'Starts only for an anonymous browser. A valid existing Account authority returns already_authenticated;
+        invalid supplied authority fails. A supplied enrollment nonce replaces only its own pending ceremony.
+        The requested terms digest must match current verified publication. Cookie-only native Account transport.
+        Any Authorization header or duplicate recognized Account cookie is refused as ambiguous_credentials.
+        Combined Cookie header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh
+        is never Account authority. Only cookie values consumed by the operation are validated as credentials.
+        Responses are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff
+        and Vary: Cookie, Origin. Owner transactions complete before success responses/cookies are released.
+        A commit transport failure returns authority_unavailable and may leave outcome uncertain; blind
+        mutation replay is not safe. Required Origin must equal the configured HTTPS origin exactly. Content-Type
+        must be exactly application/json, without parameters. Sec-Fetch-Site may be absent; if supplied
+        it must be same-origin. Top-level request must be a JSON object with no unknown or duplicate app-owned
+        fields. The entire body is bounded even without Content-Length; lexical JSON nesting is at most
+        32. Nested WebAuthn types use the pinned library decoder; see their schema descriptions.'
+      security: []
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      responses:
+        '200':
+          description: Committed native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+            Set-Cookie:
+              description: Issues the __Host-console_account_enrollment nonce cookie with Secure; HttpOnly;
+                Path=/; SameSite=Strict and a Max-Age bounded by ceremony expiry and 300 seconds.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountRegistrationStart'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: enrollment_invalid, authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - enrollment_invalid
+                          - authentication_invalid
+              examples:
+                enrollment_invalid:
+                  value:
+                    error:
+                      code: enrollment_invalid
+                      message: Enrollment is invalid.
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+        '409':
+          description: 'Applicable native error codes: already_authenticated, terms_changed.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - already_authenticated
+                          - terms_changed
+              examples:
+                already_authenticated:
+                  value:
+                    error:
+                      code: already_authenticated
+                      message: Account is already authenticated.
+                terms_changed:
+                  value:
+                    error:
+                      code: terms_changed
+                      message: Terms have changed.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+      requestBody:
+        required: true
+        description: Exact application/json Content-Type; maximum 4096 body bytes and JSON nesting depth
+          32.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NativeAccountRegistrationStartInput'
+  /api/v2/auth/terms:
+    get:
+      tags:
+      - auth
+      operationId: getCurrentTerms
+      summary: Read the current required terms release
+      description: >-
+        Public, unauthenticated metadata for the current required terms release.
+        The response identifies the selected manifest and revision only when the manifest
+        and all required content are available and verified. Current metadata is never
+        served from a cached release when the current terms authority is unavailable.
+        This operation sets no cookies and does not redirect.
+      security: []
+      responses:
+        '200':
+          description: Current release metadata. The manifest URL identifies the same digest as terms_version.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermsCurrent'
+        '503':
+          description: The current terms authority is unavailable, its selected release is absent or unsupported, or a required artifact is unavailable or invalid.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: authority_unavailable
+                  message: Terms authority unavailable
+  /api/v2/auth/terms/content/{sha256}:
+    get:
+      tags:
+      - auth
+      operationId: getTermsContent
+      summary: Read immutable terms content
+      description: >-
+        Public, unauthenticated read of registered retained content by its exact-byte
+        SHA-256 digest. The response preserves the verified UTF-8 bytes, at most 65536 bytes,
+        with Content-Type text/plain; charset=utf-8. Retained reads remain available
+        independently of the current terms authority and passkey or signing configuration.
+        This operation sets no cookies and does not redirect.
+      security: []
+      parameters:
+      - name: sha256
+        in: path
+        required: true
+        description: SHA-256 digest of the exact artifact bytes, encoded as 64 lowercase hexadecimal characters.
+        schema:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+      responses:
+        '200':
+          description: Exact verified UTF-8 bytes of the immutable content.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['public, max-age=31536000, immutable']
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: The digest is invalid, or no artifact with this digest is registered while artifact metadata is available.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: not_found
+                  message: Terms artifact not found
+        '503':
+          description: Artifact metadata is unavailable, or the registered artifact is missing or invalid.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: authority_unavailable
+                  message: Terms authority unavailable
+  /api/v2/auth/terms/manifests/{sha256}:
+    get:
+      tags:
+      - auth
+      operationId: getTermsManifest
+      summary: Read an immutable terms manifest
+      description: >-
+        Public, unauthenticated read of a registered retained manifest by its exact-byte
+        SHA-256 digest. The response preserves the verified JSON bytes, at most 16384 bytes,
+        with Content-Type application/json; charset=utf-8. Retained reads remain available
+        independently of the current terms authority and passkey or signing configuration.
+        This operation sets no cookies and does not redirect.
+      security: []
+      parameters:
+      - name: sha256
+        in: path
+        required: true
+        description: SHA-256 digest of the exact artifact bytes, encoded as 64 lowercase hexadecimal characters.
+        schema:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+      responses:
+        '200':
+          description: Exact verified bytes of the immutable manifest.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: ['public, max-age=31536000, immutable']
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TermsManifest'
+        '404':
+          description: The digest is invalid, or no artifact with this digest is registered while artifact metadata is available.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: not_found
+                  message: Terms artifact not found
+        '503':
+          description: Artifact metadata is unavailable, or the registered artifact is missing or invalid.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                enum: [no-store]
+            Pragma:
+              schema:
+                type: string
+                enum: [no-cache]
+            X-Content-Type-Options:
+              schema:
+                type: string
+                enum: [nosniff]
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+              example:
+                error:
+                  code: authority_unavailable
+                  message: Terms authority unavailable
+  /api/v2/auth/token/refresh:
+    post:
+      tags:
+      - auth
+      operationId: nativeAccountTokenRefresh
+      summary: Rotate native Account browser authority
+      description: 'Requires the refresh cookie and a verified X-Console-CSRF proof. A supplied session
+        cookie must verify its signature/kind/time structure and match the live Account/family/generation;
+        correctly signed expired access is accepted alongside current same-family refresh authority. Malformed,
+        signature-invalid, kind-invalid, otherwise time-invalid or mismatched access is refused. Rotates
+        the refresh token and returns current Account authority. Reuse detection deliberately commits family
+        revocation and evidence before returning authentication_invalid (401); error responses are not universally
+        side-effect-free. Cookie-only native Account transport. Any Authorization header or duplicate recognized
+        Account cookie is refused as ambiguous_credentials. Combined Cookie header bytes, including separators,
+        are bounded to 16 KiB. Legacy console_refresh is never Account authority. Only cookie values consumed
+        by the operation are validated as credentials. Responses are JSON with Cache-Control: no-store,
+        Pragma: no-cache, X-Content-Type-Options: nosniff and Vary: Cookie, Origin. Owner transactions complete
+        before success responses/cookies are released. A commit transport failure returns authority_unavailable
+        and may leave outcome uncertain; blind mutation replay is not safe. Required Origin must equal the
+        configured HTTPS origin exactly. Content-Type must be exactly application/json, without parameters.
+        Sec-Fetch-Site may be absent; if supplied it must be same-origin. Top-level request must be a JSON
+        object with no unknown or duplicate app-owned fields. The entire body is bounded even without Content-Length;
+        lexical JSON nesting is at most 32. Nested WebAuthn types use the pinned library decoder; see their
+        schema descriptions.'
+      security:
+      - nativeAccountRefresh: []
+      parameters:
+      - name: Origin
+        in: header
+        required: true
+        description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+        schema:
+          type: string
+          format: uri
+      - name: Sec-Fetch-Site
+        in: header
+        required: false
+        description: If supplied, exactly same-origin; duplicate values are refused.
+        schema:
+          type: string
+          enum:
+          - same-origin
+      - name: X-Console-CSRF
+        in: header
+        required: true
+        description: Single header value; total header bytes bounded to 4096. For mutations Auth verifies
+          signature/time and live Account/family/generation binding.
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 4096
+      responses:
+        '200':
+          description: Committed native Account response.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+            Set-Cookie:
+              description: Repeated Set-Cookie field lines replace native session (SameSite=Lax) and refresh
+                (SameSite=Strict), both Secure; HttpOnly; Path=/ with actual bounded expiry and no Domain.
+                Never comma-fold Set-Cookie lines.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NativeAccountEstablished'
+        '400':
+          description: 'Applicable native error codes: ambiguous_credentials.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - ambiguous_credentials
+              examples:
+                ambiguous_credentials:
+                  value:
+                    error:
+                      code: ambiguous_credentials
+                      message: Credential transport is ambiguous.
+        '401':
+          description: 'Applicable native error codes: authentication_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authentication_invalid
+              examples:
+                authentication_invalid:
+                  value:
+                    error:
+                      code: authentication_invalid
+                      message: Authentication is invalid.
+        '403':
+          description: 'Applicable native error codes: request_origin_denied, csrf_invalid.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_origin_denied
+                          - csrf_invalid
+              examples:
+                request_origin_denied:
+                  value:
+                    error:
+                      code: request_origin_denied
+                      message: Request origin is denied.
+                csrf_invalid:
+                  value:
+                    error:
+                      code: csrf_invalid
+                      message: Request proof is invalid.
+        '413':
+          description: 'Applicable native error codes: request_too_large.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - request_too_large
+              examples:
+                request_too_large:
+                  value:
+                    error:
+                      code: request_too_large
+                      message: Request exceeds the supported size.
+        '422':
+          description: 'Applicable native error codes: invalid_request.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - invalid_request
+              examples:
+                invalid_request:
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request is invalid.
+        '429':
+          description: 'Applicable native error codes: rate_limited.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - rate_limited
+              examples:
+                rate_limited:
+                  value:
+                    error:
+                      code: rate_limited
+                      message: Request rate is exceeded.
+        '503':
+          description: 'Applicable native error codes: authority_unavailable.'
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+            Pragma:
+              schema:
+                type: string
+                const: no-cache
+            X-Content-Type-Options:
+              schema:
+                type: string
+                const: nosniff
+            Vary:
+              schema:
+                type: string
+                const: Cookie, Origin
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/NativeAccountError'
+                - type: object
+                  properties:
+                    error:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                          enum:
+                          - authority_unavailable
+              examples:
+                authority_unavailable:
+                  value:
+                    error:
+                      code: authority_unavailable
+                      message: Account authority is unavailable.
+      requestBody:
+        required: true
+        description: Exact application/json Content-Type; maximum 4096 body bytes and JSON nesting depth
+          32.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NativeAccountEmptyInput'
   /api/v2/leave/requests:
     get:
       tags:
@@ -18505,6 +21908,37 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+    nativeAccountEnrollment:
+      type: apiKey
+      in: cookie
+      name: __Host-console_account_enrollment
+      description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Strict; no Domain.
+        Pending registration browser nonce; Max-Age uses the ceremony expiry, capped at 300 seconds. Browser
+        credentials are not returned in JSON. Any Authorization header is refused; legacy console_refresh
+        is not native Account authority.
+    nativeAccountLogin:
+      type: apiKey
+      in: cookie
+      name: __Host-console_account_login
+      description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Strict; no Domain.
+        Pending login browser nonce; Max-Age uses the ceremony expiry, capped at 300 seconds. Browser credentials
+        are not returned in JSON. Any Authorization header is refused; legacy console_refresh is not native
+        Account authority.
+    nativeAccountRefresh:
+      type: apiKey
+      in: cookie
+      name: __Host-console_account_refresh
+      description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Strict; no Domain.
+        Max-Age uses the actual token expiry bounded by the family absolute expiry. Browser credentials
+        are not returned in JSON. Any Authorization header is refused; legacy console_refresh is not native
+        Account authority.
+    nativeAccountSession:
+      type: apiKey
+      in: cookie
+      name: __Host-console_account_session
+      description: Native Account browser cookie. Secure; HttpOnly; Path=/; SameSite=Lax; no Domain. Max-Age
+        uses the actual signed expiry, capped at 900 seconds. Browser credentials are not returned in JSON.
+        Any Authorization header is refused; legacy console_refresh is not native Account authority.
     officeCallbackToken:
       type: apiKey
       in: query
@@ -30723,6 +34157,815 @@ components:
           $ref: '#/components/schemas/Uuid'
         name:
           type: string
+    NativeAccountActionRef:
+      type: object
+      additionalProperties: false
+      required:
+      - action_key
+      - registration_revision
+      properties:
+        action_key:
+          type: string
+          pattern: ^[a-z][a-z0-9_.-]{0,63}$
+        registration_revision:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: Canonical positive signed 64-bit integer represented as a decimal string, at most
+            9223372036854775807.
+    NativeAccountContexts:
+      type: object
+      additionalProperties: false
+      required:
+      - contexts
+      properties:
+        contexts:
+          type: array
+          maxItems: 0
+          items: false
+      description: Current owner returns only a proven empty list. Candidate contexts or unknown provenance
+        fail with navigation_unavailable; they are never fabricated or mapped to an empty success.
+    NativeAccountCsrfProof:
+      type: object
+      additionalProperties: false
+      required:
+      - csrf_proof
+      - expires_at
+      properties:
+        csrf_proof:
+          type: string
+          minLength: 1
+          maxLength: 4096
+          description: Opaque sensitive proof; bounded to 4096 bytes and verified by Auth against time and
+            live Account, family and security generation.
+        expires_at:
+          type: string
+          format: date-time
+          description: UTC RFC3339 timestamp.
+    NativeAccountEmptyInput:
+      type: object
+      additionalProperties: false
+      properties: {}
+      description: Exactly an empty JSON object. An absent body, null or positional array is rejected.
+    NativeAccountError:
+      type: object
+      additionalProperties: false
+      required:
+      - error
+      properties:
+        error:
+          oneOf:
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: ambiguous_credentials
+              message:
+                type: string
+                const: Credential transport is ambiguous.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: authentication_invalid
+              message:
+                type: string
+                const: Authentication is invalid.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: enrollment_invalid
+              message:
+                type: string
+                const: Enrollment is invalid.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: request_origin_denied
+              message:
+                type: string
+                const: Request origin is denied.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: csrf_invalid
+              message:
+                type: string
+                const: Request proof is invalid.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: already_authenticated
+              message:
+                type: string
+                const: Account is already authenticated.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: terms_acceptance_required
+              message:
+                type: string
+                const: Terms acceptance is required.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: terms_changed
+              message:
+                type: string
+                const: Terms have changed.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: request_too_large
+              message:
+                type: string
+                const: Request exceeds the supported size.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: invalid_request
+              message:
+                type: string
+                const: Request is invalid.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: rate_limited
+              message:
+                type: string
+                const: Request rate is exceeded.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: authority_unavailable
+              message:
+                type: string
+                const: Account authority is unavailable.
+          - type: object
+            additionalProperties: false
+            required:
+            - code
+            - message
+            properties:
+              code:
+                type: string
+                const: navigation_unavailable
+              message:
+                type: string
+                const: Navigation authority is unavailable.
+      description: Exact native Account refusal envelope with fixed safe messages; no token or raw diagnostic
+        fields. Per-operation response descriptions list the applicable codes.
+    NativeAccountEstablished:
+      type: object
+      additionalProperties: false
+      required:
+      - account
+      properties:
+        account:
+          $ref: '#/components/schemas/NativeAccountProjection'
+    NativeAccountLoginFinishInput:
+      type: object
+      additionalProperties: false
+      required:
+      - ceremony_id
+      - assertion
+      properties:
+        ceremony_id:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          not:
+            const: 00000000-0000-0000-0000-000000000000
+          description: Canonical lowercase hyphenated, non-nil UUID.
+        assertion:
+          $ref: '#/components/schemas/NativeWebAuthnAuthenticationCredential'
+    NativeAccountLoginStart:
+      type: object
+      additionalProperties: false
+      required:
+      - ceremony_id
+      - public_key_options
+      properties:
+        ceremony_id:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          not:
+            const: 00000000-0000-0000-0000-000000000000
+          description: Canonical lowercase hyphenated, non-nil UUID.
+        public_key_options:
+          $ref: '#/components/schemas/NativeWebAuthnRequestChallengeResponse'
+      description: Complete request-options wrapper, including mediation; there is no top-level expires_at
+        field.
+    NativeAccountLogout:
+      type: object
+      additionalProperties: false
+      required:
+      - outcome
+      properties:
+        outcome:
+          type: string
+          const: COMMITTED
+    NativeAccountProjection:
+      type: object
+      additionalProperties: false
+      required:
+      - account_id
+      - session
+      - permitted_self_actions
+      properties:
+        account_id:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          not:
+            const: 00000000-0000-0000-0000-000000000000
+          description: Canonical lowercase hyphenated, non-nil UUID.
+        session:
+          $ref: '#/components/schemas/NativeAccountSession'
+        permitted_self_actions:
+          type: array
+          maxItems: 16
+          items:
+            $ref: '#/components/schemas/NativeAccountActionRef'
+          description: Validated owner projection. Current native owner emits exactly account.session.logout
+            with registration_revision "1". This projection grants no tenant or Company context.
+    NativeAccountRegistrationFinishInput:
+      type: object
+      additionalProperties: false
+      required:
+      - ceremony_id
+      - credential
+      - accept_terms_version
+      - accept_items
+      properties:
+        ceremony_id:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          not:
+            const: 00000000-0000-0000-0000-000000000000
+          description: Canonical lowercase hyphenated, non-nil UUID.
+        credential:
+          $ref: '#/components/schemas/NativeWebAuthnRegistrationCredential'
+        accept_terms_version:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+        accept_items:
+          type: array
+          minItems: 1
+          maxItems: 8
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/NativeAccountTermsAcknowledgment'
+          description: Unique terms_kind values; the exact set must match the real required manifest. Each
+            accepted value must be true.
+    NativeAccountRegistrationStart:
+      type: object
+      additionalProperties: false
+      required:
+      - ceremony_id
+      - public_key_options
+      properties:
+        ceremony_id:
+          type: string
+          format: uuid
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$
+          not:
+            const: 00000000-0000-0000-0000-000000000000
+          description: Canonical lowercase hyphenated, non-nil UUID.
+        public_key_options:
+          $ref: '#/components/schemas/NativeWebAuthnCreationChallengeResponse'
+      description: Complete creation-options wrapper; there is no top-level expires_at field.
+    NativeAccountRegistrationStartInput:
+      type: object
+      additionalProperties: false
+      required:
+      - terms_version
+      properties:
+        terms_version:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+    NativeAccountSession:
+      type: object
+      additionalProperties: false
+      required:
+      - assurance
+      - expires_at
+      properties:
+        assurance:
+          type: string
+          enum:
+          - PASSKEY_PRIMARY
+        expires_at:
+          type: string
+          format: date-time
+          description: UTC RFC3339 timestamp.
+    NativeAccountTermsAcknowledgment:
+      type: object
+      additionalProperties: false
+      required:
+      - terms_kind
+      - accepted
+      properties:
+        terms_kind:
+          type: string
+          pattern: ^[a-z][a-z0-9_.-]{0,63}$
+        accepted:
+          type: boolean
+          const: true
+      description: An object acknowledgment; positional arrays, unknown or duplicate fields, and accepted=false
+        are rejected.
+    NativeWebAuthnAssertionResponse:
+      type: object
+      required:
+      - authenticatorData
+      - clientDataJSON
+      - signature
+      properties:
+        authenticatorData:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        clientDataJSON:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        signature:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        userHandle:
+          anyOf:
+          - $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+          - type: 'null'
+      description: Decoder accepts omitted/null userHandle; Native Account verification additionally requires
+        its exact bytes to equal the stored Account UUID. Original signed bytes go to the pinned verifier;
+        parsing is not authentication.
+    NativeWebAuthnAttestationResponse:
+      type: object
+      required:
+      - attestationObject
+      - clientDataJSON
+      properties:
+        attestationObject:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        clientDataJSON:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        transports:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnInputTransport'
+      description: Canonical object representation. Decoder also inherits serde positional-struct acceptance;
+        not an object-only parser guarantee. Attestation is CBOR bytes, clientDataJSON is original JSON
+        bytes; do not inline or reserialize those signed payloads.
+    NativeWebAuthnAuthenticationClientExtensions:
+      type: object
+      properties:
+        appid:
+          type:
+          - boolean
+          - 'null'
+        hmac_get_secret:
+          anyOf:
+          - $ref: '#/components/schemas/NativeWebAuthnHmacSecretOutput'
+          - type: 'null'
+      description: 'Pinned type has NO rename_all: hmac_get_secret is the recognized wire key. hmacGetSecret
+        is unknown and ignored, not an alias. Both known fields default None and serialize as null when
+        absent.'
+    NativeWebAuthnAuthenticationCredential:
+      type: object
+      required:
+      - id
+      - rawId
+      - response
+      - type
+      properties:
+        id:
+          type: string
+        rawId:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        response:
+          $ref: '#/components/schemas/NativeWebAuthnAssertionResponse'
+        type:
+          type: string
+          description: Canonical browser value public-key; pinned decoder field is String.
+        extensions:
+          $ref: '#/components/schemas/NativeWebAuthnAuthenticationClientExtensions'
+        clientExtensionResults:
+          $ref: '#/components/schemas/NativeWebAuthnAuthenticationClientExtensions'
+      not:
+        required:
+        - extensions
+        - clientExtensionResults
+      description: Canonical PublicKeyCredential object. extensions defaults to empty outputs; clientExtensionResults
+        alias accepted, both names together rejected as duplicate. Unknown fields ignored; positional-struct
+        forms are also decoder variants, documented separately.
+    NativeWebAuthnAuthenticationRequestExtensions:
+      type: object
+      properties:
+        appid:
+          type: string
+        uvm:
+          type: boolean
+        hmacGetSecret:
+          $ref: '#/components/schemas/NativeWebAuthnHmacSecretInput'
+    NativeWebAuthnAuthenticatorSelection:
+      type: object
+      required:
+      - requireResidentKey
+      - userVerification
+      properties:
+        authenticatorAttachment:
+          type: string
+          enum:
+          - platform
+          - cross-platform
+        residentKey:
+          $ref: '#/components/schemas/NativeWebAuthnResidentKeyRequirement'
+        requireResidentKey:
+          type: boolean
+        userVerification:
+          $ref: '#/components/schemas/NativeWebAuthnUserVerificationPolicy'
+    NativeWebAuthnCreationChallengeResponse:
+      type: object
+      required:
+      - publicKey
+      properties:
+        publicKey:
+          $ref: '#/components/schemas/NativeWebAuthnCreationOptions'
+      description: Complete CreationChallengeResponse from webauthn-rs-proto 0.5.5; serialized intact as
+        public_key_options. Native Account additionally requires authenticatorSelection, residentKey=required,
+        requireResidentKey=true and userVerification=required; user.id encodes the new Account UUID's 16
+        bytes. No expires_at appears in the HTTP wrapper.
+    NativeWebAuthnCreationOptions:
+      type: object
+      required:
+      - rp
+      - user
+      - challenge
+      - pubKeyCredParams
+      properties:
+        rp:
+          $ref: '#/components/schemas/NativeWebAuthnRelyingParty'
+        user:
+          $ref: '#/components/schemas/NativeWebAuthnUser'
+        challenge:
+          $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+        pubKeyCredParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnPublicKeyParameter'
+        timeout:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+        excludeCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnDescriptor'
+        authenticatorSelection:
+          $ref: '#/components/schemas/NativeWebAuthnAuthenticatorSelection'
+        hints:
+          type: array
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnHint'
+        attestation:
+          type: string
+          enum:
+          - none
+          - indirect
+          - direct
+        attestationFormats:
+          type: array
+          items:
+            type: string
+            enum:
+            - packed
+            - tpm
+            - android-key
+            - android-safetynet
+            - fido-u2f
+            - apple
+            - none
+        extensions:
+          $ref: '#/components/schemas/NativeWebAuthnRegistrationRequestExtensions'
+    NativeWebAuthnCredentialPropertiesOutput:
+      type: object
+      properties:
+        rk:
+          type:
+          - boolean
+          - 'null'
+      description: Unsigned browser hint. Missing/null rk is accepted; it does not prove authenticator resident-key
+        state.
+    NativeWebAuthnCredentialProtectionPolicy:
+      type: string
+      enum:
+      - userVerificationOptional
+      - userVerificationOptionalWithCredentialIDList
+      - userVerificationRequired
+      description: Pinned serde representation is a camelCase string. Rust repr(u8) does not make this JSON
+        an integer.
+    NativeWebAuthnDescriptor:
+      type: object
+      required:
+      - type
+      - id
+      properties:
+        type:
+          type: string
+        id:
+          $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+        transports:
+          type: array
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnOutputTransport'
+    NativeWebAuthnHint:
+      type: string
+      enum:
+      - security-key
+      - client-device
+      - hybrid
+    NativeWebAuthnHmacSecretInput:
+      type: object
+      required:
+      - output1
+      - output2
+      properties:
+        output1:
+          $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+        output2:
+          anyOf:
+          - $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+          - type: 'null'
+      description: Pinned request-option type uses output1/output2 names. output2 has no skip_serializing_if,
+        so server emits null when absent.
+    NativeWebAuthnHmacSecretOutput:
+      type: object
+      required:
+      - output1
+      properties:
+        output1:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        output2:
+          anyOf:
+          - $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+          - type: 'null'
+      description: Decoder accepts missing/null output2. Normal serialization includes output2:null when
+        absent.
+    NativeWebAuthnInputBytes:
+      anyOf:
+      - type: string
+        description: Valid standard or URL-safe base64, padded or unpadded; exact decoding is owned by base64urlsafedata
+          0.5.5. Canonical browser clients send URL-safe unpadded strings.
+      - type: array
+        items:
+          type: integer
+          minimum: 0
+          maximum: 255
+      description: Actual JSON decoder alternatives for Base64UrlSafeData. Empty values parse; cryptographic
+        and native-flow validation may reject them later.
+    NativeWebAuthnInputTransport:
+      type: string
+      description: Known values usb,nfc,ble,internal,hybrid,test; every other JSON string deserializes to
+        Unknown through serde(other). Do not close this request field to an enum.
+    NativeWebAuthnOutputBytes:
+      type: string
+      pattern: ^[A-Za-z0-9_-]*$
+      description: 'Server serialization of base64urlsafedata 0.5.5: URL-safe base64 without padding. No
+        generic format:byte assertion, which would suggest standard base64.'
+    NativeWebAuthnOutputTransport:
+      type: string
+      enum:
+      - usb
+      - nfc
+      - ble
+      - internal
+      - hybrid
+      - test
+      - unknown
+    NativeWebAuthnPublicKeyParameter:
+      type: object
+      required:
+      - type
+      - alg
+      properties:
+        type:
+          type: string
+          description: Normally public-key. The pinned Rust field is String, not an enum.
+        alg:
+          type: integer
+          format: int64
+    NativeWebAuthnRegistrationClientExtensions:
+      type: object
+      properties:
+        appid:
+          type:
+          - boolean
+          - 'null'
+        credProps:
+          anyOf:
+          - $ref: '#/components/schemas/NativeWebAuthnCredentialPropertiesOutput'
+          - type: 'null'
+        hmacSecret:
+          type:
+          - boolean
+          - 'null'
+        credProtect:
+          anyOf:
+          - $ref: '#/components/schemas/NativeWebAuthnCredentialProtectionPolicy'
+          - type: 'null'
+        minPinLength:
+          type:
+          - integer
+          - 'null'
+          minimum: 0
+          maximum: 4294967295
+      description: All fields default to None; unknown fields ignored by the pinned library. These client
+        outputs are unsigned. Canonical serialization omits None fields.
+    NativeWebAuthnRegistrationCredential:
+      type: object
+      required:
+      - id
+      - rawId
+      - response
+      - type
+      properties:
+        id:
+          type: string
+          description: Pinned String field; do not falsely impose base64 or id==rawId as a parser rule.
+            Registration obtains the authoritative credential ID from the attestation.
+        rawId:
+          $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+        response:
+          $ref: '#/components/schemas/NativeWebAuthnAttestationResponse'
+        type:
+          type: string
+          description: Canonical browser value public-key; pinned decoder field is String, not an enum.
+        extensions:
+          $ref: '#/components/schemas/NativeWebAuthnRegistrationClientExtensions'
+        clientExtensionResults:
+          $ref: '#/components/schemas/NativeWebAuthnRegistrationClientExtensions'
+      not:
+        required:
+        - extensions
+        - clientExtensionResults
+      description: Canonical RegisterPublicKeyCredential object. extensions may be omitted and defaults
+        to empty outputs; clientExtensionResults is an accepted alias, never both. Explicit null for the
+        outer extensions object is rejected. Unknown nested fields accepted. Serde also accepts positional
+        structs; this published canonical object schema is not a complete accepted-language grammar.
+    NativeWebAuthnRegistrationRequestExtensions:
+      type: object
+      description: Server creation-option extensions. CredProtect is flattened; there is no credProtect
+        wrapper here. Option fields absent rather than null on serialization.
+      properties:
+        credentialProtectionPolicy:
+          $ref: '#/components/schemas/NativeWebAuthnCredentialProtectionPolicy'
+        enforceCredentialProtectionPolicy:
+          type: boolean
+        uvm:
+          type: boolean
+        credProps:
+          type: boolean
+        minPinLength:
+          type: boolean
+        hmacCreateSecret:
+          type: boolean
+      dependentRequired:
+        enforceCredentialProtectionPolicy:
+        - credentialProtectionPolicy
+    NativeWebAuthnRelyingParty:
+      type: object
+      required:
+      - name
+      - id
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+    NativeWebAuthnRequestChallengeResponse:
+      type: object
+      required:
+      - publicKey
+      properties:
+        publicKey:
+          $ref: '#/components/schemas/NativeWebAuthnRequestOptions'
+        mediation:
+          type: string
+          enum:
+          - conditional
+      description: Full pinned RequestChallengeResponse. Mediation is optional in the generic Rust type
+        and omitted for None; this Native Account flow uses start_discoverable_authentication, which always
+        returns mediation=conditional, empty allowCredentials and required userVerification.
+    NativeWebAuthnRequestOptions:
+      type: object
+      required:
+      - challenge
+      - rpId
+      - allowCredentials
+      - userVerification
+      properties:
+        challenge:
+          $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+        timeout:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+        rpId:
+          type: string
+        allowCredentials:
+          type: array
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnDescriptor'
+        userVerification:
+          $ref: '#/components/schemas/NativeWebAuthnUserVerificationPolicy'
+        hints:
+          type: array
+          items:
+            $ref: '#/components/schemas/NativeWebAuthnHint'
+        extensions:
+          $ref: '#/components/schemas/NativeWebAuthnAuthenticationRequestExtensions'
+    NativeWebAuthnResidentKeyRequirement:
+      type: string
+      enum:
+      - discouraged
+      - preferred
+      - required
+    NativeWebAuthnUser:
+      type: object
+      required:
+      - id
+      - name
+      - displayName
+      properties:
+        id:
+          $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+        name:
+          type: string
+        displayName:
+          type: string
+    NativeWebAuthnUserVerificationPolicy:
+      type: string
+      enum:
+      - required
+      - preferred
+      - discouraged
     NoticeAudienceInput:
       type: object
       required:
@@ -38214,6 +42457,73 @@ components:
       - PREVENTION
       - MANAGEMENT
       - RECEPTION
+    TermsCurrent:
+      type: object
+      additionalProperties: false
+      required:
+      - terms_version
+      - terms_revision
+      - manifest_url
+      properties:
+        terms_version:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          description: SHA-256 digest of the exact current manifest bytes.
+        terms_revision:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+          description: Positive current terms revision encoded as a decimal string.
+        manifest_url:
+          type: string
+          pattern: '^/api/v2/auth/terms/manifests/[0-9a-f]{64}$'
+          description: Canonical relative manifest URL whose final segment equals terms_version.
+    TermsManifest:
+      type: object
+      additionalProperties: false
+      required:
+      - format_version
+      - fixture_only
+      - items
+      properties:
+        format_version:
+          type: integer
+          enum: [1]
+        fixture_only:
+          type: boolean
+          description: Whether the manifest identifies fixture-only content.
+        items:
+          type: array
+          minItems: 1
+          maxItems: 8
+          description: Required agreements with distinct terms_kind values. Every content digest identifies registered content.
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - terms_kind
+            - title
+            - locale
+            - content_sha256
+            - required
+            properties:
+              terms_kind:
+                type: string
+                pattern: '^[a-z][a-z0-9_.-]{0,63}$'
+              title:
+                type: string
+                minLength: 1
+                maxLength: 128
+              locale:
+                type: string
+                minLength: 2
+                maxLength: 32
+              content_sha256:
+                type: string
+                pattern: '^[0-9a-f]{64}$'
+                description: SHA-256 digest of the exact UTF-8 content bytes.
+              required:
+                type: boolean
+                enum: [true]
     TimeChangeCoverageEvidence:
       type: object
       additionalProperties: false

@@ -1,0 +1,19 @@
+type: object
+required:
+- authenticatorData
+- clientDataJSON
+- signature
+properties:
+  authenticatorData:
+    $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+  clientDataJSON:
+    $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+  signature:
+    $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+  userHandle:
+    anyOf:
+    - $ref: '#/components/schemas/NativeWebAuthnInputBytes'
+    - type: 'null'
+description: Decoder accepts omitted/null userHandle; Native Account verification additionally requires
+  its exact bytes to equal the stored Account UUID. Original signed bytes go to the pinned verifier;
+  parsing is not authentication.

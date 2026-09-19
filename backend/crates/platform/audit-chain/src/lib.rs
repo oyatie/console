@@ -216,7 +216,7 @@ pub trait SealSigner: Send + Sync {
 /// `resign_attack_defeats_key_ref_derived_dev_signer` integration test).
 /// Production uses [`ExternalSealSigner`] with locally pinned trust anchors.
 pub struct InMemoryEd25519Signer {
-    key_pair: ring::signature::Ed25519KeyPair,
+    key_pair: aws_lc_rs::signature::Ed25519KeyPair,
     key_ref: String,
 }
 
@@ -225,13 +225,10 @@ const KEY_REF_PREFIX: &str = "test:ed25519:";
 impl InMemoryEd25519Signer {
     /// Generate a fresh keypair from the system CSPRNG.
     pub fn generate() -> Result<Self, SealSignError> {
-        let rng = ring::rand::SystemRandom::new();
-        let pkcs8 = ring::signature::Ed25519KeyPair::generate_pkcs8(&rng)
-            .map_err(|_| SealSignError::KeyGen)?;
-        let key_pair = ring::signature::Ed25519KeyPair::from_pkcs8(pkcs8.as_ref())
-            .map_err(|_| SealSignError::KeyRejected)?;
+        let key_pair =
+            aws_lc_rs::signature::Ed25519KeyPair::generate().map_err(|_| SealSignError::KeyGen)?;
         let pk_hex = {
-            use ring::signature::KeyPair;
+            use aws_lc_rs::signature::KeyPair;
             hex::encode(key_pair.public_key().as_ref())
         };
         Ok(Self {
@@ -246,7 +243,7 @@ impl InMemoryEd25519Signer {
     /// `key_ref` path.
     #[must_use]
     pub fn public_key(&self) -> Vec<u8> {
-        use ring::signature::KeyPair;
+        use aws_lc_rs::signature::KeyPair;
         self.key_pair.public_key().as_ref().to_vec()
     }
 
@@ -276,9 +273,18 @@ impl SealSigner for InMemoryEd25519Signer {
         key_ref: &str,
     ) -> Result<bool, SealSignError> {
         let public_key = Self::public_key_from_ref(key_ref)?;
-        let peer = ring::signature::UnparsedPublicKey::new(&ring::signature::ED25519, public_key);
-        Ok(peer.verify(message, signature).is_ok())
+        Ok(verify_ed25519_signature(&public_key, message, signature))
     }
+}
+
+/// Both seal verifiers accept only raw Ed25519 wire values. AWS-LC also accepts
+/// DER public keys; keep that wider encoding outside this existing contract.
+fn verify_ed25519_signature(public_key: &[u8], message: &[u8], signature: &[u8]) -> bool {
+    public_key.len() == 32
+        && signature.len() == 64
+        && aws_lc_rs::signature::UnparsedPublicKey::new(&aws_lc_rs::signature::ED25519, public_key)
+            .verify(message, signature)
+            .is_ok()
 }
 
 // ===========================================================================

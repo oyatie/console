@@ -1,5 +1,4 @@
-use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext, UserId};
-use console_platform_db::insert_audit_event;
+use console_kernel_core::{AuditAction, AuditEvent, OrgId, TraceContext, UserId};
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 use time::{Duration, OffsetDateTime};
@@ -11,7 +10,7 @@ use webauthn_rs::prelude::{
     RequestChallengeResponse, Webauthn, WebauthnBuilder,
 };
 
-use crate::AuthError;
+use crate::{AuthError, append_legacy_auth_audit_in_tx, guard_legacy_subject_in_tx};
 
 pub type PasskeyRegistrationCredential = RegisterPublicKeyCredential;
 pub type PasskeyAuthenticationCredential = PublicKeyCredential;
@@ -29,6 +28,7 @@ pub struct WebauthnSettings {
 pub struct PasskeyService {
     webauthn: Webauthn,
     ceremony_ttl: Duration,
+    native_origin: String,
 }
 
 #[derive(Debug, Clone)]
@@ -322,6 +322,7 @@ impl PasskeyService {
         Ok(Self {
             webauthn: builder.build()?,
             ceremony_ttl: settings.ceremony_ttl,
+            native_origin: settings.rp_origin.origin().ascii_serialization(),
         })
     }
 
@@ -331,11 +332,20 @@ impl PasskeyService {
         org: OrgId,
         input: PasskeyRegistrationStart,
     ) -> Result<RegistrationCeremony, AuthError> {
-        // Authenticated path: `org` comes from the verified JWT's `org` claim.
-        // `load_user_passkeys` reads the FORCE-RLS `auth_webauthn_credentials`, so
-        // the org is armed inside it to avoid an empty exclude-credentials list
-        // (which would let a user re-register an already-registered authenticator).
-        let existing = load_user_passkeys(pool, org, input.user_id).await?;
+        let mut tx = pool.begin().await?;
+        let ceremony = self.start_registration_in_tx(&mut tx, org, input).await?;
+        tx.commit().await?;
+        Ok(ceremony)
+    }
+
+    pub async fn start_registration_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        org: OrgId,
+        input: PasskeyRegistrationStart,
+    ) -> Result<RegistrationCeremony, AuthError> {
+        guard_legacy_subject_in_tx(tx, org, input.user_id).await?;
+        let existing = load_user_passkeys_in_tx(tx, org, input.user_id).await?;
         let exclude_credentials = existing
             .into_iter()
             .map(|passkey| passkey.cred_id().clone())
@@ -357,7 +367,7 @@ impl PasskeyService {
         let expires_at = now + self.ceremony_ttl;
 
         persist_ceremony(
-            pool,
+            tx,
             ceremony_id,
             Some(input.user_id),
             "registration",
@@ -386,7 +396,20 @@ impl PasskeyService {
         org: OrgId,
         user_id: Uuid,
     ) -> Result<usize, AuthError> {
-        Ok(load_user_passkeys(pool, org, user_id).await?.len())
+        let mut tx = pool.begin().await?;
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(org.as_uuid().to_string())
+            .execute(tx.as_mut())
+            .await?;
+        let count: i64 =
+            sqlx::query_scalar("SELECT public.auth_legacy_self_passkey_count_v1($1, $2)")
+                .bind(*org.as_uuid())
+                .bind(user_id)
+                .fetch_one(tx.as_mut())
+                .await?;
+        tx.commit().await?;
+        usize::try_from(count)
+            .map_err(|_| AuthError::InvalidStoredData("invalid passkey count".to_owned()))
     }
 
     /// Verify a FRESH step-up assertion of one of `expected_user_id`'s OWN
@@ -410,110 +433,29 @@ impl PasskeyService {
         credential: PublicKeyCredential,
         expected_user_id: Uuid,
     ) -> Result<(), AuthError> {
-        let now = OffsetDateTime::now_utc();
         let mut tx = pool.begin().await?;
-
-        let claim = claim_ceremony_tx(&mut tx, ceremony_id, "authentication", now)
-            .await?
-            .ok_or_else(|| {
-                AuthError::InvalidStoredData("ceremony not found or already consumed".to_owned())
-            })?;
-
-        let credential_id = serialize_to_string(&credential.raw_id, "step-up credential id")?;
-
-        let Some(org_uuid) = resolve_credential_org(&mut tx, &credential_id).await? else {
-            return Err(AuthError::InvalidStoredData(
-                "asserted credential is not registered".to_owned(),
-            ));
-        };
-        sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(org_uuid.to_string())
-            .execute(tx.as_mut())
+        self.verify_step_up_for_user_in_tx(&mut tx, ceremony_id, credential, expected_user_id)
             .await?;
-
-        let row = sqlx::query(
-            r#"
-            SELECT id, user_id, passkey_json
-            FROM auth_webauthn_credentials
-            WHERE credential_id = $1
-            "#,
-        )
-        .bind(&credential_id)
-        .fetch_optional(tx.as_mut())
-        .await?
-        .ok_or_else(|| {
-            AuthError::InvalidStoredData("asserted credential is not registered".to_owned())
-        })?;
-        let passkey_id: Uuid = row.try_get("id")?;
-        let user_id: Uuid = row.try_get("user_id")?;
-        let passkey_json: serde_json::Value = row.try_get("passkey_json")?;
-
-        // The step-up must assert one of the AUTHENTICATED caller's OWN passkeys.
-        // A credential belonging to anyone else (or a handle mismatch) is rejected
-        // before verification so a different user's authenticator can never unlock
-        // an add-device for this account.
-        if user_id != expected_user_id {
-            return Err(AuthError::InvalidStoredData(
-                "step-up credential does not belong to the authenticated user".to_owned(),
-            ));
-        }
-        if let Some(asserted_handle) = credential.get_user_unique_id()
-            && Uuid::from_slice(asserted_handle).ok() != Some(user_id)
-        {
-            return Err(AuthError::InvalidStoredData(
-                "asserted user handle does not match the credential owner".to_owned(),
-            ));
-        }
-
-        let state: DiscoverableAuthentication = serde_json::from_value(claim.state_json)?;
-        let mut passkey: Passkey = serde_json::from_value(passkey_json)?;
-        let discoverable_key = DiscoverableKey::from(&passkey);
-        let result = self.webauthn.finish_discoverable_authentication(
-            &credential,
-            state,
-            &[discoverable_key],
-        )?;
-
-        // Require user verification (UV): a step-up to add a NEW credential is a
-        // high-value action, so a mere user-presence touch is insufficient — the
-        // authenticator must have verified the user (biometric/PIN).
-        if !result.user_verified() {
-            return Err(AuthError::InvalidStoredData(
-                "step-up assertion did not perform user verification".to_owned(),
-            ));
-        }
-
-        // Keep the sign-count / backup-state fresh, mirroring login, so a replayed
-        // counter is still caught on the next real authentication.
-        let changed = passkey.update_credential(&result).unwrap_or(false);
-        if changed {
-            sqlx::query(
-                r#"
-                UPDATE auth_webauthn_credentials
-                SET passkey_json = $1, last_used_at = $2
-                WHERE id = $3
-                "#,
-            )
-            .bind(serde_json::to_value(&passkey)?)
-            .bind(now)
-            .bind(passkey_id)
-            .execute(tx.as_mut())
-            .await?;
-        } else {
-            sqlx::query("UPDATE auth_webauthn_credentials SET last_used_at = $1 WHERE id = $2")
-                .bind(now)
-                .bind(passkey_id)
-                .execute(tx.as_mut())
-                .await?;
-        }
-
         tx.commit().await?;
+        Ok(())
+    }
+
+    pub async fn verify_step_up_for_user_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        ceremony_id: Uuid,
+        credential: PublicKeyCredential,
+        expected_user_id: Uuid,
+    ) -> Result<(), AuthError> {
+        self.verify_assertion_in_tx(tx, ceremony_id, credential, Some(expected_user_id), None)
+            .await?;
         Ok(())
     }
 
     pub async fn start_mobile_step_up(
         &self,
         pool: &PgPool,
+        org: OrgId,
         user_id: Uuid,
         binding: MobilePasskeyStepUpBinding,
     ) -> Result<AuthenticationCeremony, AuthError> {
@@ -526,6 +468,7 @@ impl PasskeyService {
         let expires_at = now + self.ceremony_ttl;
 
         let mut tx = pool.begin().await?;
+        guard_legacy_subject_in_tx(&mut tx, org, user_id).await?;
         sqlx::query(
             r#"
             INSERT INTO auth_webauthn_ceremonies (
@@ -562,118 +505,44 @@ impl PasskeyService {
             return Err(MobilePasskeyStepUpVerificationError::BindingMismatch);
         }
 
-        let now = OffsetDateTime::now_utc();
         let mut tx = pool.begin().await?;
-        let claim = claim_ceremony_tx(
+        self.verify_mobile_step_up_for_user_in_tx(
             &mut tx,
-            envelope.assertion.ceremony_id,
-            "authentication",
-            now,
+            envelope,
+            expected_user_id,
+            expected_binding,
         )
-        .await?
-        .ok_or_else(|| {
-            AuthError::InvalidStoredData("ceremony not found or already consumed".to_owned())
-        })?;
+        .await?;
+        tx.commit().await?;
+        Ok(())
+    }
 
-        if claim.user_id != Some(expected_user_id) {
-            return Err(AuthError::InvalidStoredData(
-                "step-up ceremony does not belong to the authenticated user".to_owned(),
-            )
-            .into());
-        }
-
-        let persisted = load_mobile_step_up_binding_tx(&mut tx, envelope.assertion.ceremony_id)
-            .await?
-            .ok_or(MobilePasskeyStepUpVerificationError::BindingMismatch)?;
-        if persisted != *expected_binding {
+    pub async fn verify_mobile_step_up_for_user_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        envelope: MobilePasskeyStepUpEnvelope,
+        expected_user_id: Uuid,
+        expected_binding: &MobilePasskeyStepUpBinding,
+    ) -> Result<(), MobilePasskeyStepUpVerificationError> {
+        if envelope.binding != *expected_binding {
             return Err(MobilePasskeyStepUpVerificationError::BindingMismatch);
         }
-
-        let credential = envelope.assertion.credential;
-        let credential_id = serialize_to_string(&credential.raw_id, "step-up credential id")?;
-
-        let Some(org_uuid) = resolve_credential_org(&mut tx, &credential_id).await? else {
-            return Err(AuthError::InvalidStoredData(
-                "asserted credential is not registered".to_owned(),
-            )
-            .into());
-        };
-        sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(org_uuid.to_string())
-            .execute(tx.as_mut())
-            .await?;
-
-        let row = sqlx::query(
-            r#"
-            SELECT id, user_id, passkey_json
-            FROM auth_webauthn_credentials
-            WHERE credential_id = $1
-            "#,
+        self.verify_assertion_in_tx(
+            tx,
+            envelope.assertion.ceremony_id,
+            envelope.assertion.credential,
+            Some(expected_user_id),
+            Some(expected_binding),
         )
-        .bind(&credential_id)
-        .fetch_optional(tx.as_mut())
-        .await?
-        .ok_or_else(|| {
-            AuthError::InvalidStoredData("asserted credential is not registered".to_owned())
+        .await
+        .map_err(|err| match err {
+            AuthError::InvalidStoredData(ref message)
+                if message == "mobile step-up binding mismatch" =>
+            {
+                MobilePasskeyStepUpVerificationError::BindingMismatch
+            }
+            other => other.into(),
         })?;
-        let passkey_id: Uuid = row.try_get("id")?;
-        let user_id: Uuid = row.try_get("user_id")?;
-        let passkey_json: serde_json::Value = row.try_get("passkey_json")?;
-
-        if user_id != expected_user_id {
-            return Err(AuthError::InvalidStoredData(
-                "step-up credential does not belong to the authenticated user".to_owned(),
-            )
-            .into());
-        }
-        if let Some(asserted_handle) = credential.get_user_unique_id()
-            && Uuid::from_slice(asserted_handle).ok() != Some(user_id)
-        {
-            return Err(AuthError::InvalidStoredData(
-                "asserted user handle does not match the credential owner".to_owned(),
-            )
-            .into());
-        }
-
-        let state: DiscoverableAuthentication = serde_json::from_value(claim.state_json)?;
-        let mut passkey: Passkey = serde_json::from_value(passkey_json)?;
-        let discoverable_key = DiscoverableKey::from(&passkey);
-        let result = self.webauthn.finish_discoverable_authentication(
-            &credential,
-            state,
-            &[discoverable_key],
-        )?;
-
-        if !result.user_verified() {
-            return Err(AuthError::InvalidStoredData(
-                "step-up assertion did not perform user verification".to_owned(),
-            )
-            .into());
-        }
-
-        let changed = passkey.update_credential(&result).unwrap_or(false);
-        if changed {
-            sqlx::query(
-                r#"
-                UPDATE auth_webauthn_credentials
-                SET passkey_json = $1, last_used_at = $2
-                WHERE id = $3
-                "#,
-            )
-            .bind(serde_json::to_value(&passkey)?)
-            .bind(now)
-            .bind(passkey_id)
-            .execute(tx.as_mut())
-            .await?;
-        } else {
-            sqlx::query("UPDATE auth_webauthn_credentials SET last_used_at = $1 WHERE id = $2")
-                .bind(now)
-                .bind(passkey_id)
-                .execute(tx.as_mut())
-                .await?;
-        }
-
-        tx.commit().await?;
         Ok(())
     }
 
@@ -708,50 +577,20 @@ impl PasskeyService {
         credential: RegisterPublicKeyCredential,
         now: OffsetDateTime,
     ) -> Result<StoredPasskey, AuthError> {
-        // The caller is AUTHENTICATED: `org` comes from the verified JWT's `org`
-        // claim (never read from a user row under RLS — chicken-and-egg). Arm the
-        // tenant GUC for this transaction so the FORCE-RLS WITH CHECK on
-        // `auth_webauthn_credentials` (migration 0035) accepts the passkey INSERT
-        // stamped with THIS org, and the consume of the bootstrap credential in
-        // the same caller transaction also passes.
-        sqlx::query("SELECT set_config('app.current_org', $1, true)")
-            .bind(org.as_uuid().to_string())
-            .execute(tx.as_mut())
-            .await?;
-
-        // Claim the ceremony atomically: the UPDATE marks it consumed only if it
-        // is still unconsumed and unexpired. A racing finish sees 0 rows and is
-        // rejected, so one ceremony can never mint two passkeys.
+        let user_id: Uuid = sqlx::query_scalar(
+            "SELECT user_id FROM public.auth_webauthn_ceremonies WHERE id = $1 AND ceremony_kind = 'registration'",
+        ).bind(ceremony_id).fetch_optional(tx.as_mut()).await?
+            .ok_or_else(|| AuthError::InvalidStoredData("registration ceremony is unavailable".to_owned()))?;
+        guard_legacy_subject_in_tx(tx, org, user_id).await?;
         let claim = claim_ceremony_tx(tx, ceremony_id, "registration", now)
             .await?
             .ok_or_else(|| {
                 AuthError::InvalidStoredData("ceremony not found or already consumed".to_owned())
             })?;
-        let user_id = claim.user_id.ok_or_else(|| {
-            AuthError::InvalidStoredData("registration ceremony missing user_id".to_owned())
-        })?;
-
-        // Serialize issuance against the deactivation sweep: lock the user row and
-        // recheck `is_active` so a passkey can never be minted on an account a
-        // concurrent (or prior) `deactivate_user` has already swept. Without this
-        // lock, `finish_registration` can INSERT + commit after
-        // `sweep_user_credentials_tx` ran, leaving a usable credential on an
-        // inactive account (console-cg6 review).
-        let active: Option<bool> =
-            sqlx::query_scalar("SELECT is_active FROM users WHERE id = $1 FOR UPDATE")
-                .bind(user_id)
-                .fetch_optional(tx.as_mut())
-                .await?;
-        match active {
-            None => {
-                return Err(AuthError::Kernel(KernelError::not_found("user not found")));
-            }
-            Some(false) => {
-                return Err(AuthError::Kernel(KernelError::conflict(
-                    "비활성화된 사용자는 패스키를 등록할 수 없습니다.",
-                )));
-            }
-            Some(true) => {}
+        if claim.user_id != Some(user_id) {
+            return Err(AuthError::InvalidStoredData(
+                "registration ceremony owner changed".to_owned(),
+            ));
         }
 
         // Verify the assertion AFTER the atomic claim using the RETURNING state.
@@ -797,7 +636,7 @@ impl PasskeyService {
                 "user_id": user_id,
             })),
         );
-        insert_audit_event(tx, &audit).await?;
+        append_legacy_auth_audit_in_tx(tx, &audit).await?;
 
         Ok(StoredPasskey {
             id: passkey_id,
@@ -821,8 +660,9 @@ impl PasskeyService {
         let now = OffsetDateTime::now_utc();
         let expires_at = now + self.ceremony_ttl;
 
+        let mut tx = pool.begin().await?;
         persist_ceremony(
-            pool,
+            &mut tx,
             ceremony_id,
             None,
             "authentication",
@@ -831,6 +671,7 @@ impl PasskeyService {
             expires_at,
         )
         .await?;
+        tx.commit().await?;
 
         Ok(AuthenticationCeremony {
             ceremony_id,
@@ -853,18 +694,33 @@ impl PasskeyService {
         ceremony_id: Uuid,
         credential: PublicKeyCredential,
     ) -> Result<AuthenticationOutcome, AuthError> {
-        let now = OffsetDateTime::now_utc();
         let mut tx = pool.begin().await?;
+        let outcome = self
+            .finish_authentication_in_tx(&mut tx, ceremony_id, credential)
+            .await?;
+        tx.commit().await?;
+        Ok(outcome)
+    }
 
-        // Claim the ceremony atomically inside the consuming transaction. A racing
-        // finish sees 0 rows and is rejected, so one authentication ceremony can
-        // never mint two token pairs.
-        let claim = claim_ceremony_tx(&mut tx, ceremony_id, "authentication", now)
-            .await?
-            .ok_or_else(|| {
-                AuthError::InvalidStoredData("ceremony not found or already consumed".to_owned())
-            })?;
+    pub async fn finish_authentication_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        ceremony_id: Uuid,
+        credential: PublicKeyCredential,
+    ) -> Result<AuthenticationOutcome, AuthError> {
+        self.verify_assertion_in_tx(tx, ceremony_id, credential, None, None)
+            .await
+    }
 
+    async fn verify_assertion_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        ceremony_id: Uuid,
+        credential: PublicKeyCredential,
+        expected_user: Option<Uuid>,
+        mobile_binding: Option<&MobilePasskeyStepUpBinding>,
+    ) -> Result<AuthenticationOutcome, AuthError> {
+        let now = OffsetDateTime::now_utc();
         // Resolve the asserting user FROM the credential. The credential id is the
         // stable lookup key (unique in `auth_webauthn_credentials`); it is always
         // present in the assertion even when the authenticator omits the user
@@ -884,7 +740,7 @@ impl PasskeyService {
         // the credential's org_id, breaking that chicken-and-egg so passkey login
         // works for ANY tenant. A NULL means the credential is unknown: keep the
         // existing "not registered" error.
-        let Some(org_uuid) = resolve_credential_org(&mut tx, &credential_id).await? else {
+        let Some(org_uuid) = resolve_credential_org(tx, &credential_id).await? else {
             return Err(AuthError::InvalidStoredData(
                 "asserted credential is not registered".to_owned(),
             ));
@@ -894,14 +750,29 @@ impl PasskeyService {
             .execute(tx.as_mut())
             .await?;
 
+        // This first read is correlation only. No credential is claimed until
+        // Company/users/Account have been locked and the key is reread.
+        let correlated_user: Uuid = sqlx::query_scalar(
+            "SELECT user_id FROM public.auth_webauthn_credentials WHERE credential_id = $1 AND org_id = $2",
+        ).bind(&credential_id).bind(org_uuid).fetch_optional(tx.as_mut()).await?
+            .ok_or_else(|| AuthError::InvalidStoredData("asserted credential is not registered".to_owned()))?;
+        if expected_user.is_some_and(|expected| expected != correlated_user) {
+            return Err(AuthError::InvalidStoredData(
+                "step-up credential does not belong to the authenticated user".to_owned(),
+            ));
+        }
+        guard_legacy_subject_in_tx(tx, OrgId::from_uuid(org_uuid), correlated_user).await?;
         let row = sqlx::query(
             r#"
             SELECT id, user_id, passkey_json
             FROM auth_webauthn_credentials
-            WHERE credential_id = $1
+            WHERE credential_id = $1 AND user_id = $2 AND org_id = $3
+            FOR UPDATE
             "#,
         )
         .bind(&credential_id)
+        .bind(correlated_user)
+        .bind(org_uuid)
         .fetch_optional(tx.as_mut())
         .await?
         .ok_or_else(|| {
@@ -919,6 +790,28 @@ impl PasskeyService {
             ));
         }
 
+        let claim = claim_ceremony_tx(tx, ceremony_id, "authentication", now)
+            .await?
+            .ok_or_else(|| {
+                AuthError::InvalidStoredData("ceremony not found or already consumed".to_owned())
+            })?;
+        if claim.user_id.is_some_and(|owner| owner != user_id) {
+            return Err(AuthError::InvalidStoredData(
+                "authentication ceremony owner mismatch".to_owned(),
+            ));
+        }
+        let persisted_binding = load_mobile_step_up_binding_tx(tx, ceremony_id).await?;
+        match (mobile_binding, persisted_binding.as_ref()) {
+            (Some(expected), Some(persisted))
+                if expected == persisted && claim.user_id == Some(user_id) => {}
+            (None, None) => {}
+            _ => {
+                return Err(AuthError::InvalidStoredData(
+                    "mobile step-up binding mismatch".to_owned(),
+                ));
+            }
+        }
+
         // Verify the assertion AFTER the atomic claim using the RETURNING state
         // and the resolved credential as the single allowed discoverable key. A
         // verification failure returns Err and rolls back the claim.
@@ -930,6 +823,11 @@ impl PasskeyService {
             state,
             &[discoverable_key],
         )?;
+        if expected_user.is_some() && !result.user_verified() {
+            return Err(AuthError::InvalidStoredData(
+                "step-up assertion did not perform user verification".to_owned(),
+            ));
+        }
         let changed = passkey.update_credential(&result).unwrap_or(false);
 
         if changed {
@@ -953,8 +851,6 @@ impl PasskeyService {
                 .await?;
         }
 
-        tx.commit().await?;
-
         Ok(AuthenticationOutcome {
             user_id,
             passkey_id,
@@ -969,7 +865,7 @@ struct CeremonyRow {
 }
 
 async fn persist_ceremony<C, S>(
-    pool: &PgPool,
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     id: Uuid,
     user_id: Option<Uuid>,
     kind: &str,
@@ -995,7 +891,7 @@ where
     .bind(serde_json::to_value(state)?)
     .bind(expires_at)
     // rls-arming: ok auth_webauthn_ceremonies is a global pre-auth table (no org_id, no RLS)
-    .execute(pool)
+    .execute(tx.as_mut())
     .await?;
     Ok(())
 }
@@ -1111,26 +1007,18 @@ async fn resolve_credential_org(
     )
 }
 
-async fn load_user_passkeys(
-    pool: &PgPool,
+async fn load_user_passkeys_in_tx(
+    tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
     org: OrgId,
     user_id: Uuid,
 ) -> Result<Vec<Passkey>, AuthError> {
-    // `auth_webauthn_credentials` is FORCE RLS; arm the tenant GUC for this
-    // transaction so the non-owner `console_rt` role sees the user's existing
-    // passkeys. The org is the authenticated request's verified tenant.
-    let mut tx = pool.begin().await?;
-    sqlx::query("SELECT set_config('app.current_org', $1, true)")
-        .bind(org.as_uuid().to_string())
-        .execute(tx.as_mut())
-        .await?;
     let rows = sqlx::query(
-        "SELECT passkey_json FROM auth_webauthn_credentials WHERE user_id = $1 ORDER BY created_at",
+        "SELECT passkey_json FROM auth_webauthn_credentials WHERE user_id = $1 AND org_id = $2 ORDER BY created_at",
     )
     .bind(user_id)
+    .bind(*org.as_uuid())
     .fetch_all(tx.as_mut())
     .await?;
-    tx.commit().await?;
 
     rows.into_iter()
         .map(|row| {
@@ -1202,5 +1090,462 @@ mod tests {
             binding.validate(),
             Err(MobileStepUpBindingError::InvalidReplayAttempt)
         ));
+    }
+}
+
+impl PasskeyService {
+    pub async fn start_account_registration_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        pending: &crate::account::PendingAccount,
+        head: &crate::account::AccountTermsHead,
+        origin: &str,
+    ) -> Result<crate::account::AccountRegistrationChallenge, crate::account::AccountOperationError>
+    {
+        use crate::account::{AccountOperationError, AccountRegistrationChallenge};
+        self.require_native_origin(origin)?;
+        if pending.account_id.is_nil()
+            || pending.security_generation != 1
+            || pending.revision != 1
+            || pending.context_generation != 1
+            || head.manifest_sha256.len() != 32
+            || head.revision <= 0
+            || self.ceremony_ttl <= Duration::ZERO
+        {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        let expires_at = pending
+            .created_at
+            .checked_add(self.ceremony_ttl.min(Duration::minutes(5)))
+            .ok_or(AccountOperationError::AuthorityUnavailable)?;
+        let now = crate::account::account_now_in_tx(tx).await?;
+        if pending.created_at > now || expires_at <= now {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        // The handle is the freshly allocated Account's exact 16 bytes. No
+        // Company identity, display-name inference or legacy fenced-user path.
+        let label = pending.account_id.to_string();
+        let (mut challenge, state) = self
+            .webauthn
+            .start_passkey_registration(pending.account_id, &label, "Console account", None)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let selection = challenge
+            .public_key
+            .authenticator_selection
+            .as_mut()
+            .ok_or(AccountOperationError::AuthorityUnavailable)?;
+        // webauthn-rs hides the enum's module; deserialize only this fixed typed
+        // option, never opaque crypto state. Preserve required UV from the owner.
+        selection.resident_key = Some(
+            serde_json::from_str("\"required\"")
+                .map_err(|_| AccountOperationError::AuthorityUnavailable)?,
+        );
+        selection.require_resident_key = true;
+        let ceremony_id = Uuid::new_v4();
+        let browser_nonce = crate::refresh::RefreshToken(crate::refresh::generate_refresh_token());
+        let challenge_json = serde_json::to_value(&challenge)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let state_json = serde_json::to_value(&state)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        sqlx::query("INSERT INTO public.auth_webauthn_ceremonies (id, user_id, ceremony_kind, challenge_json, state_json, expires_at, created_at, account_browser_flow, browser_nonce_sha256, browser_origin, terms_manifest_sha256, terms_head_revision) VALUES ($1,$2,'registration',$3,$4,$5,$6,'ACCOUNT_REGISTRATION',$7,$8,$9,$10)")
+            .bind(ceremony_id).bind(pending.account_id).bind(challenge_json).bind(state_json)
+            .bind(expires_at).bind(pending.created_at).bind(crate::refresh::hash_token(browser_nonce.as_str()))
+            .bind(origin).bind(&head.manifest_sha256).bind(head.revision)
+            .execute(tx.as_mut()).await?;
+        if expires_at <= crate::account::account_now_in_tx(tx).await? {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        Ok(AccountRegistrationChallenge {
+            ceremony: RegistrationCeremony {
+                ceremony_id,
+                challenge,
+                expires_at,
+            },
+            browser_nonce,
+        })
+    }
+
+    /// Nonlocking correlation only; finish rechecks every binding under guards.
+    pub async fn correlate_account_registration_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        ceremony: Uuid,
+        nonce: &str,
+        origin: &str,
+    ) -> Result<crate::account::AccountRegistrationBinding, crate::account::AccountOperationError>
+    {
+        use crate::account::{AccountOperationError, AccountRegistrationBinding};
+        self.require_native_origin(origin)?;
+        if ceremony.is_nil() || nonce.is_empty() || nonce.len() > 512 {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        let row = sqlx::query("SELECT user_id, terms_manifest_sha256, terms_head_revision, created_at, expires_at, consumed_at FROM public.auth_webauthn_ceremonies WHERE id = $1 AND ceremony_kind = 'registration' AND account_browser_flow = 'ACCOUNT_REGISTRATION' AND browser_nonce_sha256 = $2 AND browser_origin = $3")
+            .bind(ceremony).bind(crate::refresh::hash_token(nonce)).bind(origin)
+            .fetch_optional(tx.as_mut()).await?.ok_or(AccountOperationError::EnrollmentInvalid)?;
+        let created_at: OffsetDateTime = row.try_get("created_at")?;
+        let expires_at: OffsetDateTime = row.try_get("expires_at")?;
+        let consumed_at: Option<OffsetDateTime> = row.try_get("consumed_at")?;
+        let now = crate::account::account_now_in_tx(tx).await?;
+        if created_at > now
+            || expires_at <= now
+            || consumed_at.is_some()
+            || expires_at > created_at + Duration::minutes(5)
+        {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        let binding = AccountRegistrationBinding {
+            account_id: row.try_get("user_id")?,
+            terms_manifest_sha256: row.try_get("terms_manifest_sha256")?,
+            terms_head_revision: row.try_get("terms_head_revision")?,
+        };
+        if binding.account_id.is_nil()
+            || binding.terms_manifest_sha256.len() != 32
+            || binding.terms_head_revision <= 0
+        {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        Ok(binding)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn finish_account_registration_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        binding: &crate::account::AccountRegistrationBinding,
+        ceremony: Uuid,
+        nonce: &str,
+        origin: &str,
+        credential: PasskeyRegistrationCredential,
+    ) -> Result<Uuid, crate::account::AccountOperationError> {
+        use crate::account::AccountOperationError;
+        self.require_native_origin(origin)?;
+        if ceremony.is_nil() || nonce.is_empty() || nonce.len() > 512 {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        // The coordinator already holds Account EXCLUSIVE, terms SHARE and the
+        // tentative family/token. This is the next lock class, never a new tx.
+        let row = sqlx::query("SELECT state_json, created_at, expires_at, consumed_at FROM public.auth_webauthn_ceremonies WHERE id = $1 AND user_id = $2 AND ceremony_kind = 'registration' AND account_browser_flow = 'ACCOUNT_REGISTRATION' AND browser_nonce_sha256 = $3 AND browser_origin = $4 AND terms_manifest_sha256 = $5 AND terms_head_revision = $6 FOR UPDATE")
+            .bind(ceremony).bind(binding.account_id).bind(crate::refresh::hash_token(nonce))
+            .bind(origin).bind(&binding.terms_manifest_sha256).bind(binding.terms_head_revision)
+            .fetch_optional(tx.as_mut()).await?.ok_or(AccountOperationError::EnrollmentInvalid)?;
+        let created_at: OffsetDateTime = row.try_get("created_at")?;
+        let expires_at: OffsetDateTime = row.try_get("expires_at")?;
+        let consumed_at: Option<OffsetDateTime> = row.try_get("consumed_at")?;
+        let now = crate::account::account_now_in_tx(tx).await?;
+        if created_at > now
+            || expires_at <= now
+            || consumed_at.is_some()
+            || expires_at > created_at + Duration::minutes(5)
+        {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        let state_json: serde_json::Value = row.try_get("state_json")?;
+        let state: PasskeyRegistration = serde_json::from_value(state_json)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        // Legacy may admit extra origins. Native admits the exact configured
+        // browser origin in the cryptographically verified clientDataJSON too.
+        #[derive(Deserialize)]
+        struct NativeClientData {
+            origin: String,
+            #[serde(rename = "crossOrigin")]
+            cross_origin: Option<bool>,
+        }
+        let client_bytes: &[u8] = credential.response.client_data_json.as_ref();
+        if client_bytes.len() > 8192 {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        let client: NativeClientData = serde_json::from_slice(client_bytes)
+            .map_err(|_| AccountOperationError::EnrollmentInvalid)?;
+        self.require_native_client_origin(&client.origin, client.cross_origin)?;
+        let passkey = self
+            .webauthn
+            .finish_passkey_registration(&credential, &state)
+            .map_err(|_| AccountOperationError::EnrollmentInvalid)?;
+        let passkey_json = serde_json::to_value(&passkey)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let credential_id = serialize_to_string(passkey.cred_id(), "passkey credential id")
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let key = Uuid::new_v4();
+        let finished_at = crate::account::account_now_in_tx(tx).await?;
+        if expires_at <= finished_at {
+            return Err(AccountOperationError::EnrollmentInvalid);
+        }
+        sqlx::query("INSERT INTO public.auth_webauthn_credentials (id, user_id, credential_id, passkey_json, created_at, org_id) VALUES ($1,$2,$3,$4,$5,NULL)")
+            .bind(key).bind(binding.account_id).bind(credential_id).bind(passkey_json).bind(finished_at)
+            .execute(tx.as_mut()).await.map_err(|error| {
+                if error.as_database_error().is_some_and(|db| db.is_unique_violation()) {
+                    AccountOperationError::EnrollmentInvalid
+                } else { AccountOperationError::AuthorityUnavailable }
+            })?;
+        sqlx::query("UPDATE public.auth_webauthn_ceremonies SET consumed_at = $2 WHERE id = $1")
+            .bind(ceremony)
+            .bind(finished_at)
+            .execute(tx.as_mut())
+            .await?;
+        Ok(key)
+    }
+
+    fn require_native_client_origin(
+        &self,
+        origin: &str,
+        cross_origin: Option<bool>,
+    ) -> Result<(), crate::account::AccountOperationError> {
+        if cross_origin == Some(true) {
+            return Err(crate::account::AccountOperationError::EnrollmentInvalid);
+        }
+        // Pinned CollectedClientData serializes its Url with a root slash.
+        // Accept only that one representation of the exact configured origin;
+        // do not normalize paths, userinfo, query, fragment or extra origins.
+        self.require_native_origin(origin.strip_suffix('/').unwrap_or(origin))
+    }
+
+    fn require_native_origin(
+        &self,
+        origin: &str,
+    ) -> Result<(), crate::account::AccountOperationError> {
+        if !self.native_origin.starts_with("https://") || origin != self.native_origin {
+            return Err(crate::account::AccountOperationError::EnrollmentInvalid);
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod native_client_origin_tests {
+    use super::*;
+
+    #[test]
+    fn accepts_only_exact_origin_and_one_serialized_root_slash() {
+        let origin = Url::parse("https://auth.example.com").unwrap();
+        let serialized: String =
+            serde_json::from_str(&serde_json::to_string(&origin).unwrap()).unwrap();
+        let service = PasskeyService::new(WebauthnSettings {
+            rp_id: "example.com".to_owned(),
+            rp_origin: origin,
+            rp_name: "Console test".to_owned(),
+            extra_allowed_origins: vec![Url::parse("https://legacy.example.com").unwrap()],
+            ceremony_ttl: Duration::minutes(5),
+        })
+        .unwrap();
+        assert_eq!(serialized, "https://auth.example.com/");
+        assert_ne!(serialized, service.native_origin);
+        for accepted in [service.native_origin.as_str(), serialized.as_str()] {
+            for cross_origin in [None, Some(false)] {
+                assert!(
+                    service
+                        .require_native_client_origin(accepted, cross_origin)
+                        .is_ok()
+                );
+            }
+            assert!(matches!(
+                service.require_native_client_origin(accepted, Some(true)),
+                Err(crate::account::AccountOperationError::EnrollmentInvalid)
+            ));
+        }
+        // The HTTP/stored-flow origin guard remains byte-exact.
+        assert!(
+            service
+                .require_native_origin(&service.native_origin)
+                .is_ok()
+        );
+        assert!(matches!(
+            service.require_native_origin(&serialized),
+            Err(crate::account::AccountOperationError::EnrollmentInvalid)
+        ));
+        for denied in [
+            "",
+            "null",
+            "/",
+            "https://auth.example.com//",
+            "https://auth.example.com/path",
+            "https://auth.example.com/path/",
+            "https://auth.example.com/.",
+            "https://auth.example.com/..",
+            "https://auth.example.com?query=1",
+            "https://auth.example.com/?query=1",
+            "https://auth.example.com#fragment",
+            "https://auth.example.com/#fragment",
+            "https://user@auth.example.com/",
+            "https://user:password@auth.example.com/",
+            "https://auth.example.com@evil.example/",
+            "http://auth.example.com/",
+            "https://sub.auth.example.com/",
+            "https://auth.example.com.evil/",
+            "https://auth.example.com:444/",
+            "https://auth.example.com:443/",
+            "https://AUTH.example.com/",
+            " https://auth.example.com/",
+            "https://auth.example.com/ ",
+            "https://auth.example.com/\n",
+            "https://auth.example.com/\0",
+            "https://auth.example.com\\",
+            "https://auth.example.com/%2f",
+            "https://legacy.example.com",
+            "https://legacy.example.com/",
+        ] {
+            assert!(matches!(
+                service.require_native_client_origin(denied, None),
+                Err(crate::account::AccountOperationError::EnrollmentInvalid)
+            ));
+        }
+    }
+}
+
+impl PasskeyService {
+    pub async fn start_account_login_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        origin: &str,
+    ) -> Result<crate::account::AccountLoginChallenge, crate::account::AccountOperationError> {
+        use crate::account::{AccountLoginChallenge, AccountOperationError, account_now_in_tx};
+        self.require_native_origin(origin)
+            .map_err(|_| AccountOperationError::AuthenticationInvalid)?;
+        if self.ceremony_ttl <= Duration::ZERO {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        let (challenge, state) = self
+            .webauthn
+            .start_discoverable_authentication()
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let now = account_now_in_tx(tx).await?;
+        let expires_at = now
+            .checked_add(self.ceremony_ttl.min(Duration::minutes(5)))
+            .ok_or(AccountOperationError::AuthorityUnavailable)?;
+        let ceremony_id = Uuid::new_v4();
+        let browser_nonce = crate::refresh::RefreshToken(crate::refresh::generate_refresh_token());
+        let challenge_json = serde_json::to_value(&challenge)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let state_json = serde_json::to_value(&state)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        sqlx::query("INSERT INTO public.auth_webauthn_ceremonies (id, user_id, ceremony_kind, challenge_json, state_json, expires_at, created_at, account_browser_flow, browser_nonce_sha256, browser_origin) VALUES ($1,NULL,'authentication',$2,$3,$4,$5,'ACCOUNT_LOGIN',$6,$7)")
+            .bind(ceremony_id).bind(challenge_json).bind(state_json).bind(expires_at).bind(now)
+            .bind(crate::refresh::hash_token(browser_nonce.as_str())).bind(origin)
+            .execute(tx.as_mut()).await?;
+        if expires_at <= account_now_in_tx(tx).await? {
+            return Err(AccountOperationError::AuthenticationInvalid);
+        }
+        Ok(AccountLoginChallenge {
+            ceremony: AuthenticationCeremony {
+                ceremony_id,
+                challenge,
+                expires_at,
+            },
+            browser_nonce,
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn finish_account_login_in_tx(
+        &self,
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        ceremony: Uuid,
+        nonce: &str,
+        origin: &str,
+        credential: PasskeyAuthenticationCredential,
+        refresh_ttl: Duration,
+        absolute_ttl: Duration,
+    ) -> Result<crate::account::AccountPrimaryLogin, crate::account::AccountOperationError> {
+        use crate::account::{
+            AccountOperationError, AccountPrimaryLogin, account_now_in_tx, lock_account_in_tx,
+        };
+        let invalid = || AccountOperationError::AuthenticationInvalid;
+        self.require_native_origin(origin).map_err(|_| invalid())?;
+        if ceremony.is_nil() || nonce.is_empty() || nonce.len() > 512 {
+            return Err(invalid());
+        }
+        let credential_id = serialize_to_string(&credential.raw_id, "native credential id")
+            .map_err(|_| invalid())?;
+        // Neither the credential identifier nor the unsigned userHandle is proof.
+        // Correlate only native storage, then lock Account before its new private
+        // family/token, the exact key and finally the exact login ceremony.
+        let account: Uuid = sqlx::query_scalar("SELECT user_id FROM public.auth_webauthn_credentials WHERE credential_id=$1 AND org_id IS NULL")
+            .bind(&credential_id).fetch_optional(tx.as_mut()).await?.ok_or_else(invalid)?;
+        let security = lock_account_in_tx(tx, account, false, "ACTIVE").await?;
+        if credential.get_user_unique_id() != Some(account.as_bytes().as_slice()) {
+            return Err(invalid());
+        }
+        let family = crate::RefreshTokenStore
+            .prepare_account_login_family_in_tx(tx, &security, refresh_ttl, absolute_ttl)
+            .await?;
+        let key = sqlx::query("SELECT id, passkey_json FROM public.auth_webauthn_credentials WHERE credential_id=$1 AND user_id=$2 AND org_id IS NULL FOR UPDATE")
+            .bind(&credential_id).bind(account).fetch_optional(tx.as_mut()).await?.ok_or_else(invalid)?;
+        let key_id: Uuid = key.try_get("id")?;
+        let row = sqlx::query("SELECT state_json, created_at, expires_at, consumed_at FROM public.auth_webauthn_ceremonies c WHERE id=$1 AND user_id IS NULL AND ceremony_kind='authentication' AND account_browser_flow='ACCOUNT_LOGIN' AND browser_nonce_sha256=$2 AND browser_origin=$3 AND terms_manifest_sha256 IS NULL AND terms_head_revision IS NULL AND NOT EXISTS (SELECT 1 FROM public.auth_webauthn_ceremony_bindings b WHERE b.ceremony_id=c.id) FOR UPDATE")
+            .bind(ceremony).bind(crate::refresh::hash_token(nonce)).bind(origin)
+            .fetch_optional(tx.as_mut()).await?.ok_or_else(invalid)?;
+        let created_at: OffsetDateTime = row.try_get("created_at")?;
+        let expires_at: OffsetDateTime = row.try_get("expires_at")?;
+        let consumed_at: Option<OffsetDateTime> = row.try_get("consumed_at")?;
+        let now = account_now_in_tx(tx).await?;
+        if created_at > now
+            || expires_at <= now
+            || consumed_at.is_some()
+            || expires_at > created_at + Duration::minutes(5)
+        {
+            return Err(invalid());
+        }
+        let state_json: serde_json::Value = row.try_get("state_json")?;
+        let state: DiscoverableAuthentication = serde_json::from_value(state_json)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let passkey_json: serde_json::Value = key.try_get("passkey_json")?;
+        let mut passkey: Passkey = serde_json::from_value(passkey_json)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        if serialize_to_string(passkey.cred_id(), "stored native credential id")
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?
+            != credential_id
+        {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        #[derive(Deserialize)]
+        struct NativeClientData {
+            origin: String,
+            #[serde(rename = "crossOrigin")]
+            cross_origin: Option<bool>,
+        }
+        let client_bytes: &[u8] = credential.response.client_data_json.as_ref();
+        if client_bytes.len() > 8192 {
+            return Err(invalid());
+        }
+        let client: NativeClientData =
+            serde_json::from_slice(client_bytes).map_err(|_| invalid())?;
+        self.require_native_client_origin(&client.origin, client.cross_origin)
+            .map_err(|_| invalid())?;
+        // The pinned verifier receives original signed bytes. It enforces RP,
+        // challenge, origin, UP/UV and nonzero counter monotonicity; no fake state.
+        let verified = self
+            .webauthn
+            .finish_discoverable_authentication(
+                &credential,
+                state,
+                &[DiscoverableKey::from(&passkey)],
+            )
+            .map_err(|_| invalid())?;
+        if !verified.user_verified() {
+            return Err(invalid());
+        }
+        passkey.update_credential(&verified).ok_or_else(invalid)?;
+        let finished_at = account_now_in_tx(tx).await?;
+        if expires_at <= finished_at
+            || family.token_expires_at <= finished_at
+            || family.family_expires_at <= finished_at
+        {
+            return Err(invalid());
+        }
+        let passkey_json = serde_json::to_value(&passkey)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let changed = sqlx::query("UPDATE public.auth_webauthn_credentials SET passkey_json=$1, last_used_at=$2 WHERE id=$3 AND user_id=$4 AND credential_id=$5 AND org_id IS NULL")
+            .bind(passkey_json).bind(finished_at).bind(key_id).bind(account).bind(&credential_id)
+            .execute(tx.as_mut()).await?.rows_affected();
+        let consumed = sqlx::query("UPDATE public.auth_webauthn_ceremonies SET consumed_at=$2 WHERE id=$1 AND consumed_at IS NULL")
+            .bind(ceremony).bind(finished_at).execute(tx.as_mut()).await?.rows_affected();
+        if changed != 1 || consumed != 1 {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        Ok(AccountPrimaryLogin {
+            account_id: account,
+            security_generation: security.security_generation,
+            family,
+            ceremony_expires_at: expires_at,
+        })
     }
 }

@@ -1,0 +1,9 @@
+type: string
+enum:
+- usb
+- nfc
+- ble
+- internal
+- hybrid
+- test
+- unknown

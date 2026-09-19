@@ -472,19 +472,15 @@ impl PgOrgStore {
         .await
     }
 
-    /// Soft-deactivate a user AND revoke every active credential + session.
+    /// Soft-deactivate a Company user and revoke unfenced legacy credentials.
     ///
-    /// Offboarding must close all access in one atomic, audited transaction:
-    /// flipping `is_active = false` only blocks NEW sign-ins, but a deactivated
-    /// user keeps an enrolled passkey and any live refresh-token family until each
-    /// naturally expires. So this also DELETEs every WebAuthn credential the user
-    /// owns (their passkeys can no longer authenticate) and revokes every one of
-    /// the user's refresh-token families + tokens (any live session dies on its
-    /// next rotation, and refresh fails).
+    /// The Account guard locks and classifies the subject in this transaction.
+    /// Any Account security row preserves Account custody; only an unfenced
+    /// legacy subject permits the existing passkey and refresh-session sweep.
+    /// Unavailable authority refuses the entire Company transition.
     ///
-    /// The credential/session tables are FORCE-RLS, so the org GUC is armed for
-    /// this transaction (via `with_audit` from `event.with_org(org)`) before the
-    /// closure touches them. Each sub-action is independently audited.
+    /// The credential owner receives the same Company-armed transaction via
+    /// its fixed sweep operation. Each sub-action remains independently audited.
     pub async fn deactivate_user(
         &self,
         command: DeactivateUserCommand,
@@ -495,14 +491,32 @@ impl PgOrgStore {
         let trace = command.trace.clone();
         let occurred_at = command.occurred_at;
 
-        // One tenant-armed transaction decides between a real transition and a
-        // no-op replay, and COMMITS the credential sweep in both cases. On a
-        // no-op replay (already inactive) we still run the idempotent sweep so a
-        // passkey/token that raced the original deactivation cannot survive
-        // (console-cg6 review), then surface a Conflict to the caller without
-        // minting a second transition row.
+        // Hold the Company user and Account root locks through transition or
+        // replay. Legacy replay still commits its idempotent racing-credential
+        // sweep before returning Conflict, without another transition row.
         let outcome = with_audits::<_, DeactivateOutcome, PgOrgError>(&self.pool, org, move |tx| {
             Box::pin(async move {
+                sqlx::query("SELECT public.auth_legacy_company_lock_v1($1)")
+                    .bind(*org.as_uuid())
+                    .execute(tx.as_mut())
+                    .await?;
+                let legacy_revocation_allowed: bool = sqlx::query_scalar(
+                    "SELECT public.account_company_deactivation_guard_v1($1,$2)",
+                )
+                .bind(*org.as_uuid())
+                .bind(*user_id.as_uuid())
+                .fetch_one(tx.as_mut())
+                .await
+                .map_err(|error| {
+                    if matches!(&error, sqlx::Error::Database(db)
+                        if db.code().as_deref() == Some("P0002")
+                            && db.message() == "account_company_deactivation.subject_not_found")
+                    {
+                        PgOrgError::Domain(KernelError::not_found("user not found"))
+                    } else {
+                        PgOrgError::from(error)
+                    }
+                })?;
                 let affected = sqlx::query(
                     "UPDATE users SET is_active = false WHERE id = $1 AND is_active = true",
                 )
@@ -520,19 +534,32 @@ impl PgOrgStore {
                     if exists.is_none() {
                         return Err(PgOrgError::Domain(KernelError::not_found("user not found")));
                     }
-                    let sweep =
-                        sweep_user_credentials_tx(tx, actor, user_id, &trace, occurred_at, org)
-                            .await?;
-                    return Ok((
-                        DeactivateOutcome::AlreadyInactive,
-                        vec![sweep.credential_event, sweep.session_event],
-                    ));
+                    let events = if legacy_revocation_allowed {
+                        let sweep =
+                            sweep_user_credentials_tx(tx, actor, user_id, &trace, occurred_at, org)
+                                .await?;
+                        vec![sweep.credential_event, sweep.session_event]
+                    } else {
+                        Vec::new()
+                    };
+                    return Ok((DeactivateOutcome::AlreadyInactive, events));
                 }
 
-                // Real transition: sweep credentials + sessions, then record the
-                // transition and the archive snapshot in the same transaction.
-                let sweep =
-                    sweep_user_credentials_tx(tx, actor, user_id, &trace, occurred_at, org).await?;
+                // Fenced Account custody contributes no security-revocation
+                // events. Company archive counts report this operation's work.
+                let (revoked_credentials, revoked_families, mut events) =
+                    if legacy_revocation_allowed {
+                        let sweep =
+                            sweep_user_credentials_tx(tx, actor, user_id, &trace, occurred_at, org)
+                                .await?;
+                        (
+                            sweep.revoked_credentials,
+                            sweep.revoked_families,
+                            vec![sweep.credential_event, sweep.session_event],
+                        )
+                    } else {
+                        (0, 0, Vec::new())
+                    };
                 let transition_event = user_audit_event(
                     "user.deactivate",
                     Some(actor),
@@ -561,14 +588,13 @@ impl PgOrgStore {
                     Some(serde_json::json!({
                         "is_active": false,
                         "account_status": "ARCHIVED",
-                        "revoked_credential_count": sweep.revoked_credentials,
-                        "revoked_family_count": sweep.revoked_families,
+                        "revoked_credential_count": revoked_credentials,
+                        "revoked_family_count": revoked_families,
                     })),
                 );
 
-                // Offboarding revokes every credential + session; bump the
-                // subject session_generation so any access token minted before
-                // this point is recognizably stale to a later Cedar slice.
+                // Preserve Company authorization freshness independently of
+                // Account security generation and credential custody.
                 bump_subject_session_generation_tx(
                     tx,
                     *org.as_uuid(),
@@ -578,15 +604,8 @@ impl PgOrgStore {
                 .await?;
 
                 let summary = fetch_user_tx(tx, user_id).await?;
-                Ok((
-                    DeactivateOutcome::Deactivated(Box::new(summary)),
-                    vec![
-                        sweep.credential_event,
-                        sweep.session_event,
-                        policy_event,
-                        transition_event,
-                    ],
-                ))
+                events.extend([policy_event, transition_event]);
+                Ok((DeactivateOutcome::Deactivated(Box::new(summary)), events))
             })
         })
         .await?;
@@ -1858,12 +1877,10 @@ async fn user_in_scope(
 }
 
 /// The `users` projection for `get_user` / `list_users` and mutation returns.
-/// The `has_passkey` flag is computed inline via an EXISTS over the FORCE-RLS
-/// `auth_webauthn_credentials` table; those call sites run inside an org-armed
-/// scope (`with_org_conn` or the audited tx), so the subquery only ever sees
-/// THIS tenant's credentials and the account-setup state (활성 vs 설정 대기) is
-/// derived correctly. Directory list uses `USER_SELECT_DIRECTORY` instead so it
-/// never reads `users.phone`.
+/// The fixed credential-owner projection returns the legacy passkey flag for
+/// this Company user in the calling statement snapshot. A fenced Account has
+/// no legacy flag; unavailable authority is an error. Directory list uses
+/// `USER_SELECT_DIRECTORY` instead so it never reads `users.phone`.
 const USER_SELECT_WITH_PASSKEY: &str = r#"
     SELECT
            u.id,
@@ -1881,9 +1898,7 @@ const USER_SELECT_WITH_PASSKEY: &str = r#"
            u.team,
            u.is_active,
            u.created_at,
-           EXISTS (
-               SELECT 1 FROM auth_webauthn_credentials c WHERE c.user_id = u.id
-           ) AS has_passkey
+           public.auth_legacy_user_has_passkey_v1(u.org_id, u.id) AS has_passkey
     FROM users u
     LEFT JOIN employees e
       ON e.id = u.employee_id
@@ -1912,9 +1927,7 @@ const USER_SELECT_DIRECTORY: &str = r#"
            u.team,
            u.is_active,
            u.created_at,
-           EXISTS (
-               SELECT 1 FROM auth_webauthn_credentials c WHERE c.user_id = u.id
-           ) AS has_passkey
+           public.auth_legacy_user_has_passkey_v1(u.org_id, u.id) AS has_passkey
     FROM users u
     LEFT JOIN employees e
       ON e.id = u.employee_id
@@ -2234,12 +2247,18 @@ async fn sweep_user_credentials_tx(
     occurred_at: time::OffsetDateTime,
     org: OrgId,
 ) -> Result<CredentialSweep, PgOrgError> {
-    let revoked_credentials =
-        sqlx::query("DELETE FROM auth_webauthn_credentials WHERE user_id = $1")
-            .bind(*user_id.as_uuid())
-            .execute(tx.as_mut())
-            .await?
-            .rows_affected();
+    let revoked = sqlx::query(
+        "SELECT revoked_credentials, revoked_families FROM public.auth_legacy_deactivate_credentials_v1($1,$2,$3)",
+    )
+    .bind(*org.as_uuid())
+    .bind(*user_id.as_uuid())
+    .bind(occurred_at)
+    .fetch_one(tx.as_mut())
+    .await?;
+    let revoked_credentials = u64::try_from(revoked.try_get::<i64, _>("revoked_credentials")?)
+        .map_err(|_| KernelError::internal("invalid credential revocation count"))?;
+    let revoked_families = u64::try_from(revoked.try_get::<i64, _>("revoked_families")?)
+        .map_err(|_| KernelError::internal("invalid session revocation count"))?;
     let credential_event = user_audit_event(
         "auth.passkey.revoke_all",
         Some(actor),
@@ -2256,29 +2275,6 @@ async fn sweep_user_credentials_tx(
         })),
     );
 
-    let revoked_families = sqlx::query(
-        r#"
-        UPDATE auth_refresh_token_families
-        SET revoked_at = $2, revoked_reason = 'user_deactivated'
-        WHERE user_id = $1 AND revoked_at IS NULL
-        "#,
-    )
-    .bind(*user_id.as_uuid())
-    .bind(occurred_at)
-    .execute(tx.as_mut())
-    .await?
-    .rows_affected();
-    sqlx::query(
-        r#"
-        UPDATE auth_refresh_tokens
-        SET revoked_at = COALESCE(revoked_at, $2)
-        WHERE user_id = $1
-        "#,
-    )
-    .bind(*user_id.as_uuid())
-    .bind(occurred_at)
-    .execute(tx.as_mut())
-    .await?;
     let session_event = user_audit_event(
         "auth.refresh.revoke_all",
         Some(actor),

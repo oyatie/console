@@ -24,6 +24,10 @@ have_database_url=0
 have_owner_url=0
 have_runtime_url=0
 have_admin_url=0
+have_auth_url=0
+have_leave_url=0
+have_ontology_url=0
+have_force_url=0
 while IFS= read -r line || [[ -n "${line}" ]]; do
   case "${line}" in
     *=*) key="${line%%=*}"; value="${line#*=}" ;;
@@ -43,6 +47,18 @@ while IFS= read -r line || [[ -n "${line}" ]]; do
     CONSOLE_APALIS_ADMIN_DATABASE_URL)
       [[ "${have_admin_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_admin_url=1 ;;
+    CONSOLE_TEST_AUTH_DATABASE_URL)
+      [[ "${have_auth_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
+      have_auth_url=1 ;;
+    CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL)
+      [[ "${have_leave_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
+      have_leave_url=1 ;;
+    CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL)
+      [[ "${have_ontology_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
+      have_ontology_url=1 ;;
+    CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL)
+      [[ "${have_force_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
+      have_force_url=1 ;;
     *) echo "buck-postgres: unexpected environment key" >&2; exit 1 ;;
   esac
   export "${key}=${value}"

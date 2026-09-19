@@ -30,10 +30,16 @@ use uuid::Uuid;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit(
     owner_pool: PgPool,
 ) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::new();
     let branch = BranchId::new();
     let member = UserId::new();
@@ -61,7 +67,10 @@ async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit
             runtime_pool.clone(),
             Arc::new(PgInboxStore::new(runtime_pool)),
         ),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
 
     let own = request_json(
@@ -157,8 +166,14 @@ async fn member_self_service_is_server_bound_and_missing_home_branch_is_explicit
     );
 }
 
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::new();
     let branch = BranchId::new();
     let requester = UserId::new();
@@ -213,7 +228,10 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
             Arc::new(PgInboxStore::new(runtime_pool)),
         )
         .with_leave_command_pool(command_pool),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
 
     // 근로기준법 §60: refusal is not a decision — even the frozen v1 route must
@@ -334,8 +352,14 @@ async fn v1_wire_shape_is_frozen_and_v2_requires_modern_exact_cas(owner_pool: Pg
 /// the windows are counted from are required, the unused-day count is no longer
 /// accepted from the client, and a push outside its window is refused with the
 /// canonical envelope instead of delivering a legally void notice.
-#[sqlx::test(migrations = "../../platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn statutory_push_requires_its_statutory_inputs_over_http(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
+    let auth_database = console_platform_test_support::login_test_pool(
+        &owner_pool,
+        console_platform_test_support::TestDatabaseLogin::Auth,
+    )
+    .await;
     let org = OrgId::new();
     let branch = BranchId::new();
     let target = UserId::new();
@@ -363,7 +387,10 @@ async fn statutory_push_requires_its_statutory_inputs_over_http(owner_pool: PgPo
             runtime_pool.clone(),
             Arc::new(PgInboxStore::new(runtime_pool)),
         ),
-        Some(auth.verifier),
+        Some(console_platform_auth::SessionVerification::new(
+            auth.verifier,
+            auth_database.clone(),
+        )),
     ));
 
     // The handler stamps `occurred_at` from the clock, so the happy path picks a

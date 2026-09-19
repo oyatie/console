@@ -1,0 +1,47 @@
+table,column,target,source,constraint
+workflow_runs,initiated_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0077_create_workflow_runtime_spine.sql,preserve historical nullable actors;no cascade
+workflow_waiting_tasks,assignee_user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0077_create_workflow_runtime_spine.sql,preserve historical nullable actors;no cascade
+workflow_waiting_tasks,claimed_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0077_create_workflow_runtime_spine.sql,preserve historical nullable actors;no cascade
+workflow_waiting_tasks,completed_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0077_create_workflow_runtime_spine.sql,preserve historical nullable actors;no cascade
+gov_approval_requests,requested_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0158_create_gov_approval_requests.sql,preserve historical nullable actors;no cascade
+gov_approvals,requested_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0153_create_governance.sql,preserve historical nullable actors;no cascade
+gov_approvals,approver_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0153_create_governance.sql,preserve historical nullable actors;no cascade
+gov_approval_consumptions,consumed_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0164_bind_consume_four_eyes.sql,preserve historical nullable actors;no cascade
+ont_action_command_receipts,actor_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0177_ontology_action_command_receipts.sql,preserve historical nullable actors;no cascade
+employee_contract_wages,created_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0210_payroll_statutory_rates_and_contract_wages.sql,preserve historical nullable actors;no cascade
+payroll_draft_runs,created_by,ACCOUNT,backend/crates/platform/db/migrations/0074_create_payroll_readiness.sql,preserve historical nullable actors;no cascade
+payroll_draft_runs,approved_by,ACCOUNT,backend/crates/platform/db/migrations/0074_create_payroll_readiness.sql,preserve historical nullable actors;no cascade
+payroll_draft_runs,submitted_by,ACCOUNT,backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql,preserve historical nullable actors;no cascade
+payroll_draft_runs,decided_by,ACCOUNT,backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql,preserve historical nullable actors;no cascade
+payroll_run_exceptions,resolved_by,ACCOUNT,backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql,preserve historical nullable actors;no cascade
+audit_events,actor,ACCOUNT,backend/crates/platform/db/migrations/0003_create_audit_events.sql,preserve historical nullable actors;no cascade
+policy_roles,created_by,ACCOUNT,backend/crates/platform/db/migrations/0065_create_policy_roles.sql,preserve historical nullable actors;no cascade
+policy_roles,updated_by,ACCOUNT,backend/crates/platform/db/migrations/0065_create_policy_roles.sql,preserve historical nullable actors;no cascade
+user_role_assignments,user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0065_create_policy_roles.sql,assigned Account subject;not Employee
+user_role_assignments,assigned_by,ACCOUNT,backend/crates/platform/db/migrations/0065_create_policy_roles.sql,preserve historical nullable actors;no cascade
+policy_assignment_preview_receipts,actor_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0065_create_policy_roles.sql,requester and target Account distinct;scope strengthened for enrolled preview
+policy_assignment_preview_receipts,user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0065_create_policy_roles.sql,requester and target Account distinct;scope strengthened for enrolled preview
+subject_authz_versions,user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0096_create_subject_authz_versions.sql,Account authorization subject;not Employee
+leave_requests,requester_user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0122_create_leave_requests.sql,preserve historical nullable actors;no cascade
+leave_requests,decided_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0122_create_leave_requests.sql,preserve historical nullable actors;no cascade
+leave_charge_resolutions,resolved_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql,NULL allowed for registered automated resolution
+leave_balance_import_receipts,actor,COMPANY_ACTOR,backend/crates/platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql,preserve historical nullable actors;no cascade
+employee_attendance_records,actor_user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0091_create_employee_attendance_records.sql,replace BOTH global and composite users FK;preserve Employee subject FKs
+attendance_exceptions,created_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0188_create_attendance_console.sql,preserve historical nullable actors;no cascade
+attendance_exception_resolutions,actor_user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0188_create_attendance_console.sql,preserve historical nullable actors;no cascade
+attendance_substitutions,created_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0188_create_attendance_console.sql,preserve historical nullable actors;no cascade
+attendance_month_closes,attested_by,COMPANY_ACTOR,backend/crates/platform/db/migrations/0188_create_attendance_console.sql,preserve historical nullable actors;no cascade
+attendance_close_amendments,actor_user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0188_create_attendance_console.sql,preserve historical nullable actors;no cascade
+attendance_week52_acknowledgements,acknowledged_by_user_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0188_create_attendance_console.sql,preserve historical nullable actors;no cascade
+workflow_definitions,created_by,ACCOUNT,backend/crates/platform/db/migrations/0069_create_workflow_studio.sql,preserve historical nullable actors;no cascade
+workflow_definitions,updated_by,ACCOUNT,backend/crates/platform/db/migrations/0069_create_workflow_studio.sql,preserve historical nullable actors;no cascade
+workflow_definition_versions,created_by,ACCOUNT,backend/crates/platform/db/migrations/0069_create_workflow_studio.sql,preserve historical nullable actors;no cascade
+person_revisions,actor_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql,preserve historical nullable actors;no cascade
+person_source_bindings,actor_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql,preserve historical nullable actors;no cascade
+employment_revisions,actor_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0214_create_canonical_employment_tables.sql,preserve historical nullable actors;no cascade
+employment_source_bindings,actor_id,COMPANY_ACTOR,backend/crates/platform/db/migrations/0214_create_canonical_employment_tables.sql,preserve historical nullable actors;no cascade
+auth_webauthn_credentials,user_id,ACCOUNT,backend/crates/platform/db/migrations/0034_enforce_org_id_rollout.sql,remove global+mandatoryCompany credential ownership;preserve bytes/revocations/token-family correlation;actual catalog check required
+auth_webauthn_ceremonies,user_id,ACCOUNT,backend/crates/platform/db/migrations/0034_enforce_org_id_rollout.sql,remove global+mandatoryCompany credential ownership;preserve bytes/revocations/token-family correlation;actual catalog check required
+auth_refresh_token_families,user_id,ACCOUNT,backend/crates/platform/db/migrations/0034_enforce_org_id_rollout.sql,remove global+mandatoryCompany credential ownership;preserve bytes/revocations/token-family correlation;actual catalog check required
+auth_refresh_tokens,user_id,ACCOUNT,backend/crates/platform/db/migrations/0034_enforce_org_id_rollout.sql,remove global+mandatoryCompany credential ownership;preserve bytes/revocations/token-family correlation;actual catalog check required
+auth_bootstrap_credentials,user_id,ACCOUNT,backend/crates/platform/db/migrations/0034_enforce_org_id_rollout.sql,remove global+mandatoryCompany credential ownership;preserve bytes/revocations/token-family correlation;actual catalog check required

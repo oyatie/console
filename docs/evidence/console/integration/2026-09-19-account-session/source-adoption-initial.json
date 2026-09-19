@@ -1,0 +1,1063 @@
+{
+  "base_sha": "67a6af236dae76c100b06c92241ce99651bc123f",
+  "source_sha": "8ab9a7fc9bdb4dc657a6f4a31809fd0c673c6b6b",
+  "preview_tree": "7eea8f42c7c09c4bbc40111f78de4ae91e75788c",
+  "adopted": [
+    {
+      "path": "backend/Cargo.lock",
+      "blob": "1d063c7c332d542bc9baa9127f06289287214e06",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/Cargo.toml",
+      "blob": "9e8ddc5fcafe712758d65ddd901c626645daea83",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/Cargo.toml",
+      "blob": "9fdd4096a321c6055670a4bf136794a966dc8eb6",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/account_credential_custody_state.sql",
+      "blob": "72f71f2c00f370afd2f403ea5454303cd6351bad",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/account_custody.rs",
+      "blob": "e2f79d91b81bec877c4b459c67d95153e4268ce6",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/account_custody_session.sql",
+      "blob": "0bc0d4fd4937fe9dceccd06f78e1721f8dca0f1e",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/account_custody_state.sql",
+      "blob": "431eef134186ae6c24e560dfdf3fe129c209aa07",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/action_inbox.rs",
+      "blob": "2c2aa7ab6c25f1b28bd02b043b0338eaa0822fa3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/bin/console_deployment_operator.rs",
+      "blob": "c3d33abf8f7d39e87018878ff2391a1469ba9216",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/collaboration.rs",
+      "blob": "62eaf7f03aff9c12b93edc46e26ddcef6e3be4a1",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/console_telemetry.rs",
+      "blob": "261ae759647eb9b60dc406a94a4b1ee90f1811d8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/deployment_operator.rs",
+      "blob": "77c469549b1267a95d9b8ec63adc425badc7a12c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/hr.rs",
+      "blob": "d42b3e02d1cfaf0ce02648f15a184c9016a27e7a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/lifecycle.rs",
+      "blob": "4ddf9b28e5f411e6fbc09c1742bafc0deb43053d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/objects.rs",
+      "blob": "161851a97af185ce703acf666687fc82ef2920e8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/office.rs",
+      "blob": "cfac235418809477be17e389332999ea4160737d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/recruiting_hire.rs",
+      "blob": "e9e03bac33a7f1a4349f882058359a11e5f63743",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/workbench.rs",
+      "blob": "4aec535a906e2a3eee7693bd30874b46b735d000",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/workflow_object_context.rs",
+      "blob": "07d48161a5daa701c2e61125dabb053eb2cd985b",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/src/workflow_studio.rs",
+      "blob": "7e039baea78182012ca90be13cb5e98004a42f64",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/account_migration.rs",
+      "blob": "1994d0fc05f046b2242055f094739b0eeb1f9824",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_auth7_transition.rs",
+      "blob": "e99a55c8f6f5120a2fdaacfe6d677cc1fcfc900d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+      "blob": "956f796675b2b43032ae919cafd611978026587c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_custody_startup.rs",
+      "blob": "268fbd801ccbb89de19faee784f3f9659028abba",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_custody_temporary.rs",
+      "blob": "61972bd3388fd68773c1f58c161ac0c2745d699c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_fence_projection.rs",
+      "blob": "4523cc7698f93a720c7b66725f0d54188e334356",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_fence_transport.rs",
+      "blob": "08e13e2f5445b4345c17cbf3300757dc8a9cb8d4",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_root_transition.rs",
+      "blob": "7093411c6ec0276227b2b0bd25d98b7bb415db04",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/account_storage.rs",
+      "blob": "9b8eeaf2dd0cf652a5371c34cddb7926bb09d6f7",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/actor-migration.csv",
+      "blob": "0346e314d5131c03307b38459768ba19c27e2275",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/audit_account_transition.rs",
+      "blob": "92d0f32b5b400c7b28ba2fd6e303446f003b3c2d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/audit_account_transition_adversarial.rs",
+      "blob": "08ec8266ed41cc1a24fe41def6a2edc07a30d443",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/audit_business_session_transition.rs",
+      "blob": "9182248396462c15192b6c4333c25287216e82c2",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/auth_target_parser.rs",
+      "blob": "9646566add9197b2b019629b18f8da1d864c78de",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/deployment_operator_designation.rs",
+      "blob": "aad186dbe4ceb45224b4490bfcd1b4b81149c249",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/deployment_operator_transport.rs",
+      "blob": "a8fc5e03b4b1cc5a7a111648339324972c2f19f6",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-audit228-credential-state-20aafabb.sql",
+      "blob": "00a80ca6a5aa83bdc38adb56035f97b9297641ef",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-audit228-credentials-20aafabb.sql",
+      "blob": "b7839af7798502979f6bf3049e236e1dc505d8ee",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-audit228-root-20aafabb.sql",
+      "blob": "3a225219cde697f7247c6de72807740886a62077",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-audit228-root-state-20aafabb.sql",
+      "blob": "250eec211822db89a20e94ee89cb218ed11953f9",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-audit228-verify-20aafabb.sql",
+      "blob": "6f81d4722a61f239256721008910e9f559b652d1",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-custody-dormant-v1-7af6dfd4.sql",
+      "blob": "2fc677e1a1ac181b25fb64d1f55de4f24446f1b7",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-custody-projection-v2-69e3ca9c.sql",
+      "blob": "9938fdf25fb4bf132967970d3b3c41aa6ad21877",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-custody-root-input-d66e2112.sql",
+      "blob": "18984854f2f14dd00059eafaf146d511a0164f72",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-custody-terms-guard-v3-7c599773.sql",
+      "blob": "d5732fb72801be5edcd6e1ccd9fcbcee55bbdad1",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-deployment228-credentials-6c884418.sql",
+      "blob": "a393e9070ee83786bfec56ddb92498f331d672b5",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-deployment228-observer-6c884418.sql",
+      "blob": "39c0096115126dde06e41f37509254758de7e83a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-deployment228-root-6c884418.sql",
+      "blob": "36e153409ca8a286f172585cb89ff8a491926ac3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-deployment228-verify-6c884418.sql",
+      "blob": "1044454cdece045f3f2fde05221a167ad2a850a8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-extended227-credentials-17fba595.sql",
+      "blob": "f1830bddae36f52de20531eb69cc2e362a4d573f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-extended227-root-17fba595.sql",
+      "blob": "b69fa29f2e78563b088631b3936bd5475a1b69de",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-extended227-verify-17fba595.sql",
+      "blob": "a5f9e3d4f593bde8d04215bc343a48e1be41fe24",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-extension-metadata.sql",
+      "blob": "f1c3367334d562630cdc6058aed2798f48b6ac2f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-final9-credentials-9de5c767.sql",
+      "blob": "b8568204e3ba1805a4bb2c069a6b81d088b4c045",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account-native-final9-root-9de5c767.sql",
+      "blob": "1cd833a3199a1b8d232aaa975f8b373354795818",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account_credential_custody_state-deployment228-6c884418.sql",
+      "blob": "030818e6d207517dc3a0ebe5eeb1374615d9b296",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/account_custody_state-deployment228-6c884418.sql",
+      "blob": "c3614037791bf836cc2a840b4888ee20010444e3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/fixtures/historical-migrations227-9de5c767.json",
+      "blob": "22e90dfa5d131c02770d98d53bedf7506ebc34a5",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/historical227.rs",
+      "blob": "c6fbbcbbf2136a201db51e4e1b62261fcd20b9a1",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/historical_native_enrollment.rs",
+      "blob": "4174d2d0a756f646a4f110d752a3de8731655754",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_business_session.rs",
+      "blob": "462e8a5c2a9e3db1edbc209acaa1124273042a0d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_business_session_catalog.rs",
+      "blob": "16459581debb318f8ed8c7bceb930fc51433c9ac",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_document_cases.rs",
+      "blob": "d7ceed7a31138ed9b88305c7e024a8336fe6be1e",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_entry_browser.rs",
+      "blob": "e93348a1008d02b02435f0f3299e705620886c5f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_entry_ui_cases.rs",
+      "blob": "cd06096b06ade1158ab315cd2ac479a9d637d90b",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_extension_cases.rs",
+      "blob": "f0b40c5982823e1aad03cf434c8f1f9d8b27c7a3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_group_attribution.rs",
+      "blob": "3be402205e6e4aa17e08ebe98f3245731e2fdcc2",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_refresh_cases.rs",
+      "blob": "a10b7da3c24740599902e9a9a763ea99ae47a9b8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_startup_profile.rs",
+      "blob": "43623bd6d85edd51793c19b8ec99f7483702eb7a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/publication_privileges.rs",
+      "blob": "616de0d12806fa9b4bcfe9088d94eb77beff7fe7",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/startup_effective_privileges.rs",
+      "blob": "c899f36106714e05dd43bc25709e37ffc57b76be",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/analytics-quant/rest/src/lib.rs",
+      "blob": "07ff525394db3253ad1f8e5fdc72b8a1d1911e28",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/attendance/rest/src/lib.rs",
+      "blob": "ac329cfaef3b7ea017bbb164cff98ab95126b92d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/benefit/rest/src/lib.rs",
+      "blob": "dc54e26690cb2909319fc99cc7f075f83ff24a26",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/comms/adapter-imap/src/lib.rs",
+      "blob": "90cdcda4f203df2fa3c1806ce128e0b7cde10a3e",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/comms/rest/build.rs",
+      "blob": "73857f1dba8f4c29faa7178e13e45ed6661a7dcf",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/comms/rest/src/lib.rs",
+      "blob": "24aabfd4cafabf338ed49db7a3ee459bf342887a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/comms/rest/tests/readiness.rs",
+      "blob": "e86ece72644f590d0d6df8cfd8d9fe824ddafcd2",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/compliance/rest/src/lib.rs",
+      "blob": "484ba705f600aa2cbc5357e5f6b2d4496cc48f39",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/consulting/rest/src/lib.rs",
+      "blob": "16d11be91bc895ba9f975aa9976b28b5833e340a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/consulting/rest/tests/audit_atomicity.rs",
+      "blob": "cf9b4822294003c884398dfd180e135cb9175e34",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/dispatch/rest/src/lib.rs",
+      "blob": "db6534864e8dd3b8e1c12d2b65b9fff6f2d8517d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/docs/rest/build.rs",
+      "blob": "73857f1dba8f4c29faa7178e13e45ed6661a7dcf",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/docs/rest/src/lib.rs",
+      "blob": "1f1db353a633282b08046542e0d7aaf48a160ab4",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/equipment/rest/src/lib.rs",
+      "blob": "66a8c3599d7317bb36eeabd42ffdc50d5cc2b757",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/evaluation/rest/src/lib.rs",
+      "blob": "c44876c61f06d46b7cb8038fb742e186c7d38541",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/facilities/rest/src/lib.rs",
+      "blob": "4d3191786dbabcc2811772404c388de8db23245d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/finance-gl/rest/src/lib.rs",
+      "blob": "4f5e3a635105a845edb210b60c77bc8498995e6d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/financial/rest/src/lib.rs",
+      "blob": "62015dc606fd96e7578dcb06d06c73c0831a8a91",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/financial/rest/tests/purchase_request_list.rs",
+      "blob": "da494b918a2dcb4b4bb887240ab4caed95e93a46",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/governance/rest/src/lib.rs",
+      "blob": "b44678a48ece4d142fe39510ed23343e3b5a7918",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "blob": "fd4c9147c8022b28a4475dff81375b5ea6a87582",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs",
+      "blob": "8ecfc6571fb2d80ac5624b8eb6df7b5fb02bc512",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/inbox/rest/src/lib.rs",
+      "blob": "d37309e87d1ba05ae6d098425cef1c7adb6970d3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/inbox/rest/tests/api.rs",
+      "blob": "21edacecdfface192389974a88a887235ac1f225",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/inspection/rest/src/lib.rs",
+      "blob": "9e94fea8f707ff5ec043c3e7602d57a692397edf",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/inventory/rest/src/lib.rs",
+      "blob": "785b13e393949ddbbcc34182c90b6e419e2dd8ea",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/leave/rest/src/lib.rs",
+      "blob": "923239a8d4c50eaf3c952e3204d587bfbc528ebc",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/leave/rest/tests/leave_http_personas.rs",
+      "blob": "70612382df145317c577f4d9daa0a72bbcccca4c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/logistics/rest/src/lib.rs",
+      "blob": "e80f824f060bba3a281397a4478f144844b022a3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/messenger/rest/src/lib.rs",
+      "blob": "734d4ea708ad12304c110bc87ec7ea533d8f50a5",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/messenger/rest/tests/api.rs",
+      "blob": "9d81f1228eb0261d5fa464abc03985a3125fe5f0",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/notices/rest/src/lib.rs",
+      "blob": "088198911bac6f3832a50ea3e8a573a90fc36f67",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/notices/rest/tests/api.rs",
+      "blob": "ba34da4adc15f3dc857ecbb21e3161bbdd0c8e88",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/notifications/rest/src/lib.rs",
+      "blob": "7c9ff5c9909a9ace098478de0e7ba6879aa890ef",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/notifications/rest/tests/api.rs",
+      "blob": "5a8e461f02177c6bf340ca709c22d893ae1d4932",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/native_account.css",
+      "blob": "b02c27a816d895f4629283807adda7ee3819e408",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/native_account.js",
+      "blob": "18123eb6ab109e67253d9564f8c96411bb0550af",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/native_account.rs",
+      "blob": "f6491897992466da30a818b89cba03de78435822",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/production/rest/src/lib.rs",
+      "blob": "db7431847162e8ef2d707576d92d29b01cd595e0",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/production/rest/tests/production_lifecycle_http.rs",
+      "blob": "612623d10ebcde1ddca60c2b4a4cc2daedf32d7f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/recruiting/rest/src/lib.rs",
+      "blob": "e94c2ea5fe79e909e8b64566883dc5bb402ee84e",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/registry/rest/src/lib.rs",
+      "blob": "7947fbc2e06017ebcbc476fc0ec56d63e062b054",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/registry/rest/tests/equipment_admin.rs",
+      "blob": "9e4cfbdacd4088bc29e4072db3b0b8abeecc190d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/reporting/rest/src/lib.rs",
+      "blob": "87af209ed95798e133ed6e326387a117e3b61575",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/sales/rest/src/lib.rs",
+      "blob": "4a3719ecfee96d5110a19438e130804f8f28ec11",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/support/rest/build.rs",
+      "blob": "73857f1dba8f4c29faa7178e13e45ed6661a7dcf",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/support/rest/src/lib.rs",
+      "blob": "dd41fea83dad8bfc42edcbc11364ad64ee513e15",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/support/rest/tests/authz.rs",
+      "blob": "f6d22089ad1de1b941f84d43cf49d08143097124",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/support/rest/tests/intake.rs",
+      "blob": "ffb6d367779fcf53834bf34f09a774c907700fc2",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/todos/rest/src/lib.rs",
+      "blob": "bf04e62e3901b5eb040b4bf2fcd849e7465cbdb5",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/workorder/rest/src/lib.rs",
+      "blob": "ba1006aa76020c66a958b779466f058fa753a7a8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/workorder/rest/tests/mobile_device_registration.rs",
+      "blob": "2b89e134462fc7895336c94b5846ce8d01fb7b8b",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/workorder/rest/tests/mobile_evidence.rs",
+      "blob": "2b13bbd30b4ce83439e41e6ee4ff69d3f5e51150",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/workorder/rest/tests/mobile_sync.rs",
+      "blob": "04de87736dff55c897ffede8bd7d004b3b7145c7",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/account-custody-migrations.sha384",
+      "blob": "bc39e710ff66d5e7039eb46d609a63f7c27931f7",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/fixtures/account-custody-native-extended227-17fba595.json.gz",
+      "blob": "2ac7c462cb244639443172721ea621c4a384c30b",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/fixtures/account-custody-native-final9-9de5c767.json.gz",
+      "blob": "ea1d5fa1b7894b17979affc239cfd8d7f0bcdc6d",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/fixtures/account_credential_custody_state-extended227-17fba595.sql",
+      "blob": "5a935d02234ec4d3c2e3d0a603c21b5c1d7b1af9",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/fixtures/account_custody_state-extended227-17fba595.sql",
+      "blob": "7b5ef8ed8acd0e4086c4f39bab3f9e12a7753c43",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/generate-account-custody.py",
+      "blob": "68e22d4da34111e612e551801dd09b2d6fef2220",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-auth-topology.integration.test.py",
+      "blob": "6d590a09223fba3f675fe31563a6fd27c110d863",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-finalize-account-credentials.sql",
+      "blob": "3fab29b896c1eff11ae798e189b5105c90cf14f4",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.integration.test.py",
+      "blob": "e12c18971aa6cff509853d1fe8561db87c2896f3",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.integration.test.sh",
+      "blob": "6a8b77909fbc30208001c497da35dba9b8aee628",
+      "mode": "100755"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sh",
+      "blob": "f083926811c5fd63dcee559168af07877f40ca69",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sql",
+      "blob": "3a01db76903f064160f87822ff63a83fd5f80edb",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-install-durability-observer.sql",
+      "blob": "39c0096115126dde06e41f37509254758de7e83a",
+      "mode": "100644"
+    },
+    {
+      "path": "ops/postgres-reconcile-topology.sh",
+      "blob": "a78dab82967626921db829c96450646480240609",
+      "mode": "100755"
+    },
+    {
+      "path": "ops/postgres-topology.integration.test.sh",
+      "blob": "d1d7855a5cc06b8979e150e6a099fe6bb2a00b62",
+      "mode": "100755"
+    },
+    {
+      "path": "ops/postgres-verify-account-native.sql",
+      "blob": "1d44c7d1a173c74523154a329c2f204a20221e72",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/Cargo.toml",
+      "blob": "fe9724ff8f609296a9ab555b7d6bd7c1fa6f3a26",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/src/external.rs",
+      "blob": "c4e9664d68873d71f2d30eb2611eb8f352d93624",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/src/lib.rs",
+      "blob": "9d787b4061e3c7373e8d10c98a9fdc3b9c965597",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/tests/ed25519_compatibility.rs",
+      "blob": "fa8176c99c596a940d6f5bb55044c122d5f9ede2",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/Cargo.toml",
+      "blob": "39ef87adc31c039d6d2290b7259cfcfc59f0213d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/account_browser.rs",
+      "blob": "a8e68ec7a3597f8ea866fbf6a7f2a81d7f1e1349",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/account_entry.rs",
+      "blob": "c9d1476d401bbacf8c4f4b5ad1e0d1466bec0719",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/lib.rs",
+      "blob": "b4515b70faa6287f0dfbd3eecb55c1605f134fbd",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/src/terms.rs",
+      "blob": "50f0708bce27f992c232f99e45d9544ec427df7c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/tests/dev_auth_session.rs",
+      "blob": "43384b7a9f05e281a811962c515fbe7129e7aae8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth-rest/tests/group_admin_tenant_context.rs",
+      "blob": "64ccb408b91a5740f24631a54abfcf9917fe0a63",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/Cargo.toml",
+      "blob": "20c01b2967954094995363e46122ab829117cb74",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/account.rs",
+      "blob": "7b0ef027785839a9bd4e261ad5f661fbe5aceb9f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/handoff.rs",
+      "blob": "7277fc596af05dd68db9431ed469e88292fd461a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/jwt.rs",
+      "blob": "63ad28c6c3442f555cb9e62422f24a3dc384b516",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/jwt/account.rs",
+      "blob": "6bc5dbea6242397a69a29da88c5a574cd6ce889b",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/legacy.rs",
+      "blob": "bcaade72305e14f8e4306a67552a75b6a8b58ccf",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/lib.rs",
+      "blob": "1158c99abca5b4b66a4fdc2598a3193c47621924",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/refresh.rs",
+      "blob": "3d5537f7c5a978ba6447f9c69373b688a16140a6",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/session.rs",
+      "blob": "4a0f840d6ca64ccf4900142555ae62785485fb79",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/webauthn.rs",
+      "blob": "47d8d12d44998e38e3e2cca0b1a620a4987717af",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/auth7_legacy_projection.rs",
+      "blob": "123acf5845add7f7d79b14fc8c5fc04ca13bfb02",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/jwt_es256.rs",
+      "blob": "ceb9fa513e2f5a35de2ae260fe00945bd4d6a78c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/jwt_verifier.rs",
+      "blob": "386b2f40fc7802a073c9361822b9fd4a7ab49f65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/refresh_tokens.rs",
+      "blob": "fac00c01b31b33c68cd3c168f697b52eddf074e9",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/webauthn_ceremony.rs",
+      "blob": "24b0f756ac4fc6c5736ad69ddf114ddd89a9b0f0",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/webauthn_ceremony_replay.rs",
+      "blob": "6fd7c9df2c64d6f7d4992dc788b8d2eb8ec00b0f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/auth/tests/webauthn_registration_deactivated_user.rs",
+      "blob": "194e2843033d7556ad327d53b3d84f11f03dfc8c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/authz-rest/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/authz-rest/src/lib.rs",
+      "blob": "854047928379af461d456f711c1b745624b0850c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/authz/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/cedar_pbac/authoring.rs",
+      "blob": "e3c8057758e4530c9d0b12f232f6801b3d022ab1",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/cedar_pbac/engine.rs",
+      "blob": "9944b341b01ab9c2067175e829fe84f966d18459",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs",
+      "blob": "6743fe8268a7d86187eca1ba3277ff647fa5d07e",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/build.rs",
+      "blob": "31c4cfd4381e4e1cbf363ed0476fce339b0f4049",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0226_account_terms_catalog.sql",
+      "blob": "427d44d4162baa78ade070df15ab42a1e9af6c5c",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0227_native_account_identity_catalog.sql",
+      "blob": "77804d5995b5c2bacbe3eb185600a1f06430772a",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/migrations/0228_deployment_operator_catalog.sql",
+      "blob": "18f2077317cb7fc167a8c5ae5044b3c461938df6",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/src/audit_tx.rs",
+      "blob": "6cecf2e2fced4acc68d4f7a0b5e50f0001bd500d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/src/durability.rs",
+      "blob": "2a54acd0c0f865017c917117e81659cf3d4466fa",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/src/lib.rs",
+      "blob": "406d9619e58ad622d29dd34276ab85468a1ab642",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/db/tests/rls_isolation.rs",
+      "blob": "66692d9cc74c6d2cb68cc2a5310440a86e235a60",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/jobs/Cargo.toml",
+      "blob": "cabeb172fd0e4b1ccaace588b932557fffdb34fe",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/Cargo.toml",
+      "blob": "a08494202b099c3fa26ff105a045e2f4602b8ecd",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "blob": "bba6311dade24263b8f41335f6fc938aaea1cb95",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/tests/onboard_seeds_config_objects.rs",
+      "blob": "ddcde7f9549eaee1bf2897e7bfcd876e6c1e27d8",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/tests/ops_dashboard.rs",
+      "blob": "4ee2ae089c001e898fdd7d909645b3f3c56d8dde",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/tests/platform_groups.rs",
+      "blob": "41aad7375237ed3f99afbd68298ab9893d3cd304",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/tests/remove_tenant.rs",
+      "blob": "bca51ae39f9c6c03a1bae281d6a2967525557723",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/tests/view_as.rs",
+      "blob": "dc81a117b1706ada923c9a44062eac90ddd1172b",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/Cargo.toml",
+      "blob": "e518a109abf903c6e2040da55215305db73a8366",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/src/account.rs",
+      "blob": "603f0c4eebbcf7534b5ce1aa833203ea229f58fb",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/src/lib.rs",
+      "blob": "583ea9443f3edbc23e09314ba2c26af10da0d01f",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/account_historical_consent.rs",
+      "blob": "29d72ef4dea626bfb9d67e043c19c7a82d20c9a2",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/bootstrap_passkey.rs",
+      "blob": "f8ebcce59cc4437b46a46c9d5397864563f710f7",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs",
+      "blob": "48f8334777425b80b441104a80d62900d4cae5f3",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs",
+      "blob": "c711b55e8378b389db1813dfcf7afb77e3f1758e",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/roster_import.rs",
+      "blob": "4a5a1ec64d22afdb136ff4fb9fd9ceeb88cc0784",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/provisioning/tests/self_enroll_handoff_as_runtime_role.rs",
+      "blob": "0ea5486a199b1b294cdcb18751d3158bc2c1a54d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/realtime/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/realtime/src/lib.rs",
+      "blob": "f87752cc87d52964da9dff6b72bb9f1cd701d7db",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/realtime/tests/hub.rs",
+      "blob": "aa9d88ddb14e47fc698641e2978f929ab859e132",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/request-context/src/account.rs",
+      "blob": "d1a13a616c606fd4b8e6ae52ce7b0bd0c126761d",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/test-support/Cargo.toml",
+      "blob": "3361f3d797d5c7f156c5acf4596647c70e5f7a60",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/test-support/build.rs",
+      "blob": "679616481c68891a3bb885745d054aede9a4ac65",
+      "mode": "100644"
+    },
+    {
+      "path": "backend/crates/platform/test-support/src/lib.rs",
+      "blob": "64258dbde1b58289d337f32684fc949aa0934f52",
+      "mode": "100644"
+    }
+  ],
+  "deferred": [
+    {
+      "path": "backend/crates/platform/request-context/src/lib.rs",
+      "reason": "semantic merge conflict"
+    }
+  ]
+}

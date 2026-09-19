@@ -100,11 +100,19 @@ impl Harness {
 
     /// The PLATFORM router (START + EXIT + orgs), with the view-as issuer wired so
     /// START can mint impersonation tokens.
-    fn platform_service(&self) -> Router {
+    async fn platform_service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         router(
             PlatformRestState::new(
                 self.rt_pool.clone(),
-                Some(self.verifier()),
+                Some(console_platform_auth::SessionVerification::new(
+                    self.verifier(),
+                    auth_database.clone(),
+                )),
                 PlatformProvisioner::new(Duration::minutes(15)),
             )
             .with_view_as_issuer(Some(self.issuer())),
@@ -114,7 +122,12 @@ impl Harness {
     /// A TENANT router that mirrors production: the per-request tenant org
     /// middleware arms `app.current_org`, and the blanket view-as read-only gate
     /// wraps the whole thing (exactly as the app composition root applies it).
-    fn tenant_service(&self) -> Router {
+    async fn tenant_service(&self) -> Router {
+        let auth_database = console_platform_test_support::login_test_pool(
+            &self.rt_pool,
+            console_platform_test_support::TestDatabaseLogin::Auth,
+        )
+        .await;
         let inner = Router::new()
             .route(
                 PROBE_USERS_PATH,
@@ -125,7 +138,14 @@ impl Harness {
                     .delete(probe_mutation),
             )
             .with_state(self.rt_pool.clone());
-        let inner = with_request_context(inner, Some(self.verifier()), self.rt_pool.clone());
+        let inner = with_request_context(
+            inner,
+            Some(console_platform_auth::SessionVerification::new(
+                self.verifier(),
+                auth_database.clone(),
+            )),
+            self.rt_pool.clone(),
+        );
         with_view_as_read_only_gate(inner, Some(self.verifier()))
     }
 
@@ -377,12 +397,13 @@ async fn audit_count(owner_pool: &PgPool, action: &str, actor: UserId) -> i64 {
 // ===========================================================================
 // (c) A non-platform token cannot START — 403.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_token_cannot_start_view_as(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let _ = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 3).await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
 
     // A TENANT token (platform = false) must be rejected by the platform extractor.
     let tenant_user = UserId::new();
@@ -400,12 +421,13 @@ async fn tenant_token_cannot_start_view_as(owner_pool: PgPool) {
 // view_as token pinned to the target org/role; START is audited with the real
 // operator id.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_mints_short_lived_read_only_token_and_audits(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 4).await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (status, body) = start_view_as(&platform, &platform_token, target, "ADMIN").await;
@@ -449,14 +471,15 @@ async fn start_mints_short_lived_read_only_token_and_audits(owner_pool: PgPool) 
 // ===========================================================================
 // (a) The view_as token READS the target tenant's rows (RLS armed to acting org).
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn view_as_token_reads_target_tenant_rows(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 5).await;
     let _other = seed_tenant(&owner_pool, "globex", 9).await;
-    let platform = harness.platform_service();
-    let tenant = harness.tenant_service();
+    let platform = harness.platform_service().await;
+    let tenant = harness.tenant_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (_s, body) = start_view_as(&platform, &platform_token, target, "ADMIN").await;
@@ -478,13 +501,14 @@ async fn view_as_token_reads_target_tenant_rows(owner_pool: PgPool) {
 // (b) The view_as token CANNOT mutate: every non-GET/HEAD method → 403
 // view_as_read_only, BEFORE any handler runs.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn view_as_token_cannot_mutate_any_method(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 2).await;
-    let platform = harness.platform_service();
-    let tenant = harness.tenant_service();
+    let platform = harness.platform_service().await;
+    let tenant = harness.tenant_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (_s, body) = start_view_as(&platform, &platform_token, target, "SUPER_ADMIN").await;
@@ -525,15 +549,31 @@ async fn view_as_token_cannot_mutate_any_method(owner_pool: PgPool) {
 // An ORDINARY tenant token (NOT view_as) can still mutate the probe route — the
 // gate must not block normal traffic.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn ordinary_tenant_token_can_still_mutate(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let _operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 1).await;
-    let tenant = harness.tenant_service();
+    let tenant = harness.tenant_service().await;
 
     // An ordinary SUPER_ADMIN tenant token (view_as = false) passes the gate.
     let user = UserId::new();
+    sqlx::query("INSERT INTO users (id, display_name, roles, org_id) VALUES ($1, $2, $3, $4)")
+        .bind(user.as_uuid())
+        .bind("Ordinary tenant mutation control")
+        .bind(vec!["SUPER_ADMIN".to_owned()])
+        .bind(target)
+        .execute(&owner_pool)
+        .await
+        .unwrap();
+    let persisted: (Uuid, bool, Vec<String>) =
+        sqlx::query_as("SELECT org_id, is_active, roles FROM users WHERE id=$1")
+            .bind(user.as_uuid())
+            .fetch_one(&owner_pool)
+            .await
+            .unwrap();
+    assert_eq!(persisted, (target, true, vec!["SUPER_ADMIN".to_owned()]));
     let normal = harness.token(user, OrgId::from_uuid(target), false, "SUPER_ADMIN");
     let (status, resp) = request(
         &tenant,
@@ -555,14 +595,15 @@ async fn ordinary_tenant_token_can_still_mutate(owner_pool: PgPool) {
 // (d) Cross-tenant isolation: a view_as token pinned to org A cannot read org B.
 // The token's org claim arms RLS to A; B's rows are invisible.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn view_as_token_cannot_read_a_different_org(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let org_a = seed_tenant(&owner_pool, "acme", 3).await;
     let org_b = seed_tenant(&owner_pool, "globex", 11).await;
-    let platform = harness.platform_service();
-    let tenant = harness.tenant_service();
+    let platform = harness.platform_service().await;
+    let tenant = harness.tenant_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     // Start a view_as session pinned to org A.
@@ -591,13 +632,14 @@ async fn view_as_token_cannot_read_a_different_org(owner_pool: PgPool) {
 // START refuses a non-ACTIVE tenant (409) — impersonation is scoped to live
 // tenants.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_refuses_suspended_tenant(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 2).await;
     set_org_status(&owner_pool, target, "SUSPENDED").await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (status, _body) = start_view_as(&platform, &platform_token, target, "ADMIN").await;
@@ -611,12 +653,13 @@ async fn start_refuses_suspended_tenant(owner_pool: PgPool) {
 // ===========================================================================
 // START rejects an unknown role code (422).
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_rejects_unknown_role(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 1).await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (status, _body) = start_view_as(&platform, &platform_token, target, "WIZARD").await;
@@ -631,12 +674,13 @@ async fn start_rejects_unknown_role(owner_pool: PgPool) {
 // (e) EXIT is platform-gated and audits `platform.view_as.stop` with the real
 // operator id; a tenant token cannot EXIT.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn exit_audits_stop_with_operator_and_rejects_tenant_token(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 1).await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     // EXIT with the platform token succeeds and audits the stop.
@@ -678,13 +722,14 @@ async fn exit_audits_stop_with_operator_and_rejects_tenant_token(owner_pool: PgP
 // exactly one org. The token is not view_as/read_only, so ordinary tenant
 // mutations remain reachable while RLS is armed to the selected tenant.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_context_mints_writable_super_admin_token_and_audits(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 2).await;
-    let platform = harness.platform_service();
-    let tenant = harness.tenant_service();
+    let platform = harness.platform_service().await;
+    let tenant = harness.tenant_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (status, body) = start_tenant_context(&platform, &platform_token, target).await;
@@ -744,12 +789,13 @@ async fn tenant_context_mints_writable_super_admin_token_and_audits(owner_pool: 
 // Tenant context EXIT is platform-gated and audited; tenant tokens cannot call
 // the platform EXIT endpoint.
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn tenant_context_exit_audits_and_rejects_tenant_token(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 1).await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     let (status, _body) = request(
@@ -792,8 +838,9 @@ async fn tenant_context_exit_audits_and_rejects_tenant_token(owner_pool: PgPool)
 // operator has no `users` row in the target tenant, so subject/session are the
 // absent-row 0 baseline (the true DB-current value the guard also reads).
 // ===========================================================================
-#[sqlx::test(migrations = "../db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn start_mints_carry_real_policy_freshness(owner_pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&owner_pool).await;
     let harness = Harness::new(&owner_pool).await;
     let operator = seed_platform_admin(&owner_pool).await;
     let target = seed_tenant(&owner_pool, "acme", 1).await;
@@ -801,7 +848,7 @@ async fn start_mints_carry_real_policy_freshness(owner_pool: PgPool) {
     set_policy_version(&owner_pool, target, 7).await;
     // A second target with NO policy_versions row proves the absent baseline.
     let fresh_target = seed_tenant(&owner_pool, "globex", 1).await;
-    let platform = harness.platform_service();
+    let platform = harness.platform_service().await;
     let platform_token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
 
     // (1) read-only view-as START carries the real policy_version.
@@ -849,4 +896,585 @@ async fn start_mints_carry_real_policy_freshness(owner_pool: PgPool) {
     );
     assert_eq!(claims.authz_subject_version, 0);
     assert_eq!(claims.session_generation, 0);
+}
+
+// Additive current-authority regressions. Uses this file's existing key/issuer,
+// organization and platform context owners. No new production interface.
+mod live_authority_regressions {
+    use super::*;
+    use console_kernel_core::{
+        AccessScope, AccessScopeLevel, BranchId, BranchScope, ErrorKind, KernelError, ScopeNodeId,
+    };
+    use console_platform_auth::SessionVerification;
+    use console_platform_authz::Role;
+    use console_platform_request_context::{
+        RequestContextError, resolve_platform_principal, resolve_principal,
+        resolve_principal_from_bearer_token,
+    };
+    use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
+    use std::collections::BTreeSet;
+
+    async fn bindings(owner: &PgPool, harness: &Harness) -> (SessionVerification, PgPool) {
+        let auth = login_test_pool(owner, TestDatabaseLogin::Auth).await;
+        let business = login_test_pool(owner, TestDatabaseLogin::Business).await;
+        for (pool, expected) in [(&auth, "console_auth_rt"), (&business, "console_rt")] {
+            let identity: (String, String) =
+                sqlx::query_as("SELECT session_user::text,current_user::text")
+                    .fetch_one(pool)
+                    .await
+                    .unwrap();
+            assert_eq!(identity, (expected.into(), expected.into()));
+        }
+        (SessionVerification::new(harness.verifier(), auth), business)
+    }
+
+    async fn tenant_subject(owner: &PgPool) -> (OrgId, UserId) {
+        let org = seed_tenant(owner, "live-authority", 1).await;
+        let subject: Uuid = sqlx::query_scalar("SELECT id FROM users WHERE org_id=$1")
+            .bind(org)
+            .fetch_one(owner)
+            .await
+            .unwrap();
+        (OrgId::from_uuid(org), UserId::from_uuid(subject))
+    }
+
+    async fn set_roles(owner: &PgPool, subject: UserId, roles: &[&str]) {
+        let result = sqlx::query("UPDATE users SET roles=$2 WHERE id=$1")
+            .bind(subject.as_uuid())
+            .bind(roles)
+            .execute(owner)
+            .await
+            .unwrap();
+        assert_eq!(result.rows_affected(), 1);
+        let persisted: Vec<String> = sqlx::query_scalar("SELECT roles FROM users WHERE id=$1")
+            .bind(subject.as_uuid())
+            .fetch_one(owner)
+            .await
+            .unwrap();
+        assert_eq!(persisted, roles);
+    }
+
+    async fn set_active(owner: &PgPool, subject: UserId, active: bool) {
+        let changed = sqlx::query("UPDATE users SET is_active=$2 WHERE id=$1")
+            .bind(subject.as_uuid())
+            .bind(active)
+            .execute(owner)
+            .await
+            .unwrap();
+        assert_eq!(changed.rows_affected(), 1);
+        let persisted: bool = sqlx::query_scalar("SELECT is_active FROM users WHERE id=$1")
+            .bind(subject.as_uuid())
+            .fetch_one(owner)
+            .await
+            .unwrap();
+        assert_eq!(persisted, active);
+    }
+
+    fn headers(token: &str) -> http::HeaderMap {
+        let mut headers = http::HeaderMap::new();
+        headers.insert(
+            header::AUTHORIZATION,
+            format!("Bearer {token}").parse().unwrap(),
+        );
+        headers
+    }
+
+    fn input(subject: UserId, org: OrgId, roles: &[&str]) -> AccessTokenInput {
+        AccessTokenInput {
+            subject,
+            org_id: org,
+            roles: roles.iter().map(|r| (*r).into()).collect(),
+            branches: Vec::new(),
+            platform: false,
+            view_as: false,
+            read_only: false,
+            display_name: None,
+            feature_grants: Vec::new(),
+            authz_subject_version: 0,
+            authz_policy_version: 0,
+            session_generation: 0,
+            issued_at: OffsetDateTime::now_utc(),
+        }
+    }
+
+    fn is_public_refusal<T>(result: &Result<T, RequestContextError>) -> bool {
+        match result {
+            Err(
+                RequestContextError::InvalidToken
+                | RequestContextError::LegacySessionRejected
+                | RequestContextError::InvalidClaim(_)
+                | RequestContextError::WrongTokenTier,
+            ) => true,
+            Err(RequestContextError::AccessScope(error)) => error.kind == ErrorKind::Forbidden,
+            _ => false,
+        }
+    }
+
+    fn assert_refused<T>(result: Result<T, RequestContextError>) {
+        assert!(
+            result.is_err(),
+            "current invalid identity must not resolve a principal"
+        );
+        assert!(
+            is_public_refusal(&result),
+            "refusal must map to public401/403; internal500/503 is not denial"
+        );
+    }
+
+    // Checker controls are separate from the application's behavior. Constructed
+    // errors test this private predicate only; they never replace a runtime owner.
+    fn assert_refusal_oracle_controls() {
+        for error in [
+            RequestContextError::InvalidToken,
+            RequestContextError::LegacySessionRejected,
+            RequestContextError::InvalidClaim("control"),
+            RequestContextError::WrongTokenTier,
+            RequestContextError::AccessScope(KernelError::forbidden("control")),
+        ] {
+            assert!(
+                is_public_refusal::<()>(&Err(error)),
+                "legitimate public denial control"
+            );
+        }
+        assert!(
+            !is_public_refusal(&Ok(())),
+            "successful resolution is not refusal"
+        );
+        for error in [
+            RequestContextError::VerifierUnavailable,
+            RequestContextError::SessionVerificationUnavailable,
+            RequestContextError::BranchScope("control".into()),
+            RequestContextError::EffectivePolicy("control".into()),
+            RequestContextError::AccessScope(KernelError::internal("control")),
+            RequestContextError::AccessScope(KernelError::validation("control")),
+            RequestContextError::AccessScope(KernelError::not_found("control")),
+        ] {
+            assert!(
+                !is_public_refusal::<()>(&Err(error)),
+                "internal/unavailable control must not satisfy denial"
+            );
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_ordinary_unchanged_positive_both_entry_points(owner: PgPool) {
+        assert_refusal_oracle_controls();
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let token = harness.token(subject, org, false, "MECHANIC");
+        let via_headers = resolve_principal(&session, &business, &headers(&token))
+            .await
+            .unwrap();
+        let via_token = resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        for principal in [via_headers, via_token] {
+            assert_eq!(principal.user_id, subject);
+            assert_eq!(principal.org_id, org);
+            assert_eq!(principal.roles, BTreeSet::from([Role::Mechanic]));
+            assert_eq!(principal.branch_scope, BranchScope::none());
+            assert_eq!(principal.access_scope, AccessScope::legacy_org(org));
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_ordinary_same_bearer_observes_committed_downgrade(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        set_roles(&owner, subject, &["SUPER_ADMIN"]).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let token = harness.token(subject, org, false, "SUPER_ADMIN");
+        let before = resolve_principal(&session, &business, &headers(&token))
+            .await
+            .unwrap();
+        assert_eq!(before.roles, BTreeSet::from([Role::SuperAdmin]));
+        assert_eq!(before.branch_scope, BranchScope::All);
+        set_roles(&owner, subject, &["MEMBER"]).await;
+        let after = resolve_principal(&session, &business, &headers(&token))
+            .await
+            .unwrap();
+        assert_eq!(
+            after.roles,
+            BTreeSet::from([Role::Member]),
+            "LIVE_ROLE_DOWNGRADE"
+        );
+        assert_eq!(after.branch_scope, BranchScope::none());
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_partial_removal_retains_unaffected_current_role(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        set_roles(&owner, subject, &["SUPER_ADMIN", "MECHANIC"]).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let token = harness
+            .issuer()
+            .issue_access_token(input(subject, org, &["SUPER_ADMIN", "MECHANIC"]))
+            .unwrap();
+        let before = resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        assert_eq!(
+            before.roles,
+            BTreeSet::from([Role::SuperAdmin, Role::Mechanic])
+        );
+        set_roles(&owner, subject, &["MECHANIC"]).await;
+        let after = resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        assert_eq!(
+            after.roles,
+            BTreeSet::from([Role::Mechanic]),
+            "LIVE_PARTIAL_REMOVAL"
+        );
+        assert_eq!(after.branch_scope, BranchScope::none());
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_role_addition_applies_without_widening_signed_scope(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        // Pure signed-scope projection is exercised here. This UUID is not a
+        // claim that a data-bearing branch exists or that resource access passes.
+        let branch = BranchId::new();
+        let scope = AccessScope::new(
+            AccessScopeLevel::Branch,
+            ScopeNodeId::from_uuid(*branch.as_uuid()),
+        );
+        let token = harness
+            .issuer()
+            .issue_scoped_access_token(input(subject, org, &["MECHANIC"]), scope, Vec::new())
+            .unwrap();
+        let before = resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        assert_eq!(before.roles, BTreeSet::from([Role::Mechanic]));
+        assert_eq!(before.branch_scope, BranchScope::none());
+        set_roles(&owner, subject, &["SUPER_ADMIN", "MECHANIC"]).await;
+        let after = resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        assert_eq!(
+            after.roles,
+            BTreeSet::from([Role::SuperAdmin, Role::Mechanic]),
+            "LIVE_ROLE_ADDITION"
+        );
+        assert_eq!(after.access_scope, scope);
+        assert_eq!(after.branch_scope, BranchScope::single(branch));
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_inactive_target_refused_after_success(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        set_roles(&owner, subject, &["SUPER_ADMIN"]).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let token = harness.token(subject, org, false, "SUPER_ADMIN");
+        resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        set_active(&owner, subject, false).await;
+        assert_refused(resolve_principal_from_bearer_token(&session, &business, &token).await);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_missing_target_is_not_platform_delegation(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, control) = tenant_subject(&owner).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let valid = harness.token(control, org, false, "MECHANIC");
+        resolve_principal_from_bearer_token(&session, &business, &valid)
+            .await
+            .unwrap();
+        let missing = UserId::new();
+        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM users WHERE id=$1")
+            .bind(missing.as_uuid())
+            .fetch_one(&owner)
+            .await
+            .unwrap();
+        assert_eq!(count, 0);
+        let token = harness.token(missing, org, false, "SUPER_ADMIN");
+        assert_refused(resolve_principal_from_bearer_token(&session, &business, &token).await);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_empty_current_roles_refused_after_success(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let token = harness.token(subject, org, false, "MECHANIC");
+        resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        set_roles(&owner, subject, &[]).await;
+        assert_refused(resolve_principal_from_bearer_token(&session, &business, &token).await);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_projection_permission_failure_is_unavailable_and_recovers(
+        owner: PgPool,
+    ) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let token = harness.token(subject, org, false, "MECHANIC");
+        resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        let admitted: bool = sqlx::query_scalar("SELECT pg_catalog.has_function_privilege(current_user,'public.auth_legacy_session_context_v1(uuid,uuid)','EXECUTE')")
+            .fetch_one(session.auth_pool()).await.unwrap();
+        assert!(admitted, "real Auth LOGIN initially has function execution");
+        let before: String = sqlx::query_scalar("SELECT proacl::text FROM pg_catalog.pg_proc WHERE oid='public.auth_legacy_session_context_v1(uuid,uuid)'::regprocedure")
+            .fetch_one(&owner).await.unwrap();
+        sqlx::query("REVOKE EXECUTE ON FUNCTION public.auth_legacy_session_context_v1(uuid,uuid) FROM console_auth_rt")
+            .execute(&owner).await.unwrap();
+        // Keep failure injection/verification in a joined task so even a panic
+        // is caught before the owner restores the privilege. No detached work.
+        let fault_session = session.clone();
+        let fault_business = business.clone();
+        let fault_token = token.clone();
+        let outcome = tokio::spawn(async move {
+            let admitted: bool = sqlx::query_scalar("SELECT pg_catalog.has_function_privilege(current_user,'public.auth_legacy_session_context_v1(uuid,uuid)','EXECUTE')")
+                .fetch_one(fault_session.auth_pool()).await.unwrap();
+            assert!(!admitted, "real Auth LOGIN lost exactly this function execution");
+            resolve_principal_from_bearer_token(&fault_session, &fault_business, &fault_token).await
+        }).await;
+        // Restore exact function privilege before unwrapping a caught task panic
+        // or asserting the expected RED, so baseline failure leaves no ACL change.
+        sqlx::query("GRANT EXECUTE ON FUNCTION public.auth_legacy_session_context_v1(uuid,uuid) TO console_auth_rt")
+            .execute(&owner).await.unwrap();
+        let restored: String = sqlx::query_scalar("SELECT proacl::text FROM pg_catalog.pg_proc WHERE oid='public.auth_legacy_session_context_v1(uuid,uuid)'::regprocedure")
+            .fetch_one(&owner).await.unwrap();
+        assert_eq!(restored, before, "fault injection restores the exact ACL");
+        let admitted: bool = sqlx::query_scalar("SELECT pg_catalog.has_function_privilege(current_user,'public.auth_legacy_session_context_v1(uuid,uuid)','EXECUTE')")
+            .fetch_one(session.auth_pool()).await.unwrap();
+        assert!(admitted, "real Auth LOGIN execution is restored");
+        let outcome = outcome.expect("fault-path task must not panic");
+        let recovered = resolve_principal_from_bearer_token(&session, &business, &token)
+            .await
+            .unwrap();
+        assert_eq!(recovered.roles, BTreeSet::from([Role::Mechanic]));
+        assert!(
+            matches!(
+                outcome,
+                Err(RequestContextError::SessionVerificationUnavailable)
+            ),
+            "LIVE_PROJECTION_REQUIRED"
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_platform_delegations_preserve_acting_roles_then_revoke(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let operator = seed_platform_admin(&owner).await;
+        let target = seed_tenant(&owner, "delegated-target", 1).await;
+        // Current platform authority is home identity, not SUPER_ADMIN role.
+        set_roles(&owner, operator, &["MEMBER"]).await;
+        let platform = harness.platform_service().await;
+        let platform_token = harness.token(operator, OrgId::platform(), true, "MEMBER");
+        let (view_status, view_body) =
+            start_view_as(&platform, &platform_token, target, "ADMIN").await;
+        assert_eq!(view_status, StatusCode::OK);
+        let (write_status, write_body) =
+            start_tenant_context(&platform, &platform_token, target).await;
+        assert_eq!(write_status, StatusCode::OK);
+        let view_token = view_body["access_token"].as_str().unwrap();
+        let write_token = write_body["access_token"].as_str().unwrap();
+        let (session, business) = bindings(&owner, &harness).await;
+        let target_rows: i64 =
+            sqlx::query_scalar("SELECT count(*) FROM users WHERE id=$1 AND org_id=$2")
+                .bind(operator.as_uuid())
+                .bind(target)
+                .fetch_one(&owner)
+                .await
+                .unwrap();
+        assert_eq!(target_rows, 0);
+        let view = resolve_principal_from_bearer_token(&session, &business, view_token)
+            .await
+            .unwrap();
+        let write = resolve_principal_from_bearer_token(&session, &business, write_token)
+            .await
+            .unwrap();
+        assert_eq!(view.roles, BTreeSet::from([Role::Admin]));
+        assert_eq!(view.branch_scope, BranchScope::none());
+        assert_eq!(write.roles, BTreeSet::from([Role::SuperAdmin]));
+        assert_eq!(write.branch_scope, BranchScope::All);
+        for principal in [view, write] {
+            assert_eq!(principal.user_id, operator);
+            assert_eq!(principal.org_id, OrgId::from_uuid(target));
+            assert_eq!(
+                principal.access_scope,
+                AccessScope::legacy_org(OrgId::from_uuid(target))
+            );
+        }
+        set_active(&owner, operator, false).await;
+        // Evaluate both before asserting: neither delegated branch is hidden
+        // behind the first expected baseline failure.
+        let view_after = resolve_principal_from_bearer_token(&session, &business, view_token).await;
+        let write_after =
+            resolve_principal_from_bearer_token(&session, &business, write_token).await;
+        assert_refused(view_after);
+        assert_refused(write_after);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_platform_tier_requires_current_active_home(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let operator = seed_platform_admin(&owner).await;
+        let (session, _business) = bindings(&owner, &harness).await;
+        let token = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
+        let before = resolve_platform_principal(&session, &headers(&token))
+            .await
+            .unwrap();
+        assert_eq!(before.user_id, operator);
+        // Explicit new guard: historical JWT validation accepts any UUID org
+        // even on a platform token; the current platform resolver ignored it.
+        let tenant_org = OrgId::from_uuid(seed_tenant(&owner, "platform-org-mismatch", 1).await);
+        let wrong_org_token = harness.token(operator, tenant_org, true, "SUPER_ADMIN");
+        let signed = harness
+            .verifier()
+            .verify_access_token(&wrong_org_token)
+            .unwrap();
+        assert!(signed.platform);
+        assert_eq!(signed.org, tenant_org.to_string());
+        let wrong_org_outcome =
+            resolve_platform_principal(&session, &headers(&wrong_org_token)).await;
+        set_active(&owner, operator, false).await;
+        let after = resolve_platform_principal(&session, &headers(&token)).await;
+        assert!(after.is_err(), "LIVE_PLATFORM_HOME_REQUIRED");
+        assert_refused(after);
+        assert_refused(wrong_org_outcome);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_view_as_flag_does_not_prove_platform_home(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let (org, subject) = tenant_subject(&owner).await;
+        set_roles(&owner, subject, &["SUPER_ADMIN"]).await;
+        let (session, business) = bindings(&owner, &harness).await;
+        let valid = harness.token(subject, org, false, "SUPER_ADMIN");
+        resolve_principal_from_bearer_token(&session, &business, &valid)
+            .await
+            .unwrap();
+        // Signed adversarial shape; this is not a claim the ordinary production
+        // issuer currently exposes caller-selected view_as.
+        let mut claims = input(subject, org, &["SUPER_ADMIN"]);
+        claims.view_as = true;
+        claims.read_only = true;
+        let token = harness.issuer().issue_access_token(claims).unwrap();
+        assert_refused(resolve_principal_from_bearer_token(&session, &business, &token).await);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_unmarked_platform_context_requires_writable_super_admin_shape(
+        owner: PgPool,
+    ) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let operator = seed_platform_admin(&owner).await;
+        let target = OrgId::from_uuid(seed_tenant(&owner, "shape-target", 1).await);
+        let (session, business) = bindings(&owner, &harness).await;
+        let valid = harness.token(operator, target, false, "SUPER_ADMIN");
+        resolve_principal_from_bearer_token(&session, &business, &valid)
+            .await
+            .unwrap();
+        let token = harness.token(operator, target, false, "ADMIN");
+        let wrong_single = resolve_principal_from_bearer_token(&session, &business, &token).await;
+        let mut malformed_shapes = Vec::new();
+        for role_codes in [
+            Vec::<&str>::new(),
+            vec!["SUPER_ADMIN", "ADMIN"],
+            vec!["SUPER_ADMIN", "SUPER_ADMIN"],
+        ] {
+            for read_only_view in [false, true] {
+                let mut claims = input(operator, target, &role_codes);
+                claims.view_as = read_only_view;
+                claims.read_only = read_only_view;
+                let malformed = harness.issuer().issue_access_token(claims).unwrap();
+                let signed = harness.verifier().verify_access_token(&malformed).unwrap();
+                assert_eq!(signed.roles.len(), role_codes.len());
+                malformed_shapes.push(
+                    resolve_principal_from_bearer_token(&session, &business, &malformed).await,
+                );
+            }
+        }
+        // Evaluate every malformed request before asserting, so baseline wrong
+        // ADMIN cannot prevent execution of the empty/multiple-role controls.
+        assert_refused(wrong_single);
+        for outcome in malformed_shapes {
+            assert_refused(outcome);
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_missing_platform_home_refuses_tier_and_view_as(owner: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let operator = seed_platform_admin(&owner).await;
+        let target = OrgId::from_uuid(seed_tenant(&owner, "missing-home-target", 1).await);
+        let (session, business) = bindings(&owner, &harness).await;
+        let positive = harness.token(operator, OrgId::platform(), true, "SUPER_ADMIN");
+        resolve_platform_principal(&session, &headers(&positive))
+            .await
+            .unwrap();
+        let missing = UserId::new();
+        let count: i64 = sqlx::query_scalar("SELECT count(*) FROM users WHERE id=$1")
+            .bind(missing.as_uuid())
+            .fetch_one(&owner)
+            .await
+            .unwrap();
+        assert_eq!(count, 0);
+        let platform_token = harness.token(missing, OrgId::platform(), true, "SUPER_ADMIN");
+        let mut claims = input(missing, target, &["SUPER_ADMIN"]);
+        claims.view_as = true;
+        claims.read_only = true;
+        let view_token = harness.issuer().issue_access_token(claims).unwrap();
+        let platform = resolve_platform_principal(&session, &headers(&platform_token)).await;
+        let view = resolve_principal_from_bearer_token(&session, &business, &view_token).await;
+        assert!(
+            platform.is_err(),
+            "missing platform home must not resolve platform authority"
+        );
+        assert_refused(platform);
+        assert_refused(view);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn live_authority_platform_delegation_rejects_inconsistent_read_only_flags(
+        owner: PgPool,
+    ) {
+        console_platform_test_support::prepare_account_test_database(&owner).await;
+        let harness = Harness::new(&owner).await;
+        let operator = seed_platform_admin(&owner).await;
+        let target = OrgId::from_uuid(seed_tenant(&owner, "flag-target", 1).await);
+        let (session, business) = bindings(&owner, &harness).await;
+        let valid = harness.token(operator, target, false, "SUPER_ADMIN");
+        resolve_principal_from_bearer_token(&session, &business, &valid)
+            .await
+            .unwrap();
+        let mut outcomes = Vec::new();
+        for (view_as, read_only) in [(true, false), (false, true)] {
+            let mut claims = input(operator, target, &["SUPER_ADMIN"]);
+            claims.view_as = view_as;
+            claims.read_only = read_only;
+            let token = harness.issuer().issue_access_token(claims).unwrap();
+            outcomes.push(resolve_principal_from_bearer_token(&session, &business, &token).await);
+        }
+        for outcome in outcomes {
+            assert_refused(outcome);
+        }
+    }
 }

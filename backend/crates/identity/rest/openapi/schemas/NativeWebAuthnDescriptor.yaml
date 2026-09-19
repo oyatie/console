@@ -1,0 +1,13 @@
+type: object
+required:
+- type
+- id
+properties:
+  type:
+    type: string
+  id:
+    $ref: '#/components/schemas/NativeWebAuthnOutputBytes'
+  transports:
+    type: array
+    items:
+      $ref: '#/components/schemas/NativeWebAuthnOutputTransport'

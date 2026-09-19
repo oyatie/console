@@ -1,0 +1,26 @@
+type: object
+properties:
+  appid:
+    type:
+    - boolean
+    - 'null'
+  credProps:
+    anyOf:
+    - $ref: '#/components/schemas/NativeWebAuthnCredentialPropertiesOutput'
+    - type: 'null'
+  hmacSecret:
+    type:
+    - boolean
+    - 'null'
+  credProtect:
+    anyOf:
+    - $ref: '#/components/schemas/NativeWebAuthnCredentialProtectionPolicy'
+    - type: 'null'
+  minPinLength:
+    type:
+    - integer
+    - 'null'
+    minimum: 0
+    maximum: 4294967295
+description: All fields default to None; unknown fields ignored by the pinned library. These client
+  outputs are unsigned. Canonical serialization omits None fields.

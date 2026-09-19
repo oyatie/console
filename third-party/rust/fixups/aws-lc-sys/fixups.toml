@@ -1,0 +1,6 @@
+# Run the pinned upstream C/assembly build and link its real static artifacts.
+# Do not substitute a host crypto library or drop emitted native link paths.
+[buildscript.run]
+rustc_link_lib = true
+rustc_link_search = true
+env = { NUM_JOBS = "4", AWS_LC_SYS_USE_SYSTEM = "0" }

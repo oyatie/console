@@ -1,0 +1,350 @@
+tags:
+- auth
+operationId: nativeAccountCsrf
+summary: Fetch native Account CSRF proof
+description: 'Requires X-Console-CSRF: fetch. The proof is opaque, short-lived and bound to live Account/family/generation.
+  Its creation does not extend session lifetime. At least one current native session or refresh authority
+  is required. If both cookies are supplied their live Account/family/generation authority must agree.
+  A correctly signed but expired access cookie may accompany a current same-family refresh token.
+  Malformed, signature-invalid, kind-invalid, otherwise time-invalid or mismatched access authority
+  is refused; it never downgrades to refresh. Cookie-only native Account transport. Any Authorization
+  header or duplicate recognized Account cookie is refused as ambiguous_credentials. Combined Cookie
+  header bytes, including separators, are bounded to 16 KiB. Legacy console_refresh is never Account
+  authority. Only cookie values consumed by the operation are validated as credentials. Responses
+  are JSON with Cache-Control: no-store, Pragma: no-cache, X-Content-Type-Options: nosniff and Vary:
+  Cookie, Origin. Owner transactions complete before success responses/cookies are released. A commit
+  transport failure returns authority_unavailable and may leave outcome uncertain; blind mutation
+  replay is not safe. Origin may be absent; a supplied Origin must equal the configured HTTPS origin
+  exactly. Sec-Fetch-Site may be absent; if supplied it must be same-origin.'
+security:
+- nativeAccountSession: []
+- nativeAccountRefresh: []
+parameters:
+- name: Origin
+  in: header
+  required: false
+  description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+  schema:
+    type: string
+    format: uri
+- name: Sec-Fetch-Site
+  in: header
+  required: false
+  description: If supplied, exactly same-origin; duplicate values are refused.
+  schema:
+    type: string
+    enum:
+    - same-origin
+- name: X-Console-CSRF
+  in: header
+  required: true
+  description: Single header value; total header bytes bounded to 4096. For mutations Auth verifies
+    signature/time and live Account/family/generation binding.
+  schema:
+    type: string
+    minLength: 1
+    maxLength: 4096
+    const: fetch
+responses:
+  '200':
+    description: Validated live native Account response.
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/NativeAccountCsrfProof'
+  '400':
+    description: 'Applicable native error codes: ambiguous_credentials.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - ambiguous_credentials
+        examples:
+          ambiguous_credentials:
+            value:
+              error:
+                code: ambiguous_credentials
+                message: Credential transport is ambiguous.
+  '401':
+    description: 'Applicable native error codes: authentication_invalid.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - authentication_invalid
+        examples:
+          authentication_invalid:
+            value:
+              error:
+                code: authentication_invalid
+                message: Authentication is invalid.
+  '403':
+    description: 'Applicable native error codes: request_origin_denied, csrf_invalid.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - request_origin_denied
+                    - csrf_invalid
+        examples:
+          request_origin_denied:
+            value:
+              error:
+                code: request_origin_denied
+                message: Request origin is denied.
+          csrf_invalid:
+            value:
+              error:
+                code: csrf_invalid
+                message: Request proof is invalid.
+  '413':
+    description: 'Applicable native error codes: request_too_large.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - request_too_large
+        examples:
+          request_too_large:
+            value:
+              error:
+                code: request_too_large
+                message: Request exceeds the supported size.
+  '422':
+    description: 'Applicable native error codes: invalid_request.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - invalid_request
+        examples:
+          invalid_request:
+            value:
+              error:
+                code: invalid_request
+                message: Request is invalid.
+  '429':
+    description: 'Applicable native error codes: rate_limited.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - rate_limited
+        examples:
+          rate_limited:
+            value:
+              error:
+                code: rate_limited
+                message: Request rate is exceeded.
+  '503':
+    description: 'Applicable native error codes: authority_unavailable.'
+    headers:
+      Cache-Control:
+        schema:
+          type: string
+          const: no-store
+      Pragma:
+        schema:
+          type: string
+          const: no-cache
+      X-Content-Type-Options:
+        schema:
+          type: string
+          const: nosniff
+      Vary:
+        schema:
+          type: string
+          const: Cookie, Origin
+    content:
+      application/json:
+        schema:
+          allOf:
+          - $ref: '#/components/schemas/NativeAccountError'
+          - type: object
+            properties:
+              error:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum:
+                    - authority_unavailable
+        examples:
+          authority_unavailable:
+            value:
+              error:
+                code: authority_unavailable
+                message: Account authority is unavailable.

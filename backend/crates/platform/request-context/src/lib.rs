@@ -21,6 +21,8 @@
 //! tables must re-enter the scope, e.g. `CURRENT_ORG.scope(org, async { .. })`.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod account;
+
 use std::net::{IpAddr, SocketAddr};
 use std::str::FromStr;
 use std::sync::Arc;
@@ -33,7 +35,7 @@ use console_kernel_core::{
     AccessScope, AuditRequestContext, BranchScope, ErrorKind, KernelError, OrgId, TraceContext,
     UserId,
 };
-use console_platform_auth::{JwtVerifier, TenantAccessContext};
+use console_platform_auth::{LegacySessionContextError, SessionVerification, TenantAccessContext};
 use console_platform_authz::{
     PlatformPrincipal, Principal, Role, SubjectFreshness, effective_branch_scope_for_tenant,
     resolve_branch_scope_in_org, resolve_effective_feature_grants_in_org,
@@ -209,6 +211,10 @@ pub enum RequestContextError {
     #[error("invalid bearer token")]
     InvalidToken,
 
+    /// A cryptographically valid legacy session belongs to an Account-fenced subject.
+    #[error("invalid bearer token")]
+    LegacySessionRejected,
+
     /// A claim in an otherwise-valid token did not parse (subject, role, or org).
     #[error("token claim is invalid: {0}")]
     InvalidClaim(&'static str),
@@ -216,6 +222,10 @@ pub enum RequestContextError {
     /// JWT verification is not configured for this deployment.
     #[error("jwt verification is not configured")]
     VerifierUnavailable,
+
+    /// Current session verification could not read its mandatory Auth dependency.
+    #[error("session verification unavailable")]
+    SessionVerificationUnavailable,
 
     /// Resolving the live branch scope from the database failed.
     #[error("failed to resolve branch scope: {0}")]
@@ -291,11 +301,12 @@ fn bearer_token(headers: &HeaderMap) -> Result<&str, RequestContextError> {
 /// 2. verify it (the verifier already rejects a token whose `org` claim is not a
 ///    valid UUID),
 /// 3. parse subject and roles,
-/// 4. take the tenant from the verified `org` claim,
+/// 4. take the tenant from the verified `org` claim and refuse fenced subjects
+///    through the mandatory Auth projection,
 /// 5. re-resolve the live branch scope from the database rather than trusting the
 ///    token's `branches` claim, so a membership revocation takes effect at once.
 pub async fn resolve_principal(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     pool: &PgPool,
     headers: &HeaderMap,
 ) -> Result<Principal, RequestContextError> {
@@ -308,13 +319,15 @@ pub async fn resolve_principal(
 /// Realtime WebSocket handshakes may carry the token in `Sec-WebSocket-Protocol`
 /// rather than `Authorization`, but the security path after extraction must be
 /// identical: verify, reject platform tier, parse roles/org/access scope,
-/// re-resolve live branch memberships, and narrow by [`AccessScope`].
+/// check the Auth projection, re-resolve live branch memberships, and narrow by
+/// [`AccessScope`].
 pub async fn resolve_principal_from_bearer_token(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     pool: &PgPool,
     token: &str,
 ) -> Result<Principal, RequestContextError> {
     let claims = verifier
+        .token_verifier()
         .verify_access_token(token)
         .map_err(|_| RequestContextError::InvalidToken)?;
 
@@ -332,13 +345,11 @@ pub async fn resolve_principal_from_bearer_token(
     let access_scope = claims
         .access_scope()
         .map_err(|_| RequestContextError::InvalidClaim("access scope is invalid"))?;
-    let roles = claims
-        .roles
-        .iter()
-        .map(|role| {
-            Role::from_str(role).map_err(|_| RequestContextError::InvalidClaim("unknown role"))
-        })
-        .collect::<Result<BTreeSet<_>, _>>()?;
+    let roles = parse_current_roles(&claims.roles)?;
+
+    // JWT validation already checked the GroupAdmin claim constraints. Fence
+    // before either principal path can perform a live Business lookup.
+    ensure_session_subject(verifier, user_id).await?;
 
     // Subject authorization freshness snapshot carried by the verified token
     // (Cedar/PBAC activation, ADR-0021). Absent claims default to 0 (the
@@ -365,6 +376,41 @@ pub async fn resolve_principal_from_bearer_token(
         .await;
     }
 
+    let no_group_context = claims.tenant_context.is_none()
+        && claims.group_context_id.is_none()
+        && claims.actor_home_org.is_none()
+        && claims.group_roles.is_empty();
+    let roles = if claims.view_as || claims.read_only {
+        if !claims.view_as
+            || !claims.read_only
+            || claims.roles.len() != 1
+            || !no_group_context
+            || org_id == OrgId::platform()
+        {
+            return Err(RequestContextError::LegacySessionRejected);
+        }
+        current_legacy_roles(verifier, OrgId::platform(), user_id).await?;
+        roles
+    } else {
+        match verifier
+            .legacy_session_context(org_id, *user_id.as_uuid())
+            .await
+        {
+            Ok(current) => parse_current_roles(&current.roles)?,
+            Err(LegacySessionContextError::NotFound)
+                if claims.roles.as_slice() == ["SUPER_ADMIN"]
+                    && no_group_context
+                    && org_id != OrgId::platform() =>
+            {
+                // Existing writable platform contexts have no marker. A missing
+                // target is never authority: prove the same subject's live home.
+                current_legacy_roles(verifier, OrgId::platform(), user_id).await?;
+                roles
+            }
+            Err(error) => return Err(legacy_context_error(error)),
+        }
+    };
+
     let role_vec = roles.iter().copied().collect::<Vec<_>>();
     let live_branch_scope = resolve_branch_scope_in_org(pool, org_id, user_id, &role_vec)
         .await
@@ -380,6 +426,52 @@ pub async fn resolve_principal_from_bearer_token(
         .with_access_scope(access_scope)
         .with_effective_feature_grants(effective_feature_grants)
         .with_authz_freshness(authz_freshness))
+}
+
+fn parse_current_roles(values: &[String]) -> Result<BTreeSet<Role>, RequestContextError> {
+    if values.is_empty() {
+        return Err(RequestContextError::LegacySessionRejected);
+    }
+    values
+        .iter()
+        .map(|role| {
+            Role::from_str(role).map_err(|_| RequestContextError::InvalidClaim("unknown role"))
+        })
+        .collect()
+}
+
+fn legacy_context_error(error: LegacySessionContextError) -> RequestContextError {
+    match error {
+        LegacySessionContextError::Unavailable => {
+            RequestContextError::SessionVerificationUnavailable
+        }
+        LegacySessionContextError::NotFound
+        | LegacySessionContextError::Inactive
+        | LegacySessionContextError::Fenced => RequestContextError::LegacySessionRejected,
+    }
+}
+
+async fn current_legacy_roles(
+    verifier: &SessionVerification,
+    org: OrgId,
+    subject: UserId,
+) -> Result<BTreeSet<Role>, RequestContextError> {
+    let current = verifier
+        .legacy_session_context(org, *subject.as_uuid())
+        .await
+        .map_err(legacy_context_error)?;
+    parse_current_roles(&current.roles)
+}
+
+async fn ensure_session_subject(
+    verifier: &SessionVerification,
+    user_id: UserId,
+) -> Result<(), RequestContextError> {
+    match verifier.legacy_subject_is_fenced(*user_id.as_uuid()).await {
+        Ok(false) => Ok(()),
+        Ok(true) => Err(RequestContextError::LegacySessionRejected),
+        Err(_) => Err(RequestContextError::SessionVerificationUnavailable),
+    }
 }
 
 async fn resolve_group_admin_tenant_context_principal(
@@ -451,11 +543,12 @@ async fn resolve_group_admin_tenant_context_principal(
 /// Fail-closed: a request that cannot be resolved to a principal is rejected
 /// before any handler runs, so no tenant-scoped query can execute without an org.
 ///
-/// Pass the router's own `jwt_verifier` and a clone of its `pool`. Do NOT apply
-/// it to pre-auth routes (login/refresh) or the realtime WS upgrade.
+/// Pass the router's session verification binding and a clone of its Business
+/// `pool`. Do NOT apply it to pre-auth routes (login/refresh) or the realtime WS
+/// upgrade.
 pub fn with_request_context<S>(
     router: axum::Router<S>,
-    verifier: Option<JwtVerifier>,
+    verifier: Option<SessionVerification>,
     pool: PgPool,
 ) -> axum::Router<S>
 where
@@ -467,10 +560,8 @@ where
             let pool = pool.clone();
             async move {
                 let Some(verifier) = verifier.as_ref() else {
-                    return error_response(
-                        StatusCode::SERVICE_UNAVAILABLE,
-                        "service_unavailable",
-                        "JWT verification is not configured",
+                    return error_response_for(
+                        &RequestContextError::SessionVerificationUnavailable,
                     );
                 };
                 let principal = match resolve_principal(verifier, &pool, request.headers()).await {
@@ -589,6 +680,11 @@ fn error_response(status: StatusCode, code: &'static str, message: &str) -> Resp
 
 fn error_response_for(err: &RequestContextError) -> Response {
     let (status, code, message) = match err {
+        RequestContextError::SessionVerificationUnavailable => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "service_unavailable",
+            "session verification is unavailable",
+        ),
         RequestContextError::VerifierUnavailable => (
             StatusCode::SERVICE_UNAVAILABLE,
             "service_unavailable",
@@ -620,7 +716,7 @@ fn error_response_for(err: &RequestContextError) -> Response {
             "unauthorized",
             "missing or malformed bearer token",
         ),
-        RequestContextError::InvalidToken => (
+        RequestContextError::InvalidToken | RequestContextError::LegacySessionRejected => (
             StatusCode::UNAUTHORIZED,
             "unauthorized",
             "invalid bearer token",
@@ -710,17 +806,18 @@ async fn http_error_envelope(request: Request, next: Next) -> Response {
 /// 1. parse + verify the bearer token,
 /// 2. REQUIRE `platform = true` — a tenant token is rejected here, so a tenant
 ///    admin can never reach `/api/platform/*`,
-/// 3. parse the subject.
+/// 3. parse the subject and refuse fenced subjects through the Auth projection.
 ///
 /// It deliberately resolves NO tenant org and NO branch scope: a platform
 /// principal is not tenant-scoped, and platform handlers arm the specific
 /// TARGET org themselves per action.
 pub async fn resolve_platform_principal(
-    verifier: &JwtVerifier,
+    verifier: &SessionVerification,
     headers: &HeaderMap,
 ) -> Result<PlatformPrincipal, RequestContextError> {
     let token = bearer_token(headers)?;
     let claims = verifier
+        .token_verifier()
         .verify_access_token(token)
         .map_err(|_| RequestContextError::InvalidToken)?;
 
@@ -731,6 +828,14 @@ pub async fn resolve_platform_principal(
 
     let user_id = UserId::from_str(&claims.sub)
         .map_err(|_| RequestContextError::InvalidClaim("subject is not a valid user id"))?;
+    let org = OrgId::from_str(&claims.org)
+        .map_err(|_| RequestContextError::InvalidClaim("org is not a valid uuid"))?;
+    if org != OrgId::platform() {
+        return Err(RequestContextError::LegacySessionRejected);
+    }
+    parse_current_roles(&claims.roles)?;
+    ensure_session_subject(verifier, user_id).await?;
+    current_legacy_roles(verifier, org, user_id).await?;
     Ok(PlatformPrincipal::new(user_id))
 }
 
@@ -745,7 +850,7 @@ pub async fn resolve_platform_principal(
 /// rejected before any handler runs.
 pub fn with_platform_context<S>(
     router: axum::Router<S>,
-    verifier: Option<JwtVerifier>,
+    verifier: Option<SessionVerification>,
 ) -> axum::Router<S>
 where
     S: Clone + Send + Sync + 'static,
@@ -755,10 +860,8 @@ where
             let verifier = verifier.clone();
             async move {
                 let Some(verifier) = verifier.as_ref() else {
-                    return error_response(
-                        StatusCode::SERVICE_UNAVAILABLE,
-                        "service_unavailable",
-                        "JWT verification is not configured",
+                    return error_response_for(
+                        &RequestContextError::SessionVerificationUnavailable,
                     );
                 };
                 let principal = match resolve_platform_principal(verifier, request.headers()).await
@@ -1248,5 +1351,132 @@ mod tests {
             );
             assert_eq!(bearer_token(&headers).expect("bearer"), "access-token");
         }
+    }
+}
+#[cfg(test)]
+mod diagnostic_nondisclosure_tests {
+    // Exercise the real HTTP error boundary. These paired inputs establish
+    // diagnostic-text noninterference only, not SQL origin, timing, or logs.
+    use super::*;
+    use axum::body::to_bytes;
+
+    async fn observe(error: &RequestContextError) -> (StatusCode, HeaderMap, Vec<u8>) {
+        let response = error_response_for(error);
+        let status = response.status();
+        let headers = response.headers().clone();
+        let body = to_bytes(response.into_body(), 4096)
+            .await
+            .expect("error body must be bounded")
+            .to_vec();
+        (status, headers, body)
+    }
+
+    async fn assert_same_public_failure(
+        wrap: fn(String) -> RequestContextError,
+        expected_status: StatusCode,
+    ) {
+        let first = observe(&wrap("PRIVATE-DIAGNOSTIC-A".to_owned())).await;
+        let second = observe(&wrap("PRIVATE-DIAGNOSTIC-B: 급여 20000000".to_owned())).await;
+        assert_eq!(first.0, expected_status);
+        assert_eq!(second.0, expected_status);
+        assert_eq!(
+            first.1, second.1,
+            "private diagnostic must not affect headers"
+        );
+        assert!(
+            first.2 == second.2,
+            "same error class must have diagnostic-independent body bytes"
+        );
+        assert!(
+            !first.2.is_empty(),
+            "failure still needs a public explanation"
+        );
+        assert!(
+            std::str::from_utf8(&first.2).is_ok(),
+            "public explanation is valid UTF-8"
+        );
+        assert!(
+            !first
+                .2
+                .windows(b"PRIVATE-DIAGNOSTIC".len())
+                .any(|bytes| bytes == b"PRIVATE-DIAGNOSTIC")
+        );
+    }
+
+    #[tokio::test]
+    async fn branch_resolution_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            RequestContextError::BranchScope,
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn policy_resolution_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            RequestContextError::EffectivePolicy,
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn internal_access_scope_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            |message| RequestContextError::AccessScope(KernelError::internal(message)),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn forbidden_access_scope_failure_does_not_echo_private_diagnostic() {
+        assert_same_public_failure(
+            |message| RequestContextError::AccessScope(KernelError::forbidden(message)),
+            StatusCode::FORBIDDEN,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    async fn fixed_public_failure_classes_keep_actionable_statuses() {
+        for (error, expected) in [
+            (RequestContextError::InvalidToken, StatusCode::UNAUTHORIZED),
+            (
+                RequestContextError::LegacySessionRejected,
+                StatusCode::UNAUTHORIZED,
+            ),
+            (RequestContextError::WrongTokenTier, StatusCode::FORBIDDEN),
+            (
+                RequestContextError::VerifierUnavailable,
+                StatusCode::SERVICE_UNAVAILABLE,
+            ),
+            (
+                RequestContextError::SessionVerificationUnavailable,
+                StatusCode::SERVICE_UNAVAILABLE,
+            ),
+        ] {
+            let first = observe(&error).await;
+            let second = observe(&error).await;
+            assert_eq!(first.0, expected);
+            assert_eq!(first, second);
+            assert!(!first.2.is_empty());
+        }
+    }
+}
+
+#[cfg(test)]
+mod current_role_tests {
+    use super::*;
+
+    #[test]
+    fn current_roles_reject_empty_and_partially_invalid_sets() {
+        assert!(parse_current_roles(&[]).is_err());
+        assert!(parse_current_roles(&["MEMBER".into(), "UNKNOWN".into()]).is_err());
+        assert_eq!(
+            parse_current_roles(&["MEMBER".into()]).unwrap(),
+            BTreeSet::from([Role::Member])
+        );
     }
 }
