@@ -1,0 +1,36 @@
+# Audit HTTP current-authority design candidate
+
+Status: proposal only. No design round, test approval, implementation admission, or release acceptance is claimed.
+Base: b14d38a0ce5eb58c9d5664dccc6224954fa16882, plus independently approved audit fixture SHA256 12ed1bf6eb97fa70b1740e18c5f8da984bf0204c65603d09dd30eec37a38f031.
+Owner: root is sole repository writer. Immutable target: both existing audit GET handlers consume the server-resolved request Principal, preserving existing routes, query/response contracts, audit writer, and attestation verifier.
+
+## Evidence and defect
+
+backend/app/src/lib.rs:3404 composes both routes through with_request_context. request-context/src/lib.rs:328 verifies the token, checks the Auth owner projection, resolves current roles (399), current Business branch memberships (415), and effective grants (421), then inserts Principal into request extensions (570).
+App audit_log (4344) and audit_attestation (4406) independently verify the JWT and call principal_from_claims (4463), which rebuilds roles/branches from historical claims and omits current grants. This discards the authoritative projection produced moments earlier. Existing audit fixture5/5 passes (console-audit-api-fixture-green.log); the earlier missing durability failure was infrastructure, not product RED.
+
+## Smallest repair boundary
+
+Use axum Extension<Principal> in both handlers; authorize and pass its org/branch scope to the unchanged owning functions. Middleware remains the sole request authority constructor. Remove the now-unused local token/principal conversion helpers and imports only after checking all callers. Keep with_audit, audit_read_event, fetch_audit_records, verify_org_chain, and both authorization helpers unchanged. Missing extension must fail closed; no fallback to JWT or default principal. No SQL, migration, credential, custody, policy, or public contract changes.
+
+## Proposed executable histories
+
+1. audit_log_uses_current_role_after_token_issuance: same valid ADMIN JWT/router successfully reads an actual branch audit; fixture commits ADMIN→MECHANIC in users; same JWT returns403/forbidden and no new audit rows; restoring the fixture role lets the identical JWT/router succeed again.
+2. audit_attestation_uses_current_role_after_token_issuance: same history with SUPER_ADMIN→MECHANIC and actual chain report. Expect403/forbidden after demotion, identical audit rows, then successful same-token recovery after restored fixture role.
+3. audit_log_uses_current_branches_after_token_issuance: ADMIN JWT names two real authorized branches with one audited object each; first GET exposes both. Fixture commits revocation of one user_branches row; same JWT/router returns200 with exactly the retained object/branch and no revoked target. Removing the final membership yields403 and no new audit rows.
+
+All requests use build_router and independently authenticated restricted Auth and Business pools. Fixture mutations use the isolated SQLx administrative setup pool, assert exactly one affected row, and commit before HTTP. They model already-committed authority changes; they do not claim role-management, approval, or revocation-command correctness. Preserve all five existing tests byte-for-byte. No injected Principal or mocked resolver. Bound response bodies to64KiB. Current bug should fail each new test on its own stale-authority assertion, after a successful positive HTTP control.
+
+Positive controls detect blanket denial and absent routes/data; same-router/same-token controls detect reliance on remint/restart. Denied-response snapshots detect unexpected audit.read effects. Existing five tests retain cross-Company denial and attestation scope coverage. During post-fix evidence review, restore JWT reconstruction separately in each handler to ensure the matching role test detects it, and restore stale branch reconstruction to ensure the branch test detects disclosure. Record actual outcomes, not anticipated ones.
+
+## Admission and review order
+
+DELIVERY requires four independent design-review rounds with consensus and exact design SHA approval. Round1 owner/boundary; round2 authorization/adversarial histories; round3 failure/fixture/oracle; round4 independent final simplification and residual-risk check. These are suggested review assignments, not four completed approvals. Root must record reviewer identities, findings, revisions, and final consensus. Material revision returns to design review.
+Then separately approve exact test SHA, apply/commit tests, run named probes and retain owner-bound RED logs with actual discovered/executed counts. Admit the implementation lane through tools/lanes/fanout.py only from the approved test commit. Keep migration/generated/authority writers serialized. Test drafts attached here are review proposals, not authority to skip the design sequence.
+
+## Pre-mortem and limits
+
+Failure mode: a green stale-role test merely exercises middleware rejection before reaching the defective handler, or repair loses valid branch reads. Detect through real pre-change success, exact403/forbidden (not401/500), role-recovery success, and continued retained-branch visibility. Branch revocation uses still-active users and valid unchanged JWTs.
+Blast radius: two app audit GET handlers, local dead helpers/imports, and their HTTP tests. Rollback: revert bounded repair, retaining tests/evidence; no data restoration or historical rewrite required. Stop on unrelated fixture failure, missing executed cases, unexpected status, weakened existing assertion, owner-boundary widening, source/custody changes, or incomplete independent approval.
+Required lenses: Red Team, Operability/Day-2, Blast-radius, Zero-trust. Conclusions: server-built authority must survive transport handling; use existing ports; preserve audit attribution and RLS; exercise revocation and recoverable authorized access.
+This establishes current authority at request resolution, not atomic revocation midway through a transaction. Token freshness/invalid-token handling remain middleware contracts. Native browser sessions, subscriptions, production from_config startup admission, independent migration qualification, and the full release remain separate required evidence.

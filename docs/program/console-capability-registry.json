@@ -7624,6 +7624,672 @@
           "sha256": "71425e22a31f96c3ae6f2def632c10c92b149703a0280f34a5354e1ac31809ba",
           "compressed_sha256": "af0497317f84847d93caf1bcfe38b3d695bcc8df3c85c5db97639482a0b60735",
           "limitations": "Mutable public page; redirects followed, headers/effective URL not captured. Describes reference capability, not Console implementation."
+        },
+        {
+          "id": "vertex-scenarios-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/vertex/scenarios-overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/vertex/scenarios-overview",
+          "retrieved_utc": "2026-09-19T23:42:35.712930+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "435985",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:26 GMT",
+            "ETag": "\"91904d85142a800ae1bbef1d7bd33150\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660027-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861356.571928,VS0,VE132",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/vertex-scenarios-overview.html.gz",
+          "bytes": 435985,
+          "sha256": "8fcf5612fe097c27e192252c610de11c22fa6a8c059925fb4f8ae3823ea9f996",
+          "compressed_sha256": "18c4dd676cf3a8abaed0ff8e226953b2fd5b03b56b771a1ca892d7470abb58e2",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "foundry-devops-supported-resources",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/supported-resources/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/supported-resources",
+          "retrieved_utc": "2026-09-19T23:43:10.712205+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "257584",
+            "Server": "AmazonS3",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+            "ETag": "\"64a137a5e68726e153cc46bb9dbf87a3\"",
+            "Content-Type": "text/html",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:43:10 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660050-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861391.547918,VS0,VE155",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-supported-resources.html.gz",
+          "bytes": 257584,
+          "sha256": "af023965148c311028a665a969defacc2225a4fd663cc31f7b7e0c296bf2a1e7",
+          "compressed_sha256": "ec42894db229533a858e5950c43fb649f3808e9f09bd545c94a918d1571e4659",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "manage-models-live-deployment-reference",
+          "requested_url": "https://www.palantir.com/docs/foundry/manage-models/live-deployment-reference/",
+          "effective_url": "https://www.palantir.com/docs/foundry/manage-models/live-deployment-reference",
+          "retrieved_utc": "2026-09-19T23:42:00.745956+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "367881",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"1d87ded70424485d7b7adc904d3dc6e9\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:00 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660061-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861321.618885,VS0,VE136",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-live-deployment-reference.html.gz",
+          "bytes": 367881,
+          "sha256": "668eae41e0f40852e2788bc50d589e569e3e9cd401dc83955d4158b2d93ec1f0",
+          "compressed_sha256": "81f0d1ef499a9f063155ab228af33ade161f2d9be7f438f7c4645aae33d5fc70",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "authentication-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/authentication/overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/authentication/overview",
+          "retrieved_utc": "2026-09-19T23:43:10.536122+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "332354",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:16 GMT",
+            "ETag": "\"b4903e05a571d6fc9caca3cf832dd516\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:43:10 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660028-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861390.386062,VS0,VE123",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-overview.html.gz",
+          "bytes": 332354,
+          "sha256": "97808088f6605596d1c262125becd1d4e5ae17d7ab43c72625497a8162154930",
+          "compressed_sha256": "c9dad942cb9f4a444a2ae3fb7078d7491f86667b316cf1b4360230b55da305ac",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "model-studio-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-studio/overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-studio/overview",
+          "retrieved_utc": "2026-09-19T23:42:35.718118+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "301118",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"62a87a331cdfdbe5cfc9b6bf2d5d5a6a\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660074-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861356.594748,VS0,VE117",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-studio-overview.html.gz",
+          "bytes": 301118,
+          "sha256": "2644c31135911deb9db595d2e2d8b573a76a6fdef0d85413ab90e9dde8b5a1c1",
+          "compressed_sha256": "a08a13941d1cceb07406b053cab7f2768ccca0da1b553b9e2f767ec73eba20f2",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "resource-management-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/overview",
+          "retrieved_utc": "2026-09-19T23:42:35.576980+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "338439",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:24 GMT",
+            "ETag": "\"d89cf6ea567650d40d28a0819abef26c\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=1500",
+            "Accept-Ranges": "bytes",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "Age": "0",
+            "X-Served-By": "cache-lga-kjfk8660077-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861355.426674,VS0,VE143",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-overview.html.gz",
+          "bytes": 338439,
+          "sha256": "20cfc7d40ec1f9cfd7899fea8523046a20157e7ea34dc78f28a4c5a90dc82347",
+          "compressed_sha256": "839dddf2b43010a8c87e01d9c0c59eff7a43dd131def81de2ec8684ccaa3439f",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "model-integration-objectives",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/objectives/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/objectives",
+          "retrieved_utc": "2026-09-19T23:42:00.765004+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "314488",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"f305f537a1c415876080af3793545343\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:00 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660024-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861321.620549,VS0,VE154",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-objectives.html.gz",
+          "bytes": 314488,
+          "sha256": "ce91057d3da056d2412c59c4bd40348f27082d497a9c8c37f72d46753eeb70c9",
+          "compressed_sha256": "4f4c4d5a45b4f33c3defe171e2b0f8bebbab05b9e4e216886b68c790ade7eec7",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "resource-management-budgets",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/budgets/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/budgets",
+          "retrieved_utc": "2026-09-19T23:42:35.572923+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "347935",
+            "Server": "AmazonS3",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:24 GMT",
+            "ETag": "\"9ccfb5b1c3f8ecb5d028eb93ad4a3bad\"",
+            "Content-Type": "text/html",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660048-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861355.425309,VS0,VE140",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-budgets.html.gz",
+          "bytes": 347935,
+          "sha256": "026ddf14fad72450ae8c59fff45e3894371e25a3392b190a01f297a1b35bcf48",
+          "compressed_sha256": "27901c79d988d5c3098b48137cdcb9117b00becace44de9e076f60d32d24eacd",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "marketplace-upgrades",
+          "requested_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades/",
+          "effective_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades",
+          "retrieved_utc": "2026-09-19T23:43:10.494540+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "267039",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"d1f44c46ebb3d770fa93ee121f318f77\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:43:10 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660072-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861390.386109,VS0,VE98",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/marketplace-upgrades.html.gz",
+          "bytes": 267039,
+          "sha256": "e84b9582b222a43efcb9316d7b332b7450b1aea78e019f063892801c50548401",
+          "compressed_sha256": "9756d081f6784b74301c5a25c47544bbd825433be5d4937f14f93b6c1b0f566e",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "integrate-models-experiments-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview",
+          "retrieved_utc": "2026-09-19T23:42:35.726305+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "362498",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"d6a8dc4e04ab3a11ad951374775cda75\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660029-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861356.585630,VS0,VE130",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/integrate-models-experiments-overview.html.gz",
+          "bytes": 362498,
+          "sha256": "aa0c6faf8cfeb810aecb5ce2e2f90e4dab7ead2dd40f8495318e39589fc75df8",
+          "compressed_sha256": "09849bac448360320616d0736da00ff5069e7c975b555d8c004b8ab1fdb679ad",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "resource-management-resource-queues",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues",
+          "retrieved_utc": "2026-09-19T23:42:35.563984+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "368079",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:24 GMT",
+            "ETag": "\"86af5d8ada7a4c294a0454ddc1fb6c78\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660065-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861355.427851,VS0,VE128",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-resource-queues.html.gz",
+          "bytes": 368079,
+          "sha256": "7a60016bcb707da04c1059a18bf1822f8ebad5964b4062463e2b639a380e0c9c",
+          "compressed_sha256": "df587e3389b5686d6cb045c601a014612e94bfa3c2b5a639fa2e4e5cb80486bb",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "administration-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/administration/overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/administration/overview",
+          "retrieved_utc": "2026-09-19T23:42:00.746805+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "345115",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:12 GMT",
+            "ETag": "\"fadb6131d52bebfd855afe65f6a8ccfe\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Date": "Sat, 19 Sep 2026 23:42:00 GMT",
+            "Via": "1.1 varnish",
+            "Age": "0",
+            "X-Served-By": "cache-lga-kjfk8660071-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861321.618363,VS0,VE137",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/administration-overview.html.gz",
+          "bytes": 345115,
+          "sha256": "94e45c700d37d30f757dc131e8bfa980ffa0ec97f31600d38cb7cf7d04fa95a4",
+          "compressed_sha256": "ed32f23c4198f1bb872be01f6d0e02fa57c1802c364c262da0b590f1a65d2037",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "manage-models-model-inference-history",
+          "requested_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history/",
+          "effective_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history",
+          "retrieved_utc": "2026-09-19T23:42:35.787692+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "315033",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"25816c5a80346b348fc311865249a136\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660043-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861356.596870,VS0,VE185",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-model-inference-history.html.gz",
+          "bytes": 315033,
+          "sha256": "32bfa1cb3628832a8849fa9ca6e8ce4f0358ca4ae5fa20b653a00d6098b81a63",
+          "compressed_sha256": "28151f9a22be25db378b430abdae6302320d2d165f6e2592e060001be96a58ec",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "foundry-devops-create-products",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products",
+          "retrieved_utc": "2026-09-19T23:42:35.550107+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "300251",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+            "ETag": "\"5db32464e36c6eb3f4fedfeb2816a31f\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:35 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660071-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861355.426221,VS0,VE116",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-create-products.html.gz",
+          "bytes": 300251,
+          "sha256": "58970958097b0cadc95d791a5e7499bd0b6b472bf3ab675117f84cc7ac7294b0",
+          "compressed_sha256": "4af5aed8051bf51d485674f9c3a6f16040a76815f8038a8c7ca9007e276ff728",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "model-integration-marketplace-models",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "321206",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+            "ETag": "\"ef0548bef889a3e05be028e39b457fc7\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:42:00 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660061-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861321.620195,VS0,VE115",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "bytes": 321206,
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "compressed_sha256": "6570d41a220c526f4f9f5952bd636c1224efe0c3e4af241eb2c2eb7ed601c7ac",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "authentication-scim-overview",
+          "requested_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview",
+          "retrieved_utc": "2026-09-19T23:43:10.538076+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "333341",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:16 GMT",
+            "ETag": "\"0db4647dc22336fd5354c8ea9620e981\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:43:10 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660055-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861390.387532,VS0,VE131",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-scim-overview.html.gz",
+          "bytes": 333341,
+          "sha256": "9de4ad38e8f812bd7d20e39a1dd4d16c0bc9f124ead20290dca7fc32da01bbeb",
+          "compressed_sha256": "a575048c8de640f36be65b3602cd558061c856f415f74a597bbf838c0f2b5cd8",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "foundry-devops-export-import-products",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products",
+          "retrieved_utc": "2026-09-19T23:43:10.558734+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "263475",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+            "ETag": "\"7bb84a10bd0d9c434937b600c80fdf2c\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:43:10 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660060-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861390.385886,VS0,VE163",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-export-import-products.html.gz",
+          "bytes": 263475,
+          "sha256": "7285f022d44f451299b2e2ca42b787ac33e9ce95fa9d85403bfaf014c61ce8f0",
+          "compressed_sha256": "4796beef90540fa167d19367c99851234eee7c6dbda0f4739baa78571b93321d",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
+        },
+        {
+          "id": "use-case-patterns-resource-allocation-optimization",
+          "requested_url": "https://www.palantir.com/docs/foundry/use-case-patterns/resource-allocation-optimization/",
+          "effective_url": "https://www.palantir.com/docs/foundry/use-case-patterns/resource-allocation-optimization",
+          "retrieved_utc": "2026-09-19T23:43:10.780911+00:00",
+          "status": 200,
+          "headers": {
+            "Connection": "close",
+            "Content-Length": "356202",
+            "Last-Modified": "Thu, 17 Sep 2026 16:05:26 GMT",
+            "ETag": "\"0639d06085a789a6b943272a11f7ddf6\"",
+            "Content-Type": "text/html",
+            "Server": "AmazonS3",
+            "Cache-Control": "max-age=3600",
+            "Accept-Ranges": "bytes",
+            "Age": "0",
+            "Date": "Sat, 19 Sep 2026 23:43:10 GMT",
+            "Via": "1.1 varnish",
+            "X-Served-By": "cache-lga-kjfk8660034-LGA",
+            "X-Cache": "MISS",
+            "X-Cache-Hits": "0",
+            "X-Timer": "S1789861391.568996,VS0,VE201",
+            "Vary": "Accept-Encoding",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "SAMEORIGIN",
+            "X-XSS-Protection": "1; mode=block",
+            "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+            "Referrer-Policy": "no-referrer-when-downgrade",
+            "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+            "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+          },
+          "path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/use-case-patterns-resource-allocation-optimization.html.gz",
+          "bytes": 356202,
+          "sha256": "a7a641354840962517eda1a23c7b8a190df4c84366accdcc7ff9df27bb080277",
+          "compressed_sha256": "1709c5440fda2e5bb213b81300e9a6b23169dd7c68c2b1ef47b05a197cca12d2",
+          "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support."
         }
       ],
       "blockers": [
@@ -8380,6 +9046,305 @@
             "quote_matching": "exact text after HTML whitespace normalization",
             "scope": "public reference only; not Console implementation or acceptance"
           }
+        ],
+        "F12.visual-training": [
+          {
+            "source_id": "model-studio-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-studio-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-studio/overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-studio/overview",
+            "retrieved_utc": "2026-09-19T23:42:35.718118+00:00",
+            "sha256": "2644c31135911deb9db595d2e2d8b573a76a6fdef0d85413ab90e9dde8b5a1c1",
+            "quote": "Built-in production-grade model trainers tailored for common use cases such as time series forecasting, regression, and classification.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.experiment-logging": [
+          {
+            "source_id": "integrate-models-experiments-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/integrate-models-experiments-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview",
+            "retrieved_utc": "2026-09-19T23:42:35.726305+00:00",
+            "sha256": "aa0c6faf8cfeb810aecb5ce2e2f90e4dab7ead2dd40f8495318e39589fc75df8",
+            "quote": "Experiments support five types of logs: hyperparameters, metrics, images, plots, and tables.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.mlflow": [
+          {
+            "source_id": "integrate-models-experiments-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/integrate-models-experiments-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview",
+            "retrieved_utc": "2026-09-19T23:42:35.726305+00:00",
+            "sha256": "aa0c6faf8cfeb810aecb5ce2e2f90e4dab7ead2dd40f8495318e39589fc75df8",
+            "quote": "After creating an experiment, users can set that experiment as the active MLflow run, and then use MLflow's Python API to write logs to the experiment.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.immutable-submissions": [
+          {
+            "source_id": "model-integration-objectives",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-objectives.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-integration/objectives/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-integration/objectives",
+            "retrieved_utc": "2026-09-19T23:42:00.765004+00:00",
+            "sha256": "ce91057d3da056d2412c59c4bd40348f27082d497a9c8c37f72d46753eeb70c9",
+            "quote": "When a model is submitted to a modeling objective to be managed and evaluated, a copy of that model version is created.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.metricsets": [
+          {
+            "source_id": "model-integration-objectives",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-objectives.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-integration/objectives/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-integration/objectives",
+            "retrieved_utc": "2026-09-19T23:42:00.765004+00:00",
+            "sha256": "ce91057d3da056d2412c59c4bd40348f27082d497a9c8c37f72d46753eeb70c9",
+            "quote": "MetricSets contain a reference to the corresponding model (and version), as well as the singular dataset and transaction (i.e. version) on which the metrics were computed.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.tagged-releases": [
+          {
+            "source_id": "model-integration-objectives",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-objectives.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-integration/objectives/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-integration/objectives",
+            "retrieved_utc": "2026-09-19T23:42:00.765004+00:00",
+            "sha256": "ce91057d3da056d2412c59c4bd40348f27082d497a9c8c37f72d46753eeb70c9",
+            "quote": "A Release includes configurable environment tags (such as \"Staging\" or \"Production\"), a user-defined version number, and a short descriptive field—a release note.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.live-multi-io": [
+          {
+            "source_id": "manage-models-live-deployment-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-live-deployment-reference.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/manage-models/live-deployment-reference/",
+            "effective_url": "https://www.palantir.com/docs/foundry/manage-models/live-deployment-reference",
+            "retrieved_utc": "2026-09-19T23:42:00.745956+00:00",
+            "sha256": "668eae41e0f40852e2788bc50d589e569e3e9cd401dc83955d4158b2d93ec1f0",
+            "quote": "A multi I/O endpoint - sometimes referred to as a \"v2 endpoint\" - is a flexible endpoint that supports one or more inputs and one or more outputs.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.inference-history": [
+          {
+            "source_id": "manage-models-model-inference-history",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-model-inference-history.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history/",
+            "effective_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history",
+            "retrieved_utc": "2026-09-19T23:42:35.787692+00:00",
+            "sha256": "32bfa1cb3628832a8849fa9ca6e8ce4f0358ca4ae5fa20b653a00d6098b81a63",
+            "quote": "The model inference history is a dataset in Foundry that captures all inference requests (inputs) and inference results (outputs) that are sent to a Modeling Objective live deployment.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.scenario-timeseries": [
+          {
+            "source_id": "vertex-scenarios-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/vertex-scenarios-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/vertex/scenarios-overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/vertex/scenarios-overview",
+            "retrieved_utc": "2026-09-19T23:42:35.712930+00:00",
+            "sha256": "8fcf5612fe097c27e192252c610de11c22fa6a8c059925fb4f8ae3823ea9f996",
+            "quote": "This will allow you to monitor your current state, view historic trends, and predict future changes with simulated overrides to modeled conditions.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F12.optimization-decisions": [
+          {
+            "source_id": "use-case-patterns-resource-allocation-optimization",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/use-case-patterns-resource-allocation-optimization.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/use-case-patterns/resource-allocation-optimization/",
+            "effective_url": "https://www.palantir.com/docs/foundry/use-case-patterns/resource-allocation-optimization",
+            "retrieved_utc": "2026-09-19T23:43:10.780911+00:00",
+            "sha256": "a7a641354840962517eda1a23c7b8a190df4c84366accdcc7ff9df27bb080277",
+            "quote": "Writeback of allocation decisions along with the context in which each decision was made means that the predicted versus actual outcome can be compared and evaluated over time.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.dependency-packaging": [
+          {
+            "source_id": "foundry-devops-create-products",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-create-products.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products/",
+            "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products",
+            "retrieved_utc": "2026-09-19T23:42:35.550107+00:00",
+            "sha256": "58970958097b0cadc95d791a5e7499bd0b6b472bf3ab675117f84cc7ac7294b0",
+            "quote": "DevOps automatically surfaces output dependencies as Inputs as you add outputs to your draft product. Users who install your finished product must provide resources to satisfy each input.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.folder-tracking": [
+          {
+            "source_id": "foundry-devops-create-products",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-create-products.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products/",
+            "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products",
+            "retrieved_utc": "2026-09-19T23:42:35.550107+00:00",
+            "sha256": "58970958097b0cadc95d791a5e7499bd0b6b472bf3ab675117f84cc7ac7294b0",
+            "quote": "Track a folder: The product will track a source folder. New versions of the product will automatically bring in new outputs from the folder.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.installation-modes": [
+          {
+            "source_id": "foundry-devops-create-products",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-create-products.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products/",
+            "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products",
+            "retrieved_utc": "2026-09-19T23:42:35.550107+00:00",
+            "sha256": "58970958097b0cadc95d791a5e7499bd0b6b472bf3ab675117f84cc7ac7294b0",
+            "quote": "Singleton: The same settings as Production mode, with the restriction that there can only be one installation of the product per space and ontology.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.model-content-producer": [
+          {
+            "source_id": "model-integration-marketplace-models",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+            "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+            "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+            "quote": "There are two ways to include a model in a product's outputs, Include with content, and Include with producer.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.model-inputs": [
+          {
+            "source_id": "model-integration-marketplace-models",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+            "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+            "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+            "quote": "During installation, users select the model to use via a model selector, which allows them to resolve specific model versions required by dependent components.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.signed-transfer": [
+          {
+            "source_id": "foundry-devops-export-import-products",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-export-import-products.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products/",
+            "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products",
+            "retrieved_utc": "2026-09-19T23:43:10.558734+00:00",
+            "sha256": "7285f022d44f451299b2e2ca42b787ac33e9ce95fa9d85403bfaf014c61ce8f0",
+            "quote": "The exported file is code signed; any changes to the file in transit will make the file not importable.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F15.maintenance-upgrades": [
+          {
+            "source_id": "marketplace-upgrades",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/marketplace-upgrades.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades/",
+            "effective_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades",
+            "retrieved_utc": "2026-09-19T23:43:10.494540+00:00",
+            "sha256": "e84b9582b222a43efcb9316d7b332b7450b1aea78e019f063892801c50548401",
+            "quote": "The maintenance windows during which you would like to receive automatic upgrades. Select Always open to take upgrades as soon as they are available.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F17.usage-accounts": [
+          {
+            "source_id": "resource-management-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/resource-management/overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/resource-management/overview",
+            "retrieved_utc": "2026-09-19T23:42:35.576980+00:00",
+            "sha256": "20cfc7d40ec1f9cfd7899fea8523046a20157e7ea34dc78f28a4c5a90dc82347",
+            "quote": "Resource usage for each of these items is accrued to its parent Project. In turn, Projects belong to a usage account.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F17.budgets": [
+          {
+            "source_id": "resource-management-budgets",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-budgets.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/resource-management/budgets/",
+            "effective_url": "https://www.palantir.com/docs/foundry/resource-management/budgets",
+            "retrieved_utc": "2026-09-19T23:42:35.572923+00:00",
+            "sha256": "026ddf14fad72450ae8c59fff45e3894371e25a3392b190a01f297a1b35bcf48",
+            "quote": "Frequency: The rate at which this budget repeats; can be monthly, quarterly, yearly or non-recurring.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F17.resource-queues": [
+          {
+            "source_id": "resource-management-resource-queues",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-resource-queues.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues/",
+            "effective_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues",
+            "retrieved_utc": "2026-09-19T23:42:35.563984+00:00",
+            "sha256": "7a60016bcb707da04c1059a18bf1822f8ebad5964b4062463e2b639a380e0c9c",
+            "quote": "Workloads are then sent to run in the compute group specified by the resource queue, and resources are released once the workload completes or is terminated.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F17.priority-branches": [
+          {
+            "source_id": "resource-management-resource-queues",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-resource-queues.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues/",
+            "effective_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues",
+            "retrieved_utc": "2026-09-19T23:42:35.563984+00:00",
+            "sha256": "7a60016bcb707da04c1059a18bf1822f8ebad5964b4062463e2b639a380e0c9c",
+            "quote": "When a priority branch is configured for a project, workloads on that branch use the resource queues that are assigned to the priority branch.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F17.identity-federation": [
+          {
+            "source_id": "authentication-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/authentication/overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/authentication/overview",
+            "retrieved_utc": "2026-09-19T23:43:10.536122+00:00",
+            "sha256": "97808088f6605596d1c262125becd1d4e5ae17d7ab43c72625497a8162154930",
+            "quote": "Integration via SAML 2.0 or OpenID Connect 1.0 (OIDC) is supported.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
+        ],
+        "F17.scim": [
+          {
+            "source_id": "authentication-scim-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-scim-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview",
+            "retrieved_utc": "2026-09-19T23:43:10.538076+00:00",
+            "sha256": "9de4ad38e8f812bd7d20e39a1dd4d16c0bc9f124ead20290dca7fc32da01bbeb",
+            "quote": "Foundry supports automated user and group provisioning via the System for Cross-domain Identity Management (SCIM) 2.0 protocol.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          }
         ]
       },
       "runtime_qualifications": [
@@ -8440,6 +9405,285 @@
         "No Console acceptance commands invented; all implementation and later states remain false.",
         "No proposed test or implementation admission.",
         "The existing validateConsoleTruthLedger validator does not inspect release_inventory; source, dependency and state checks below are local candidate-construction assertions, not an admitted release-qualification gate."
+      ],
+      "models_administration_qualifications": [
+        {
+          "source_id": "model-integration-marketplace-models",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "quote": "Models can only be deployed as Include with content if the total model size, including files and underlying container images, is under eight gibibytes.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "model-integration-marketplace-models",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "quote": "External models are not supported in DevOps or in Marketplace.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "model-integration-marketplace-models",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "quote": "Modeling Objectives: Use direct model deployments for live objective deployments and model transforms for batch deployments.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "model-integration-marketplace-models",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "quote": "Live deployment needs to be configured manually only once after deployment, and cannot be automatically configured by Marketplace.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "model-integration-marketplace-models",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "quote": "When a model is used as a ModelInput in packaged transforms, the transform must set use_sidecar=True.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "model-integration-marketplace-models",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-integration-marketplace-models.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models/",
+          "effective_url": "https://www.palantir.com/docs/foundry/model-integration/marketplace-models",
+          "retrieved_utc": "2026-09-19T23:42:00.725265+00:00",
+          "sha256": "e0fcda551380b0655cb97a3f58e79f82f8d5e3b5b8aaca21ddce24aab9f0b002",
+          "quote": "To solve this issue, manually trigger checks on the installed repository that produces the model to build the container image and make it available for subsequent model training builds.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "manage-models-model-inference-history",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-model-inference-history.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history/",
+          "effective_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history",
+          "retrieved_utc": "2026-09-19T23:42:35.787692+00:00",
+          "sha256": "32bfa1cb3628832a8849fa9ca6e8ce4f0358ca4ae5fa20b653a00d6098b81a63",
+          "quote": "Not all inputs and outputs are guaranteed to appear in the inference history. To maintain platform performance, requests that fail when trying to write to the model inference history are not retried.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "manage-models-model-inference-history",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-model-inference-history.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history/",
+          "effective_url": "https://www.palantir.com/docs/foundry/manage-models/model-inference-history",
+          "retrieved_utc": "2026-09-19T23:42:35.787692+00:00",
+          "sha256": "32bfa1cb3628832a8849fa9ca6e8ce4f0358ca4ae5fa20b653a00d6098b81a63",
+          "quote": "As inputs and outputs may contain sensitive information, you are required to save the dataset to the same project as its parent modeling objective.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "resource-management-budgets",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-budgets.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/budgets/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/budgets",
+          "retrieved_utc": "2026-09-19T23:42:35.572923+00:00",
+          "sha256": "026ddf14fad72450ae8c59fff45e3894371e25a3392b190a01f297a1b35bcf48",
+          "quote": "The Resource Management budget functionality is only available for customers who have an active usage-based contract with Palantir.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "resource-management-budgets",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-budgets.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/budgets/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/budgets",
+          "retrieved_utc": "2026-09-19T23:42:35.572923+00:00",
+          "sha256": "026ddf14fad72450ae8c59fff45e3894371e25a3392b190a01f297a1b35bcf48",
+          "quote": "In some rare cases, this latency could be up to 26 hours.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "resource-management-resource-queues",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-resource-queues.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues",
+          "retrieved_utc": "2026-09-19T23:42:35.563984+00:00",
+          "sha256": "7a60016bcb707da04c1059a18bf1822f8ebad5964b4062463e2b639a380e0c9c",
+          "quote": "Resource queue utilization does not represent all Foundry compute usage, and resource queues are not spending caps.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "resource-management-resource-queues",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/resource-management-resource-queues.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues/",
+          "effective_url": "https://www.palantir.com/docs/foundry/resource-management/resource-queues",
+          "retrieved_utc": "2026-09-19T23:42:35.563984+00:00",
+          "sha256": "7a60016bcb707da04c1059a18bf1822f8ebad5964b4062463e2b639a380e0c9c",
+          "quote": "Resource queues for streaming resources may not be available in your enrollment.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "marketplace-upgrades",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/marketplace-upgrades.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades/",
+          "effective_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades",
+          "retrieved_utc": "2026-09-19T23:43:10.494540+00:00",
+          "sha256": "e84b9582b222a43efcb9316d7b332b7450b1aea78e019f063892801c50548401",
+          "quote": "Automatic upgrades in Marketplace are in the beta phase of development and may not be available on your enrollment.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "marketplace-upgrades",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/marketplace-upgrades.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades/",
+          "effective_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades",
+          "retrieved_utc": "2026-09-19T23:43:10.494540+00:00",
+          "sha256": "e84b9582b222a43efcb9316d7b332b7450b1aea78e019f063892801c50548401",
+          "quote": "Upgrades will cause downtime for installed resources; we recommend adding a maintenance window to avoid downtime.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "marketplace-upgrades",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/marketplace-upgrades.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades/",
+          "effective_url": "https://www.palantir.com/docs/foundry/marketplace/upgrades",
+          "retrieved_utc": "2026-09-19T23:43:10.494540+00:00",
+          "sha256": "e84b9582b222a43efcb9316d7b332b7450b1aea78e019f063892801c50548401",
+          "quote": "Upgrades will still require manual action if the new product version includes new inputs that must be mapped, or if any validation errors arise.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "authentication-scim-overview",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-scim-overview.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview",
+          "retrieved_utc": "2026-09-19T23:43:10.538076+00:00",
+          "sha256": "9de4ad38e8f812bd7d20e39a1dd4d16c0bc9f124ead20290dca7fc32da01bbeb",
+          "quote": "SCIM is in the beta phase of development and may not be available on your enrollment.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "foundry-devops-export-import-products",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-export-import-products.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products",
+          "retrieved_utc": "2026-09-19T23:43:10.558734+00:00",
+          "sha256": "7285f022d44f451299b2e2ca42b787ac33e9ce95fa9d85403bfaf014c61ce8f0",
+          "quote": "Marketplace products may contain sensitive data, and the exported file is not encrypted.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "foundry-devops-export-import-products",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-export-import-products.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/export-import-products",
+          "retrieved_utc": "2026-09-19T23:43:10.558734+00:00",
+          "sha256": "7285f022d44f451299b2e2ca42b787ac33e9ce95fa9d85403bfaf014c61ce8f0",
+          "quote": "Marketplace products are exported as a file, which should only be used for short-lived transport and not for permanent storage.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "foundry-devops-supported-resources",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-supported-resources.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/supported-resources/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/supported-resources",
+          "retrieved_utc": "2026-09-19T23:43:10.712205+00:00",
+          "sha256": "af023965148c311028a665a969defacc2225a4fd663cc31f7b7e0c296bf2a1e7",
+          "quote": "A non-exhaustive list of unsupported resources is below: Data Connection sources Code Workbook workbooks Fusion sheets",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "integrate-models-experiments-overview",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/integrate-models-experiments-overview.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview/",
+          "effective_url": "https://www.palantir.com/docs/foundry/integrate-models/experiments-overview",
+          "retrieved_utc": "2026-09-19T23:42:35.726305+00:00",
+          "sha256": "aa0c6faf8cfeb810aecb5ce2e2f90e4dab7ead2dd40f8495318e39589fc75df8",
+          "quote": "Logging can only be done at model publication (training) time. Asset support is limited; any asset that is not a PNG will be silently dropped. Tags are silently ignored. Nested runs are not supported.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "foundry-devops-create-products",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-create-products.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products",
+          "retrieved_utc": "2026-09-19T23:42:35.550107+00:00",
+          "sha256": "58970958097b0cadc95d791a5e7499bd0b6b472bf3ab675117f84cc7ac7294b0",
+          "quote": "A product can contain a combined total of 15,000 inputs and outputs, including nested resources such as dataset columns and object type properties.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "foundry-devops-create-products",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-create-products.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products/",
+          "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/create-products",
+          "retrieved_utc": "2026-09-19T23:42:35.550107+00:00",
+          "sha256": "58970958097b0cadc95d791a5e7499bd0b6b472bf3ab675117f84cc7ac7294b0",
+          "quote": "Packaging a dataset as an output using the Include with static data option reads its underlying files, which requires the foundry-data-proxy:get-files (Download) operation on the dataset.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        },
+        {
+          "source_id": "manage-models-live-deployment-reference",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/manage-models-live-deployment-reference.html.gz",
+          "requested_url": "https://www.palantir.com/docs/foundry/manage-models/live-deployment-reference/",
+          "effective_url": "https://www.palantir.com/docs/foundry/manage-models/live-deployment-reference",
+          "retrieved_utc": "2026-09-19T23:42:00.745956+00:00",
+          "sha256": "668eae41e0f40852e2788bc50d589e569e3e9cd401dc83955d4158b2d93ec1f0",
+          "quote": "Single I/O endpoints are no longer recommended for new implementations. Prefer the more flexible multi I/O endpoint described above.",
+          "matching": "HTML body text with whitespace normalization",
+          "scope": "Public reference; Console implementation and acceptance not established"
+        }
+      ],
+      "models_administration_successor_mappings": [
+        {
+          "source": "manage-models-live-deployment-reference",
+          "legacy": "Single I/O live endpoint",
+          "successor": "Multi I/O live endpoint",
+          "status": "explicit recommendation in retained body"
+        },
+        {
+          "source": "model-integration-marketplace-models",
+          "unsupported": "Marketplace Modeling Objectives",
+          "successor": "Direct model deployments for live; model transforms for batch",
+          "status": "documented workaround; not proof all objective governance capabilities are equivalent"
+        }
+      ],
+      "models_administration_limitations": [
+        "23 proposed leaves only; exhaustive inventory not established.",
+        "No AIP leaves; no authenticated vendor service, account or deployment accessed.",
+        "Reference limits and beta/lifecycle conditions are vendor facts, not automatically Console architecture constraints.",
+        "Lossy model history, plaintext export and silent MLflow log drops are documented source limitations; they do not waive the Console release contract for truthful evidence, governed disclosure or durable acknowledged state.",
+        "SAML/OIDC/SCIM covers identity federation; cross-instance resource-policy federation still needs separate detailed evidence.",
+        "Quoted source-supported behavior is separate from acceptance journeys which additionally apply user-required Console security/recovery contracts.",
+        "No Console runtime boundary, executable acceptance or production qualification established for these new leaves.",
+        "All artifacts remain temporary; root is sole repository writer."
       ]
     },
     "population": {
@@ -11022,7 +12266,94 @@
           "source evidence",
           "executable acceptance"
         ]
-      }
+      },
+      "models_administration": [
+        {
+          "dimension": "classical trainer",
+          "values": [
+            "time series forecasting",
+            "regression",
+            "classification"
+          ],
+          "reference_support": "documented built-in",
+          "source_binding": {
+            "source_id": "model-studio-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/model-studio-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/model-studio/overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/model-studio/overview",
+            "retrieved_utc": "2026-09-19T23:42:35.718118+00:00",
+            "sha256": "2644c31135911deb9db595d2e2d8b573a76a6fdef0d85413ab90e9dde8b5a1c1",
+            "quote": "Built-in production-grade model trainers tailored for common use cases such as time series forecasting, regression, and classification.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          },
+          "console_acceptance": "not established",
+          "command": null
+        },
+        {
+          "dimension": "identity federation protocol",
+          "values": [
+            "SAML2.0",
+            "OIDC1.0"
+          ],
+          "reference_support": "supported",
+          "source_binding": {
+            "source_id": "authentication-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/authentication/overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/authentication/overview",
+            "retrieved_utc": "2026-09-19T23:43:10.536122+00:00",
+            "sha256": "97808088f6605596d1c262125becd1d4e5ae17d7ab43c72625497a8162154930",
+            "quote": "Integration via SAML 2.0 or OpenID Connect 1.0 (OIDC) is supported.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          },
+          "console_acceptance": "not established",
+          "command": null
+        },
+        {
+          "dimension": "directory provisioning protocol",
+          "values": [
+            "SCIM2.0"
+          ],
+          "reference_support": "beta; availability enrollment-dependent",
+          "source_binding": {
+            "source_id": "authentication-scim-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/authentication-scim-overview.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview/",
+            "effective_url": "https://www.palantir.com/docs/foundry/authentication/scim-overview",
+            "retrieved_utc": "2026-09-19T23:43:10.538076+00:00",
+            "sha256": "9de4ad38e8f812bd7d20e39a1dd4d16c0bc9f124ead20290dca7fc32da01bbeb",
+            "quote": "Foundry supports automated user and group provisioning via the System for Cross-domain Identity Management (SCIM) 2.0 protocol.",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          },
+          "console_acceptance": "not established",
+          "command": null
+        },
+        {
+          "dimension": "unsupported package resource",
+          "values": [
+            "Data Connection sources",
+            "Code Workbook workbooks",
+            "Fusion sheets"
+          ],
+          "reference_support": "explicitly unsupported; non-exhaustive source list",
+          "source_binding": {
+            "source_id": "foundry-devops-supported-resources",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-models-admin/foundry-devops-supported-resources.html.gz",
+            "requested_url": "https://www.palantir.com/docs/foundry/foundry-devops/supported-resources/",
+            "effective_url": "https://www.palantir.com/docs/foundry/foundry-devops/supported-resources",
+            "retrieved_utc": "2026-09-19T23:43:10.712205+00:00",
+            "sha256": "af023965148c311028a665a969defacc2225a4fd663cc31f7b7e0c296bf2a1e7",
+            "quote": "A non-exhaustive list of unsupported resources is below: Data Connection sources Code Workbook workbooks Fusion sheets",
+            "matching": "HTML body text with whitespace normalization",
+            "scope": "Public reference; Console implementation and acceptance not established"
+          },
+          "console_acceptance": "not established; does not remove explicit Console requirements",
+          "command": null
+        }
+      ]
     },
     "leaves": [
       {
@@ -14987,6 +16318,708 @@
         "journey": "Transform time series and emit matching per-object intervals with start, end and duration for downstream decisions",
         "acceptance": {
           "outcome": "Transform time series and emit matching per-object intervals with start, end and duration for downstream decisions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.visual-training",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.training",
+          "F12.experiments",
+          "F02.schedule"
+        ],
+        "journey": "Configure no-code classification, regression and time-series model training with selected datasets, parameters and scheduled retraining",
+        "acceptance": {
+          "outcome": "Configure no-code classification, regression and time-series model training with selected datasets, parameters and scheduled retraining",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.experiment-logging",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.experiments",
+          "F03.datasets"
+        ],
+        "journey": "Publish model-linked hyperparameter, metric, image, plot and table logs with typed values and visible failures",
+        "acceptance": {
+          "outcome": "Publish model-linked hyperparameter, metric, image, plot and table logs with typed values and visible failures",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.mlflow",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.experiment-logging",
+          "F12.training"
+        ],
+        "journey": "Use supported MLflow logging and autologging against version-bound experiments with explicit compatibility limitations",
+        "acceptance": {
+          "outcome": "Use supported MLflow logging and autologging against version-bound experiments with explicit compatibility limitations",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.immutable-submissions",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.objectives",
+          "F12.training"
+        ],
+        "journey": "Submit an immutable model-version copy for independent review without later training altering the submitted candidate",
+        "acceptance": {
+          "outcome": "Submit an immutable model-version copy for independent review without later training altering the submitted candidate",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.metricsets",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.experiments",
+          "F03.datasets"
+        ],
+        "journey": "Compare model evaluation metric sets bound to exact model and input-dataset transaction versions",
+        "acceptance": {
+          "outcome": "Compare model evaluation metric sets bound to exact model and input-dataset transaction versions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.tagged-releases",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.immutable-submissions",
+          "F12.promotion",
+          "F12.inference"
+        ],
+        "journey": "Publish reviewed model releases with version numbers, environment tags and release notes; track intentional deployment upgrades",
+        "acceptance": {
+          "outcome": "Publish reviewed model releases with version numbers, environment tags and release notes; track intentional deployment upgrades",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.live-multi-io",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.inference",
+          "F11.api",
+          "F16.policy"
+        ],
+        "journey": "Serve typed multi-input/output model inference endpoints with current authority and explicit invalid-input, overload and unavailable outcomes",
+        "acceptance": {
+          "outcome": "Serve typed multi-input/output model inference endpoints with current authority and explicit invalid-input, overload and unavailable outcomes",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.inference-history",
+        "milestone": 9,
+        "required": true,
+        "owner": "models application",
+        "dependencies": [
+          "F12.inference",
+          "F03.datasets",
+          "F16.derived"
+        ],
+        "journey": "Inspect authorized inference input/output history with model-version and request identity and disclose capture completeness limitations",
+        "acceptance": {
+          "outcome": "Inspect authorized inference input/output history with model-version and request identity and disclose capture completeness limitations",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.scenario-timeseries",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.simulation",
+          "F04.timeseries",
+          "F12.chained-scenarios"
+        ],
+        "journey": "Compare historical and simulated time-series model outputs after overriding scenario operating conditions",
+        "acceptance": {
+          "outcome": "Compare historical and simulated time-series model outputs after overriding scenario operating conditions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F12.optimization-decisions",
+        "milestone": 9,
+        "required": true,
+        "owner": "model application",
+        "dependencies": [
+          "F12.simulation",
+          "F06.typed",
+          "F12.feedback"
+        ],
+        "journey": "Define objectives and constraints, compare allocation scenarios, and record chosen decisions with context for predicted-versus-actual evaluation",
+        "acceptance": {
+          "outcome": "Define objectives and constraints, compare allocation scenarios, and record chosen decisions with context for predicted-versus-actual evaluation",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.dependency-packaging",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.versions",
+          "F05.schema",
+          "F16.policy"
+        ],
+        "journey": "Discover downstream resource dependencies and map each dependency as packaged output or installer-provided typed input",
+        "acceptance": {
+          "outcome": "Discover downstream resource dependencies and map each dependency as packaged output or installer-provided typed input",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.folder-tracking",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.versions",
+          "F15.dependency-packaging"
+        ],
+        "journey": "Track a source folder so later product versions include newly added outputs with reviewable dependency changes",
+        "acceptance": {
+          "outcome": "Track a source folder so later product versions include newly added outputs with reviewable dependency changes",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.installation-modes",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.install",
+          "F15.upgrade"
+        ],
+        "journey": "Configure managed-production, singleton and bootstrap installations with explicit upgrade and location rules",
+        "acceptance": {
+          "outcome": "Configure managed-production, singleton and bootstrap installations with explicit upgrade and location rules",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.model-content-producer",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.versions",
+          "F12.training",
+          "F12.import"
+        ],
+        "journey": "Package a static model artifact or its reproducible training producer and validate container/image dependencies before installed inference",
+        "acceptance": {
+          "outcome": "Package a static model artifact or its reproducible training producer and validate container/image dependencies before installed inference",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.model-inputs",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.install",
+          "F12.import",
+          "F15.dependency-packaging"
+        ],
+        "journey": "Resolve installer-selected model versions as typed package inputs and run model adapters in their isolated sidecar environments",
+        "acceptance": {
+          "outcome": "Resolve installer-selected model versions as typed package inputs and run model adapters in their isolated sidecar environments",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.signed-transfer",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.versions",
+          "F17.federation",
+          "F16.sharing"
+        ],
+        "journey": "Export and import authorized product packages between stores or instances while checking transport integrity and source disclosure restrictions",
+        "acceptance": {
+          "outcome": "Export and import authorized product packages between stores or instances while checking transport integrity and source disclosure restrictions",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F15.maintenance-upgrades",
+        "milestone": 9,
+        "required": true,
+        "owner": "package application",
+        "dependencies": [
+          "F15.upgrade",
+          "F15.install"
+        ],
+        "journey": "Schedule upgrade maintenance windows and release channels, surface required input remapping, and support chosen-version downgrade jobs",
+        "acceptance": {
+          "outcome": "Schedule upgrade maintenance windows and release channels, surface required input remapping, and support chosen-version downgrade jobs",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F17.usage-accounts",
+        "milestone": 9,
+        "required": true,
+        "owner": "tenant administration",
+        "dependencies": [
+          "F17.resources",
+          "F16.policy"
+        ],
+        "journey": "Attribute resource usage to projects and administratively assigned usage accounts with inspectable cost categories",
+        "acceptance": {
+          "outcome": "Attribute resource usage to projects and administratively assigned usage accounts with inspectable cost categories",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F17.budgets",
+        "milestone": 9,
+        "required": true,
+        "owner": "tenant administration",
+        "dependencies": [
+          "F17.usage-accounts",
+          "F18.notifications"
+        ],
+        "journey": "Create currency-denominated recurring or bounded budgets and notify accountable users when measured spend exceeds thresholds",
+        "acceptance": {
+          "outcome": "Create currency-denominated recurring or bounded budgets and notify accountable users when measured spend exceeds thresholds",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F17.resource-queues",
+        "milestone": 9,
+        "required": true,
+        "owner": "tenant administration",
+        "dependencies": [
+          "F17.resources",
+          "F02.schedule"
+        ],
+        "journey": "Allocate CPU/GPU concurrency across projects with explicit queueing, compute placement and release after completion or termination",
+        "acceptance": {
+          "outcome": "Allocate CPU/GPU concurrency across projects with explicit queueing, compute placement and release after completion or termination",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F17.priority-branches",
+        "milestone": 9,
+        "required": true,
+        "owner": "tenant administration",
+        "dependencies": [
+          "F17.resource-queues",
+          "F03.branches"
+        ],
+        "journey": "Assign separate compute queues to priority branches so development workloads cannot consume their reserved capacity",
+        "acceptance": {
+          "outcome": "Assign separate compute queues to priority branches so development workloads cannot consume their reserved capacity",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F17.identity-federation",
+        "milestone": 9,
+        "required": true,
+        "owner": "tenant administration",
+        "dependencies": [
+          "F16.identity",
+          "F16.policy",
+          "F17.federation"
+        ],
+        "journey": "Configure and test external identity providers using SAML2.0 or OIDC1.0 with explicit attribute/group mapping and current authorization",
+        "acceptance": {
+          "outcome": "Configure and test external identity providers using SAML2.0 or OIDC1.0 with explicit attribute/group mapping and current authorization",
+          "command": null,
+          "fixtures": null,
+          "boundary": null,
+          "status": "not_bound"
+        },
+        "states": {
+          "planned": true,
+          "implemented": false,
+          "integration_accepted": false,
+          "production_qualified": false,
+          "released": false
+        },
+        "evidence": {},
+        "blockers": [
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+        ],
+        "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+      },
+      {
+        "id": "F17.scim",
+        "milestone": 9,
+        "required": true,
+        "owner": "tenant administration",
+        "dependencies": [
+          "F17.identity-federation",
+          "F17.lifecycle",
+          "F16.policy"
+        ],
+        "journey": "Synchronize external user/group provisioning and deprovisioning through SCIM2.0 while retaining persistent Account identity and revocation",
+        "acceptance": {
+          "outcome": "Synchronize external user/group provisioning and deprovisioning through SCIM2.0 while retaining persistent Account identity and revocation",
           "command": null,
           "fixtures": null,
           "boundary": null,

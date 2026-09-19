@@ -1,0 +1,21 @@
+{
+  "kind": "models-administration-inventory-addition-review",
+  "base_sha": "0c893dd39bcc6ee227c569b4db5b3f5250110bee",
+  "previous_registry_sha256": "fc0fead61c306d63a9f16094e934313693f6ac0221cd66246e4e1b7836d143e1",
+  "registry_sha256": "3b71343f2dad0dd9a5bbc3d199c0705f6fa945a1e7c2b8aa1a6e7182a31d07d7",
+  "proposal_sha256": "c7082e92b5137d75803215fd01fece3dc870089ab5f6b73727d65a559f496bcf",
+  "reviewer": "integration_security",
+  "verdict": "approved additive integration; independently verified 18 raw/gzip source hashes, 40 manifest entries, 50 quoted bindings, 23 unique leaves and dependencies",
+  "validation": "Original values preserved recursively; new raw/compressed source hashes verified; all new states planned-only; paths rebound to exact repository snapshot bytes.",
+  "status": "partial reference freeze; no implementation, integration acceptance, qualification or release established",
+  "limits": [
+    "23 proposed leaves only; exhaustive inventory not established.",
+    "No AIP leaves; no authenticated vendor service, account or deployment accessed.",
+    "Reference limits and beta/lifecycle conditions are vendor facts, not automatically Console architecture constraints.",
+    "Lossy model history, plaintext export and silent MLflow log drops are documented source limitations; they do not waive the Console release contract for truthful evidence, governed disclosure or durable acknowledged state.",
+    "SAML/OIDC/SCIM covers identity federation; cross-instance resource-policy federation still needs separate detailed evidence.",
+    "Quoted source-supported behavior is separate from acceptance journeys which additionally apply user-required Console security/recovery contracts.",
+    "No Console runtime boundary, executable acceptance or production qualification established for these new leaves.",
+    "All artifacts remain temporary; root is sole repository writer."
+  ]
+}
