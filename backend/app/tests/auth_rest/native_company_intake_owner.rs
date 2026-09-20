@@ -28,7 +28,7 @@ mod intake_owner {
     }
 
     async fn profiles(connection: &mut sqlx::PgConnection, root: &str, credential: &str) {
-        sqlx::raw_sql("SET search_path=pg_catalog,pg_temp; SET statement_timeout='10s'; SET lock_timeout='1s'")
+        sqlx::raw_sql("SET search_path=pg_catalog,pg_temp; SET statement_timeout='10s'; SET lock_timeout='1s'; SET jit=off")
             .execute(&mut *connection).await.unwrap();
         for (source, expected) in [(ROOT_STATE, root), (CREDENTIAL_STATE, credential)] {
             let actual: String = sqlx::query_scalar(source)
