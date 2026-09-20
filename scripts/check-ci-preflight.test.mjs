@@ -2682,8 +2682,13 @@ describe("native browser evidence retention", () => {
       const { failures } = evaluateCiPreflight(changed);
       assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
     }
-    for (const other of ["Native payroll hydration browser", "Collect failures"]) {
-      const { failures } = evaluateCiPreflight(swapNamedSteps(workflow, "backend", step.name, other));
+    for (const [first, second] of [
+      ["Native payroll hydration browser", step.name],
+      [step.name, "Collect failures"],
+    ]) {
+      const changed = swapNamedSteps(workflow, "backend", first, second);
+      assert.doesNotThrow(() => yaml.load(changed));
+      const { failures } = evaluateCiPreflight(changed);
       assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
     }
     for (const replacement of [null, '"changed-path"']) {
