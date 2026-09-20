@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root",
+  "author": "/root/integration_security",
+  "verdict": "APPROVE_EXACT_TLS_CONTROL_PREREQUISITE_CORRECTION",
+  "manifest_sha256": "8e13f37b621deaa6b73e1560bb2f430ada6f0bcc6e04df01329a2d9d3967d38d",
+  "checks": [
+    "Exact source hashes and full successor diffs checked",
+    "TLS control calls use verify-full fixed CA and GSS disable; existing callers retain defaults",
+    "SSL=true and exact administrator/JIT positive controls preserved",
+    "Private umask077 runner makes public server certificate readable; keys remain0600",
+    "Both profile failures retained with final nonzero; no missing execution can count asPASS",
+    "Root machinery46/46passed; original44 preserved"
+  ],
+  "runtime_executed": 0,
+  "holds": [
+    "Actual wrapper RED required; prior unencrypted-control failure is prerequisite only",
+    "Normal full finalizer runtime and release qualification"
+  ]
+}

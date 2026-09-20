@@ -1,0 +1,51 @@
+test_absence_requires_failure_and_exact_resource_name (__main__.machinery_tests.<locals>.Machinery.test_absence_requires_failure_and_exact_resource_name) ... ok
+test_cleanup_attempts_all_after_lost_reply (__main__.machinery_tests.<locals>.Machinery.test_cleanup_attempts_all_after_lost_reply) ... ok
+test_composed_psql_order_accepts_both_fixed_profiles (__main__.machinery_tests.<locals>.Machinery.test_composed_psql_order_accepts_both_fixed_profiles) ... ok
+test_composed_psql_order_rejects_omission_extra_substitution_reorder_and_split (__main__.machinery_tests.<locals>.Machinery.test_composed_psql_order_rejects_omission_extra_substitution_reorder_and_split) ... ok
+test_current_ledger_accepts_exact_frozen_sources_and_new_suffix (__main__.machinery_tests.<locals>.Machinery.test_current_ledger_accepts_exact_frozen_sources_and_new_suffix) ... ok
+test_current_ledger_rejects_omission_duplicate_extra_types_failure_and_checksum (__main__.machinery_tests.<locals>.Machinery.test_current_ledger_rejects_omission_duplicate_extra_types_failure_and_checksum) ... ok
+test_current_ledger_rejects_source_roster_drift_duplicates_and_nonregular_files (__main__.machinery_tests.<locals>.Machinery.test_current_ledger_rejects_source_roster_drift_duplicates_and_nonregular_files) ... ok
+test_docker28_lowercase_absence_is_recognized (__main__.machinery_tests.<locals>.Machinery.test_docker28_lowercase_absence_is_recognized) ... ok
+test_docker29_daemon_absence_is_recognized (__main__.machinery_tests.<locals>.Machinery.test_docker29_daemon_absence_is_recognized) ... ok
+test_duplicate_cannot_replace_omitted_case (__main__.machinery_tests.<locals>.Machinery.test_duplicate_cannot_replace_omitted_case) ... ok
+test_exact_unique_roster_positive (__main__.machinery_tests.<locals>.Machinery.test_exact_unique_roster_positive) ... ok
+test_extended227_bundle_and_classifiers_are_hash_bound_without_history (__main__.machinery_tests.<locals>.Machinery.test_extended227_bundle_and_classifiers_are_hash_bound_without_history) ... ok
+test_frozen_executable_mutation_refuses_before_execution (__main__.machinery_tests.<locals>.Machinery.test_frozen_executable_mutation_refuses_before_execution) ... ok
+test_frozen_executable_survives_build_output_replacement (__main__.machinery_tests.<locals>.Machinery.test_frozen_executable_survives_build_output_replacement) ... ok
+test_historical227_prefix_allows_suffix_but_rejects_old_source_drift (__main__.machinery_tests.<locals>.Machinery.test_historical227_prefix_allows_suffix_but_rejects_old_source_drift) ... ok
+test_historical227_producer_requires_complete_unique_success (__main__.machinery_tests.<locals>.Machinery.test_historical227_producer_requires_complete_unique_success) ... ok
+test_lost_create_reply_still_registers_cleanup_intent (__main__.machinery_tests.<locals>.Machinery.test_lost_create_reply_still_registers_cleanup_intent) ... ok
+test_missing_unknown_and_failed_case_refuse (__main__.machinery_tests.<locals>.Machinery.test_missing_unknown_and_failed_case_refuse) ... ok
+test_native_failure_location_omits_protected_locals (__main__.machinery_tests.<locals>.Machinery.test_native_failure_location_omits_protected_locals) ... ok
+test_native_ledger_omission_duplicate_future_and_boolean_versions_refuse (__main__.machinery_tests.<locals>.Machinery.test_native_ledger_omission_duplicate_future_and_boolean_versions_refuse) ... ok
+test_native_literal_reader_never_executes_and_rejects_duplicates (__main__.machinery_tests.<locals>.Machinery.test_native_literal_reader_never_executes_and_rejects_duplicates) ... ok
+test_native_lossless_json_distinguishes_boolean_integer_and_fraction (__main__.machinery_tests.<locals>.Machinery.test_native_lossless_json_distinguishes_boolean_integer_and_fraction) ... ok
+test_native_lossless_row_and_routine_oracle_refuses_python_equal_drift (__main__.machinery_tests.<locals>.Machinery.test_native_lossless_row_and_routine_oracle_refuses_python_equal_drift) ... ok
+test_native_metadata_hash_label_cannot_hide_new_helper_body_or_config (__main__.machinery_tests.<locals>.Machinery.test_native_metadata_hash_label_cannot_hide_new_helper_body_or_config) ... ok
+test_native_observation_uses_fixed_read_only_search_path_and_private_output (__main__.machinery_tests.<locals>.Machinery.test_native_observation_uses_fixed_read_only_search_path_and_private_output) ... ok
+test_native_oracle_accepts_only_exact_additive_transition (__main__.machinery_tests.<locals>.Machinery.test_native_oracle_accepts_only_exact_additive_transition) ... ok
+test_native_oracle_rejects_changed_or_omitted_row_in_every_table (__main__.machinery_tests.<locals>.Machinery.test_native_oracle_rejects_changed_or_omitted_row_in_every_table) ... ok
+test_native_oracle_rejects_each_missing_duplicate_null_table (__main__.machinery_tests.<locals>.Machinery.test_native_oracle_rejects_each_missing_duplicate_null_table) ... ok
+test_native_oracle_rejects_helper_capability_and_profile_drift (__main__.machinery_tests.<locals>.Machinery.test_native_oracle_rejects_helper_capability_and_profile_drift) ... ok
+test_native_oracle_rejects_missing_duplicate_and_overloaded_helper (__main__.machinery_tests.<locals>.Machinery.test_native_oracle_rejects_missing_duplicate_and_overloaded_helper) ... ok
+test_native_oracle_rejects_old_routine_ledger_and_role_mutation (__main__.machinery_tests.<locals>.Machinery.test_native_oracle_rejects_old_routine_ledger_and_role_mutation) ... ok
+test_native_predecessor_loads_without_git_history_or_subprocess (__main__.machinery_tests.<locals>.Machinery.test_native_predecessor_loads_without_git_history_or_subprocess) ... ok
+test_native_predecessor_missing_corrupt_and_symlink_refuse (__main__.machinery_tests.<locals>.Machinery.test_native_predecessor_missing_corrupt_and_symlink_refuse) ... ok
+test_native_private_observation_never_enters_command_log (__main__.machinery_tests.<locals>.Machinery.test_native_private_observation_never_enters_command_log) ... ok
+test_native_private_timeout_never_logs_partial_rows (__main__.machinery_tests.<locals>.Machinery.test_native_private_timeout_never_logs_partial_rows) ... ok
+test_native_raw_migration_phase_rejects_owned_or_populated_root (__main__.machinery_tests.<locals>.Machinery.test_native_raw_migration_phase_rejects_owned_or_populated_root) ... ok
+test_operator_assets_have_exact_six_without_losing_manifest_index (__main__.machinery_tests.<locals>.Machinery.test_operator_assets_have_exact_six_without_losing_manifest_index) ... ok
+test_operator_child_execution_settings_positive (__main__.machinery_tests.<locals>.Machinery.test_operator_child_execution_settings_positive) ... ok
+test_operator_child_execution_settings_reject_corruption (__main__.machinery_tests.<locals>.Machinery.test_operator_child_execution_settings_reject_corruption) ... ok
+test_operator_configuration_collects_both_real_case_failures (__main__.machinery_tests.<locals>.Machinery.test_operator_configuration_collects_both_real_case_failures) ... ok
+test_private_cleanup_runs_despite_inspection_exception (__main__.machinery_tests.<locals>.Machinery.test_private_cleanup_runs_despite_inspection_exception) ... ok
+test_psql_streams_large_utf8_sql_without_command_argument (__main__.machinery_tests.<locals>.Machinery.test_psql_streams_large_utf8_sql_without_command_argument) ... ok
+test_psql_verifying_tls_uses_fixed_ca_without_changing_sql (__main__.machinery_tests.<locals>.Machinery.test_psql_verifying_tls_uses_fixed_ca_without_changing_sql) ... ok
+test_real_head_change_refuses_even_when_selected_bytes_same (__main__.machinery_tests.<locals>.Machinery.test_real_head_change_refuses_even_when_selected_bytes_same) ... ok
+test_real_source_change_missing_and_symlink_refuse (__main__.machinery_tests.<locals>.Machinery.test_real_source_change_missing_and_symlink_refuse) ... ok
+test_unavailable_inspection_is_not_absence (__main__.machinery_tests.<locals>.Machinery.test_unavailable_inspection_is_not_absence) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 0.430s
+
+OK

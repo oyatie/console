@@ -529,9 +529,12 @@ class Suite:
                 raise AssertionError('copy source differs from pre-build freeze: '+name)
         self.run(['docker', 'cp', str(source), f'{container}:{target}'])
 
-    def psql(self, container, database, sql, *, role='wrapper_admin', password=None, required=True, private_output=False):
+    def psql(self, container, database, sql, *, role='wrapper_admin', password=None, required=True, private_output=False, verifying_tls=False):
         password = password or self.passwords['POSTGRES_ADMIN_PASSWORD']
-        envfile = self.private_file('psql.env', 'PGPASSWORD='+password+'\n')
+        assert type(verifying_tls) is bool, 'TLS observation profile must be explicit'
+        tls_options = ('PGSSLMODE=verify-full\nPGSSLROOTCERT=/wrapper-tls/ca.crt\nPGGSSENCMODE=disable\n'
+                       if verifying_tls else '')
+        envfile = self.private_file('psql.env', 'PGPASSWORD='+password+'\n'+tls_options)
         return self.run(['docker', 'exec', '-i', '--env-file', str(envfile), container,
                          'psql', '-X', '-w', '-h', 'localhost', '-U', role, '-d', database,
                          '-v', 'ON_ERROR_STOP=1', '-At', '-F', '|', *(['-q'] if private_output else []), '--file', '-'],
@@ -817,24 +820,33 @@ class Suite:
             assert_operator_child_environment(environment)
         return result
 
-    def operator_jit_configuration_cases(self, container):
+    def operator_jit_configuration_cases(self, container, *, collect_failures=False):
         # Real TLS psql executes the original production preflight. Deliberately
         # wrong expected identity stops before any schema/installer dependency.
+        assert type(collect_failures) is bool, 'case collection must be explicit'
+        failures = False
         descriptor = self.descriptor(container, 'postgres')
         descriptor['ACCOUNT_CUSTODY_EXPECTED_OPERATOR'] = 'not_the_actual_operator'
         for observer, name in ((False, 'operator_jit_default_child_settings'),
                                (True, 'operator_jit_observer_child_settings')):
             def observe(observer=observer):
                 sql = "SELECT current_setting('jit'),session_user,current_user,current_database(),(SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid())"
-                _, before = self.psql(container, 'postgres', sql)
+                _, before = self.psql(container, 'postgres', sql, verifying_tls=True)
                 assert before.strip() == 'on|wrapper_admin|wrapper_admin|postgres|t', 'real TLS administrator and default JIT-on positive control required'
                 code, text = self.traced_wrapper(container, 'postgres', descriptor,
                     observer=observer, execution_settings=True)
                 assert code != 0 and 'account_custody.operator_identity_mismatch' in text, 'actual production preflight identity refusal required'
                 assert 'account_custody.native_finalized' not in text
-                _, after = self.psql(container, 'postgres', sql)
+                _, after = self.psql(container, 'postgres', sql, verifying_tls=True)
                 assert after == before, 'one-shot options escaped into later sessions'
-            self.case(name, observe)
+            try:
+                self.case(name, observe)
+            except Exception:
+                if not collect_failures:
+                    raise
+                failures = True
+        if failures:
+            raise AssertionError('operator configuration cases failed; each exact failure is retained')
 
     def certificate(self):
         def openssl(*args):
@@ -1289,6 +1301,36 @@ def machinery_tests():
             for malformed in corruptions:
                 with self.subTest(trace=malformed), self.assertRaises(AssertionError):
                     assert_operator_child_environment(malformed)
+
+        def test_psql_verifying_tls_uses_fixed_ca_without_changing_sql(self):
+            suite = object.__new__(Suite)
+            suite.passwords = {'POSTGRES_ADMIN_PASSWORD':'fixture-private-password'}
+            files = []
+            calls = []
+            suite.private_file = lambda name,text: (files.append((name,text)) or Path('/private/psql.env'))
+            suite.run = lambda argv,**options: (calls.append((argv,options)) or (0,'fixture-observed'))
+            self.assertEqual(suite.psql('fixture-container','postgres','SELECT 1',verifying_tls=True), (0,'fixture-observed'))
+            self.assertEqual(files, [('psql.env','PGPASSWORD=fixture-private-password\nPGSSLMODE=verify-full\nPGSSLROOTCERT=/wrapper-tls/ca.crt\nPGGSSENCMODE=disable\n')])
+            self.assertEqual(calls[0][1]['stdin'], b'SELECT 1')
+            self.assertNotIn('fixture-private-password', calls[0][0])
+            self.assertIn('--env-file', calls[0][0])
+
+        def test_operator_configuration_collects_both_real_case_failures(self):
+            suite = object.__new__(Suite)
+            suite.commands = []
+            suite.results = []
+            suite.descriptor = lambda *args: {}
+            suite.psql = lambda *args,**kwargs: (0,'on|wrapper_admin|wrapper_admin|postgres|t\n')
+            observed_profiles = []
+            def fail_wrapper(*args,**kwargs):
+                observed_profiles.append(kwargs['observer'])
+                raise AssertionError('TEST_ONLY injected child configuration failure')
+            suite.traced_wrapper = fail_wrapper
+            with self.assertRaisesRegex(AssertionError, 'each exact failure is retained'):
+                suite.operator_jit_configuration_cases('fixture-container', collect_failures=True)
+            self.assertEqual(observed_profiles, [False,True])
+            self.assertEqual([(r['name'],r['status']) for r in suite.results],
+                [('operator_jit_default_child_settings','FAIL'),('operator_jit_observer_child_settings','FAIL')])
 
         def test_operator_assets_have_exact_six_without_losing_manifest_index(self):
             self.assertEqual(len(ASSETS), 6)
