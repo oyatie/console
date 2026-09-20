@@ -1,0 +1,21 @@
+{
+  "base_registry_sha256": "0772eff84fd6ad8084e70a3cd608d210b633aa8209070727ef4246bc811bf7d6",
+  "owner": "root sole writer",
+  "reviewer": "integration_security",
+  "leaves_before": 187,
+  "leaves_after": 211,
+  "source_snapshots_after": 102,
+  "preservation": "Reviewed additive operations only; all preexisting values preserved.",
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 101,
+    "passed": 98,
+    "failed": 3,
+    "failure": "Actual signed-candidate source-resolver tests exceed Node child-process default1MiB stdout buffer while reading enlarged registry; ENOBUFS. Structural checks pass. Repair remains required."
+  },
+  "limitations": [
+    "Reference-only partial inventory.",
+    "All added leaves planned/not_bound.",
+    "No runtime, complete matrix, exhaustive freeze or release acceptance."
+  ]
+}
