@@ -783,6 +783,14 @@ mod platform_source_transition {
             .bind(family).bind(roles).fetch_one(pool).await.unwrap()
     }
 
+    fn same_owner_snapshot(before: &(Value, Value), after: &(Value, Value)) -> bool {
+        let metadata_equal = same_metadata(&before.0, &after.0);
+        if before.1 != after.1 {
+            eprintln!("PLATFORM_SOURCE_OWNER_BUSINESS_STATE_CHANGED");
+        }
+        metadata_equal && before.1 == after.1
+    }
+
     async fn owner_snapshot(pool: &PgPool) -> (Value, Value) {
         let mut tx = pool.begin().await.unwrap();
         operator(&mut tx).await;
@@ -858,7 +866,7 @@ mod platform_source_transition {
             );
         }
         assert!(
-            before == owner_snapshot(&pool).await,
+            same_owner_snapshot(&before, &owner_snapshot(&pool).await),
             "capability probes changed metadata or rows"
         );
         f.auth.close().await;
@@ -917,7 +925,7 @@ mod platform_source_transition {
                 exact_projection(&actual, &expected);
             }
             assert!(
-                before == owner_snapshot(&pool).await,
+                same_owner_snapshot(&before, &owner_snapshot(&pool).await),
                 "facts reads changed state"
             );
         }
@@ -939,7 +947,7 @@ mod platform_source_transition {
             .unwrap(),
             &expected,
         );
-        assert!(before == owner_snapshot(&pool).await);
+        assert!(same_owner_snapshot(&before, &owner_snapshot(&pool).await));
         f.auth.close().await;
         f.business.close().await;
     }
@@ -1033,7 +1041,7 @@ mod platform_source_transition {
                 message,
             );
         }
-        assert!(before == owner_snapshot(&pool).await);
+        assert!(same_owner_snapshot(&before, &owner_snapshot(&pool).await));
         for (mutation, code, message) in [
             (
                 "UPDATE public.users SET is_active=false WHERE id=$1",
@@ -1071,7 +1079,7 @@ mod platform_source_transition {
                 code,
                 message,
             );
-            assert!(mutated == owner_snapshot(&pool).await);
+            assert!(same_owner_snapshot(&mutated, &owner_snapshot(&pool).await));
         }
         f.auth.close().await;
         f.business.close().await;
