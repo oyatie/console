@@ -363,7 +363,11 @@ pub fn account_custody_finalizer_sql() -> String {
 
 pub async fn finalize_account_custody(pool: &PgPool) {
     let mut tx = pool.begin().await.expect("begin disposable finalization");
-    sqlx::query("SET LOCAL statement_timeout = '60s'")
+    sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+        .execute(tx.as_mut())
+        .await
+        .expect("use fresh catalog snapshots after shared role lock waits");
+    sqlx::raw_sql("SET LOCAL statement_timeout = '60s'; SET LOCAL jit = off")
         .execute(tx.as_mut())
         .await
         .expect("bound disposable finalization statement");
@@ -378,6 +382,19 @@ pub async fn finalize_account_custody(pool: &PgPool) {
             true
         )
     );
+    sqlx::query("SET LOCAL lock_timeout = '5s'")
+        .execute(tx.as_mut())
+        .await
+        .expect("bound disposable finalization lock wait");
+    // Roles and their custody fingerprints are cluster-wide even when each
+    // test owns a separate database. Hold the preexisting topology row until
+    // this whole finalization transaction commits or rolls back.
+    let _: String = sqlx::query_scalar(
+        "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE",
+    )
+    .fetch_one(tx.as_mut())
+    .await
+    .expect("lock preexisting disposable Account owner topology");
     sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
         .execute(tx.as_mut())
         .await
@@ -398,7 +415,11 @@ pub async fn finalize_serving_account_custody(pool: &PgPool) {
     // Missing SQL is a prerequisite; never fall back to root-only behavior.
     let credentials = account_credential_custody_finalizer_sql();
     let mut tx = pool.begin().await.expect("begin disposable finalization");
-    sqlx::query("SET LOCAL statement_timeout = '60s'")
+    sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+        .execute(tx.as_mut())
+        .await
+        .expect("use fresh catalog snapshots after shared role lock waits");
+    sqlx::raw_sql("SET LOCAL statement_timeout = '60s'; SET LOCAL jit = off")
         .execute(tx.as_mut())
         .await
         .expect("bound disposable finalization statement");
@@ -417,6 +438,15 @@ pub async fn finalize_serving_account_custody(pool: &PgPool) {
             true
         )
     );
+    // Roles and their custody fingerprints are cluster-wide even when each
+    // test owns a separate database. Hold the preexisting topology row until
+    // this whole finalization transaction commits or rolls back.
+    let _: String = sqlx::query_scalar(
+        "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE",
+    )
+    .fetch_one(tx.as_mut())
+    .await
+    .expect("lock preexisting disposable Account owner topology");
     sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
         .execute(tx.as_mut())
         .await

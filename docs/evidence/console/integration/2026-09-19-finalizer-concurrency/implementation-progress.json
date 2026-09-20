@@ -1,0 +1,67 @@
+{
+  "kind": "finalizer-concurrency-implementation-progress",
+  "base_sha": "dfa385208df36d8919e1ace45f7d7e3747f3da2c",
+  "owner": "root sole repository writer",
+  "implementation_sha256": "a2e4aa012fd877137df3ec1d5635d7ae08321797f510e2797453aac31445cfb5",
+  "reviewer": "audit_review",
+  "verdict": "exact implementation approved;3case probe green; further qualification running",
+  "probe": "tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-finalizer-probe-map.json --only app-auth-rest-pg --runner cargo > /private/tmp/console-finalizer-probe.log 2>&1",
+  "red": {
+    "executed": 3,
+    "passed": 0,
+    "failed": 3,
+    "filtered": 326,
+    "seconds": 16.4
+  },
+  "first_candidate": {
+    "executed": 3,
+    "passed": 1,
+    "failed": 2,
+    "seconds": 117.76,
+    "finding": "Correct observed anchor locking but contender55P03 within unchanged5s bound; no acceptance."
+  },
+  "jit_addendum": {
+    "sha256": "cba68547c6099aeb6e6cfb6c4e19c72546265cc03eb9402999151bc01cd9e307",
+    "reviews": [
+      {
+        "round": 1,
+        "reviewer": "audit_review",
+        "verdict": "approve bounded one-variable diagnostic and exact unchanged test reuse"
+      },
+      {
+        "round": 2,
+        "reviewer": "integration_tests",
+        "verdict": "approve bounded one-variable diagnostic and exact unchanged test reuse"
+      },
+      {
+        "round": 3,
+        "reviewer": "integration_security",
+        "verdict": "approve bounded one-variable diagnostic and exact unchanged test reuse"
+      },
+      {
+        "round": 4,
+        "reviewer": "reference_inventory",
+        "verdict": "approve bounded one-variable diagnostic and exact unchanged test reuse"
+      }
+    ],
+    "change": "Transaction-local jit=off follows existing classifier execution setting. Historical SQL, tests, fingerprints and5s/60s bounds unchanged."
+  },
+  "green": {
+    "executed": 3,
+    "passed": 3,
+    "failed": 0,
+    "filtered": 326,
+    "seconds": 35.1,
+    "observation_ms": [
+      40,
+      47
+    ]
+  },
+  "remaining": [
+    "Fresh serving/serving first-create proof running.",
+    "Full retained lifecycle suite running.",
+    "Real ordinary nextest audit/evaluation consumers running.",
+    "Missing-anchor scenario unexecuted; shared anchor never removed.",
+    "No production or release qualification."
+  ]
+}
