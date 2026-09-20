@@ -1,0 +1,25 @@
+{
+  "owner": "/root",
+  "base_sha": "c613626e6dcab9c7c9ce8e4f479576d8ca0e20f7",
+  "target": "Regenerated app Buck sources include all three retained Company helper modules; existing Account designation owner executes successfully.",
+  "allowed_paths": [
+    "backend/app/BUCK"
+  ],
+  "forbidden": "All other production, test, generator, SQL, lock and authority files",
+  "mechanical_guide": "Run unchanged python3 tools/buck/gen_first_party.py; refuse any other generated diff.",
+  "probe": "PATH=\"${TMPDIR:-/tmp}/console-dotslash/bin:$PATH\" DOCKER_CONTEXT=colima-console-release-20260919 CONSOLE_BUCK_NEEDS_POSTGRES_ISOLATION_DIR=console-release-startup CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg",
+  "pre_mortem": "Stale graph omits nested helpers and prevents real owner verification; broad generator drift could modify unrelated inputs.",
+  "blast_radius": "Generated app integration test source inputs only",
+  "detection": "Exact Buck owner probe and unchanged generator test suite; strict diff allowlist",
+  "rollback": "Revert only generated app BUCK delta; original failure returns, no data mutation",
+  "stop_conditions": [
+    "Unexpected generated diff",
+    "Owner probe needs semantic test changes",
+    "Unexpected generator behavior"
+  ],
+  "reviewer": "/root/integration_security",
+  "holds": [
+    "No Company implementation acceptance",
+    "No full release acceptance"
+  ]
+}

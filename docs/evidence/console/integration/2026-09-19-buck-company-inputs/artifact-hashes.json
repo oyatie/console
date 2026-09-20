@@ -1,0 +1,12 @@
+{
+  "generated.patch": "61e12e35de360acca0f814b57139b4b8688487447e88defa26087235275850a1",
+  "generation.log": "c2dbc476e1d1e34e2167bafa00898b4fcabd04d0cabf3270904143c6a1e96e98",
+  "generator-tests-staged.log": "2e9cfdf7b4f90fa5f41ac6f6a523b6386d4854405c2713d7976dc23b6a6085c7",
+  "generator-tests.log": "f58ed33bc5eb8b509bc190826af19a5a6268cc23144af6e997d6f00e8fa606dd",
+  "green.log": "e73de90403c1b7dd1e9bc04d51b2534b310f29bb0117aa9f8c8c5815034a17c7",
+  "independent-review.json": "370eeeac6cc506c7c559cd9ecb4cfd8a0baddca8e5da4dedee5f2568eb0d3310",
+  "lane.json": "d556df227c6175ca1b70da68682023ca1ad8ec06f23b6c00d5c2578ceef97015",
+  "red-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+  "red.log": "25ed93ff44c720ee0e19ac1a28858ffdfe573893ae67834faa091a8b3808ab7b",
+  "verification.json": "679edff99deed7bedcd8c45dc618848d3ed40901eb426d4ac77b6dd5063336f4"
+}

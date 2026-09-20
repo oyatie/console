@@ -1,0 +1,39 @@
+{
+  "base_sha": "c613626e6dcab9c7c9ce8e4f479576d8ca0e20f7",
+  "source_paths": [
+    "backend/app/BUCK"
+  ],
+  "generator_command": "python3 tools/buck/gen_first_party.py",
+  "generator_changed": false,
+  "source_inputs_added": [
+    "tests/auth_rest/native_company_setup.rs",
+    "tests/auth_rest/native_company_eligibility.rs",
+    "tests/auth_rest/native_company_browser.rs"
+  ],
+  "targets_affected": 67,
+  "source_sha256": "9b7051cd33eacaa1e7e4162753a92a4ab6079356f0e532516b234519b1a879cb",
+  "red": {
+    "exit_code": 3,
+    "runtime_tests": 0,
+    "cause": "Missing retained native_company_setup.rs in generated Buck source inputs"
+  },
+  "green": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "filtered": 352,
+    "runtime_seconds": 4.6
+  },
+  "generator_suite": {
+    "executed": 59,
+    "passed": 59,
+    "failed": 0,
+    "initial_unstaged_run": "58passed1failed; existing clean-generation test compares output to Git index. Staged exact generated artifact then reran unchanged suite; no assertions modified."
+  },
+  "remaining_holds": [
+    "No Company behavior implementation",
+    "Whole Account suite remains unaccepted",
+    "Inherited nightly compiler still in this specific test",
+    "No release qualification or exposure"
+  ]
+}
