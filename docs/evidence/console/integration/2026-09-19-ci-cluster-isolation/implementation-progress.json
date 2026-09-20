@@ -2,7 +2,7 @@
   "kind": "ci-cluster-isolation-implementation-progress",
   "base_sha": "ed173206f0a67e672a08c782a780312c13c7ce78",
   "owner": "root sole repository writer",
-  "status": "actual harness probe repaired; real PostgreSQL pair verification running; not integration acceptance",
+  "status": "mocked harness and real PostgreSQL pair passed; ordinary concurrent finalizer qualification remains open",
   "implementation_sha256": "11b87dc722534604320e1908cafec8b97841fc10fa2812f8986f12d48abbdd42",
   "approved_semantic_candidate_sha256": "decb7696752ba96b7335420376b967bbd26ff2e1afc81f15680ca39e71b4f77d",
   "subsequent_change": "Comment-only refresh removes obsolete assertion that nextest group serialization isolates roles.",
@@ -34,17 +34,28 @@
     "red": "08e69de9e5f82080d44c3771e575c68a57b6abfa42fd703a91d5e46b52eadddd",
     "green": "d16b4a0e0b1b180b0db702bcfbec9ea8f50c23e106eec4575f764f00cebe8137",
     "all-green": "7f073d0b3e0d3de3f1b0499b5e6b6fbc483f3db5e802d49bfa3b484ade3dee84",
-    "admission": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+    "admission": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "real-pair": "b218141909957861234aca0a2eea8f742f7004411dab74a93b23cd7c89649484",
+    "real-pair-map": "38eaedc3851f2f827618be4aa811e621b9f9b17960ec75f043cba12e9e291064"
   },
   "real_pair": {
-    "status": "running",
+    "status": "passed",
     "command": "tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-ci-isolation-real-pair-map.json --only platform-db-group-of-one-expand-contract-pg,app-audit-api-pg --runner cargo",
     "map_sha256": "38eaedc3851f2f827618be4aa811e621b9f9b17960ec75f043cba12e9e291064",
     "map_recipe": "Move unchanged platform-db-group-of-one-expand-contract-pg row to front of canonical map; preserve all row values, other row order and metadata.",
-    "purpose": "Actual migration password mutation precedes real restricted-login consumer in a separate cluster."
+    "purpose": "Actual migration password mutation precedes real restricted-login consumer in a separate cluster.",
+    "executed": 7,
+    "passed": 7,
+    "failed": 0,
+    "counts_by_binary": {
+      "group_of_one_expand_contract": 2,
+      "audit_api": 5
+    },
+    "database_image": "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56",
+    "reviewer": "integration_security",
+    "review": "All238 canonical rows and metadata preserved; row order only changed. Separate parent and child clusters observed."
   },
   "remaining": [
-    "Real PostgreSQL pair outcome pending.",
     "Shared first credential-owner creation race remains; ordinary nextest cohort not yet qualified.",
     "Full release goal remains incomplete."
   ]

@@ -6,11 +6,14 @@
   "inputs": {
     "backend/crates/payroll/ui/Cargo.toml": "1d70d2049d05b82bd5bdbc2b17dd0a99c2990ca5339379d916ea1d6ad1e3dbee",
     "backend/crates/payroll/ui/src/island_script.js": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d",
-    "backend/crates/payroll/ui/src/lib.rs": "ea398f48e779c7835ef9e667f9724916a9e379a3cfc4e88e1f84286005d9bd82",
+    "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+    "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
+    "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
+    "backend/crates/payroll/ui/src/native_account.rs": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
     "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad"
   },
   "outputs": {
-    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "26558f83a074be1421a2604b15a2aa95b24d40a216b04986a31346843d374ee0",
-    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "dadedd93ca5ec0be32f51d506fa144ec0c0de823d49964ae521878b37975da90"
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "6a4caef3cb32ff6c981991eca5819e6c3d9bd58e18c37c8039597bfe2130a534",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "69958e39fcdbdc20a9fe2bdb05f047817e313969d279bae3c3016f3c5a6758e9"
   }
 }
