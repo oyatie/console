@@ -1,0 +1,166 @@
+--- a/backend/app/tests/health_readiness.rs
++++ b/backend/app/tests/health_readiness.rs
+@@ -396,7 +396,19 @@
+             .unwrap()
+     }
+ 
+-    fn jwt_app_state(runtime_pool: PgPool, public_key_pem: String) -> AppState {
++    async fn jwt_app_state(owner_pool: &PgPool, public_key_pem: String) -> AppState {
++        // The session verifier reads current legacy context and Account fencing
++        // through its actual restricted Auth login, independent of token issuance.
++        let auth_database = console_platform_test_support::login_test_pool(
++            owner_pool,
++            console_platform_test_support::TestDatabaseLogin::Auth,
++        )
++        .await;
++        let runtime_pool = console_platform_test_support::login_test_pool(
++            owner_pool,
++            console_platform_test_support::TestDatabaseLogin::Business,
++        )
++        .await;
+         let config = AppConfig::from_pairs([
+             (
+                 "CONSOLE_DATABASE_DURABILITY",
+@@ -409,7 +421,9 @@
+             ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
+         ])
+         .unwrap();
+-        AppState::new(config, DatabaseDependency::Postgres(runtime_pool)).unwrap()
++        AppState::new(config, DatabaseDependency::Postgres(runtime_pool))
++            .unwrap()
++            .with_auth_database(auth_database)
+     }
+ 
+     async fn seed_user(pool: &PgPool, org: OrgId, user: UserId, role: &str) {
+@@ -578,17 +592,15 @@
+     /// Supplying an access token under the legacy cookie name is deliberately
+     /// generous: the real refresh cookie is path-scoped away from root. Native
+     /// __Host-console_account_* credentials have a separate accepted owner.
+-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
++    #[sqlx::test(migrations = false)]
+     async fn browser_navigation_reaches_no_authorized_screen_adr_0042(pool: PgPool) {
++        console_platform_test_support::prepare_account_test_database(&pool).await;
+         let keys = keys();
+         let org = OrgId::knl();
+         let admin = UserId::new();
+         seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+         let run = seed_run(&pool, org, admin).await;
+-        let service = build_router(jwt_app_state(
+-            runtime_role_pool(&pool).await,
+-            keys.public_pem.clone(),
+-        ));
++        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+         let token = bearer(&keys, org, admin, "SUPER_ADMIN");
+ 
+         // One principal, over the transport an HTTP client can use.
+@@ -704,17 +716,15 @@
+     /// valid access JWT. Root may show Public without granting any shipping
+     /// data; native Account cookie entry does not activate this old proposal.
+     /// Keep the separate live JSON API cookie-denial and Bearer controls.
+-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
++    #[sqlx::test(migrations = false)]
+     async fn proposed_ssr_session_cookie_does_not_authorize_html_get_yet(pool: PgPool) {
++        console_platform_test_support::prepare_account_test_database(&pool).await;
+         let keys = keys();
+         let org = OrgId::knl();
+         let admin = UserId::new();
+         seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+         let run = seed_run(&pool, org, admin).await;
+-        let service = build_router(jwt_app_state(
+-            runtime_role_pool(&pool).await,
+-            keys.public_pem.clone(),
+-        ));
++        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+         let token = bearer(&keys, org, admin, "SUPER_ADMIN");
+ 
+         let (status, with_header) = get_ui(service.clone(), Some(&token)).await;
+@@ -769,8 +779,9 @@
+         (status, String::from_utf8(bytes.to_vec()).unwrap())
+     }
+ 
+-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
++    #[sqlx::test(migrations = false)]
+     async fn ui_shell_omits_runs_unless_payroll_run_read(pool: PgPool) {
++        console_platform_test_support::prepare_account_test_database(&pool).await;
+         let keys = keys();
+         let org = OrgId::knl();
+         let super_admin = UserId::new();
+@@ -779,10 +790,7 @@
+         seed_user(&pool, org, member, "MEMBER").await;
+         let run = seed_run(&pool, org, super_admin).await;
+ 
+-        let service = build_router(jwt_app_state(
+-            runtime_role_pool(&pool).await,
+-            keys.public_pem.clone(),
+-        ));
++        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+ 
+         let (status, unauth) = get_ui(service.clone(), None).await;
+         assert_eq!(status, StatusCode::OK, "{unauth}");
+@@ -846,8 +854,9 @@
+         .unwrap();
+     }
+ 
+-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
++    #[sqlx::test(migrations = false)]
+     async fn ui_shipping_screens_deny_by_omission(pool: PgPool) {
++        console_platform_test_support::prepare_account_test_database(&pool).await;
+         let keys = keys();
+         let org = OrgId::knl();
+         let super_admin = UserId::new();
+@@ -858,10 +867,7 @@
+         let run = seed_run(&pool, org, super_admin).await;
+         let heads = seed_heads(&pool, org, super_admin).await;
+ 
+-        let service = build_router(jwt_app_state(
+-            runtime_role_pool(&pool).await,
+-            keys.public_pem.clone(),
+-        ));
++        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+         let admin = bearer(&keys, org, super_admin, "SUPER_ADMIN");
+         let member_tok = bearer(&keys, org, member, "MEMBER");
+ 
+@@ -977,8 +983,9 @@
+     }
+ 
+     /// ADR-0025 §4 persona real-backend E2E on `/`, `/organization`, `/hr`, `/payroll`.
+-    #[sqlx::test(migrations = "../crates/platform/db/migrations")]
++    #[sqlx::test(migrations = false)]
+     async fn ui_persona_e2e(pool: PgPool) {
++        console_platform_test_support::prepare_account_test_database(&pool).await;
+         let keys = keys();
+         let org = OrgId::knl();
+         let member = UserId::new();
+@@ -1007,10 +1014,7 @@
+         seed_user(&pool, other_org, foreign, "SUPER_ADMIN").await;
+         grant_group_viewer(&pool, other_org, foreign).await;
+ 
+-        let service = build_router(jwt_app_state(
+-            runtime_role_pool(&pool).await,
+-            keys.public_pem.clone(),
+-        ));
++        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+         let member_tok = bearer(&keys, org, member, "MEMBER");
+         let admin_tok = bearer(&keys, org, admin, "ADMIN");
+         let exec_tok = bearer(&keys, org, executive, "EXECUTIVE");
+@@ -1225,17 +1229,15 @@
+         /// would mint `console_session` with Path=/ so a browser sends it to
+         /// JSON API too; the server must still ignore it. Keep this live after
+         /// a session cookie exists.
+-        #[sqlx::test(migrations = "../crates/platform/db/migrations")]
++        #[sqlx::test(migrations = false)]
+         async fn cookie_does_not_authorize_json_api(pool: PgPool) {
++            console_platform_test_support::prepare_account_test_database(&pool).await;
+             let keys = keys();
+             let org = OrgId::knl();
+             let admin = UserId::new();
+             seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+             let _run = seed_run(&pool, org, admin).await;
+-            let service = build_router(jwt_app_state(
+-                runtime_role_pool(&pool).await,
+-                keys.public_pem.clone(),
+-            ));
++            let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+             let token = bearer(&keys, org, admin, "SUPER_ADMIN");
+ 
+             for cookie in [

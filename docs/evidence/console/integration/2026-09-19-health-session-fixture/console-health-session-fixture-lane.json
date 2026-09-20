@@ -1,0 +1,23 @@
+{
+  "owner": "/root",
+  "base_sha": "58191b77d078547498cdcf53fc07033ea5ff0676",
+  "immutable_target": "Restore current Auth session reader dependencies in six retained health SSR/API tests without changing assertions",
+  "allowed_paths": [
+    "backend/app/tests/health_readiness.rs"
+  ],
+  "mechanical_guide": "Exact independently approved console-health-session-fixture-20260919; use prepare_account_test_database and separate real Auth/Business login pools; no issuer additions",
+  "pre_mortem": "Adminpool or omittedfinalization could create false-green authorization tests",
+  "blast_radius": "One existing test file; ephemeral test DBs only",
+  "detection": "Same full15leaf suite and byte-preserved assertions; source review verifies leastprivilege helpers",
+  "rollback": "Revert exact fixtureonly diff",
+  "stop_conditions": [
+    "Changed assertions",
+    "Missing fixture prereqs interpreted as acceptance",
+    "Production guard bypass"
+  ],
+  "reviewer": "/root/integration_security",
+  "remaining_holds": [
+    "Onepreexistingignored proposed transport test notimplemented",
+    "Fullworkflow/release qualification incomplete"
+  ]
+}

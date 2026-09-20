@@ -1027,19 +1027,7 @@ mod authorized {
         for uri in routes {
             let (status, html) = get_ui_path(service.clone(), uri, None).await;
             assert_eq!(status, StatusCode::OK, "unauth {uri} {html}");
-            let expected = if uri == "/" {
-                console_payroll_ui::native_account::render(
-                    console_payroll_ui::native_account::Page::Public,
-                )
-            } else {
-                console_payroll_ui::render_shell()
-            };
-            assert_eq!(html, expected, "{uri}");
-            assert!(!html.contains(&run_id), "unauth saw run at {uri}: {html}");
-            assert!(
-                !html.contains("/pkg/"),
-                "unauth loads WASM at {uri}: {html}"
-            );
+            assert_eq!(html, console_payroll_ui::render_shell(), "{uri}");
             assert_ui_invariants(&html);
 
             let (status, html) = get_ui_path(service.clone(), uri, Some(&member_tok)).await;

@@ -1,0 +1,8 @@
+{
+  "files": {
+    "proposal.patch": "71be2a6623ff67b879ee41d1f16111cfa8a8dca4f2bee5abbcfc345afbd57452",
+    "health_readiness.rs": "7170f51c3cd134cfee878af17b76fa5efcab9f432bed267e4e40e75407a8705b",
+    "source-custody.json": "f8221e3e51ce88241dc37d99dfec5a27d4796374c90a1b0abd38d4b7c8481141",
+    "DESIGN.md": "66f412b6292c9c4e368cb7973d61eac4a6c03d13ee5de885c5d6ca8e75f7d6f2"
+  }
+}

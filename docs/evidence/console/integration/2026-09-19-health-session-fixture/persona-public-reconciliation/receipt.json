@@ -1,0 +1,11 @@
+{
+  "base_sha256": "7170f51c3cd134cfee878af17b76fa5efcab9f432bed267e4e40e75407a8705b",
+  "reason": "After real Auth dependency restoration, previously unreachable fifth old-root presentation assumption in ui_persona_e2e fails. Existing approved routing design gives anonymousroot exactPublic; protectedroutes remain exactshell. Preserve every other persona/role/source denial, add explicit noRun/noWASM to anonymous branch.",
+  "red": "/private/tmp/console-root-entry-health-regressions-v3.log",
+  "counts": {
+    "passed": 13,
+    "failed": 1,
+    "preexisting_ignored": 1
+  },
+  "no_production_change": true
+}
