@@ -615,3 +615,6 @@ fn group_projection_oracle_rejects_every_field_topology_and_order_corruption() {
         );
     }
 }
+
+#[path = "legacy_platform_group_credentials.rs"]
+mod legacy_platform_group_credentials;
