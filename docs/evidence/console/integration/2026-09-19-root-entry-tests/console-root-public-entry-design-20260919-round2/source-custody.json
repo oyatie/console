@@ -1,0 +1,14 @@
+{
+  "head": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "files": {
+    "backend/app/src/lib.rs": "607cddd0d44681a2439b5ce6d5ee6a68f92ec3c7cca827355e7824c9662e4613",
+    "backend/crates/platform/auth-rest/src/lib.rs": "a78efc30ecebafd61c9b3fb78617e0370b80fdae4ef4226e67d02730d2d96910",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "8fee13471d35110dcf2bee9d666e78b1d909f0fbf6b8ac28489f6d5845e9f4a8",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "a5fff5c289c82bd72aa335f1008851ffce956a4f4b8373b1a09bfdecbb9ebf77",
+    "backend/crates/payroll/ui/src/native_account.rs": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
+    "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "eaf8af31061736a71bc249b95d3e8bd962303541ca4ec7581d1a904dcff598ed",
+    "backend/app/tests/auth_rest.rs": "fdcd288718591a0ba7bf8c3b23af7acf9f4a604416e1366a93e438f9f7f6245d",
+    "backend/app/tests/health_readiness.rs": "aba39e10c0ea1a298d23aa0dee577ba773fa5a112085dd13792a40a2faa170a8"
+  }
+}

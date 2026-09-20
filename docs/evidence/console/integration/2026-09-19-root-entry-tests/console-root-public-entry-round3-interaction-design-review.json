@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:14:56.189719+00:00",
+  "candidate_manifest_sha256": "bf6dcece1d90f51676e00f4771744abccec1ce43a095f0eb62b80f75c88e2c51",
+  "incorporated_design_manifest_sha256": "b51847ae66168edc06b50d9b57000879e411ca2ffdd3ecbc0f5b627013c76cbb",
+  "fixture_review_sha256": "01ea8c2b79a4c4814ec3733bfc5f60b74ac3bf72b2ae70d503d268c6b434e0e2",
+  "source_bindings_verified": 9,
+  "repository_edits": 0,
+  "runtime_tests_executed": 0,
+  "kind": "independent-root-entry-frontend-interaction-design-review",
+  "status": "APPROVE_REUSE_DESIGN_NOT_BROWSER_ACCEPTANCE",
+  "conclusions": [
+    "Existing Page::Public supplies visible login/create links, Korean language/viewport, h1/main/skip-link and native CSS; no new layout system needed.",
+    "Native Active/Error/Unavailable reuse existing document state grammar; public SignIn presentation at root preserves normal /account route.",
+    "Public no-form document cannot initiate current native-account.js form handlers; top-level source only queries form. It carries no Leptos island. This source observation is not browser network evidence.",
+    "Static HEAD200/bodystripped, native/errorHEAD405 and legacyHEADunchanged are explicitly bounded; original protected routes unchanged."
+  ],
+  "required_evidence": [
+    "Actual browser screenshot and keyboard/320px/200percent-zoom critique; verify links, no owner effects/network on Public, no hidden business data.",
+    "No claim of completed Company workspace or broad release UI maturity from a public landing repair."
+  ],
+  "limits": [
+    "No browser session or screenshot executed by reviewer; independent visual/interaction acceptance remains open."
+  ]
+}

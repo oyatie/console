@@ -1,0 +1,52 @@
+{
+  "design_reviews": {
+    "/private/tmp/console-root-public-entry-round3-fixture-design-review.json": "01ea8c2b79a4c4814ec3733bfc5f60b74ac3bf72b2ae70d503d268c6b434e0e2",
+    "/private/tmp/console-root-public-entry-round3-security-design-review.json": "0782992595350eb261ff0f1efd5f7cdfb7aa8bbcbbebfea7d0a08ccefaf47b3d",
+    "/private/tmp/console-root-public-entry-round3-interaction-design-review.json": "a7a5a1252f878fdd40e6393a3ec28ce19cb121e6c6e2d0bdb42707bf7a137161",
+    "/private/tmp/console-root-public-entry-round3-mechanical-design-review.json": "4482d1c798b8865ae0b4f2de147a5f88186c1509ed67834464e9a55f9ef448b4"
+  },
+  "new_test_names": [
+    "account_browser::native_root_unrelated_cookies_are_public_without_owner_effects",
+    "account_browser::native_root_native_cookie_classes_and_head_preserve_owner_selection",
+    "account_browser::native_root_expired_and_revoked_access_never_consumes_refresh",
+    "account_browser::native_root_cookie_refusals_preserve_native_parser_precedence",
+    "account_browser::native_root_document_admission_matches_native_owner_before_credentials",
+    "account_browser::native_root_invalid_legacy_authorization_never_becomes_anonymous_public",
+    "account_browser::native_root_parser_refactor_preserves_api_authorization_first"
+  ],
+  "unchanged_actual_root_red": "account_browser::native_entry_public_root_exposes_discoverable_routes",
+  "modified_existing_runtime_tests": [
+    "account_browser::native_document_auth_transport_outage_is_unavailable_not_anonymous",
+    "account_browser::native_document_unproven_context_retains_live_account_and_lawful_logout",
+    "ui_shell_serves_empty_ssr_html",
+    "authorized::browser_navigation_reaches_no_authorized_screen_adr_0042",
+    "authorized::proposed_ssr_session_cookie_does_not_authorize_html_get_yet",
+    "authorized::ui_shell_omits_runs_unless_payroll_run_read"
+  ],
+  "runtime_executed": 0,
+  "compiler_discovery_executed": false,
+  "syntax_check": {
+    "command": "rustfmt --edition 2024 --emit stdout <three candidate test files> > /dev/null",
+    "exit_code": 0,
+    "claim": "Rust syntax parsed; not Rust compilation or runtime tests"
+  },
+  "repository_edits": 0,
+  "required_next": [
+    "Independent exact test fixture/security review",
+    "Root executes retained original root RED on current bound source",
+    "Root applies exact admitted test proposal and builds/discovers7newtests before claiming any probe outcome",
+    "Record exact individual RED/GREEN counts, including existing modifiednative/healthcases",
+    "Mechanical source review must verify single moved parser body and unchanged Authorization guard",
+    "Actual browser network/screenshot/keyboard/320px/200percentzoom evidence separately"
+  ],
+  "format_check": {
+    "command": "rustup run 1.98.1 rustfmt --edition 2024 --check <three full candidate files>",
+    "exit_code": 0
+  },
+  "successor_checks": {
+    "original_native_entry_prefix_byte_identical": true,
+    "native_files_equal_formatted_predecessor": true,
+    "health_delta_from_formatted_predecessor_only_doc_comments": true,
+    "predecessor_fixture_review_sha256": "351fe7a54c1b5e47821b06e67574514da0fcfc243a2509f0d19858477c2b582a"
+  }
+}

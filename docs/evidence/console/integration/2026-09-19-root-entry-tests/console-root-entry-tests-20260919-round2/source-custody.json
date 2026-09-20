@@ -1,0 +1,21 @@
+{
+  "head": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+  "source_hashes": {
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "eaf8af31061736a71bc249b95d3e8bd962303541ca4ec7581d1a904dcff598ed",
+    "backend/app/tests/auth_rest/native_document_cases.rs": "db8300050c391183bb33f950134e98607c13384a60702e2b4a31aba5ea6145eb",
+    "backend/app/tests/health_readiness.rs": "aba39e10c0ea1a298d23aa0dee577ba773fa5a112085dd13792a40a2faa170a8",
+    "backend/app/src/lib.rs": "607cddd0d44681a2439b5ce6d5ee6a68f92ec3c7cca827355e7824c9662e4613",
+    "backend/app/tests/auth_rest.rs": "fdcd288718591a0ba7bf8c3b23af7acf9f4a604416e1366a93e438f9f7f6245d",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "a5fff5c289c82bd72aa335f1008851ffce956a4f4b8373b1a09bfdecbb9ebf77",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "8fee13471d35110dcf2bee9d666e78b1d909f0fbf6b8ac28489f6d5845e9f4a8",
+    "backend/crates/platform/request-context/src/lib.rs": "30d42d13d406367b1915a5ef4b376a2eb33ca0c36ab57392db7ca6e0f057415d"
+  },
+  "candidate_hashes": {
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "d86781610aaae305cd7ba662f3b9fcd0484e0f5c3a453c11ca897f5c3801ad29",
+    "backend/app/tests/auth_rest/native_document_cases.rs": "f1082edf27121cea88ce8056eeb8dd45dd8360a46dcd61e00087e7f158096722",
+    "backend/app/tests/health_readiness.rs": "29a7c4fb9341e4c19ade8eeed672d96950d082e803eb659e31068b8604fc711b"
+  },
+  "original_native_entry_file_is_unchanged_prefix": true,
+  "predecessor_manifest_sha256": "7c7e47fff9a4122ab25cd62482e3da026f8b405dda38c81fe37cec95d95a65e9",
+  "successor_kind": "Rust1.98.1 format plus two stale doc-comment replacements; no semantic change"
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "independent-exact-root-entry-test-security-mechanical-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:27:56.553259+00:00",
+  "decision": "APPROVE_EXACT_TEST_CANDIDATE_AND_NARROW_HEALTH_PRESENTATION_RECONCILIATION",
+  "manifest_sha256": "69c313a772564b9d540e69965e29587007519c1722f22a46d39b30d574e89788",
+  "patch_sha256": "1d22bab6e4a3e604b02fc0ea0ada6095069f42381005bdfe89cf702fbb7b3442",
+  "candidate_hashes": {
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "d86781610aaae305cd7ba662f3b9fcd0484e0f5c3a453c11ca897f5c3801ad29",
+    "backend/app/tests/auth_rest/native_document_cases.rs": "f1082edf27121cea88ce8056eeb8dd45dd8360a46dcd61e00087e7f158096722",
+    "backend/app/tests/health_readiness.rs": "29a7c4fb9341e4c19ade8eeed672d96950d082e803eb659e31068b8604fc711b"
+  },
+  "predecessor_fixture_review_sha256": "351fe7a54c1b5e47821b06e67574514da0fcfc243a2509f0d19858477c2b582a",
+  "checks": {
+    "packet_hashes": 8,
+    "current_source_hashes": 8,
+    "candidate_hashes": 3,
+    "original_native_entry_whole_prefix_bytes_unchanged": 16688,
+    "source_expected_new_sqlx": 7,
+    "source_expected_modified_existing_tests": 6,
+    "rustfmt_check_1_98_1_exit": 0,
+    "exact_patch_reproduces_all_three_candidates": true,
+    "formatted_predecessor_equivalence_plus_two_doc_comment_corrections": true,
+    "compiled": 0,
+    "runtime_executed": 0,
+    "repository_edits": 0
+  },
+  "conclusions": [
+    "Original actual root test/helpers/assertions unchanged. New native tests are appended with real enrolled Account, signed expired access, actual logout revocation and complete native/legacy/general-audit snapshots.",
+    "All4nativecookie classes observed by HEAD405; native+Bearer, malformed/duplicate/nonUTF8/oversized and combinedmetadata refusals pin explicit status plus real /account response comparison.",
+    "API regression control pins Authorization-first400 through actual owner. Root lookup errors cannot become Public. Existing JSON413 envelope limitation is correctly recorded, not silently rewritten or described as private HTML.",
+    "Outage/context tests retain all prior assertions and add real root unavailable/recovery. No configuration still produces native503/HEAD405, public200 only absent native credentials.",
+    "Fourhealth presentation conflicts reviewed explicitly: anonymous/non-native-cookie root expects exactPublic; all MEMBER/run/island/WASM/salary-denial controls retained. Protected routes independently checked, old early-success masking removed.",
+    "Real legacyBearer response with unrelated cookies matches body and content/CSP/cache/Vary GET/HEAD; /work preserved.",
+    "Successor is exact rustfmt output of behavior-reviewed predecessor except two truthful doc comments; no assertion/test removed/skipped/inverted."
+  ],
+  "approved_next_action": "Root may integrate exactly three reviewed test files, compile/discover and commit tests before clean actual rootRED/admission. Root source implementation remains separate reviewed lane.",
+  "required_acceptance": [
+    "Exact original root probe and7newtests plus6modifiedexisting tests must execute with truthful discovery/pass counts.",
+    "Mechanical production review of sole shared parser body/Authorization guard, originalheader delegation, method/entry mode and /work preservation.",
+    "Browser/network/screenshot/keyboard320px200percentzoom evidence separate; tests prove HTTP behavior only."
+  ],
+  "remaining_holds": [
+    "No production source implementation or full Account/Company/release qualification approval.",
+    "Existing mountedJSON413 document-envelope gap remains separately required work."
+  ]
+}

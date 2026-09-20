@@ -1,0 +1,832 @@
+--- a/backend/app/tests/auth_rest/native_entry_ui_cases.rs
++++ b/backend/app/tests/auth_rest/native_entry_ui_cases.rs
+@@ -504,3 +504,490 @@
+         &native_extension_rows(&pool).await
+     ));
+ }
++
++// Root selection is presentation over the existing native owner. These cases
++// compare full owner state, not just response status or row counts.
++async fn native_root_snapshot(pool: &PgPool) -> BTreeMap<String, String> {
++    let mut rows = native_document_snapshot(pool).await;
++    let audit: String = sqlx::query_scalar(
++        "SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text COLLATE \"C\"),'[]'::jsonb)::text FROM public.audit_events t"
++    ).fetch_one(pool).await.unwrap();
++    assert!(serde_json::from_str::<Value>(&audit).unwrap().is_array());
++    assert!(rows.insert("audit_events".to_owned(), audit).is_none());
++    rows
++}
++
++fn native_root_public(response: &Response) {
++    let html = native_entry_html(response, StatusCode::OK);
++    assert!(
++        html == console_payroll_ui::native_account::render(
++            console_payroll_ui::native_account::Page::Public
++        )
++    );
++    for action in [
++        "href=\"/account\"",
++        "href=\"/account/register\"",
++        "로그인",
++        "계정 만들기",
++    ] {
++        assert!(
++            html.contains(action),
++            "ROOT_PUBLIC: discoverable action absent"
++        );
++    }
++    assert!(!html.contains("data-account-state="));
++    assert!(!html.contains("data-context-state="));
++    assert!(!html.contains("leptos-island") && !html.contains("/pkg/"));
++    native_entry_no_business_navigation(html);
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_unrelated_cookies_are_public_without_owner_effects(pool: PgPool) {
++    let app = fixture(&pool).await;
++    let before = native_root_snapshot(&pool).await;
++    for cookie in [
++        "theme=root-theme-marker",
++        "console_refresh=root-legacy-refresh-marker",
++        "console_session=root-proposed-session-marker",
++        "__Host-console_account_session_extra=root-near-name-marker",
++        "theme=root-theme-marker; locale=root-locale-marker",
++    ] {
++        let response = native_entry_get(
++            &app,
++            "/",
++            &Cookies::default(),
++            "none",
++            "navigate",
++            "document",
++            &[("Cookie", cookie)],
++        )
++        .await;
++        native_root_public(&response);
++        assert!(
++            before == native_root_snapshot(&pool).await,
++            "ROOT_PUBLIC: unknown cookies changed state"
++        );
++    }
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_native_cookie_classes_and_head_preserve_owner_selection(pool: PgPool) {
++    let app = fixture(&pool).await;
++    let (attempt, cookies) = enrolled(&app).await;
++    let before = native_root_snapshot(&pool).await;
++    let root = native_document_get(&app, "/", &cookies).await;
++    let account = native_document_get(&app, "/account", &cookies).await;
++    let html = native_entry_html(&root, StatusCode::OK);
++    native_entry_html(&account, StatusCode::OK);
++    assert!(
++        root.bytes == account.bytes,
++        "ROOT_NATIVE: active projection differs from owner"
++    );
++    assert!(
++        html.contains("data-account-state=\"active\"")
++            && html.contains("data-context-state=\"empty\"")
++    );
++    native_entry_no_business_navigation(html);
++    assert_no_company_identity(&pool, attempt.account).await;
++
++    // HEAD makes all four supplied native classes observably distinct from
++    // anonymous Public. Refresh/enrollment/login alone are never consumed.
++    for name in [ACCESS, REFRESH, ENROLLMENT, LOGIN] {
++        let value = if name == ACCESS {
++            cookies.0[ACCESS].clone()
++        } else {
++            "root-unused-proof-marker".to_owned()
++        };
++        let presented = Cookies(BTreeMap::from([(name.to_owned(), value)]));
++        let head = request(
++            &app,
++            "HEAD",
++            "/",
++            &presented,
++            None,
++            &[
++                ("Sec-Fetch-Mode", "navigate"),
++                ("Sec-Fetch-Dest", "document"),
++            ],
++        )
++        .await;
++        assert_eq!(
++            head.status,
++            StatusCode::METHOD_NOT_ALLOWED,
++            "ROOT_NATIVE_HEAD: wrong branch for {name}"
++        );
++        assert!(head.bytes.is_empty());
++        assert!(!head.headers.contains_key(header::SET_COOKIE));
++        head.private();
++        if name != ACCESS {
++            native_root_public(&native_document_get(&app, "/", &presented).await);
++        }
++        assert!(
++            before == native_root_snapshot(&pool).await,
++            "ROOT_NATIVE_HEAD: credential class caused effects"
++        );
++    }
++    for extra in [vec![], vec![("Cookie", "theme=root-head-theme-marker")]] {
++        let head = request(&app, "HEAD", "/", &Cookies::default(), None, &extra).await;
++        assert_eq!(head.status, StatusCode::OK);
++        assert!(head.bytes.is_empty());
++        assert!(!head.headers.contains_key(header::SET_COOKIE));
++        head.private();
++        assert!(native_entry_frame_policy_is_closed(&head.headers));
++    }
++    assert!(before == native_root_snapshot(&pool).await);
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_expired_and_revoked_access_never_consumes_refresh(pool: PgPool) {
++    let (app, key) = signed_fixture(&pool).await;
++    let (attempt, cookies) = enrolled(&app).await;
++    let mut expired = cookies.clone();
++    let mut claims = signed_claims(&expired.0[ACCESS], &key).unwrap();
++    let now: OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
++        .fetch_one(&pool)
++        .await
++        .unwrap();
++    claims["exp"] = json!(now.unix_timestamp() - 1);
++    expired
++        .0
++        .insert(ACCESS.to_owned(), sign_proof_claims(&claims, &key));
++    let before = native_root_snapshot(&pool).await;
++    let response = native_document_get(&app, "/", &expired).await;
++    native_root_public(&response);
++    assert!(
++        !std::str::from_utf8(&response.bytes)
++            .unwrap()
++            .contains(&attempt.account.to_string())
++    );
++    assert!(
++        before == native_root_snapshot(&pool).await,
++        "ROOT_EXPIRED: silent refresh or state repair"
++    );
++    let current = native_document_get(&app, "/", &cookies).await;
++    assert!(native_entry_html(&current, StatusCode::OK).contains("data-account-state=\"active\""));
++    assert!(before == native_root_snapshot(&pool).await);
++
++    // Revoke through the existing command owner, retaining stale browser bytes.
++    let scoped_before = snapshot(&pool, attempt.account).await;
++    let csrf = proof(&app, &cookies).await;
++    let logout = request(
++        &app,
++        "POST",
++        "/api/v2/auth/logout",
++        &cookies,
++        Some(json!({})),
++        &[("X-Console-CSRF", &csrf)],
++    )
++    .await;
++    assert!(logout.json(StatusCode::OK) == json!({"outcome":"COMMITTED"}));
++    logout.private();
++    assert_logout_transition(
++        &scoped_before,
++        &snapshot(&pool, attempt.account).await,
++        attempt.account,
++    );
++    let revoked = native_root_snapshot(&pool).await;
++    let response = native_document_get(&app, "/", &cookies).await;
++    native_root_public(&response);
++    assert!(
++        !std::str::from_utf8(&response.bytes)
++            .unwrap()
++            .contains(&attempt.account.to_string())
++    );
++    assert!(
++        revoked == native_root_snapshot(&pool).await,
++        "ROOT_REVOKED: resurrected or refreshed session"
++    );
++}
++
++fn native_root_parser_refusal(response: &Response, expected: StatusCode) {
++    if expected == StatusCode::PAYLOAD_TOO_LARGE {
++        // The retained outer HTTP envelope replaces native HTML413 with JSON.
++        // Pin the actual mounted contract; do not pretend its privacy headers survive.
++        assert!(
++            response.json(expected)
++                == json!({"error": {
++                    "code": "payload_too_large", "message": "request body too large"
++                }})
++        );
++        assert!(
++            response
++                .headers
++                .get(header::CONTENT_TYPE)
++                .unwrap()
++                .to_str()
++                .unwrap()
++                .starts_with("application/json")
++        );
++        assert!(!response.headers.contains_key(header::SET_COOKIE));
++        response.no_literal_echo();
++    } else {
++        native_entry_html(response, expected);
++    }
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_cookie_refusals_preserve_native_parser_precedence(pool: PgPool) {
++    let app = fixture(&pool).await;
++    let before = native_root_snapshot(&pool).await;
++    let oversized = format!("theme={}", "z".repeat(16 * 1024 + 1));
++    let bearer = "Bearer root-ambiguity-marker";
++    let mut cases = vec![
++        (
++            vec![("Cookie", oversized.clone())],
++            StatusCode::PAYLOAD_TOO_LARGE,
++        ),
++        (
++            vec![
++                ("Cookie", oversized.clone()),
++                ("Authorization", bearer.to_owned()),
++            ],
++            StatusCode::BAD_REQUEST,
++        ),
++    ];
++    for name in [ACCESS, REFRESH, ENROLLMENT, LOGIN] {
++        let supplied = format!("{name}=root-proof-marker");
++        cases.extend([
++            (
++                vec![("Cookie", format!("{name}="))],
++                StatusCode::BAD_REQUEST,
++            ),
++            (
++                vec![("Cookie", format!("{name} =root-proof-marker"))],
++                StatusCode::BAD_REQUEST,
++            ),
++            (
++                vec![("Cookie", format!("{supplied}; {supplied}"))],
++                StatusCode::BAD_REQUEST,
++            ),
++            (
++                vec![("Cookie", supplied.clone()), ("Cookie", supplied.clone())],
++                StatusCode::BAD_REQUEST,
++            ),
++            (
++                vec![
++                    ("Cookie", supplied.clone()),
++                    ("Authorization", bearer.to_owned()),
++                ],
++                StatusCode::BAD_REQUEST,
++            ),
++            (
++                vec![
++                    ("Cookie", format!("{supplied}; {supplied}")),
++                    ("Authorization", bearer.to_owned()),
++                ],
++                StatusCode::BAD_REQUEST,
++            ),
++        ]);
++    }
++    for (headers, expected) in cases {
++        let headers: Vec<_> = headers
++            .iter()
++            .map(|(name, value)| (*name, value.as_str()))
++            .collect();
++        let account = native_entry_get(
++            &app,
++            "/account",
++            &Cookies::default(),
++            "same-origin",
++            "navigate",
++            "document",
++            &headers,
++        )
++        .await;
++        native_root_parser_refusal(&account, expected); // Actual mounted owner is independently pinned.
++        let root = native_entry_get(
++            &app,
++            "/",
++            &Cookies::default(),
++            "same-origin",
++            "navigate",
++            "document",
++            &headers,
++        )
++        .await;
++        native_root_parser_refusal(&root, expected);
++        assert!(
++            root.bytes == account.bytes,
++            "ROOT_PARSER: root bypassed exact native refusal"
++        );
++        assert!(
++            before == native_root_snapshot(&pool).await,
++            "ROOT_PARSER: refused input changed state"
++        );
++    }
++    // HeaderMap permits opaque field bytes; the owner refuses them rather than
++    // treating a failed UTF8 conversion as absent/native-free credentials.
++    for path in ["/account", "/"] {
++        let mut req = Request::builder()
++            .uri(path)
++            .header("Sec-Fetch-Site", "same-origin")
++            .header("Sec-Fetch-Mode", "navigate")
++            .header("Sec-Fetch-Dest", "document")
++            .header(
++                header::COOKIE,
++                http::HeaderValue::from_bytes(b"theme=\xff").unwrap(),
++            )
++            .body(Body::empty())
++            .unwrap();
++        req.extensions_mut().insert(ConnectInfo(
++            "127.0.0.1:41000".parse::<SocketAddr>().unwrap(),
++        ));
++        let (parts, body) = app.service.clone().oneshot(req).await.unwrap().into_parts();
++        let response = Response {
++            status: parts.status,
++            headers: parts.headers,
++            bytes: to_bytes(body, 256 * 1024).await.unwrap().to_vec(),
++            sent_secrets: vec![],
++        };
++        native_entry_html(&response, StatusCode::BAD_REQUEST);
++        assert!(before == native_root_snapshot(&pool).await);
++    }
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_document_admission_matches_native_owner_before_credentials(pool: PgPool) {
++    let app = fixture(&pool).await;
++    let (_, cookies) = enrolled(&app).await;
++    let before = native_root_snapshot(&pool).await;
++    let oversized = format!("theme={}", "z".repeat(16 * 1024 + 1));
++    for (site, mode, destination, extra, expected) in [
++        (
++            "cross-site",
++            "no-cors",
++            "image",
++            vec![],
++            StatusCode::FORBIDDEN,
++        ),
++        (
++            "cross-site",
++            "navigate",
++            "iframe",
++            vec![],
++            StatusCode::FORBIDDEN,
++        ),
++        (
++            "same-origin",
++            "navigate",
++            "document",
++            vec![("Origin", "https://foreign.invalid")],
++            StatusCode::FORBIDDEN,
++        ),
++        ("none", "", "document", vec![], StatusCode::BAD_REQUEST),
++        // Metadata admission precedes even Authorization/cookie ambiguity.
++        (
++            "cross-site",
++            "no-cors",
++            "image",
++            vec![
++                ("Authorization", "Bearer root-metadata-marker"),
++                ("Cookie", oversized.as_str()),
++            ],
++            StatusCode::FORBIDDEN,
++        ),
++    ] {
++        let account =
++            native_entry_get(&app, "/account", &cookies, site, mode, destination, &extra).await;
++        native_entry_html(&account, expected);
++        let root = native_entry_get(&app, "/", &cookies, site, mode, destination, &extra).await;
++        native_entry_html(&root, expected);
++        assert!(
++            root.bytes == account.bytes,
++            "ROOT_ADMISSION: current native owner precedence changed"
++        );
++        assert!(before == native_root_snapshot(&pool).await);
++    }
++    // Valid cross-site top-level navigation remains permitted with live access.
++    let root = native_entry_get(
++        &app,
++        "/",
++        &cookies,
++        "cross-site",
++        "navigate",
++        "document",
++        &[],
++    )
++    .await;
++    assert!(native_entry_html(&root, StatusCode::OK).contains("data-account-state=\"active\""));
++    assert!(before == native_root_snapshot(&pool).await);
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_invalid_legacy_authorization_never_becomes_anonymous_public(pool: PgPool) {
++    let app = fixture(&pool).await;
++    let before = native_root_snapshot(&pool).await;
++    for headers in [
++        vec![("Authorization", "")],
++        vec![("Authorization", "Bearer root-invalid-legacy-marker")],
++        vec![
++            ("Authorization", "Bearer root-invalid-legacy-marker"),
++            ("Authorization", "Bearer root-second-legacy-marker"),
++        ],
++        vec![
++            ("Authorization", "Bearer root-invalid-legacy-marker"),
++            ("Cookie", "theme=root-legacy-error-theme-marker"),
++        ],
++    ] {
++        let root = native_entry_get(
++            &app,
++            "/",
++            &Cookies::default(),
++            "none",
++            "navigate",
++            "document",
++            &headers,
++        )
++        .await;
++        let work = native_entry_get(
++            &app,
++            "/work",
++            &Cookies::default(),
++            "none",
++            "navigate",
++            "document",
++            &headers,
++        )
++        .await;
++        assert_eq!(root.status, StatusCode::OK);
++        assert_eq!(work.status, StatusCode::OK);
++        root.no_literal_echo();
++        assert!(!root.headers.contains_key(header::SET_COOKIE));
++        assert!(root.bytes == work.bytes);
++        assert!(std::str::from_utf8(&root.bytes).unwrap() == console_payroll_ui::render_shell());
++        assert!(before == native_root_snapshot(&pool).await);
++    }
++}
++
++#[sqlx::test(migrations = false)]
++async fn native_root_parser_refactor_preserves_api_authorization_first(pool: PgPool) {
++    let app = fixture(&pool).await;
++    let before = native_root_snapshot(&pool).await;
++    let oversized = format!("theme={}", "z".repeat(16 * 1024 + 1));
++    let mut values = vec![oversized];
++    for name in [ACCESS, REFRESH, ENROLLMENT, LOGIN] {
++        values.push(format!("{name}="));
++        values.push(format!(
++            "{name}=root-api-proof-marker; {name}=root-api-proof-marker"
++        ));
++    }
++    for cookie in values {
++        request(
++            &app,
++            "GET",
++            "/api/v2/accounts/me",
++            &Cookies::default(),
++            None,
++            &[
++                ("Cookie", cookie.as_str()),
++                ("Authorization", "Bearer root-api-ambiguity-marker"),
++            ],
++        )
++        .await
++        .error(StatusCode::BAD_REQUEST, "ambiguous_credentials");
++        assert!(
++            before == native_root_snapshot(&pool).await,
++            "ROOT_PARSER_API: rejection ordering changed owner state"
++        );
++    }
++}
+--- a/backend/app/tests/auth_rest/native_document_cases.rs
++++ b/backend/app/tests/auth_rest/native_document_cases.rs
+@@ -75,6 +75,11 @@
+         }
+     }
+ 
++    let root_unavailable = native_document_get(&app, "/", &cookies).await;
++    native_document_unavailable(&root_unavailable);
++    native_root_public(&native_document_get(&app, "/", &Cookies::default()).await);
++    assert!(before == native_document_snapshot(&pool).await);
++
+     // Exact same signing identity and surviving Account after real transport
+     // replacement prove the refusal came from availability, not bad credentials.
+     let recovered = logout_auth_pool(&pool).await;
+@@ -88,6 +93,11 @@
+     assert!(
+         native_entry_html(&anonymous, StatusCode::OK).contains("data-account-state=\"anonymous\"")
+     );
++    assert!(before == native_document_snapshot(&pool).await);
++    let recovered_root = native_document_get(&app, "/", &cookies).await;
++    let recovered_account = native_document_get(&app, "/account", &cookies).await;
++    native_entry_html(&recovered_root, StatusCode::OK);
++    assert!(recovered_root.bytes == recovered_account.bytes);
+     assert!(before == native_document_snapshot(&pool).await);
+     recovered.close().await;
+ }
+@@ -143,7 +153,7 @@
+     auth.close().await;
+     assert!(before == native_document_snapshot(&pool).await);
+ 
+-    for path in ["/account", "/account/register"] {
++    for path in ["/account", "/account/register", "/"] {
+         let response = native_document_get(&app, path, &cookies).await;
+         let html = native_entry_html(&response, StatusCode::SERVICE_UNAVAILABLE);
+         assert!(html.contains("data-account-state=\"active\""));
+@@ -219,6 +229,7 @@
+     assert!(html.contains("data-account-state=\"anonymous\""));
+     assert!(!html.contains("data-account-state=\"active\""));
+     assert!(!html.contains("data-context-state="));
++    native_root_public(&native_document_get(&app, "/", &cookies).await);
+     assert!(after == native_document_snapshot(&pool).await);
+ }
+ 
+--- a/backend/app/tests/health_readiness.rs
++++ b/backend/app/tests/health_readiness.rs
+@@ -108,16 +108,84 @@
+     let config = app_config(AppRole::Api)?;
+     let state = AppState::new(config, DatabaseDependency::NotConfigured)?;
+     let app = build_router(state);
+-    let mut last = String::new();
+-    for uri in ["/", "/organization", "/hr", "/payroll"] {
++    // Public root is a concrete native document even without configured Auth.
++    // Every protected route is checked separately; no early-success escape.
++    for cookie in [None, Some("theme=root-no-database-marker")] {
++        for method in ["GET", "HEAD"] {
++            let mut request = Request::builder().method(method).uri("/");
++            if let Some(cookie) = cookie {
++                request = request.header("Cookie", cookie);
++            }
++            let response = app.clone().oneshot(request.body(Body::empty())?).await?;
++            assert_eq!(response.status(), StatusCode::OK);
++            assert_eq!(response.headers().get("cache-control").unwrap(), "no-store");
++            assert_eq!(response.headers().get("pragma").unwrap(), "no-cache");
++            assert!(!response.headers().contains_key("set-cookie"));
++            let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
++            if method == "HEAD" {
++                assert!(body.is_empty());
++            } else {
++                assert!(
++                    String::from_utf8(body.to_vec())?
++                        == console_payroll_ui::native_account::render(
++                            console_payroll_ui::native_account::Page::Public
++                        )
++                );
++            }
++        }
++    }
++    // Native credentials and parser errors retain configuration-before-parse
++    // precedence. Neither mixed Bearer nor oversize may manufacture Public.
++    let oversized = format!("theme={}", "z".repeat(16 * 1024 + 1));
++    for headers in [
++        vec![(
++            "Cookie",
++            "__Host-console_account_session=root-unavailable-marker",
++        )],
++        vec![
++            (
++                "Cookie",
++                "__Host-console_account_session=root-unavailable-marker",
++            ),
++            ("Authorization", "Bearer root-unavailable-bearer"),
++        ],
++        vec![
++            ("Cookie", oversized.as_str()),
++            ("Authorization", "Bearer root-unavailable-bearer"),
++        ],
++    ] {
++        for path in ["/", "/account"] {
++            for (method, expected) in [
++                ("GET", StatusCode::SERVICE_UNAVAILABLE),
++                ("HEAD", StatusCode::METHOD_NOT_ALLOWED),
++            ] {
++                let mut builder = Request::builder().method(method).uri(path);
++                for (name, value) in &headers {
++                    builder = builder.header(*name, *value);
++                }
++                let response = app.clone().oneshot(builder.body(Body::empty())?).await?;
++                assert_eq!(response.status(), expected);
++                assert!(!response.headers().contains_key("set-cookie"));
++                let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
++                if method == "HEAD" {
++                    assert!(body.is_empty());
++                } else {
++                    assert!(
++                        String::from_utf8(body.to_vec())?
++                            == console_payroll_ui::native_account::render(
++                                console_payroll_ui::native_account::Page::Unavailable
++                            )
++                    );
++                }
++            }
++        }
++    }
++    for uri in ["/work", "/organization", "/hr", "/payroll"] {
+         let response = app
+             .clone()
+             .oneshot(Request::builder().uri(uri).body(Body::empty())?)
+             .await?;
+-        if response.status() != StatusCode::OK {
+-            last = format!("{uri} {}", response.status());
+-            continue;
+-        }
++        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+         let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
+         let text = String::from_utf8(body.to_vec())?;
+         assert_eq!(text, console_payroll_ui::render_shell());
+@@ -125,9 +193,8 @@
+             !text.contains("291_520") && !text.to_ascii_lowercase().contains("payslip"),
+             "{uri} leaked payroll: {text}"
+         );
+-        return Ok(());
+-    }
+-    Err(format!("/ did not return 200 ({last})").into())
++    }
++    Ok(())
+ }
+ 
+ #[tokio::test]
+@@ -499,31 +566,12 @@
+         }
+     }
+ 
+-    /// ADR-0042 tripwire. This is **not** a claim that the behavior is correct.
+-    ///
+-    /// A browser cannot attach `Authorization` to a top-level navigation, and
+-    /// `bearer_token()` accepts no other transport, so a person who navigates to
+-    /// the SSR screens gets the empty shell however they authenticated. Every
+-    /// other UI test sets the header programmatically, as an HTTP client must,
+-    /// so the suite proves composition is right GIVEN a principal and says
+-    /// nothing about whether the intended client can supply one. This pins that
+-    /// asymmetry where a reader of the suite can see it.
+-    ///
+-    /// What it does NOT do is detect an arbitrary future transport. It sends
+-    /// one credential shape -- `console_refresh` carrying an access token --
+-    /// so it goes red only for a fix that reuses that exact cookie. ADR-0042's
+-    /// recommended option mints a *new* cookie beside the existing pair, and
+-    /// the client-bootstrap option keeps serving this very shell, so neither
+-    /// would turn this red. Treat it as a pin on today's behavior and a
+-    /// pointer to the ADR, not as a gate on the fix: when a transport lands,
+-    /// delete this and put the positive test in its place -- a
+-    /// navigation-shaped request renders the authorized screens.
+-    ///
+-    /// The cookie is deliberately unrealistic in the browser's favor.
+-    /// `console_refresh` is `HttpOnly; SameSite=Strict; Path=/api/v1/auth` and
+-    /// carries a refresh token, so a real browser would never send it to `/`
+-    /// and it would never hold an access token. Handing it one anyway makes
+-    /// the negative result stronger, not representative.
++    /// Legacy console_refresh never authorizes a shipping document. The public
++    /// landing now offers native Account entry, while Bearer remains the
++    /// positive control for the same Company's authorized run and island.
++    /// Supplying an access token under the legacy cookie name is deliberately
++    /// generous: the real refresh cookie is path-scoped away from root. Native
++    /// __Host-console_account_* credentials have a separate accepted owner.
+     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+     async fn browser_navigation_reaches_no_authorized_screen_adr_0042(pool: PgPool) {
+         let keys = keys();
+@@ -549,11 +597,74 @@
+             "header transport must reach the hydrated island: {with_header}"
+         );
+ 
++        // Unrelated cookies are not alternate authority. The legacy Bearer
++        // response, including its CSP/hydration envelope, stays byte-identical.
++        let baseline = service
++            .clone()
++            .oneshot(
++                Request::builder()
++                    .uri("/")
++                    .header(header::AUTHORIZATION, format!("Bearer {token}"))
++                    .body(Body::empty())
++                    .unwrap(),
++            )
++            .await
++            .unwrap();
++        assert_eq!(baseline.status(), StatusCode::OK);
++        let baseline_headers = baseline.headers().clone();
++        let baseline_body = to_bytes(baseline.into_body(), usize::MAX).await.unwrap();
++        assert!(baseline_body.as_ref() == with_header.as_bytes());
++        for cookie in [
++            "theme=root-legacy-theme-marker",
++            "console_refresh=root-non-native-marker",
++            "console_session=root-proposed-marker",
++        ] {
++            for method in ["GET", "HEAD"] {
++                let response = service
++                    .clone()
++                    .oneshot(
++                        Request::builder()
++                            .method(method)
++                            .uri("/")
++                            .header(header::AUTHORIZATION, format!("Bearer {token}"))
++                            .header(header::COOKIE, cookie)
++                            .body(Body::empty())
++                            .unwrap(),
++                    )
++                    .await
++                    .unwrap();
++                assert_eq!(response.status(), StatusCode::OK);
++                for name in [
++                    header::CONTENT_TYPE,
++                    header::CONTENT_SECURITY_POLICY,
++                    header::CACHE_CONTROL,
++                    header::PRAGMA,
++                    header::VARY,
++                ] {
++                    assert!(
++                        response
++                            .headers()
++                            .get_all(&name)
++                            .iter()
++                            .eq(baseline_headers.get_all(&name).iter()),
++                        "legacy response envelope changed"
++                    );
++                }
++                assert!(!response.headers().contains_key(header::SET_COOKIE));
++                let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
++                if method == "HEAD" {
++                    assert!(body.is_empty());
++                } else {
++                    assert!(body == baseline_body);
++                }
++            }
++        }
++
+         // The same principal, over what a browser navigation can carry.
+         // Generous on purpose: this hands the browser a real access token in
+         // the only cookie the system sets at all -- a cookie that is
+         // path-scoped away from `/` and never holds an access token. Even so
+-        // the page is empty.
++        // no authorized screen is disclosed; the public landing offers Account entry.
+         let navigation = Request::builder()
+             .uri("/")
+             .header(
+@@ -572,25 +683,21 @@
+ 
+         assert_eq!(
+             navigated,
+-            console_payroll_ui::render_shell(),
+-            "ADR-0042: a navigation still renders the empty shell. If this line \
+-             failed, a cookie transport now exists -- replace this test with \
+-             the positive one rather than loosening it."
++            console_payroll_ui::native_account::render(
++                console_payroll_ui::native_account::Page::Public
++            ),
++            "Legacy refresh cookies must render only the public entry, never authorize shipping work."
+         );
+         assert!(
+             !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
+-            "the empty shell must leak neither the run nor the island: {navigated}"
+-        );
+-    }
+-
+-    /// ADR-0042 option 1 is proposed, not implemented. The recommended cookie
+-    /// (`console_session`) must not authorize HTML GET `/` today. If this goes
+-    /// red, HTML documents gained a cookie transport: replace this tripwire
+-    /// with the positive HTML assertions from the proposed-until-accepted
+-    /// module. `/api/v1` Bearer-only is a separate live test.
+-    ///
+-    /// Generous on purpose: a valid access JWT is placed in that cookie, which
+-    /// production would never do for an opaque/signed session.
++            "the public entry must leak neither the run nor the island: {navigated}"
++        );
++    }
++
++    /// The proposed console_session name remains non-authorizing, even with a
++    /// valid access JWT. Root may show Public without granting any shipping
++    /// data; native Account cookie entry does not activate this old proposal.
++    /// Keep the separate live JSON API cookie-denial and Bearer controls.
+     #[sqlx::test(migrations = "../crates/platform/db/migrations")]
+     async fn proposed_ssr_session_cookie_does_not_authorize_html_get_yet(pool: PgPool) {
+         let keys = keys();
+@@ -623,15 +730,14 @@
+         assert_eq!(status, StatusCode::OK, "{navigated}");
+         assert_eq!(
+             navigated,
+-            console_payroll_ui::render_shell(),
+-            "ADR-0042 proposed: `console_session` still does not authorize HTML GET `/`. \
+-             If this line failed, HTML gained a cookie transport — replace this \
+-             tripwire with the proposed-until-accepted HTML assertions rather than \
+-             loosening it. Keep `cookie_does_not_authorize_json_api` live."
++            console_payroll_ui::native_account::render(
++                console_payroll_ui::native_account::Page::Public
++            ),
++            "Proposed console_session cookies must remain non-authorizing public entry; native Account cookies have a separate owner."
+         );
+         assert!(
+             !navigated.contains(&run.to_string()) && !navigated.contains("leptos-island"),
+-            "the empty shell must leak neither the run nor the island: {navigated}"
++            "the public entry must leak neither the run nor the island: {navigated}"
+         );
+     }
+ 
+@@ -674,10 +780,15 @@
+ 
+         let (status, unauth) = get_ui(service.clone(), None).await;
+         assert_eq!(status, StatusCode::OK, "{unauth}");
+-        assert_eq!(unauth, console_payroll_ui::render_shell());
++        assert_eq!(
++            unauth,
++            console_payroll_ui::native_account::render(
++                console_payroll_ui::native_account::Page::Public
++            )
++        );
+         assert!(
+             !unauth.contains("/pkg/"),
+-            "empty shell must not load WASM: {unauth}"
++            "public entry must not load WASM: {unauth}"
+         );
+ 
+         let (status, member_html) =

@@ -1,0 +1,12 @@
+{
+  "kind": "independent-exact-root-entry-fixture-successor-review",
+  "reviewer": "/root/integration_tests",
+  "status": "APPROVE_EXACT_TEST_FIXTURE_INTEGRATION_PENDING_COMPILE_AND_RUNTIME",
+  "candidate_manifest_sha256": "69c313a772564b9d540e69965e29587007519c1722f22a46d39b30d574e89788",
+  "incorporated_prior_review_sha256": "351fe7a54c1b5e47821b06e67574514da0fcfc243a2509f0d19858477c2b582a",
+  "delta_verified": "Pinned1.98.1 formatting matches both native predecessor candidates exactly. Health differs from formatted predecessor only in reviewed doc comments; all non-doc-comment lines equal. Original native-entry file remains byte-identical prefix. All successor manifest hashes match.",
+  "findings": [],
+  "tests_executed": 0,
+  "repository_edits": 0,
+  "prior_compile_runtime_admission_conditions_preserved": true
+}
