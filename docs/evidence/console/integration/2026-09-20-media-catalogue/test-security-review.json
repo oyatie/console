@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact additive Media test candidate for root integration and real owner RED; no implementation admission",
+  "manifest_sha256": "9b40fb7b3e7477ac53fdbc54c8df2809d8d8258ea45c5ce008738650c924f3d5",
+  "candidate_sha256": "e1f0a269c2679c50004be55c478cf44eb2d0403b54b8c341e0a472dfd4f13f59",
+  "preimage_sha256": "382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf",
+  "observed_source_commit": "99203cf2ea01404a48a97173c3bbd3f49551771c",
+  "checks": [
+    "All seven packet member hashes and16source pins verified at exact99203cf2; full candidate equals unchanged169-test prefix plus exact335-line additive packet.",
+    "Fixed original proposal/review and compressed/raw byte length/hash prerequisites bind44ordered records; all category/rate counts,43shared memberships/seven leaves and sole excluded index42 verified.",
+    "Positive controls retain reference units, null semantics, planned-only states, embedding caveat, VLM null without invented shared leaf, duplicate operation names across distinct categories and unrelated registry values.",
+    "32negative groups cover missing/duplicate/relabelled runtime, units/rates/scopes/keys/bindings, omission/reordering, excluded-row promotion, arbitrary null mapping and caller-supplied digest.",
+    "Four-level key substitution keeps required own value but hides enumeration and adds omitted enumerable extra; both undefined/function variants, and card operation/rate keys, require key-specific Media rejection before digest.",
+    "Invisible row/binding additions persist in memory and keep canonical bytes; tests do not falsely demand prevalidation revocation from existing digest-only API.",
+    "Every rejection follows successful real-owner validation, asserts rejection and revocation, restores exact original shape/bytes in place on same outer object, asserts still unvalidated, then explicitly revalidates.",
+    "Named changed-reference-rate probe mutates numeric literal then string/null variants at actual exported owner; no fixture replacement or private attestation state access.",
+    "No implementation, source recapture, new framework, existing test edits, CI or generated changes."
+  ],
+  "static_coverage": {
+    "existing_tests": 169,
+    "added_tests": 38,
+    "combined_tests": 207,
+    "negative_groups": 32,
+    "negative_group_histories": 90,
+    "separate_named_restoration_history": 1,
+    "total_rejection_histories": 91,
+    "named_rate_probe_matching_tests": 1,
+    "named_rate_probe_variants": 3,
+    "runtime_discovered": null,
+    "runtime_executed_by_reviewer": 0
+  },
+  "findings": [],
+  "remaining_holds": [
+    "Root must compile/discover and run actual named owner RED with functioning fixed custody prerequisites; no test execution claimed by source review.",
+    "Implementation needs lane admission; same probe GREEN, complete207owner and retained29planner suites plus exact immutable source/registry preservation review required.",
+    "Catalogue custody cannot qualify Media runtime behavior, Console pricing/performance, excluded AIP work, full freeze or milestones0-10."
+  ]
+}

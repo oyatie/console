@@ -1,0 +1,80 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT bounded Media reference catalogue integration at exact immutable commit",
+  "head_sha": "bfe3a7b91ad6f609b2aa2b601fa088c47f36d1d1",
+  "source_review_sha256": "d126613f8b5cbe00b69936fef3ef187a7037dbf79e996dc3d20e1d64cbb03669",
+  "source_sha256": {
+    "docs/program/console-capability-registry.json": "a508582601506411e8f511a63cce6248b8b5f59909f1ca80cc1d375db937abf0",
+    "scripts/console/validate-console-truth-ledger.mjs": "7c978ed3799c8fc0cfc72e093f0930c4d3dd18b084fd7f0d64dd8b49aeb0dd25",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "e1f0a269c2679c50004be55c478cf44eb2d0403b54b8c341e0a472dfd4f13f59"
+  },
+  "logs": {
+    "full-owner": {
+      "sha256": "f5fc3f312535044d0cbbdd09448d44f134c927534f4984da8f023d6818e91e70",
+      "discovered": 207,
+      "passed": 207,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 69081.5495
+    },
+    "planner": {
+      "sha256": "870d690da4fa4e6790d4b3bebd102da0492786773165ef3ea4ac4ea77bf6b19e",
+      "discovered": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 539.281916
+    },
+    "exact-green": {
+      "sha256": "b523def0140800fdb4222f57c55428ba70ca48c9d6dc3f435dac38960e1e3ea4",
+      "discovered": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 716.101625
+    },
+    "exact-red": {
+      "sha256": "e9298537b0aa9df92cfd6c3d51d86682dcf45e1c0337db894077d6b4b74d41df",
+      "discovered": 1,
+      "passed": 0,
+      "failed": 1,
+      "reason": "Actual owner failed to reject changed rate after positive prerequisites"
+    }
+  },
+  "coverage": {
+    "owner_distinct": 207,
+    "planner_distinct": 29,
+    "same_probe_repeated_not_additional": true,
+    "prior_owner_tests_preserved": 169,
+    "new_owner_tests": 38,
+    "negative_groups": 32,
+    "negative_group_histories": 90,
+    "separate_named_restore_history": 1,
+    "reviewer_runtime_executions": 0
+  },
+  "selection_correction": "Initial unanchored rate substring also matched rate-units test; actual2-failure run retained. Anchored exact rate probe was then used for actual1RED/1GREEN; earlier static1-match expectation superseded.",
+  "audit_16_lenses": {
+    "Cartesian doubt": "Custody validation does not establish execution, vendor historical authenticity or exhaustive freeze.",
+    "Essentialism / YAGNI": "One existing runtime row and32-line local guard; no new framework or dependency.",
+    "Chesterton's Fence": "All previous validator bytes and401 leaf states preserved; exact prior catalogue and source qualifications retained.",
+    "Contrarian / outside-the-box": "Repeated operation names remain category-distinct; VLM row retained to expose exclusion instead of silently dropping it.",
+    "Socratic": "Null semantics and explicit model/usage-unit caveats expose unanswered execution questions.",
+    "Pragmatism": "Reuse captured, independently reviewed44-row table and existing owner/planner workflow.",
+    "Red Team": "32 corruption groups exercise omission, promotion, source binding tampering, rate/unit alteration and invisible key tricks.",
+    "Systems Thinking": "All44 source identities checked;43 exact shared bindings align with seven existing leaves; one specific exclusion creates no fake leaf.",
+    "Operability / Day-2": "Same-object restored bytes cannot resurrect failed attestation; explicit valid retry required.",
+    "Opportunity Cost": "Focused additive guard avoids source recapture or generic schema infrastructure.",
+    "Blast-radius / cell-based": "Two production files only; semantic and business runtimes unchanged.",
+    "Constant-work / anti-fragility": "Array length44 checked before per-row validation; corruption controls fail closed.",
+    "Shared-nothing / eventual consistency": "No new distributed writer; root serializes catalogue/checker integration and immutable evidence.",
+    "FinOps / unit-cost": "Vendor compute-seconds/GB explicitly not Console cost, currency or latency; no pricing inference.",
+    "Telemetry-first": "Exact commit/log hashes and observed207+29 unique tests retained; anchored probe is a repeat, not extra coverage.",
+    "Zero-trust / defense-in-depth": "Exact enumerable keys, checker-owned digest, source validation and shared binding membership independently prevent unsupported authority claims."
+  },
+  "findings": [],
+  "remaining_holds": [
+    "Only44 frozen reference records accepted:43 existing required mappings and one explicit Intelligence exclusion.",
+    "All401 release leaf states unchanged; reference freeze partial, Media execution/source-policy/recovery and Console pricing/performance unqualified.",
+    "No milestone0-10, source-transition reliability or production exposure completion claimed."
+  ]
+}

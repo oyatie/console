@@ -1,0 +1,16 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVE exact additive Media tests for integration and actual RED; implementation requires clean lane admission",
+  "base_sha": "4adfcc52d564ba41953ac4eb3206c38d83d7e49f",
+  "manifest_sha256": "9b40fb7b3e7477ac53fdbc54c8df2809d8d8258ea45c5ce008738650c924f3d5",
+  "candidate_sha256": "e1f0a269c2679c50004be55c478cf44eb2d0403b54b8c341e0a472dfd4f13f59",
+  "checks": [
+    "All16sourcepins and7packetfilehashes match; existing169testpreimage byte-preserved",
+    "Source fixed custody and 44ordered tuples with43sharedbindings and soleVLMexclusion verified by test prerequisites",
+    "Read full335line additive suite; positive actual owner precedes fault; restoration uses same outer object and requires explicit successful revalidation",
+    "90 corruption variants plus separate named restoration cover units,promotions,missing/repeated rows,bindings,keyenumeration and unchanged-canonical extras",
+    "Reuses current owner and helpers; no new framework/caller; no execution/state/price claims"
+  ],
+  "runtime_executed": 0,
+  "independent_review": "/private/tmp/console-media-catalogue-tests-round1-security-review-20260920.json"
+}

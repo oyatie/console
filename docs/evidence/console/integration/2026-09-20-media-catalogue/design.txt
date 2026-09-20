@@ -1,0 +1,91 @@
+# Bounded media operation and reference-rate catalogue — design round1
+
+Private design/data packet only. Root remains sole repository, authority, generated-artifact and runtime writer. No implementation, test code, lane admission, build, database/browser execution or network capture is included. Source inspected at95e48111ad23abc1ebec7f1a0bd396b2deca4871; source-custody.json pins16 regular Git blobs at that exact commit and proves their worktree bytes equal the committed blobs. Source data and historical reviews are preserved, not replaced by this design.
+
+## Why this bounded dependency exists
+
+PRODUCT requires source-bound capability/support inventories in the existing release_inventory. ROADMAP orders that prerequisite within milestone0. DELIVERY requires four independent design rounds and revision-bound consensus before reviewed tests and owner-bound RED/admission. README remains the sole entry point; this is not another product authority or roadmap.
+
+The retained transforms proposal has media_transform_catalog:44 exact ordered category/operation/rate records independently reviewed against the captured article.43 records map to seven existing Console leaves; one is explicitly excluded as generative/model-specific Intelligence work. All43 required source bindings already exist in release_inventory. Current registry has no structured media_transform_catalog. Existing validateReleaseInventory:249 checks generic runtime/source/acceptance fields and shared binding shape, and its focused Fusion/Quiver branches:390–440 enforce those two catalogues only. It never reads media operation/rate/category tuples. The source gap is therefore real; no executed RED is claimed by this inspection.
+
+## Existing owner and callers
+
+Extend only scripts/console/validate-console-truth-ledger.mjs's existing validateReleaseInventory, reusing record/require/binding/leaves/source maps, catalogueKeys and canonicalJsonDigest. The catalogueKeys helper already compares actual enumerable own-key membership and count. Preserve its Fusion/Quiver callers and diagnostics. No schema framework, recursive JavaScript-object sandbox, loader API, alternate checker or source execution is needed.
+
+Exported validateConsoleTruthLedger:448 deletes the prior WeakMap attestation at entry, invokes release validation at669 and records the whole-registry digest at670. isValidatedConsoleTruthLedger:673 compares current canonical content. CLI:703 and plan-fanout.mjs:594 call the same exported owner under their existing candidate/source/authority contracts. CI runs the owner tests at186 and planner regression at191. The actual testfile loads the real registry/jurisdiction and already has catalogue custody/attestation patterns. Reuse those patterns where their semantics match; preserve every existing test.
+
+The planner schedules historical capabilities, not new release leaves or matrix rows. This metadata conveys no implementation admission. Whole-registry/planner/promotion digests change after an additive row; root must rebind exact current candidates and retain all historical receipts unchanged. No caller, CLI, planner, CI, package or generated-contract edit is proposed.
+
+## Reviewed source and honest temporal scope
+
+Retained proposal: docs/evidence/console/research/2026-09-19-foundry-transforms/proposal.json, SHA2563d27a8cc372fba47d5f16b8d94415e82e26512742ece24d0d2f1b205e4c58d1d. Retained independent-review.json SHA2564fbeb6cd78ced4f729e6561b6cf322d543cc01867c43d0c5f5c8b5021ccf3284 confirms44 exact ordered category/name/rate rows,43 required mappings and explicit VLM exclusion. Reuse that independent article extraction; no new parser or source recapture is required.
+
+All44 rows bind the existing source media-sets-advanced-formats-media-usage-limits. Captured gzip path: docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz. Compressed bytes83929, SHA2568eceaa3b77f2f1376c87ff6bafc26c521a5224b58748f5351c814bdc780ef4f4; raw bytes761613, SHA256816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460. Both byte lengths and hashes were checked against the retained source record.
+
+Actual retrieval was2026-09-20T01:35:07.825788+00:00, which is2026-09-19T21:35:07.825788-04:00 in America/New_York. This is the already-recorded target-local-date capture, not a pre-September20UTC capture or independently authenticated historical vendor release. Last-Modified is server metadata, not an authentication proof. The source remains mutable public documentation; full Foundry/F04 exhaustiveness and executable compatibility remain unestablished. Do not rewrite UTC timestamps or advance reference_freeze beyond partial_snapshot.
+
+The captured page says: “Usage is tracked in units of Foundry compute-seconds.” and “Usage rate is measured in compute-seconds per GB.” It also directs enterprise-contract customers to their Palantir representative before usage calculations. These published reference usage quantities are not currency prices, wall-clock latency, throughput, Console resource measurements or a verified billing formula. No GB-to-GiB conversion, currency estimate, timing promise or performance target is inferred.
+
+## One additive reference entry
+
+Append exactly one entry under release_inventory.support_matrices.runtimes.entries, with runtime identity Media operations and reference compute rates. Prospective-runtime-row.json is the complete proposed payload, not an applied patch. Runtime rows91→92; all401 leaves, all states, all prior91 runtime rows including Fusion/Quiver and all other registry values remain unchanged.
+
+Exactly nine runtime fields:
+
+- runtime: exact identity above.
+- reference_status: frozen44-row public operation/rate catalogue,43 required references and1 explicit Intelligence exclusion; vendor usage units are not Console price/latency/throughput; executable semantics unverified.
+- source: existing media-sets-advanced-formats-media-usage-limits.
+- console_acceptance: not established.
+- command: null.
+- media_transform_catalog: all44 original records in original order, no rewritten field/value.
+- reference_rate_unit: Foundry compute-seconds per GB processed.
+- semantics_status: not_bound.
+- unqualified_semantics: nine explicit null dimensions: operation_semantics; format_codec_and_version_support; runtime_and_model_versions; limits_and_resource_accounting; authorization_and_source_restrictions; output_publication_and_partial_failure; cancellation_and_recovery; retention_and_deletion; lifecycle_and_successor_equivalence.
+
+These defaults are unknowns, not promises of eventual support for the excluded operation. Reference-rate units are known from source; their relation to Console execution/cost/performance is not qualified.
+
+Each original catalogue record keeps its six exact fields: category, operation, reference_compute_seconds_per_gb, required_leaf, scope, source_binding. Each binding keeps source_id, artifact_path, sha256, quote, matching, scope. Ordered complete catalogue canonical pin, computed for independent JS confirmation:76e13ccb2918a75b6612415d891f68fd8695667f6e3539d68806281934b17504. Root/security must reproduce it with the existing JS canonicalJsonDigest before design approval. Expected pin is checker-owned, never candidate-declared or derived from mutable input.
+
+Six category counts are All1, Images15, Audio6, Video7, Documents14, Spreadsheets1. Rate values2/40/75/275 occur1/9/20/14 times. Category plus operation forms44 distinct identities. Operation alone is NOT unique: Extract text (OCR) occurs under Images and Documents; Chunk, Stream with HLS and Transcode each occur under Audio and Video. Preserve each tuple without deduplicating or merging semantics.
+
+Seven existing nonnull leaf owners: F04.media-capacity-recovery; F04.image-transform-library; F04.audio-transform-library; F04.video-transform-library; F04.document-transform-library; F04.spreadsheet-extraction; F12.inference. The Generate embedding Images row already maps to F12.inference but its retained scope says the model family is unspecified and does not imply AIP authority. Do not assert a classical or generative implementation/model/version from this name.
+
+The one excluded record is Documents / Extract text using VLM * /275, at original index42, required_leaf:null, scope “Excluded generative/model-specific operation; Intelligence roadmap authority required”. Retain its original footnote marker, exact scope, source binding and position as evidence of the exclusion. It is NOT a required Console leaf, supported operation, new planned implementation, admission or AIP authorization. Retaining its public source row makes omission and accidental promotion detectable. Do not create a null leaf, shared-binding key for null, or a new Intelligence leaf.
+
+## Narrow owning validation
+
+1. Require exactly one named runtime entry; generic runtime uniqueness plus explicit presence suffice.
+2. Require its exact nine enumerable own keys, exact conservative status/source/unit/acceptance/command/semantics values; require exact nine semantic keys with null values. Reject added support/price/performance/receipt/pin override cells.
+3. Require44 ordered records. Before hashing, apply existing catalogueKeys to the exact six row keys and six binding keys. Actual Object.keys membership and count are mandatory; a nonenumerable required property plus enumerable undefined/function extra must not pass a count-plus-Object.hasOwn shortcut. No global digest/attestation changes.
+4. Match the entire44-row array to the checker-owned reviewed canonical pin. This protects every original category, operation, literal number, required mapping, exclusion/scope and binding, including duplicated operation names in different categories. Do not enforce operation-name uniqueness.
+5. Validate all44 source bindings with the existing source validator and require the exact source ID. For43 nonnull mappings, resolve only the seven existing reviewed leaves and require exact canonical shared-binding membership under that leaf. Shared-array multiplicity or arbitrary old JavaScript graph structure is not claimed.
+6. Require exactly one null mapping and verify the specific original Documents/VLM tuple,275rate and exclusion scope. Its source binding is still validated, but no shared leaf-binding membership exists or is required for this excluded record. Every other record must have a nonnull permitted existing leaf. The canonical pin binds the full record, so no alternate null exemption or scope substitution can be invented.
+7. Preserve partial_snapshot, conservative matrix status, existing five-state refusal and all old validators/tests. Existing media deletion/transactionless-write/virtual-source/output/format/PDF/XLSX qualifications remain intact in their current locations. This bounded catalogue neither supersedes them nor makes an operational guarantee.
+
+## Reviewed oracles and future owner RED
+
+After four independent design rounds and exact consensus, author additive tests in the existing owner testfile, then obtain independent root/security test approval before integration. Only eventual edit owners: existing registry, validator and validator testfile. Root serializes all three and invokes admission. No new fixture package, test framework, CI surface or source reader is necessary.
+
+Source prerequisites must check fixed proposal and prior independent-review hashes, captured gzip/raw hashes and byte lengths,44 exact records/category/rate counts,43 existing shared bindings, seven leaf identities and the sole explicit excluded record. Compare source bytes to pinned evidence, not candidate-supplied hashes alone. Reuse retained independently reviewed table extraction. Track source/fixture failures separately; a tracked regular path alone does not verify byte custody.
+
+Construct the exact prospective entry on a clone of actual registry only if absent; require already-integrated data to equal the reviewed payload. Positive owner validation/nonmutation must precede corruption. Positive controls preserve all repeated-name category tuples, sole excluded null row, existing embedding caveat, null semantics, planned-only state and old registry values.
+
+Named future probe:
+
+    node --test --test-name-pattern='Media catalogue rejects changed reference rate' scripts/console/validate-console-truth-ledger.test.mjs
+
+Change only a literal reference_compute_seconds_per_gb after proving the positive fixture; require actual exported validateConsoleTruthLedger rejection with a release-inventory/Media diagnostic. Current owner ignores this new nested field, but root must observe actual RED after reviewed tests exist. Missing fixture, custody mismatch, zero selected tests, absent code or unrelated validation error is not lane RED. Generic runtime-duplicate/support-cell failures may use their exact established diagnostics; other controls require Media-specific rejection.
+
+Every digest-visible history: validate one outer object true; save exact positive shape/bytes; mutate, prove changed canonical bytes and prevalidation false; require actual rejection and false; restore exact original keys/values/bytes IN PLACE on SAME outer object without validation; prove identity/deep/key equality and STILL false; explicitly validate restored object and only then true. Named rate-restoration control makes this history visible.
+
+Extra-only undefined/function properties require in-memory own-enumerable persistence and unchanged canonical bytes, no prevalidation false requirement, actual exact-key rejection, then same-object restorationstillfalse→explicitvalidationtrue. For count-preserving required-key substitutions at runtime/semantics/card/binding levels, keep required value but make its key nonenumerable, add enumerable omitted extra, prove unchanged key count and missing expected enumerable membership; canonical bytes CHANGE, so prevalidation false is required. These substitutions must fail the Media exact-key guard before later digest/status checks. Never serialize away faults, replace the outer object, clear private attestation state, or quietly revalidate restoration.
+
+Oracle-roster.json gives proposed positive/corruption/exclusion/units controls. No discovered/executed test count exists yet. Root later reports actual counts for the same probe, full owner suite and affected planner regression, with independent exact-source/preservation review. Existing accepted Fusion/Quiver tests are not rerun or changed by this design task.
+
+## Preservation, recovery and review scope
+
+Pin actual registry/checker/test preimages before root applies the approved candidate. Removing ONLY this newly appended runtime entry from a parsed candidate must restore exact full preimage registry: all401 leaves/states,91 earlier runtimes,245 connectors,6SDK rows, all sources/shared bindings/qualifications, exclusions, authority/historical metadata and previously accepted catalogues. No permanent whole-registry baseline test is needed. Historical migrations, command bytes and custody fingerprints remain untouched. Old receipts remain immutable; new review/train digests bind the new candidate honestly.
+
+Pre-mortem: unchecked rate list, currency/latency inference, omitted or promoted VLM row, inferred embedding model authority, duplicate-name data loss, wrong timezone claim, invisible key additions, or stale attestation restoration. Detection: prior exact table review and fixed pins; explicit unit/exclusion/default-null controls; category tuples; actual owner RED/GREEN and exact-key histories; full preimage preservation and independent review. Blast radius: one planned reference matrix entry and current validator. Rollback: exact reviewed preimages before acceptance while preserving sealed evidence. Stop on source/preimage mismatch, failed positive prerequisite, unreviewed semantic change, competing writer or failed admission. Lenses: Essentialism, Chesterton's Fence and Red Team for custody/attestation integrity.
+
+Four required independent rounds:1 source/representation;2 adversarial units/exclusion/key/attestation;3 actual current owner/callers/custody;4 final exact-candidate consensus after findings. Seal successors for corrections; never edit predecessors. No test authoring until root's revision-bound final approval. Acceptance of this bounded reference artifact would not complete milestone0, qualify execution/media workflows, freeze all Foundry capabilities, promote a state or authorize exposure/payment/AIP.

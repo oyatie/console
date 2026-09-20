@@ -1,0 +1,41 @@
+{
+  "implementation_commit": "bfe3a7b91ad6f609b2aa2b601fa088c47f36d1d1",
+  "test_commit": "9fc8b80bd",
+  "status": "local reference catalogue integrity accepted; product execution and release qualification incomplete",
+  "preservation": {
+    "prior_runtime_rows": 91,
+    "current_runtime_rows": 92,
+    "release_leaves": 401,
+    "all_other_registry_values_unchanged": true,
+    "states_advanced": 0
+  },
+  "runtime": {
+    "owner": {
+      "executed": 207,
+      "passed": 207,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 69081.5495
+    },
+    "planner": {
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 539.281916
+    },
+    "exact_probe": {
+      "red_executed": 1,
+      "red_failed": 1,
+      "green_executed": 1,
+      "green_passed": 1
+    }
+  },
+  "probe_selection_correction": "Initial unanchored filter matched two intended failures; anchored filter selects exactly one and was used for admission and GREEN. No test semantic change.",
+  "remaining_holds": [
+    "Media execution semantics and source-policy qualification",
+    "Full public-reference freeze coverage",
+    "All release milestones and production qualification",
+    "Hosted protected integration"
+  ]
+}
