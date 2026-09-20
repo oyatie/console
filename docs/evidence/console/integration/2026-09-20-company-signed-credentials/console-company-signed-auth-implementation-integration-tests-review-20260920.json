@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_BOUNDED_AUTH_IMPLEMENTATION_SOURCE_RUNTIME_PENDING",
+  "base": "bcb0530a0fb751a3c420d5b819d705f2d8b07f11",
+  "files": {
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "0cb8ff85fb1ae9053864e09a8e9a36ecc2f89bcc63863f50b583db3600450710",
+    "backend/crates/platform/auth/src/session.rs": "e2a277d6dbbba53de3c9c68896a0c92aefe72ff7cf1468238914a8990a1e0db3",
+    "backend/crates/platform/auth/src/account.rs": "b5984b02c3a5b37174155af75bfd41ddb54fbab0411aa64523dbc67441d200da",
+    "backend/crates/platform/auth/BUCK": "92e0ae62109535979023bd7b61409ba851db812200428dbdfb0789d2792db02d",
+    "backend/app/BUCK": "0f1e7b42b77446f48497bcca0c30deafc1a552bc737246a2f542d5f49e09ca7d"
+  },
+  "findings": [],
+  "evidence": [
+    "Entire new Auth module reviewed against approved signedround2 interface/design/test contract.",
+    "Opaque private immutable access/proof, exact byte bounds, no Clone/serde/Debug secrets, positive configured TTL.",
+    "Cryptographic Current-only access and bound proof at DB time before fixed material query; same existing strict verifier, account-security and family parsers reused. No read SHARE resolver/refresh fallback/token rotation/new session constructor.",
+    "Exact one-row material; bounded SQL authentication-invalid diagnostic mapping, all other SQL/transport failures unavailable; planned recipient/null-recovery/digest shape checked without granting policy.",
+    "Account/family/generation/auth_time/assurance/iat/nbf/created-time/access-family ceiling correlations checked after actual locks; consuming finish repeats signed proof/access and expiry checks with DB clock on exact borrowed transaction.",
+    "Existing session.rs equals original plus module/reexports; account.rs differs only reexport block. Existing session/read/logout/refresh logic byte-preserved.",
+    "Auth BUCK unchanged: recursive src glob already captures module. App BUCK differs only exact signed test-source entry added69times by existing generator shape. No dependencies/targets changed.",
+    "Exact reviewed test successor commit/hash in lane record; two installed test files match composition review hashes."
+  ],
+  "counts": {
+    "new_module_lines": 232,
+    "app_buck_added_resource_occurrences": 69,
+    "reviewer_executed_tests": 0
+  },
+  "limitations": [
+    "Runtime/build/SQLx results pending root-owned verification.",
+    "Trusted adapter must call finish immediately before successful commit; exposing connection is not protection against deliberate raw SQL/drop-and-commit misuse.",
+    "HTTP transport/application adapter/complete business effects/custody activation remain separate requirements.",
+    "No release or full P4/P8 completion claim."
+  ]
+}

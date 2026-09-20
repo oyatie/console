@@ -1,0 +1,10 @@
+{
+  "base": "458fb682eee64bb72af264bfe2b542343d0acff7",
+  "files": {
+    "backend/app/BUCK": "72ae6c9e19fd3b7842962cc3a96af614d2e7a3f08bd2a8bb93a416c8512fa251",
+    "ops/BUCK": "83b2a44a5166f6b7557f4c29d0696bac2d58c5ab077064f1e0c0cbc95de0a96d",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "ops/postgres-company-enrollment-guards.sql": "e7ad2c8343fa596073ad82842b8eae9e2a67eb0aba8903daf86b853e59a4575a",
+    "tools/buck/gen_first_party.py": "4eeb806a10282f7b4fe6d9d75e9c25295a4e4b8a72f7b3a66217f3f2e571d652"
+  }
+}

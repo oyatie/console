@@ -1,0 +1,29 @@
+{
+  "investigator": "/root/integration_tests",
+  "status": "PREREQUISITE_EXECUTION_CONTEXT_CORRECTED_EXACT_POSITIVE_PASSED",
+  "supersedes": "/private/tmp/console-company-signed-profile-timeout-investigation-20260920.json",
+  "evidence": {
+    "positive_log": "/private/tmp/console-company-signed-positive-native-round3-20260920.log",
+    "positive_log_sha256": "d6e51fa1b6e886881364339ab40236478e1217556ab0b67d5db9a519a0bb54fb",
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 493,
+    "seconds": 9.17,
+    "prior_failure_seconds": [
+      60.52,
+      59.81
+    ]
+  },
+  "conclusion": "The helper omitted the existing production JIT-off classifier execution setting. Adding only SET jit=off removed the reproduced prerequisite timeout and allowed the actual signed positive owner journey to pass under unchanged10s statement/1s lock limits. Production already disabled JIT; correction is test-context-only.",
+  "limits": [
+    "No profiler/EXPLAIN timing decomposes LLVM compilation versus other planner/CPU time; exact internal delay remains unmeasured.",
+    "One passing exact positive leaf is not full signed-seam, owner, browser or release acceptance.",
+    "Root executed native evidence; reviewer performed read-only log/source checks only."
+  ],
+  "preservation": [
+    "Classifier SQL and custody fingerprints unchanged.",
+    "Existing tests/oracles and limits unchanged; no retry suppression or timeout relaxation."
+  ]
+}

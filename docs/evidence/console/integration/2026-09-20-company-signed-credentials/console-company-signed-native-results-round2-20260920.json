@@ -1,0 +1,32 @@
+[
+  {
+    "leaf": "company_intake_sql_command_fence_timeout_preserves_history_and_reopens",
+    "exit": 0,
+    "log": "/private/tmp/console-company_intake_sql_command_fence_timeout_preserves_history_and_reopens-native-round2-20260920.log"
+  },
+  {
+    "leaf": "signed_credentials::company_signed_invalid_access_and_bound_proofs_preserve_every_row",
+    "exit": 0,
+    "log": "/private/tmp/console-company_signed_invalid_access_and_bound_proofs_preserve_every_row-native-round2-20260920.log"
+  },
+  {
+    "leaf": "signed_credentials::company_signed_real_logout_revocation_denies_retained_access_and_proof",
+    "exit": 0,
+    "log": "/private/tmp/console-company_signed_real_logout_revocation_denies_retained_access_and_proof-native-round2-20260920.log"
+  },
+  {
+    "leaf": "signed_credentials::company_signed_expiry_after_material_wait_and_after_owner_rolls_back",
+    "exit": 0,
+    "log": "/private/tmp/console-company_signed_expiry_after_material_wait_and_after_owner_rolls_back-native-round2-20260920.log"
+  },
+  {
+    "leaf": "signed_credentials::company_signed_capture_bounds_are_exact_without_claiming_authentication",
+    "exit": 0,
+    "log": "/private/tmp/console-company_signed_capture_bounds_are_exact_without_claiming_authentication-native-round2-20260920.log"
+  },
+  {
+    "leaf": "signed_credentials::company_signed_nonpositive_configured_ttl_never_acquires_authority",
+    "exit": 0,
+    "log": "/private/tmp/console-company_signed_nonpositive_configured_ttl_never_acquires_authority-native-round2-20260920.log"
+  }
+]

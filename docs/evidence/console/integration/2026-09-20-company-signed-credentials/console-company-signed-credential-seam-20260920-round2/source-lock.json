@@ -1,0 +1,12 @@
+{
+  "backend/crates/platform/auth/src/account.rs": "046cd1289f2df69fadcd23807f1e07a8a0e81f697a229e2eeccf36d5856e1bad",
+  "backend/crates/platform/auth/src/session.rs": "3c652d4e0fc6e8df05b02a54a06007718542c99075779280116f0a3afc6a212f",
+  "backend/crates/platform/auth/src/jwt/account.rs": "55e871a3cd6bab34bdc957f522b5e1d2f58edb09bffb1af0e906f7dcb67aa841",
+  "backend/crates/platform/auth-rest/src/account_browser.rs": "84e1a639c7ef72c8b5a62d9c44c1ed6d514efec8e0ddd67022f41577cbcde114",
+  "backend/crates/identity/application/Cargo.toml": "90d01de0474b627200b6a5daba74f17a2ffad497a8c9d8c8829ca4a6fa5c8474",
+  "backend/crates/identity/application/src/company.rs": "9c1cecbc57a1c55b2a90d958a2ceae6046a97e04866da935e3ebf2c595a2899c",
+  "backend/app/tests/auth_rest.rs": "0f30cd64c5811204a7ced422dac5bfa3a721f77b23b858d45e06a9ebf1feb1e2",
+  "backend/app/tests/auth_rest/native_company_setup.rs": "46d132ab76777cfdab8db769a2c0ce615ca965ffc59b159a402981d4b9b1072a",
+  "backend/app/tests/auth_rest/deployment_operator_designation.rs": "665b67a912233f29658f16ef003e98381e897879bf73f0be29b7c3b3820641d9",
+  "backend/app/tests/auth_rest/native_company_intake_owner.rs": "edf78dca4fd37d54a43c7308255d2897fc1a7edba075d59852de93c40aedef76"
+}

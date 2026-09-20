@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_LOCAL_COMMITTED_ARCHIVE_BYTE_PRESERVATION",
+  "commit": "7f59ddc776b3ff99c15993e3ab8d784a960fd528",
+  "path": "docs/evidence/console/integration/2026-09-20-company-intake-owner",
+  "receipt_sha256": "d17e7b3ef34350dfbc0edab190b9ac99b8811430375646e9088be7aa93e74c21",
+  "checks": [
+    "All31receipt members match recorded SHA256 and exact regular committed Git blob bytes.",
+    "Twelve gzip logs decompress to original retained tmp bytes/hashes/lengths;17plain files likewise match original retained bytes.",
+    "Two source archives contain13regular files, no symlinks/hardlinks/absolute/traversal paths; both internal manifests and member hashes independently validated.",
+    "Initial E0432build failure, ACL source finding, exact test/runtime reviews and explicit partial/HOLD boundaries retained."
+  ],
+  "packets": [
+    {
+      "archive": "console-native-company-intake-owner-refinement-20260920-round2.tar.gz",
+      "manifest_sha256": "353a905291a6d4494c0c9876122816421e7b3af188ea805444353580f3f39df8",
+      "verified_members": 5
+    },
+    {
+      "archive": "console-native-company-intake-generator-tests-20260920-round1.tar.gz",
+      "manifest_sha256": "8db1e4cd72d86b22529649da158d634d80ef4867c00c60ce436b79313b871d72",
+      "verified_members": 6
+    }
+  ],
+  "limits": [
+    "Local Git byte-preservation/custody only, not off-device independent storage or hosted CI/readback.",
+    "Original private owner six-test approval scope and all unresolved release requirements remain unchanged."
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

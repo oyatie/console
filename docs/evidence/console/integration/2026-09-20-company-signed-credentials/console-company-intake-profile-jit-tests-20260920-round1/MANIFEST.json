@@ -1,0 +1,14 @@
+{
+  "author": "/root/integration_tests",
+  "status": "PROPOSED_CONTEXT_ONLY_TEST_SUCCESSOR_REQUIRES_INDEPENDENT_REVIEW",
+  "base": "bcb0530a0fb751a3c420d5b819d705f2d8b07f11",
+  "source_preimage_sha256": "56dd170464e5e135c84b87b07fc160a31ac7cd0afe4b6dcce5d14d109bb2d47e",
+  "new_tests": 0,
+  "all_existing_leaves_preserved": 10,
+  "actual_tests_executed": 0,
+  "repository_writes": 0,
+  "files": {
+    "native_company_intake_owner.rs": "85f3027ed4af8e9c55513b4259233aa6c5f4dc6654a42c1a90ddcfb6c70f540c",
+    "CONTRACT.md": "2a410a3fb47fa4a4325d239f4fd60a23dd088c8717ea110c121adc813657a283"
+  }
+}

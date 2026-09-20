@@ -1,0 +1,11 @@
+{
+  "base": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+  "files": {
+    "backend/app/BUCK": "0f1e7b42b77446f48497bcca0c30deafc1a552bc737246a2f542d5f49e09ca7d",
+    "backend/crates/platform/auth/src/account.rs": "b5984b02c3a5b37174155af75bfd41ddb54fbab0411aa64523dbc67441d200da",
+    "backend/crates/platform/auth/src/session.rs": "e2a277d6dbbba53de3c9c68896a0c92aefe72ff7cf1468238914a8990a1e0db3",
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "bb2795e654e466b65975d2874b96f84ffacc60476733a440b024c85d01e30e0e",
+    "backend/app/tests/auth_rest/native_company_intake_owner.rs": "85f3027ed4af8e9c55513b4259233aa6c5f4dc6654a42c1a90ddcfb6c70f540c",
+    "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "7351d79474e30649775312792b0ff6920d699581e0da77cd866742d5982d6a26"
+  }
+}

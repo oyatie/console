@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_PRIVATE_GUARD_GENERATOR_PRESERVATION_AND_RESOURCE_TEST_SUCCESSOR",
+  "packet": "/private/tmp/console-company-intake-guard-generator-tests-20260920-round1",
+  "manifest_sha256": "d4da697a1cd3194173084188345871dca262378bd1a226690094d6100025817e",
+  "candidate_sha256": {
+    "ops/test_company_enrollment_input_generator.py": "632010c33c33ea262af9ddfe380b2825ad4aa5c337f8428785b30fbd040bd745",
+    "tools/buck/test_gen_first_party.py": "275d6d98bc7cec743a73a40162ceb9ba1bbf8096609da7d4d1a8aeab7b81b94b"
+  },
+  "checks": [
+    "All packet member and actual source-lock hashes independently matched; exact two patches applied in memory only.",
+    "All67existing Buck test methods byte-identical; one additive exact guards external mapping/test-source presence check gives68.",
+    "Preservation method retains all six historical hashes/equalities, parser and schema fixed hashes/separation, and intake equality/UNINSTALLED/four-function markers; intake newly frozen2d8e5bc9.",
+    "Exact10output roster admits one separate new UNINSTALLED guards output, matching owning generator and disk; six guard declarations excluded from all nine predecessors."
+  ],
+  "findings": [],
+  "limits": [
+    "Source approval only; no generator/guard body or tests executed by reviewer.",
+    "Marker assertions establish resource separation only, not guard correctness, runtime, profile activation or release qualification.",
+    "Actual six guard SQLx sources/body/catalog/concurrency and remaining expiry/cleanup/effect acceptance remain separate."
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

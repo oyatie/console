@@ -1,0 +1,19 @@
+{
+  "status": "PROPOSED_PRIVATE_GUARD_REFINEMENT_AND_SIX_SQLX_SOURCES",
+  "source_head": "9bfd94e52b2175ca2333ffbee06012573f64fa7b",
+  "supersedes_manifest_sha256": "9d8a4defcc4fe24453b4a21047da2eacc79d584be899d0bd6ea00c01418b4bc0",
+  "author": "/root/reference_inventory",
+  "repository_writes": false,
+  "executed_tests": 0,
+  "authored_sqlx_leaves": 6,
+  "catalog_corruption_controls": 4,
+  "preserved_generated_outputs": 9,
+  "guard_implementation_included": false,
+  "files": {
+    "CONTRACT.md": "024358b4ce49e1d11cb282f9b930006193c2c0ce8a72bdf7a754ceab49fc9778",
+    "catalog.json": "a67826d75c419426254098db79aa5d811f81e53de1be544d4abd6003bdff05dd",
+    "native_company_intake_guards.rs": "27cd2865c06dbe2ff368ef3cbb80f6aded864d9b6035f45bc579cee9845addf3",
+    "preserved-predecessors.json": "c19979550991d1142d82a3843b655b00f953d5d3924b6f0f03c2457069772dac",
+    "source-lock.json": "390c32a79f98cd666db707e45d6372047385f232ec176cfc3c2809a84663d9ec"
+  }
+}

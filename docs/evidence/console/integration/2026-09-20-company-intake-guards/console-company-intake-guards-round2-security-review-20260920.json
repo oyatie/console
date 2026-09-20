@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_BOUNDED_PRIVATE_GUARD_REFINEMENT_CATALOG_AND_SIX_SQLX_SOURCES",
+  "packet": "/private/tmp/console-company-intake-guards-20260920-round2",
+  "manifest_sha256": "274c42ecf71fd2fed78015dac47e74093cb91625237d6cdf120bef1d7b0fce33",
+  "source_sha256": "27cd2865c06dbe2ff368ef3cbb80f6aded864d9b6035f45bc579cee9845addf3",
+  "resolved_findings": [
+    "GUARDS-CATALOG-ROUTINE-IDENTITY: trigger association now requires public namespace; combined exact seven-name routine census with zero-argument checks uniquely binds intended public routine. Actual foreign-schema same-name reassociation is rejected and restored.",
+    "GUARDS-CATALOG-OVERLOAD: census selects exact seven names regardless return type, then validates actual trigger return/signature/ACL/config. Actual integer-to-boolean same-name overload adds an invalid row and must be detected/restored.",
+    "GUARDS-INSTALL-EMPTY-RACE: explicit READCOMMITTED installer locks requests\u2192events\u2192receipts ACCESS EXCLUSIVE,1second bound, before fresh emptiness read; locks retained through catalog creation/commit. New real in-flight prepare/installer wait test witnesses exact blocked PID and requests AccessExclusive lock, commits canonical pair, then requires fresh nonempty refusal and exact preservation."
+  ],
+  "checks": [
+    "All packet members, seven source locks and nine frozen predecessor output hashes independently matched. Separate tenth UNINSTALLED output only, no historical mutation or serving-profile reseal.",
+    "Six trigger routines/eight ALWAYS triggers: SI immediate immutable/transition/attribution guards, SD deferred key-local closure; existing receipt immutability guard unchanged. Empty EXECUTE ACL and exact metadata no caller-controlled dynamic SQL.",
+    "Deferred closure observes final per-command request/event state, not stale trigger snapshot; requires exact one/two matching events and no unsupported receipt. Does not recheck historical current family, avoiding revocation rewriting historical attribution.",
+    "Genuine prepare/cancel positives use exact original pending and cancellation history/time/origin helpers. Event-suppression sequence witnesses require both SETCONSTRAINTS and actualCOMMIT to reject actual omitted initial or terminal owner event.",
+    "Actual final inserted-event timestamp corruption must fail AFTER guard, with nontransactional witness and full-history rollback. Owner-role adversarial immutable/transition/zero-row statement mutations distinguish owner safety from servingLOGIN authorization and roll back broadened ACL.",
+    "Catalog now has four actual corruption controls, all restored before genuine owner use. Nonempty sequential and concurrent installation each refuse without changing real prepared pair or leaving closure routine."
+  ],
+  "source_counts": {
+    "sqlx_leaves": 6,
+    "reviewer_tests": 0
+  },
+  "findings": [],
+  "limits": [
+    "No SQL body included or executed. Root must independently review exact implementation/generated mapping/preservation-test successor then retain actual runtime evidence under existing enclosing lane.",
+    "These invariants do not prevent malicious table owner from altering triggers or issuing a fully valid paired transition; canonical writer/source/ACL and signed credentials remain separate authority.",
+    "No COMMITTED/effect fixture fabricated. Receipt INSERT denial and pending-only closure are explicit private-stage barrier; future full effect owner/closure must be separately admitted.",
+    "Actual expiry-positive still requires admitted real deterministic clock/deadline method or actual168hours; immutable dates cannot be shortened/reseeded. Cleanup owner/populated guard rollout remain required separate work.",
+    "No complete workflow/milestone/release or exposure approval."
+  ],
+  "repository_writes": 0
+}

@@ -1,0 +1,192 @@
+{
+  "new_functions": [
+    {
+      "name": "company_enrollment_request_guard_v1",
+      "signature": "company_enrollment_request_guard_v1()",
+      "owner": "console_account_owner",
+      "returns": "trigger",
+      "security_definer": false,
+      "execute_acl": [],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "name": "company_enrollment_request_preserve_v1",
+      "signature": "company_enrollment_request_preserve_v1()",
+      "owner": "console_account_owner",
+      "returns": "trigger",
+      "security_definer": false,
+      "execute_acl": [],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "name": "company_enrollment_event_immutable_v1",
+      "signature": "company_enrollment_event_immutable_v1()",
+      "owner": "console_account_owner",
+      "returns": "trigger",
+      "security_definer": false,
+      "execute_acl": [],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "name": "company_enrollment_event_guard_v1",
+      "signature": "company_enrollment_event_guard_v1()",
+      "owner": "console_account_owner",
+      "returns": "trigger",
+      "security_definer": false,
+      "execute_acl": [],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "name": "company_enrollment_receipt_intake_guard_v1",
+      "signature": "company_enrollment_receipt_intake_guard_v1()",
+      "owner": "console_account_owner",
+      "returns": "trigger",
+      "security_definer": false,
+      "execute_acl": [],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    },
+    {
+      "name": "company_enrollment_intake_closure_v1",
+      "signature": "company_enrollment_intake_closure_v1()",
+      "owner": "console_account_owner",
+      "returns": "trigger",
+      "security_definer": true,
+      "execute_acl": [],
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ]
+    }
+  ],
+  "new_triggers": [
+    {
+      "table": "company_enrollment_requests",
+      "name": "company_enrollment_request_guard_v1",
+      "tgtype": 23,
+      "tgenabled": "A",
+      "tgdeferrable": false,
+      "tginitdeferred": false,
+      "function": "company_enrollment_request_guard_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_requests",
+      "name": "company_enrollment_request_preserve_v1",
+      "tgtype": 42,
+      "tgenabled": "A",
+      "tgdeferrable": false,
+      "tginitdeferred": false,
+      "function": "company_enrollment_request_preserve_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_request_events",
+      "name": "company_enrollment_event_immutable_v1",
+      "tgtype": 58,
+      "tgenabled": "A",
+      "tgdeferrable": false,
+      "tginitdeferred": false,
+      "function": "company_enrollment_event_immutable_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_request_events",
+      "name": "company_enrollment_event_guard_v1",
+      "tgtype": 5,
+      "tgenabled": "A",
+      "tgdeferrable": false,
+      "tginitdeferred": false,
+      "function": "company_enrollment_event_guard_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_receipts",
+      "name": "company_enrollment_receipt_intake_guard_v1",
+      "tgtype": 6,
+      "tgenabled": "A",
+      "tgdeferrable": false,
+      "tginitdeferred": false,
+      "function": "company_enrollment_receipt_intake_guard_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_requests",
+      "name": "company_enrollment_request_closure_v1",
+      "tgtype": 21,
+      "tgenabled": "A",
+      "tgdeferrable": true,
+      "tginitdeferred": true,
+      "function": "company_enrollment_intake_closure_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_request_events",
+      "name": "company_enrollment_event_closure_v1",
+      "tgtype": 5,
+      "tgenabled": "A",
+      "tgdeferrable": true,
+      "tginitdeferred": true,
+      "function": "company_enrollment_intake_closure_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    },
+    {
+      "table": "company_enrollment_receipts",
+      "name": "company_enrollment_receipt_closure_v1",
+      "tgtype": 5,
+      "tgenabled": "A",
+      "tgdeferrable": true,
+      "tginitdeferred": true,
+      "function": "company_enrollment_intake_closure_v1",
+      "tgqual": null,
+      "tgnargs": 0,
+      "tgattr": "",
+      "tgoldtable": null,
+      "tgnewtable": null
+    }
+  ],
+  "unchanged_existing_receipt_statement_trigger": "company_enrollment_receipts_immutable_v1",
+  "new_runtime_grants": false
+}
