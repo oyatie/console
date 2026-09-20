@@ -47,6 +47,12 @@ pub enum ProvisioningError {
     PlatformListForbidden,
     #[error("platform listing is unavailable")]
     PlatformListUnavailable,
+    #[error("platform authentication refused")]
+    PlatformHealthUnauthorized,
+    #[error("platform policy refused")]
+    PlatformHealthForbidden,
+    #[error("platform health is unavailable")]
+    PlatformHealthUnavailable,
 
     #[error("database error: {0}")]
     Sqlx(#[from] sqlx::Error),
@@ -1160,8 +1166,15 @@ impl PlatformProvisioner {
             absolute_family_ttl,
         )
         .await
-        .map_err(platform_list_source_error)?;
-        check_platform_list_authority(&mut tx, &source, absolute_family_ttl, policy).await?;
+        .map_err(|error| PlatformRead::Companies.source_error(error))?;
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::Companies,
+        )
+        .await?;
         let rows = sqlx::query(
             r#"
             SELECT
@@ -1196,8 +1209,14 @@ impl PlatformProvisioner {
         // Audited cross-tenant read. This is a PLATFORM-tier event (no single
         // target tenant), so it carries org_id = NULL — the audit_events WITH
         // CHECK allows a NULL-org platform row even with no tenant GUC armed.
-        let now =
-            check_platform_list_authority(&mut tx, &source, absolute_family_ttl, policy).await?;
+        let now = check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::Companies,
+        )
+        .await?;
         let event = AuditEvent::new(
             Some(source.subject()),
             AuditAction::new("platform.tenant.list")
@@ -1211,7 +1230,14 @@ impl PlatformProvisioner {
         insert_audit_event(&mut tx, &event)
             .await
             .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
-        check_platform_list_authority(&mut tx, &source, absolute_family_ttl, policy).await?;
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::Companies,
+        )
+        .await?;
 
         // A lost COMMIT acknowledgement is unavailable, not a known rollback.
         // Do not retry this attempt or disclose its collected rows.
@@ -1231,10 +1257,35 @@ impl PlatformProvisioner {
     pub async fn list_tenant_health(
         &self,
         pool: &PgPool,
-        actor: Option<UserId>,
-        now: OffsetDateTime,
+        verifier: &console_platform_auth::JwtVerifier,
+        access: &str,
+        absolute_family_ttl: Duration,
+        policy: &console_platform_authz::platform_policy::PlatformPolicy,
     ) -> Result<Vec<TenantHealth>, ProvisioningError> {
-        let mut tx = pool.begin().await?;
+        let mut tx = pool
+            .begin()
+            .await
+            .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
+        sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+            .execute(tx.as_mut())
+            .await
+            .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
+        let source = console_platform_auth::live_legacy_platform_source_in_tx(
+            &mut tx,
+            verifier,
+            access,
+            absolute_family_ttl,
+        )
+        .await
+        .map_err(|error| PlatformRead::OperationsHealth.source_error(error))?;
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::OperationsHealth,
+        )
+        .await?;
         let rows = sqlx::query(
             r#"
             SELECT
@@ -1245,8 +1296,17 @@ impl PlatformProvisioner {
             "#,
         )
         .fetch_all(tx.as_mut())
-        .await?;
+        .await
+        .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
 
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::OperationsHealth,
+        )
+        .await?;
         let adoption_rows = sqlx::query(
             r#"
             SELECT
@@ -1256,62 +1316,100 @@ impl PlatformProvisioner {
             "#,
         )
         .fetch_all(tx.as_mut())
+        .await
+        .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
+
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::OperationsHealth,
+        )
         .await?;
+        let health = (|| -> Result<Vec<TenantHealth>, sqlx::Error> {
+            let mut adoption_by_org: BTreeMap<Uuid, Vec<RouteAdoptionMetric>> = BTreeMap::new();
+            for row in adoption_rows {
+                adoption_by_org
+                    .entry(row.try_get("org_id")?)
+                    .or_default()
+                    .push(RouteAdoptionMetric {
+                        release_cycle: row.try_get("release_cycle")?,
+                        console_route_events: row.try_get("console_route_events")?,
+                        legacy_route_events: row.try_get("legacy_route_events")?,
+                        rum_error_events: row.try_get("rum_error_events")?,
+                        rum_perf_p95_ms: row.try_get("rum_perf_p95_ms")?,
+                        last_event_at: row.try_get("last_event_at")?,
+                    });
+            }
 
-        let mut adoption_by_org: BTreeMap<Uuid, Vec<RouteAdoptionMetric>> = BTreeMap::new();
-        for row in adoption_rows {
-            adoption_by_org
-                .entry(row.try_get("org_id")?)
-                .or_default()
-                .push(RouteAdoptionMetric {
-                    release_cycle: row.try_get("release_cycle")?,
-                    console_route_events: row.try_get("console_route_events")?,
-                    legacy_route_events: row.try_get("legacy_route_events")?,
-                    rum_error_events: row.try_get("rum_error_events")?,
-                    rum_perf_p95_ms: row.try_get("rum_perf_p95_ms")?,
-                    last_event_at: row.try_get("last_event_at")?,
+            let mut health = Vec::with_capacity(rows.len());
+            for row in rows {
+                let id: Uuid = row.try_get("id")?;
+                let route_adoption = adoption_by_org.remove(&id).unwrap_or_default();
+                let zero_legacy_release_cycles = route_adoption
+                    .iter()
+                    .filter(|metric| {
+                        metric.console_route_events > 0 && metric.legacy_route_events == 0
+                    })
+                    .count() as i64;
+                health.push(TenantHealth {
+                    id,
+                    slug: row.try_get("slug")?,
+                    name: row.try_get("name")?,
+                    status: row.try_get("status")?,
+                    group_id: row.try_get("group_id")?,
+                    group_slug: row.try_get("group_slug")?,
+                    group_name: row.try_get("group_name")?,
+                    user_count: row.try_get("user_count")?,
+                    active_user_count: row.try_get("active_user_count")?,
+                    active_work_orders: row.try_get("active_work_orders")?,
+                    open_work_orders: row.try_get("open_work_orders")?,
+                    last_activity_at: row.try_get("last_activity_at")?,
+                    route_adoption,
+                    zero_legacy_release_cycles,
                 });
-        }
+            }
 
-        let mut health = Vec::with_capacity(rows.len());
-        for row in rows {
-            let id: Uuid = row.try_get("id")?;
-            let route_adoption = adoption_by_org.remove(&id).unwrap_or_default();
-            let zero_legacy_release_cycles = route_adoption
-                .iter()
-                .filter(|metric| metric.console_route_events > 0 && metric.legacy_route_events == 0)
-                .count() as i64;
-            health.push(TenantHealth {
-                id,
-                slug: row.try_get("slug")?,
-                name: row.try_get("name")?,
-                status: row.try_get("status")?,
-                group_id: row.try_get("group_id")?,
-                group_slug: row.try_get("group_slug")?,
-                group_name: row.try_get("group_name")?,
-                user_count: row.try_get("user_count")?,
-                active_user_count: row.try_get("active_user_count")?,
-                active_work_orders: row.try_get("active_work_orders")?,
-                open_work_orders: row.try_get("open_work_orders")?,
-                last_activity_at: row.try_get("last_activity_at")?,
-                route_adoption,
-                zero_legacy_release_cycles,
-            });
-        }
+            Ok(health)
+        })()
+        .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
 
         // Audited cross-tenant read (PLATFORM-tier; org_id = NULL).
+        let now = check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::OperationsHealth,
+        )
+        .await?;
         let event = AuditEvent::new(
-            actor,
-            AuditAction::new("platform.tenant.health")?,
+            Some(source.subject()),
+            AuditAction::new("platform.tenant.health")
+                .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?,
             "organizations",
             "health",
             TraceContext::generate(),
             now,
         )
         .with_snapshots(None, Some(serde_json::json!({ "count": health.len() })));
-        insert_audit_event(&mut tx, &event).await?;
+        insert_audit_event(&mut tx, &event)
+            .await
+            .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::OperationsHealth,
+        )
+        .await?;
 
-        tx.commit().await?;
+        // A lost acknowledgement is unavailable; never retry or disclose collected rows.
+        tx.commit()
+            .await
+            .map_err(|_| ProvisioningError::PlatformHealthUnavailable)?;
         Ok(health)
     }
 
@@ -2629,29 +2727,59 @@ fn hash_token(token: &str) -> Vec<u8> {
     Sha256::digest(token.as_bytes()).to_vec()
 }
 
-fn platform_list_source_error(
-    error: console_platform_auth::LegacyPlatformSourceError,
-) -> ProvisioningError {
-    match error {
-        console_platform_auth::LegacyPlatformSourceError::Unauthorized => {
-            ProvisioningError::PlatformListUnauthorized
+#[derive(Clone, Copy)]
+enum PlatformRead {
+    Companies,
+    OperationsHealth,
+}
+
+impl PlatformRead {
+    fn source_error(
+        self,
+        error: console_platform_auth::LegacyPlatformSourceError,
+    ) -> ProvisioningError {
+        match error {
+            console_platform_auth::LegacyPlatformSourceError::Unauthorized => match self {
+                Self::Companies => ProvisioningError::PlatformListUnauthorized,
+                Self::OperationsHealth => ProvisioningError::PlatformHealthUnauthorized,
+            },
+            console_platform_auth::LegacyPlatformSourceError::Unavailable => self.unavailable(),
         }
-        console_platform_auth::LegacyPlatformSourceError::Unavailable => {
-            ProvisioningError::PlatformListUnavailable
+    }
+
+    fn forbidden(self) -> ProvisioningError {
+        match self {
+            Self::Companies => ProvisioningError::PlatformListForbidden,
+            Self::OperationsHealth => ProvisioningError::PlatformHealthForbidden,
+        }
+    }
+
+    fn unavailable(self) -> ProvisioningError {
+        match self {
+            Self::Companies => ProvisioningError::PlatformListUnavailable,
+            Self::OperationsHealth => ProvisioningError::PlatformHealthUnavailable,
         }
     }
 }
 
-async fn check_platform_list_authority(
+async fn check_platform_read_authority(
     tx: &mut Transaction<'_, Postgres>,
     source: &console_platform_auth::LegacyPlatformSource,
     absolute_family_ttl: Duration,
     policy: &console_platform_authz::platform_policy::PlatformPolicy,
+    read: PlatformRead,
 ) -> Result<OffsetDateTime, ProvisioningError> {
     use console_platform_authz::{PlatformFeature, platform_policy::*};
     let now = console_platform_auth::ensure_legacy_platform_source_fresh_in_tx(tx, source)
         .await
-        .map_err(platform_list_source_error)?;
+        .map_err(|error| read.source_error(error))?;
+    let (feature, target) = match read {
+        PlatformRead::Companies => (PlatformFeature::TenantList, PlatformTarget::Companies),
+        PlatformRead::OperationsHealth => (
+            PlatformFeature::TenantHealthRead,
+            PlatformTarget::Operations,
+        ),
+    };
     let input = PlatformPolicyInput {
         credential: PlatformCredentialFacts {
             subject: source.subject(),
@@ -2688,8 +2816,8 @@ async fn check_platform_list_authority(
         }),
         absolute_family_ttl,
         now,
-        feature: PlatformFeature::TenantList,
-        target: PlatformTarget::Companies,
+        feature,
+        target,
         use_kind: PlatformUse::ReadProjection,
         call_site: PlatformCallSite::DirectPlatformOwner,
     };
@@ -2698,12 +2826,10 @@ async fn check_platform_list_authority(
         PlatformPolicyDecision::Deny {
             reason:
                 PlatformPolicyDenyReason::InvalidMaterial | PlatformPolicyDenyReason::PolicyDenied,
-        } => Err(ProvisioningError::PlatformListForbidden),
+        } => Err(read.forbidden()),
         PlatformPolicyDecision::Deny {
             reason: PlatformPolicyDenyReason::EvaluatorUnavailable,
         }
-        | PlatformPolicyDecision::UpgradeRequired => {
-            Err(ProvisioningError::PlatformListUnavailable)
-        }
+        | PlatformPolicyDecision::UpgradeRequired => Err(read.unavailable()),
     }
 }

@@ -898,19 +898,22 @@ async fn remove_org_from_group(
 /// token is rejected with 403 by the platform extractor before this runs.
 async fn ops_dashboard(
     State(state): State<PlatformRestState>,
-    Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
 ) -> Result<Response, PlatformError> {
-    principal
-        .authorize(PlatformFeature::TenantHealthRead)
-        .map_err(|_| PlatformError::forbidden("platform principal cannot read tenant health"))?;
+    let access = platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
+    let (ttl, policy) = state
+        .list_authority
+        .as_ref()
+        .ok_or_else(platform_health_unavailable)?;
+    let verifier = state
+        .session_verification
+        .as_ref()
+        .map(SessionVerification::token_verifier)
+        .ok_or_else(platform_health_unavailable)?;
 
     let health = state
         .provisioner
-        .list_tenant_health(
-            &state.pool,
-            Some(principal.user_id),
-            OffsetDateTime::now_utc(),
-        )
+        .list_tenant_health(&state.pool, verifier, access, *ttl, policy)
         .await
         .map_err(PlatformError::from_provisioning)?;
 
@@ -1053,6 +1056,11 @@ impl PlatformError {
                 Self::forbidden("platform principal cannot list tenants")
             }
             ProvisioningError::PlatformListUnavailable => platform_list_unavailable(),
+            ProvisioningError::PlatformHealthUnauthorized => platform_list_unauthorized(),
+            ProvisioningError::PlatformHealthForbidden => {
+                Self::forbidden("platform principal cannot read tenant health")
+            }
+            ProvisioningError::PlatformHealthUnavailable => platform_health_unavailable(),
             // Caller-facing input problems map to 422; everything else is logged
             // and collapsed to a generic 500 so no DB/constraint detail leaks.
             ProvisioningError::InvalidRoster(message) => Self::validation(message),
@@ -1120,6 +1128,14 @@ fn platform_list_unavailable() -> PlatformError {
     )
 }
 
+fn platform_health_unavailable() -> PlatformError {
+    PlatformError::new(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "service_unavailable",
+        "platform health is unavailable",
+    )
+}
+
 fn platform_list_bearer(headers: &HeaderMap) -> Option<&str> {
     let mut values = headers.get_all(header::AUTHORIZATION).iter();
     let value = values.next()?;
@@ -1146,7 +1162,9 @@ pub fn with_platform_list_transport(router: Router) -> Router {
 
 async fn platform_list_transport(request: Request, next: Next) -> Response {
     let is_head = request.method() == Method::HEAD;
-    if request.uri().path() != PLATFORM_ORGS_PATH || !(request.method() == Method::GET || is_head) {
+    if !matches!(request.uri().path(), PLATFORM_ORGS_PATH | PLATFORM_OPS_PATH)
+        || !(request.method() == Method::GET || is_head)
+    {
         return next.run(request).await;
     }
     let mut response = if platform_list_bearer(request.headers()).is_some() {
