@@ -891,3 +891,77 @@ test('release inventory preserves valid leap date offset and fractional retrieva
   assert.doesNotThrow(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}));
   assert.equal(value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc,timestamp);
 });
+
+function withSignedGitBufferFixture({ source, ledger = 'candidate ledger\n' }, check) {
+  const root = mkdtempSync(path.join(tmpdir(), 'console-git-buffer-'));
+  const run = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  try {
+    run(['init']);
+    run(['config', 'user.name', 'Jason Lee']);
+    run(['config', 'user.email', 'jason19931225@gmail.com']);
+    // Keep this ephemeral fixture key in .git, outside every committed path.
+    const signingKey = path.join(root, '.git', 'fixture-signing-key');
+    execFileSync('ssh-keygen', ['-q', '-t', 'ed25519', '-N', '', '-f', signingKey]);
+    run(['config', 'gpg.format', 'ssh']);
+    run(['config', 'user.signingkey', signingKey]);
+    const publicKey = readFileSync(`${signingKey}.pub`, 'utf8').trim().split(/\s+/).slice(0, 2).join(' ');
+    const fingerprint = execFileSync('ssh-keygen', ['-lf', `${signingKey}.pub`, '-E', 'sha256'], { encoding: 'utf8' }).trim().split(/\s+/)[1];
+    const candidateSigningAuthority = { format: 'ssh', principal: 'jason19931225@gmail.com', fingerprint };
+    const write = (relative, content) => {
+      const absolute = path.join(root, relative);
+      mkdirSync(path.dirname(absolute), { recursive: true });
+      writeFileSync(absolute, content);
+    };
+    write('.github/trust/console.allowed_signers', `jason19931225@gmail.com ${publicKey}\n`);
+    write('docs/program/console-capability-registry.json', '{"fixture":true}\n');
+    write('docs/program/console-jurisdiction-register.json', '{"fixture":true}\n');
+    write('docs/program/console-program-ledger.md', 'candidate ledger\n');
+    write('candidate-source.txt', source);
+    run(['add', '--', '.github/trust/console.allowed_signers', 'docs/program', 'candidate-source.txt']);
+    run(['commit', '-S', '-m', 'candidate buffer fixture']);
+    const candidateSha = run(['rev-parse', 'HEAD']);
+    write('docs/program/console-program-ledger.md', `${ledger}authority child\n`);
+    run(['add', '--', 'docs/program/console-program-ledger.md']);
+    run(['commit', '-S', '-m', 'authority buffer fixture']);
+    const authorityTipSha = run(['rev-parse', 'HEAD']);
+    // Signature, parent and changed-path checks run inside the actual resolver.
+    check(() => createConsoleCandidateSourceResolver(root, candidateSha, authorityTipSha, { candidateSigningAuthority }));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+}
+
+test('signed Git source reader preserves complete bytes beyond the former one MiB buffer', () => {
+  const ledger = 'reviewed ledger entry\n'.repeat(60000);
+  const source = 'candidate source line\n'.repeat(60000) + 'last source bytes: 한글 preserved\n';
+  assert.ok(Buffer.byteLength(ledger) > 1024 * 1024);
+  assert.ok(Buffer.byteLength(source) > 1024 * 1024);
+  withSignedGitBufferFixture({ source, ledger }, (resolve) => {
+    const resolver = resolve();
+    assert.equal(resolver.resolveSource('candidate-source.txt')?.tracked_regular, true);
+    const actual = resolver.readText('candidate-source.txt');
+    assert.equal(Buffer.byteLength(actual), Buffer.byteLength(source));
+    assert.deepEqual(Buffer.from(actual, 'utf8'), Buffer.from(source, 'utf8'));
+    assert.ok(actual.endsWith('last source bytes: 한글 preserved\n'));
+  });
+});
+
+test('signed Git authority reader rejects a merge marker beyond one MiB', () => {
+  const prefix = 'reviewed ledger entry\n'.repeat(60000);
+  const ledger = `${prefix}||||||| late unresolved ancestor\n`;
+  assert.ok(Buffer.byteLength(prefix) > 1024 * 1024);
+  withSignedGitBufferFixture({ source: 'source prerequisite\n', ledger }, (resolve) => {
+    // ENOBUFS is not this oracle: the actual late line must be inspected.
+    assert.throws(resolve, /console-program-ledger\.md:60001 carries an unresolved merge marker \(\|\|\|\|\|\|\|\)/);
+  });
+});
+
+test('signed Git source reader fails closed above the sixteen MiB bound', () => {
+  const source = 'x'.repeat(16 * 1024 * 1024 + 64) + '\nend beyond admitted bound\n';
+  assert.ok(Buffer.byteLength(source) > 16 * 1024 * 1024);
+  withSignedGitBufferFixture({ source }, (resolve) => {
+    const resolver = resolve();
+    assert.equal(resolver.resolveSource('candidate-source.txt')?.tracked_regular, true);
+    // The existing public boundary maps subprocess failure to missing source.
+    // Any returned prefix, even a nonempty one, fails this assertion.
+    assert.throws(() => resolver.readText('candidate-source.txt'), /candidate source is missing: candidate-source\.txt/);
+  });
+});

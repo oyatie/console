@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-exact-tests",
+  "candidate_path": "/private/tmp/console-ledger-git-buffer-tests/validate-console-truth-ledger.test.mjs",
+  "candidate_sha256": "edd175dbdca29850fcec6226b91cda0834445fc06b610d3c9f9b6b3633a158f1",
+  "design_sha256": "79f101ebeab1c54955d25c8bfb708f38315d330d8eccd1e9f09a395f3cdfe989",
+  "existing_file_prefix_preserved": true,
+  "added_tests": 3,
+  "findings": [],
+  "checks": [
+    "Fresh local real Git repository and SSH-signed C/direct-childT invoke actual exported candidate resolver. Ephemeral key stays in .git, not committed. All three authority paths exist before C.",
+    "Large positive independently verifies authority text and candidate source exceed1MiB, demands tracked regular identity, byte count, complete UTF8 buffer equality and Korean terminal suffix.",
+    "Late ancestor marker starts line60001 after>1MiB; diagnostic explicitly demands that line and marker. ENOBUFS or unrelated signature/path error cannot satisfy oracle.",
+    "Overflow creates real tracked source>16MiB. Resolver successfully validates signed authority and regular source before readText; existing public missing-source rejection is correct fail-closed oracle because private execFileSync cause is intentionally wrapped. A returned truncated prefix fails.",
+    "No historical test/assertion deletion, parser replacement, mocked Git or timeout change. Fixture finally removes only its own mkdtemp directory."
+  ],
+  "limitations": [
+    "Static exact-byte review only; parent must execute real RED and GREEN with discovered/executed counts.",
+    "Overflow rejection is observed through existing public wrapper and alone does not measure the precise private buffer threshold; byte-perfect positive and one-line finite option complement it."
+  ],
+  "approval_scope": "Three added boundary tests and minimal fixture helper; no implementation or release acceptance."
+}

@@ -1,0 +1,22 @@
+{
+  "round": 4,
+  "reviewer": "/root/integration_security",
+  "decision": "approved-final-design-only",
+  "design_sha256": "79f101ebeab1c54955d25c8bfb708f38315d330d8eccd1e9f09a395f3cdfe989",
+  "independence": "Independent of root design author; same reviewer as round3. This is a fourth adversarial design pass, not a claim of a fourth distinct reviewer.",
+  "adversarial_findings": [],
+  "checked": [
+    "One fixed numeric option changes only output capacity; no environment/user-config override, shell interpolation, permissive catch or new authority surface.",
+    "Raw source must still originate from signed exact candidate C and direct signed authority childT;16MiB cannot bypass mode/path restrictions or missing signatures.",
+    "Marker suffix after1MiB remains scanned over complete output; late-marker test must demand unresolved-marker diagnostic and complete positive must compare all bytes.",
+    "Over16MiB child output remains rejected rather than partially returned; real overflow test should be unambiguous and have valid signed prerequisites.",
+    "Existing3ENOBUFS failures must pass unchanged after one-line change; remaining validator/train/planner gates still required.",
+    "Fixed perread allowance raises bounded memory pressure and can represent more heap after decoding/splitting; replacement trigger remains measured16MiB overflow."
+  ],
+  "stop_conditions": [
+    "Any truncated or partial output accepted.",
+    "Any signature/path/mode/merge-marker/JSON contract weakening.",
+    "Generic assertions allowing missing fixture, invalid signature or unrelated read errors to masquerade as overflow proof."
+  ],
+  "scope": "Approval of exact design only. Exact tests and actual runtime evidence require separate review."
+}
