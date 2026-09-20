@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_ROUND3_INITIAL_ADMISSION_PRIVACY_TEST_PACKET",
+  "manifest_sha256": "eda1ba1d04f57dfb33e57bdd9096340779c641976a1b4e82cb2f8d4769aa9de7",
+  "new_test_source_sha256": "05a0592efad80b7da4f2b2bc9484ee03cda6d41ccbc0d7ca5ca1d85bca3371d9",
+  "prior_hold_receipt_sha256": "37f6aec459c0afd034d0e98c39bf03519c656079ee735dab0094e3ca1181370e",
+  "closed_findings": {
+    "PASSKEY-AUDIT-1": "Newlogout oracle requires exact20keys, actor/home/action/target/snapshot, all9unrelatednullablefields null, UUIDv4 nonnilid, nonzerolowercase32/16hex trace, exactoccurred_at and created_at within actualDB before/afterbounds. Added1positive+41corruption vectors:20omissions,1extra,11mutations,9metadata corruptions. No execution claimed.",
+    "PASSKEY-ECHO-2": "Existing fence_credential_snapshot supplies actualcredential_id and stored+compact passkey JSON for both nonempty subjects into private noecho list; values never printed. Exactpublicsummary remains3fields.",
+    "PASSKEY-DOC-3": "README now states nine mechanical sites. Exactintegrationpatch and4mechanical successor files byte-identical to round1; no extra existinghelper/testchanges."
+  },
+  "fixture_api_review": [
+    "Existing realfinalized legacy_fence_fixture enrollment with retainedSigningKey, actualAuth/Businesslogin identities, genuineRefreshTokenStore issue_family_in_tx and opaque revoke_family_for_logout signatures verified.",
+    "Test-only boundclaims preserve original verifiedsub/org/roles/exp and actualfamilyissueiat/nbf; productionNone asserted. No new productionhelper dependency or fakefamilypositive.",
+    "Actual A/B nonemptyprojection+unrelatedsubjectpositive, exactissuance/wholepublicstate, actualAlogout+exactA/Bpredicate before intended401 assertion. Headerassertions do not mask ownerRED.",
+    "Separateprivacy leaf covers200/missing-malformed-invalidbearer401/configuredclosedAuth503/invalidbeforeoutage401/recovery. Localnoecho/cacheoracles include injected omissions/duplicates/metadata.",
+    "Fullstate/issuance existinghelpers remain body-identical; boundedtest-onlyvisibility andkeyretention edits preserve allretainedtests."
+  ],
+  "source_defined_counts": {
+    "http_sqlx_leaves": 2,
+    "synchronous_oracle_leaves": 3,
+    "total": 5,
+    "privacy_oracle_positive_vectors": 2,
+    "privacy_oracle_negative_vectors": 15,
+    "disclosure_oracle_positive_vectors": 1,
+    "disclosure_oracle_negative_vectors": 3,
+    "audit_oracle_positive_vectors": 1,
+    "audit_oracle_negative_vectors": 41,
+    "compiled": 0,
+    "executed": 0
+  },
+  "scope": "Approve initial admission/privacy packet for root integration and actualprerequisite/discovery/RED. Not owneracceptance or sourceimplementation admission by itself. Any compile/schema/fixtureerror remains prerequisitefailure, not intended revokedfamilyRED.",
+  "remaining_mandatory_design_families": [
+    "Actual rotation/reuse and complete tuple/protocol/nativefield isolatedcontrols",
+    "Current identity and approvedbusinessrole/suspendedCompany/historicalunsupportedkind behavior",
+    "Strict signed/familytime/floorprecision/TTLoverflow and errororigin/unavailability",
+    "Observed reader/revoker locks, afterwait/finalexpiry and independentCompanyprogress",
+    "Final source/runtime review and all otherboundconsumers/globalmint qualification"
+  ],
+  "reviewer_actions": "Read-only source/packet/custodyreview plus privatereceipt; no build/database/repo writes.",
+  "lenses": [
+    "Zero trust: exactfamilyrealowner and completeaudit/noecho oracles.",
+    "Cartesian doubt:5sourceleaves and vectors are prospective counts, runtime0.",
+    "Blast radius: initial2HTTPdefects only, retainedhelpers/testbytespreserved and largerfamilies explicitlystillrequired."
+  ],
+  "prior_round2_receipt_sha256": "1a6e5c52cc1e2678fd0bf6db7bc4faae42d3f3afe7a5786ddbe5339abdc66f74",
+  "round3_addendum": [
+    "Exactround2 audit/credential/nine-site fixes accepted and preserved; initialround1HOLD fullyclosed.",
+    "Actually presented malformed Basic authorization header+payload and invalidBearer header+payload are now in noecho vector for each ordinary401. Outageinvalidtoken explicitly included too.",
+    "Only these additions modify newtestsource relative to round2. Fourmechanical successorfiles/integrationpatch/sourcecustody unchanged.",
+    "Runtime remains0compiled/0executed by author/reviewer; actualcleanprerequisite/RED/lane gate remains required.",
+    "ADRrawdiffpackaging approval-review rejection is independent; no action/workaround on that blockedpath authorized by this testapproval."
+  ]
+}

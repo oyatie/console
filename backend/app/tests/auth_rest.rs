@@ -54,6 +54,8 @@ mod account_storage;
 mod auth_target_parser;
 #[path = "auth_rest/historical227.rs"]
 mod historical227;
+#[path = "auth_rest/legacy_bound_passkey_reads.rs"]
+mod legacy_bound_passkey_reads;
 #[path = "auth_rest/publication_privileges.rs"]
 mod publication_privileges;
 
@@ -3531,6 +3533,7 @@ async fn account_fence_outstanding_employer_otp_cannot_create_a_session(pool: Pg
 }
 
 struct LegacyFenceFixture {
+    signing_key: SigningKey,
     router: axum::Router,
     subject: UserId,
     access: String,
@@ -3599,6 +3602,7 @@ async fn legacy_fence_fixture(pool: &PgPool) -> LegacyFenceFixture {
     let control_access = admin_session_via_otp(&router, pool, control).await;
     assert_legacy_reads(&router, control, &control_access).await;
     LegacyFenceFixture {
+        signing_key: key,
         router,
         subject,
         access: rotated.access_token,

@@ -1,7 +1,7 @@
 // Include inside existing auth_rest::account_browser. No new Rust API imports.
 // Catalog RED admits the DB owner only. Later cases invoke real owner functions
 // as actual configured LOGINs and use existing real HTTP/WebAuthn enrollment.
-mod deployment_operator_designation {
+pub(crate) mod deployment_operator_designation {
     use super::*;
     use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
     use sqlx::{Connection, Executor, Row};

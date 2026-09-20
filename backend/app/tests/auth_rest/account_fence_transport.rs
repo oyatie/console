@@ -499,7 +499,7 @@ async fn account_fence_transport_retains_auth_pool_and_readyz_tracks_auth_only_o
 use console_platform_auth::{RefreshTokenStore, RefreshTokenUseError};
 use sha2::{Digest, Sha256};
 
-async fn refresh_complete_snapshot(pool: &PgPool) -> Value {
+pub(super) async fn refresh_complete_snapshot(pool: &PgPool) -> Value {
     // Whole isolated-fixture rosters catch wrong-subject and misattributed writes.
     // Preserve terminal metadata too; never print this credential-bearing value.
     sqlx::query_scalar(
@@ -1000,7 +1000,7 @@ async fn account_fence_refresh_effective_cookie_subject_controls_conflicting_bod
     assert_legacy_reads(&fixture.router, fixture.control, &body.access_token).await;
 }
 
-mod issue_family_fence {
+pub(super) mod issue_family_fence {
     use super::*;
     use console_platform_auth::{AuthError, RefreshTokenIssue};
 
@@ -1038,7 +1038,7 @@ mod issue_family_fence {
         added[0]
     }
 
-    async fn assert_issue_delta(
+    pub(crate) async fn assert_issue_delta(
         pool: &PgPool,
         before: &Value,
         after: &Value,

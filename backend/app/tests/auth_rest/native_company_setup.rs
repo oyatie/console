@@ -1,6 +1,6 @@
 // Included inside deployment_operator_designation; genuine startup designation,
 // ordinary native enrollment, mounted HTTP routes and restricted product owners.
-mod company_setup {
+pub(crate) mod company_setup {
     use super::*;
 
     const ENTRY: &str = "/account/companies/new";
@@ -53,7 +53,7 @@ mod company_setup {
             })
     }
 
-    async fn all_rows(pool: &PgPool) -> BTreeMap<String, String> {
+    pub(crate) async fn all_rows(pool: &PgPool) -> BTreeMap<String, String> {
         // Actual complete public base-table census, including later owner tables.
         // Only trusted catalog identifiers enter SQL; exact JSON text preserves
         // PostgreSQL numeric fidelity. No raw rows appear in assertion output.
