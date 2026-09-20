@@ -83,6 +83,46 @@ pub enum TenantAccessContext {
     GroupAdmin,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LegacySessionKind {
+    Direct,
+    GroupAdmin,
+    PlatformViewAs,
+    PlatformTenantContext,
+}
+
+/// Signed correlation only; consumers must still guard the current exact family
+/// and source/target authority. This does not establish a live session.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LegacySessionBinding {
+    pub version: u8,
+    pub family_id: Uuid,
+    pub home_org: Uuid,
+    pub kind: LegacySessionKind,
+}
+
+// Absence alone is historical unbound access. Require a map when present;
+// Option's normal decoder accepts null and struct decoders also accept arrays.
+fn present_legacy_session<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Option<LegacySessionBinding>, D::Error> {
+    struct BindingVisitor;
+    impl<'de> serde::de::Visitor<'de> for BindingVisitor {
+        type Value = LegacySessionBinding;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("a legacy session binding object")
+        }
+
+        fn visit_map<M: serde::de::MapAccess<'de>>(self, map: M) -> Result<Self::Value, M::Error> {
+            LegacySessionBinding::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+        }
+    }
+    deserializer.deserialize_map(BindingVisitor).map(Some)
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AccessClaims {
     pub iss: String,
@@ -167,6 +207,12 @@ pub struct AccessClaims {
     pub authz_policy_version: u64,
     #[serde(default)]
     pub session_generation: u64,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "present_legacy_session"
+    )]
+    pub legacy_session: Option<LegacySessionBinding>,
     pub alg: String,
 }
 
@@ -188,6 +234,63 @@ impl AccessClaims {
                 "token scope claims must include both scope_level and scope_node".to_owned(),
             )),
         }
+    }
+
+    fn validate_legacy_session(&self) -> Result<(), AuthError> {
+        let Some(binding) = &self.legacy_session else {
+            return Ok(());
+        };
+        let invalid = || AuthError::InvalidStoredData("invalid legacy session binding".to_owned());
+        let org = Uuid::parse_str(&self.org).map_err(|_| invalid())?;
+        let platform_org = *OrgId::platform().as_uuid();
+        if binding.version != 1
+            || binding.family_id.is_nil()
+            || binding.home_org.is_nil()
+            || org.is_nil()
+        {
+            return Err(invalid());
+        }
+        let valid = match binding.kind {
+            LegacySessionKind::Direct => {
+                binding.home_org == org
+                    && self.platform == (org == platform_org)
+                    && !self.view_as
+                    && !self.read_only
+                    && self.tenant_context.is_none()
+            }
+            LegacySessionKind::GroupAdmin => {
+                binding.home_org != platform_org
+                    && org != platform_org
+                    && self.tenant_context == Some(TenantAccessContext::GroupAdmin)
+                    && self
+                        .actor_home_org
+                        .as_deref()
+                        .and_then(|id| Uuid::parse_str(id).ok())
+                        == Some(binding.home_org)
+                    && self
+                        .group_context_id
+                        .as_deref()
+                        .and_then(|id| Uuid::parse_str(id).ok())
+                        .is_some_and(|id| !id.is_nil())
+            }
+            LegacySessionKind::PlatformViewAs | LegacySessionKind::PlatformTenantContext => {
+                let view_as = binding.kind == LegacySessionKind::PlatformViewAs;
+                binding.home_org == platform_org
+                    && org != platform_org
+                    && !self.platform
+                    && self.tenant_context.is_none()
+                    && self.group_roles.is_empty()
+                    && self.view_as == view_as
+                    && self.read_only == view_as
+                    && self.roles.len() == 1
+                    && if view_as {
+                        !self.roles[0].is_empty()
+                    } else {
+                        self.roles[0] == "SUPER_ADMIN"
+                    }
+            }
+        };
+        if valid { Ok(()) } else { Err(invalid()) }
     }
 }
 
@@ -445,6 +548,7 @@ impl JwtIssuer {
             authz_subject_version: input.authz_subject_version,
             authz_policy_version: input.authz_policy_version,
             session_generation: input.session_generation,
+            legacy_session: None,
             alg: "ES256".to_owned(),
         };
 
@@ -527,5 +631,6 @@ fn verify_access_token(
         claims.view_as,
         claims.read_only,
     )?;
+    claims.validate_legacy_session()?;
     Ok(claims)
 }

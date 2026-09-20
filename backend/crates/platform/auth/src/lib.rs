@@ -26,7 +26,8 @@ pub use error::AuthError;
 pub use jwt::{
     AccessClaims, AccessTokenInput, AccountAccessClaims, AccountAccessTokenInput,
     AccountAccessVerification, AccountAssurance, AccountCsrfClaims, AccountCsrfTokenInput,
-    JwtIssuer, JwtSettings, JwtVerifier, SignedAccountToken, TenantAccessContext,
+    JwtIssuer, JwtSettings, JwtVerifier, LegacySessionBinding, LegacySessionKind,
+    SignedAccountToken, TenantAccessContext,
 };
 pub use legacy::{
     LegacySessionContext, LegacySessionContextError, append_legacy_auth_audit_in_tx,

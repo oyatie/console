@@ -1,0 +1,111 @@
+   Compiling syn v3.0.5
+   Compiling serde_json v1.0.151
+   Compiling futures-channel v0.3.34
+   Compiling tokio v1.53.1
+   Compiling futures-util v0.3.34
+   Compiling asn1-rs v0.6.2
+   Compiling curve25519-dalek v4.1.3
+   Compiling async-stream-impl v0.3.6
+   Compiling async-trait v0.1.89
+   Compiling num-derive v0.4.2
+   Compiling serde_bytes v0.11.19
+   Compiling async-stream v0.3.6
+   Compiling ed25519-dalek v2.2.0
+   Compiling oid-registry v0.7.1
+   Compiling der-parser v9.0.0
+   Compiling x509-parser v0.16.0
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.20
+   Compiling futures-macro v0.3.34
+   Compiling tokio-util v0.7.18
+   Compiling thiserror v2.0.20
+   Compiling tokio-stream v0.1.18
+   Compiling serde v1.0.229
+   Compiling futures-executor v0.3.34
+   Compiling futures v0.3.34
+   Compiling simple_asn1 v0.6.4
+   Compiling smallvec v1.15.2
+   Compiling either v1.16.0
+   Compiling base64urlsafedata v0.5.5
+   Compiling serde_cbor_2 v0.13.0
+   Compiling console-kernel-core v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/kernel/core)
+   Compiling webauthn-attestation-ca v0.5.5
+   Compiling icu_normalizer v2.2.0
+   Compiling parking_lot_core v0.9.12
+   Compiling num-bigint-dig v0.8.6
+   Compiling parking_lot v0.12.5
+   Compiling idna_adapter v1.2.2
+   Compiling rsa v0.9.10
+   Compiling futures-intrusive v0.5.0
+   Compiling idna v1.1.0
+   Compiling url v2.5.8
+   Compiling jsonwebtoken v11.0.0
+   Compiling sqlx-core v0.9.0
+   Compiling webauthn-rs-proto v0.5.5
+   Compiling webauthn-rs-core v0.5.5
+   Compiling sqlx-postgres v0.9.0
+   Compiling webauthn-rs v0.5.5
+   Compiling webauthn-authenticator-rs v0.5.5
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+   Compiling sqlx v0.9.0
+   Compiling console-platform-db v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/db)
+   Compiling console-platform-test-support v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/test-support)
+   Compiling console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.72s
+     Running tests/jwt_verifier.rs (/private/tmp/console-rust1981-owner-target/debug/deps/jwt_verifier-2f473b4f3495879e)
+
+running 7 tests
+test legacy_family_binding::repeated_nested_members_are_rejected_in_both_orders_including_identical_values ... FAILED
+test legacy_family_binding::present_null_partial_extra_and_wrong_typed_binding_are_rejected ... FAILED
+test legacy_family_binding::valid_binding_is_retained_for_all_four_closed_kinds ... FAILED
+test legacy_family_binding::repeated_outer_binding_is_rejected_in_both_orders_including_identical_values ... FAILED
+test legacy_family_binding::unknown_version_kind_and_invalid_or_nil_identifiers_are_rejected ... FAILED
+test legacy_family_binding::binding_rejects_contradictory_home_tier_and_derived_flags ... FAILED
+test legacy_family_binding::absent_binding_keeps_historical_defaults_and_unknown_outer_claims ... ok
+
+failures:
+
+---- legacy_family_binding::repeated_nested_members_are_rejected_in_both_orders_including_identical_values stdout ----
+
+thread 'legacy_family_binding::repeated_nested_members_are_rejected_in_both_orders_including_identical_values' (66773009) panicked at crates/platform/auth/tests/jwt_verifier.rs:382:13:
+LEGACY_FAMILY_PARSER: duplicate nested member; issuer_accepted=true; public_accepted=true
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- legacy_family_binding::present_null_partial_extra_and_wrong_typed_binding_are_rejected stdout ----
+
+thread 'legacy_family_binding::present_null_partial_extra_and_wrong_typed_binding_are_rejected' (66773008) panicked at crates/platform/auth/tests/jwt_verifier.rs:382:13:
+LEGACY_FAMILY_PARSER: binding must be a complete object; issuer_accepted=true; public_accepted=true
+
+---- legacy_family_binding::valid_binding_is_retained_for_all_four_closed_kinds stdout ----
+
+thread 'legacy_family_binding::valid_binding_is_retained_for_all_four_closed_kinds' (66773012) panicked at crates/platform/auth/tests/jwt_verifier.rs:371:17:
+LEGACY_FAMILY_PARSER: binding was lost or absence changed
+
+---- legacy_family_binding::repeated_outer_binding_is_rejected_in_both_orders_including_identical_values stdout ----
+
+thread 'legacy_family_binding::repeated_outer_binding_is_rejected_in_both_orders_including_identical_values' (66773010) panicked at crates/platform/auth/tests/jwt_verifier.rs:382:13:
+LEGACY_FAMILY_PARSER: duplicate outer legacy_session; issuer_accepted=true; public_accepted=true
+
+---- legacy_family_binding::unknown_version_kind_and_invalid_or_nil_identifiers_are_rejected stdout ----
+
+thread 'legacy_family_binding::unknown_version_kind_and_invalid_or_nil_identifiers_are_rejected' (66773011) panicked at crates/platform/auth/tests/jwt_verifier.rs:382:13:
+LEGACY_FAMILY_PARSER: version; issuer_accepted=true; public_accepted=true
+
+---- legacy_family_binding::binding_rejects_contradictory_home_tier_and_derived_flags stdout ----
+
+thread 'legacy_family_binding::binding_rejects_contradictory_home_tier_and_derived_flags' (66773007) panicked at crates/platform/auth/tests/jwt_verifier.rs:382:13:
+LEGACY_FAMILY_PARSER: /legacy_session/home_org; issuer_accepted=true; public_accepted=true
+
+
+failures:
+    legacy_family_binding::binding_rejects_contradictory_home_tier_and_derived_flags
+    legacy_family_binding::present_null_partial_extra_and_wrong_typed_binding_are_rejected
+    legacy_family_binding::repeated_nested_members_are_rejected_in_both_orders_including_identical_values
+    legacy_family_binding::repeated_outer_binding_is_rejected_in_both_orders_including_identical_values
+    legacy_family_binding::unknown_version_kind_and_invalid_or_nil_identifiers_are_rejected
+    legacy_family_binding::valid_binding_is_retained_for_all_four_closed_kinds
+
+test result: FAILED. 1 passed; 6 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s
+
+error: test failed, to rerun pass `-p console-platform-auth --test jwt_verifier`

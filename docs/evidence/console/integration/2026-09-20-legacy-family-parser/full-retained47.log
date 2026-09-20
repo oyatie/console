@@ -1,0 +1,73 @@
+   Compiling console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.74s
+     Running unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_platform_auth-b228142d7f75f781)
+
+running 3 tests
+test webauthn::tests::mobile_step_up_binding_rejects_zero_replay_attempt ... ok
+test webauthn::tests::mobile_step_up_binding_replay_attempt_is_required_but_nullable ... ok
+test webauthn::native_client_origin_tests::accepts_only_exact_origin_and_one_serialized_root_slash ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/jwt_es256.rs (/private/tmp/console-rust1981-owner-target/debug/deps/jwt_es256-89a00ac658287ad7)
+
+running 29 tests
+test access_scope_claims_must_be_a_complete_pair ... ok
+test es256_access_token_can_carry_group_roles_without_widening_scope ... ok
+test account_crypto::issuance_rejects_zero_ttl_expired_ceiling_invalid_identity_and_generation ... ok
+test es256_access_token_carries_optional_display_name_claim ... ok
+test es256_access_token_carries_feature_grant_ui_hints ... ok
+test account_crypto::lifetime_arithmetic_near_representable_time_limit_does_not_overflow ... ok
+test es256_scoped_token_rejects_unknown_group_role_on_issue ... ok
+test account_crypto::csrf_issuance_respects_five_minute_and_family_ceilings ... ok
+test es256_access_token_round_trips_explicit_access_scope_claims ... ok
+test es256_access_token_stamps_subject_authz_freshness ... ok
+test es256_access_token_round_trips_with_expected_claims ... ok
+test account_crypto::csrf_round_trip_is_closed_and_has_no_access_or_assurance_projection ... ok
+test group_admin_tenant_context_token_rejects_super_admin_role ... ok
+test es256_view_as_token_refuses_group_roles ... ok
+test account_crypto::access_issuance_respects_configured_fifteen_minute_and_family_ceilings ... ok
+test es256_rejects_actor_home_org_on_non_delegated_tokens ... ok
+test es256_scoped_token_rejects_unknown_group_role_on_verify ... ok
+test group_admin_tenant_context_token_is_bounded_and_distinct_from_super_admin ... ok
+test legacy_access_token_without_freshness_claims_defaults_to_zero ... ok
+test account_crypto::account_csrf_and_legacy_parsers_are_separate_in_both_directions ... ok
+test account_crypto::access_round_trip_is_closed_company_free_and_bound_to_primary_metadata ... ok
+test account_crypto::empty_configured_issuer_never_enables_account_or_csrf_tokens ... ok
+test account_crypto::wrong_keys_hmac_payload_tampering_and_malformed_tokens_are_refused ... ok
+test account_crypto::expired_access_preserves_verified_claims_without_skipping_other_validation ... ok
+test account_crypto::signed_token_debug_and_invalid_claim_errors_do_not_echo_secrets ... ok
+test account_crypto::both_protocols_require_exact_issuer_audience_and_kind ... ok
+test account_crypto::time_validation_has_no_grace_and_enforces_signed_lifetime_and_primary_age ... ok
+test account_crypto::identity_generation_and_assurance_claims_have_closed_canonical_values ... ok
+test account_crypto::both_protocols_reject_missing_extra_and_raw_duplicate_claims ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests/jwt_verifier.rs (/private/tmp/console-rust1981-owner-target/debug/deps/jwt_verifier-2f473b4f3495879e)
+
+running 14 tests
+test public_key_verifier_accepts_es256_access_token ... ok
+test account_protocol_separation::unmarked_legacy_token_remains_valid_in_both_verifiers ... ok
+test legacy_family_binding::absent_binding_keeps_historical_defaults_and_unknown_outer_claims ... ok
+test legacy_protocol_compatibility::unrelated_unknown_fields_and_null_protocol_marker_preserve_legacy_compatibility ... ok
+test account_protocol_separation::account_access_marker_cannot_enter_legacy_parser_with_legacy_shaped_claims ... ok
+test account_protocol_separation::account_csrf_marker_cannot_enter_legacy_parser_with_legacy_shaped_claims ... ok
+test legacy_protocol_compatibility::duplicate_known_claims_remain_refused_in_both_verifiers ... ok
+test legacy_family_binding::valid_binding_is_retained_for_all_four_closed_kinds ... ok
+test legacy_family_binding::repeated_outer_binding_is_rejected_in_both_orders_including_identical_values ... ok
+test legacy_family_binding::binding_rejects_contradictory_home_tier_and_derived_flags ... ok
+test legacy_protocol_compatibility::duplicate_recognized_protocol_markers_are_refused_in_both_orders ... ok
+test legacy_family_binding::present_null_partial_extra_and_wrong_typed_binding_are_rejected ... ok
+test legacy_family_binding::repeated_nested_members_are_rejected_in_both_orders_including_identical_values ... ok
+test legacy_family_binding::unknown_version_kind_and_invalid_or_nil_identifiers_are_rejected ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/well_known.rs (/private/tmp/console-rust1981-owner-target/debug/deps/well_known-b3db07ad741eafbf)
+
+running 1 test
+test app_link_documents_render_static_passkey_metadata ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
