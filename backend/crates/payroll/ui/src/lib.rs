@@ -1547,3 +1547,219 @@ mod tests {
         );
     }
 }
+
+#[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod private_document_tests {
+    use super::*;
+    use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
+    use axum::response::{IntoResponse, Response};
+    use std::collections::BTreeSet;
+    use std::future::Future;
+    use std::task::{Context, Poll, Waker};
+
+    fn frame_policy_is_closed(headers: &HeaderMap) -> bool {
+        let policies: Vec<_> = headers
+            .get_all(header::CONTENT_SECURITY_POLICY)
+            .iter()
+            .collect();
+        if policies.len() != 1 {
+            return false;
+        }
+        let Ok(policy) = policies[0].to_str() else {
+            return false;
+        };
+        let directives: Vec<Vec<_>> = policy
+            .split(';')
+            .map(|part| part.split_ascii_whitespace().collect::<Vec<_>>())
+            .filter(|parts| {
+                parts
+                    .first()
+                    .is_some_and(|name| name.eq_ignore_ascii_case("frame-ancestors"))
+            })
+            .collect();
+        directives.len() == 1 && directives[0].as_slice() == ["frame-ancestors", "'none'"]
+    }
+
+    fn assert_document(
+        response: impl IntoResponse,
+        status: StatusCode,
+        expected: String,
+    ) -> HeaderMap {
+        let response: Response = response.into_response();
+        assert_eq!(response.status(), status);
+        let headers = response.headers().clone();
+        for (name, expected) in [
+            (header::CACHE_CONTROL, "no-store"),
+            (header::PRAGMA, "no-cache"),
+            (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            (header::REFERRER_POLICY, "no-referrer"),
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+        ] {
+            let values: Vec<_> = headers.get_all(name.clone()).iter().collect();
+            assert_eq!(values.len(), 1, "missing or duplicate {name}");
+            assert_eq!(values[0].to_str().unwrap(), expected, "{name}");
+        }
+        assert!(
+            frame_policy_is_closed(&headers),
+            "missing or ambiguous frame-ancestors denial"
+        );
+        assert!(!headers.contains_key(header::SET_COOKIE));
+        let vary: BTreeSet<_> = headers
+            .get_all(header::VARY)
+            .iter()
+            .flat_map(|value| value.to_str().unwrap().split(','))
+            .map(|value| value.trim().to_ascii_lowercase())
+            .collect();
+        for key in ["authorization", "cookie", "origin"] {
+            assert!(vary.contains(key), "missing Vary {key}");
+        }
+        // These actual owners return fully buffered Html<String>, not streams.
+        // Polling the ready in-memory body needs no async runtime or dependency.
+        let mut body = std::pin::pin!(axum::body::to_bytes(response.into_body(), 256 * 1024));
+        let Poll::Ready(bytes) = body.as_mut().poll(&mut Context::from_waker(Waker::noop())) else {
+            panic!("buffered SSR owner unexpectedly returned a pending body");
+        };
+        assert_eq!(
+            bytes.unwrap().as_ref(),
+            expected.as_bytes(),
+            "response changed SSR document bytes"
+        );
+        headers
+    }
+
+    fn run() -> RunSummary {
+        RunSummary {
+            id: "00000000-0000-0000-0000-000000000001".into(),
+            period_start: "2026-06-01".into(),
+            period_end: "2026-06-30".into(),
+            source_label: "검토 <source> & evidence".into(),
+            status: "BLOCKED_LEGAL_GATE".into(),
+            calculation_enabled: false,
+            created_at: "2026-06-01T00:00:00Z".into(),
+            updated_at: "2026-06-01T00:00:00Z".into(),
+        }
+    }
+
+    #[test]
+    fn ssr_private_shell_response_preserves_anonymous_document() {
+        assert_document(html_shell(), StatusCode::OK, render_shell());
+    }
+
+    #[test]
+    fn ssr_private_runs_response_preserves_empty_and_authorized_documents() {
+        for runs in [vec![], vec![run()]] {
+            assert_document(
+                html_shell_with(&runs),
+                StatusCode::OK,
+                render_shell_with(&runs),
+            );
+        }
+    }
+
+    #[test]
+    fn ssr_private_screens_response_preserves_all_focus_and_disclosure_states() {
+        for runs in [
+            ScreenSection::Omitted,
+            ScreenSection::Empty,
+            ScreenSection::Rows(vec![run()]),
+        ] {
+            let screens = ShippingScreens {
+                runs,
+                ..ShippingScreens::default()
+            };
+            for focus in [
+                UiScreen::Home,
+                UiScreen::Organization,
+                UiScreen::Hr,
+                UiScreen::Payroll,
+            ] {
+                assert_document(
+                    html_shell_with_screens(&screens, focus),
+                    StatusCode::OK,
+                    render_screens(&screens, focus),
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn ssr_private_native_documents_retain_status_bytes_and_restrictive_csp() {
+        use native_account::{CompanySetupEligibility, ContextState, Page};
+        let cases: [(fn() -> Page, StatusCode); 8] = [
+            (|| Page::Public, StatusCode::OK),
+            (|| Page::SignIn, StatusCode::OK),
+            (
+                || Page::Register {
+                    version: "terms-v1".into(),
+                    items: vec![native_account::TermsItem {
+                        kind: "service".into(),
+                        title: "이용 약관".into(),
+                        content_url: "/terms/service".into(),
+                        content: "검토 <terms> & consent".into(),
+                    }],
+                },
+                StatusCode::OK,
+            ),
+            (
+                || Page::Account {
+                    context: ContextState::Empty,
+                    can_logout: true,
+                    company_setup: CompanySetupEligibility::Eligible,
+                },
+                StatusCode::OK,
+            ),
+            (
+                || Page::Account {
+                    context: ContextState::Unavailable,
+                    can_logout: true,
+                    company_setup: CompanySetupEligibility::Unavailable,
+                },
+                StatusCode::SERVICE_UNAVAILABLE,
+            ),
+            (|| Page::CompanySetup, StatusCode::OK),
+            (|| Page::Refused, StatusCode::FORBIDDEN),
+            (|| Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE),
+        ];
+        for (page, status) in cases {
+            let headers = assert_document(
+                native_account::document(page(), status),
+                status,
+                native_account::render(page()),
+            );
+            assert_eq!(
+                headers[header::CONTENT_SECURITY_POLICY],
+                "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+            );
+        }
+    }
+
+    #[test]
+    fn ssr_private_frame_oracle_rejects_missing_permissive_and_duplicate_policies() {
+        let mut headers = HeaderMap::new();
+        assert!(!frame_policy_is_closed(&headers));
+        for policy in [
+            "frame-ancestors *",
+            "frame-ancestors 'none' *",
+            "frame-ancestors 'none'; frame-ancestors *",
+            "default-src 'none'",
+            "frame-ancestors",
+        ] {
+            headers.insert(
+                header::CONTENT_SECURITY_POLICY,
+                HeaderValue::from_str(policy).unwrap(),
+            );
+            assert!(!frame_policy_is_closed(&headers), "accepted {policy}");
+        }
+        headers.insert(
+            header::CONTENT_SECURITY_POLICY,
+            HeaderValue::from_static("object-src 'none'; frame-ancestors 'none'"),
+        );
+        assert!(frame_policy_is_closed(&headers));
+        headers.append(
+            header::CONTENT_SECURITY_POLICY,
+            HeaderValue::from_static("frame-ancestors 'none'"),
+        );
+        assert!(!frame_policy_is_closed(&headers));
+    }
+}

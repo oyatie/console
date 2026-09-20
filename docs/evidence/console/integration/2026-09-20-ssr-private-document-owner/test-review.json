@@ -1,0 +1,14 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_EXACT_TESTS_FOR_EXECUTABLE_OWNER_RED",
+  "head": "1085613a03bcb24511885066040f3fefd219a302",
+  "manifest_sha256": "6ab8f8ba8de537368e10eb10099f142cad9e2c43d091f5b9a956e897bc4faf5b",
+  "candidate_sha256": "eba0a412fe93440f26543c746544286fd917f9de04e94ccf643aafeb154a4c06",
+  "findings": [],
+  "scope": [
+    "Five additive leaves preserve all original bytes; four owner assertions expected red, one structural oracle expected green.",
+    "All three public response owners exercised, bodies and native CSP preserved, missing/duplicate/permissive frame directives refused.",
+    "Independent root review of security-authored tests; no runtime result claimed.",
+    "Actual hydration and retained HTTP tests remain required; no release acceptance."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "author": "/root/integration_security",
+  "source": "backend/crates/payroll/ui/src/lib.rs",
+  "preimage_sha256": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+  "mechanical_integration": "Append exact additive-tests.rs bytes after existing lib.rs plus one newline. Original entire lib.rs remains an exact prefix; no test body changed.",
+  "design_review": "/private/tmp/console-ssr-private-document-design-security-review.json",
+  "design_review_sha256": "c69853bc45e2dac5e3bbd6b2ed62370324d92de6df92f0e73b35ea3a9080cd15",
+  "tests": {
+    "new_leaves": 5,
+    "owner_expected_red": 4,
+    "oracle_positive_control_expected_green": 1,
+    "document_cases": 23
+  },
+  "notes": [
+    "Rustfmt completed successfully; no compile, database, browser or test execution by author.",
+    "All tests call actual public response constructors. Existing Html return types compile through IntoResponse, and new Response types remain compatible.",
+    "Buffered body is polled once using standard-library noop waker; actual Html<String> body is immediately ready, so no new test runtime/dependencies are introduced.",
+    "Three shell tests cover one anonymous, two direct-run and twelve focus/disclosure combinations. Native test covers eight real page/status combinations with exact rendered bytes and existing restrictive CSP.",
+    "Frame oracle uses structural directive multiplicity and one exact none source, with one positive and seven negative cases including duplicate header. Browser assertions remain unchanged.",
+    "Actual authorized browser is still required to demonstrate inline island execution survives the privacy repair."
+  ]
+}
