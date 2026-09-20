@@ -1,0 +1,807 @@
+{
+  "kind": "bounded-flow-capture-reference-proposal",
+  "observed_head_sha": "c659210e37f3f0fa5b8dc7d3b9ed7b8e07b7d139",
+  "registry_sha256": "8d5ed3ce6e2fd9fa735893af7f57c31aa7bffb8b25d59d1b8bd1d08d6cf6b5e4",
+  "reference_date": "2026-09-19",
+  "reference_timezone": "America/New_York",
+  "retrieval_utc_date": "2026-09-20",
+  "exhaustive": false,
+  "sources": [
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/flow-capture/generate-documentation/",
+      "effective_url": "https://www.palantir.com/docs/foundry/flow-capture/generate-documentation",
+      "retrieved_utc": "2026-09-20T03:56:38.763167+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "347332",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"bebe48e79fa8c7376a16ea3413276d55\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 03:56:38 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660078-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789876599.595428,VS0,VE153",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "bytes": 347332,
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "compressed_sha256": "a86a5f05a98f152006e73b3dd3a9da60c8b93e5843e1e9f6991a16385ee517dd",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "flow-capture-generate-documentation",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-flow-capture-20260919/flow-capture-generate-documentation.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/flow-capture/overview/",
+      "effective_url": "https://www.palantir.com/docs/foundry/flow-capture/overview",
+      "retrieved_utc": "2026-09-20T02:25:35.866162+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "347930",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"bd4cdd1883bca0434c30f76c4721ef02\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:25:35 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660077-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871136.707387,VS0,VE153",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "bytes": 347930,
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "compressed_sha256": "86e5b27b6a53c429b367fae93b02a9d5c83d4a97ffc70eb220241e73d800c42f",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "flow-capture-overview",
+      "capture_path_at_retrieval": "/private/tmp/console-release-completeness-audit-20260919/flow-capture-overview.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/flow-capture/record-a-workflow/",
+      "effective_url": "https://www.palantir.com/docs/foundry/flow-capture/record-a-workflow",
+      "retrieved_utc": "2026-09-20T03:56:38.768949+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "362437",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"4ba2c82a2a826fcdfd547a964259020e\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 03:56:38 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660028-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789876599.601468,VS0,VE156",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "bytes": 362437,
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "compressed_sha256": "6663fb18298cefe7556854f22de275ea20d8553fdc0199e3510370ff9e1def3b",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual2026-09-20UTC retrieval preserved, no authenticated historical snapshot claimed.",
+      "id": "flow-capture-record-a-workflow",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-flow-capture-20260919/flow-capture-record-a-workflow.html.gz"
+    }
+  ],
+  "leaves_to_append": [
+    {
+      "id": "F09.workflow-capture-resources",
+      "milestone": 8,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F09.documents",
+        "F04.media-reference-identity",
+        "F16.derived"
+      ],
+      "journey": "Create and reopen a named workflow capture with click screenshots and contextual metadata bound to authorized source resources",
+      "acceptance": {
+        "outcome": "Create and reopen a named workflow capture with click screenshots and contextual metadata bound to authorized source resources",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Capture source restrictions retention browser/media support and export conversion need explicit contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F09.workflow-recorder-controls",
+      "milestone": 8,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F09.workflow-capture-resources",
+        "F10.mobile-application-interactions"
+      ],
+      "journey": "Record same-origin application workflows with automatic or keyboard/manual screenshots and explicit frame dimensions; pause resume finish or discard with truthful durable outcomes",
+      "acceptance": {
+        "outcome": "Record same-origin application workflows with automatic or keyboard/manual screenshots and explicit frame dimensions; pause resume finish or discard with truthful durable outcomes",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Capture source restrictions retention browser/media support and export conversion need explicit contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F09.capture-asset-editing",
+      "milestone": 8,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F09.workflow-capture-resources",
+        "F04.image-transform-library",
+        "F04.media-retention",
+        "F16.upload-execution-isolation"
+      ],
+      "journey": "Stage screenshot crops and blur edits, import validated images, restore unsaved deletions and save versioned capture assets under explicit retention and legal-hold rules",
+      "acceptance": {
+        "outcome": "Stage screenshot crops and blur edits, import validated images, restore unsaved deletions and save versioned capture assets under explicit retention and legal-hold rules",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Capture source restrictions retention browser/media support and export conversion need explicit contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F09.capture-audio-transcripts",
+      "milestone": 8,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F09.workflow-capture-resources",
+        "F04.audio-transform-library",
+        "F16.derived"
+      ],
+      "journey": "Record optional microphone narration with explicit permission and source restrictions, associate timestamped audio transcripts with screenshots, and correct or regenerate transcript versions through isolated processing",
+      "acceptance": {
+        "outcome": "Record optional microphone narration with explicit permission and source restrictions, associate timestamped audio transcripts with screenshots, and correct or regenerate transcript versions through isolated processing",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Capture source restrictions retention browser/media support and export conversion need explicit contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F09.capture-document-export",
+      "milestone": 8,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F09.workflow-capture-resources",
+        "F09.document-export",
+        "F09.document-markdown-conversion",
+        "F16.download-governance"
+      ],
+      "journey": "Preview manually authored capture documentation and export governed document, ordered walkthrough, PDF and ZIP Markdown/image versions with explicit conversion differences and current disclosure checks",
+      "acceptance": {
+        "outcome": "Preview manually authored capture documentation and export governed document, ordered walkthrough, PDF and ZIP Markdown/image versions with explicit conversion differences and current disclosure checks",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Capture source restrictions retention browser/media support and export conversion need explicit contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F16.capture-source-policy",
+      "milestone": 7,
+      "required": true,
+      "owner": "workflow capture application use cases and canonical media document and policy owners",
+      "dependencies": [
+        "F16.derived",
+        "F16.sharing",
+        "F16.download-governance",
+        "F16.sensitive-action-checkpoints",
+        "F09.workflow-capture-resources"
+      ],
+      "journey": "Inherit captured source and field restrictions across screenshots audio transcripts manual documentation copies and exports, enforce current revocation, and require explicit release authority for broader disclosure",
+      "acceptance": {
+        "outcome": "Inherit captured source and field restrictions across screenshots audio transcripts manual documentation copies and exports, enforce current revocation, and require explicit release authority for broader disclosure",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Capture source restrictions retention browser/media support and export conversion need explicit contracts and independent security/recovery oracles."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  ],
+  "source_bindings": {
+    "F09.workflow-capture-resources": [
+      {
+        "source_id": "flow-capture-record-a-workflow",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+        "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+        "quote": "Choose a file name and location to save your resource in Compass.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F09.workflow-recorder-controls": [
+      {
+        "source_id": "flow-capture-record-a-workflow",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+        "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+        "quote": "Select Discard and exit to cancel the session and remove any captured media.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F09.capture-asset-editing": [
+      {
+        "source_id": "flow-capture-record-a-workflow",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+        "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+        "quote": "Deleted items remain recoverable until you save your changes by selecting Save in the edit toolbar.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F09.capture-audio-transcripts": [
+      {
+        "source_id": "flow-capture-record-a-workflow",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+        "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+        "quote": "If recorded, your audio will be transcribed automatically and associated with the captured screenshots.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F09.capture-document-export": [
+      {
+        "source_id": "flow-capture-generate-documentation",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+        "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+        "quote": "Export as .zip: Bundles Markdown content and images into a .zip file that can be downloaded.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F16.capture-source-policy": [
+      {
+        "source_id": "flow-capture-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+        "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+        "quote": "It is the user’s responsibility to ensure that appropriate security checks related to markings and group-based access are applied to created Flow Capture resources to reflect the security checks of the captured content.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F09.documents": [
+      {
+        "source_id": "flow-capture-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+        "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+        "quote": "View mode displays generated documentation in presentation or preview form, while edit mode can be used to modify generated Markdown, create additional recordings, and adjust images or transcriptions before re-generating, saving, or exporting.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F16.sensitive-action-checkpoints": [
+      {
+        "source_id": "flow-capture-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+        "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+        "quote": "You can configure a checkpoint to warn users before they perform sensitive actions, such as exporting generated content.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F16.image-obfuscation": [
+      {
+        "source_id": "flow-capture-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+        "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+        "quote": "Crop and blur areas of captured images directly in Flow Capture to remove or redact sensitive areas before generation or export.",
+        "matching": "HTML article whitespace normalized",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ]
+  },
+  "support_matrix_additions": {
+    "runtimes": [
+      {
+        "runtime": "Workflow recorder capture modes",
+        "reference_status": "Beta same-enrollment browser recording; exact browser/runtime support unspecified",
+        "source": "flow-capture-record-a-workflow",
+        "source_bindings": [
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "The URL field only accepts same-domain URLs. The page you navigate to must be on the same Foundry enrollment that Flow Capture is running on.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "If Auto-screenshot is enabled, screenshots will be taken automatically for every click event, but you may take manual screenshots at any time.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "Use the Take screenshot option in the recorder controls to capture the current view, or use the keyboard shortcut Cmd+Shift+S (macOS) or Ctrl+Shift+S (Windows) to capture a screenshot.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "Full size: Capture at the full resolution of the target page.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "Scaled: Scale the page to fit the recorder viewport.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "Custom: Specify custom dimensions for the capture frame.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F09.workflow-recorder-controls",
+        "console_acceptance": "not established",
+        "command": null,
+        "capture_triggers": [
+          "click-auto",
+          "manual-control",
+          "Cmd+Shift+S",
+          "Ctrl+Shift+S"
+        ],
+        "frame_modes": [
+          "full",
+          "scaled",
+          "custom"
+        ],
+        "origin_scope": "same enrollment/domain; Console current authority remains mandatory"
+      },
+      {
+        "runtime": "Workflow capture export formats",
+        "reference_status": "Manual content and captured assets require native successor equivalence and explicit conversion loss",
+        "source": "flow-capture-generate-documentation",
+        "source_bindings": [
+          {
+            "source_id": "flow-capture-generate-documentation",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+            "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+            "quote": "Export as Walkthrough: Converts the content to a Walkthrough. Walkthroughs enforce a step-by-step structure, so Walkthrough content may differ after export from Flow Capture.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-generate-documentation",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+            "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+            "quote": "Export as Notepad: Converts the content to a Notepad document.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-generate-documentation",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+            "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+            "quote": "Export as PDF: Renders Markdown content as a PDF document that can be downloaded.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-generate-documentation",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+            "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+            "quote": "Export as .zip: Bundles Markdown content and images into a .zip file that can be downloaded.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F09.capture-document-export",
+        "console_acceptance": "not established",
+        "command": null,
+        "formats": [
+          "native document (Notepad equivalent)",
+          "ordered walkthrough",
+          "PDF",
+          "ZIP Markdown and images"
+        ]
+      },
+      {
+        "runtime": "Workflow capture optional audio and transcripts",
+        "reference_status": "Optional microphone assets and editable/regenerable transcripts; provider model and browser/version support not established",
+        "source": "flow-capture-record-a-workflow",
+        "source_bindings": [
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "Enable Record audio if you want spoken narration and transcription.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "flow-capture-record-a-workflow",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+            "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+            "quote": "To regenerate the transcription automatically, select Regenerate.",
+            "matching": "HTML article whitespace normalized",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F09.capture-audio-transcripts",
+        "console_acceptance": "not established",
+        "command": null,
+        "intelligence_scope": "LLM document generation remains separate; classical transcription contract required"
+      }
+    ]
+  },
+  "compatibility_and_security_qualifications": [
+    {
+      "source_id": "flow-capture-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "quote": "Flow Capture is in the beta phase of development and may not be available on your enrollment. Functionality may change during active development.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "quote": "To enable Flow Capture, contact your platform administrator to modify application access in Control Panel.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "quote": "It records mouse clicks, screenshots, optional audio with transcription, and contextual metadata while you navigate an application in a recording session.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "quote": "Screenshots are stored as individual snapshot assets and can be included in the final documentation in context, or as standalone images.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "quote": "Audio files and their transcriptions are stored as assets and can be used to enrich documentation generation by providing additional context and instructions.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Before recording, ensure that you understand your organization's data handling policies.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "In the acknowledgement dialog, select the checkbox to confirm the required security settings, and then select Acknowledge.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "The URL field only accepts same-domain URLs. The page you navigate to must be on the same Foundry enrollment that Flow Capture is running on.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "If Auto-screenshot is enabled, screenshots will be taken automatically for every click event, but you may take manual screenshots at any time.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Use the Take screenshot option in the recorder controls to capture the current view, or use the keyboard shortcut Cmd+Shift+S (macOS) or Ctrl+Shift+S (Windows) to capture a screenshot.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Full size: Capture at the full resolution of the target page.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Scaled: Scale the page to fit the recorder viewport.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Custom: Specify custom dimensions for the capture frame.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Select Pause to pause the capture.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Select Record to resume after pausing.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "When you have finished capturing the workflow, select Done.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "Edits are staged until you save them.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "You can also import images into Flow Capture by selecting Upload in the top right corner of the Assets page, and selecting the files you want to upload.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "After selecting Save, deleted images and audio will be permanently removed.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-record-a-workflow",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-record-a-workflow.html.gz",
+      "sha256": "0380973f67e87b576728a8eaaad70929b2756b6a73276c5434aad3cb0f7e2525",
+      "quote": "To regenerate the transcription automatically, select Regenerate.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Export as Walkthrough: Converts the content to a Walkthrough. Walkthroughs enforce a step-by-step structure, so Walkthrough content may differ after export from Flow Capture.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Export as Notepad: Converts the content to a Notepad document.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Export as PDF: Renders Markdown content as a PDF document that can be downloaded.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "After content has been generated, you can edit the results by switching to the Documentation tab and selecting Edit in the top right corner. Content will be displayed using Markdown syntax.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Only assets that you have added to context are visible to the model during generation.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Different models support different images quantities per request.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-overview.html.gz",
+      "sha256": "52ce6731637feea030c3853caadb73b14cd222f4e1214ddc3c71313f96fcdc0c",
+      "quote": "Choose a system prompt or template, and a model to influence how content is generated.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Regenerate documentation: Overwrite existing documentation with a new prompt.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "flow-capture-generate-documentation",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-flow-capture/flow-capture-generate-documentation.html.gz",
+      "sha256": "f3d5989f2c69fa6101f19bb6b05e4d535854d944c71b0925c935b332254211f4",
+      "quote": "Append to or modify current documentation: Edit the existing documentation using the prompt.",
+      "matching": "HTML article whitespace normalized",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    }
+  ],
+  "limitations": [
+    "Flow Capture is a bounded three-page reference capture, not exhaustive Foundry reconciliation or proof of Console implementation. Beta/administrator enablement does not remove requested classical capabilities.",
+    "Flow Capture classical scope includes capture resources, recorder controls, screenshots, optional audio/transcripts, asset edits, manual Markdown preview and governed export. Prompt templates/model selection, LLM context inclusion, LLM generation, regeneration and prompt-driven append/modify are classified on the separate Intelligence roadmap; this does not exclude the whole workflow application.",
+    "Optional transcription is required through the isolated classical audio processing contract; provider/model/runtime support and confidentiality must be independently qualified. No microphone permission, transcription quality, timestamp fidelity, browser capture engine or supported browser/version has been established by these public references.",
+    "Vendor documentation places responsibility for matching markings/group access on users. Console instead requires source/field restriction inheritance and current-authority checks for every capture artifact, transcript, document, copy, preview and export. A warning checkpoint or same-domain recorder is not authorization; blur is not proof of irreversible redaction or a disclosure release.",
+    "Vendor saved asset deletion is documented as permanent. Console must provide an explicit retention/legal-hold compatibility contract and must not copy this behavior in violation of required historical evidence or recovery. Actual physical deletion and derived-copy cleanup remain independently qualified.",
+    "Walkthrough export may alter content to fit ordered steps. Required native successor equivalence must retain stable references, disclose conversion loss, provide accessible navigation and preserve source policy. No requirement to reproduce vendor application names or use vendor APIs is implied.",
+    "Recorded clicks and URLs are contextual evidence only; recorder replay must never execute consequential business commands without the canonical owner and current authority. Capture must not expose cookies, tokens, confidential hidden fields or unrelated working context.",
+    "All new leaves remain planned with null executable bindings. Capture correctness, policy revocation, hostile uploads, Korean IME/keyboard/320px/zoom, interrupted save/export, restoration, resource limits and independent browser acceptance remain release blockers."
+  ]
+}

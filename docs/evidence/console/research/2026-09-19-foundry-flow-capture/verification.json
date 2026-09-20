@@ -1,0 +1,14 @@
+{
+  "source_count": 3,
+  "new_leaf_count": 6,
+  "binding_keys": 9,
+  "qualification_count": 29,
+  "matrix_rows": 3,
+  "quote_membership_checks": 50,
+  "size_and_hash_checks": 9,
+  "combined_leaf_count": 392,
+  "all_dependencies_resolve": true,
+  "acyclic_dependencies": true,
+  "runtime_tests_executed": 0,
+  "implementation_accepted": false
+}

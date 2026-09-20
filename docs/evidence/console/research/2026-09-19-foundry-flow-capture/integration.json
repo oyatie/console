@@ -1,0 +1,22 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "c659210e37f3f0fa5b8dc7d3b9ed7b8e07b7d139",
+  "before_registry_sha256": "8d5ed3ce6e2fd9fa735893af7f57c31aa7bffb8b25d59d1b8bd1d08d6cf6b5e4",
+  "after_registry_sha256": "bdb958927a416a87243f245caaf3e14487a2e1e569258fc209e0e8b2774a9197",
+  "leaves_before": 386,
+  "leaves_after": 392,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "Exhaustive reference freeze and executable acceptance remain incomplete; historical detail qualifications retained."
+  ],
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "discovered": 104,
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "ed03016b0b0152dd6624c984deeeceb13e8b6cdff697a15533661d9592fb00e2"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "candidate-patch.json": "964d2ca200558c12bafafc0ef113bdc222711c6f124482879c1514af2cfc5e28",
+  "fetch.py": "c0ba504957043bd14066992f37e2bfc039157d9c378d5d79c71e25843b5c5c79",
+  "flow-capture-generate-documentation.html.gz": "a86a5f05a98f152006e73b3dd3a9da60c8b93e5843e1e9f6991a16385ee517dd",
+  "flow-capture-generate-documentation.json": "2de7b017b55085aae74a55d60f185866ee9daa7ba49654977fcd8a1d29b5269f",
+  "flow-capture-overview.html.gz": "86e5b27b6a53c429b367fae93b02a9d5c83d4a97ffc70eb220241e73d800c42f",
+  "flow-capture-overview.json": "0c439055cec1024ed3d5b34e7784b5d4dde83e3312303ea800f0cdbdfb7d2e1f",
+  "flow-capture-record-a-workflow.html.gz": "6663fb18298cefe7556854f22de275ea20d8553fdc0199e3510370ff9e1def3b",
+  "flow-capture-record-a-workflow.json": "67c7fab586698e3db0873a6d0e1f3eee02c1012cb13e9236a3dcf8353778279f",
+  "proposal.json": "4fa0ec33993c5f1f5178cf5c34e65352ab82834df360d0c2fc0ebb9fcce09b70",
+  "propose.py": "5aaf7b09af5c575a03cc985395adc0ed5419d7cb8bb1bb1df8a9d80e2aa9b647",
+  "read.py": "5d1ea4bf94bae39a0e550d860988e6bf3ec613fa5a0e02709f98a3ec95dd0f3c",
+  "specs.py": "027f85c9dd469d19058980ee4b7f6aad27a7eb99c09b60e2b430134a7595015a",
+  "verification.json": "7debdbb39a262a985dd5c19222eddb6fd9e6300028665ce0ca4d12b14987143b"
+}

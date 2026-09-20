@@ -1,0 +1,2319 @@
+{
+  "kind": "bounded-vulcan-reference-proposal",
+  "observed_head_sha": "c659210e37f3f0fa5b8dc7d3b9ed7b8e07b7d139",
+  "registry_sha256": "8d5ed3ce6e2fd9fa735893af7f57c31aa7bffb8b25d59d1b8bd1d08d6cf6b5e4",
+  "reference_date": "2026-09-19",
+  "reference_timezone": "America/New_York",
+  "retrieval_utc_date": "2026-09-20",
+  "exhaustive": false,
+  "sources": [
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/announcements/release-notes/",
+      "effective_url": "https://www.palantir.com/docs/foundry/announcements/release-notes",
+      "retrieved_utc": "2026-09-20T04:02:15.175438+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "1581721",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:12 GMT",
+        "ETag": "\"83b517a357491fbd2e4b347f617e5841\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 04:02:15 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660067-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789876935.931081,VS0,VE205",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "bytes": 1581721,
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "compressed_sha256": "c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual retrieval preserved. post-cutoff capture; exact historical support unqualified; Last-Modified is not historical equivalence. No authenticated historical snapshot claimed.",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "id": "announcements-release-notes",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-vulcan-20260919/announcements-release-notes.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/vulcan/overview/",
+      "effective_url": "https://www.palantir.com/docs/foundry/vulcan/overview",
+      "retrieved_utc": "2026-09-20T02:25:35.872151+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "434762",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:26 GMT",
+        "ETag": "\"46384c5d34fd35a2343220990a35090a\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 02:25:35 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660044-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789871136.720701,VS0,VE145",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+      "bytes": 434762,
+      "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+      "compressed_sha256": "369539a1b0bfc4241110a1f49b303a6b16afe5ac23021bfeaac6628952dfc564",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual retrieval preserved. pre-cutoff capture; Last-Modified is not historical equivalence. No authenticated historical snapshot claimed.",
+      "reference_temporal_status": "pre-cutoff capture",
+      "id": "vulcan-overview",
+      "capture_path_at_retrieval": "/private/tmp/console-release-completeness-audit-20260919/vulcan-overview.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/vulcan/schema-reference/",
+      "effective_url": "https://www.palantir.com/docs/foundry/vulcan/schema-reference",
+      "retrieved_utc": "2026-09-20T04:01:37.038548+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "465813",
+        "Server": "AmazonS3",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:26 GMT",
+        "ETag": "\"d918e81512908b91a5c3620f189618cf\"",
+        "Content-Type": "text/html",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 04:01:37 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660047-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789876897.841051,VS0,VE184",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "bytes": 465813,
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "compressed_sha256": "c91266af0dfc2254a0ddba00adcf7143359a91bfa2032129463ebd5cc07dac44",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual retrieval preserved. post-cutoff capture; exact historical support unqualified; Last-Modified is not historical equivalence. No authenticated historical snapshot claimed.",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "id": "vulcan-schema-reference",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-vulcan-20260919/vulcan-schema-reference.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/vulcan/tool-overview/",
+      "effective_url": "https://www.palantir.com/docs/foundry/vulcan/tool-overview",
+      "retrieved_utc": "2026-09-20T04:01:36.986900+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "440429",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:26 GMT",
+        "ETag": "\"235f9de45d4452c08075ce6b69df05c8\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 04:01:36 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660032-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789876897.839535,VS0,VE136",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-tool-overview.html.gz",
+      "bytes": 440429,
+      "sha256": "21a60812ffae5eb7f1403a3447ed7903b88e273f063197fd58342ca788864390",
+      "compressed_sha256": "8ac02d0586ed56c9058859412c6875849a151807783dd75e98cacbcdbbd00c39",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual retrieval preserved. post-cutoff capture; exact historical support unqualified; Last-Modified is not historical equivalence. No authenticated historical snapshot claimed.",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "id": "vulcan-tool-overview",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-vulcan-20260919/vulcan-tool-overview.html.gz"
+    },
+    {
+      "requested_url": "https://www.palantir.com/docs/foundry/vulcan/widget/",
+      "effective_url": "https://www.palantir.com/docs/foundry/vulcan/widget",
+      "retrieved_utc": "2026-09-20T04:01:37.022100+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "460780",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:26 GMT",
+        "ETag": "\"d0af9a83e3a01a03534a7071e5fe721c\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 04:01:37 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660065-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789876897.839953,VS0,VE170",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "bytes": 460780,
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "compressed_sha256": "d008f120d6e59150dfaf2f5c631bdec16ebc5b2a16acb41cd8352703b8755961",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target date2026-09-19 America/New_York; actual retrieval preserved. post-cutoff capture; exact historical support unqualified; Last-Modified is not historical equivalence. No authenticated historical snapshot claimed.",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "id": "vulcan-widget",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-vulcan-20260919/vulcan-widget.html.gz"
+    }
+  ],
+  "leaves_to_append": [
+    {
+      "id": "F08.cad-model-scenes",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F04.media-format-ingestion",
+        "F04.media-reference-identity",
+        "F05.schema",
+        "F16.derived"
+      ],
+      "journey": "Load multiple authorized CAD mesh drawing or point-cloud objects into one scene from stable media references and declared formats with explicit unsupported-input outcomes",
+      "acceptance": {
+        "outcome": "Load multiple authorized CAD mesh drawing or point-cloud objects into one scene from stable media references and declared formats with explicit unsupported-input outcomes",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F08.cad-scene-navigation",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F10.saved-application-state"
+      ],
+      "journey": "Inspect assembled models unique-part grids and selected components with accessible scene trees camera controls and persistent authorized object context",
+      "acceptance": {
+        "outcome": "Inspect assembled models unique-part grids and selected components with accessible scene trees camera controls and persistent authorized object context",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F08.cad-annotations",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F06.typed",
+        "F06.action-recovery"
+      ],
+      "journey": "Create typed annotations attached to stable part instances with validated 3D points labels intent and server-attributed authorship through the canonical action owner",
+      "acceptance": {
+        "outcome": "Create typed annotations attached to stable part instances with validated 3D points labels intent and server-attributed authorship through the canonical action owner",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F08.cad-measurements",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F06.typed",
+        "F06.action-recovery"
+      ],
+      "journey": "Measure ordered 3D polylines with explicit model axis and physical versus scene units, save reproducible measurement objects and expose typed results",
+      "acceptance": {
+        "outcome": "Measure ordered 3D polylines with explicit model axis and physical versus scene units, save reproducible measurement objects and expose typed results",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F08.cad-section-planes",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F06.typed",
+        "F06.action-recovery"
+      ],
+      "journey": "Inspect model cross-sections and save validated plane positions and quaternion orientations as governed objects that reopen with current authority",
+      "acceptance": {
+        "outcome": "Inspect model cross-sections and save validated plane positions and quaternion orientations as governed objects that reopen with current authority",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F08.cad-part-styling",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F11.function-dependency-resolution"
+      ],
+      "journey": "Style meshes in normal X-Ray and wireframe modes and apply typed property/function driven part colors opacity and precedence without changing source geometry or disclosure policy",
+      "acceptance": {
+        "outcome": "Style meshes in normal X-Ray and wireframe modes and apply typed property/function driven part colors opacity and precedence without changing source geometry or disclosure policy",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F08.cad-part-transforms",
+      "milestone": 7,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F11.function-dependency-resolution"
+      ],
+      "journey": "Apply validated finite column-major 4x4 transforms to stable part-instance or assembly identities from pinned authorized function outputs with explicit invalid-input outcomes",
+      "acceptance": {
+        "outcome": "Apply validated finite column-major 4x4 transforms to stable part-instance or assembly identities from pinned authorized function outputs with explicit invalid-input outcomes",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    },
+    {
+      "id": "F10.cad-widget-bindings",
+      "milestone": 8,
+      "required": true,
+      "owner": "CAD analysis application use cases and canonical media schema Action and function owners",
+      "dependencies": [
+        "F08.cad-model-scenes",
+        "F08.cad-annotations",
+        "F08.cad-measurements",
+        "F08.cad-section-planes",
+        "F08.cad-part-styling",
+        "F08.cad-part-transforms",
+        "F10.typed-variable-bindings",
+        "F10.application-access-diagnostics"
+      ],
+      "journey": "Embed governed CAD viewports in native applications with typed model scenario selection camera click and measurement bindings, canonical save actions and independently authorized tools",
+      "acceptance": {
+        "outcome": "Embed governed CAD viewports in native applications with typed model scenario selection camera click and measurement bindings, canonical save actions and independently authorized tools",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Exact post-cutoff reference details retain historical-validity HOLD; geometry schema units policy numerical accuracy and recovery require independent acceptance."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  ],
+  "source_bindings": {
+    "F08.cad-model-scenes": [
+      {
+        "source_id": "vulcan-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+        "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+        "quote": "In the standalone application, select Add to scene, then choose a CAD object. Repeat this process to add more models to the scene.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "pre-cutoff capture",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      },
+      {
+        "source_id": "announcements-release-notes",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+        "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+        "quote": "Vulcan is available in beta across all enrollments starting the week of September 7.",
+        "matching": "HTML __NEXT_DATA__ JSON announcement0c3d7d64-ff10-45ef-9a6e-7684478055b4 description/longDescription whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F08.cad-scene-navigation": [
+      {
+        "source_id": "vulcan-widget",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+        "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+        "quote": "Grid: Display a sortable grid of unique parts.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F08.cad-annotations": [
+      {
+        "source_id": "vulcan-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+        "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+        "quote": "Annotate, measure, section, and recolor parts of a model.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "pre-cutoff capture",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F08.cad-measurements": [
+      {
+        "source_id": "vulcan-tool-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-tool-overview.html.gz",
+        "sha256": "21a60812ffae5eb7f1403a3447ed7903b88e273f063197fd58342ca788864390",
+        "quote": "A measurement is an ordered set of points, and Vulcan reports the total distance along the polyline they define.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F08.cad-section-planes": [
+      {
+        "source_id": "vulcan-tool-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-tool-overview.html.gz",
+        "sha256": "21a60812ffae5eb7f1403a3447ed7903b88e273f063197fd58342ca788864390",
+        "quote": "A saved section plane stores its position and orientation so that the cross-section can be recalled later or shared across sessions and users.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F08.cad-part-styling": [
+      {
+        "source_id": "vulcan-tool-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-tool-overview.html.gz",
+        "sha256": "21a60812ffae5eb7f1403a3447ed7903b88e273f063197fd58342ca788864390",
+        "quote": "You can switch between Normal, X-Ray, and Wireframe views.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F08.cad-part-transforms": [
+      {
+        "source_id": "vulcan-tool-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-tool-overview.html.gz",
+        "sha256": "21a60812ffae5eb7f1403a3447ed7903b88e273f063197fd58342ca788864390",
+        "quote": "Part transforms use function outputs to reposition parts or assemblies in space.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F10.cad-widget-bindings": [
+      {
+        "source_id": "vulcan-widget",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+        "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+        "quote": "Its inputs, outputs, and interface can also connect to Workshop variables so that Vulcan can interact with other widgets in the module.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      },
+      {
+        "source_id": "announcements-release-notes",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+        "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+        "quote": "camera position, part selection, and measurement results can be connected bidirectionally to Workshop variables.",
+        "matching": "HTML __NEXT_DATA__ JSON announcement0c3d7d64-ff10-45ef-9a6e-7684478055b4 description/longDescription whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F05.schema": [
+      {
+        "source_id": "vulcan-schema-reference",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+        "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+        "quote": "Vulcan looks up properties by their type classes, never by name, so you can name properties to fit your own Ontology conventions.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F06.typed": [
+      {
+        "source_id": "vulcan-schema-reference",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+        "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+        "quote": "Vulcan writes annotations, measurements, and section planes back to the Ontology through actions.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ],
+    "F04.media-format-ingestion": [
+      {
+        "source_id": "vulcan-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+        "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+        "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "pre-cutoff capture",
+        "scope": "Public reference only; Console implementation/acceptance not established."
+      }
+    ]
+  },
+  "support_matrix_additions": {
+    "runtimes": [
+      {
+        "runtime": "Vulcan geometry format GLB",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "GLB",
+        "geometry": "mesh",
+        "up_axis_default": "Y",
+        "units": "file-declared",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format GLTF",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "GLTF",
+        "geometry": "mesh",
+        "up_axis_default": "Y",
+        "units": "file-declared",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format STL",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "STL",
+        "geometry": "mesh",
+        "up_axis_default": "Z",
+        "units": "model_unit m/mm or explicit scene units",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format OBJ",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "OBJ",
+        "geometry": "mesh",
+        "up_axis_default": "Z",
+        "units": "model_unit m/mm or explicit scene units",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format PLY",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "PLY",
+        "geometry": "mesh",
+        "up_axis_default": "Z",
+        "units": "model_unit m/mm or explicit scene units",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format 3MF",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Mesh formats: GLB, GLTF, STL, OBJ, PLY, 3MF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "3MF",
+        "geometry": "mesh",
+        "up_axis_default": "Z",
+        "units": "file-declared",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format DXF",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Engineering drawings: DXF",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "DXF",
+        "geometry": "drawing",
+        "up_axis_default": "Z",
+        "units": "model_unit m/mm or explicit scene units",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format LAS",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Point clouds: LAS, LAZ",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "LAS",
+        "geometry": "point-cloud",
+        "up_axis_default": "Z",
+        "units": "model_unit m/mm or explicit scene units",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan geometry format LAZ",
+        "reference_status": "Overview-supported direct rendering; post-cutoff unit/axis detail not historically qualified",
+        "source": "vulcan-overview",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-overview",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+            "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+            "quote": "Point clouds: LAS, LAZ",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "pre-cutoff capture",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "format": "LAZ",
+        "geometry": "point-cloud",
+        "up_axis_default": "Z",
+        "units": "model_unit m/mm or explicit scene units",
+        "detail_reference_temporal_status": "post-cutoff historical-validity HOLD"
+      },
+      {
+        "runtime": "Vulcan transform result schema",
+        "reference_status": "Post-cutoff detail; historical qualification pending",
+        "source": "vulcan-widget",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Exactly 16 finite numbers representing a 4×4 transformation matrix in column-major order.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "The matrix values must use the order [m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44]. Vulcan ignores entries with a missing ID or an invalid matrix.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-part-transforms",
+        "console_acceptance": "not established",
+        "command": null,
+        "required_fields": [
+          "id:string",
+          "transform:16 finite numbers column-major"
+        ]
+      },
+      {
+        "runtime": "Vulcan color result schema",
+        "reference_status": "Post-cutoff detail; historical qualification pending",
+        "source": "vulcan-widget",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Each struct must define at least one of color, opacity, or selectedOpacity to affect the model.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "If the Scene Coloring tool also assigns a color, the scene coloring value takes precedence while the configured opacity values remain in effect.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-part-styling",
+        "console_acceptance": "not established",
+        "command": null,
+        "fields": [
+          "partInstanceIds:string[]",
+          "color:CSS string?",
+          "opacity:number0..1?",
+          "selectedOpacity:number0..1?"
+        ]
+      },
+      {
+        "runtime": "Vulcan embedded variable directions",
+        "reference_status": "Post-cutoff exact directions; vendor dated announcement supports broad binding capability",
+        "source": "vulcan-widget",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "A part ID selects every instance of that part in this model; a part instance ID selects one specific instance.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Camera target, position, and zoom bindings work in both directions.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Click X / Y / Z: Output number variables for the 3D coordinates of the point on a model part that the user most recently selected. Bind all three variables to reconstruct the selected point.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Measurement scene distance: The total measurement distance as a number in the model's scene units.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Measurement unit distance: The same distance as a formatted string in the user's selected display unit, such as 12.30 mm. If the model has no recognized unit, the output uses units.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F10.cad-widget-bindings",
+        "console_acceptance": "not established",
+        "command": null,
+        "bidirectional": [
+          "part ID",
+          "part instance ID",
+          "camera target x/y/z",
+          "camera position x/y/z",
+          "camera zoom"
+        ],
+        "outputs": [
+          "click x/y/z",
+          "measurement scene distance number",
+          "measurement unit distance formatted string"
+        ]
+      },
+      {
+        "runtime": "Vulcan exact schema tables vulcan-schema-reference",
+        "reference_status": "Post-cutoff documentation; historical-validity HOLD and executable support unqualified",
+        "source": "vulcan-schema-reference",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "cad_media_reference | Yes | Media reference | The CAD model file. This property accepts any of the formats listed in Supported model formats. Vulcan detects the format from the file extension.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "up_axis | No | String | The up-axis convention of the model. Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "model_unit | No | String | How Vulcan interprets the model's coordinates when the file declares no unit of its own. Set this property for OBJ, STL, PLY, DXF, LAS, and LAZ, which never declare a unit. This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare. Accepted values are m (or meter / metre) and mm (or millimeter / millimetre). Vulcan ignores any other value.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_id | Yes | String | Unique identifier for the annotation.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_title | Yes | String | Short label displayed with the annotation.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_content | Yes | String | Longer body text.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "part_instance_id | Yes | String | Identifier of the part instance that the annotation is attached to.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_attachment_x | Yes | Double | X-coordinate of the attachment point, in model units.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_attachment_y | Yes | Double | Y-coordinate of the attachment point, in model units.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_attachment_z | Yes | Double | Z-coordinate of the attachment point, in model units.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_sphere_size | Yes | Double | Marker radius in model units. Use 0 to render a point marker.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_created_by | Yes | String | Identifier of the user who created the annotation.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_intent | Yes | String | Visual intent of the annotation marker. See Intent values below.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_timestamp | Yes | Timestamp | When the annotation was created.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "none | Gray",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "primary | Blue (the default when a new annotation is created)",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "success | Green",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "warning | Yellow",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "danger | Red",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "measurement_id | Yes | String | Unique identifier for the measurement.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "measurement_points | Yes | Array of doubles | Ordered 3D point coordinates that define the measurement, serialized as a flat number array. See Points format below.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "measurement_created_by | Yes | String | Identifier of the user who created the measurement.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "measurement_timestamp | Yes | Timestamp | When the measurement was created.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_id | Yes | String | Unique identifier for the section plane.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_position | Yes | Array of doubles | Exactly three position values in [x, y, z] order.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_quaternion | Yes | Array of doubles | Exactly four quaternion values in [x, y, z, w] order.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_created_by | Yes | String | Identifier of the user who created the section plane.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_timestamp | Yes | Timestamp | When the section plane was created.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_title | Yes | String | Short label.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_content | Yes | String | Body text.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "part_instance_id | Yes | String | Part instance that the annotation attaches to.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_attachment_x | Yes | Double | X-coordinate of the attachment point.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_attachment_y | Yes | Double | Y-coordinate of the attachment point.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_attachment_z | Yes | Double | Z-coordinate of the attachment point.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_sphere_size | Yes | Double | Marker radius in model units. Use 0 for a point marker.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_intent | Yes | String | Category or severity.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "annotation_timestamp | Yes | Timestamp | Creation timestamp.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "cad_object | Yes | Object reference | Reference to the CAD object that the annotation belongs to.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "measurement_points | Yes | Array of doubles | Ordered point coordinates in [x1, y1, z1, x2, y2, z2, ...] format.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_position | Yes | Array of doubles | Exactly three position values in [x, y, z] order.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "section_plane_quaternion | Yes | Array of doubles | Exactly four quaternion values in [x, y, z, w] order.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-schema-reference",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+            "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+            "quote": "cad_object | Yes | Associates an annotation with its parent CAD object.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F08.cad-model-scenes",
+        "console_acceptance": "not established",
+        "command": null,
+        "catalog_tables": [
+          [
+            [
+              "Type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "cad_media_reference",
+              "Yes",
+              "Media reference",
+              "The CAD model file. This property accepts any of the formats listed in Supported model formats. Vulcan detects the format from the file extension."
+            ],
+            [
+              "up_axis",
+              "No",
+              "String",
+              "The up-axis convention of the model. Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ."
+            ],
+            [
+              "model_unit",
+              "No",
+              "String",
+              "How Vulcan interprets the model's coordinates when the file declares no unit of its own. Set this property for OBJ, STL, PLY, DXF, LAS, and LAZ, which never declare a unit. This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare. Accepted values are m (or meter / metre) and mm (or millimeter / millimetre). Vulcan ignores any other value."
+            ]
+          ],
+          [
+            [
+              "Type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "annotation_id",
+              "Yes",
+              "String",
+              "Unique identifier for the annotation."
+            ],
+            [
+              "annotation_title",
+              "Yes",
+              "String",
+              "Short label displayed with the annotation."
+            ],
+            [
+              "annotation_content",
+              "Yes",
+              "String",
+              "Longer body text."
+            ],
+            [
+              "part_instance_id",
+              "Yes",
+              "String",
+              "Identifier of the part instance that the annotation is attached to."
+            ],
+            [
+              "annotation_attachment_x",
+              "Yes",
+              "Double",
+              "X-coordinate of the attachment point, in model units."
+            ],
+            [
+              "annotation_attachment_y",
+              "Yes",
+              "Double",
+              "Y-coordinate of the attachment point, in model units."
+            ],
+            [
+              "annotation_attachment_z",
+              "Yes",
+              "Double",
+              "Z-coordinate of the attachment point, in model units."
+            ],
+            [
+              "annotation_sphere_size",
+              "Yes",
+              "Double",
+              "Marker radius in model units. Use 0 to render a point marker."
+            ],
+            [
+              "annotation_created_by",
+              "Yes",
+              "String",
+              "Identifier of the user who created the annotation."
+            ],
+            [
+              "annotation_intent",
+              "Yes",
+              "String",
+              "Visual intent of the annotation marker. See Intent values below."
+            ],
+            [
+              "annotation_timestamp",
+              "Yes",
+              "Timestamp",
+              "When the annotation was created."
+            ]
+          ],
+          [
+            [
+              "Value",
+              "Marker color"
+            ],
+            [
+              "none",
+              "Gray"
+            ],
+            [
+              "primary",
+              "Blue (the default when a new annotation is created)"
+            ],
+            [
+              "success",
+              "Green"
+            ],
+            [
+              "warning",
+              "Yellow"
+            ],
+            [
+              "danger",
+              "Red"
+            ]
+          ],
+          [
+            [
+              "Type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "measurement_id",
+              "Yes",
+              "String",
+              "Unique identifier for the measurement."
+            ],
+            [
+              "measurement_points",
+              "Yes",
+              "Array of doubles",
+              "Ordered 3D point coordinates that define the measurement, serialized as a flat number array. See Points format below."
+            ],
+            [
+              "measurement_created_by",
+              "Yes",
+              "String",
+              "Identifier of the user who created the measurement."
+            ],
+            [
+              "measurement_timestamp",
+              "Yes",
+              "Timestamp",
+              "When the measurement was created."
+            ]
+          ],
+          [
+            [
+              "Type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "section_plane_id",
+              "Yes",
+              "String",
+              "Unique identifier for the section plane."
+            ],
+            [
+              "section_plane_position",
+              "Yes",
+              "Array of doubles",
+              "Exactly three position values in [x, y, z] order."
+            ],
+            [
+              "section_plane_quaternion",
+              "Yes",
+              "Array of doubles",
+              "Exactly four quaternion values in [x, y, z, w] order."
+            ],
+            [
+              "section_plane_created_by",
+              "Yes",
+              "String",
+              "Identifier of the user who created the section plane."
+            ],
+            [
+              "section_plane_timestamp",
+              "Yes",
+              "Timestamp",
+              "When the section plane was created."
+            ]
+          ],
+          [
+            [
+              "Parameter type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "annotation_title",
+              "Yes",
+              "String",
+              "Short label."
+            ],
+            [
+              "annotation_content",
+              "Yes",
+              "String",
+              "Body text."
+            ],
+            [
+              "part_instance_id",
+              "Yes",
+              "String",
+              "Part instance that the annotation attaches to."
+            ],
+            [
+              "annotation_attachment_x",
+              "Yes",
+              "Double",
+              "X-coordinate of the attachment point."
+            ],
+            [
+              "annotation_attachment_y",
+              "Yes",
+              "Double",
+              "Y-coordinate of the attachment point."
+            ],
+            [
+              "annotation_attachment_z",
+              "Yes",
+              "Double",
+              "Z-coordinate of the attachment point."
+            ],
+            [
+              "annotation_sphere_size",
+              "Yes",
+              "Double",
+              "Marker radius in model units. Use 0 for a point marker."
+            ],
+            [
+              "annotation_intent",
+              "Yes",
+              "String",
+              "Category or severity."
+            ],
+            [
+              "annotation_timestamp",
+              "Yes",
+              "Timestamp",
+              "Creation timestamp."
+            ],
+            [
+              "cad_object",
+              "Yes",
+              "Object reference",
+              "Reference to the CAD object that the annotation belongs to."
+            ]
+          ],
+          [
+            [
+              "Parameter type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "measurement_points",
+              "Yes",
+              "Array of doubles",
+              "Ordered point coordinates in [x1, y1, z1, x2, y2, z2, ...] format."
+            ]
+          ],
+          [
+            [
+              "Parameter type class (name)",
+              "Required",
+              "Data type",
+              "Description"
+            ],
+            [
+              "section_plane_position",
+              "Yes",
+              "Array of doubles",
+              "Exactly three position values in [x, y, z] order."
+            ],
+            [
+              "section_plane_quaternion",
+              "Yes",
+              "Array of doubles",
+              "Exactly four quaternion values in [x, y, z, w] order."
+            ]
+          ],
+          [
+            [
+              "Type class (name)",
+              "Required",
+              "Description"
+            ],
+            [
+              "cad_object",
+              "Yes",
+              "Associates an annotation with its parent CAD object."
+            ]
+          ]
+        ]
+      },
+      {
+        "runtime": "Vulcan exact schema tables vulcan-widget",
+        "reference_status": "Post-cutoff documentation; historical-validity HOLD and executable support unqualified",
+        "source": "vulcan-widget",
+        "source_bindings": [
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "id | Yes | String | The part instance or assembly ID to transform.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "transform | Yes | Array of numbers | Exactly 16 finite numbers representing a 4×4 transformation matrix in column-major order.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "partInstanceIds | Yes | Array of strings | One or more part instance or assembly IDs to style.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "color | No | String | A CSS color value, such as #0055ff or rgb(0, 85, 255).",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "opacity | No | Number | Base opacity, from 0 for transparent to 1 for opaque.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "selectedOpacity | No | Number | Opacity while selected or highlighted, using the same 0 to 1 scale.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Enable annotation tool | Annotation creation on model parts.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Enable mesh styling tool | Appearance controls for individual meshes.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Enable measurement tool | Distance measurements between model points.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Enable section view tool | Model cross-sections using section planes.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Enable transform tool | Repositioning of parts and assemblies.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          },
+          {
+            "source_id": "vulcan-widget",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+            "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+            "quote": "Enable scene coloring tool | Property- or function-based coloring of parts.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance not established."
+          }
+        ],
+        "required_leaf": "F10.cad-widget-bindings",
+        "console_acceptance": "not established",
+        "command": null,
+        "catalog_tables": [
+          [
+            [
+              "Field",
+              "Required",
+              "Type",
+              "Description"
+            ],
+            [
+              "id",
+              "Yes",
+              "String",
+              "The part instance or assembly ID to transform."
+            ],
+            [
+              "transform",
+              "Yes",
+              "Array of numbers",
+              "Exactly 16 finite numbers representing a 4×4 transformation matrix in column-major order."
+            ]
+          ],
+          [
+            [
+              "Field",
+              "Required",
+              "Type",
+              "Description"
+            ],
+            [
+              "partInstanceIds",
+              "Yes",
+              "Array of strings",
+              "One or more part instance or assembly IDs to style."
+            ],
+            [
+              "color",
+              "No",
+              "String",
+              "A CSS color value, such as #0055ff or rgb(0, 85, 255)."
+            ],
+            [
+              "opacity",
+              "No",
+              "Number",
+              "Base opacity, from 0 for transparent to 1 for opaque."
+            ],
+            [
+              "selectedOpacity",
+              "No",
+              "Number",
+              "Opacity while selected or highlighted, using the same 0 to 1 scale."
+            ]
+          ],
+          [
+            [
+              "Setting",
+              "Functionality"
+            ],
+            [
+              "Enable annotation tool",
+              "Annotation creation on model parts."
+            ],
+            [
+              "Enable mesh styling tool",
+              "Appearance controls for individual meshes."
+            ],
+            [
+              "Enable measurement tool",
+              "Distance measurements between model points."
+            ],
+            [
+              "Enable section view tool",
+              "Model cross-sections using section planes."
+            ],
+            [
+              "Enable transform tool",
+              "Repositioning of parts and assemblies."
+            ],
+            [
+              "Enable scene coloring tool",
+              "Property- or function-based coloring of parts."
+            ]
+          ]
+        ]
+      }
+    ]
+  },
+  "compatibility_and_security_qualifications": [
+    {
+      "source_id": "vulcan-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+      "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+      "quote": "Vulcan is in the beta phase of development and may not be available on your enrollment. Functionality may change during active development.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "pre-cutoff capture",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+      "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+      "quote": "A CAD object is an Ontology object with a property carrying the cad_media_reference type class, which holds a media reference to a model file.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "pre-cutoff capture",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-overview.html.gz",
+      "sha256": "439455c6e085549f6f503edcca8e90a5ecac2bd9441b3d8b82470a7e436bd4f2",
+      "quote": "Annotations, measurements, and section planes saved from Vulcan are Ontology objects, so they can drive other Palantir platform workflows such as alerts and dashboards.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "pre-cutoff capture",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Schema details may evolve as Vulcan develops. Verify your schema against this page after each Vulcan release.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "All type classes listed below are in the vulcan namespace — that is, their kind field is always \"vulcan\" and only the name field varies.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Vulcan detects the format from the file extension.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Accepted values are X, Y, and Z. If omitted, Vulcan applies a format-specific default: Y for GLB and GLTF, Z for STL, OBJ, PLY, 3MF, DXF, LAS, and LAZ.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Accepted values are m (or meter / metre) and mm (or millimeter / millimetre). Vulcan ignores any other value.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "This property has no effect on GLB, GLTF, or 3MF, because Vulcan always reads the unit those formats declare.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Measurement points are serialized as a flat array of numbers in the order [x1, y1, z1, x2, y2, z2, ...], expressed in the model's coordinate space.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Vulcan does not enforce semantic meaning for these values, so you can set them to match your workflow.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Set the creator property — annotation_created_by, measurement_created_by, or section_plane_created_by — to the user who submitted the action.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-schema-reference",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-schema-reference.html.gz",
+      "sha256": "a04b628a35a170bc56b0fa742d3bd0f1b25a909f760b2b66ef1a2dae4da50769",
+      "quote": "Vulcan supplies annotation_timestamp only for Create annotation.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Vulcan loads the first object in the set. To render multiple models, add a separate model entry for each object set.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "A part ID selects every instance of that part in this model; a part instance ID selects one specific instance.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Scenario: The Workshop primary scenario to use when loading Ontology objects.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Exactly 16 finite numbers representing a 4×4 transformation matrix in column-major order.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "The matrix values must use the order [m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44]. Vulcan ignores entries with a missing ID or an invalid matrix.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Each struct must define at least one of color, opacity, or selectedOpacity to affect the model.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "If the Scene Coloring tool also assigns a color, the scene coloring value takes precedence while the configured opacity values remain in effect.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Camera target, position, and zoom bindings work in both directions.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Click X / Y / Z: Output number variables for the 3D coordinates of the point on a model part that the user most recently selected. Bind all three variables to reconstruct the selected point.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "All options are on by default.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "By default, Vulcan uses Complete mode, an Orthographic camera, and Orbit controls. Mode switching and part information are on; auto-rotate is off.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "If you do not configure an action, Vulcan discovers actions that have the required parameter type classes and lets the user choose from the matches.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Configuring an action limits saving to that action and can provide defaults or user input fields for additional action parameters.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Measurement scene distance: The total measurement distance as a number in the model's scene units.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-widget",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-widget.html.gz",
+      "sha256": "f168085fe34097b493cc527215174049ff15435215fc77c92057a61ba252a243",
+      "quote": "Measurement unit distance: The same distance as a formatted string in the user's selected display unit, such as 12.30 mm. If the model has no recognized unit, the output uses units.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "vulcan-tool-overview",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/vulcan-tool-overview.html.gz",
+      "sha256": "21a60812ffae5eb7f1403a3447ed7903b88e273f063197fd58342ca788864390",
+      "quote": "When neither the file nor the CAD object supplies a unit, you can set one for the current session with Scene units in Measurement settings. This setting appears only in that case, and it resets when you reload the page.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "Vulcan is available in beta across all enrollments starting the week of September 7.",
+      "matching": "HTML __NEXT_DATA__ JSON announcement0c3d7d64-ff10-45ef-9a6e-7684478055b4 description/longDescription whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    },
+    {
+      "source_id": "announcements-release-notes",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+      "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+      "quote": "When saved, annotations, measurements, and section planes created in Vulcan are written to the Ontology as objects.",
+      "matching": "HTML __NEXT_DATA__ JSON announcement0c3d7d64-ff10-45ef-9a6e-7684478055b4 description/longDescription whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance not established."
+    }
+  ],
+  "limitations": [
+    "Vulcan is a bounded CAD/3D reference proposal, not exhaustive Foundry reconciliation or implementation evidence. The overview was captured before the September19 America/New_York cutoff; schema/tools/widget and release-note pages were captured after cutoff with exact timestamps preserved.",
+    "The post-cutoff release-notes JSON contains vendor announcement0c3d7d64-ff10-45ef-9a6e-7684478055b4 dated September8,2026 and beta availability starting weekSeptember7. This supports a dated public vendor assertion for broad formats/tools/widgets; it is not immutable historical page custody or proof that post-cutoff schema/tool details were identical on September19. Last-Modified alone is not historical proof.",
+    "Exact post-cutoff type classes, required fields, action parameter bindings, units/defaults, return schemas, precedence and navigation support retain historical-validity HOLD until source revision evidence or independent accepted freeze qualification is available. All newly required leaves remain planned and all executable bindings null.",
+    "Beta rollout wording differs: overview warns some enrollments may lack availability; dated announcement says all enrollments starting weekSeptember7. Record both vendor claims; no Console availability or support guarantee follows.",
+    "Nine directly rendered formats are GLB GLTF STL OBJ PLY 3MF DXF LAS LAZ. File extensions are vendor detection hints, not security validation. Parser fidelity, external references, decompression bounds, corrupted files, coordinate units, precision and resource saturation need isolated validated processing and independent fixtures.",
+    "Annotation measurement and section writes must use canonical authorized Actions with current field/source policy, immutable model/media versions, strict finite/shape/identity validation, expected revisions and command receipts. Creator identity is server-attributed; client schema IDs and hidden toolbar controls never grant authority.",
+    "Vendor ignores unknown model-unit values and invalid transform entries. Console must keep strict input validation and explicit unsupported/conflicting outcomes; silently copying vendor fallback behavior does not qualify correctness. Unit declarations and resets must be visible and reproducible when measurements are saved.",
+    "Property/function coloring and part transforms require pinned authorized inputs; styling must not expose restricted fields through colors measurements scene trees or selection state. Stored annotations planes and widget outputs inherit source restrictions and current revocation.",
+    "Widget scenario semantics and cross-resource branch consistency are not fully qualified by this bounded packet. Object-set first-item behavior, multi-model stable identity, two-way selection/camera and one-way click/measurement outputs require precise versioned contracts and recovery evidence.",
+    "Normal X-Ray wireframe colors and 3D controls require accessible alternatives, keyboard operation, Korean text, readable non-color intent, narrow/zoom navigation, cancellation and bounded GPU/memory envelopes. Screenshots in source docs are not Console browser acceptance.",
+    "No geometry manipulation scientific/engineering accuracy regulatory conclusion or physical unit calibration is established by these references; independent numerical and domain oracles remain required before workflow acceptance."
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_ADDITIVE_REFERENCE_INVENTORY_ONLY",
+  "manifest_sha256": "15a814af3e9e667581d81bdff1613ee48edbcb2c585b6292210a37d158464a0a",
+  "proposal_sha256": "373471cd82da3796bd62a24aa45a476e52c62d3588c90d8c367978582fd37c52",
+  "patch_sha256": "4b04c5d6038a0d4c15ee029683ebf83a4e71c0ff8cd3d98f2ef98a096e480a10",
+  "base_sha": "c659210e37f3f0fa5b8dc7d3b9ed7b8e07b7d139",
+  "registry_preimage_sha256": "8d5ed3ce6e2fd9fa735893af7f57c31aa7bffb8b25d59d1b8bd1d08d6cf6b5e4",
+  "checks": {
+    "manifest_files": 20,
+    "raw_sources": 5,
+    "quote_bindings": 134,
+    "patch_operations": 81,
+    "prior_leaves": 386,
+    "candidate_leaves": 394,
+    "new_leaves": 8,
+    "runtime_rows": 14,
+    "exact_schema_rows": 54,
+    "strict_additive_preservation": true,
+    "dependencies_resolve_and_acyclic": true,
+    "all_new_capabilities_planned_and_unbound": true
+  },
+  "findings": [],
+  "reasoning_lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "conclusions": [
+    "Five mutable public HTML captures independently hash/size checked;134 bindings independently matched article text or exact dated announcement JSON.",
+    "One pre-cutoff and four post-cutoff captures truthfully distinguished. Exact schema historical-validity HOLD preserved; Sept8 vendor assertion supplies broad scope only.",
+    "54schema-table data rows exactly match independently parsed source tables and proposed runtime catalogs. All existing inventory values preserved;8new leaves planned and unbound.",
+    "Canonical Action/identity/strict-input/source-policy/retention and numerical/accessible rendering qualifications remain requirements, not proven capability."
+  ],
+  "limits": [
+    "No product implementation, lane admission, browser/runtime support or exhaustive Foundry coverage approved.",
+    "Exact owner bindings, executable criteria and qualified browser/security/recovery evidence remain release blockers.",
+    "No DB, Cargo, browser or repository-writing commands executed by reviewer."
+  ],
+  "runtime_tests_executed": 0
+}

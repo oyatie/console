@@ -1,0 +1,22 @@
+{
+  "announcements-release-notes.html.gz": "c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c",
+  "announcements-release-notes.json": "c79e6a3577933461e3d081772aeacc4dd04efdbb3e452be8a944ab59034e6331",
+  "candidate-patch.json": "4b04c5d6038a0d4c15ee029683ebf83a4e71c0ff8cd3d98f2ef98a096e480a10",
+  "catalog.py": "082a4821dcf1f12cb5191ecf2366350d26278e3000fff06bd4f0fe8c6cee0b4e",
+  "dated-vulcan-announcement.json": "b11a1e8fb2b71de5b1425acc8e395fc9cad71cfc1da9b9b3c41a7795a33ffd32",
+  "fetch.py": "eeff53347f4f782044130f3e97cf4bf6a15f42baa5cf73f127b20660e4fd2434",
+  "proposal.json": "373471cd82da3796bd62a24aa45a476e52c62d3588c90d8c367978582fd37c52",
+  "propose.py": "5a9fb17d42bb161ff2eb5d944e9bba41ed9ad3ce0c5195dfc9d614230778e27b",
+  "read.py": "5d1ea4bf94bae39a0e550d860988e6bf3ec613fa5a0e02709f98a3ec95dd0f3c",
+  "schema-support-catalog.json": "04975baae671fae9207ec9e328f137faf5ba85bafd26fdab55ca64e615b295a5",
+  "specs.py": "90cbbdca09734772a8c52751df0467f3d69e1527990c2a0bbd1ef37e0b485a65",
+  "verification.json": "bbc1d61cdf0133f01c2f81106643b1d89dfb7e2744b13bc35995afff62cb593b",
+  "vulcan-overview.html.gz": "369539a1b0bfc4241110a1f49b303a6b16afe5ac23021bfeaac6628952dfc564",
+  "vulcan-overview.json": "df8d1ec36cb45c7578da6412353e0b9fe32d634d2657df4b6476bae4d0c99b85",
+  "vulcan-schema-reference.html.gz": "c91266af0dfc2254a0ddba00adcf7143359a91bfa2032129463ebd5cc07dac44",
+  "vulcan-schema-reference.json": "3e06915bacda0e51cb9269a0574dc277e788e80ca9193a8c07cc0933ca2d5e44",
+  "vulcan-tool-overview.html.gz": "8ac02d0586ed56c9058859412c6875849a151807783dd75e98cacbcdbbd00c39",
+  "vulcan-tool-overview.json": "652a3fbe948e92b5fc5d82ee31a3311a85f68b0edf8935d02ed86426becc7412",
+  "vulcan-widget.html.gz": "d008f120d6e59150dfaf2f5c631bdec16ebc5b2a16acb41cd8352703b8755961",
+  "vulcan-widget.json": "1b8ef2dcf0241443b6073b5929cbb9d9b478a53ef3f9731cc62581a15b92dda0"
+}

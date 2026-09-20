@@ -1,0 +1,45 @@
+{
+  "json_path": "/props/pageProps/releases/6/releaseNotes/2",
+  "record": {
+    "id": "0c3d7d64-ff10-45ef-9a6e-7684478055b4",
+    "type": "APPLICATION",
+    "description": "Vulcan is a 3D visualization application that renders engineering geometry directly from Ontology data. Mesh models (`GLB`, `GLTF`, `STL`, `OBJ`, `PLY`, and `3MF`), 2D engineering drawings (`DXF`), and point clouds (`LAS` and `LAZ`) can be loaded without conversion, and a single scene can contain all the models needed for a workflow. Vulcan is available in beta across all enrollments starting the week of September 7.",
+    "categoryTitle": "Ontology building",
+    "categoryId": "ontology",
+    "applicationId": "",
+    "applicationTitle": "Vulcan",
+    "date": "September 8, 2026",
+    "title": "Introducing Vulcan, a CAD review application for the Ontology",
+    "prominence": "Announce",
+    "releaseVersion": "",
+    "productId": "Foundry",
+    "frontendApplicationId": "vulcan",
+    "mediaFilenames": [
+      "/docs/resources/foundry/announcements/release-notes/2026-09-04-103519-vulcan-vulcanmain-jp.jpg",
+      "/docs/resources/foundry/announcements/release-notes/2026-09-04-103522-vulcan-vulcan_annotation_tool-jp.jpg"
+    ],
+    "longDescription": "## Introducing Vulcan, a CAD review application for the Ontology\n\n[Vulcan](../vulcan/overview.md) is a 3D visualization application that renders engineering geometry directly from Ontology data. Mesh models (`GLB`, `GLTF`, `STL`, `OBJ`, `PLY`, and `3MF`), 2D engineering drawings (`DXF`), and point clouds (`LAS` and `LAZ`) can be loaded without conversion, and a single scene can contain all the models needed for a workflow. Vulcan is available in beta across all enrollments starting the week of September 7.\n\nWhen saved, annotations, measurements, and section planes created in Vulcan are written to the Ontology as objects. A flagged defect can be used to trigger an alert, a critical dimension can be tracked in a dashboard over time, and a saved cross-section can be retrieved or shared with another team. Vulcan runs as a standalone application and can also be embedded in Workshop as a widget, where camera position, part selection, and measurement results can be connected bidirectionally to Workshop variables.\n\n![The Vulcan part tree showing part instances in an assembly.](./media/2026-09-04-103519-vulcan-vulcanmain-jp.jpg)\n\n_The part tree lists each part instance in the assembly; each instance corresponds to an object in the Ontology. Model source: [Printables](https://www.printables.com/model/1360390-esp32-c3-super-mini-model/files). Released under a Creative Commons public-domain license._\n\nVulcan has Ontology-backed tools to support cross-team workflows:\n\n* Measure distances on models\n* Create annotations\n* Slice models with section planes\n* Apply colors to parts with Ontology actions\n\n![Annotations and measurements on a CAD model in Vulcan.](./media/2026-09-04-103522-vulcan-vulcan_annotation_tool-jp.jpg)\n\n_Annotations and measurements on a CAD model in Vulcan. Model source: [Printables](https://www.printables.com/model/1360390-esp32-c3-super-mini-model/files). Released under a Creative Commons public-domain license._\n\nSee how Vulcan can support your production workflows:\n\n* Markup models to provide instructions for assembly or repair procedures\n* Share annotations and measurements across design-review teams\n* Color models according to inventory levels or failure rates\n* Visualize the results of automated design-verification runs in the Palantir platform\n* Use components and models imported into Vulcan for further analysis across the Foundry application suite\n\nTo get started, load a CAD model into the viewport and select **Add to scene**. To learn more about the tools, the Workshop widget, and the Ontology object types and actions that Vulcan reads and writes, review the [Vulcan documentation](../vulcan/overview.md).\n\n### Your feedback matters\n\nWe want to hear about your experiences using Vulcan in the Palantir platform and welcome your feedback. Share your thoughts with Palantir Support channels or on our [Developer Community \u2197](https://community.palantir.com/) using the [vulcan tag \u2197](https://community.palantir.com/tag/vulcan).",
+    "applications": [
+      {
+        "productId": "Foundry",
+        "categoryId": "ontology",
+        "categoryTitle": "Ontology building",
+        "applicationTitle": "Vulcan",
+        "frontendApplicationId": "vulcan",
+        "isKeyComponent": true
+      }
+    ],
+    "application": {
+      "id": "",
+      "title": "Vulcan"
+    },
+    "category": {
+      "id": "ontology",
+      "title": "Ontology building"
+    },
+    "product": {
+      "id": "Foundry"
+    }
+  },
+  "limitations": "Post-cutoff capture of a vendor-dated announcement; vendor assertion of September8 availability, not immutable historical page bytes."
+}
