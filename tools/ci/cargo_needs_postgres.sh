@@ -62,11 +62,17 @@ container_name="console-cargo-postgres-${USER:-user}-$$"
 database="console_cargo_test_$$_contract"
 container_env_file=""
 test_env_file=""
+tmp_list=""
+tmp_pkgs=""
+tmp_groups=""
 
 cleanup() {
   docker rm -f "${container_name}" >/dev/null 2>&1 || true
   [[ -z "${container_env_file}" ]] || rm -f "${container_env_file}"
   [[ -z "${test_env_file}" ]] || rm -f "${test_env_file}"
+  for temporary in "${tmp_list}" "${tmp_pkgs}" "${tmp_groups}"; do
+    [[ -z "${temporary}" ]] || rm -f "${temporary}"
+  done
 }
 trap cleanup EXIT
 
@@ -188,6 +194,57 @@ else
   echo "cargo-postgres: running ${count} cargo test invocations (threads=${num_threads})"
 fi
 
+# Roles and passwords are cluster-wide even when SQLx gives each test a database.
+# Keep mutating binaries in separate disposable clusters; preserve all aliases
+# within a canonical binary and the ordinary cohort's existing concurrency.
+tmp_groups="$(mktemp "${TMPDIR:-/tmp}/console-cargo-groups.XXXXXX")"
+node --input-type=module - "${repo_root}" "${tmp_list}" >"${tmp_groups}" <<'JS'
+import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+const { binaryIdForEntry } = await import(pathToFileURL(`${process.argv[2]}/tools/ci/nextest-filterset.mjs`));
+const isolated = new Set([
+  'console-app::auth_rest',
+  'console-leave-adapter-postgres::leave_migration_expand_contract',
+  'console-ontology-adapter-postgres::key_revision_migration_upgrade',
+  'console-platform-db::attendance_console_migration_contract',
+  'console-platform-db::group_of_one_expand_contract',
+  'console-platform-jobs::apalis_adapter',
+  'console-platform-jobs::apalis_schema_contract',
+]);
+const groups = new Map();
+for (const line of readFileSync(process.argv[3], 'utf8').trim().split('\n')) {
+  const row = JSON.parse(line);
+  const id = binaryIdForEntry({ ...row, cargo_argv: row.argv });
+  if (!id || !/^[A-Za-z0-9_.-]+$/.test(row.name)) throw new Error(`untranslatable cluster selection: ${row.name}`);
+  const key = isolated.has(id) ? id : 'ordinary';
+  if (!groups.has(key)) groups.set(key, []);
+  groups.get(key).push(row.name);
+}
+for (const [key, names] of groups) console.log(`${key === 'ordinary' ? 0 : 1}\t${names.join(',')}`);
+JS
+
+group_count="$(wc -l <"${tmp_groups}" | tr -d ' ')"
+if [[ "${group_count}" -gt 1 ]]; then
+  failed_groups=0
+  while IFS=$'\t' read -r isolated_group group_names; do
+    child_args=(--map "${map_path}" --workflow-only --only "${group_names}"
+      --shard-id "${shard_id}" --runner "${runner}" --num-threads "${num_threads}")
+    if [[ "${keep_going}" == 1 ]]; then child_args+=(--keep-going); else child_args+=(--fail-fast); fi
+    if "${repo_root}/tools/ci/cargo_needs_postgres.sh" "${child_args[@]}"; then
+      echo "cargo-postgres: cluster PASS ${group_names}"
+    else
+      failed_groups=$((failed_groups + 1))
+      echo "cargo-postgres: cluster FAIL ${group_names}" >&2
+      if [[ "${keep_going}" == 0 ]]; then break; fi
+    fi
+  done <"${tmp_groups}"
+  [[ "${failed_groups}" == 0 ]]
+  exit
+fi
+IFS=$'\t' read -r isolated_group group_names <"${tmp_groups}"
+if [[ "${isolated_group}" == 1 ]]; then num_threads=1; fi
+export RUST_TEST_THREADS="${num_threads}"
+
 # Unique packages for --no-run build
 tmp_pkgs="$(mktemp "${TMPDIR:-/tmp}/console-cargo-pkgs.XXXXXX")"
 python3 - "${tmp_list}" >"${tmp_pkgs}" <<'PY'
@@ -211,16 +268,9 @@ echo "cargo-postgres: building packages..."
 # cargo-test-runner.sh so it is unit-testable without Docker (fake map + stubbed
 # cargo). Default is --keep-going; --fail-fast opts back out for local use.
 if [[ "${runner}" == nextest ]]; then
-  # One `cargo nextest run` over a filterset instead of N serial `cargo test`
-  # invocations, each pinned to --test-threads=1.
-  #
-  # Measured 2026-08-18 on run 32115833327: 209 invocations, 3299.4s of test
-  # execution, 88% of it in #[sqlx::test] cases that are serial only because the
-  # cargo path forces them to be. `.config/nextest.toml` already encodes the
-  # parallel/serial split this repo decided on (ADR-0039 / DN-0005 P3): only the
-  # `cluster-global` group is max-threads=1 and its comment says the rest stay
-  # parallel. Nothing has ever invoked it -- the ledger records the runner swap
-  # as deferred on "preflight command locks", not on a safety concern.
+  # The ordinary cohort shares one nextest invocation; hazardous terminal
+  # groups use their own cluster and explicit per-test serialization below.
+  # The config's serial group alone cannot isolate cluster-wide role changes.
   #
   # The filterset is derived from the SAME map rows the cargo path would run, so
   # the two runners select an identical target set by construction. The
@@ -245,9 +295,11 @@ if [[ "${runner}" == nextest ]]; then
     [[ -n "${p}" ]] && nextest_args+=(-p "${p}")
   done <"${tmp_pkgs}"
   nextest_args+=(-E "${filterset}")
+  if [[ "${isolated_group}" == 1 ]]; then nextest_args+=(--test-threads 1); fi
+  if [[ "${keep_going}" == 1 ]]; then nextest_args+=(--no-fail-fast); fi
   echo "cargo-postgres: running ${count} targets via cargo-nextest (shard=${shard_id})"
-  ( cd "${repo_root}" && SQLX_OFFLINE=true CARGO_TERM_COLOR=always "${nextest_args[@]}" )
-  status=$?
+  status=0
+  ( cd "${repo_root}" && SQLX_OFFLINE=true CARGO_TERM_COLOR=always "${nextest_args[@]}" ) || status=$?
   rm -f "${tmp_list}" "${tmp_pkgs}"
   exit "${status}"
 fi
@@ -257,11 +309,11 @@ export CARGO_REPO_ROOT="${repo_root}"
 # harvested from five separate job logs can be re-packed as one population.
 export CARGO_POSTGRES_SHARD_ID="${shard_id}"
 export RUST_TEST_THREADS="${num_threads}"
+status=0
 if [[ "${keep_going}" == 1 ]]; then
-  "${repo_root}/tools/ci/cargo-test-runner.sh" --keep-going <"${tmp_list}"
+  "${repo_root}/tools/ci/cargo-test-runner.sh" --keep-going <"${tmp_list}" || status=$?
 else
-  "${repo_root}/tools/ci/cargo-test-runner.sh" --fail-fast <"${tmp_list}"
+  "${repo_root}/tools/ci/cargo-test-runner.sh" --fail-fast <"${tmp_list}" || status=$?
 fi
-status=$?
 rm -f "${tmp_list}" "${tmp_pkgs}"
 exit "${status}"
