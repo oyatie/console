@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 1,
+  "design_sha256": "e8438de8487511ed23e39a4662b98063c9583a5737de15f3bb861b5a0a1d08c1",
+  "test_manifest_sha256": "9d3f538e02da034b84e5a1ca47b3d7ead8bb46ed7a2c55ad3cab42396ec3e8d1",
+  "decision": "HOLD_BOUNDED_CORRECTIONS",
+  "source_custody_verified": 7,
+  "packet_files_verified": 8,
+  "findings": [
+    {
+      "id": "STARTUP-R1-1",
+      "scope": "design executable proof",
+      "finding": "Concrete owner probe prefixes native_account_lifecycle:: differ from current compiler-discovered account_browser:: prefix reported by root; must correct commands and preserve nonzero execution oracle.",
+      "requested_fix": "Correct exact identifiers and permit real Cargo exactmap designation proof with separate rebuiltBuck evidence gap."
+    },
+    {
+      "id": "STARTUP-R1-2",
+      "scope": "test missing-effect detection",
+      "finding": "Buck new handoff oracle is conditional on envfile existing; preexisting fake commands do not use set-e, so missing entire envfile can bypass required startup checks.",
+      "requested_fix": "Distinguish actual test invocation from build; for test explicitly require file exists before new Python oracle, with missing-request failure."
+    }
+  ],
+  "accepted_design_constraints": [
+    "Canonical topology remains sole credential/role owner; no new memberships or SQL.",
+    "Fresh distinct startup secret through existing0600files only; no argvsecrets/adminfallback.",
+    "Existing4required+4optional strictloader compatibility remains unchanged;startupoptionalduplicatechecked.",
+    "No production/migration/custody/sourceauthorization changes."
+  ],
+  "limits": [
+    "No source implementation, actualRED admission, PostgreSQL owner acceptance or release acceptance."
+  ]
+}

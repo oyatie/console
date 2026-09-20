@@ -1,0 +1,9 @@
+{
+  "tools/ci/cargo_needs_postgres.sh": "11b87dc722534604320e1908cafec8b97841fc10fa2812f8986f12d48abbdd42",
+  "tools/buck/test_needs_postgres.sh": "b1d49ccb3f60d21567d510c2765d4b3c89accbc251e10c84e0719351a8a6c68a",
+  "tools/buck/run_test_with_postgres_env.sh": "8a208f88833dd49e8c0fddc901c5ac47b9c79cf448171e13429fc1ca575df1af",
+  "ops/postgres-reconcile-topology.sh": "aed4269f991123534bb347ae99fc660fa6517f9f9ec9cfeb626da5dc0a48bbb1",
+  "ops/postgres-auth-topology.integration.test.py": "544dd363f154435cc68d425ec3e50c0e9d169447ecf39f3633818bb93d0116a2",
+  "backend/app/tests/auth_rest/deployment_operator_designation.rs": "3d583a6c624b2ab2e5c4f6f46656c65aaaba132df8404674330c34e32819a09a",
+  "backend/app/tests/auth_rest/native_company_setup.rs": "41c3af6900cab5d8de0fe905d7b37df875abb3918e6f3073e285b5ac053189be"
+}

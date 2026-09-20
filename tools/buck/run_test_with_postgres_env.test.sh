@@ -54,4 +54,39 @@ for binding in AUTH:auth_rt LEAVE_COMMAND:leave_cmd ONTOLOGY_COMMAND:ontology_cm
   chmod 600 "${scratch}/duplicate.env"
   if CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/duplicate.env" "${wrapper}" /usr/bin/true; then exit 1; fi
 done
+# All historical eight keys above remain valid without the optional startup key.
+CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" "${wrapper}" /usr/bin/true
+cat >"${scratch}/startup-child" <<'STARTUP_CHILD'
+#!/usr/bin/env bash
+touch "${STARTUP_CHILD_MARKER}"
+STARTUP_CHILD
+chmod 700 "${scratch}/startup-child"
+for required_key in DATABASE_URL CONSOLE_APALIS_OWNER_DATABASE_URL CONSOLE_APALIS_RUNTIME_DATABASE_URL CONSOLE_APALIS_ADMIN_DATABASE_URL; do
+  grep -v "^${required_key}=" "${valid}" >"${scratch}/startup-incomplete.env"
+  chmod 600 "${scratch}/startup-incomplete.env"
+  if STARTUP_CHILD_MARKER="${scratch}/startup-child-ran" CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/startup-incomplete.env" "${wrapper}" "${scratch}/startup-child" >"${scratch}/startup.stdout" 2>"${scratch}/startup.stderr"; then exit 1; fi
+  grep -Fq 'incomplete environment file' "${scratch}/startup.stderr"
+  [[ ! -e "${scratch}/startup-child-ran" ]]
+done
+startup_value='postgres://console_auth_startup:startup-secret@localhost/db'
+printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=%s\n' "${startup_value}" >>"${valid}"
+CONSOLE_STARTUP_AUTH_DATABASE_URL='postgres://wrong:inherited@wrong/db' CONSOLE_BUCK_POSTGRES_ENV_FILE="${valid}" "${wrapper}" /usr/bin/env | grep -Fqx "CONSOLE_STARTUP_AUTH_DATABASE_URL=${startup_value}"
+for invalid_kind in duplicate empty substitution unknown; do
+  cp "${valid}" "${scratch}/startup-invalid.env"
+  case "${invalid_kind}" in
+    duplicate) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=%s\n' "${startup_value}" >>"${scratch}/startup-invalid.env" ;;
+    empty) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=\n' >>"${scratch}/startup-invalid.env" ;;
+    substitution) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=$(touch %s)\n' "${scratch}/startup-executed" >>"${scratch}/startup-invalid.env" ;;
+    unknown) printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL_EXTRA=%s\n' "${startup_value}" >>"${scratch}/startup-invalid.env" ;;
+  esac
+  chmod 600 "${scratch}/startup-invalid.env"
+  if STARTUP_CHILD_MARKER="${scratch}/startup-child-ran" CONSOLE_BUCK_POSTGRES_ENV_FILE="${scratch}/startup-invalid.env" "${wrapper}" "${scratch}/startup-child" >"${scratch}/startup.stdout" 2>"${scratch}/startup.stderr"; then exit 1; fi
+  case "${invalid_kind}" in
+    duplicate) grep -Fq 'duplicate environment key' "${scratch}/startup.stderr" ;;
+    empty|substitution) grep -Fq 'malformed environment file' "${scratch}/startup.stderr" ;;
+    unknown) grep -Fq 'unexpected environment key' "${scratch}/startup.stderr" ;;
+  esac
+  [[ ! -e "${scratch}/startup-executed" && ! -e "${scratch}/startup-child-ran" ]]
+  ! grep -Eq 'startup-secret|touch |postgres://' "${scratch}/startup.stdout" "${scratch}/startup.stderr"
+done
 echo 'run_test_with_postgres_env: PASS'

@@ -1,0 +1,36 @@
+{
+  "syntax_checks": [
+    {
+      "argv": [
+        "node",
+        "--check",
+        "/private/tmp/console-startup-credential-transport-proposal-20260919-round3/tools/ci/cargo-needs-postgres-args.test.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "-n",
+        "/private/tmp/console-startup-credential-transport-proposal-20260919-round3/tools/buck/test_needs_postgres.test.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "bash",
+        "-n",
+        "/private/tmp/console-startup-credential-transport-proposal-20260919-round3/tools/buck/run_test_with_postgres_env.test.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "runtime_tests_executed": 0,
+  "repository_edits": 0
+}

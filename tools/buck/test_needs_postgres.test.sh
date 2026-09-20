@@ -25,6 +25,16 @@ case "$1" in
     if [[ "$3" == *:/topology.env ]]; then
       cut -d= -f1 "$2" | sort >"${HARNESS_LOG}.topology-env-keys"
       printf '%s\n' "$2" >"${HARNESS_LOG}.topology-env-file"
+      python3 - "$2" <<'PY_STARTUP_TOPOLOGY' || exit 1
+import sys, pathlib, stat, hashlib, os
+p = pathlib.Path(sys.argv[1])
+assert stat.S_IMODE(p.stat().st_mode) == 0o600
+values = dict(line.split("=", 1) for line in p.read_text().splitlines())
+keys = ["POSTGRES_ADMIN_PASSWORD", "CONSOLE_APP_POSTGRES_PASSWORD", "CONSOLE_RT_POSTGRES_PASSWORD", "CONSOLE_AUTH_POSTGRES_PASSWORD", "CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD", "CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD", "CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD", "CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD"]
+assert all(values[k] for k in keys)
+assert len({values[k] for k in keys}) == len(keys)
+pathlib.Path(os.environ["HARNESS_LOG"] + ".startup-digest").write_text(hashlib.sha256(values["CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD"].encode()).hexdigest())
+PY_STARTUP_TOPOLOGY
     fi
     exit 0 ;;
   exec)
@@ -72,6 +82,27 @@ grep -Fq 'CONSOLE_TEST_AUTH_DATABASE_URL=postgres://console_auth_rt:' "${env_fil
 grep -Fq 'CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:' "${env_file}"
 grep -Fq 'CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:' "${env_file}"
 grep -Fq 'CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:' "${env_file}"
+
+# The build phase has no executor file; only inspect the actual test handoff.
+if [[ "$1" == test ]]; then
+  [[ -f "${env_file}" ]] || exit 1
+  python3 - "${env_file}" <<'PY_STARTUP_TEST' || exit 1
+import sys, pathlib, stat, hashlib, os, urllib.parse
+p = pathlib.Path(sys.argv[1])
+assert stat.S_IMODE(p.stat().st_mode) == 0o600
+values = dict(line.split("=", 1) for line in p.read_text().splitlines())
+roles = {"DATABASE_URL": "console_buck_admin", "CONSOLE_APALIS_OWNER_DATABASE_URL": "console_app", "CONSOLE_APALIS_RUNTIME_DATABASE_URL": "console_rt", "CONSOLE_TEST_AUTH_DATABASE_URL": "console_auth_rt", "CONSOLE_STARTUP_AUTH_DATABASE_URL": "console_auth_startup", "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL": "console_leave_cmd", "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL": "console_ontology_cmd", "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL": "console_platform_force_cmd"}
+urls = [urllib.parse.urlparse(values[k]) for k in roles]
+assert all(u.username == role and u.password for u, role in zip(urls, roles.values()))
+assert len({u.password for u in urls}) == len(urls)
+assert len({(u.hostname, u.port, u.path) for u in urls}) == 1
+startup = urllib.parse.urlparse(values["CONSOLE_STARTUP_AUTH_DATABASE_URL"])
+assert startup.hostname == "127.0.0.1" and startup.port == 49123
+assert not startup.query and not startup.fragment
+assert hashlib.sha256(startup.password.encode()).hexdigest() == pathlib.Path(os.environ["HARNESS_LOG"] + ".startup-digest").read_text()
+assert all(u.password not in pathlib.Path(os.environ["HARNESS_LOG"]).read_text() for u in urls)
+PY_STARTUP_TEST
+fi
 printf '%s\n' "${env_file}" >>"${HARNESS_LOG}.envfiles"
 if [[ "${FAKE_BUCK_SLEEP:-0}" == 1 ]]; then printf "%s\n" "$$" >"${HARNESS_LOG}.childpid"; exec sleep 30; fi
 exit "${FAKE_BUCK_STATUS:-0}"
@@ -137,6 +168,7 @@ CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD
 CONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD
 CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD
 CONSOLE_RT_POSTGRES_PASSWORD
+CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD
 POSTGRES_ADMIN_PASSWORD
 POSTGRES_ADMIN_USER
 POSTGRES_DB

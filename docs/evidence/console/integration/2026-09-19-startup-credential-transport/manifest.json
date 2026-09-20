@@ -1,0 +1,10 @@
+{
+  "DESIGN.md": "d38567a7bebf8d2f0729bbe92c4482f07d051f6fafa61846226816ac87273a8f",
+  "source-custody.json": "e84722a4ce53890d75b842cefca6c9bb46d9c4f5a15943b15f3f6ab2b5e62bf6",
+  "syntax-verification.json": "82834d0db6ea4c75aa44877dd6b2fa375ae0e6a3d2e0df404f9bbc609c897737",
+  "test-manifest.json": "82756fadb2378044a65a7ed1cd2e0dc249baba0ce7772da72c05e4edd9afadcb",
+  "tests.patch": "5140eb18e5c9728a9dda1b1be38dfc94024b9077937172a24e6b1acb82d9de9c",
+  "tools/buck/run_test_with_postgres_env.test.sh": "f224391d6e3037f29de5b81836f97bc7793a39f787e1535be179fe29aea81a8b",
+  "tools/buck/test_needs_postgres.test.sh": "cb3c94bac40fa038ba2fa369b53362c6157645ee7f92b5c8ac7e7c8fcf76e64b",
+  "tools/ci/cargo-needs-postgres-args.test.mjs": "1525ed3a7365063487e5e6ea25e35ce0ad9ec2f23ef64164cf0efacb9e5872a2"
+}
