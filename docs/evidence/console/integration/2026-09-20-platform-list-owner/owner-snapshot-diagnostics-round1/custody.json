@@ -1,0 +1,22 @@
+{
+  "console-platform-source-full52-cfd16748-run4-20260920.log": {
+    "source": "/private/tmp/console-platform-source-full52-cfd16748-run4-20260920.log",
+    "sha256": "b506065959d2bd3d07131e36eab893bf6e72eb79de2d26ee91d20256d9f5300f"
+  },
+  "console-platform-source-owner-diagnostics-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-source-owner-diagnostics-round1-security-review-20260920.json",
+    "sha256": "ca4d5c7012d64ce897daca13852eb81bf438cb73d8701ca1502ca74ff9c8476b"
+  },
+  "console-platform-source-owner-diagnostic-run1-20260920.log": {
+    "source": "/private/tmp/console-platform-source-owner-diagnostic-run1-20260920.log",
+    "sha256": "24becc013e6607363590d6ccbc294a9ac8b96dee657cfa6c9f3540a7163241ac"
+  },
+  "console-platform-source-owner-diagnostic-map-20260920.json": {
+    "source": "/private/tmp/console-platform-source-owner-diagnostic-map-20260920.json",
+    "sha256": "593fda91d6d2116462e363865310dba66a6c4412e2e85e074930295f0b8d0d80"
+  },
+  "manifest.json": {
+    "source": "/private/tmp/console-platform-source-owner-diagnostics-20260920-round1/manifest.json",
+    "sha256": "193483fb26e63132692fdd2809799c3c330670a9e76b6be7b86fd55b28c3f6b7"
+  }
+}

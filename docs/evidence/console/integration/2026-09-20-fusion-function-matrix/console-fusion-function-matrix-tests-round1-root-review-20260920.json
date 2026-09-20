@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root",
+  "verdict": "approve tests for integration and actual RED execution only",
+  "head": "cfd16748349d0b3f4cab811a0809703ad24fb255",
+  "manifest_sha256": "91bbb22ca9c589493f7b24b451fd604e3e253c9e96976f428adef0cccde01773",
+  "candidate_sha256": "2eca1c58d20621500d9200420f7f03405af6f465b9e3a2b578c7f1fb651633f0",
+  "checks": [
+    "all packet and source hashes verified",
+    "existing test bytes unchanged prefix",
+    "real exported validator positive fixture precedes each corruption",
+    "same outer object restoration remains unattested until explicit validation",
+    "invisible own properties rejected at validation without false prevalidation claim",
+    "fixed reviewed source catalogue; no acceptance promotion"
+  ],
+  "runtime_claim": null,
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

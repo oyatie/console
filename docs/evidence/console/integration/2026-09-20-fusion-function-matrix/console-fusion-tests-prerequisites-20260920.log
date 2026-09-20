@@ -1,0 +1,11 @@
+✔ Fusion catalogue frozen proposal and captured source retain reviewed custody (32.290125ms)
+✔ Fusion catalogue exact reference row validates without mutation or promotion (70.058709ms)
+✔ Fusion catalogue fixture preserves every unrelated registry value (29.184583ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 190.77975

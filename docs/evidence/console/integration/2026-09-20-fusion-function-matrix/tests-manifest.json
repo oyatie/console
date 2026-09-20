@@ -1,0 +1,38 @@
+{
+  "kind": "private-additive-Fusion-test-candidate",
+  "round": 1,
+  "observed_head_sha": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "design_manifest_sha256": "c6a3923089706addc6f3e691a7651646675fca9ebf0984b05c00ee73d4b013c6",
+  "root_design_consensus_sha256": "21518055c04538f7e685de5b87ec51ba1776c249c020d27888e471c0a08d79e2",
+  "target": "scripts/console/validate-console-truth-ledger.test.mjs",
+  "target_preimage_sha256": "edd175dbdca29850fcec6226b91cda0834445fc06b610d3c9f9b6b3633a158f1",
+  "source_pins": {
+    "docs/program/console-capability-registry.json": "568e4701f7306a2af006887758103d6f408778cb12f8e66ccd49439b5b575431",
+    "docs/evidence/console/plans/2026-09-19-first-client-release.txt": "c47e3b387987a2927dc42271b2ba475399ad94c61ef67014a62c342a02fef63e",
+    "docs/evidence/console/research/2026-09-19-foundry-sheets-documents/proposal.json": "3c9c66bcb2026a5ef94a32d4a0a7672bf9bc9f794316be36ac5eb3461910029e",
+    "docs/evidence/console/research/2026-09-19-foundry-sheets-documents/independent-review.json": "0c3c45ae0dbb1758c805ac412f7616bd0515e2f3fed883b802731d0e24f79689",
+    "docs/evidence/console/research/2026-09-19-foundry-sheets-documents/integration.json": "c0d0b3281fc3a94e0a4017c4bd905b76afd6cec5f92eb4c3891e4d1734c6da6e",
+    "docs/evidence/console/research/2026-09-19-foundry-sheets-documents/fusion-function-library.html.gz": "15c7e57dd486404d045b835d8fc1fc628ee8ce8b3243f93f6c9487d27815f830",
+    "scripts/console/validate-console-truth-ledger.mjs": "cf9b4afd53665b38b0a15daa46988660e514e4861a6326a77d064def299b93c8",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "edd175dbdca29850fcec6226b91cda0834445fc06b610d3c9f9b6b3633a158f1",
+    "scripts/console/plan-fanout.mjs": "a8a53569d9eb68ac86b5fa77a122729e1a06f52302963205244f732302e5db44",
+    "scripts/console/verify-console-authority-train.mjs": "3809bde7bf9bd085e5376ea0deba2d5e5cf576f945235fd3d502d3af9bead20b",
+    "tools/ci/assess-tip-contention.mjs": "4f93632242b2a428b8ea8d1246e3e7c1e4f1ab57ac15fd20e14421179f27d8c5",
+    "package.json": "86f60cf9c4e1954c4fdfab25ef270d8592d8dc7d8ec535f625002f5a5bd3f391",
+    ".github/workflows/ci.yml": "3fde3529edf7c59c6f3bd489e68907a54dc78250d658c152a5ce75957d301cb8"
+  },
+  "expected_discovered_count": 134,
+  "expected_new_test_leaves": 30,
+  "expected_rejection_histories": 49,
+  "tests_executed": 0,
+  "implementation_admitted": false,
+  "files": {
+    "README.md": "a0f994e859fd63f38b6b6eacd40c92b08f835989d6c09e750638bbcfa6b36b1b",
+    "additive-tests.mjs": "7c2951c90b9d660f84c998c89d26736b75c43138cd4419c92c176578f27ddbf9",
+    "coverage.json": "c0dd3086d4f37384d6a10ca8d227c57fe8cdff221b3ea5e153c2f32c709f74d6",
+    "design-manifest.json": "c6a3923089706addc6f3e691a7651646675fca9ebf0984b05c00ee73d4b013c6",
+    "root-design-consensus.json": "21518055c04538f7e685de5b87ec51ba1776c249c020d27888e471c0a08d79e2",
+    "source-checks.json": "1fc669f69f8ab32b2b47deefe298fe856c602693d60b4440073dcf2c101af9ee",
+    "validate-console-truth-ledger.test.mjs": "2eca1c58d20621500d9200420f7f03405af6f465b9e3a2b578c7f1fb651633f0"
+  }
+}

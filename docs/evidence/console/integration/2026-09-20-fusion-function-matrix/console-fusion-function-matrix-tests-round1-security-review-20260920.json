@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-additive-test-source-runtime-RED-pending",
+  "design_manifest_sha256": "c6a3923089706addc6f3e691a7651646675fca9ebf0984b05c00ee73d4b013c6",
+  "test_manifest_sha256": "91bbb22ca9c589493f7b24b451fd604e3e253c9e96976f428adef0cccde01773",
+  "candidate_sha256": "2eca1c58d20621500d9200420f7f03405af6f465b9e3a2b578c7f1fb651633f0",
+  "checks": [
+    "All seven packet hashes, thirteen current source pins, exact unchanged prior test prefix plus additive suffix verified.",
+    "Fixture checks actual retained proposal/review/gzip/raw custody,202ordered signatures/fiveleaf membership before positive exported-owner baseline.",
+    "Only existing validateConsoleTruthLedger and isValidatedConsoleTruthLedger interfaces used; no mocks/private cache mutation.",
+    "Visible negative histories prove changed canonical bytes and false content binding; invisible neutral own-key histories assert own enumerable key and identical bytes without impossible prefalse assertion.",
+    "All negative histories require owner rejection, false attestation, same outer object exact restoration/deep equality/bytes, still false, then explicit revalidation true.",
+    "N02 generic uniqueness diagnostic includes literal Fusion identity and satisfies bounded regex; N06 intentionally asserts existing generic support refusal. Other negatives target Fusion branch.",
+    "Original tests unchanged; prospective preservation test limited honestly and independent integrated preimage comparison remains root requirement."
+  ],
+  "source_derived_expectations": {
+    "existing_leaves": 104,
+    "new_leaves": 30,
+    "total_leaves": 134,
+    "negative_histories_in_full_green": 49,
+    "named_RED_selected_leaves": 1
+  },
+  "findings": [],
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Root must integrate exact reviewed test source and execute named actual owner RED; prerequisite errors or zero matched tests do not admit lane.",
+    "Exact clean test commit and fanout admission precede checker/registry implementation.",
+    "Full owner/planner validation and integrated additive registry preservation proof remain required; no release state promotion."
+  ]
+}

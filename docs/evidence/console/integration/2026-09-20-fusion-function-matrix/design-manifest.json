@@ -1,0 +1,19 @@
+{
+  "kind": "private-bounded-Fusion-function-matrix-design",
+  "round": 3,
+  "predecessor_manifest_sha256": "03def8cfbfc80f188cd998b5e00925e0f5a6d9612524800465cda3b2b271ccf3",
+  "authority": "none; final round4 design/test review and lane admission remain required",
+  "changes": [
+    "Differentiate digest-visible and serialization-invisible own-key attestation histories",
+    "Require invisible own keys persist while canonical bytes remain identical before exact-key rejection",
+    "Preserve global digest/attestation APIs and same-object post-restoration revocation"
+  ],
+  "files": {
+    "design.md": "e1b1f777692c5339f5a8f2196c209951c6074e4789a15490b987aa3ec86e8025",
+    "oracle-roster.json": "932c7f92b95b2603daa1dcd318782b8e39ff4545fa7abc57e680a68dbd09f3ee",
+    "predecessor-manifest.json": "03def8cfbfc80f188cd998b5e00925e0f5a6d9612524800465cda3b2b271ccf3",
+    "prospective-runtime-row.json": "86f71fb54b809ee06807eefb3c45d37032706bea2f1ce66f78385eaad73edbdc",
+    "round1-manifest.json": "aff055193ab0b7cb58c9f15f95d7ecf6583076c41baa7dc3899763230bbc3834",
+    "source-custody.json": "946e8e16debdf719f5f6a15a7f574e6cbc7bcfbb26ea953dc6f595494c8641e3"
+  }
+}
