@@ -142,11 +142,14 @@ async fn exact_bound_pair(pool: &PgPool, f: &DirectFixture, access: &str, refres
             && b.home_org == *OrgId::platform().as_uuid()
             && b.kind == LegacySessionKind::Direct
     );
+    assert_eq!(
+        row.5, "LEGACY_COMPANY",
+        "actual refresh family protocol differs from the retained credential owner"
+    );
     assert!(
         row.1 == *f.subject.as_uuid()
             && row.2 == *OrgId::platform().as_uuid()
             && row.4.is_none()
-            && row.5 == "LEGACY_USER"
             && row.6.is_none()
             && row.7.is_none()
             && row.8.is_none()
