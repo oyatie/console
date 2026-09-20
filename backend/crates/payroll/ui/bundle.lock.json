@@ -1,6 +1,6 @@
 {
   "_comment": "Regenerate with: bash tools/ui/build-payroll-wasm.sh (it writes this file). Checked by scripts/check-wasm-bundle-drift.mjs.",
-  "toolchain_channel": "nightly-2026-09-10",
+  "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",
   "wasm_bindgen_cli": "0.2.123",
   "inputs": {
@@ -9,11 +9,11 @@
     "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
     "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
     "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
-    "backend/crates/payroll/ui/src/native_account.rs": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
+    "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c",
     "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad"
   },
   "outputs": {
-    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "6a4caef3cb32ff6c981991eca5819e6c3d9bd58e18c37c8039597bfe2130a534",
-    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "69958e39fcdbdc20a9fe2bdb05f047817e313969d279bae3c3016f3c5a6758e9"
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "c3d9d2342a2f4d44f16382a8b76c2bd08d7dbd30dd0c29232d7a91a6dc820a06",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "98950409e6b616abab0ea90f074115bab26870c6e9a0bd54a8d80a48dddde43d"
   }
 }

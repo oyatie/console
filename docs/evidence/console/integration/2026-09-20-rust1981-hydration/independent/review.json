@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "decision": "APPROVE bounded generated-artifact and custody change; authorized browser hydration acceptance remains HOLD",
+  "observed_head": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "base_sha": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "artifact_checks": 27,
+  "artifact_checks_failed": 0,
+  "verified": [
+    "Only admitted JS WASM bundle.lock files differ from prebuild base; build recipe crate/workspace manifests Cargo.lock root compiler pin gate and tests unchanged against independently reviewed hashes.",
+    "All7manifest input and2output SHA256 values match current bytes.",
+    "Actual376337byte WASM validates/decodes; all67WASM imports resolve to generatedJS imports, all28JS wasm member references resolve to29realWASM exports.",
+    "ActualWASM producers section names rustc1.98.1(48a229cea2026-09-01),wasm-bindgen0.2.123,walrus0.26.4; manifest pin/declaration/CLI version match.",
+    "AuthorizedRuns_177efa8e22da84d9 is a realWASM function export and generatedJS wrapper; hydrate/__wbindgen_start exports present.",
+    "Prebuild named drift reported oldnightly channel and changednative_account source; actual recipe log reports successful releasebuild37.17seconds and generation7inputs2outputs.",
+    "Existing gate tests use positive baseline controls and reason-specific rejection for changed source/file sets/artifacts/recipe/pin/CLI, missing/falsy/array manifests and missingCLI metadata. Source listing/write side rejects untracked/ignored compiled sources. Tests unchanged; execution counts belong to parent."
+  ],
+  "findings": [],
+  "limits": [
+    "No browser/server/WASM instantiation or rebuild performed by reviewer; Node WebAssembly validation/module decoding and readonly file/source inspection only.",
+    "No independent bit-for-bit second build performed; manifest/hash and compiler producer evidence do not replace runtime browser proof.",
+    "Gate intentionally omits Cargo.lock/workspaceCargo.toml; separate unchanged-hash review closes this candidate scope only, not future dependency changes.",
+    "Historical reusable harness targets a different source/artifact set and cannot be relabeled current acceptance."
+  ],
+  "next_browser_boundary": {
+    "current_owner": "backend/app/tests/health_readiness.rs::authorized (realAuth/JWT+PgPayRunPort fixtures)",
+    "current_island": "backend/crates/payroll/ui/src/lib.rs::AuthorizedRuns, #run-status presentation-only filter",
+    "retained_harness": "/private/tmp/payroll-hydration-canonical-browser-boundary-v1",
+    "retained_review": "/private/tmp/console-canonical-route-retention-78e79106/hydration-review.json",
+    "retained_limit": "Oldowner payroll_browser.rs is not in current checkout; oldscript/browser pins and changedDOM need exact reviewed successor. It used existingJWT fixture, not nativeAccount authority.",
+    "required_successor": "Current realauthorized server\u2192/payroll\u2192exact/pkgJS+WASM response hashes; at least2authorized statuses and actualselect changes hiddenrows; restricted/static no-island controls; noJS/CSPerrors/APIwrites; exact rebuiltSSRbinary custody. Reuse asset/coverage/cleanup mechanisms only after compatibility review."
+  }
+}

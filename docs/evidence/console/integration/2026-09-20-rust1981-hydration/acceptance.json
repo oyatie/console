@@ -1,0 +1,24 @@
+{
+  "state": "artifact_implementation_verified_browser_pending",
+  "exact_source_base": "74c81a0ed19d38c13a1ba94e45937302a6cc865f",
+  "checks": {
+    "drift": {
+      "executed": 18,
+      "passed": 18
+    },
+    "ui": {
+      "executed": 8,
+      "passed": 8
+    },
+    "asset_http": {
+      "executed": 1,
+      "passed": 1
+    }
+  },
+  "scope": "Existing recipe rebuilt exact3artifacts under1.98.1/bindgen0.2.123; unchangedlockfiles/pin/recipe verified independently.",
+  "holds": [
+    "Actualauthorizedbrowser filter/hydration of newbundle required",
+    "No Account businessjourney/current-sessionacceptance from Bearerfixtures",
+    "Fullrelease incomplete"
+  ]
+}

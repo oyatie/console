@@ -1,0 +1,13 @@
+{
+  "unchanged_inputs": {
+    "backend/Cargo.lock": "3616dadd89892ac18c9d7abcb2a8daa71c47a292e204c1cdd6306a16f1f0a3a5",
+    "backend/Cargo.toml": "4d566b31cb64b02dd8107d92e4926291e9afdf9d20bcf2cd53abee80f12dc064",
+    "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad",
+    "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c"
+  },
+  "generated_outputs": {
+    "backend/crates/payroll/ui/bundle.lock.json": "7407c1bdac20399e33c4b512f2ac1112002588e8fd6070bedd464bcabaf12057",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "98950409e6b616abab0ea90f074115bab26870c6e9a0bd54a8d80a48dddde43d",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "c3d9d2342a2f4d44f16382a8b76c2bd08d7dbd30dd0c29232d7a91a6dc820a06"
+  }
+}
