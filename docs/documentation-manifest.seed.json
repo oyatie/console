@@ -1950,6 +1950,166 @@
     "archive_tag": null
   },
   {
+    "path": "docs/evidence/console/integration/2026-09-19-company-eligibility-prospective-capture/README.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "2cd09778bea9eb84f2fcd8610db4e85ea2800133",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-company-eligibility-prospective-capture/source/proposal.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "5296eb618d92506f978a407ef71ba6d04dff0446",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-company-eligibility-transition-tests/PROPOSAL.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "26cb1a26bd823fc7295b4786eea3470d2fd3bcf6",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-company-eligibility-transition-tests/sequencing-amendment.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "c9bb88732660084035831469ee895d2fb11fc503",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-container-root-pin/DESIGN.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "ea009fe019e9ae626b1f82e8659008e2d0e40685",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-health-session-fixture/DESIGN.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "d716f05f1bc7c3f2f6430ab26bf7e1136545b211",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-original-account-suite-failure-audit/report.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "50b9ab91db4d555c2c1a9d5c744ffc86275a390a",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-original-account-suite-failure-audit/source-contract-trace.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "652c40e15d52ab713d16143eb3993aa82fbb09f3",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-root-entry-browser/summary.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "decb869d0005c99c134c352e1c2a7f84508d1c22",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-root-entry-tests/console-root-entry-tests-20260919-round2/proposal.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "2c03d08168627f5754fcddb65113e2455c63056c",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-root-entry-tests/console-root-public-entry-design-20260919-round2/design.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "147156683cd16f8f3b48b5478d15678dbbf7d0d0",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-root-entry-tests/console-root-public-entry-design-20260919-round3/addendum.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "1e7809630d7b98801042b3f64c99ff56c109749c",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-rust1981-transition/DESIGN.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "80c58b5a501365ca07034d4c762bf862939fa250",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-rust1981-transition/fixture-correction/DESIGN.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "40986ad02ab18eae9a1bcfb2629dd3d53ffb82c3",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-session-reader-contract/proposal.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "33dfd97185ee574e426e20bb531202afc6f8f4b0",
+    "archive_tag": null
+  },
+  {
+    "path": "docs/evidence/console/integration/2026-09-19-startup-credential-transport/DESIGN.md",
+    "class": "evidence",
+    "owner": "repository maintainers",
+    "status": "frozen",
+    "replacement": null,
+    "retention": "retain",
+    "blob_sha": "13e79dbd8192a9c072fb687ae330c1e4597138e7",
+    "archive_tag": null
+  },
+  {
     "path": "docs/evidence/console/openapi-integration-plan.md",
     "class": "evidence",
     "owner": "repository maintainers",

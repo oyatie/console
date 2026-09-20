@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_EXACT_ADDITIVE_EVIDENCE_METADATA_REPAIR",
+  "manifest_sha256": "240f5dc9e42a6fa2a614e70d1b0bf6f4448abd85e4b77ea2c1fd278d2a399166",
+  "base_sha": "d7b4338e126b8a36b04e6de8b265e53122c6036a",
+  "candidate_seed_sha256": "d3c107e187b87ffa0c0245ad622d3889c160e7db606480bea3a93cb2fa959f25",
+  "checks": {
+    "manifest_files": 14,
+    "existing_seed_records_preserved": 458,
+    "new_frozen_evidence_records": 16,
+    "candidate_records": 474,
+    "new_git_regular_blob_identities_checked": 16,
+    "private_fixture_changed_paths": [
+      "docs/documentation-index.json",
+      "docs/documentation-manifest.seed.json"
+    ],
+    "entry_authorities_transitions_preserved": true
+  },
+  "findings": [],
+  "conclusions": [
+    "Each new record names an actual regular tracked Git blob under integration evidence; no historical bytes, authority class, archive tag or replacement edge changed.",
+    "All458preexisting records preserved; candidate generated index documents exactly equal474seed records. Top-level index authority and transition metadata unchanged.",
+    "Private fixture staged diff limited to seed/index. Supplied unchanged-generator and link-check success logs inspected; reviewer did not rerun network/signed-archive validation."
+  ],
+  "limits": [
+    "Root must regenerate with unchanged canonical generator and execute actual candidate gates after staging intended files.",
+    "Classification as frozen evidence does not promote proposed designs or reports into active authority or accepted product implementation.",
+    "No repository mutation, DB/browser tests or network run by reviewer."
+  ]
+}
