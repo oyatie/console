@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_EXACT_TEST_INTEGRATION_REBASE_ONLY",
+  "packet": "/private/tmp/console-native-browser-integration-tests-20260920",
+  "manifest_sha256": "f7df04c8e1334dd6da58be09a5225076237a59024b76012847fd7ec66149d07e",
+  "source_base": "2f11f2f4f",
+  "inherited_independent_semantic_review": "/private/tmp/console-native-browser-producer-tests-round3-security-review-20260920.json",
+  "checks": [
+    "All3packetmemberSHA and all3currentrepositorypreimageSHA match manifest.",
+    "Generator candidate is byte-exact currenttestsource with the previouslysecurity-approved round3generator-addition.py inserted before unittest.main; no other edits.",
+    "ASTcomparison preserves all61existingtestmethods; exact3approvedaddedmethods make64. The newer test_private_company_parser_auth_rest_resources_are_complete remains byte/AST-identical.",
+    "PostgreSQLharnesscandidate byte-identical to approvedround1successor containing6publicbrowserenvdispatchcases; no rebase semanticchange.",
+    "CIpreflighttestcandidate byte-identical to approvedround3count-onlysuccessor:backend25\u219230,total132\u2192137,mutation396\u2192411,commentcorrespondinglyupdated; no bypasscase weakened or removed.",
+    "Existing run_test_with_postgres_env.test.sh SHA26d6ed3a5da69b4a4c7c2e095135fcf801f69116f4b75068649018acfd2f72cd equals approvedround3candidate exactly. All9exact-discoverycases retained. Integrationpacketcontainsno wrapperreplacement."
+  ],
+  "limits": [
+    "This is mechanical integration/rebase review using prior independentsecurity semanticapproval; it doesnot replace requiredsource/runtime review of generator,harness,installer,CIproducer or nativebrowser execution.",
+    "Rootowns executableRED/laneadmission and allrepositorywrites; no tests/build/DB/browser executed bythisreviewer.",
+    "No darkbaselinegrowth, ignoredtestchange or productworkflowacceptance authorized."
+  ],
+  "execution": {
+    "repository_edits": 0,
+    "tests": 0,
+    "builds": 0,
+    "sql": 0,
+    "browser": 0,
+    "python_ast_hash_diff_comparison": true
+  }
+}

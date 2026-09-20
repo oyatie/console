@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_BOUNDED_REGRESSION_TEST_AND_GENERATOR_RESOURCE_CHANGE",
+  "packet": "/private/tmp/console-native-health-browser-resources-20260920",
+  "manifest_sha256": "e8f6e3179f356849c5683458ca5f82978ce1ff56d6f949ade3aed29b9b69a93c",
+  "test_sha256": "1160486c2c13ff79dd6e44e814b769da09cfe62acfe98c12c966c251cb2adbea",
+  "generator_sha256": "ac4a1ec444d6588cf0b99e6ed9320e307a394bb3a547874af00e6b37ee6fac36",
+  "checks": [
+    "Both current source preimage hashes and both candidate hashes match the manifest. AST comparison preserves all 64 current test methods and adds exactly one resource regression, for 65 methods.",
+    "The retained native compile log reports precisely the three existing include_str inputs at health_readiness.rs:279-282: platform/auth-rest/src/lib.rs, app/src/lib.rs and platform/request-context/src/lib.rs. No Rust assertion is removed, ignored or rewritten.",
+    "Both platform crates already export crate-source-tree with src=src, mode=reference and PUBLIC visibility. No new export or dependency is invented. The local src/lib.rs file exists.",
+    "The generator change adds only console-app/tests/health_readiness.rs resource configuration: one local source and two existing external source-tree exports mapped to the exact repository-relative directories.",
+    "repo_mapped_srcs preserves package-local paths and explicit external destinations. The existing emitter shares the same srcs_expr and external map between ordinary health_readiness and its browser variant, so both receive the corrected closure. Other tests and production library dependency/features are untouched.",
+    "The new regression calls the actual integration_resource_config function, requires all three mappings and checks both external lib.rs paths exist. The current function returns no such health-specific resources, providing a real generator-boundary RED probe before implementation."
+  ],
+  "root_probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_health_readiness_maps_its_existing_source_tripwire_inputs",
+  "limits": [
+    "Root owns test integration, observed RED, generator implementation, serialized regeneration and native compile/discovery/execution. No test or build was executed by this reviewer.",
+    "The previously ordinary health_readiness target is explicitly permitted to gain these three source inputs; do not claim every historical ordinary target block remained unchanged across this correction.",
+    "No source-tripwire semantics, authentication behavior, hydration oracle, browser journey or product acceptance is changed or inferred. The existing broader source-tree exports are reused as declared compiler inputs only."
+  ],
+  "execution": {
+    "repository_edits": 0,
+    "tests": 0,
+    "builds": 0,
+    "sql": 0,
+    "browser": 0,
+    "python_hash_ast_comparison": true
+  }
+}

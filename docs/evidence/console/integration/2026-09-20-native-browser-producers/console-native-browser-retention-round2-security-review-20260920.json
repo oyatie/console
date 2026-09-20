@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_RETENTION_SOURCE_AND_TEST_CONTRACT_SUCCESSOR_ONLY",
+  "packet": "/private/tmp/console-native-browser-retention-tests-20260920-round2",
+  "manifest_sha256": "68c36f9726d6c6fa7bf0077a6cbbfe64207325a9005c7009798b48614d676d0c",
+  "source_preimages": "All twelve source-lock.json entries independently matched current working bytes.",
+  "candidate_sha256": {
+    "ci.yml": "58328feaf707cdd01a5295e2bc75dacec27c8753c9a86497bf728f984e316d84",
+    "check-ci-preflight.mjs": "363a98836b8c5af580f2183ca12f947a258f7808a009e8be514e72dbd5388784",
+    "check-ci-preflight.test.mjs": "5c144f1f79072f6f578ba4db8a7415dcdeda0627532308c89115b89848f8aee8",
+    "test_gen_first_party.py": "4c34fe6e3f648fa4871dc1042cae62af24a0939f904bdb6c2b84f205893e222e"
+  },
+  "checks": [
+    "All round2 manifest member hashes verified; three CI/gate/JS-test patches unchanged from round1; exact private patch application against current source preimages successful.",
+    "Read-only YAML comparison proves entire workflow unchanged except four browser run suffixes and one exact upload step; all17 jobs, matrices, services, envelopes and existing step metadata preserved.",
+    "Existing repository upload-artifact pin043fb46d1a93c77aae656e7c1c64a875d1fc6a0a reused, corroborated in existing hermeticity/canary/image-release workflows.",
+    "Exact26 paths =8JSON and18PNG from four public OUTPUT settings; no globs, runtime directories, private TLS material, storage/profile state, raw traces or logs. Actual driver capture/write calls and owner receipt fields corroborate provenance.",
+    "Upload step guards successful prerequisite/topology and heavy buck-app admission but not browser success; !cancelled permits retention after failed Company leaf. ID allows unchanged failure collector to observe upload errors; step immediately precedes collection.",
+    "Unique run/run-attempt/leg name, seven-day retention, hidden files disabled and zero-files error explicitly locked. Hosted upload/readback remains unexecuted.",
+    "Each original browser command remains exact prefix, including Account three-oracle discovery/execution. Four appended guards require all fixed evidence files nonempty regular nonsymlink after successful leaf; default Actions bash errexit preserves failure before guard. A failed leaf stays failed while its safe partial outputs may upload.",
+    "Focused new test executes each actual guard against path-with-spaces temporary fixture; proposed82 invocations =4positive +26each missing/empty/symlink; source review only, not executed by reviewer.",
+    "JS source adds exactly two retention tests and safe multiline input mutation helper; parses mutated YAML to prevent syntax failure counting as gate rejection. Action count40\u219241, bypass80\u219282, identity/input/order236\u2192250 accounted for one action/five inputs/adjacent ordering; run-count matrices unchanged.",
+    "Python AST comparison proves65 methods retained,64 unchanged and sole existing browser-producer method amended. First five dictionaries retain exact metadata/command prefixes, only four guards appended; exact upload dictionary added and contiguous span5\u21926. No generator implementation or browser assertions changed."
+  ],
+  "predecessor": {
+    "manifest_sha256": "25549b0052a6ea63c554ea85bc3482ddf7b52dc871f5215441f7c387738b96c8",
+    "disposition": "Do not integrate round1: omitted existing Python producer contract successor, repaired by round2 fourth patch and corrected contract prose."
+  },
+  "findings": [],
+  "limits": [
+    "Root owns repository integration, prerequisite RED, same-probe green and complete test results. Reviewer ran no product/test/build/browser/upload execution.",
+    "Bounded source approval only; actual hosted Linux browser/upload artifact download and readback required before CI retention execution claim.",
+    "Trusted pinned test producers supply sanitized named files. Presence guards are not a generic sanitizer or defense against arbitrary compromised test code.",
+    "Cancellation deliberately skips upload; this receipt does not claim retention for canceled jobs.",
+    "Company creation remains red COMPANY_FORM; preview and fixture hydration do not accept Company/payroll workflows or release milestones."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

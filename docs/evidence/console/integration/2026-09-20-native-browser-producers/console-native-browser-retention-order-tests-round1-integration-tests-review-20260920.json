@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_SOURCE_CORRECTION_RUNTIME_PENDING",
+  "packet_manifest_sha256": "7fec1cef041340e0acd361c847a7c63ce18448a4f1b9a3566f9a317c629386de",
+  "preimage_sha256": "5c144f1f79072f6f578ba4db8a7415dcdeda0627532308c89115b89848f8aee8",
+  "postimage_sha256": "482c9e94181e8faa5a8343e6bdf1ab8d2475446258e595f33c19b672c49835ef",
+  "checks": [
+    "Packet manifest and all file hashes match; current repository preimage matches.",
+    "In-memory exact patch application yields declared postimage hash.",
+    "Both original ordering mutants preserved as chronological pairs (31,32) and (32,33), satisfying unchanged helper precondition.",
+    "Added YAML parseability assertion before same gate rejection makes invalid YAML insufficient.",
+    "No test removed, skipped, weakened; existing68 test count and82 synthetic file-guard executions unchanged by source."
+  ],
+  "executed_tests": 0,
+  "repository_writes": false,
+  "runtime_hold": "Root must rerun full previously failing preflight suite; previous67pass/1fail is not green.",
+  "remaining_holds": [
+    "Hosted upload/download/readback",
+    "Independent confidentiality review",
+    "Product and release qualification"
+  ]
+}

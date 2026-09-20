@@ -1,0 +1,56 @@
+{
+  "kind": "REAL_NATIVE_ACCOUNT_UI_BROWSER_LEAF",
+  "node_version": "v26.7.0",
+  "checkpoints": [
+    "ENROLLED",
+    "LOGGED_OUT",
+    "LOGGED_IN"
+  ],
+  "screenshots": [
+    "01-public.png",
+    "02-terms.png",
+    "03-account-enrolled.png",
+    "04-sign-in.png",
+    "05-account-returned.png"
+  ],
+  "posts": {
+    "/api/v2/auth/registration/start": 1,
+    "/api/v2/auth/registration/finish": 1,
+    "/api/v2/auth/passkey/login/start": 1,
+    "/api/v2/auth/passkey/login/finish": 1,
+    "/api/v2/auth/logout": 1
+  },
+  "external_requests": 0,
+  "unexpected_posts": 0,
+  "cleanup": {
+    "confirmed": true,
+    "browser_process_exited": true,
+    "relay_closed": true
+  },
+  "limits": [
+    "Chromium153 virtual resident authenticator and automatic presence only; no human or physical-device picker proof.",
+    "Ephemeral-SPKI localhost TLS termination and unencrypted owned loopback upstream are test topology, not production TLS/HA certification.",
+    "Context routing controls page traffic, not operating-system egress.",
+    "Three independent DB acknowledgements are required; parent remains final acceptance owner.",
+    "Keyboard discovery and320px geometric reflow are observed on mounted pages; this is not human usability, screen-reader, contrast or complete WCAG certification."
+  ],
+  "browser_pid": 4831,
+  "browser_version": "153.0.8010.12",
+  "root_status": 200,
+  "reflow_root_320": true,
+  "keyboard_skip": true,
+  "keyboard_registration": true,
+  "reflow_register_320": true,
+  "keyboard_terms": true,
+  "keyboard_registration_submit": true,
+  "registration_wire": true,
+  "reflow_account_320": true,
+  "resident": true,
+  "literal_secret_absent": true,
+  "cookie_security": true,
+  "logout_cookie_clear": true,
+  "login_wire": true,
+  "same_account": true,
+  "active_after_login": true,
+  "status": "BROWSER_LEAF_PASSED"
+}

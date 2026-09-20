@@ -1,0 +1,15 @@
+{
+  "kind": "INDEPENDENT_NATIVE_COMPANY_PREVIEW_DATABASE_CHECKPOINTS",
+  "checkpoints": [
+    "ENROLLED",
+    "PREVIEW_PRESERVED"
+  ],
+  "source_unchanged": true,
+  "driver_exit_success": true,
+  "server_shutdown": true,
+  "browser_pid": 6080,
+  "browser_seen_alive": true,
+  "browser_pid_exit_confirmed": true,
+  "browser_final_alive_observation": false,
+  "limits": "TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/preview only; no Company command or release acceptance; no human usability/WCAG/production exposure"
+}

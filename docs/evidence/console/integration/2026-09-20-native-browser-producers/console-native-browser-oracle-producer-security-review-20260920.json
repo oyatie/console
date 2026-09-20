@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_THREE_ORACLE_CI_RUN_AND_TEST_SUCCESSOR",
+  "packet": "/private/tmp/console-native-browser-oracle-producer-20260920",
+  "manifest_sha256": "94c1a35a21b0c94e72c599881b5ab5fd48230e8535073ffe1d4f343a6a3ad298",
+  "run_sha256": "aec3ca8a6c084eae3490a395c55256a2925e593c682eff4f33991601d9e16f9c",
+  "test_sha256": "09f4d37ad506346be5f7880beeebf9d9ea252277cf72f2f59559702c0b94c62e",
+  "test_preimage_sha256": "c7c8fa10deeb04bdec556631dca29286dfe55afa6145cc814acc9e413c101aa9",
+  "reviewed": [
+    "Exactly three fixed pure oracle names selected; no prefix expansion or ignored-test override",
+    "Each actual Buck RunInfo invocation lists exact selected test and requires one-test/zero-benchmark output before running --exact; listingstderr suppressed and fixed diagnostic onfailure",
+    "Execution runs as existing GitHub Actions Linux run step with standard bash errexit; do not invoke standalone without equivalent fail-fast shell",
+    "Existing real Account PostgreSQL/browser harness call retained verbatim after pure oracle loop; other foursteps unchanged",
+    "Generator test AST differs only in exact Accountstep runstring; restoringoldrun restoresfullAST; job/stepcounts stay unchanged",
+    "Current native Buck run discovery succeeded for first pure leaf; actual three exact native leaves each1passed482filtered in retained independent logs"
+  ],
+  "logs": {
+    "/private/tmp/console-native-browser-buck-run-discovery-20260920.log": "b50e9f6c740d02bd4789edc6bb858736d687986741f49a9757e49be2c2e52c83",
+    "/private/tmp/console-native-account-browser-oracles-exact-20260920.log": "18620fffff525214239a00db82b7914d39de99a2513eae3ab9a4ed6162a211d4"
+  },
+  "required_integration": [
+    "Use exact script bytes as Account workflow runliteral and exact preflight runcontract",
+    "Retain sameconditions/IDs/failurecollector and all prior producer tests",
+    "Run producer/gate tests after integration; this is source approval, not actual hostedCI acceptance"
+  ],
+  "limits": [
+    "No new Docker launches for three pure tests",
+    "No change to credential wrapper contract",
+    "No browserworkflow/clientrelease completion from pureoracle coverage"
+  ],
+  "findings": [],
+  "reviewer_product_tests_executed": 0
+}

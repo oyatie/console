@@ -1,0 +1,44 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_INSTALLER_TEST_SOURCE_ONLY",
+  "packet": "/private/tmp/console-native-browser-installer-tests-20260920-round1",
+  "manifest_sha256": "8f01e8e61a34e671a0709e1aad798bb105214ae174e711b9456ca78d7a2270fe",
+  "test_source_sha256": "0ad67f6629c93c58dddbf6efe4dcaddf9504cf034c00c37e8952396d5ba0d327",
+  "guide_sha256": "daaee501827765ad9510e20803c7f00440dc17179c8b46d00496ae994cc89699",
+  "expected": {
+    "test_methods": 6,
+    "installer_invocations_on_success": 7,
+    "positive_staging_invocations": 2
+  },
+  "reviewed": [
+    "Tests invoke isolated verbatim copy of actual installer; no replacement installer implementation",
+    "Immutable archive/executable/package/lock/browser/driver pins independent of installer output; current source pins and retained archive hash match",
+    "Real host hashing and unzip, exact Linux ELF hash and required ICU/V8 sibling presence; archive corruption must stop before unzip",
+    "Two successful invocations require distinct private0700 stages, exact12 public settings, distinct fresh output leaves, preserved first driver and pinned prerequisite evidence",
+    "Unsupported platform, changed driver, newline RUNNER_TEMP and missing GITHUB_ENV reject with existing environment bytes unchanged; early-input failures make no artifact/dependency calls",
+    "Strict local curl fixture permits only reviewed HTTPS URL; mock npm asserts ci flags and versions; mock dependency CLI asserts install-deps chromium-headless-shell",
+    "Synthetic secret canary absent from stdout/stderr/environment/evidence; actual credentials not needed",
+    "Temporary copies and cleanup contain mutations; archive read bounded by streamed hash; no Linux executable launched"
+  ],
+  "hydration_successor": {
+    "sha256": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
+    "mechanical_review": "Actual source equals approved round3 driver with only private/tmp prefix condition removed; remaining exact bytes unchanged."
+  },
+  "limits": [
+    "No tests or installer CLI executed by reviewer",
+    "No production installer source approval from this receipt",
+    "Mocked platform/download/npm/OS dependencies do not establish actual Linux browser execution or supply-chain runtime qualification",
+    "Missing fixture/tool/source pin is prerequisite failure, not passing or skipped acceptance",
+    "Use existing admitted browser producer lane; absent installer file is not standalone executed product RED",
+    "Real browser and installer runtime evidence remain required"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": []
+}

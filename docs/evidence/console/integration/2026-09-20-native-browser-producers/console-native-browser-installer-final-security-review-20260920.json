@@ -1,0 +1,50 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_INSTALLER_SOURCE_AND_BOUNDED_MOCKED_RUNTIME",
+  "head": "e6a7777ab524ba90c5f24cfa3b83ffa39378caf1",
+  "source_sha256": {
+    "tools/browser/prepare_native_browser.sh": "46e4c2210c73a4bc89f53292b8dd05bc5729a127b48df1208c86be762c0d8cde",
+    "tools/browser/test_prepare_native_browser.py": "0ad67f6629c93c58dddbf6efe4dcaddf9504cf034c00c37e8952396d5ba0d327",
+    ".github/workflows/ci.yml": "055e81b6821cdba7fc17f96265d77d10f9a1c78c1b6f3b68f122bb09b248523b",
+    "scripts/check-ci-preflight.mjs": "50e8a5509829ca11e9ce09076619d07b37ec754ff116f51e737e91e4626e4c94"
+  },
+  "evidence_sha256": {
+    "/private/tmp/console-native-browser-installer-red-20260920.log": "34784b76d3ef217b28226ea8382456693acb2b57244ee0b6b321e63d3fc7207b",
+    "/private/tmp/console-native-browser-installer-green-20260920.log": "9c57cfccaf4156bf9089d13b7186e70e886ef1233a30f2778f95df3bd17ec32c"
+  },
+  "findings": [],
+  "verified": [
+    "Pinned package/lock and four driver copies verified before npm; installed browser manifest verified; fixed official HTTPS archive digest checked before extraction and executable digest checked before publication.",
+    "Fresh private stage with umask077 and chmod0700; exclusive0600 prerequisite receipt; absolute existing runner root and CR/LF checks; supported Linux x86_64 and Node18+ gate.",
+    "npm ci disables lifecycle scripts; installed pinned Playwright owns OS dependency installation; no product build tool replacement.",
+    "All twelve public driver/digest/output settings published only after successful staging and pin checks; no credential or full environment receipt.",
+    "Approved installer test source byte-identical; six tests passed in retained root-produced log, comprising seven installer invocations; actual Linux archive hash/extraction and executable hash, mocked platform/download/npm/dependency install.",
+    "Approved three-oracle exact-discovery/execution script integrated identically into CI and preflight contract; SHA256 aec3ca8a6c084eae3490a395c55256a2925e593c682eff4f33991601d9e16f9c."
+  ],
+  "red": {
+    "discovered": 6,
+    "executed": 6,
+    "failed": 6,
+    "meaning": "Missing installer prerequisite only; not a standalone actual-owner product RED or new lane admission."
+  },
+  "green": {
+    "discovered": 6,
+    "executed": 6,
+    "passed": 6,
+    "installer_invocations": 7
+  },
+  "holds": [
+    "Actual Linux npm/apt/browser execution and full CI producer qualification remain unproved by mocked installer tests.",
+    "Current backend workflow has no upload-artifact producer. Sanitized exact JSON/PNG retention requires separately reviewed pinned upload action and test/preflight contract; five browser steps alone do not satisfy CI retention.",
+    "Account/Company/browser outcomes require their own immutable source/runtime receipts. Company creation remains real product RED COMPANY_FORM; this receipt does not accept Company workflow or any release milestone.",
+    "No product tests/builds/runtime executed by reviewer; inspected root-produced logs and source."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

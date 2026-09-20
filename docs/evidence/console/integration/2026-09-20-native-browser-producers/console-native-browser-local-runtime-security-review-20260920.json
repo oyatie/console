@@ -1,0 +1,135 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPTED_BOUNDED_BROWSER_EVIDENCE_WITH_COMPANY_CREATION_RED_RETAINED",
+  "review_head": "6697a1dc4903d22ea071d37d32e9767e80e6b41c",
+  "source_sha256": {
+    "backend/app/tests/auth_rest/native_entry_browser.rs": "0540ddb5aac4aaa77d19125c1644498bdb5406d65424d967f0b96e4888fe31ff",
+    "backend/app/tests/auth_rest/native_company_browser.rs": "5741d4a033be256f3f274726e96379b48ef674e9603d5ab5291beca0afb52018",
+    "backend/app/tests/health_readiness.rs": "0d7ea0d47f304b18f7078eab19de6a6af5ae6ba9ae9d1dac25558c7d00bbf6d8",
+    "tools/buck/gen_first_party.py": "ac4a1ec444d6588cf0b99e6ed9320e307a394bb3a547874af00e6b37ee6fac36",
+    "tools/buck/test_gen_first_party.py": "1160486c2c13ff79dd6e44e814b769da09cfe62acfe98c12c966c251cb2adbea",
+    "backend/app/BUCK": "69e79ff1038749d54ec883b1c0712aa2d5fea4da7b231b594a6a735c879601e1",
+    "tools/buck/BUCK": "7285aa961af3125d8510524a99b20c5187a0770a0fc5fbac15cc67db7bce72a7",
+    "tools/buck/test_needs_postgres.sh": "7f8173acc6fbd05d0658336c3bf23fa02498ee2a6483da779be740deb8d32e74",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "98950409e6b616abab0ea90f074115bab26870c6e9a0bd54a8d80a48dddde43d",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "21a79442f6d473f212c3c86249f6f16f3f055eb2653c0c726378e2f1a5a8a79c",
+    "tools/browser/account.cjs": "1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664",
+    "tools/browser/company.cjs": "7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57",
+    "tools/browser/company-preview.cjs": "7e52a48f2e851457dba7d55fa0874fc10dc516506bdd5701b086f2fac4ee0ce6",
+    "tools/browser/hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c"
+  },
+  "logs_sha256": {
+    "console-native-account-browser-runtime-20260920.log": "edbbb62d50c8a295eeaba26ef6b7819aca796b584a65f0256fb7be9cb14b9bf6",
+    "console-native-browser-account-ci-recipe-20260920.log": "81a981b3d9633a5a3ea1a4a05561124781846d69f19f2ab683fe4e026232b249",
+    "console-native-company-preview-browser-runtime-20260920.log": "414269e8aba9d9b5f618377ee7bc93acccead049e6fe27d96df818e8f1f6d31d",
+    "console-native-company-creation-browser-runtime-20260920.log": "21f1b75f17226a2237cc36534b1a76da05ef3fb2d6d216b1af1b20a6759791b8",
+    "console-native-payroll-hydration-browser-runtime-20260920.log": "971ff64d1fae4e1a2fb8a8501b4f9f08cfad848eed2be8115b0abd0995bdc5f8",
+    "console-native-payroll-hydration-browser-successor-runtime-20260920.log": "edd9594f0032bf1c4360ea843b8d2cfc582130b9da95642b9b69dc070b897174"
+  },
+  "output_root": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/outputs",
+  "artifact_sha256": {
+    "account/01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "account/02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "account/03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "account/04-sign-in.png": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+    "account/05-account-returned.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "account/owner-receipt.json": "377869ad12c0bad89288d2d7002ba762c8eb82153aea8004c792e9b70b2e054b",
+    "account/result.json": "9a7536448d2cca72dcf3295b0049224f907610ed4aa4d24cc063e8c9d198556a",
+    "account-ci/01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "account-ci/02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "account-ci/03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "account-ci/04-sign-in.png": "7c5fa0989f865678c32e3c5bb098a396ef2747091abaad612ced5b2d76033e37",
+    "account-ci/05-account-returned.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "account-ci/owner-receipt.json": "88a8b9ba8c4860c6450e6eeac4f923a53c4965be299890fd273c208850dbf597",
+    "account-ci/result.json": "13d1e6a02e087d605e3bc967fd3b4ae9f3a94ebde62c609b3a0899ef14fee827",
+    "company/01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "company/02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "company/03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "company/owner-receipt.json": "9557daf3053e3061fab3bb83b0cc07c5c1c80871a5fa947df6244775787bdc57",
+    "company/result.json": "40293ee82729519c96a54a28bcdde648e9eb5e2beae9b180565c6475053d3e4f",
+    "company-preview/01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "company-preview/02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "company-preview/03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "company-preview/04-company-preview-input-preserved.png": "dcdd416e9d6f1a1ac4bb83ee375560a005f762dfc06553ea0d5b4e02c9c11438",
+    "company-preview/owner-receipt.json": "2a37b25bf5b0b498e29bcd561b0d6bb521de05dfdf47f93d1325bdf434ca3eb2",
+    "company-preview/result.json": "e977c44108562d6dbe0154b6a3da7a5ace2a129e15542587cefed7d7dccb1cb7",
+    "hydration/authorized-before.png": "cfea45abc4ed71de5c0224c34fe869f3d5747d2982588af3a430b296599cf8a3",
+    "hydration/authorized-filter-1.png": "f9f08dae6c254fb651222f5ebbefe8c2e956e730ddd876e87556e0b8708ddb39",
+    "hydration/authorized-filter-2.png": "8e7dbca71b6d99f43a14732865e8390625c8fd398c8e2550e7eb00d68019b762",
+    "hydration/authorized-filter-3.png": "bc21f183a2e9563bc3605d98cfecd5e02f043c83af36997c79bef6e4822a4a66",
+    "hydration/owner-receipt.json": "98af5854fc6ebb0a6f42169d4ec7646ac9d13b893d382ff5d4f3ef267f92a5c3",
+    "hydration/result.json": "9d292e366a1bd69b19c6ed5b93fb44a2a76006dc14ccca6a1227c15b3f941646"
+  },
+  "counts": {
+    "browser_invocations_executed": 5,
+    "passed": 4,
+    "failed": 1,
+    "distinct_browser_tests_passed": 3,
+    "distinct_browser_tests_failed": 1,
+    "account_repeat_in_ci_recipe": 1,
+    "pure_oracle_tests_in_ci_recipe": 3,
+    "pure_oracle_passed": 3,
+    "earlier_hydration_compile_failure_product_tests_executed": 0
+  },
+  "accepted": [
+    {
+      "leaf": "Account enrollment/logout/login",
+      "logs": [
+        "console-native-account-browser-runtime-20260920.log",
+        "console-native-browser-account-ci-recipe-20260920.log"
+      ],
+      "counts_per_invocation": "1 passed, 0 failed, 0 ignored, 482 filtered",
+      "proof": "Real native registration, resident virtual WebAuthn credential, logout and rediscoverable login to same Account. Three parent DB checkpoints enforce complete Account-owned effects, retained history and unchanged business identity rows. Exact five auth POSTs, no unexpected POSTs or external page requests, secure-cookie and literal-secret checks. Mounted 320px geometric reflow and keyboard checks pass. Both owner receipts confirm observed-live then absent browser PID, driver success, unchanged source and app shutdown."
+    },
+    {
+      "leaf": "Company preview",
+      "counts": "1 passed, 0 failed, 0 ignored, 482 filtered",
+      "proof": "Real Account registration and restricted owner designation precede navigation to /account/companies/new. Preview Enter in name/slug preserves inputs, URL/history and emits no requests; parent compares complete all_rows before/after and asserts no Company identity. This accepts historical noncommitting preview only."
+    },
+    {
+      "leaf": "Payroll hydration",
+      "counts": "1 passed, 0 failed, 0 ignored, 15 filtered",
+      "proof": "Five actual browser contexts: anonymous, member, foreign empty Company, authorized JS disabled, authorized. Exact private response envelope and denied row/island/assets omission; authorized JS/WASM response hashes equal currently embedded bytes. Three filters preserve original nodes and issue no requests. JS-disabled control remains unfiltered. Exactly one expected CSP failure for JS-disabled script with empty inflight request sets; all other error/egress/mutation counters zero. Real redirect source Authorization observed once, positive-tested/reset foreign sink receives zero requests or Authorization. Parent verifies all durable tables unchanged except exactly three authorized read audits, with exact fields/actors/Company/retained history. Browser/app/sink cleanup confirmed."
+    }
+  ],
+  "company_failure": {
+    "executed": 1,
+    "passed": 0,
+    "failed": 1,
+    "ignored": 0,
+    "filtered": 482,
+    "driver_failure": {
+      "stage": "company_entry",
+      "code": "COMPANY_FORM"
+    },
+    "owner_panic": "unexpected wrapper keys: owner awaits COMPANY_COMMITTED checkpoint, receives failure RESULT instead",
+    "evidence": "Five exact 200 document navigations, real registration and successful designated entry; two auth POSTs, zero Company enrollment POSTs, only ENROLLED DB checkpoint; driver false success and failed status retained; browser PID observed live then absent and server/relay closed.",
+    "consequence": "No Company command, creation, reopening, workspace or persistence acceptance. Existing owner lane remains red. No inference of complete Company DB effects from failed creation."
+  },
+  "custody": [
+    "Three Rust owner files match previously approved source manifest exactly; no browser assertion changes from resource correction.",
+    "All four staged drivers byte-identical to reviewed repository sources; parent checks configured driver SHA before execution and unchanged source after.",
+    "Actual staged macOS arm64 executable SHA a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282 independently verified; package version1.63.0 and Chromium153.0.8010.12 enforced by driver.",
+    "JS/WASM current file digests independently match parent embedded-asset receipt and browser actual response hashes.",
+    "31 exact output files, including21 PNGs and10 JSON receipts, hashed; no TLS fixtures, key files, storage-state dumps or raw traces retained in these output directories."
+  ],
+  "limits": [
+    "macOS local native execution, not actual Linux CI qualification or production deployment artifact attestation.",
+    "CI recipe was executed locally; retention upload producer and actual CI run remain separate.",
+    "Synthetic resident authenticator, test-only terms publication and fixture Bearer hydration do not establish physical-device usability, full access/revocation, native payroll workflow or legal calculation correctness.",
+    "Preview no-form semantics require an independently reviewed successor when Company creation is implemented. Do not delete or weaken prior test without that approval.",
+    "Earlier hydration failure was missing three compile-time source resources, not executed browser/product RED. Independent resource correction receipt d01957938639e0d101e5f74a7405b6811c6d3f172510c63d8067dd3182166026 retained; full generator run acceptance separate.",
+    "Functional DB topology does not prove durability, HA, workload, backup or recovery targets.",
+    "Visual critique, screen-reader/IME/zoom/representative-user usability and complete release qualification remain separate.",
+    "Reviewer ran no product tests/builds/DB/browser; reviewed existing sources, logs, JSON and hashes."
+  ],
+  "findings": [],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}
