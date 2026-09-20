@@ -187,7 +187,7 @@ async fn actual_group_member_decode_failure_is_finite_atomic_and_recovers(pool: 
     let captured = std::panic::AssertUnwindSafe(async {
         // Original function text plus one fixed typed-UUID fixture substitution;
         // no credentials, external SQL input, ACL changes or historical edits.
-        sqlx::raw_sql(sqlx::AssertSqlSafe(&faulty_definition))
+        sqlx::raw_sql(sqlx::AssertSqlSafe(faulty_definition.as_str()))
             .execute(&pool)
             .await
             .unwrap();
@@ -272,7 +272,7 @@ async fn actual_group_member_decode_failure_is_finite_atomic_and_recovers(pool: 
         .execute(&mut *restore)
         .await
         .unwrap();
-    sqlx::raw_sql(sqlx::AssertSqlSafe(&original_definition))
+    sqlx::raw_sql(sqlx::AssertSqlSafe(original_definition.as_str()))
         .execute(&mut *restore)
         .await
         .unwrap();
