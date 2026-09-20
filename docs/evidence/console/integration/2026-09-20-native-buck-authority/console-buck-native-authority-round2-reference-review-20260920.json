@@ -1,0 +1,80 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "round": 2,
+  "scope": "independent coverage and transition-scope review",
+  "decision": "approve same sealed candidate; native implementation remains unqualified",
+  "packet_path": "/private/tmp/console-buck-native-authority-design-20260920-round1",
+  "manifest_sha256": "73a89553c7867074dd88dd9bcf51c9330fe8a448468242186f2004d15184d733",
+  "base_sha": "209af958af44fba8577ce8e2cae1068150a1b410",
+  "findings": [],
+  "cargo_usage_classification": [
+    {
+      "uses": [
+        "ci.yml:216 cargo metadata",
+        "layer-boundary metadata",
+        "dev-auth-absence metadata",
+        "writer-ownership metadata",
+        "Cargo.toml and Cargo.lock for first/third-party generation"
+      ],
+      "classification": "permitted dependency/graph metadata; does not produce qualifying product compilation"
+    },
+    {
+      "uses": [
+        "ci.yml Cargo fmt",
+        "Cargo-compatible editor tooling"
+      ],
+      "classification": "permitted formatting/editor support; do not delete metadata or compatibility to satisfy native requirement"
+    },
+    {
+      "uses": [
+        "third-party/rust/reindeer/bootstrap.sh:53-59",
+        "security.yml:99 pinned cargo-audit install",
+        "security.yml:119 pinned cargo-deny install"
+      ],
+      "classification": "separately pinned supporting-tool bootstrap; resulting dependency/advisory checks remain required, not Console product compiler delegation"
+    },
+    {
+      "uses": [
+        "ci.yml Cargo tests/runs",
+        "cargo_needs_postgres.sh cargo test --no-run and cargo nextest run",
+        "cargo-test-runner.sh subprocess Cargo map invocations"
+      ],
+      "classification": "transitional product/test execution; replace with native equivalents before native qualification, preserve full memberships and failure propagation"
+    },
+    {
+      "uses": [
+        "ci.yml:1139-1143 Cargo clippy default, dev-auth, hydrate/islands"
+      ],
+      "classification": "compiler-driven checks of product variants, not formatting exemption; preserve checks and declared input/feature coverage in native migration"
+    },
+    {
+      "uses": [
+        "tools/ui/build-payroll-wasm.sh:7-11",
+        "backend/Dockerfile:34,49"
+      ],
+      "classification": "Cargo product artifact production; not permitted native acceptance; native WASM and optimized binary/image input evidence required"
+    },
+    {
+      "uses": [
+        "buckify.sh:11 ambient default 1.97.1"
+      ],
+      "classification": "known generation toolchain defect; pinned bootstrap permission does not excuse conflicting ambient project toolchain"
+    }
+  ],
+  "coverage_conclusions": [
+    "PRODUCT names app/worker, SSR, hydration, compiled gates, required Rust tests and release artifacts; DELIVERY requires action and artifact evidence for the same scope.",
+    "ROADMAP requires same discovered/executed tests and feature variants, PostgreSQL isolation, failure behavior and credential safety; dev-auth, test-postgres and hydrate/islands are not excluded by required Rust test variants.",
+    "Compiled governance gate executable production belongs to native scope even when the gate invokes Cargo metadata to inspect the workspace.",
+    "Test binaries for non-default PostgreSQL features must remain covered even if current default Clippy invocation does not lint that feature; existing CI comments are historical coverage facts, not exemptions.",
+    "Existing JS/browser/security gates remain required by DELIVERY:44,55,78-84 and the assembled release contract. Removing old Buck-deletion-direction sentence does not authorize dropping JavaScript reachability or browser security tests.",
+    "No CI, JavaScript/browser tests, PostgreSQL maps, fixture bytes, historical documents or metadata are edited by this candidate.",
+    "Inherited Cargo partition counts at ROADMAP:38 describe the transitional baseline; new :39 explicitly preserves them until proven equivalents, so they no longer contradict target direction.",
+    "Inherited SSR native-target presence and committed release WASM statements establish current source state only; new PRODUCT and DELIVERY explicitly deny full native qualification from target presence or Cargo output."
+  ],
+  "limitations": [
+    "Review proves authority scope and preservation contract, not actual equality of future native/Cargo test discovery or execution.",
+    "Native migration must later supply variant-specific membership/count, failure and exact artifact evidence.",
+    "No repository edits, generator execution, runtime/build/test/network or installation performed."
+  ],
+  "executed_tests": 0
+}

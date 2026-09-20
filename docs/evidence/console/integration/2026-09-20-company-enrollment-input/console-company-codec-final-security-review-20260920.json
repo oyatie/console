@@ -1,0 +1,46 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_FOR_BOUNDED_CODEC_COMMIT",
+  "head_before_commit": "7601134f1e03606f4002a447f9317d4d400e3b43",
+  "files": {
+    "backend/crates/identity/application/src/company.rs": "9c1cecbc57a1c55b2a90d958a2ceae6046a97e04866da935e3ebf2c595a2899c",
+    "backend/crates/identity/application/src/lib.rs": "a5588a66f9de56ba57d7092eefc999aaf03d504f7aba27a8850ee480756e99fa",
+    "backend/crates/identity/application/src/company_enrollment_tests.rs": "7b8957c76a9233872da50284b07f4309267434214dea90bf0ea65eb851e1f484",
+    "docs/program/executed-tests-baseline.json": "ec5c148fa0fbbe857889001bf09a5f189c9109b7159d4979c6e47c37a2edec71"
+  },
+  "test_successor": "Exact sole chunks_exact(2) to as_chunks::<2>().0.iter() replacement plus newlines; original even-length assertion remains. No fixture, assertion, case or expected-result changes.",
+  "logs": {
+    "/private/tmp/console-company-codec-native-final-20260920.log": "bb8324366d3953c0d4f556d72b1963a2874e8d482bef5d0a6bf1e681212e7084",
+    "/private/tmp/console-company-codec-clippy-green-20260920.log": "a89afca3fa56cc33a23c2521d758c4fa5db77a0fb701dc3d5e973c869888c70a",
+    "/private/tmp/console-company-codec-native-layer-gate-20260920.log": "cefc3336a611e9a4be846b6663030006373272f454fae51e5472a6dbab7720a8",
+    "/private/tmp/console-company-codec-native-library-20260920.log": "3d4d5718d3caf8695180a4852c8cf587af3fdccf85c95934d0bda1ba13e35794",
+    "/private/tmp/console-company-codec-reachability-green-20260920.log": "c6d908760a411a46a7b5db131568a2202021b7e4c505fcfd3a7addd6f4f02f34",
+    "/private/tmp/console-company-codec-baseline-tests-20260920.log": "0532ccee2f2a0ad37311bbfb3aaf09544afb5c37e555ff675f13913f12aea778",
+    "/private/tmp/console-company-codec-clippy-20260920.log": "980ab92e4e9aca994359a12ff15b09f282c160f7480ea05fb35b7a82e67a4a4b",
+    "/private/tmp/console-company-codec-reachability-20260920.log": "8c311fe1decff7bc952671ac8d3da7c26595d0fee597ffbe73914d04cc432c8f"
+  },
+  "results": {
+    "native_discovered": 10,
+    "native_distinct_passed": 10,
+    "native_failed": 0,
+    "native_ignored": 0,
+    "reachability_tests_passed": 15,
+    "baseline_tests_passed": 26,
+    "native_layer_crates": 176,
+    "native_layer_violations": 0,
+    "native_library": "BUILD SUCCEEDED",
+    "clippy": "success after helper successor"
+  },
+  "count_correction": "Baseline log reports26/26, not25/25 in root message.",
+  "ratchet": "Verified exact sole baseline lib.rs2\u219210 in prior runtime receipt; no dark exception changed.",
+  "prior_receipts": [
+    "/private/tmp/console-native-company-codec-implementation-security-review-20260920.json",
+    "/private/tmp/console-company-codec-native-runtime-security-review-20260920.json"
+  ],
+  "remaining_holds": [
+    "Company original end-to-end lane remains RED",
+    "No authority, DB persistence, browser or release acceptance from this codec"
+  ],
+  "reviewer_executed_product_tests": 0,
+  "findings": []
+}

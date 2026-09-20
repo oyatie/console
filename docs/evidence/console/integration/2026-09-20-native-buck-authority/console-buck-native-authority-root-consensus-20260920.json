@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVE exact3authorityreconciliation after4independentreviewrounds; rootintegration/generatedprojections/gates only",
+  "design_manifest_sha256": "73a89553c7867074dd88dd9bcf51c9330fe8a448468242186f2004d15184d733",
+  "integration_base": "77c29876731d8500ccaa20698b336f96fdfd9814",
+  "independent_rounds_sha256": {
+    "/private/tmp/console-buck-native-authority-round1-reference-review-20260920.json": "0729f1d194042c3ce72830b8e6ee8c2bb769592ef0864b50a10037803c03bf64",
+    "/private/tmp/console-buck-native-authority-round2-reference-review-20260920.json": "bc443e2ca6b4fa4a4f0edb609f7a38e19d727ddb1c1b455d4dac11283b2638ff",
+    "/private/tmp/console-buck-native-authority-round3-reference-review-20260920.json": "9b6c4eb93e0dc779e661bbd03946ca15f8a0ae7d11c84f7b2d8a01127c9b65a4",
+    "/private/tmp/console-buck-native-authority-round4-reference-review-20260920.json": "95f761d3d295cc7d428aaf968c0ec8e283df35e3c385951e81e5cd35a97982ba"
+  },
+  "user_authorization": "and making sure we are buck2 native?",
+  "checks": [
+    "Reviewed currentmixednative/Cargopaths and usertarget",
+    "NativeRustactions required across host/SSR/WASM/tests/gates/release",
+    "Metadata/toolbootstrap explicitlysupporting only,not competingproductproducer",
+    "Preserve all existingcoverage before retiring oldproducer",
+    "No sourceevidence,SQLhistory,TLS/Rustpin/exposure change",
+    "No nativecompletion/hermeticity/cache/performance claim"
+  ],
+  "remaining": [
+    "Required doc/ADR/citation/foundation/preflight/verifier/repository gates",
+    "NativeWASM,releaseimage andCI execution convergence",
+    "Complete firstclientreleasequalification"
+  ]
+}

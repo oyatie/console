@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact CompanyEnrollmentV1 API and eight additive tests as implementation dependency within admitted authenticated enrollment owner lane",
+  "manifest_sha256": "820dc2376fe778eb4450c79c3621599475a4e61de1eb3a3b1b116de60100212e",
+  "test_sha256": "01f4b97dc45eda4dd706b1997a21e9b875c40880d5f3281b913c4211de66e19c",
+  "api_sha256": "d3903ba36f8e8be6111d500a7e6f52412f25981ec2219d0865702bb9b7554dcd",
+  "checks": [
+    "All packet and current source preimage hashes verified. Eight test functions and five vectors match declared inventory; no prior source or test changed in proposal.",
+    "Independently reconstructed all five binary vectors from specified header,BE lengths and UUID network bytes; exact hex,byte counts and SHA256 match both Rust literals and golden-vectors.json. All malformed offset constants independently checked against null-group layout.",
+    "Contract matches accepted consolidated PROPOSALsection3 binary codec. Header is26text bytes plus one NUL=27total, then BEu16 version. API sentence is interpreted with its parenthetical and exact test constants, not as28bytes.",
+    "Strict JSON construction covers object-only shape,all five mandatory members including explicit nullable group,each duplicate,escaped semantic duplicate,positive escaped unique key,unknown/wrong types,canonical nonnil UUIDs and4096raw-byte/exhaustion limit.",
+    "Unicode tests enforce byte count rather than scalar count,blank/control rejection and exact preserved valid content. Slug tests enforce ASCII grammar/endpoints/length. Codec tests cover every prefix truncation,suffixes,nil Account/command/admin/group,wrong version/presence,lengths and invalid UTF8/fields.",
+    "Private validated fields avoid unchecked serde bypass. UUID is namespace data only; decoding cannot establish Account authority. Actual session binding,source policy,transport bounded reading and SQL parser parity remain owner responsibilities.",
+    "Read root admission log: named probes admitted RED. Root reports actual retained authenticated POST404vs201,1executed/1failed,475filtered. Codec missing-symbol compilation is explicitly not that RED; no fake stub needed."
+  ],
+  "required_followup": [
+    "Root implement actual pure application codec and unchanged tests,format/build/discover and run all eight plus existing identity application tests. Independently review concrete implementation bounds before acceptance.",
+    "Use shared fixed vectors in later SQL parser,digest and stored request owner; never reseal or reinterpret persisted v1 bytes.",
+    "Keep enclosing enrollment lane open until exact retained HTTP probe and required acceptance pass. Pure codec GREEN is intermediate product progress."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "repository_mutations_by_reviewer": 0,
+  "limits": [
+    "No codec implementation supplied/reviewed yet.",
+    "No policy,request persistence,receipt,effect or browser completion inferred from these pure tests."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton's Fence",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

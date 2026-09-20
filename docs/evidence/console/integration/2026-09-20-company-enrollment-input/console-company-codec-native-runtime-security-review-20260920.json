@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT_PURE_CODEC_NATIVE_EXECUTION_AND_EXACT_RATCHET_GAIN",
+  "source_review": "/private/tmp/console-native-company-codec-implementation-security-review-20260920.json",
+  "source_review_sha256": "2aacc72ad6e93f218414b0a168497e34857b1199d43ffffcc43680e2f5deb487",
+  "logs": {
+    "/private/tmp/console-company-codec-native-build-20260920.log": "d9d44d3236622bb3e0f0930ad22990b935438804df7254dbc35091a816412575",
+    "/private/tmp/console-company-codec-native-discovery-20260920.log": "3e0ba49cec2bdf94326c4454c2fbc26b96d66cb31af8933f72fadff2695f68c9",
+    "/private/tmp/console-company-codec-native-focused-20260920.log": "e26fec88b2ae1ac9046c168248b1ccd2c5d73cc8f2e7d0850584f27f30b65149",
+    "/private/tmp/console-company-codec-native-full-20260920.log": "34b9cbaad1f5bb98e8e43e91c5896ae0e3cca704cbf573611f89ee33eaeeef19",
+    "/private/tmp/console-company-codec-native-layer-gate-20260920.log": "cefc3336a611e9a4be846b6663030006373272f454fae51e5472a6dbab7720a8",
+    "/private/tmp/console-company-codec-native-library-20260920.log": "3d4d5718d3caf8695180a4852c8cf587af3fdccf85c95934d0bda1ba13e35794"
+  },
+  "discovered": 10,
+  "distinct_executed": 10,
+  "distinct_passed": 10,
+  "focused_new_tests": 8,
+  "full_unit_tests": 10,
+  "failed": 0,
+  "ignored": 0,
+  "floor_change": {
+    "path": "docs/program/executed-tests-baseline.json",
+    "key": "backend/crates/identity/application/src/lib.rs",
+    "old": 2,
+    "new": 10,
+    "before_sha256": "367c11d56aefe71da5e760d4f25bffaf037f1153ca89d075f59622c0b7c67de2",
+    "exact_candidate_sha256": "ec5c148fa0fbbe857889001bf09a5f189c9109b7159d4979c6e47c37a2edec71",
+    "other_bytes": "identical"
+  },
+  "limits": [
+    "Full Company enrollment original HTTP probe still RED",
+    "Subsequent lint-only test helper successor requires focused recheck",
+    "No DB/browser/authorization/persistence acceptance"
+  ],
+  "findings": []
+}

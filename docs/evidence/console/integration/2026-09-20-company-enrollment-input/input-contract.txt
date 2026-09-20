@@ -1,0 +1,62 @@
+# Exact CompanyEnrollmentV1 validation/codec test candidate
+
+This is a test/API proposal within the root's actual Company owner lane, not a separate fake implementation or a request to weaken admission. Root identified `company_setup_commits_once_reopens_and_preserves_account_credentials` as an existing genuine HTTP-owner RED that expects 201 before reading missing enrollment tables. Root must attest its native run separately. The codec is a subordinate implementation dependency of that enclosing lane. No stub, Unsupported API, production edit, build or runtime execution is included here.
+
+Reuse accepted consolidated PROPOSAL §§2–3 and v2/v6. The finite schema/JSONB evidence is unchanged. Exact scope: strict input construction, fixed immutable v1 byte encoding/decoding. No SQL owner, new authority, receipt state, hash implementation, endpoint or effect is supplied by this packet.
+
+## Eventual application API
+
+Proposed `backend/crates/identity/application/src/company.rs`, publicly re-exported by existing lib.rs:
+
+```rust
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CompanyEnrollmentV1 {
+    // Private validated fields: command_id: uuid::Uuid,
+    // group_id: Option<uuid::Uuid>, slug: String, name: String,
+    // administrative_account_id: uuid::Uuid.
+}
+impl CompanyEnrollmentV1 {
+    pub fn from_json_slice(input: &[u8]) -> Result<Self, console_kernel_core::KernelError>;
+    pub fn encode(&self, account_id: uuid::Uuid) -> Result<Vec<u8>, console_kernel_core::KernelError>;
+    pub fn decode(input: &[u8]) -> Result<(uuid::Uuid, Self), console_kernel_core::KernelError>;
+}
+```
+
+The current tree has no native AccountId Rust type; current native Account APIs use uuid::Uuid. Do not refer to a nonexistent kernel type or cast to UserId. Here `account_id` is exact Account namespace addressing only, not proof. Its server provenance and namespace equality are enforced by the later existing session/application owner before intake. Decode returns data and cannot mint authentication. Getters may be added only for actual owner consumption during implementation; they cannot mutate validated fields. No public unchecked serde constructor.
+
+`from_json_slice` is the application input parser for the v1 route and also enforces 4096 raw input bytes. Transport must bound body reading before allocation and call this same parser. This colocates the existing HTTP acceptance limit defensively without applying 4096 to historical codec decoding. Input must be one complete JSON object (permitted JSON trailing whitespace fits the same byte budget), five mandatory members including explicit nullable group_id, no duplicate or unknown member, correct string/null types. serde_json Value conversion before typed validation would lose duplicate-member evidence, so the actual owner must parse without that loss.
+
+Names: 1–256 UTF-8 bytes, trim view used solely to reject all-whitespace, no Rust char::is_control characters, exact valid bytes preserved. This treats Unicode NBSP as blank and U+0085 as control; no normalization. Slugs: 1–63 ASCII lowercase/digit/hyphen, alphanumeric endpoints. Every UUID string must equal its canonical lowercase hyphenated representation and be nonnil. group_id=null is a present member, not a missing default. Codec can preserve a nonnull Group, while initial Group-of-one owner separately refuses unsupported selection; codec acceptance is not Group authority.
+
+Binary layout: 27 ASCII bytes `console.company.enrollment` + NUL (the literal text is 26 bytes), u16 BE version 1, Account UUID16, command UUID16, group-presence byte0/1 and optional Group UUID16, administrator UUID16, u32 BE slug length/exact bytes, u32 BE name length/exact UTF-8. No trailing bytes. Decoder applies all field validity and verifies consumption using checked bounds before length slicing; huge supplied length must fail without allocating huge buffers. Encoder rejects nil Account; command fields are already validated. Version1 forever retains exact bytes.
+
+## Fixture oracle and tests
+
+`golden-vectors.json` records five independent immutable vectors: ASCII, Korean, escaping, preserved spaces, nonnull Group. Test source embeds their fixed JSON and hex directly, requiring no BUCK JSON resource addition. Golden expectations were assembled privately from the specified binary layout with Python struct/UUID; they do not call the proposed production codec. Their digests are reference data only; this test candidate does not assert a product digest function exists.
+
+Eight Rust test leaves exercise fixed-byte encode/decode, missing/duplicate/unknown/wrong JSON, canonical/nonnil UUID, Unicode name bytes/control/blank preservation, exact slug grammar, 4096/4097 bytes and full JSON consumption, every prefix truncation and suffix, and malformed binary header/version/discriminator/UUID/length/UTF8/fields. Rejection tests use fixed offsets documented from the independent null-Group vector. Parent should review these offsets and fixtures before implementation. SQL parser equality and raw HTTP body bound are later actual-boundary tests, not claimed by these pure tests.
+
+Intended test include at the end of company.rs:
+
+```rust
+#[cfg(test)]
+#[path = "company_enrollment_tests.rs"]
+mod tests;
+```
+
+The existing identity/application native unit target glob includes both .rs files; root owns any lib.rs edit. Native commands after exact implementation/test integration:
+
+```sh
+tools/buck2 build //backend/crates/identity/application:console-identity-application-unit --show-output
+tools/buck2 test //backend/crates/identity/application:console-identity-application-unit
+```
+
+Discover exact binary tests with --list and record eight new leaves plus full regression counts. A missing API compile failure is not executed product RED. No zero-test GREEN. Root's enclosing reviewed real HTTP owner RED remains the implementation admission boundary; these pure tests refine its byte contract.
+
+## Review and safety
+
+Pre-mortem: parser silently drops duplicates, Option accepts missing group, UUID parser accepts noncanonical strings, common domain helper trims names, UTF8 length counted as scalars, codec overallocates on forged length, decoded UUID is mistaken for verified Account. Detection: explicit adverse cases plus owner-bound session/prepare tests later. Blast radius: pure identity application module and additive tests only. Rollback: remove only candidate additions before persisted codec publication; after persisted v1 use, never rewrite bytes or remove decoding support. Stop on golden mismatch or semantic conflict; revise immutably and return tests to independent review. No historical commands, custody profile, migration or generated artifact is changed by this packet.
+
+Author /root/reference_inventory. Independent reviewer /root/integration_security requested. Selected lenses: Cartesian doubt, Chesterton's Fence, Red Team, Operability, Blast radius, Zero trust. Runtime tests executed: 0; Rust syntax/format/build not executed. Tests are an exact review candidate, not passed evidence.
+
+Round2 strengthens the same JSON-shape test with an otherwise valid five-value struct array, a Unicode-escaped duplicate name key, and a positive uniquely escaped command_id key. This rejects duplicate semantics without prohibiting legal JSON key escaping. A map-only serde visitor can reuse the existing account_browser.rs pattern without a platform dependency. Round1 is preserved.

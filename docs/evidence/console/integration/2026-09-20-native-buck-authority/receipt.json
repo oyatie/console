@@ -1,0 +1,192 @@
+{
+  "kind": "bounded-authority-verification-evidence",
+  "frozen_head": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+  "owner": "/root",
+  "result": "npm run verify exited0;74 fast stages passed",
+  "execution": "mixed Cargo/Buck2; not full native release qualification",
+  "authority_tests": {
+    "executed": 190,
+    "passed": 190
+  },
+  "request_body_tests": {
+    "executed": 622,
+    "passed": 622
+  },
+  "zero_test_summaries_are_not_acceptance": true,
+  "prior_failures_preserved": true,
+  "remaining_holds": [
+    "Company enrollment and five-area MVP incomplete",
+    "native browser, WASM and release artifact qualification pending",
+    "full client release qualification and separate exposure decision pending"
+  ],
+  "files": {
+    "console-buck-native-authority-final-security-review-20260920.json": {
+      "source_sha256": "b187cbe210055d58d1437e14ac36aab1c4effa93710b87836b670d68ee11ccaf",
+      "stored_sha256": "b187cbe210055d58d1437e14ac36aab1c4effa93710b87836b670d68ee11ccaf",
+      "source_bytes": 5094,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-gate-0-20260920.log.gz": {
+      "source_sha256": "48a645f4d7e4db26498a865cd73cdb2e708d490880e3fc7279e28b686f87709a",
+      "stored_sha256": "026028557ef1b1910e48641bdff6926f0e568b4d1125d93265fd97ea063e17e5",
+      "source_bytes": 34,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gate-1-20260920.log.gz": {
+      "source_sha256": "b9af0fa9b4e1564aaaf449725898fd39bfd37f50244f069758260bd2b77023a2",
+      "stored_sha256": "2f0c6a05941874895e60d16ae91d48622f08f870d879698e8cc0a3b503735e5c",
+      "source_bytes": 47,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gate-2-20260920.log.gz": {
+      "source_sha256": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995",
+      "stored_sha256": "c3666319379d205c1f61d8b960cc635867b20e65f663ccdc7002290355258157",
+      "source_bytes": 53,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gate-3-20260920.log.gz": {
+      "source_sha256": "06e9b465b7ef70b6bafb2ea61eaa1cedefd9533545e184a35a3bed6376f31d9a",
+      "stored_sha256": "8de3144f07339d1ac45cc9beb5e802720f22b11e7df7025e1884dc654f8d8f25",
+      "source_bytes": 80629,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gate-4-20260920.log.gz": {
+      "source_sha256": "8d5956d1ede4e434f33dc78ff6420ddbaf5cada2f01beccd295a869fb3e5cdaa",
+      "stored_sha256": "6de879d952e595f7aaf180a6eb83ab4471a53fdeda2c308d52cb553a09f7990d",
+      "source_bytes": 8135,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gate-5-20260920.log.gz": {
+      "source_sha256": "526756f529cc5a4bfffb1c2fd903ab894eeffe79fd87dda4c8d6e464cd265f6e",
+      "stored_sha256": "b792a4464b2d3eb2ab961ad7921dd05a14f1760de99a3677b6e447c96d20ab38",
+      "source_bytes": 30,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gate-6-20260920.log.gz": {
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stored_sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "source_bytes": 0,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-gates-20260920.json": {
+      "source_sha256": "ff017a0b2cec4dd11d04ee00dc7d13403b0e8c2611e3825e6e28884ded5d0457",
+      "stored_sha256": "ff017a0b2cec4dd11d04ee00dc7d13403b0e8c2611e3825e6e28884ded5d0457",
+      "source_bytes": 1282,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-integrated-source-review-20260920.json": {
+      "source_sha256": "63ee3727d36f5cb02eb114cd852d889bdae912919c2397c103b089c3f7265dc0",
+      "stored_sha256": "63ee3727d36f5cb02eb114cd852d889bdae912919c2397c103b089c3f7265dc0",
+      "source_bytes": 2853,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-root-consensus-20260920.json": {
+      "source_sha256": "7ed49c6c95aaee746189b6267706797c13a822dc7353a9132a6d1786e341d370",
+      "stored_sha256": "7ed49c6c95aaee746189b6267706797c13a822dc7353a9132a6d1786e341d370",
+      "source_bytes": 1686,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-round1-reference-review-20260920.json": {
+      "source_sha256": "0729f1d194042c3ce72830b8e6ee8c2bb769592ef0864b50a10037803c03bf64",
+      "stored_sha256": "0729f1d194042c3ce72830b8e6ee8c2bb769592ef0864b50a10037803c03bf64",
+      "source_bytes": 2750,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-round2-reference-review-20260920.json": {
+      "source_sha256": "bc443e2ca6b4fa4a4f0edb609f7a38e19d727ddb1c1b455d4dac11283b2638ff",
+      "stored_sha256": "bc443e2ca6b4fa4a4f0edb609f7a38e19d727ddb1c1b455d4dac11283b2638ff",
+      "source_bytes": 4645,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-round3-reference-review-20260920.json": {
+      "source_sha256": "9b6c4eb93e0dc779e661bbd03946ca15f8a0ae7d11c84f7b2d8a01127c9b65a4",
+      "stored_sha256": "9b6c4eb93e0dc779e661bbd03946ca15f8a0ae7d11c84f7b2d8a01127c9b65a4",
+      "source_bytes": 4225,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-round4-reference-review-20260920.json": {
+      "source_sha256": "95f761d3d295cc7d428aaf968c0ec8e283df35e3c385951e81e5cd35a97982ba",
+      "stored_sha256": "95f761d3d295cc7d428aaf968c0ec8e283df35e3c385951e81e5cd35a97982ba",
+      "source_bytes": 3275,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-buck-native-authority-tests-20260920.log.gz": {
+      "source_sha256": "c34466d59f0676dc0f4d5fc37994ae46c8a8d54da1ab1abe1d55e15aedf58ff6",
+      "stored_sha256": "ba9389446a615b869e35347a21534623ad0671db82a97c79635f7e92daf37375",
+      "source_bytes": 52986,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-tests-authorized-20260920.log.gz": {
+      "source_sha256": "3e2c6bdcdd3949f4aa32dcd779230d4c43000963a7d91c75c10dca2ea510c841",
+      "stored_sha256": "49f51632fb302b434ed2c848a4fe41511727cad719aab744670597e03bb44944",
+      "source_bytes": 15912,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-verify-20260920.log.gz": {
+      "source_sha256": "ec70fe5f4a1a4f3e182ea9f58ce712cedf1f749e53033e7ba9d41e2f440e3bcb",
+      "stored_sha256": "322f137a1d6fe64cd11a8f5079ba76844935a8efcec5067172859a79b1d89702",
+      "source_bytes": 692249,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-buck-native-authority-verify-recheck-20260920.log.gz": {
+      "source_sha256": "5eaad20786820bd95fc580702a410b05c32c13241697c32089ea21e327389678",
+      "stored_sha256": "42ae8c4cc4a8eb81fde3a9cd4f7feadf9838c14d813ca57ef626dc5d5261c1f8",
+      "source_bytes": 669665,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-executed-tests-gain-baseline-tests-20260920.log.gz": {
+      "source_sha256": "e998fec6b36a63a6e64bd20c86ea348d8cf5b30b138f41a81b5f5d50a3c1762b",
+      "stored_sha256": "95aeb93e2f41e39c382d735cc2b26767fc201ffc43f6c5d31b3b0f7196ad1ee8",
+      "source_bytes": 2313,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-executed-tests-gain-green-20260920.log.gz": {
+      "source_sha256": "9d89efc305b237ca5b648b1302f03eeeccdafa98b8ed413e4f6f1194ca7db116",
+      "stored_sha256": "31abea92c260eed659f745c64c7ff11cd147ebc80238edd5b1b2644405c2e880",
+      "source_bytes": 2290,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    },
+    "console-executed-tests-gain-security-review-20260920.json": {
+      "source_sha256": "c1325d145897ae2c9d1206cea47d542357ddc3cb73c2954b8876324c2adde0b3",
+      "stored_sha256": "c1325d145897ae2c9d1206cea47d542357ddc3cb73c2954b8876324c2adde0b3",
+      "source_bytes": 1729,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-prototype-baseline-line-rebind-security-review-20260920.json": {
+      "source_sha256": "6154bfe9e10d61cecef2cea4fe01c3b1a598c5a5f0cb1a2dcd5d4df6c7b74596",
+      "stored_sha256": "6154bfe9e10d61cecef2cea4fe01c3b1a598c5a5f0cb1a2dcd5d4df6c7b74596",
+      "source_bytes": 1786,
+      "content_kind": "review-or-verification-record",
+      "compression": null
+    },
+    "console-request-body-contract-recheck-20260920.log.gz": {
+      "source_sha256": "59cd7881f8633063cecec4fbe5540844ab08275124bb0e24bff0560a0ee7ad0c",
+      "stored_sha256": "bcbfbea6c5b05e9ef9d0651e5769848342030cc19a24ada3ec8573ee56a0ea68",
+      "source_bytes": 69399,
+      "content_kind": "raw-tool-output",
+      "compression": "gzip"
+    }
+  }
+}
