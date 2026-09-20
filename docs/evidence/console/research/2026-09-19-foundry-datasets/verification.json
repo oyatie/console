@@ -1,0 +1,11 @@
+{
+  "source_count": 16,
+  "new_leaf_count": 19,
+  "bound_leaf_keys": 21,
+  "qualification_count": 23,
+  "quote_membership_checks": 44,
+  "all_new_dependencies_resolve": true,
+  "duplicate_ids": false,
+  "implementation_accepted": false,
+  "runtime_tests_executed": 0
+}

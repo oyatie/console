@@ -1,0 +1,1902 @@
+[
+  {
+    "op": "test",
+    "path": "/release_inventory/version",
+    "value": 1
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/branching/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/branching",
+      "retrieved_utc": "2026-09-20T00:48:00.614443+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "764420",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"ce20b28ac13bbbac8c87aa3e024bee9d\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660054-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865280.492500,VS0,VE117",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-branching.html.gz",
+      "bytes": 764420,
+      "sha256": "02e44533363d82a7f6d2c7d0f7beb68f76aee69988b5533106beb942ea4d91c4",
+      "compressed_sha256": "1579a516ae94c6453c9467721fe72395a93086e95bd8086463364df360ae7c4b",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-branching"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/datasets/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/datasets",
+      "retrieved_utc": "2026-09-20T00:48:00.644570+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "781615",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"940a0bfed699b9c8ee1c2e05ca1e0697\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660038-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865280.489146,VS0,VE143",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+      "bytes": 781615,
+      "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+      "compressed_sha256": "b16803cabb173334db153a6da40ff9778584ee5ec526cb45aea178ddd34d885d",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-datasets"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/reset-stream/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/reset-stream",
+      "retrieved_utc": "2026-09-20T00:48:52.032711+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "735858",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:18 GMT",
+        "ETag": "\"4f51e7f91fd2a5a689f599b31999a2fa\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:52 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660042-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865332.843424,VS0,VE166",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-reset-stream.html.gz",
+      "bytes": 735858,
+      "sha256": "9b8fba773da7435914537787a57b90e71431ead9d788159889ae603e64e85498",
+      "compressed_sha256": "70cbffe47b83b1ef37dc645ce77b0847f12ac8d5c9d090dec879733d28d4a28b",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-reset-stream"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/streaming-guide/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/streaming-guide",
+      "retrieved_utc": "2026-09-20T00:48:00.844253+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "749189",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"3ad13396b363f01b5965fecc2edce420\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660033-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.668491,VS0,VE154",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-streaming-guide.html.gz",
+      "bytes": 749189,
+      "sha256": "a248e70816f7572cc5ca02e92e011b2e3746edd4b6baa03bf5d02b9b01725ed1",
+      "compressed_sha256": "f3bdb7f1958753e796a21352a498799d867f04892db7f912ed10e5f72ba8559c",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-streaming-guide"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/streaming-profiles/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/streaming-profiles",
+      "retrieved_utc": "2026-09-20T00:48:00.829934+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "754338",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"651b3d69d208d93512143471d52a1080\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660055-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.677944,VS0,VE141",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-streaming-profiles.html.gz",
+      "bytes": 754338,
+      "sha256": "62369711e1eb1e634faef6b3b06a0991eddf5801dfd7450027adc41ace28b1cc",
+      "compressed_sha256": "578e6a1323f08ef89f0edd6ab1009cf0687f3afe4461facafbe426a6274cb696",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-streaming-profiles"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/streams/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/streams",
+      "retrieved_utc": "2026-09-20T00:48:52.040501+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "772241",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"ea97ebb50d6bac4e05fd4246bcf9874a\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:52 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660073-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865332.848258,VS0,VE187",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-streams.html.gz",
+      "bytes": 772241,
+      "sha256": "986f24bf02a6f6c05934dce2fcf6bcf588433d5533de0a249d81378ff243b82f",
+      "compressed_sha256": "2ad2f71b8c4893971f684edc34e0459de5337e2a78be23bb669fb8d0c3a54f82",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-streams"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-integration/virtual-tables/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-integration/virtual-tables",
+      "retrieved_utc": "2026-09-20T00:48:00.840649+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "812975",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"d94557e69f00d636fa57194337a7c910\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660038-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.678393,VS0,VE156",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-virtual-tables.html.gz",
+      "bytes": 812975,
+      "sha256": "10119d2ef4641e79a4eebb208260841cd36d64b7608f0c9d23b7b42a01fc1ea2",
+      "compressed_sha256": "7c710490bfee4745eb1610fdd02048d381db16212f70104ef3bf55d9f78e389f",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-integration-virtual-tables"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/data-lineage/dataset-rollback/",
+      "effective_url": "https://www.palantir.com/docs/foundry/data-lineage/dataset-rollback",
+      "retrieved_utc": "2026-09-20T00:48:00.801796+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "755053",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"d4f62ec9582a2454a6246750c0defc95\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660051-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.656422,VS0,VE143",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-lineage-dataset-rollback.html.gz",
+      "bytes": 755053,
+      "sha256": "d11a0655a3c3004add723a2023374eb13dbcdb03fc7979dc6e540f19417ffe3f",
+      "compressed_sha256": "0092e013d102f0b3e69474a44b8ea3e0e7cc3c9faa3935a9d07f2e75d42f00ed",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "data-lineage-dataset-rollback"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/dataset-preview/overview/",
+      "effective_url": "https://www.palantir.com/docs/foundry/dataset-preview/overview",
+      "retrieved_utc": "2026-09-20T00:48:00.634632+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "773491",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"de03ab53e185ecc481b8dc9d23d165cf\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660071-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865280.486060,VS0,VE135",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-overview.html.gz",
+      "bytes": 773491,
+      "sha256": "1ae3923d340aeb201217901f95fa64af7af904b2848b54026631a839ebad62ad",
+      "compressed_sha256": "5835f00a528297387789b6f5ce2512e640a291dbfdbf120bcdafcab055c63c46",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "dataset-preview-overview"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/dataset-preview/time-travel/",
+      "effective_url": "https://www.palantir.com/docs/foundry/dataset-preview/time-travel",
+      "retrieved_utc": "2026-09-20T00:48:00.644351+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "747991",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:19 GMT",
+        "ETag": "\"2b360df0b6a205ec6405ca97beec2a72\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:00 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660067-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865280.486142,VS0,VE147",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-time-travel.html.gz",
+      "bytes": 747991,
+      "sha256": "e8b62d18e3f018f8d386590ead97ec40a8ba9bf261169d2afb0ab26cb4876e2e",
+      "compressed_sha256": "a8600858fd277d73a283ed95fafb4d30d327b3c69dcd362cf50a3df13dbd3b60",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "dataset-preview-time-travel"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/iceberg/branching/",
+      "effective_url": "https://www.palantir.com/docs/foundry/iceberg/branching",
+      "retrieved_utc": "2026-09-20T00:48:01.047238+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "788547",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+        "ETag": "\"70d7315759344560271f44fe430fac23\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:01 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660033-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.874547,VS0,VE168",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-branching.html.gz",
+      "bytes": 788547,
+      "sha256": "9610c91eee58d84dee26d0ffa15969d5394622899bf66e512d9b8abb60e43095",
+      "compressed_sha256": "da37b0e4f13caf29a9e3a08570a063477f8a4e2843ae71073b6bb1b11e8e3285",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "iceberg-branching"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/iceberg/iceberg-vs-datasets/",
+      "effective_url": "https://www.palantir.com/docs/foundry/iceberg/iceberg-vs-datasets",
+      "retrieved_utc": "2026-09-20T00:48:01.008548+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "754690",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+        "ETag": "\"1aed18e0decaf44a0a388ee62e0919c5\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:01 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660028-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.846524,VS0,VE159",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-iceberg-vs-datasets.html.gz",
+      "bytes": 754690,
+      "sha256": "8e826244bd01ca5a212e242ac413e5266c7598bf8c236f267f4023540b94a276",
+      "compressed_sha256": "a663371504c05cbbdbce8922bcb93dd7ffe1ed46806450b5b7e4d7417613d307",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "iceberg-iceberg-vs-datasets"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/iceberg/retention/",
+      "effective_url": "https://www.palantir.com/docs/foundry/iceberg/retention",
+      "retrieved_utc": "2026-09-20T00:48:01.034367+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "752642",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+        "ETag": "\"d649883491921903374e8ac445095e0a\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:01 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660048-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.877208,VS0,VE148",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-retention.html.gz",
+      "bytes": 752642,
+      "sha256": "6fd12f2393720d7706e84a8ce33828fd6797372b776009f955b01a8fcac3859e",
+      "compressed_sha256": "3e84fa411f80e40b668485122f7135271efdfaa4e5e3a256b1667b5ada711e27",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "iceberg-retention"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/iceberg/storage/",
+      "effective_url": "https://www.palantir.com/docs/foundry/iceberg/storage",
+      "retrieved_utc": "2026-09-20T00:48:52.003366+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "752072",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+        "ETag": "\"d6b9edd0535b2f9cb0c4637192a379ee\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:51 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660046-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865332.845184,VS0,VE148",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-storage.html.gz",
+      "bytes": 752072,
+      "sha256": "144c4d512a38f5f82376546e1afb9d0998d1c5aee613e32df8e325b2b0a770d1",
+      "compressed_sha256": "17d89b1bcfea61a81bb96a7536d5525d9e8bf7114480d7ce1b27388b317d1170",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "iceberg-storage"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/iceberg/transactions/",
+      "effective_url": "https://www.palantir.com/docs/foundry/iceberg/transactions",
+      "retrieved_utc": "2026-09-20T00:48:01.037375+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "747931",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:20 GMT",
+        "ETag": "\"c767446638bf271e4cde388a158dba54\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:01 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660071-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865281.865222,VS0,VE163",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-transactions.html.gz",
+      "bytes": 747931,
+      "sha256": "6d7b74c2bd3b746e6623b9ab81fc345c380a9bf6e310ca072163ab9996232417",
+      "compressed_sha256": "7b3381d770108c86803d5145d4044380ad78e3859830c07c50428b7111761f28",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "iceberg-transactions"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/retention/overview/",
+      "effective_url": "https://www.palantir.com/docs/foundry/retention/overview",
+      "retrieved_utc": "2026-09-20T00:48:51.993856+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "337082",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:24 GMT",
+        "ETag": "\"305c52e083a89884920a0ecbc2be5345\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 00:48:51 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660072-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789865332.849583,VS0,VE145",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-datasets/retention-overview.html.gz",
+      "bytes": 337082,
+      "sha256": "10335f3519ab23fc8f5aaf6300d04b1a3b3478a1658fe83aee520512da190a42",
+      "compressed_sha256": "133dd4aaad3389a65bd163af91398d3bab657615b7994ca2484bdb24f36ce2ff",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status. Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established.",
+      "id": "retention-overview"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.transaction-lifecycle",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets"
+      ],
+      "journey": "Open a dataset transaction, upload files, commit atomically or abort, and reopen its durable outcome after an interrupted response",
+      "acceptance": {
+        "outcome": "Open a dataset transaction, upload files, commit atomically or abort, and reopen its durable outcome after an interrupted response",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.file-mutation-modes",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.transaction-lifecycle"
+      ],
+      "journey": "Apply snapshot, append, update, and logical file deletion with explicit incremental-consumer consequences and preserved prior versions",
+      "acceptance": {
+        "outcome": "Apply snapshot, append, update, and logical file deletion with explicit incremental-consumer consequences and preserved prior versions",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.schema-history",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets"
+      ],
+      "journey": "Inspect and evolve versioned schemas, nested and exact decimal types, and expose file/schema discrepancies before downstream use",
+      "acceptance": {
+        "outcome": "Inspect and evolve versioned schemas, nested and exact decimal types, and expose file/schema discrepancies before downstream use",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.manual-import-inference",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.schema-history",
+        "F03.file-mutation-modes"
+      ],
+      "journey": "Upload tabular or schema-less files, review inferred parsing and column types, and choose append versus replacement with a durable receipt",
+      "acceptance": {
+        "outcome": "Upload tabular or schema-less files, review inferred parsing and column types, and choose append versus replacement with a durable receipt",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.authorized-preview",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F16.policy"
+      ],
+      "journey": "Inspect a labeled sample, filter and sort the authorized dataset, inspect column statistics, and report a column issue without disclosing restricted values",
+      "acceptance": {
+        "outcome": "Inspect a labeled sample, filter and sort the authorized dataset, inspect column statistics, and report a column issue without disclosing restricted values",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.resource-inspection",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F16.policy"
+      ],
+      "journey": "Reopen dataset metadata, schema, logical files and authorized downloads, build history, health and resource usage with stable resource/version identity",
+      "acceptance": {
+        "outcome": "Reopen dataset metadata, schema, logical files and authorized downloads, build history, health and resource usage with stable resource/version identity",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.historical-diff",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.schema-history",
+        "F03.branches"
+      ],
+      "journey": "Compare retained dataset versions or branches with schema changes and key-aware added, removed and modified rows, retaining current disclosure checks",
+      "acceptance": {
+        "outcome": "Compare retained dataset versions or branches with schema changes and key-aware added, removed and modified rows, retaining current disclosure checks",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.history-bisect",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.historical-diff"
+      ],
+      "journey": "Locate the first retained version where a row or cell changed and preserve the query and loaded-history limits in the result",
+      "acceptance": {
+        "outcome": "Locate the first retained version where a row or cell changed and preserve the query and loaded-history limits in the result",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.rollback-coherence",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F03.lineage"
+      ],
+      "journey": "Restore a selected successful retained dataset version, reconcile every shared-job output and downstream object refresh, and show unchanged transformation logic",
+      "acceptance": {
+        "outcome": "Restore a selected successful retained dataset version, reconcile every shared-job output and downstream object refresh, and show unchanged transformation logic",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.retention-execution",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.file-mutation-modes",
+        "F16.policy"
+      ],
+      "journey": "Inspect applicable retention policies and consequences, remove eligible retained versions through the policy owner, and distinguish logical deletion from physical removal",
+      "acceptance": {
+        "outcome": "Inspect applicable retention policies and consequences, remove eligible retained versions through the policy owner, and distinguish logical deletion from physical removal",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.stream-archive-view",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F01.stream"
+      ],
+      "journey": "Inspect a stream as recent rows and archived dataset versions with explicit freshness, checkpoint and delivery semantics, preserving authorized continuous history",
+      "acceptance": {
+        "outcome": "Inspect a stream as recent rows and archived dataset versions with explicit freshness, checkpoint and delivery semantics, preserving authorized continuous history",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.stream-reset-recovery",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.stream-archive-view",
+        "F03.lineage"
+      ],
+      "journey": "Reset an ingest stream through an authorized consequential command, retain resource references, update source endpoint identity and replay downstream consumers",
+      "acceptance": {
+        "outcome": "Reset an ingest stream through an authorized consequential command, retain resource references, update source endpoint identity and replay downstream consumers",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.virtual-resource",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F01.federation"
+      ],
+      "journey": "Register and reopen a governed external-table resource with source locator, schema, supported read/write paths and explicit absence of local version/branch guarantees",
+      "acceptance": {
+        "outcome": "Register and reopen a governed external-table resource with source locator, schema, supported read/write paths and explicit absence of local version/branch guarantees",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.virtual-update-detection",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.virtual-resource"
+      ],
+      "journey": "Configure external-table change polling, distinguish versioned change detection from snapshot triggers, and expose stale-source and unsupported incremental outcomes",
+      "acceptance": {
+        "outcome": "Configure external-table change polling, distinguish versioned change detection from snapshot triggers, and expose stale-source and unsupported incremental outcomes",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.row-change-log",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F03.transaction-lifecycle"
+      ],
+      "journey": "Apply governed row delete, update and merge changes with an inspectable changelog that downstream incremental readers can resume",
+      "acceptance": {
+        "outcome": "Apply governed row delete, update and merge changes with an inspectable changelog that downstream incremental readers can resume",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.table-maintenance",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.retention-execution",
+        "F03.row-change-log"
+      ],
+      "journey": "Compact table files and expire snapshots under retention and recovery rules, preserving valid incremental checkpoints and exposing irrecoverable history loss",
+      "acceptance": {
+        "outcome": "Compact table files and expire snapshots under retention and recovery rules, preserving valid incremental checkpoints and exposing irrecoverable history loss",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.multi-output-publication",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.transaction-lifecycle"
+      ],
+      "journey": "Publish all outputs of one dataset job atomically with stable input versions and recover a failed partial-write attempt without duplicated effects",
+      "acceptance": {
+        "outcome": "Publish all outputs of one dataset job atomically with stable input versions and recover a failed partial-write attempt without duplicated effects",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.branch-metadata-isolation",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.branches",
+        "F03.schema-history"
+      ],
+      "journey": "Evolve schema, partition and sort metadata on an isolated branch and publish through reviewed rebuilding without leaking changes to other branches",
+      "acceptance": {
+        "outcome": "Evolve schema, partition and sort metadata on an isolated branch and publish through reviewed rebuilding without leaking changes to other branches",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/leaves/-",
+    "value": {
+      "id": "F03.storage-locations",
+      "milestone": 6,
+      "required": true,
+      "owner": "data resources",
+      "dependencies": [
+        "F03.datasets",
+        "F16.policy"
+      ],
+      "journey": "Inspect and govern managed or externally owned storage locations and encryption settings by resource scope while preserving dataset identity, recovery and current access",
+      "acceptance": {
+        "outcome": "Inspect and govern managed or externally owned storage locations and encryption settings by resource scope while preserving dataset identity, recovery and current access",
+        "command": null,
+        "fixtures": null,
+        "boundary": null,
+        "status": "not_bound"
+      },
+      "states": {
+        "planned": true,
+        "implemented": false,
+        "integration_accepted": false,
+        "production_qualified": false,
+        "released": false
+      },
+      "evidence": {},
+      "blockers": [
+        "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+        "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+      ],
+      "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.transaction-lifecycle",
+    "value": [
+      {
+        "source_id": "data-integration-datasets",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+        "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+        "quote": "A transaction can be aborted, which puts it into an ABORTED state. Any files that were written during the transaction are ignored.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.file-mutation-modes",
+    "value": [
+      {
+        "source_id": "data-integration-datasets",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+        "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+        "quote": "There are four possible transaction types: SNAPSHOT, APPEND, UPDATE, and DELETE.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.schema-history",
+    "value": [
+      {
+        "source_id": "data-integration-datasets",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+        "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+        "quote": "Because schemas are stored on a dataset view, schemas can change over time.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.manual-import-inference",
+    "value": [
+      {
+        "source_id": "dataset-preview-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-overview.html.gz",
+        "sha256": "1ae3923d340aeb201217901f95fa64af7af904b2848b54026631a839ebad62ad",
+        "quote": "In Dataset Preview, you can upload files of the following types directly into a dataset: .csv, .tsv, .xls, .xlsm, and .xlsx.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.authorized-preview",
+    "value": [
+      {
+        "source_id": "dataset-preview-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-overview.html.gz",
+        "sha256": "1ae3923d340aeb201217901f95fa64af7af904b2848b54026631a839ebad62ad",
+        "quote": "By default, the preview table will show a limited sample of the data; the exact number of rows is displayed in the preview table header.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.resource-inspection",
+    "value": [
+      {
+        "source_id": "dataset-preview-overview",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-overview.html.gz",
+        "sha256": "1ae3923d340aeb201217901f95fa64af7af904b2848b54026631a839ebad62ad",
+        "quote": "The Dataset Preview application provides you with a variety of details of a given dataset, including metadata, build history, health, and more.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.historical-diff",
+    "value": [
+      {
+        "source_id": "dataset-preview-time-travel",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-time-travel.html.gz",
+        "sha256": "e8b62d18e3f018f8d386590ead97ec40a8ba9bf261169d2afb0ab26cb4876e2e",
+        "quote": "A Key column allows Time Travel to match the same row across versions. With a stable, unique key, edits appear as modifications. Without one, changes to an existing row appear as a removal and an addition.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.history-bisect",
+    "value": [
+      {
+        "source_id": "dataset-preview-time-travel",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-time-travel.html.gz",
+        "sha256": "e8b62d18e3f018f8d386590ead97ec40a8ba9bf261169d2afb0ab26cb4876e2e",
+        "quote": "Bisect only searches across the versions currently loaded on the page.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.rollback-coherence",
+    "value": [
+      {
+        "source_id": "data-lineage-dataset-rollback",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-lineage-dataset-rollback.html.gz",
+        "sha256": "d11a0655a3c3004add723a2023374eb13dbcdb03fc7979dc6e540f19417ffe3f",
+        "quote": "If multiple outputs are built together by the same job, each output would need to be rolled back to a transaction that was built by the same previous job.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.retention-execution",
+    "value": [
+      {
+        "source_id": "data-integration-datasets",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+        "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+        "quote": "Since a DELETE transaction does not actually remove older data from the backing filesystem, you can use Retention policies to remove data in transactions which are no longer needed.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.stream-archive-view",
+    "value": [
+      {
+        "source_id": "data-integration-streams",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-streams.html.gz",
+        "sha256": "986f24bf02a6f6c05934dce2fcf6bcf588433d5533de0a249d81378ff243b82f",
+        "quote": "All data from within a Foundry stream is transferred from the hot buffer to the cold storage every few minutes.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.stream-reset-recovery",
+    "value": [
+      {
+        "source_id": "data-integration-reset-stream",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-reset-stream.html.gz",
+        "sha256": "9b8fba773da7435914537787a57b90e71431ead9d788159889ae603e64e85498",
+        "quote": "Note that resets are only available for ingest streams. Downstream consuming pipelines of the ingest stream must be replayed after a reset.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.virtual-resource",
+    "value": [
+      {
+        "source_id": "data-integration-virtual-tables",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-virtual-tables.html.gz",
+        "sha256": "10119d2ef4641e79a4eebb208260841cd36d64b7608f0c9d23b7b42a01fc1ea2",
+        "quote": "A virtual table acts as a pointer to a table in a source system outside of Foundry.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.virtual-update-detection",
+    "value": [
+      {
+        "source_id": "data-integration-virtual-tables",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-virtual-tables.html.gz",
+        "sha256": "10119d2ef4641e79a4eebb208260841cd36d64b7608f0c9d23b7b42a01fc1ea2",
+        "quote": "Update detection only controls when a downstream build is triggered. It does not determine whether the resulting build is a snapshot or an incremental build.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.row-change-log",
+    "value": [
+      {
+        "source_id": "iceberg-iceberg-vs-datasets",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-iceberg-vs-datasets.html.gz",
+        "sha256": "8e826244bd01ca5a212e242ac413e5266c7598bf8c236f267f4023540b94a276",
+        "quote": "Row edits: Support for DELETE, UPDATE, and MERGE INTO statements, which allow you to conditionally modify rows without the need to re-snapshot.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.table-maintenance",
+    "value": [
+      {
+        "source_id": "iceberg-retention",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-retention.html.gz",
+        "sha256": "6fd12f2393720d7706e84a8ce33828fd6797372b776009f955b01a8fcac3859e",
+        "quote": "After a snapshot is expired, it no longer appears in the table's snapshot history, and you cannot roll back or time travel to that snapshot.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.multi-output-publication",
+    "value": [
+      {
+        "source_id": "iceberg-transactions",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-transactions.html.gz",
+        "sha256": "6d7b74c2bd3b746e6623b9ab81fc345c380a9bf6e310ca072163ab9996232417",
+        "quote": "All-or-nothing commits: All table updates in a job are committed together. If the job fails at any point, no partial writes are visible to downstream consumers or other jobs.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.branch-metadata-isolation",
+    "value": [
+      {
+        "source_id": "iceberg-branching",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-branching.html.gz",
+        "sha256": "9610c91eee58d84dee26d0ffa15969d5394622899bf66e512d9b8abb60e43095",
+        "quote": "Foundry's Iceberg catalog extends standard Iceberg so that each branch can independently track its own current schema, default partition spec, and default sort order.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.storage-locations",
+    "value": [
+      {
+        "source_id": "iceberg-storage",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-storage.html.gz",
+        "sha256": "144c4d512a38f5f82376546e1afb9d0998d1c5aee613e32df8e325b2b0a770d1",
+        "quote": "Foundry-managed Iceberg tables can either use Foundry-managed storage or BYOB storage, or a combination, where different projects or namespaces target different storage locations.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.datasets",
+    "value": [
+      {
+        "source_id": "data-integration-datasets",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+        "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+        "quote": "The benefit of using Foundry datasets is that they provide integrated support for permission management, schema management, version control, and updates over time.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F03.branches",
+    "value": [
+      {
+        "source_id": "data-integration-branching",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-branching.html.gz",
+        "sha256": "02e44533363d82a7f6d2c7d0f7beb68f76aee69988b5533106beb942ea4d91c4",
+        "quote": "Unlike Git, there is no support for merging dataset branches.",
+        "matching": "HTML page body text with whitespace normalization",
+        "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-datasets",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+      "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+      "quote": "An APPEND transaction cannot modify existing files in the current dataset view.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-datasets",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+      "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+      "quote": "Note that committing a DELETE transaction does not delete the underlying file from the backing file system—it simply removes the file reference from the dataset view.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-datasets",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-datasets.html.gz",
+      "sha256": "07d4f48532f47722c1f84e96b6d63045032d10ddbba176445a36a1610e2a3db0",
+      "quote": "Viewing dataset retention policies is in the beta phase of development and may not be available on your enrollment.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-branching",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-branching.html.gz",
+      "sha256": "02e44533363d82a7f6d2c7d0f7beb68f76aee69988b5533106beb942ea4d91c4",
+      "quote": "One open transaction per branch. Every branch can have at most one open (as in, opened and neither committed or aborted) transaction, and this transaction is always the latest transaction on the branch.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "dataset-preview-time-travel",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-time-travel.html.gz",
+      "sha256": "e8b62d18e3f018f8d386590ead97ec40a8ba9bf261169d2afb0ab26cb4876e2e",
+      "quote": "Time Travel is in the beta phase of development.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "dataset-preview-time-travel",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/dataset-preview-time-travel.html.gz",
+      "sha256": "e8b62d18e3f018f8d386590ead97ec40a8ba9bf261169d2afb0ab26cb4876e2e",
+      "quote": "You can only inspect versions where data is still available under the applicable retention policy.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-lineage-dataset-rollback",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-lineage-dataset-rollback.html.gz",
+      "sha256": "d11a0655a3c3004add723a2023374eb13dbcdb03fc7979dc6e540f19417ffe3f",
+      "quote": "After a rollback is carried out, the logic backing the dataset will be left unchanged and will need to be updated in order to apply to the next build.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-lineage-dataset-rollback",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-lineage-dataset-rollback.html.gz",
+      "sha256": "d11a0655a3c3004add723a2023374eb13dbcdb03fc7979dc6e540f19417ffe3f",
+      "quote": "If the branch on which a rollback is being performed does not exist on the dataset, the rollback will be applied to a fallback branch.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-streams",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-streams.html.gz",
+      "sha256": "986f24bf02a6f6c05934dce2fcf6bcf588433d5533de0a249d81378ff243b82f",
+      "quote": "Streaming sources in Foundry currently only support AT_LEAST_ONCE semantics for extracts and exports.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-streams",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-streams.html.gz",
+      "sha256": "986f24bf02a6f6c05934dce2fcf6bcf588433d5533de0a249d81378ff243b82f",
+      "quote": "When EXACTLY_ONCE is enabled, records are only visible downstream after each checkpoint has completed (default is two seconds).",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-reset-stream",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-reset-stream.html.gz",
+      "sha256": "9b8fba773da7435914537787a57b90e71431ead9d788159889ae603e64e85498",
+      "quote": "Resetting streams can have irreversible effects on data.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-virtual-tables",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-virtual-tables.html.gz",
+      "sha256": "10119d2ef4641e79a4eebb208260841cd36d64b7608f0c9d23b7b42a01fc1ea2",
+      "quote": "Virtual tables do not benefit from Foundry dataset capabilities such as dataset versioning or branching.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-virtual-tables",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-virtual-tables.html.gz",
+      "sha256": "10119d2ef4641e79a4eebb208260841cd36d64b7608f0c9d23b7b42a01fc1ea2",
+      "quote": "Virtual tables require a Foundry worker source and direct egress policies.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "data-integration-virtual-tables",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/data-integration-virtual-tables.html.gz",
+      "sha256": "10119d2ef4641e79a4eebb208260841cd36d64b7608f0c9d23b7b42a01fc1ea2",
+      "quote": "Incremental support for virtual tables is currently limited to append-only changes and has additional source-specific prerequisites, such as enabling Delta's Change Data Feed ↗ or Iceberg's Incremental Reads ↗.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-iceberg-vs-datasets",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-iceberg-vs-datasets.html.gz",
+      "sha256": "8e826244bd01ca5a212e242ac413e5266c7598bf8c236f267f4023540b94a276",
+      "quote": "At the table level: Iceberg tables cannot directly back restricted views.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-iceberg-vs-datasets",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-iceberg-vs-datasets.html.gz",
+      "sha256": "8e826244bd01ca5a212e242ac413e5266c7598bf8c236f267f4023540b94a276",
+      "quote": "A marking inherited by any retained Iceberg snapshot can prevent users who do not satisfy that marking from reading the entire table, including otherwise unmarked branches.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-transactions",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-transactions.html.gz",
+      "sha256": "6d7b74c2bd3b746e6623b9ab81fc345c380a9bf6e310ca072163ab9996232417",
+      "quote": "The transaction guarantees described on this page apply only when running jobs through Foundry's build system.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-transactions",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-transactions.html.gz",
+      "sha256": "6d7b74c2bd3b746e6623b9ab81fc345c380a9bf6e310ca072163ab9996232417",
+      "quote": "Jobs writing to the same output are queued and run sequentially rather than concurrently.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-branching",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-branching.html.gz",
+      "sha256": "9610c91eee58d84dee26d0ffa15969d5394622899bf66e512d9b8abb60e43095",
+      "quote": "Branch isolation is available from transforms-tables library version 0.1211.0 and greater.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-branching",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-branching.html.gz",
+      "sha256": "9610c91eee58d84dee26d0ffa15969d5394622899bf66e512d9b8abb60e43095",
+      "quote": "Iceberg's native branch merge procedures, such as cherry-pick and fast-forward, operate on snapshot references only and are not aware of Foundry's branch-scoped schema properties.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-retention",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-retention.html.gz",
+      "sha256": "6fd12f2393720d7706e84a8ce33828fd6797372b776009f955b01a8fcac3859e",
+      "quote": "Remove orphan files in Foundry only deletes orphan files that are older than both the user-supplied older_than timestamp and the configured disaster recovery lookback window on your environment.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-storage",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-storage.html.gz",
+      "sha256": "144c4d512a38f5f82376546e1afb9d0998d1c5aee613e32df8e325b2b0a770d1",
+      "quote": "Server-side encryption (SSE) is mandatory for all tables.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "iceberg-storage",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-datasets/iceberg-storage.html.gz",
+      "sha256": "144c4d512a38f5f82376546e1afb9d0998d1c5aee613e32df8e325b2b0a770d1",
+      "quote": "Client-side Iceberg table encryption is a new and evolving capability that is not yet supported by all Foundry features, external compute engines, or tools that connect to Iceberg tables.",
+      "matching": "HTML page body text with whitespace normalization",
+      "scope": "Public reference only; Console implementation and acceptance not established; retrieval after target UTC date requires freeze-date reconciliation."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Retrieval occurred on 2026-09-20 UTC, still 2026-09-19 America/New_York. The target freeze date has no declared timezone; these mutable pages do not independently prove availability by 2026-09-19 UTC or historical release status."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Public reference only; no Console implementation, source-freeze completeness, selected dataset format, legal conclusion, or acceptance established."
+  }
+]
