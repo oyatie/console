@@ -1,0 +1,25 @@
+{
+  "base": "58a2ab041584ce652db70d4476468d06a61f2d61",
+  "source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "af1722074e362b58568233053eff3b8547655bbfe3611d2f31a463d12a90848a",
+    "backend/crates/platform/auth/src/lib.rs": "23cf57fa20090ed35c95f02410d911b78869dab6c1bb81677341b0e73e4050df",
+    "backend/crates/platform/auth-rest/src/lib.rs": "174c428ffc6b6effa51119034833851ba6eb018e184973c37a2b5f5df86e5a7d",
+    "backend/crates/platform/auth/src/legacy_self_read_tests.rs": "5d13ee4a190161380c7af8b4f17af68db2c4f6dc835f30e1c5224fc82da86a85"
+  },
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-legacy-passkey-owner-map-20260920.json --only legacy-passkey-owner",
+  "owner": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 379,
+    "seconds": 9.15
+  },
+  "private_tests": {
+    "command": "SQLX_OFFLINE=true CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-auth --lib legacy_self_read_tests::",
+    "executed": 8,
+    "passed": 8,
+    "ignored": 0
+  },
+  "remaining": "Missing-pool signature precedence fix with focused test; complete mandatory HTTP compatibility/time/lock histories; retained tests; final review; full release."
+}

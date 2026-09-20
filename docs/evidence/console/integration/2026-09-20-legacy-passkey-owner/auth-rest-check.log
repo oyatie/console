@@ -1,0 +1,64 @@
+    Checking serde v1.0.229
+   Compiling rustls v0.23.45
+    Checking futures-channel v0.3.34
+    Checking asn1-rs v0.6.2
+   Compiling sha3 v0.10.9
+    Checking serde_with v3.21.0
+    Checking chrono v0.4.45
+    Checking simple_asn1 v0.6.4
+    Checking axum-core v0.5.6
+    Checking tower v0.5.3
+    Checking ipnet v2.12.2
+    Checking smallvec v1.15.2
+    Checking either v1.16.0
+    Checking base64urlsafedata v0.5.5
+    Checking linked-hash-map v0.5.6
+    Checking console-kernel-core v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/kernel/core)
+    Checking nonempty v0.12.0
+    Checking miette v7.6.0
+    Checking serde_cbor_2 v0.13.0
+    Checking serde_urlencoded v0.7.1
+    Checking tokio-rustls v0.26.5
+    Checking webauthn-attestation-ca v0.5.5
+   Compiling parking_lot_core v0.9.12
+   Compiling icu_normalizer v2.2.0
+    Checking linked_hash_set v0.1.6
+    Checking num-bigint-dig v0.8.6
+    Checking hyper v1.10.1
+    Checking itertools v0.15.0
+   Compiling itertools v0.14.0
+   Compiling parking_lot v0.12.5
+    Checking hyper-util v0.1.20
+   Compiling futures-intrusive v0.5.0
+   Compiling string_cache v0.8.9
+    Checking axum v0.8.9
+   Compiling lalrpop v0.22.2
+    Checking rsa v0.9.10
+    Checking jsonwebtoken v11.0.0
+    Checking der-parser v9.0.0
+    Checking oid-registry v0.7.1
+    Checking x509-parser v0.16.0
+   Compiling cedar-policy-core v4.12.0
+    Checking idna_adapter v1.2.2
+    Checking idna v1.1.0
+    Checking url v2.5.8
+    Checking sqlx-core v0.9.0
+    Checking webauthn-rs-proto v0.5.5
+    Checking lettre v0.11.23
+    Checking webauthn-rs-core v0.5.5
+    Checking sqlx-postgres v0.9.0
+    Checking console-platform-email v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/email)
+    Checking webauthn-rs v0.5.5
+   Compiling sqlx-macros-core v0.9.0
+   Compiling sqlx-macros v0.9.0
+    Checking sqlx v0.9.0
+    Checking cedar-policy-formatter v4.12.0
+    Checking console-platform-db v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/db)
+    Checking cedar-policy v4.12.0
+    Checking console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+    Checking console-platform-group v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/group)
+    Checking console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+    Checking console-platform-provisioning v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/provisioning)
+    Checking console-platform-request-context v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/request-context)
+    Checking console-platform-auth-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth-rest)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 29.51s

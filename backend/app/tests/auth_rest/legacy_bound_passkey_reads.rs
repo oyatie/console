@@ -732,3 +732,6 @@ fn logout_audit_oracle_rejects_missing_extra_and_corrupted_fields() {
         );
     }
 }
+
+#[path = "legacy_bound_passkey_availability.rs"]
+mod availability;

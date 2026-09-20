@@ -30,8 +30,9 @@ pub use jwt::{
     SignedAccountToken, TenantAccessContext,
 };
 pub use legacy::{
-    LegacySessionContext, LegacySessionContextError, append_legacy_auth_audit_in_tx,
-    guard_legacy_subject_in_tx, legacy_session_context_in_tx,
+    LegacySelfPasskeyReadError, LegacySelfPasskeySummary, LegacySessionContext,
+    LegacySessionContextError, append_legacy_auth_audit_in_tx, guard_legacy_subject_in_tx,
+    legacy_session_context_in_tx, read_legacy_self_passkeys,
 };
 pub use refresh::{RefreshToken, RefreshTokenIssue, RefreshTokenStore, RefreshTokenUseError};
 pub use session::SessionVerification;

@@ -1542,42 +1542,53 @@ async fn admin_credential_reset(
 /// namespace. Unlike `/api/v1/passkeys`, this route is not behind the tenant
 /// middleware, so it also works for PLATFORM accounts whose token is deliberately
 /// rejected from tenant APIs.
-async fn list_self_passkeys(
-    State(state): State<AuthRestState>,
-    headers: HeaderMap,
-) -> Result<Json<Vec<PasskeySummary>>, RestError> {
-    let services = state.services()?;
-    let (user_id, org_id) = authenticated_user_context(&state, services, &headers).await?;
-
-    let summaries =
-        with_org_conn::<_, Vec<PasskeySummary>, RestError>(&state.pool, org_id, move |tx| {
-            Box::pin(async move {
-                let rows = sqlx::query(
-                    r#"
-                    SELECT id, created_at, last_used_at
-                    FROM public.auth_legacy_self_passkeys_v1($1, $2)
-                    "#,
-                )
-                .bind(*org_id.as_uuid())
-                .bind(user_id)
-                .fetch_all(tx.as_mut())
-                .await
-                .map_err(DbError::Sqlx)?;
-
-                rows.into_iter()
-                    .map(|row| {
-                        Ok(PasskeySummary {
-                            id: row.try_get("id").map_err(DbError::Sqlx)?,
-                            created_at: row.try_get("created_at").map_err(DbError::Sqlx)?,
-                            last_used_at: row.try_get("last_used_at").map_err(DbError::Sqlx)?,
-                        })
-                    })
-                    .collect::<Result<Vec<_>, RestError>>()
-            })
-        })
-        .await?;
-
-    Ok(Json(summaries))
+async fn list_self_passkeys(State(state): State<AuthRestState>, headers: HeaderMap) -> Response {
+    let result: Result<Json<Vec<PasskeySummary>>, RestError> = async {
+        let services = state.services()?;
+        let token = bearer_token(&headers)?;
+        let Some(auth_pool) = state.auth_database.as_ref() else {
+            // Even without a transport, an available verifier can refuse an
+            // invalid credential. Current identity and family checks stay in Auth.
+            services
+                .jwt_verifier
+                .verify_access_token(token)
+                .map_err(|_| RestError::unauthorized("invalid bearer token"))?;
+            return Err(RestError::unavailable("session verification unavailable"));
+        };
+        let summaries = console_platform_auth::read_legacy_self_passkeys(
+            &services.jwt_verifier,
+            token,
+            services.refresh_family_absolute_ttl,
+            auth_pool,
+        )
+        .await
+        .map_err(|error| match error {
+            console_platform_auth::LegacySelfPasskeyReadError::Unauthorized => {
+                RestError::unauthorized("invalid bearer token")
+            }
+            console_platform_auth::LegacySelfPasskeyReadError::Unavailable => {
+                RestError::unavailable("session verification unavailable")
+            }
+        })?;
+        Ok(Json(
+            summaries
+                .into_iter()
+                .map(|summary| PasskeySummary {
+                    id: summary.id,
+                    created_at: summary.created_at,
+                    last_used_at: summary.last_used_at,
+                })
+                .collect(),
+        ))
+    }
+    .await;
+    let mut response = result.into_response();
+    account_browser::private_response(&mut response);
+    response.headers_mut().insert(
+        header::VARY,
+        HeaderValue::from_static("Authorization, Cookie, Origin"),
+    );
+    response
 }
 
 /// Revoke ONE of the authenticated user's OWN passkey credentials through the

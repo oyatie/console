@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_FOCUSED_ABSENT_AUTH_POOL_TEST_AND_AVAILABILITY_PRECEDENCE",
+  "manifest_sha256": "402cd0f30fcd49e9f456470db6df80fed96a4aa137e362636b66d16db0c61ae5",
+  "test_source_sha256": "cee2ec1ea3bb6ec9d7b4b5098d2f1e4c2034a79d2c7d769837f72586d491ba66",
+  "contract_sha256": "1483229ee7537ba6000a7980c786bfc51e1a721a239581348681fb5138365a79",
+  "decisions": [
+    "Configured realverifier+AuthpoolNone must cryptographically reject invalidtoken401; cryptographically validcredential gets503 because ownercannotinvoke absenttransport. Do not duplicate self-purpose/currentfamilydispatch in REST. NormalSomepool path remains verifiedexactlyonce by owningAuthusecase.",
+    "A validcryptographicunsupportedkind can503 onlyin this missingdependencybranch; ordinarily configuredownerstill401. This freezes narrowavailabilityprecedence explicitly rather thanadding anotherbusinessdispatcher or publicAPI.",
+    "Unconfiguredservices retains existing503literal since noverifierexists; oldstate.services compatibility explicitlypreserved."
+  ],
+  "test_review": [
+    "Uses actualexisting AuthRestState::new withrealrestrictedBusinesspool, samefixturekey and fullvalidconfig; sourceconstructor confirms servicesSome/authNone and sourceactualroutermounts AUTH_PASSKEYS_PATH. No newhook/credentialauthority.",
+    "Same realfixture/enrollednonemptyprojection providesvalidbound503andconfiguredrecovery200; invalid401 anddisabled503pairedwithfixedliteral/privacy/noecho andwholepublicstateunchanged.",
+    "Actuallypresentedinvalidtoken includedin noecho vector; originalfixture credentials/family/rawkeystrings remaincovered.",
+    "Oneadditivechildleaf only; no retainedtestexpectation edits. Sourceobserved APIs/types align; compile/runtime remain rootowned."
+  ],
+  "counts": {
+    "prospective_sqlx_http_leaves": 1,
+    "compiled": 0,
+    "executed": 0
+  },
+  "remaining": [
+    "Root integrates exactchild/include and demonstrates currentmissingpool503-v401RED then correctedGREEN",
+    "Finalowningsource review includingmissingpoolbranch",
+    "All mandatory largerHTTPcompatibility/time/lock families and fullreleasequalification"
+  ],
+  "scope": "Focusedtest+availabilityprecedence approval, no runtime/sourceacceptance yet. ADRpackaging rejection remains separate and untouched.",
+  "reviewer_actions": "Read-onlysource/packetchecks; privatereceipt only."
+}

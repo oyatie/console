@@ -1,0 +1,16 @@
+   Compiling console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.83s
+     Running unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_platform_auth-b228142d7f75f781)
+
+running 8 tests
+test legacy::legacy_self_read_tests::guard_mapper_accepts_only_exact_known_storage_code_and_message_pairs ... ok
+test legacy::legacy_self_read_tests::guard_mapper_does_not_turn_outage_null_or_unexpected_origin_into_revocation ... ok
+test legacy::legacy_self_read_tests::invalid_or_overflowing_server_family_policy_is_unavailable ... ok
+test legacy::legacy_self_read_tests::same_second_issuance_is_valid_but_earlier_whole_second_is_not ... ok
+test legacy::legacy_self_read_tests::current_family_and_signed_deadlines_are_strict_and_neither_extends_the_other ... ok
+test legacy::legacy_self_read_tests::signed_correlation_cannot_select_another_subject_home_or_family ... ok
+test legacy::legacy_self_read_tests::bound_signed_times_reject_future_bad_order_and_unrepresentable_values ... ok
+test legacy::legacy_self_read_tests::exact_tuple_rejects_each_component_and_native_metadata_independently ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+

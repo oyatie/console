@@ -1,0 +1,22 @@
+{
+  "base": "58a2ab041584ce652db70d4476468d06a61f2d61",
+  "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-legacy-passkey-availability-map-20260920.json --only legacy-passkey-availability",
+  "red": {
+    "executed": 1,
+    "failed": 1,
+    "passed": 0,
+    "ignored": 0,
+    "seconds": 7.6,
+    "actual": 503,
+    "expected": 401
+  },
+  "green": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "seconds": 8.08
+  },
+  "source_sha256": "c12a322d26b797f075b4ac33bcb9e83e4d5200af6a0056d8ccab3f9f0754e78a",
+  "scope": "Pure signature rejection with configured verifier and absent transport. Original configured-path verification stays in Auth; no source-policy or family decision is made in REST."
+}
