@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_PENDING_PREPARED_EVENT_ORACLE_SUCCESSOR",
+  "packet": "/private/tmp/console-native-company-pending-event-oracle-20260920-round1",
+  "manifest_sha256": "e3b59f6ed9d3cea0220c21a310fd77124c6f945d7eb70240bfd63151749c689e",
+  "unformatted_postimage_sha256": "acde22f6ebde5c9f57e645b70aa3915a2abdd48636a6152bbd53edde75ac959b",
+  "checks": [
+    "All packet hashes and three actual source-lock preimages independently matched; exact patch application reconstructs recorded postimage.",
+    "Only failed_actor_admission_rolls_back_topology_and_same_command_retries_once changes. Whole-database comparison excludes exactly requests/events and then preserves all predecessors via existing RawValue added_rows oracle for both tables, rejecting deletion/mutation/duplicate histories.",
+    "Exactly one added request remains PENDING and exactly one event equals complete nine-field PREPARED revision1 object; account/command match, from_state null, to_state PENDING, actor caller, occurred_at request created_at, session independently derived.",
+    "Session attribution derives SHA256 of actually submitted refresh cookie, finds singular original token/family in pre-submission complete DB snapshot, requires caller-owned unused/unrevoked token and caller-owned native ACCOUNT_V1 unrevoked family. No submitted session identifier is trusted and no raw cookie/hash is printed.",
+    "Verified inherited Sha256/Digest and REFRESH imports, existing hex dependency, actual token/family columns and preexisting matching cookie-hash convention. all_rows uses actual to_jsonb(t) including real fields, not handcrafted projection.",
+    "Existing precise topology/actor fault witness,503 error, retained input read, reopening, no-read mutations, successful retry, durable effect checks and duplicate replay identity/no-mutation assertions byte-preserved outside two additive hunks.",
+    "This corrects an old oracle inconsistent with required atomic initial request+event persistence; it does not exempt arbitrary events, terminal effects, audit/grant/topology/session mutations or prior-history changes."
+  ],
+  "findings": [],
+  "limits": [
+    "Source approval only; root owns integration/rustfmt and actual native fault/retry execution.",
+    "No prepare implementation, serving profile activation, Company workflow or release acceptance from this receipt.",
+    "Expiry/current credential validation remains product-owner responsibility; pre-request snapshot correlation is an independent attribution oracle, not replacement authentication."
+  ],
+  "execution": {
+    "reviewer_tests": 0,
+    "reviewer_sql": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}
