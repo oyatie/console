@@ -688,3 +688,6 @@ mod legacy_platform_list_unavailable;
 
 #[path = "legacy_platform_ops_reads.rs"]
 mod legacy_platform_ops_reads;
+
+#[path = "legacy_platform_group_reads.rs"]
+mod legacy_platform_group_reads;
