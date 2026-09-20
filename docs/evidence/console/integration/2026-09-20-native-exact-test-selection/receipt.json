@@ -1,0 +1,64 @@
+{
+  "kind": "native-exact-test-selection-regression",
+  "implementation_commit": "41133ad20",
+  "approved_test_commit": "90257f0a3",
+  "owner": "/root",
+  "tests": {
+    "shell_suite": "passed with all prior credential assertions and nine new discovery scenarios",
+    "real_native_positive_executed": 1,
+    "real_native_positive_passed": 1,
+    "native_missing_selection": "refused before execution"
+  },
+  "limits": [
+    "No claim that discovery runs ignored tests",
+    "No PostgreSQL or browser execution claimed by pure-native controls",
+    "Browser feature variants and CI producer remain pending"
+  ],
+  "files": {
+    "console-buck-exact-discovery-admission-20260920.log.gz": {
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "source_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "content_kind": "raw-tool-output"
+    },
+    "console-buck-exact-discovery-final-security-review-20260920.json": {
+      "sha256": "f05db3441c3fc13f4589fe3ae989039f2fe6a1e78fb4a55c30db718bd4ca9458",
+      "source_sha256": "f05db3441c3fc13f4589fe3ae989039f2fe6a1e78fb4a55c30db718bd4ca9458",
+      "content_kind": "review-or-execution-record"
+    },
+    "console-buck-exact-discovery-green-20260920.log.gz": {
+      "sha256": "c9720b4f72833be9e567bc398061b74ec08da9f1aaeb08ab7635339a0e9010b8",
+      "source_sha256": "adf3af0ca26b6b4717d79b4a1ed25663bea8ca5cee09f2677852b9045be0915d",
+      "content_kind": "raw-tool-output"
+    },
+    "console-buck-exact-discovery-lane-20260920.json": {
+      "sha256": "f629f3e3bb28b48bf0b93f99d80ec998728586cb68315bb93ce4d2fbf07f6e94",
+      "source_sha256": "f629f3e3bb28b48bf0b93f99d80ec998728586cb68315bb93ce4d2fbf07f6e94",
+      "content_kind": "review-or-execution-record"
+    },
+    "console-buck-exact-discovery-red-20260920.log.gz": {
+      "sha256": "30ff60d516307806c293806b5df8da7e22751c17b15931cccae471ebbc3ce820",
+      "source_sha256": "2120161317585666156365ba32086d763347a226093b7af3e0c2d0b2caee8994",
+      "content_kind": "raw-tool-output"
+    },
+    "console-buck-exact-discovery-source-20260920.json": {
+      "sha256": "85f59bd6bf26d94afd0bb7c04800c63d886cbfdad6be71ce8b91cb0c42ea3473",
+      "source_sha256": "85f59bd6bf26d94afd0bb7c04800c63d886cbfdad6be71ce8b91cb0c42ea3473",
+      "content_kind": "review-or-execution-record"
+    },
+    "console-buck-exact-native-missing-20260920.log.gz": {
+      "sha256": "19b5ce0ea3005964e0b832f831f56123f2c3e2e76ef33c70d759e6640754fdab",
+      "source_sha256": "c58e8c3f879a77923f5c8e166ff2cbfcd3b8bf93b5ffc562a39c7f24a704011e",
+      "content_kind": "raw-tool-output"
+    },
+    "console-buck-exact-native-positive-20260920.log.gz": {
+      "sha256": "e88400d52ea51183952331f23b3f70ed71ccd2b6caff5c17710eaa2cfb109217",
+      "source_sha256": "bc2ed2f06c27e27564a52e571228bad4c399f1285fbe7b13222bc5ab1ca1c32b",
+      "content_kind": "raw-tool-output"
+    },
+    "console-buck-exact-native-receipt-20260920.json": {
+      "sha256": "8c0dcb72641365b4b1219e6cddbddea2afd45edb8c316de0ef5035b9b24a67b3",
+      "source_sha256": "8c0dcb72641365b4b1219e6cddbddea2afd45edb8c316de0ef5035b9b24a67b3",
+      "content_kind": "review-or-execution-record"
+    }
+  }
+}

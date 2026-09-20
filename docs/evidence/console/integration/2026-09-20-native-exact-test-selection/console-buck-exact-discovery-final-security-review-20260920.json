@@ -1,0 +1,65 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_BOUNDED_EXACT_DISCOVERY_IMPLEMENTATION_FOR_COMMIT",
+  "base_head": "90257f0a32941309ea154926fbae8bd3f31ca49d",
+  "source": {
+    "tools/buck/run_test_with_postgres_env.sh": "7e4a53d254a3fc2a3583b235201d004b3615b6f8d991259dde47315c5a1f0805",
+    "tools/buck/run_test_with_postgres_env.test.sh": "26d6ed3a5da69b4a4c7c2e095135fcf801f69116f4b75068649018acfd2f72cd"
+  },
+  "mechanical_preservation": "Deleting only new9-line exact-discovery block restores entire prior wrapper bytes, including credential parser and ordinary execution.",
+  "tests": "Nine approved wrapper scenarios: valid, child-failure, empty, ambiguous, discovery-error, wrong-name, benchmark, no-summary, extra-output. Existing transport tests preserved. Actual enclosing probe red and admitted before implementation; same shell suite now PASS.",
+  "logs": {
+    "/private/tmp/console-buck-exact-discovery-red-20260920.log": "2120161317585666156365ba32086d763347a226093b7af3e0c2d0b2caee8994",
+    "/private/tmp/console-buck-exact-discovery-green-20260920.log": "adf3af0ca26b6b4717d79b4a1ed25663bea8ca5cee09f2677852b9045be0915d",
+    "/private/tmp/console-buck-exact-discovery-admission-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-buck-exact-discovery-lane-20260920.json": "f629f3e3bb28b48bf0b93f99d80ec998728586cb68315bb93ce4d2fbf07f6e94"
+  },
+  "native": {
+    "source_head": "90257f0a32941309ea154926fbae8bd3f31ca49d",
+    "scope": "actual Buck-built pure identity test through unchanged credential loader; no PostgreSQL execution claimed",
+    "wrapper_sha256": "7e4a53d254a3fc2a3583b235201d004b3615b6f8d991259dde47315c5a1f0805",
+    "results": [
+      {
+        "case": "positive",
+        "exact_test": "company::tests::accepted_vectors_match_exact_independent_bytes_and_decode",
+        "exit": 0,
+        "log": "/private/tmp/console-buck-exact-native-positive-20260920.log",
+        "sha256": "bc2ed2f06c27e27564a52e571228bad4c399f1285fbe7b13222bc5ab1ca1c32b"
+      },
+      {
+        "case": "missing",
+        "exact_test": "company::tests::intentionally_missing_discovery_control",
+        "exit": 1,
+        "log": "/private/tmp/console-buck-exact-native-missing-20260920.log",
+        "sha256": "c58e8c3f879a77923f5c8e166ff2cbfcd3b8bf93b5ffc562a39c7f24a704011e"
+      }
+    ],
+    "limits": [
+      "ignored tests are not force-run and discovery is not proof of unignored execution",
+      "browser driver execution remains separate"
+    ]
+  },
+  "reviewed_security": [
+    "Names validated before execution; command/arguments passed as original argv, no eval or shell expansion",
+    "Discovery must exit0 and output exactly selected name:type test plus1test0bench summary; trailing newlines naturally trimmed by shell substitution",
+    "All discovered output held private; stderr discarded; failure message fixed",
+    "Child receives unchanged exact selection and its actual exitcode via exec",
+    "Actual native positive1passed9filtered; nonexistent name fails1 with fixed diagnostic"
+  ],
+  "limits": [
+    "Does not prove ignored tests executed; never force-runs ignored tests",
+    "Pure identity native test only, no PostgreSQL/browser test execution",
+    "No credential-parser changes or browser producer acceptance",
+    "Root reports bash-n and diffcheck success; reviewer did not execute tests"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "reviewer_product_tests_executed": 0
+}

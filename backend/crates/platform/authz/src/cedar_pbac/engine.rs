@@ -713,3 +713,7 @@ mod tests {
         assert_ne!(first.key, bumped.key);
     }
 }
+
+#[cfg(test)]
+#[path = "native_company_contract_probe.rs"]
+mod native_company_contract_probe;
