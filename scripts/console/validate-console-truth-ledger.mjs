@@ -244,7 +244,158 @@ function verifyImmutableReviewReceipt(repoRoot, reviewer, cap, candidate, outcom
   const attestation = Object.freeze({}); immutableReceiptAttestations.add(attestation); return attestation;
 }
 
-export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha = () => true, resolveRef = () => true, resolveBuckTarget = () => true, resolveSource = () => true, expectedCandidateSha, routeFacts, repoRoot } = {}) {
+// This verifies planned inventory structure only. Promotion requires a separate
+// authenticated, stage-specific verifier; descriptive evidence cannot grant it.
+function validateReleaseInventory(registry, resolveSource) {
+  const label = 'release inventory';
+  const require = (condition, detail) => { if (!condition) fail(`${label}: ${detail}`); };
+  const text = (value, detail) => nonempty(value, `${label} ${detail}`);
+  const record = (value, detail) => object(value, `${label} ${detail}`);
+  const list = (value, detail, empty = false) => {
+    require(Array.isArray(value) && (empty || value.length > 0), `${detail} must be an array${empty ? '' : ' with entries'}`);
+    return value;
+  };
+  const strings = (value, detail, empty = false) => uniqueStrings(list(value, detail, empty), `${label} ${detail}`);
+  const uniqueRecords = (value, key, detail) => {
+    const rows = list(value, detail);
+    strings(rows.map((row) => record(row, detail)[key]), `${detail} ${key}`);
+    return new Map(rows.map((row) => [row[key], row]));
+  };
+  require(Object.hasOwn(registry, 'release_inventory'), 'section is required');
+  const release = record(registry.release_inventory, 'section');
+  require(release.version === 1 && release.intent_date === '2026-09-19', 'unsupported version or intent date');
+  require(JSON.stringify(release.authority) === JSON.stringify(['docs/current/PRODUCT.md','docs/current/ROADMAP.md','docs/current/DELIVERY.md']), 'current authority paths required');
+  const population = record(release.population, 'population');
+  require(population.groups === 1 && population.companies === 6 && population.people === 2000 && population.jurisdiction === 'KR', 'population differs from release contract');
+  const stages = ['planned','implemented','integration_accepted','production_qualified','released'];
+  const policy = record(release.state_policy, 'state policy');
+  require(JSON.stringify(policy.order) === JSON.stringify(stages), 'state order is invalid');
+  text(policy.rule, 'state rule'); text(policy.dispatch, 'dispatch rule');
+  strings(release.cross_product_acceptance, 'cross-product acceptance');
+  strings(release.blockers, 'blockers');
+  const families = uniqueRecords(release.families, 'id', 'families');
+  for (const family of families.values()) { text(family.label, 'family label'); text(family.coverage, 'family coverage'); }
+  const exclusions = uniqueRecords(release.exclusions, 'id', 'exclusions');
+  for (const excluded of exclusions.values()) {
+    require(!families.has(excluded.id), 'family is also excluded'); text(excluded.reason, 'exclusion reason');
+  }
+  const leaves = uniqueRecords(release.leaves, 'id', 'leaves');
+  for (const leaf of leaves.values()) {
+    require(families.has(leaf.id.split('.')[0]) && leaf.id.includes('.'), `${leaf.id} has unknown family`);
+    require(leaf.required === true, `${leaf.id} must be required`);
+    require(Number.isInteger(leaf.milestone) && leaf.milestone >= 0 && leaf.milestone <= 10, `${leaf.id} milestone invalid`);
+    text(leaf.owner, `${leaf.id} owner`); text(leaf.journey, `${leaf.id} journey`);
+    strings(leaf.blockers, `${leaf.id} blockers`); record(leaf.evidence, `${leaf.id} evidence`);
+    for (const dependency of strings(leaf.dependencies, `${leaf.id} dependencies`, true)) {
+      require(dependency !== leaf.id && leaves.has(dependency), `${leaf.id} has invalid dependency ${dependency}`);
+    }
+    const acceptance = record(leaf.acceptance, `${leaf.id} acceptance`);
+    text(acceptance.outcome, `${leaf.id} acceptance outcome`);
+    require(acceptance.status === 'not_bound' && acceptance.command === null && acceptance.fixtures === null && acceptance.boundary === null, `${leaf.id} has unverified acceptance binding`);
+    const states = record(leaf.states, `${leaf.id} states`);
+    require(Object.keys(states).length === stages.length && stages.every((stage) => Object.hasOwn(states, stage) && typeof states[stage] === 'boolean'), `${leaf.id} state keys must be the five booleans`);
+    require(states.planned, `${leaf.id} must be planned`);
+    require(stages.slice(1).every((stage) => !states[stage]), `${leaf.id} unbound promotion cannot establish a later state`);
+  }
+  const visited = new Set(), active = new Set();
+  const visit = (id) => {
+    require(!active.has(id), `dependency cycle at ${id}`);
+    if (visited.has(id)) return;
+    active.add(id);
+    for (const dependency of leaves.get(id).dependencies) visit(dependency);
+    active.delete(id); visited.add(id);
+  };
+  for (const id of leaves.keys()) visit(id);
+
+  const freeze = record(release.reference_freeze, 'reference freeze');
+  require(freeze.target_date === '2026-09-19' && freeze.status === 'partial_snapshot', 'reference freeze is unverified');
+  text(freeze.coverage, 'reference coverage'); strings(freeze.blockers, 'reference blockers');
+  const sources = uniqueRecords(freeze.sources, 'id', 'sources');
+  const url = (value) => {
+    text(value, 'public URL');
+    let parsed; try { parsed = new URL(value); } catch { fail(`${label}: invalid public URL`); }
+    require(parsed.protocol === 'https:' && !parsed.username && !parsed.password, 'public URL must use HTTPS without credentials');
+  };
+  const timestamp = (value) => {
+    require(typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) && Number.isFinite(Date.parse(value)), 'source retrieval timestamp invalid');
+    const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+    const date = new Date(0); date.setUTCFullYear(year, month - 1, day);
+    require(date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day, 'source retrieval timestamp calendar date invalid');
+  };
+  for (const source of sources.values()) {
+    require(repositoryPath(source.path) && path.posix.normalize(source.path) === source.path && !/[\x00-\x1f]/.test(source.path), 'source path must be canonical repository relative');
+    require(Number.isSafeInteger(source.bytes) && source.bytes > 0, 'source byte size invalid');
+    require(SHA256.test(source.sha256 ?? '') && SHA256.test(source.compressed_sha256 ?? ''), 'source hashes invalid');
+    url(source.requested_url); text(source.limitations, 'source limitations');
+    if (Object.hasOwn(source, 'retrieved_utc')) {
+      timestamp(source.retrieved_utc); url(source.effective_url); require(source.status === 200, 'source response not successful');
+    } else { timestamp(source.retrieved_file_mtime_utc); text(source.timestamp_basis, 'source timestamp basis'); }
+    const resolved = resolveSource(source.path);
+    require(resolved === true || resolved?.tracked_regular === true, `source is not a tracked regular file: ${source.path}`);
+  }
+  const binding = (value) => {
+    const item = record(value, 'source binding'), source = sources.get(item.source_id);
+    require(source && item.artifact_path === source.path, 'source binding identity/path mismatch');
+    const digests = ['sha256','artifact_uncompressed_sha256'].filter((key) => Object.hasOwn(item, key));
+    require(digests.length > 0 && digests.every((key) => item[key] === source.sha256), 'source binding digest mismatch');
+    text(item.quote, 'source quotation'); text(item.quote_matching ?? item.matching, 'quote matching'); text(item.scope, 'source scope');
+  };
+  const matrices = record(release.support_matrices, 'support matrices');
+  const connectorRows = list(record(matrices.connectors, 'connectors matrix').entries, 'connector entries');
+  const connectorNames = new Set(), connectorIdentities = new Set();
+  for (const row of connectorRows) {
+    record(row, 'connector entry'); text(row.reference_path, 'connector reference path');
+    const named = typeof row.status === 'string' && row.status.match(/^Overview explicitly names (\S(?:.*\S)?) under (\S(?:[^;]*\S)?); individual support\/modes\/lifecycle not verified$/);
+    require(named || row.status === 'discovered documentation link; support/modes/lifecycle not verified', 'malformed connector reference status');
+    const identity = named ? `name:${named[1]}` : `path:${row.reference_path}`;
+    require(!connectorIdentities.has(identity), 'duplicate connector identity');
+    connectorIdentities.add(identity);
+    if (named) connectorNames.add(named[1]);
+  }
+  const runtimeNames = new Set(list(record(matrices.runtimes, 'runtimes matrix').entries, 'runtime entries').map((row) => record(row, 'runtime entry').runtime));
+  const bindings = record(freeze.source_bindings, 'source bindings');
+  for (const [leaf, entries] of Object.entries(bindings)) {
+    const targetExists = leaves.has(leaf)
+      || (leaf.startsWith('connector:') && connectorNames.has(leaf.slice('connector:'.length)))
+      || (leaf.startsWith('runtime:') && runtimeNames.has(leaf.slice('runtime:'.length)));
+    require(targetExists, 'source binding names unknown leaf or support identity');
+    for (const item of list(entries, 'leaf source bindings')) binding(item);
+  }
+  for (const name of connectorNames) require(Object.hasOwn(bindings, `connector:${name}`), 'named connector source binding required');
+  for (const field of ['runtime_qualifications','models_administration_qualifications']) {
+    if (Object.hasOwn(freeze, field)) for (const item of list(freeze[field], field)) binding(item);
+  }
+  const consoleAcceptance = (row) => {
+    require(['not established','not established; does not remove explicit Console requirements'].includes(row.console_acceptance) && row.command === null, 'support cell claims unverified Console acceptance');
+  };
+  for (const [name, key] of [['connectors','reference_path'],['runtimes','runtime'],['sdks','language']]) {
+    const matrix = record(matrices[name], `${name} matrix`);
+    require(matrix.status === 'incomplete', `${name} support matrix is unverified`);
+    strings(matrix.required_dimensions, `${name} dimensions`);
+    if (name === 'connectors') require(sources.has(matrix.catalog_source), 'connector catalog source invalid');
+    const rows = name === 'connectors' ? connectorRows : uniqueRecords(matrix.entries, key, `${name} entries`).values();
+    for (const row of rows) {
+      consoleAcceptance(row);
+      if (name === 'connectors') {
+        require(row.reference_path.startsWith('/docs/foundry/'), 'connector reference path invalid');
+        text(row.status, 'connector reference status');
+        if (row.source_binding) binding(row.source_binding);
+      } else {
+        require(sources.has(row.source), `${name} source invalid`); text(row.reference_status, `${name} reference status`);
+        if (name === 'sdks') text(row.reference_distribution, 'SDK distribution');
+      }
+    }
+  }
+  if (Object.hasOwn(matrices, 'models_administration')) {
+    for (const row of uniqueRecords(matrices.models_administration, 'dimension', 'models administration matrix').values()) {
+      strings(row.values, 'model support values'); text(row.reference_support, 'model reference support'); binding(row.source_binding); consoleAcceptance(row);
+    }
+  }
+}
+
+export function validateConsoleTruthLedger(registry, jurisdiction, options = {}) {
+  validatedRegistries.delete(registry);
+  const { resolveSha = () => true, resolveRef = () => true, resolveBuckTarget = () => true, resolveSource = () => true, expectedCandidateSha, routeFacts, repoRoot } = options;
   object(registry, 'registry'); object(jurisdiction, 'jurisdiction register');
   if (registry.schema_version !== 'console-capability-registry-v2') fail('unsupported console capability registry schema');
   if (jurisdiction.schema_version !== 'console-jurisdiction-register-v2') fail('unsupported console jurisdiction register schema');
@@ -463,6 +614,7 @@ export function validateConsoleTruthLedger(registry, jurisdiction, { resolveSha 
   // directly — so the equality it tests is unchanged, only shorter.
   const expectedBindings = new Set(registry.capabilities.flatMap((cap) => array(cap.jurisdiction_bindings).map((binding) => `${binding.control_id}|${cap.id}`))); const actualTraces = new Set([...controls.values()].flatMap((control) => array(control.capability_traceability).map((trace) => `${control.id}|${trace.capability_id}`))); if (expectedBindings.size !== actualTraces.size || [...expectedBindings].some((tuple) => !actualTraces.has(tuple))) fail('Korea control trace is not an exact capability binding bijection');
     if (routeFacts) { const owners = registry.capabilities.flatMap((cap) => cap.route_presentation.route_keys.map((key) => `cap:${cap.id}:${key}`)).concat(array(registry.source_inventory?.unmodeled_keys).map((entry) => `unmodeled:${entry.key}`)); const keys=owners.map((entry) => entry.split(':').at(-1)); const actual=new Set(Object.keys(routeFacts.facts ?? {})); if (new Set(keys).size !== keys.length || keys.length !== actual.size || [...actual].some((key)=>!keys.includes(key))) fail('source route inventory is not a complete bijection'); }
+  validateReleaseInventory(registry, resolveSource);
   validatedRegistries.set(registry, ledgerDigest(registry));
   return { capability_count: registry.capabilities.length, candidate_sha: candidate.sha, verdict: 'STRUCTURALLY_VALID_HOLD_PRESERVED' };
 }

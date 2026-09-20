@@ -1,0 +1,91 @@
+{
+  "kind": "release-inventory-structural-validation-proof",
+  "base_sha": "3bdebb726ccf568ab566547ab64ece6990bb69a8",
+  "owner": "root sole repository writer",
+  "implementation_sha256": "9456d18f2e87bc50b8bd1bc0bff8c1edb51bfc55269ebb57f337c91bf8300d88",
+  "implementation_review": {
+    "reviewer": "audit_review",
+    "verdict": "approved exact candidate after calendar normalization defect repaired"
+  },
+  "probe": "node --test --test-name-pattern=\"release inventory\" scripts/console/validate-console-truth-ledger.test.mjs > /private/tmp/console-release-validator-probe.log 2>&1",
+  "red": {
+    "executed": 76,
+    "passed": 3,
+    "failed": 73,
+    "skipped": 0
+  },
+  "green": {
+    "executed": 76,
+    "passed": 76,
+    "failed": 0,
+    "skipped": 0
+  },
+  "full_suite": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs scripts/console/verify-console-authority-train.test.mjs scripts/console/plan-fanout.test.mjs",
+    "executed": 133,
+    "passed": 133,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 7.080679
+  },
+  "calendar_red": {
+    "executed": 5,
+    "passed": 2,
+    "failed": 3,
+    "note": "Name filter also matched retained malformed retrieval-date control; all3new impossible-date failures were intended."
+  },
+  "mutation_controls": [
+    {
+      "name": "owning-call",
+      "detected": true,
+      "executed": 2,
+      "positive_passed": 1,
+      "negative_failed": 1,
+      "exit_code": 1,
+      "log_sha256": "39c5640bc43902313f358fa22190ede473c09e52264bba1ee267e39ed8171a41"
+    },
+    {
+      "name": "promotion",
+      "detected": true,
+      "executed": 2,
+      "positive_passed": 1,
+      "negative_failed": 1,
+      "exit_code": 1,
+      "log_sha256": "a62ec2ed04a78dc4690c8e5d6f8ad9fea13dfaf6f8326185f090a3e85fd067a7"
+    },
+    {
+      "name": "cycle",
+      "detected": true,
+      "executed": 2,
+      "positive_passed": 1,
+      "negative_failed": 1,
+      "exit_code": 1,
+      "log_sha256": "000526141cfd4c70d8b6987afaa9edaf4e5cf53c19522466ddd88b70c08b36fd"
+    },
+    {
+      "name": "binding",
+      "detected": true,
+      "executed": 2,
+      "positive_passed": 1,
+      "negative_failed": 1,
+      "exit_code": 1,
+      "log_sha256": "8eb9b5c08124f1b225e9c107a09483989914bb31e90adbd0d6d19bfa055bd86d"
+    }
+  ],
+  "logs": {
+    "admission": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "red": "70ac510806610fc4ddeb12ce3c35a6f865df5ccc32e4872ce24162462ef95236",
+    "green": "2c8f685f77302e897ae73bf0e40d21a18221467096948e72d1618812b72d0a89",
+    "full-suite": "c354bfd1cca89b570e44349ae95ff034098a7b944882c0900e9eb2a64c75c2da",
+    "mutation-driver": "e1e11ff939e76ae12ce79c9107f7ae9b463325e431a2b4309ca735971b4fe885",
+    "mutation-owning-call": "39c5640bc43902313f358fa22190ede473c09e52264bba1ee267e39ed8171a41",
+    "mutation-promotion": "a62ec2ed04a78dc4690c8e5d6f8ad9fea13dfaf6f8326185f090a3e85fd067a7",
+    "mutation-cycle": "000526141cfd4c70d8b6987afaa9edaf4e5cf53c19522466ddd88b70c08b36fd",
+    "mutation-binding": "8eb9b5c08124f1b225e9c107a09483989914bb31e90adbd0d6d19bfa055bd86d"
+  },
+  "remaining": [
+    "Structural validation and authentic regular-blob existence do not prove decompressed source bytes, quote entailment, exhaustive inventory or cross-revision preservation.",
+    "Later states intentionally rejected until an independently reviewed stage-specific evidence verifier exists.",
+    "Full repository verification and release milestones remain incomplete."
+  ]
+}
