@@ -1,0 +1,10 @@
+{
+  "kind": "proposed-platform-list-retained-source-bounded-owner-design-round3",
+  "files_sha256": {
+    "DESIGN.md": "d0e6118f6f0d095130dd626a01a256b859d3db32196838c667528124c20ea7b7",
+    "callers.json": "fcda568624ec40e1d178cf07c439bfc1bf521db1a160d6b35d3528b16976881a",
+    "source-custody.json": "910c7ab4d906ece6472436fbe499402c11e569f89f41b9eaa55e8ddecb4a392f",
+    "verification.json": "77ccc908c0475a311a6ed1560e8e85e9c3b7441dd7cdb225343e3423443dfc69"
+  },
+  "predecessor_manifest_sha256": "0668ff5c2cb20b4a34251bbd767d485ea382b0fead0f8acc2387b82f769f5c35"
+}

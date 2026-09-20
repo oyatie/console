@@ -1,0 +1,55 @@
+{
+  "rust_list_tenants_callers": [
+    {
+      "path": "backend/crates/platform/platform-rest/src/lib.rs",
+      "line": 637,
+      "function": "list_orgs",
+      "kind": "HTTP GET /api/platform/orgs"
+    }
+  ],
+  "raw_sql_runtime_callers": [
+    {
+      "path": "backend/crates/platform/provisioning/src/lib.rs",
+      "line": 1147,
+      "function": "list_tenants",
+      "use": "full metadata"
+    },
+    {
+      "path": "backend/crates/platform/platform-rest/src/view_as.rs",
+      "line": 573,
+      "function": "lookup_active_org",
+      "use": "target name/status lookup"
+    },
+    {
+      "path": "backend/app/src/workflow_schedules.rs",
+      "line": 174,
+      "function": "run_tick",
+      "use": "Company id-only machine discovery"
+    },
+    {
+      "path": "backend/app/src/workflow_drain.rs",
+      "line": 115,
+      "function": "run_tick",
+      "use": "Company id-only machine discovery"
+    },
+    {
+      "path": "backend/crates/platform/audit-chain/src/lib.rs",
+      "line": 714,
+      "function": "run_tick",
+      "use": "Company id-only machine discovery"
+    },
+    {
+      "path": "backend/crates/facilities/rest/src/lib.rs",
+      "line": 65,
+      "function": "poll_scheduled_hvac",
+      "use": "Company id-only machine discovery"
+    }
+  ],
+  "non_runtime_references": [
+    "historical migrations0036/0061",
+    "current and historical custody profile SQL/generator strings",
+    "startup_effective_privileges protected function roster",
+    "RLS arming gate test fixture"
+  ],
+  "method": "Read-only repository rg for list_tenants( and platform_list_organizations( plus manual source inspection; no runtime claims"
+}

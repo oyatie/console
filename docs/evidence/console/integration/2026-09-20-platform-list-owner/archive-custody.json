@@ -1,0 +1,141 @@
+{
+  "purpose": "Immutable reviewed design and prerequisite evidence; not a new roadmap, implementation admission or release acceptance",
+  "packets": [
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round3/source-custody.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round1/source-custody.json",
+      "sha256": "910c7ab4d906ece6472436fbe499402c11e569f89f41b9eaa55e8ddecb4a392f"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round3/callers.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round1/callers.json",
+      "sha256": "fcda568624ec40e1d178cf07c439bfc1bf521db1a160d6b35d3528b16976881a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round3/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round1/manifest.json",
+      "sha256": "dd407b6654d083a4a06312b708899d07c503f061e75f1a86ee77314381629b75"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round3/verification.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round1/verification.json",
+      "sha256": "77ccc908c0475a311a6ed1560e8e85e9c3b7441dd7cdb225343e3423443dfc69"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round3/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round1/design.txt",
+      "sha256": "d0e6118f6f0d095130dd626a01a256b859d3db32196838c667528124c20ea7b7"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round5/source-custody.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round2/source-custody.json",
+      "sha256": "4666f10b27be71244b07e3f32eabc23cafd68d86ebe08280b7b45a79d499eafe"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round5/callers.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round2/callers.json",
+      "sha256": "fcda568624ec40e1d178cf07c439bfc1bf521db1a160d6b35d3528b16976881a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round5/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round2/manifest.json",
+      "sha256": "4e6e37fd1d8960b84f6c6699ab95eaece8bc7b444b657c7bab240428e4f4967a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round5/verification.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round2/verification.json",
+      "sha256": "68e7c6ef6d80a76ba1ae61a78bd7eb2c753e77cce4433206ce5abaa9b75d6d9a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round5/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round2/design.txt",
+      "sha256": "662b2f336be866d520943343b3986015a4054b565f15c585a1feaa37a0c4cf3f"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round9/source-custody.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round4/source-custody.json",
+      "sha256": "0d6f9d8abdd5e8c272482c5430adb9a4887fc579bee0d887a512fc6b91c94593"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round9/callers.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round4/callers.json",
+      "sha256": "fcda568624ec40e1d178cf07c439bfc1bf521db1a160d6b35d3528b16976881a"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round9/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round4/manifest.json",
+      "sha256": "3f3b77eb13e194a11b451635226988912062c38b235341ca745d560b5ac877a7"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round9/verification.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round4/verification.json",
+      "sha256": "2c2cf8ad7638e381c01cb620fdf292b0ec0e73b128249131ad4c9b2d5d8a8c2c"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-source-design-20260920-round9/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/round4/design.txt",
+      "sha256": "464d7ef09142363c05b091903d247f9f4bed576415502288f7b495ba00edb549"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/caller-census.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/caller-census.json",
+      "sha256": "4a2551e545559939c5337848b7fcbbd85c54ec3e5521b1f5d6133c2905adad96"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/legacy-platform-v1.cedar",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/legacy-platform-v1.cedar",
+      "sha256": "80838954a2ccf18008632a7f9a082a60a7429e2519636c75d5caad9c48068136"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/source-custody.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/source-custody.json",
+      "sha256": "70b7cfd52c4cd4ab3285e26c8142cd376879a4cf51602976efc1d4f6dbeb1778"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/manifest.json",
+      "sha256": "7823ee9032c28c0d54300c4e23bf3100bf42742eef69e4f3fcd9df9e40a60c42"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/verification.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/verification.json",
+      "sha256": "3a4ad6719f8b48f17708e8a594ad9bfc25b4acc03736baffbcf63f808fa2ed75"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/truth-table.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/truth-table.json",
+      "sha256": "366da33371b94527d7c3a20688c89425e1ca8da5961d1d06c0961822464f873c"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/design.txt",
+      "sha256": "9e3e567056a5b4784ff20470bd8f5886b59f8c1305c412532745b80e5c56206d"
+    },
+    {
+      "original": "/private/tmp/console-finite-platform-cedar-design-20260920-round5/legacy-platform-v1.cedarschema",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/finite-policy/legacy-platform-v1.cedarschema",
+      "sha256": "c7a83bf86301f3bfd27444c6e43ff70dfbabfa997e4749c383c07cba0097bff2"
+    }
+  ],
+  "reviews": [
+    "round1-root-review.json",
+    "round1-security-review.json",
+    "round2-root-review.json",
+    "round2-security-review.json",
+    "round3-root-review.json",
+    "round3-security-review.json",
+    "round4-root-review.json",
+    "round4-security-review.json"
+  ],
+  "design_consensus_manifest_sha256": "3f3b77eb13e194a11b451635226988912062c38b235341ca745d560b5ac877a7",
+  "prerequisite_candidate": "83f9b098bcf4f2c7274e0e0743a2326dcaa2c209",
+  "prerequisite_command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-platform-list-prerequisites-map-20260920.json --only platform-list-retained-prerequisites",
+  "prerequisite_discovered": 14,
+  "prerequisite_executed": 14,
+  "prerequisite_passed": 14,
+  "prerequisite_ignored": 0,
+  "prerequisite_filtered": 12,
+  "prerequisite_seconds": 70.75,
+  "prerequisite_log_sha256": "3f3d9af920869128488b06c8fb319dfeb996f07f75da3cc345ff1cefb1340cdc",
+  "remaining": "Exact independently reviewed tests; actual owner RED; lane admission; implementation and runtime evidence; all broader release dependencies."
+}

@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "packet_manifest_sha256": "3f3b77eb13e194a11b451635226988912062c38b235341ca745d560b5ac877a7",
+  "design_sha256": "464d7ef09142363c05b091903d247f9f4bed576415502288f7b495ba00edb549",
+  "repository_writes": 0,
+  "reviewer_build_or_db_executions": 0,
+  "status": "APPROVE_INDEPENDENT_DESIGN_ROUND_4_OWNER_RED_FIXTURES_ORACLES_AND_SCOPE",
+  "decisions": [
+    "Initial real App mounted MEMBER-after-SUPER_ADMIN historical bearer test compiles against existing route/helpers, proves nonempty source positive and reaches currently ungated owner200; intended403/no effects is a behavioral RED. Missing future API/schema is excluded as admission.",
+    "Real restricted LOGIN pools, actual root preparation/Account roots, genuine family issuance and fixture-only bound signing preserve credential provenance. Full ordered metadata and exact complete audit/public-table rosters reject hidden effects.",
+    "Source/projection/audit waits are separate observed histories; groups relation blocker reaches projection after source guards unlike organizations blocker. Exact pg_blocking_pids/role/query histories plus cleanup and independent-subject progress required.",
+    "Cancellation/outer timeout and HEAD evidence occurs through configured App root. Ambiguous commit remains unaccepted until independently reviewed real COMMIT acknowledgement fault fixture exists; ordinary query error cannot substitute.",
+    "Prospective custody captures require source review, plain/observer fresh/populated/replay/drift/interruption and effective privilege controls; historical serializers, migrations and pins preserved.",
+    "Real linked Cedar4.12.0, closed policy truth table, private corruption controls and two crate-private compiler field accesses reuse strict compiler without public permit or duplicate compiler.",
+    "Only root serializes final path list/generated artifacts. No worker/view-as/other feature/issuer/mint conversion is smuggled into list lane. Exact followup tests receive separate review; mandatory owner evidence cannot be skipped for partial green."
+  ],
+  "prerequisite_log": {
+    "path": "/private/tmp/console-platform-list-prerequisites-83f9b098-20260920.log",
+    "sha256": "3f3d9af920869128488b06c8fb319dfeb996f07f75da3cc345ff1cefb1340cdc",
+    "observed": "14 executed and passed, 0 ignored, 12 filtered, 70.75 seconds; existing prerequisite behavior only, not new owner RED"
+  },
+  "limits": "Four-round design scope accepted, not implementation admission. Exact reviewed tests, clean candidate and actual owner RED still required. Raw metadata SQL grants/five consumers, other Platform owners, global bound mint and full release remain HOLD."
+}

@@ -1,0 +1,58 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_90546" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_90546, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m console-ontology-domain v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/domain)
+[1m[92m   Compiling[0m console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+[1m[92m   Compiling[0m console-platform-test-support v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/test-support)
+[1m[92m   Compiling[0m console-platform-request-context v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/request-context)
+[1m[92m   Compiling[0m console-platform-provisioning v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/provisioning)
+[1m[92m   Compiling[0m console-ontology-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/adapter-postgres)
+[1m[92m   Compiling[0m console-platform-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/platform-rest)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 8.32s
+[1m[92m  Executable[0m unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_platform_rest-1bc0c9fb0a9f1c5e)
+[1m[92m  Executable[0m tests/onboard_seeds_config_objects.rs (/private/tmp/console-rust1981-owner-target/debug/deps/onboard_seeds_config_objects-e4959c327b8b9638)
+[1m[92m  Executable[0m tests/ops_dashboard.rs (/private/tmp/console-rust1981-owner-target/debug/deps/ops_dashboard-7455e94292f0b569)
+[1m[92m  Executable[0m tests/platform_groups.rs (/private/tmp/console-rust1981-owner-target/debug/deps/platform_groups-4880e62da5811874)
+[1m[92m  Executable[0m tests/remove_tenant.rs (/private/tmp/console-rust1981-owner-target/debug/deps/remove_tenant-dc8ad9d586a548e3)
+[1m[92m  Executable[0m tests/view_as.rs (/private/tmp/console-rust1981-owner-target/debug/deps/view_as-2a8f406c0909a4a1)
+cargo-postgres: === platform-list-retained-prerequisites ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-rest --test view_as live_authority_regressions:: -- --nocapture --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.22s
+[1m[92m     Running[0m tests/view_as.rs (/private/tmp/console-rust1981-owner-target/debug/deps/view_as-2a8f406c0909a4a1)
+
+running 14 tests
+test live_authority_regressions::live_authority_empty_current_roles_refused_after_success ... ok
+test live_authority_regressions::live_authority_inactive_target_refused_after_success ... ok
+test live_authority_regressions::live_authority_missing_platform_home_refuses_tier_and_view_as ... ok
+test live_authority_regressions::live_authority_missing_target_is_not_platform_delegation ... ok
+test live_authority_regressions::live_authority_ordinary_same_bearer_observes_committed_downgrade ... ok
+test live_authority_regressions::live_authority_ordinary_unchanged_positive_both_entry_points ... ok
+test live_authority_regressions::live_authority_partial_removal_retains_unaffected_current_role ... ok
+test live_authority_regressions::live_authority_platform_delegation_rejects_inconsistent_read_only_flags ... ok
+test live_authority_regressions::live_authority_platform_delegations_preserve_acting_roles_then_revoke ... ok
+test live_authority_regressions::live_authority_platform_tier_requires_current_active_home ... ok
+test live_authority_regressions::live_authority_projection_permission_failure_is_unavailable_and_recovers ... ok
+test live_authority_regressions::live_authority_role_addition_applies_without_widening_signed_scope ... ok
+test live_authority_regressions::live_authority_unmarked_platform_context_requires_writable_super_admin_shape ... ok
+test live_authority_regressions::live_authority_view_as_flag_does_not_prove_platform_home ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 70.75s
+
+cargo-postgres-timing: {"name": "platform-list-retained-prerequisites", "package": "console-platform-rest", "seconds": 71.954, "shard": "", "status": "pass"}
+
+cargo-postgres: summary
+  PASS  platform-list-retained-prerequisites
+cargo-postgres: 1 passed, 0 failed
+cargo-postgres: all 1 invocations passed

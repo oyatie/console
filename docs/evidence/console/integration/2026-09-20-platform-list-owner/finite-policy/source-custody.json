@@ -1,0 +1,29 @@
+{
+  "observed_head": "e1007b0c4235f86079cfff40f2f8280c9fa40c3a",
+  "approved_parent_contract_manifest": "6fae6fdf6987ac0ef694869324879922912577188dbb34a252c97f682e2a41e0",
+  "source_sha256": {
+    "backend/crates/platform/authz/src/lib.rs": "1e663e5ef898c129b9e6cdfc1a5eb16574b57c7e0dab1e8ab1ade8dbd9e0f65d",
+    "backend/crates/platform/authz/src/cedar_pbac/engine.rs": "8e1f29ca5845e52b7e038804a1e581908443250b48dffec3278a1ba72fcc88d5",
+    "backend/crates/platform/authz/src/cedar_pbac/authoring.rs": "b9726366e1df05c15e2bddb3b6ca23d81b63d0783171ac5aef7d2840a134734b",
+    "backend/crates/platform/authz/tests/cedar_sdk_identity.rs": "60f4a3d7ef8d56367e3fd6c1296440053ddcfe00aaa96dda3a8f855a1cb5c2d5",
+    "backend/crates/platform/authz/Cargo.toml": "434cdd4d202f1c859fe8bda3ba4040eb8594f7e9bedfb38d66811df6f61361f3",
+    "backend/Cargo.lock": "3616dadd89892ac18c9d7abcb2a8daa71c47a292e204c1cdd6306a16f1f0a3a5",
+    "backend/crates/platform/request-context/src/lib.rs": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+    "backend/crates/platform/auth/src/session.rs": "3c652d4e0fc6e8df05b02a54a06007718542c99075779280116f0a3afc6a212f",
+    "backend/crates/platform/auth/src/legacy.rs": "6be533f35ec41cdaa52c2c62d0054e72af120e1e706b1c53fabb03d9c34e1ea9",
+    "backend/crates/platform/platform-rest/src/view_as.rs": "3d3ea2738bf8aaf7410ad36216e5e5df83158bce27356552bc02a12a54903755",
+    "backend/crates/platform/platform-rest/src/lib.rs": "ff28b45ada17f6fbd8e33ef4899fe779f71b215bcccb8c28cbecf9efa319a2ec",
+    "backend/crates/policy/application/src/lib.rs": "7b31f675460061bb93feadc19652eb1b759d8fa09e3964e6b276980498d2ca95",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+    "docs/evidence/console/integration/2026-09-20-cedar-sdk-owner/runtime-review.json": "fd4a28f36910cb231a2044a7f826b59ff7ea107661ee93cc4f04640449327361",
+    "backend/crates/platform/platform-rest/tests/view_as.rs": "cbc11808ed9eca53cdecbad7d3ca8075aa2a39013007159714e54c034271f7cc",
+    "backend/crates/platform/auth/src/jwt.rs": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b"
+  },
+  "policy_sdk": {
+    "manifest_exact": "4.12.0",
+    "lock_exact": "4.12.0",
+    "linked_identity_evidence": "existing actual cedar_sdk_identity tests2/2, reused not rerun",
+    "native_company_policy": "separate unqualified dependency; no executable native schema found in inspected release tree"
+  },
+  "predecessor_observed_head": "4b11ea0149ff3d6dac5e2187bf21d7c336c00e17"
+}

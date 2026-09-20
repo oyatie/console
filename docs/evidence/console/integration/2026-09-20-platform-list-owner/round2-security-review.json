@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_INDEPENDENT_DESIGN_ROUND_2_SQL_ACL_CUSTODY_WIRING_SCOPE",
+  "packet_manifest_sha256": "edf1329eefc8dc90dd0abb42fc55550e25a5d5bf72294df6169e1021645deefb",
+  "design_sha256": "0e25035cc5d3dfc0bcb5cc2371b82d8692f0ed3705673ec173c51eb9a7880790",
+  "scope": "Second independent design review round only; no SQL body, generated pins, migration application, tests or implementation approved.",
+  "accepted": [
+    "Exact ten-column bridge returns only current roles and actual optional nine-field family tuple; absent historical family differs from missing selected family. SQL never claims JWT possession from IDs or returns a policy grant.",
+    "Fixed sentinel context and READ COMMITTED; existing Company KEY SHARE then User/Account UPDATE precede exact-family SHARE. Separate statements for fresh current context after waits; real clock remains Auth-owned.",
+    "Credential owner owns VOLATILE safe-search-path bridge; sole serving EXECUTE is Business. Existing context projection gains credential-owner EXECUTE only; no Business credential table access, Auth business privileges or role escalation.",
+    "New outer whole-profile custody and classifier preserve historical installers/serializers/pins; exact prior-to-final transition, replay and drift refusal require root-owned source-reviewed certification. No fabricated/runtime-learned pin is approved.",
+    "Rollback honestly rejects assumed old-binary compatibility; exact compatible software or separately reviewed inverse transition with fenced admission required.",
+    "Explicit AppState compiled-policy composition and configured TTL into optional PlatformRestState seam avoid nonexistent config fields/default authority. Auth token_verifier supplies verifier; no released Auth snapshot passes as retained guard."
+  ],
+  "interpretation_to_clarify_in_successor": "Preserve old serializer output means unchanged algorithms and identical output for identical historical input profiles. New helper/context ACL changes necessarily alter current profile bytes; new outer reviewed pins must cover that, never relabel old pins.",
+  "deferred_round3": [
+    "Transport phrase existing strict single-Bearer parser is not source fact: current private parser selects HeaderMap.get. Author identified correction; round2 does not approve credential selection. Freeze exact one-header list route parsing/privacy in next round.",
+    "Precise lifetime, SQL/error provenance, composite Cedar and audit rollback/recovery remain round3."
+  ],
+  "remaining_round4": "Actual owner RED, ACL/custody corruption controls, lock histories and complete prerequisites; then exact tests before implementation.",
+  "runtime_tests_executed": 0,
+  "repository_writes": 0
+}

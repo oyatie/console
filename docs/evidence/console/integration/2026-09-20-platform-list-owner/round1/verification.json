@@ -1,0 +1,17 @@
+{
+  "status": "SOURCE_CENSUS_AND_PROPOSED_DESIGN_ONLY",
+  "public_method_runtime_callers": 1,
+  "raw_projection_runtime_callers": 6,
+  "machine_id_only_callers": 4,
+  "repository_writes": 0,
+  "tests_authored": 0,
+  "tests_executed": 0,
+  "SQL_execution": 0,
+  "builds": 0,
+  "runtime_owner_RED": false,
+  "implementation_admitted": false,
+  "migration_grants_approved": false,
+  "scope": "Bounded actual list_tenants application owner first; raw SQL capability/machine/view-as closure deferred explicit release HOLD",
+  "independent_design_rounds_completed": 0,
+  "root_scope_review_manifest": "39fec96dd1843bdce9d9a142a9e552f46e6a6c2375a62e448616dab068afda24"
+}

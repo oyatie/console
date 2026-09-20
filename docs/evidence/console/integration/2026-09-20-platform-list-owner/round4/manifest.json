@@ -1,0 +1,10 @@
+{
+  "kind": "proposed-platform-list-retained-source-design-review-rounds3-4-corrected-final",
+  "files_sha256": {
+    "DESIGN.md": "464d7ef09142363c05b091903d247f9f4bed576415502288f7b495ba00edb549",
+    "callers.json": "fcda568624ec40e1d178cf07c439bfc1bf521db1a160d6b35d3528b16976881a",
+    "source-custody.json": "0d6f9d8abdd5e8c272482c5430adb9a4887fc579bee0d887a512fc6b91c94593",
+    "verification.json": "2c2cf8ad7638e381c01cb620fdf292b0ec0e73b128249131ad4c9b2d5d8a8c2c"
+  },
+  "predecessor_manifest_sha256": "2362fabd14f9e173a226b5412f82949920e86c320ec77ba233db88e4eaf8db59"
+}

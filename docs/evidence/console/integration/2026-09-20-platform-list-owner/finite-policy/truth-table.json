@@ -1,0 +1,3668 @@
+{
+  "status": "PROPOSED_DESIGN_ORACLES_NOT_EXECUTED_TESTS",
+  "authority": "approved legacy-platform-authority-v1 contract, never PlatformPrincipal::authorize always-Ok or tenant permission matrix",
+  "known_roles": [
+    "MEMBER",
+    "RECEPTIONIST",
+    "MECHANIC",
+    "ADMIN",
+    "EXECUTIVE",
+    "SUPER_ADMIN"
+  ],
+  "features": [
+    {
+      "variant": "TenantCreate",
+      "action": "tenant_create",
+      "canonical_target": "companies",
+      "canonical_use": "effect"
+    },
+    {
+      "variant": "TenantList",
+      "action": "tenant_list",
+      "canonical_target": "companies",
+      "canonical_use": "read"
+    },
+    {
+      "variant": "TenantSuspend",
+      "action": "tenant_suspend",
+      "canonical_target": "company",
+      "canonical_use": "effect"
+    },
+    {
+      "variant": "TenantRemove",
+      "action": "tenant_remove",
+      "canonical_target": "company",
+      "canonical_use": "effect"
+    },
+    {
+      "variant": "TenantHealthRead",
+      "action": "tenant_health_read",
+      "canonical_target": "company",
+      "canonical_use": "read"
+    },
+    {
+      "variant": "TenantManage",
+      "action": "tenant_manage",
+      "canonical_target": "company",
+      "canonical_use": "mint"
+    },
+    {
+      "variant": "GroupManage",
+      "action": "group_manage",
+      "canonical_target": "group",
+      "canonical_use": "effect"
+    },
+    {
+      "variant": "PlatformAuditRead",
+      "action": "platform_audit_read",
+      "canonical_target": "platform_audit",
+      "canonical_use": "read"
+    }
+  ],
+  "role_matrix": [
+    {
+      "id": "role-set-00",
+      "current_roles": [],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-01",
+      "current_roles": [
+        "MEMBER"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-02",
+      "current_roles": [
+        "RECEPTIONIST"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-03",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-04",
+      "current_roles": [
+        "MECHANIC"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-05",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-06",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-07",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-08",
+      "current_roles": [
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-09",
+      "current_roles": [
+        "MEMBER",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-10",
+      "current_roles": [
+        "RECEPTIONIST",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-11",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-12",
+      "current_roles": [
+        "MECHANIC",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-13",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-14",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-15",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-16",
+      "current_roles": [
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-17",
+      "current_roles": [
+        "MEMBER",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-18",
+      "current_roles": [
+        "RECEPTIONIST",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-19",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-20",
+      "current_roles": [
+        "MECHANIC",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-21",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-22",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-23",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-24",
+      "current_roles": [
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-25",
+      "current_roles": [
+        "MEMBER",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-26",
+      "current_roles": [
+        "RECEPTIONIST",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-27",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-28",
+      "current_roles": [
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-29",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-30",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-31",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE"
+      ],
+      "bound_direct": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "Deny",
+        "tenant_list": "Deny",
+        "tenant_suspend": "Deny",
+        "tenant_remove": "Deny",
+        "tenant_health_read": "Deny",
+        "tenant_manage": "Deny",
+        "group_manage": "Deny",
+        "platform_audit_read": "Deny"
+      }
+    },
+    {
+      "id": "role-set-32",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-33",
+      "current_roles": [
+        "MEMBER",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-34",
+      "current_roles": [
+        "RECEPTIONIST",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-35",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-36",
+      "current_roles": [
+        "MECHANIC",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-37",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-38",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-39",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-40",
+      "current_roles": [
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-41",
+      "current_roles": [
+        "MEMBER",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-42",
+      "current_roles": [
+        "RECEPTIONIST",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-43",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-44",
+      "current_roles": [
+        "MECHANIC",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-45",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-46",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-47",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-48",
+      "current_roles": [
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-49",
+      "current_roles": [
+        "MEMBER",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-50",
+      "current_roles": [
+        "RECEPTIONIST",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-51",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-52",
+      "current_roles": [
+        "MECHANIC",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-53",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-54",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-55",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-56",
+      "current_roles": [
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-57",
+      "current_roles": [
+        "MEMBER",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-58",
+      "current_roles": [
+        "RECEPTIONIST",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-59",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-60",
+      "current_roles": [
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-61",
+      "current_roles": [
+        "MEMBER",
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-62",
+      "current_roles": [
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    },
+    {
+      "id": "role-set-63",
+      "current_roles": [
+        "MEMBER",
+        "RECEPTIONIST",
+        "MECHANIC",
+        "ADMIN",
+        "EXECUTIVE",
+        "SUPER_ADMIN"
+      ],
+      "bound_direct": {
+        "tenant_create": "Allow",
+        "tenant_list": "Allow",
+        "tenant_suspend": "Allow",
+        "tenant_remove": "Allow",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "Allow",
+        "group_manage": "Allow",
+        "platform_audit_read": "Allow"
+      },
+      "historical_direct_canonical_use": {
+        "tenant_create": "UpgradeRequired",
+        "tenant_list": "Allow",
+        "tenant_suspend": "UpgradeRequired",
+        "tenant_remove": "UpgradeRequired",
+        "tenant_health_read": "Allow",
+        "tenant_manage": "UpgradeRequired",
+        "group_manage": "UpgradeRequired",
+        "platform_audit_read": "Allow"
+      }
+    }
+  ],
+  "role_matrix_decision_cells": 1024,
+  "base_material": "correct authenticated direct platform session, active unfenced actual current platform-home user, supported policy/schema/SDK, valid target; bound rows also exact live LEGACY_COMPANY family; historical rows signed unbound original expiry",
+  "single_fault_cases": [
+    {
+      "id": "subject_missing",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "subject_inactive",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "subject_id_nil",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "subject_home_missing",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "subject_home_ordinary_company",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "subject_home_platform_claim_only",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "account_fence_present",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "account_fence_projection_missing",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "account_fence_projection_null",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "current_roles_missing",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "current_roles_null",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "current_roles_unknown_even_with_super_admin",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "current_roles_empty",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "jwt_super_admin_only_current_member",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "group_admin_grant_only",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_signature_invalid",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_protocol_account_v1",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_subject_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_home_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_expired_at_now",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_not_yet_valid",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "credential_claim_present_malformed_no_absence_fallback",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_missing",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_id_nil",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_id_other_live_family_same_subject",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_subject_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_home_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_protocol_account_v1",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_revoked",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_absolute_deadline_reached",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "bound_family_deadline_missing_or_overflow",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "current_auth_material_unavailable",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "target_id_nil_or_platform_sentinel_for_company",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "feature_target_kind_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "unknown_feature",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "unsupported_policy_version",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "schema_or_policy_digest_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "linked_sdk_identity_mismatch",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "strict_schema_or_policy_compile_error_or_warning",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "cedar_entities_request_error",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "cedar_evaluation_diagnostic_error",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "cedar_evaluation_panic",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "cedar_no_permit",
+      "expected": "Deny",
+      "applies_to_actions": [
+        "tenant_create",
+        "tenant_list",
+        "tenant_suspend",
+        "tenant_remove",
+        "tenant_health_read",
+        "tenant_manage",
+        "group_manage",
+        "platform_audit_read"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical request; preserve target variant and mutate only the named fact."
+    },
+    {
+      "id": "target_group_id_nil",
+      "applies_to_actions": [
+        "group_manage"
+      ],
+      "basis": "Otherwise valid bound direct current SUPER_ADMIN canonical Group target; replace its UUID with nil without changing target kind.",
+      "expected": "Deny"
+    }
+  ],
+  "session_and_callsite_cases": [
+    {
+      "id": "direct-bound-read",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_list",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Allow"
+    },
+    {
+      "id": "direct-bound-view-as-mint",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "Allow"
+    },
+    {
+      "id": "direct-bound-writable-mint",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "Allow"
+    },
+    {
+      "id": "direct-historical-group-list",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "group_manage",
+      "target_kind": "groups",
+      "use_kind": "read",
+      "expected": "Allow"
+    },
+    {
+      "id": "direct-historical-view-as-mint",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "UpgradeRequired"
+    },
+    {
+      "id": "direct-historical-writable-mint",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "UpgradeRequired"
+    },
+    {
+      "id": "direct-invalid-read-class-for-create",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_create",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-invalid-mint-class-for-list",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_list",
+      "target_kind": "companies",
+      "use_kind": "mint",
+      "expected": "Deny"
+    },
+    {
+      "id": "view-as-bound-source-read",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Allow",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "view-as-old-source-read",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Allow",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "view-as-bound-effect",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "effect",
+      "expected": "Deny",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "view-as-old-effect",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "effect",
+      "expected": "Deny",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "view-as-platform-route",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Deny",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "view-as-wrong-source-feature",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Deny",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "writable-bound-source-read",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Allow",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "writable-bound-source-effect",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "effect",
+      "expected": "Allow",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "writable-old-source-read",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Allow",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "writable-old-source-effect",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "effect",
+      "expected": "UpgradeRequired",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "writable-platform-route",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "effect",
+      "expected": "Deny",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "writable-wrong-source-feature",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "read",
+      "expected": "Deny",
+      "target_relation": "same_as_signed_company"
+    },
+    {
+      "id": "group-derived-not-platform-source",
+      "binding": "bound",
+      "source_kind": "group_admin",
+      "call_site": "derived_source",
+      "action": "group_manage",
+      "target_kind": "group",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "ordinary-company-super-admin",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_list",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "bound-view-as-exit",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "operations",
+      "use_kind": "effect",
+      "expected": "Allow"
+    },
+    {
+      "id": "bound-writable-exit",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "operations",
+      "use_kind": "effect",
+      "expected": "Allow"
+    },
+    {
+      "id": "old-view-as-exit",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "operations",
+      "use_kind": "effect",
+      "expected": "UpgradeRequired"
+    },
+    {
+      "id": "old-writable-exit",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "operations",
+      "use_kind": "effect",
+      "expected": "UpgradeRequired"
+    },
+    {
+      "id": "platform_view_as-bound-derived-operations-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "operations",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-derived-companies-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-derived-groups-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "groups",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-derived-group-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "group",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-derived-platform_audit-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "platform_audit",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-different_valid_company-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "different_valid_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-nil_company-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "nil_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-platform_sentinel_company-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "platform_sentinel_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-bound-direct-callsite-denied",
+      "binding": "bound",
+      "source_kind": "platform_view_as",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "same_as_signed_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-derived-operations-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "operations",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-derived-companies-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-derived-groups-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "groups",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-derived-group-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "group",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-derived-platform_audit-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "platform_audit",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-different_valid_company-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "different_valid_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-nil_company-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "nil_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-platform_sentinel_company-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "platform_sentinel_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-bound-direct-callsite-denied",
+      "binding": "bound",
+      "source_kind": "platform_tenant_context",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "same_as_signed_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-bound-tenant_list-derived-callsite-denied",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "derived_source",
+      "action": "tenant_list",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-bound-tenant_health_read-derived-callsite-denied",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-bound-tenant_manage-derived-callsite-denied",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-bound-operations-read",
+      "binding": "bound",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "operations",
+      "use_kind": "read",
+      "expected": "Allow"
+    },
+    {
+      "id": "platform_view_as-absent-derived-operations-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "operations",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-derived-companies-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-derived-groups-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "groups",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-derived-group-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "group",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-derived-platform_audit-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "platform_audit",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-different_valid_company-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "different_valid_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-nil_company-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "nil_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-platform_sentinel_company-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "platform_sentinel_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_view_as-absent-direct-callsite-denied",
+      "binding": "absent",
+      "source_kind": "platform_view_as",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "target_relation": "same_as_signed_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-derived-operations-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "operations",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-derived-companies-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-derived-groups-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "groups",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-derived-group-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "group",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-derived-platform_audit-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "platform_audit",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-different_valid_company-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "different_valid_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-nil_company-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "nil_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-platform_sentinel_company-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "platform_sentinel_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "platform_tenant_context-absent-direct-callsite-denied",
+      "binding": "absent",
+      "source_kind": "platform_tenant_context",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "target_relation": "same_as_signed_company",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-absent-tenant_list-derived-callsite-denied",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "derived_source",
+      "action": "tenant_list",
+      "target_kind": "companies",
+      "use_kind": "read",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-absent-tenant_health_read-derived-callsite-denied",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "derived_source",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-absent-tenant_manage-derived-callsite-denied",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "derived_source",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected": "Deny"
+    },
+    {
+      "id": "direct-absent-operations-read",
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "operations",
+      "use_kind": "read",
+      "expected": "Allow"
+    }
+  ],
+  "nonauthority_variations": [
+    "Changing JWT role hints never changes decision from current roles.",
+    "Job title/rank/organization hierarchy/group membership do not grant platform features.",
+    "Another live family cannot replace revoked/mismatched presented family.",
+    "Changing requested display labels never changes typed target identity."
+  ],
+  "required_cross_product": "All64known role sets\u00d78features\u00d7bound/old canonical mode =1024explicit cells; session/callsite cases repeat6singletonroles+empty+mixedSuper/Admin. Single-fault cases execute only their explicit applies_to_actions (341 total):42categories\u00d78 + Company-id4 + Group-id1. No target-shape substitution to manufacture nil-id applicability. Additional pairwise faults preserve Deny; Deny/UpgradeRequired never permits effects.",
+  "single_fault_applicable_cases": 341,
+  "source_target_rule": "Direct source iff platform_route callsite; its Cedar source_company is empty constant. Platform-derived source iff derived_source callsite and target Company is the exact signed credential org_id, nonnil/nonplatform. Wrapper rejects before old upgrade classification. Cedar independently requires matching call_site, company kind and key == source_company; all other derived target kinds deny. Source Company key comes from verified claims, never requested target.",
+  "private_cedar_semantics": "Private current-policy eligibility only. Actual bound or historical_unbound mode, original action/use/facts, one evaluation. Composite sole public decision first Denies invalid raw material or Cedar deny/error/diagnostic; diagnostic-free permit becomes Allow for validated bound or historical ReadProjection, UpgradeRequired for historical Effect/ContextMint. Never synthesize bound mode/family or duplicate privileged-role predicate.",
+  "classification_cases": [
+    {
+      "id": "historical-empty-tenant_create",
+      "current_roles": [],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_create",
+      "target_kind": "companies",
+      "use_kind": "effect",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-empty-tenant_health_read",
+      "current_roles": [],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-empty-tenant_manage",
+      "current_roles": [],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-empty-group_manage",
+      "current_roles": [],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "group_manage",
+      "target_kind": "group",
+      "use_kind": "effect",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-MEMBER-tenant_create",
+      "current_roles": [
+        "MEMBER"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_create",
+      "target_kind": "companies",
+      "use_kind": "effect",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-MEMBER-tenant_health_read",
+      "current_roles": [
+        "MEMBER"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-MEMBER-tenant_manage",
+      "current_roles": [
+        "MEMBER"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-MEMBER-group_manage",
+      "current_roles": [
+        "MEMBER"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "group_manage",
+      "target_kind": "group",
+      "use_kind": "effect",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-ADMIN-tenant_create",
+      "current_roles": [
+        "ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_create",
+      "target_kind": "companies",
+      "use_kind": "effect",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-ADMIN-tenant_health_read",
+      "current_roles": [
+        "ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-ADMIN-tenant_manage",
+      "current_roles": [
+        "ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-ADMIN-group_manage",
+      "current_roles": [
+        "ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "group_manage",
+      "target_kind": "group",
+      "use_kind": "effect",
+      "expected_private_cedar": "Deny",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-tenant_create",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_create",
+      "target_kind": "companies",
+      "use_kind": "effect",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "UpgradeRequired"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-tenant_health_read",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "UpgradeRequired"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-tenant_manage",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "UpgradeRequired"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-group_manage",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "group_manage",
+      "target_kind": "group",
+      "use_kind": "effect",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "UpgradeRequired"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-UNKNOWN-tenant_create",
+      "current_roles": [
+        "SUPER_ADMIN",
+        "UNKNOWN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_create",
+      "target_kind": "companies",
+      "use_kind": "effect",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-UNKNOWN-tenant_health_read",
+      "current_roles": [
+        "SUPER_ADMIN",
+        "UNKNOWN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_health_read",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-UNKNOWN-tenant_manage",
+      "current_roles": [
+        "SUPER_ADMIN",
+        "UNKNOWN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "tenant_manage",
+      "target_kind": "company",
+      "use_kind": "mint",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "historical-SUPER_ADMIN-UNKNOWN-group_manage",
+      "current_roles": [
+        "SUPER_ADMIN",
+        "UNKNOWN"
+      ],
+      "binding": "absent",
+      "source_kind": "direct",
+      "call_site": "platform_route",
+      "action": "group_manage",
+      "target_kind": "group",
+      "use_kind": "effect",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-current_subject_inactive",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "current_subject_inactive",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-account_fenced",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "account_fenced",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-expired_signed_deadline",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "expired_signed_deadline",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-malformed_present_binding",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "malformed_present_binding",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-revoked_present_binding",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "revoked_present_binding",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-other_family_present_binding",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "other_family_present_binding",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-wrong_derived_company",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "wrong_derived_company",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-wrong_callsite",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "wrong_callsite",
+      "expected_private_cedar": "NotEvaluated",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-cedar_no_permit",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "cedar_no_permit",
+      "expected_private_cedar": "DenyOrError",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-cedar_diagnostic_error",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "cedar_diagnostic_error",
+      "expected_private_cedar": "DenyOrError",
+      "expected_public": "Deny"
+    },
+    {
+      "id": "otherwise-eligible-old-effect-cedar_evaluation_panic",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "base": "historical writable-context Company effect with exact signed Company and current source material",
+      "fault": "cedar_evaluation_panic",
+      "expected_private_cedar": "DenyOrError",
+      "expected_public": "Deny"
+    }
+  ],
+  "classification_positive_controls": [
+    {
+      "id": "old-current-super-read",
+      "binding": "absent",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "use": "ReadProjection",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "Allow"
+    },
+    {
+      "id": "bound-current-super-effect",
+      "binding": "bound_exact_current_family",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "use": "Effect",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "Allow"
+    },
+    {
+      "id": "bound-current-super-mint",
+      "binding": "bound_exact_current_family",
+      "current_roles": [
+        "SUPER_ADMIN"
+      ],
+      "use": "ContextMint",
+      "expected_private_cedar": "PermitEligibility",
+      "expected_public": "Allow"
+    }
+  ]
+}

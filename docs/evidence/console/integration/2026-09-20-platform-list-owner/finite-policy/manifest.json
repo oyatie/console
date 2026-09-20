@@ -1,0 +1,13 @@
+{
+  "kind": "proposed-finite-current-platform-cedar-owner-design-round5",
+  "files_sha256": {
+    "DESIGN.md": "9e3e567056a5b4784ff20470bd8f5886b59f8c1305c412532745b80e5c56206d",
+    "legacy-platform-v1.cedar": "80838954a2ccf18008632a7f9a082a60a7429e2519636c75d5caad9c48068136",
+    "legacy-platform-v1.cedarschema": "c7a83bf86301f3bfd27444c6e43ff70dfbabfa997e4749c383c07cba0097bff2",
+    "source-custody.json": "70b7cfd52c4cd4ab3285e26c8142cd376879a4cf51602976efc1d4f6dbeb1778",
+    "truth-table.json": "366da33371b94527d7c3a20688c89425e1ca8da5961d1d06c0961822464f873c",
+    "verification.json": "3a4ad6719f8b48f17708e8a594ad9bfc25b4acc03736baffbcf63f808fa2ed75",
+    "caller-census.json": "4a2551e545559939c5337848b7fcbbd85c54ec3e5521b1f5d6133c2905adad96"
+  },
+  "predecessor_manifest_sha256": "bde9ffe159137fcfe39d05acad4fc8131c9707478c25f35e5398c60ccb748483"
+}
