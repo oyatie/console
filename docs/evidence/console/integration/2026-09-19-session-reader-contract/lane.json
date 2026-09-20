@@ -1,0 +1,28 @@
+{
+  "owner": "/root",
+  "base_sha": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "immutable_target": "Existing7test reader/fault/recovery module obeys retained exact JSON transport for each canonical boundary",
+  "allowed_paths": [
+    "backend/app/tests/auth_rest/account_fence_transport.rs"
+  ],
+  "forbidden": "All production sources, migration bytes, generated artifacts and historical tests outside this exact reviewed helper/map",
+  "mechanical_guide": "Apply exact independently approved93c5aaa322d1226676c380554eb2b45bc24365d2d6fe44954a4b2ea2d72935b7 candidate; no edits to current owner responses.",
+  "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-session-reader-map.json --only app-auth-rest-pg --runner cargo",
+  "pre_mortem": "Permissive accept-either expected response could conceal contract regression; API mismatch could be wrongly treated as recovered authority.",
+  "blast_radius": "One integration oracle helper and exact per-route503pair map",
+  "detection": "Current module4pass3specific mismatches; exact corrected7must pass, all security/status/secrecy/mutation/recovery code retained",
+  "rollback": "Restore original test file only; production contract unchanged",
+  "stop_conditions": [
+    "Any production edit required",
+    "Source preimage drift",
+    "Unexpected fault failure",
+    "Unreviewed response accepted"
+  ],
+  "reviewer": "/root/integration_tests",
+  "review_sha256": "51d791e96671846475220835f0ceedf487c27326f1af455a2738610083b1d856",
+  "remaining_holds": [
+    "Full Account suite remains unaccepted",
+    "Actor FK transition missing",
+    "Company and assembled release incomplete"
+  ]
+}

@@ -2134,14 +2134,22 @@ mod session_reader_contract {
         expected: StatusCode,
         tokens: &[&str],
     ) {
-        assert_reader_error_with_code(response, expected, tokens, "unavailable").await;
+        assert_reader_error_with_contract(
+            response,
+            expected,
+            tokens,
+            "unavailable",
+            "session verification unavailable",
+        )
+        .await;
     }
 
-    async fn assert_reader_error_with_code(
+    async fn assert_reader_error_with_contract(
         response: http::Response<Body>,
         expected: StatusCode,
         tokens: &[&str],
         unavailable_code: &str,
+        unavailable_message: &str,
     ) {
         assert_eq!(
             response.status(),
@@ -2170,24 +2178,16 @@ mod session_reader_contract {
             tokens.iter().all(|token| !body.contains(token)),
             "body token echo"
         );
-        // Canonical request middleware already uses plain text; local REST
-        // adapters already use JSON. Preserve those transport shapes.
-        if let Ok(json) = serde_json::from_slice::<Value>(&bytes) {
-            assert!(json["error"]["code"].is_string());
-            assert!(json["error"]["message"].is_string());
-            assert!(json.get("access_token").is_none() && json.get("refresh_token").is_none());
-            if expected == StatusCode::SERVICE_UNAVAILABLE {
-                assert_eq!(json["error"]["code"], unavailable_code);
-                assert_eq!(json["error"]["message"], "session verification unavailable");
-            }
-        } else {
-            let message = match expected {
-                StatusCode::UNAUTHORIZED => "invalid bearer token",
-                StatusCode::FORBIDDEN => "token tier is not valid for this route",
-                StatusCode::SERVICE_UNAVAILABLE => "session verification unavailable",
-                _ => panic!("unreviewed reader error status"),
-            };
-            assert!(body == message, "fixed sanitized middleware error required");
+        // The retained integration contract uses JSON ErrorBody at every
+        // reader boundary. Owner-specific 503 code/message pairs remain exact.
+        let json: Value = serde_json::from_slice(&bytes)
+            .expect("SESSION_READER_HTTP: retained JSON error envelope required");
+        assert!(json["error"]["code"].is_string());
+        assert!(json["error"]["message"].is_string());
+        assert!(json.get("access_token").is_none() && json.get("refresh_token").is_none());
+        if expected == StatusCode::SERVICE_UNAVAILABLE {
+            assert_eq!(json["error"]["code"], unavailable_code);
+            assert_eq!(json["error"]["message"], unavailable_message);
         }
     }
 
@@ -2598,13 +2598,19 @@ mod session_reader_contract {
                 ("/api/v1/auth/passkeys", fixture.platform.as_str()),
                 ("/api/platform/orgs", fixture.platform.as_str()),
             ] {
-                let unavailable_code = if path == "/api/v1/auth/passkeys" {
-                    "service_unavailable"
-                } else {
-                    "unavailable"
+                let (unavailable_code, unavailable_message) = match path {
+                    "/api/v1/auth/passkeys" => (
+                        "service_unavailable",
+                        "session verification unavailable",
+                    ),
+                    "/api/v1/users/me" | "/api/platform/orgs" => (
+                        "service_unavailable",
+                        "session verification is unavailable",
+                    ),
+                    _ => panic!("unreviewed session reader owner"),
                 };
-                assert_reader_error_with_code(get_legacy_raw(&fixture.router, path, token).await,
-                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens(), unavailable_code).await;
+                assert_reader_error_with_contract(get_legacy_raw(&fixture.router, path, token).await,
+                    StatusCode::SERVICE_UNAVAILABLE, &fixture.tokens(), unavailable_code, unavailable_message).await;
             }
             for (authorization, protocol) in [(Some(fixture.tenant.as_str()), None), (None, Some(fixture.tenant.as_str()))] {
                 assert_reader_error(reader_handshake(address, authorization, protocol).await,

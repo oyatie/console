@@ -1,0 +1,27 @@
+{
+  "base_sha": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "source_sha256": "93c5aaa322d1226676c380554eb2b45bc24365d2d6fe44954a4b2ea2d72935b7",
+  "production_sources_changed": false,
+  "red": {
+    "executed": 7,
+    "passed": 4,
+    "failed": 3,
+    "filtered": 346,
+    "seconds": 33.4,
+    "cause": "Three imported owner-error503oracles expected unavailable instead of retained service_unavailable"
+  },
+  "green": {
+    "executed": 7,
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 346,
+    "seconds": 33.84
+  },
+  "rustfmt": "pass",
+  "diff_check": "pass",
+  "limits": [
+    "This seven-test module does not establish complete Account/browser/Company acceptance",
+    "Original full325test dirty run remains failed and unreproducible as clean release evidence"
+  ]
+}
