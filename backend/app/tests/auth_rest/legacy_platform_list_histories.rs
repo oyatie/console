@@ -685,3 +685,6 @@ mod legacy_platform_list_credentials;
 
 #[path = "legacy_platform_list_unavailable.rs"]
 mod legacy_platform_list_unavailable;
+
+#[path = "legacy_platform_ops_reads.rs"]
+mod legacy_platform_ops_reads;
