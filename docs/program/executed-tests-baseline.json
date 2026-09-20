@@ -296,7 +296,7 @@
     "backend/crates/platform/authz-rest/src/lib.rs": 1,
     "backend/crates/platform/authz-rest/tests/cedar_authoring_rls_as_runtime_role.rs": 5,
     "backend/crates/platform/authz-rest/tests/decision_feed_as_runtime_role.rs": 2,
-    "backend/crates/platform/authz/src/lib.rs": 117,
+    "backend/crates/platform/authz/src/lib.rs": 121,
     "backend/crates/platform/authz/tests/cedar_diagnostic_fail_closed.rs": 5,
     "backend/crates/platform/authz/tests/cedar_pbac_legacy_only_observe_and_record.rs": 5,
     "backend/crates/platform/authz/tests/cedar_pbac_readiness_cases.rs": 2,

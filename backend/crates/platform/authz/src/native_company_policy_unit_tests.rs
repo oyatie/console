@@ -59,7 +59,7 @@ fn authority() -> CurrentCompanyAuthority {
 }
 fn request_for(a: &CurrentCompanyAuthority, index: usize) -> CompanyPolicyRequest {
     let clause = &a.clauses()[index];
-    let object = if index < 2 || index > 4 {
+    let object = if !(2..=4).contains(&index) {
         *a.company().as_uuid()
     } else {
         a.assignment_id()

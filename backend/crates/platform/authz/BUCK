@@ -15,7 +15,7 @@ export_file(
 
 rust_library(
     name = "console-platform-authz",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
         "//docs/specs:cedar-pbac-map": "docs/specs/cedar-pbac-coexistence-map.json",
     }),
     crate = "console_platform_authz",
@@ -24,6 +24,7 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",
@@ -38,7 +39,7 @@ rust_library(
 
 rust_test(
     name = "console-platform-authz-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/company_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
         "//docs/specs:cedar-pbac-map": "docs/specs/cedar-pbac-coexistence-map.json",
     }),
     crate = "console_platform_authz",
@@ -48,6 +49,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
     labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",
@@ -70,6 +72,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
     labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.none"],
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",
@@ -93,6 +96,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
     labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.none"],
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",
@@ -116,6 +120,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
     labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.none"],
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",
@@ -139,6 +144,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
     labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.none"],
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",
@@ -164,6 +170,7 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz", "SQLX_OFFLINE": "true", "SQLX_OFFLINE_DIR": "$(location //backend:sqlx-offline)"},
     labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.postgres", "needs-postgres"],
     deps = [
+        "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:cedar-policy",
         "//third-party/rust:hex",

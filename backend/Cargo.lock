@@ -2016,6 +2016,7 @@ dependencies = [
  "console-kernel-core",
  "serde",
  "serde_json",
+ "time",
  "uuid",
 ]
 
@@ -2026,6 +2027,7 @@ dependencies = [
  "console-kernel-core",
  "serde",
  "time",
+ "uuid",
 ]
 
 [[package]]
@@ -2928,6 +2930,7 @@ name = "console-platform-authz"
 version = "0.1.0"
 dependencies = [
  "cedar-policy",
+ "console-identity-application",
  "console-kernel-core",
  "hex",
  "serde",

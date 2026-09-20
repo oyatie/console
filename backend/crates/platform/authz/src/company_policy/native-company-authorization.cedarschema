@@ -1,0 +1,26 @@
+entity Account;
+entity CompanyResource = {
+  "org_id": String,
+  "object_type_id": String
+};
+
+action "context.discover" appliesTo {
+  principal: [Account], resource: [CompanyResource],
+  context: { "requested_fields": Set<String> }
+};
+action "company.identity.read" appliesTo {
+  principal: [Account], resource: [CompanyResource],
+  context: { "requested_fields": Set<String> }
+};
+action "company.policy.read" appliesTo {
+  principal: [Account], resource: [CompanyResource],
+  context: { "requested_fields": Set<String> }
+};
+action "company.policy.assign" appliesTo {
+  principal: [Account], resource: [CompanyResource],
+  context: { "requested_fields": Set<String> }
+};
+action "company.policy.revoke" appliesTo {
+  principal: [Account], resource: [CompanyResource],
+  context: { "requested_fields": Set<String> }
+};

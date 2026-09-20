@@ -124,21 +124,25 @@ impl CompanyEnrollmentV1 {
         if let Some(group) = self.group_id {
             non_nil(group)?;
         }
-        let slug = self.slug.as_bytes();
-        if !(1..=63).contains(&slug.len())
-            || !slug.first().is_some_and(u8::is_ascii_alphanumeric)
-            || !slug.last().is_some_and(u8::is_ascii_alphanumeric)
-            || !slug
-                .iter()
-                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-')
-            || !(1..=256).contains(&self.name.len())
-            || self.name.trim().is_empty()
-            || self.name.chars().any(char::is_control)
-        {
-            return Err(invalid());
-        }
-        Ok(())
+        validate_name_slug(&self.name, &self.slug)
     }
+}
+
+pub(crate) fn validate_name_slug(name: &str, slug: &str) -> Result<(), KernelError> {
+    let slug = slug.as_bytes();
+    if !(1..=63).contains(&slug.len())
+        || !slug.first().is_some_and(u8::is_ascii_alphanumeric)
+        || !slug.last().is_some_and(u8::is_ascii_alphanumeric)
+        || !slug
+            .iter()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || *b == b'-')
+        || !(1..=256).contains(&name.len())
+        || name.trim().is_empty()
+        || name.chars().any(char::is_control)
+    {
+        return Err(invalid());
+    }
+    Ok(())
 }
 
 fn invalid() -> KernelError {

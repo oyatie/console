@@ -26,6 +26,7 @@ rust_library(
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )
@@ -44,6 +45,7 @@ rust_test(
         "//backend/crates/kernel/core:console-kernel-core",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )
