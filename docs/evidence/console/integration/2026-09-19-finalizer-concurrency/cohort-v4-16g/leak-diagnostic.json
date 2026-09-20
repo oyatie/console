@@ -1,0 +1,55 @@
+{
+  "reviewer": "/root/integration_security",
+  "kind": "read-only-leak-diagnostic",
+  "status": "cause-unresolved-exact-passive-evidence-required",
+  "source_head": "16ed08ef3bbedd6d018f66226c599f126aedf860",
+  "bound_sources": {
+    "/private/tmp/console-client-release-20260919/backend/app/tests/evaluation_cycle_api.rs": "4c15af001f0334efb20893f15108d870596bac20e47b816eed2883a50813575e",
+    "/private/tmp/console-client-release-20260919/backend/app/src/lib.rs": "607cddd0d44681a2439b5ce6d5ee6a68f92ec3c7cca827355e7824c9662e4613",
+    "/private/tmp/console-client-release-20260919/backend/crates/platform/test-support/src/lib.rs": "bb4ace9c9864db932253ae3013114e9aac9681da72192c1058ff7de6b57f414c",
+    "/private/tmp/console-client-release-20260919/.config/nextest.toml": "1d26e4581aa8c4474b4c5f645684eeec13799a953068b5d4b49d1965a3c71408",
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nextest-runner-0.119.0/src/runner/executor.rs": "37b29d904acf940a8e32dfb9b0d73bb2d808cb19c1c8c945b1b1b40a4b8b3f73",
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/nextest-runner-0.119.0/default-config.toml": "e7a0b5e3e9ebe91c493ce839a53aa70a0babcbac9f2aad54ec7956060dba6bcb",
+    "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/cargo-nextest-0.9.138/Cargo.toml": "9ae056eafcfa29fe74a938681f5df2784fcfdf8576753e3b6256fe55830197b2"
+  },
+  "observed": [
+    "v4cold nextest annotated evaluation_cycle_api::evaluation_routes_are_mounted_by_the_authenticated_app_router LEAK with testprocess exit0;15passed(1leaky). Warm samecohort clean15passed.",
+    "Installed cargo-nextest0.9.138 fc97e97bbe0a3927482a694247da00c099f4269e aarch64-apple-darwin depends exact nextest-runner0.119.0.",
+    "runner executor.rs1482detect_fd_leaks waits for pipe closure after childexit; default-config.toml136 leak-timeout200ms. LEAK proves stdout/stderrEOF not observed within that interval, not identity of a live child.",
+    "Repository .config/nextest.toml has no leak-timeoutoverride. This diagnosis does not propose adding/wideningone."
+  ],
+  "source_trace": [
+    "evaluation_cycle_api.rs36 test uses SQLx database preparation then Fixture::new, real runtime/Auth pools, AppState::new and build_router. It performs two inprocess Axum oneshotGETs, then returns. No subprocessspawn or childhandle appears in this test.",
+    "AppState::new(lib.rs1575+) does not call production from_config workerstartup: realtime_bridge/mail_sync_handle=None, no objectstorage/transcode work. Routerconstruction and these evaluation GETpaths revealed no subprocessspawn.",
+    "platform/test-support preparation uses SQLx and historical finalizerSQL, not an OSchild. RemotePostgreSQL processes do not inherit localteststdout.",
+    "Only platformStorage ffmpeg Command::new was found among searched platform/ontology/evaluation owner source; route under test does not invoke media transcoding. This rules out the located callpath, not every compiled dependency/runtime possibility."
+  ],
+  "hypotheses": [
+    {
+      "rank": 1,
+      "hypothesis": "A surviving process or unexpectedly inherited capture FD kept one outputpipe open.",
+      "evidence": "Matches nextest detector contract; ownerPID/FD absent from historical artifact.",
+      "falsification": "Passive process-tree+pipe endpoint capture through actual recurrence."
+    },
+    {
+      "rank": 2,
+      "hypothesis": "Runner/OS pipe readiness or descriptor inheritance transient under concurrentexecution.",
+      "evidence": "No reached productsubprocess found and warmclean; insufficient to claim falsepositive.",
+      "falsification": "Correlate actual processexit, openwriter endpoint holders and nextest LEAK timestamp without changingdetector."
+    }
+  ],
+  "smallest_next_diagnostic": [
+    "Repeat unchanged15case cold/warm cohort in admitted dedicated16GiBenvelope; retain all annotations and rawstdout. No concurrency/test/deadline change for qualification.",
+    "Passively capture local nextest/test descendants as PID/PPID/PGID/executablecomm (noenvironment/fullargv), and target stdout/stderr pipeidentities plus their ownerPIDs using lsof or platform proc APIs. Capture beforetestexit and through the200mswindow, retaining watcher samplinggaps. Metadataonly; never readpipepayload or redirectteststdio.",
+    "A separate exactsingle-test repeat can localize concurrencydependence, but cannot replace unchangedcohort acceptance.",
+    "Do NOT use nextest --trace/--debug as acceptance diagnostic: executor.rs1072 skips leak detection whenever interceptor.should_skip_leak_detection is true."
+  ],
+  "repair_policy": [
+    "No product/test repair justified until concrete FDowner/mechanism identified.",
+    "If actual product/testchild survives, close/await/terminate that child at owningboundary and prove noLEAK under originaldetector. If unnecessary childinheritsstdio, fix explicitstdio ownership in that childcreation path.",
+    "If runnerreadiness/inheritance defect independentlyproven, separatelyreview narrowly pinned runnerrepair; never suppress annotation or widen200msdeadline to manufacturecleanresult."
+  ],
+  "specific_missing_evidence": "Historical v4 artifacts lack target testPID, post-exit process tree and stdout/stderr writer-FD ownership at the LEAK instant.",
+  "repository_edits": 0,
+  "product_tests_executed_by_reviewer": 0
+}

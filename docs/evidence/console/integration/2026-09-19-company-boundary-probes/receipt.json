@@ -1,0 +1,36 @@
+{
+  "kind": "company-prerequisite-and-boundary-evidence",
+  "eligibility": {
+    "source_head": "16ed08ef3bbedd6d018f66226c599f126aedf860",
+    "executed": 1,
+    "failed": 1,
+    "passed": 0,
+    "filtered_out": 352,
+    "duration_seconds": 5.71,
+    "marker": "NATIVE_COMPANY_ELIGIBILITY_OWNER",
+    "meaningful_owner_red": true
+  },
+  "entry": {
+    "source_head": "d9e2927e2ad48dd3cf9ad5266be4738d26507928",
+    "executed": 1,
+    "failed": 1,
+    "passed": 0,
+    "filtered_out": 352,
+    "duration_seconds": 4.96,
+    "marker": "PREREQUISITE: externally provisioned startup LOGIN",
+    "meaningful_owner_red": false,
+    "blocker": "Disposable Cargo harness omits CONSOLE_STARTUP_AUTH_DATABASE_URL and startup password provision transport."
+  },
+  "environment": {
+    "DOCKER_CONTEXT": "colima-console-release-20260919",
+    "vm_memory_gib": 16
+  },
+  "commands": [
+    "DOCKER_CONTEXT=colima-console-release-20260919 tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-company-eligibility-map.json --only app-auth-rest-pg --runner cargo",
+    "DOCKER_CONTEXT=colima-console-release-20260919 tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-company-entry-map.json --only app-auth-rest-pg --runner cargo"
+  ],
+  "limits": [
+    "No Company workflow implementation admitted by prerequisite failure.",
+    "Filters only select the approved exact retained test; source test bytes unchanged."
+  ]
+}
