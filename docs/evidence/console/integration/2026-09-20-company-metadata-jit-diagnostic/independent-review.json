@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "OBSERVED_DIAGNOSTIC_NOT_RUNTIME_FIX",
+  "packet_manifest_sha256": "e2a2a68eb64135622d37236be958619c9f70a3f3bdec7c6a8de53feb0367ac8e",
+  "result_sha256": "a5fe1d3786e5a2bc0398055e86d6ab43b325f7d753b3522566cd395f7ac8d58c",
+  "owner": {
+    "exact_unchanged_test": [
+      "/Users/jasonlee/.cargo/bin/cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back",
+      "--",
+      "--test-threads=1",
+      "--exact"
+    ],
+    "exit": 0,
+    "executed": 1,
+    "passed": 1,
+    "seconds": 259.01,
+    "prior_timeout_remains_historical": true
+  },
+  "diagnostics": {
+    "executed": 6,
+    "passed": 6,
+    "postgres": "18.4",
+    "target_kind": "existing_template_no_state_assumed",
+    "no_other_active_target_backend": true,
+    "current_cost": 116737.48,
+    "default_jit_threshold": 100000,
+    "current_off_execution_ms": 59.878,
+    "current_on_execution_ms": 3361.354,
+    "current_jit_ms": 3283.653,
+    "current_jit_functions": 13681,
+    "historical_cost": 81315.84,
+    "historical_on_execution_ms": 38.634
+  },
+  "conclusions": [
+    "Current expanded metadata query crosses default JIT threshold and incurs measured code generation overhead.",
+    "These read-only template query measurements do not alone prove the prior whole-DO 60-second timeout cause or guarantee finalizer completion.",
+    "Retained regression rerun passes without raising timeout or changing tests.",
+    "First one-entry-map attempt ran zero owner tests and zero diagnostic queries; prerequisite failure retained."
+  ],
+  "limitations": [
+    "Existing template after successful SQLx test cleanup; finalized-state was not assumed.",
+    "Parent compiler and separate disposable database tests may overlap owner execution; not an isolated workload or qualified performance measurement.",
+    "No repository, production configuration, historical SQL/serializer/fingerprint or timeout changes."
+  ]
+}

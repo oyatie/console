@@ -1,0 +1,18 @@
+{
+  "status": "approved_additive_tests_pending_actual_red",
+  "expected": {
+    "sqlx": 1,
+    "actual_wrapper": 2
+  },
+  "machinery": {
+    "executed": 44,
+    "passed": 44
+  },
+  "holds": [
+    "Exactclean test commit",
+    "Actual owner RED and admission",
+    "Source fix and same GREEN",
+    "Retained4+6transitions",
+    "Fullrelease"
+  ]
+}

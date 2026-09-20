@@ -1,0 +1,14 @@
+{
+  "retained_owner": {
+    "executed": 1,
+    "passed": 1,
+    "prior_timeout": "Preserved earlier57014 failure; rerun does not erase it."
+  },
+  "measurements": "READONLY on existingtemplate after successfulSQLx cleanup, no finalizedstateassumption.",
+  "inference": "Currentquery crossesdefaultJITthreshold andmeasuredcompilerexpense; notproof of solecauseofpriorwholeDO timeout.",
+  "limits": [
+    "Concurrentcompiler/otherdisposableDB activity occurred duringowner rerun; notcleanload qualification.",
+    "Production/testoperatorconfiguration fix stillrequiresactualboundaryRED/review.",
+    "Companyworkflows/fullrelease incomplete"
+  ]
+}

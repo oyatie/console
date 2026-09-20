@@ -607,6 +607,52 @@ mod audit_account_transition {
         );
     }
 
+    // Execution settings belong to the operator transaction, not pooled callers.
+    #[sqlx::test(migrations = false)]
+    async fn operator_jit_is_disabled_locally_with_original_timeouts(pool: PgPool) {
+        let mut connection = pool.acquire().await.unwrap();
+        let original_jit: String = sqlx::query_scalar("SELECT current_setting('jit')")
+            .fetch_one(&mut *connection)
+            .await
+            .unwrap();
+        sqlx::raw_sql("SET SESSION jit=on")
+            .execute(&mut *connection)
+            .await
+            .unwrap();
+        let settings = "SELECT current_setting('jit'),current_setting('statement_timeout'),current_setting('lock_timeout'),current_setting('search_path')";
+        let before: (String, String, String, String) = sqlx::query_as(settings)
+            .fetch_one(&mut *connection)
+            .await
+            .unwrap();
+        assert_eq!(before.0, "on", "positive control must not inherit jit=off");
+        let mut tx = sqlx::Connection::begin(&mut *connection).await.unwrap();
+        operator(&mut tx).await;
+        let inside: (String, String, String, String) =
+            sqlx::query_as(settings).fetch_one(&mut *tx).await.unwrap();
+        tx.rollback().await.unwrap();
+        let after: (String, String, String, String) = sqlx::query_as(settings)
+            .fetch_one(&mut *connection)
+            .await
+            .unwrap();
+        // Restore this checked-out connection even when the final assertion is RED.
+        sqlx::query("SELECT set_config('jit',$1,false)")
+            .bind(original_jit)
+            .execute(&mut *connection)
+            .await
+            .unwrap();
+        assert_eq!(after, before, "operator settings escaped their transaction");
+        assert_eq!(
+            inside,
+            (
+                "off".into(),
+                "1min".into(),
+                "5s".into(),
+                "pg_catalog, pg_temp".into()
+            ),
+            "operator must disable JIT without changing execution budgets or search path"
+        );
+    }
+
     // Filled from immutable source bytes before packet publication.
     const OBSERVER_SHA256: &str =
         "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc";

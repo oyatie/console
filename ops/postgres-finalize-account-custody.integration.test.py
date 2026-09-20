@@ -37,7 +37,8 @@ CASES = ('valid_finalize', 'already_finalized', 'wrong_expected_operator',
          'native_extension_replay_preserves_all15_state',
          'native_extension_partial_helper_refuses_without_repair',
          'native_extension_foreign_helpers_refuse_without_repair',
-         'native_extension_late_failure_rolls_back_then_retries')
+         'native_extension_late_failure_rolls_back_then_retries',
+         'operator_jit_default_child_settings', 'operator_jit_observer_child_settings')
 ASSETS = ('postgres-finalize-account-custody.sh', 'postgres-finalize-account-custody.sql',
           'account-custody-migrations.sha384', 'postgres-finalize-account-credentials.sql',
           'postgres-install-durability-observer.sql', 'postgres-verify-account-native.sql')
@@ -391,6 +392,15 @@ def assert_composed_psql_trace(trace, assets, observer):
     assert len(files) == len(expected)+1, 'missing or extra installer file'
     assert re.fullmatch(r'/tmp/console-account-custody\.[A-Za-z0-9]+/preflight\.sql', files[0]), 'actual private preflight first'
     assert files[1:] == expected, 'root then credential then optional observer then native postcondition in the same transaction'
+
+
+def assert_operator_child_environment(trace):
+    """Only explicit nonsecret fields emitted by the actual psql child shim."""
+    expected = ['BEGIN_OPERATOR_ENV', 'PGOPTIONS',
+                '-c search_path=pg_catalog,pg_temp -c statement_timeout=60000 -c lock_timeout=5000 -c jit=off',
+                'PGSSLMODE', 'verify-full', 'PGGSSENCMODE', 'disable',
+                'PGCONNECT_TIMEOUT', '10', 'END_OPERATOR_ENV', '']
+    assert trace.split('\0') == expected, 'actual psql child execution settings differ from fixed operator contract'
 
 
 def complete_case_roster(results):
@@ -771,7 +781,7 @@ class Suite:
             assert_native_extension(before, self.native_observation(container, database, query))
         self.case('native_extension_late_failure_rolls_back_then_retries', rollback)
 
-    def traced_wrapper(self, container, database, expected, *, observer=False, assets='/wrapper-assets'):
+    def traced_wrapper(self, container, database, expected, *, observer=False, assets='/wrapper-assets', execution_settings=False):
         # Test-only transport observation. The shim forwards every original
         # argument to the actual image psql; it changes no SQL, identity or TLS.
         number = self.sequence
@@ -781,16 +791,50 @@ class Suite:
         actual_psql = selected.strip()
         assert re.fullmatch(r'/[A-Za-z0-9_./-]+/psql', actual_psql)
         trace_path = directory+'/argv'
+        environment_path = directory+'/environment'
+        environment_trace = (
+            "printf '%s\\0' BEGIN_OPERATOR_ENV PGOPTIONS \"${PGOPTIONS-}\" "
+            "PGSSLMODE \"${PGSSLMODE-}\" PGGSSENCMODE \"${PGGSSENCMODE-}\" "
+            "PGCONNECT_TIMEOUT \"${PGCONNECT_TIMEOUT-}\" END_OPERATOR_ENV > "+environment_path+'\n'
+        ) if execution_settings else ''
         shim = self.private_file(f'psql-shim-{number}',
             '#!/bin/sh\n{ printf \'BEGIN_PSQL\\0\'; printf \'%s\\0\' "$@"; } >> '+trace_path+'\n'
-            'exec '+actual_psql+' "$@"\n')
+            +environment_trace+'exec '+actual_psql+' "$@"\n')
         self.copy(container, shim, directory+'/psql')
         self.run(['docker', 'exec', container, 'chmod', '500', directory+'/psql'])
+        hostile_ambient = {'PGOPTIONS':'-c jit=on -c statement_timeout=0 -c lock_timeout=0',
+                           'PGSSLMODE':'disable', 'PGGSSENCMODE':'prefer'} if execution_settings else {}
         result = self.wrapper(container, database, expected, observer=observer, assets=assets,
-            PATH=directory+':/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin')
+            PATH=directory+':/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+            **hostile_ambient)
         _, trace = self.run(['docker', 'exec', container, 'cat', trace_path])
         assert_composed_psql_trace(trace, assets, observer)
+        if execution_settings:
+            code, text = result
+            assert code != 0 and 'account_custody.operator_identity_mismatch' in text, 'actual production preflight identity refusal required before configuration oracle'
+            assert 'account_custody.native_finalized' not in text
+            _, environment = self.run(['docker', 'exec', container, 'cat', environment_path])
+            assert_operator_child_environment(environment)
         return result
+
+    def operator_jit_configuration_cases(self, container):
+        # Real TLS psql executes the original production preflight. Deliberately
+        # wrong expected identity stops before any schema/installer dependency.
+        descriptor = self.descriptor(container, 'postgres')
+        descriptor['ACCOUNT_CUSTODY_EXPECTED_OPERATOR'] = 'not_the_actual_operator'
+        for observer, name in ((False, 'operator_jit_default_child_settings'),
+                               (True, 'operator_jit_observer_child_settings')):
+            def observe(observer=observer):
+                sql = "SELECT current_setting('jit'),session_user,current_user,current_database(),(SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid())"
+                _, before = self.psql(container, 'postgres', sql)
+                assert before.strip() == 'on|wrapper_admin|wrapper_admin|postgres|t', 'real TLS administrator and default JIT-on positive control required'
+                code, text = self.traced_wrapper(container, 'postgres', descriptor,
+                    observer=observer, execution_settings=True)
+                assert code != 0 and 'account_custody.operator_identity_mismatch' in text, 'actual production preflight identity refusal required'
+                assert 'account_custody.native_finalized' not in text
+                _, after = self.psql(container, 'postgres', sql)
+                assert after == before, 'one-shot options escaped into later sessions'
+            self.case(name, observe)
 
     def certificate(self):
         def openssl(*args):
@@ -987,6 +1031,7 @@ class Suite:
         self.provenance['migrations']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((ROOT/'backend/crates/platform/db/migrations').glob('*.sql'))}
         self.certificate()
         first,second=self.cluster(),self.cluster()
+        self.operator_jit_configuration_cases(first)
         for container,name,raw in ((first,'wrapper_positive',False),(first,'wrapper_subject',False),
             (first,'wrapper_other',False),(second,'wrapper_subject',False),(first,'wrapper_raw',True)):
             self.database(container,name,binary,raw=raw)
@@ -1220,6 +1265,30 @@ def machinery_tests():
             for mutation in mutations:
                 with self.subTest(argv=mutation), self.assertRaises(AssertionError):
                     assert_composed_psql_trace('BEGIN_PSQL\0'+'\0'.join(mutation)+'\0', '/assets', True)
+
+        def test_operator_child_execution_settings_positive(self):
+            trace = '\0'.join(['BEGIN_OPERATOR_ENV', 'PGOPTIONS',
+                '-c search_path=pg_catalog,pg_temp -c statement_timeout=60000 -c lock_timeout=5000 -c jit=off',
+                'PGSSLMODE', 'verify-full', 'PGGSSENCMODE', 'disable',
+                'PGCONNECT_TIMEOUT', '10', 'END_OPERATOR_ENV', ''])
+            assert_operator_child_environment(trace)
+
+        def test_operator_child_execution_settings_reject_corruption(self):
+            trace = '\0'.join(['BEGIN_OPERATOR_ENV', 'PGOPTIONS',
+                '-c search_path=pg_catalog,pg_temp -c statement_timeout=60000 -c lock_timeout=5000 -c jit=off',
+                'PGSSLMODE', 'verify-full', 'PGGSSENCMODE', 'disable',
+                'PGCONNECT_TIMEOUT', '10', 'END_OPERATOR_ENV', ''])
+            corruptions = [trace.replace(' -c jit=off', ''), trace.replace('jit=off', 'jit=on'),
+                trace.replace('jit=off', 'jit=off -c jit=on'), trace.replace('jit=off', 'jit=off -c jit=off'),
+                trace.replace('60000', '120000'), trace.replace('60000', '1000'),
+                trace.replace('5000', '10000'), trace.replace('5000', '100'),
+                trace.replace('pg_catalog,pg_temp', 'public'), trace.replace('verify-full', 'require'),
+                trace.replace('disable', 'prefer'), trace.replace('\0'+'10'+'\0', '\0'+'0'+'\0'),
+                trace.replace('END_OPERATOR_ENV', ''), trace[:-1], trace+trace,
+                trace.replace('BEGIN_OPERATOR_ENV', 'FORGED_OPERATOR_ENV')]
+            for malformed in corruptions:
+                with self.subTest(trace=malformed), self.assertRaises(AssertionError):
+                    assert_operator_child_environment(malformed)
 
         def test_operator_assets_have_exact_six_without_losing_manifest_index(self):
             self.assertEqual(len(ASSETS), 6)

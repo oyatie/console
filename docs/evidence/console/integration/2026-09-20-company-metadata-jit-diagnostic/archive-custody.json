@@ -1,0 +1,29 @@
+{
+  "source": "/private/tmp/console-company-metadata-jit-diagnostic-20260920-round2",
+  "sha256": "8a2bb09e7310ea3375251d56107b58f44c1d5ed1b6efb2b88ea065af99dd40cf",
+  "members": {
+    "cargo": "844dd2ae7993f2f8c41c05bdc25a4520b8c57769ca2e42df9b351cbcfaea734b",
+    "current-off-analyze.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "current-off-analyze.stdout.json": "2f365102cc6dae08f03f28c71e65a7edff7cbfae85fad523ee25a471d2ffc0e8",
+    "current-on-analyze.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "current-on-analyze.stdout.json": "64fb780f66746664d2f2be20b4705c70e53512d2875d5de2be126b8ce0a5a0f4",
+    "current-on-plan.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "current-on-plan.stdout.json": "293d3bf36434e191c8f5e4b05dbf0dd83bde95c2f1008a8256942045313a290a",
+    "current.sql": "9cc21ff1677d91bde9d5b94e7b7e502bf85480cee97aa895f50d5aae96d8c88b",
+    "historical-off-analyze.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "historical-off-analyze.stdout.json": "2238e3c479d836931a0845affa1d3904a67a1901f2604a00926939dee215647e",
+    "historical-on-analyze.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "historical-on-analyze.stdout.json": "dbdd92a8c282773cb5aae69a76f09eff995aefc9d9808061124491a0c5ae9534",
+    "historical-on-plan.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "historical-on-plan.stdout.json": "399f7c86a70d35e28c6b94c7842b8884943cf2ba5b0d11f3d06d5049c270591a",
+    "historical.sql": "5bc81dc71eaf2c8b872e886cb6ab7334c465c1a89ed71b14d64bcd5d00676521",
+    "inputs.json": "ea30132faa192601a4c1185738013259fb7c8ba6044c56f1201924542d10e8c4",
+    "manifest.json": "e2a2a68eb64135622d37236be958619c9f70a3f3bdec7c6a8de53feb0367ac8e",
+    "map.json": "6668a0d4ccdf008f2d1dc5b8ec1eba71791b14ec578afc9b2e0d0e81f5deea81",
+    "owner.stderr.log": "24cbc6018884b628378855bdb44059914eb36959317ba8761ed7cbfed6b61906",
+    "owner.stdout.log": "8e2c6412115a1e8adb2675d2d3f65cb7c25e219860546d6ee9c0c6b5b94c4959",
+    "result.json": "a5fe1d3786e5a2bc0398055e86d6ab43b325f7d753b3522566cd395f7ac8d58c",
+    "source.json": "867aeb8c187f9e554752d8f9bfbb37438096e2de77799127e040906e50685425",
+    "successor.json": "4c1b991ea6d5cae4fa83e67c4d97739cc9f67bb6789ff72b55aa46a46e58e783"
+  }
+}

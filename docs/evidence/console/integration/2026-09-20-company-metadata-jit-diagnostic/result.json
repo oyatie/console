@@ -1,0 +1,178 @@
+{
+  "actual_cargo_argv": [
+    "/Users/jasonlee/.cargo/bin/cargo",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "backend/Cargo.toml",
+    "-p",
+    "console-app",
+    "--test",
+    "auth_rest",
+    "account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back",
+    "--",
+    "--test-threads=1",
+    "--exact"
+  ],
+  "owner_exit": 0,
+  "query_inputs": {
+    "current.sql": "9cc21ff1677d91bde9d5b94e7b7e502bf85480cee97aa895f50d5aae96d8c88b",
+    "historical.sql": "5bc81dc71eaf2c8b872e886cb6ab7334c465c1a89ed71b14d64bcd5d00676521"
+  },
+  "status": "DIAGNOSTICS_CAPTURED_NOT_A_FIX",
+  "cases": [
+    {
+      "query": "historical",
+      "jit": "on",
+      "analyze": false,
+      "exit": 0,
+      "wall_seconds": 0.166,
+      "raw_stdout_sha256": "399f7c86a70d35e28c6b94c7842b8884943cf2ba5b0d11f3d06d5049c270591a",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Settings": {
+        "search_path": "pg_catalog, pg_temp"
+      },
+      "total_cost": 81315.84
+    },
+    {
+      "query": "current",
+      "jit": "on",
+      "analyze": false,
+      "exit": 0,
+      "wall_seconds": 0.663,
+      "raw_stdout_sha256": "293d3bf36434e191c8f5e4b05dbf0dd83bde95c2f1008a8256942045313a290a",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "JIT": {
+        "Functions": 13019,
+        "Options": {
+          "Inlining": false,
+          "Optimization": false,
+          "Expressions": true,
+          "Deforming": true
+        }
+      },
+      "Settings": {
+        "search_path": "pg_catalog, pg_temp"
+      },
+      "total_cost": 116737.48
+    },
+    {
+      "query": "historical",
+      "jit": "off",
+      "analyze": true,
+      "exit": 0,
+      "wall_seconds": 0.213,
+      "raw_stdout_sha256": "2238e3c479d836931a0845affa1d3904a67a1901f2604a00926939dee215647e",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Planning Time": 87.599,
+      "Execution Time": 39.596,
+      "Settings": {
+        "search_path": "pg_catalog, pg_temp",
+        "jit": "off"
+      },
+      "total_cost": 81315.84
+    },
+    {
+      "query": "current",
+      "jit": "off",
+      "analyze": true,
+      "exit": 0,
+      "wall_seconds": 0.295,
+      "raw_stdout_sha256": "2f365102cc6dae08f03f28c71e65a7edff7cbfae85fad523ee25a471d2ffc0e8",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Planning Time": 125.23,
+      "Execution Time": 59.878,
+      "Settings": {
+        "search_path": "pg_catalog, pg_temp",
+        "jit": "off"
+      },
+      "total_cost": 116737.48
+    },
+    {
+      "query": "historical",
+      "jit": "on",
+      "analyze": true,
+      "exit": 0,
+      "wall_seconds": 0.224,
+      "raw_stdout_sha256": "dbdd92a8c282773cb5aae69a76f09eff995aefc9d9808061124491a0c5ae9534",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Planning Time": 89.62,
+      "Execution Time": 38.634,
+      "Settings": {
+        "search_path": "pg_catalog, pg_temp"
+      },
+      "total_cost": 81315.84
+    },
+    {
+      "query": "current",
+      "jit": "on",
+      "analyze": true,
+      "exit": 0,
+      "wall_seconds": 3.595,
+      "raw_stdout_sha256": "64fb780f66746664d2f2be20b4705c70e53512d2875d5de2be126b8ce0a5a0f4",
+      "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "Planning Time": 125.395,
+      "Execution Time": 3361.354,
+      "JIT": {
+        "Functions": 13681,
+        "Options": {
+          "Inlining": false,
+          "Optimization": false,
+          "Expressions": true,
+          "Deforming": true
+        },
+        "Timing": {
+          "Generation": {
+            "Deform": 115.552,
+            "Total": 273.444
+          },
+          "Inlining": 0.0,
+          "Optimization": 171.646,
+          "Emission": 2838.562,
+          "Total": 3283.653
+        }
+      },
+      "Settings": {
+        "search_path": "pg_catalog, pg_temp"
+      },
+      "total_cost": 116737.48
+    }
+  ],
+  "target_kind": "existing_template_no_state_assumed",
+  "database": "console_cargo_test_89340_contract",
+  "identity": {
+    "database": "console_cargo_test_89340_contract",
+    "session_user": "console_buck_admin",
+    "current_user": "console_buck_admin",
+    "bootstrap": "buck-sqlx-superuser-v1",
+    "server_version_num": "180004",
+    "superuser": true,
+    "other_active": 0
+  },
+  "baseline_settings": {
+    "jit": {
+      "setting": "on",
+      "source": "default"
+    },
+    "jit_above_cost": {
+      "setting": "100000",
+      "source": "default"
+    },
+    "jit_inline_above_cost": {
+      "setting": "500000",
+      "source": "default"
+    },
+    "jit_optimize_above_cost": {
+      "setting": "500000",
+      "source": "default"
+    },
+    "jit_provider": {
+      "setting": "llvmjit",
+      "source": "default"
+    },
+    "max_parallel_workers_per_gather": {
+      "setting": "2",
+      "source": "default"
+    }
+  }
+}
