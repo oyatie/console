@@ -1,0 +1,13 @@
+{
+  "files": {
+    "observer.sql": "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc",
+    "prospective.sql": "30926503535a2ca60199c14548d1d78faaaa0967b45ca96a2ea9ee1b003c687c",
+    "cargo": "53e17b62843c9f16562d155ed2c26923373b24646562c9d40cb3b5655825a0f9",
+    "README.md": "2cdfe3ffe170b531e2140fa872fffd688358fb49ed57ea39e1a0617583f73c80",
+    "inputs.json": "071c4bebe612e5d482c3a30f49035bd5c29e7354d51a2876d069c9270456c0ba",
+    "install.sql": "4209d4ed37cd725eddcce9fc8a26b582e030081205718020fa534345a60f9d87",
+    "historical.sql": "c714e36583e8d95c28e5aeb29d189df18be011945e30ef228f96cb43bc87bc31",
+    "metadata.sql": "3f22d440d46f3aaec27016e36df625e7aa1e0728795da52311fb4af508b35f06",
+    "checked.sql": "161c13709aa6c7cb33f55c79f327084ea011ae00e8cf0b9793db4641734e8b6c"
+  }
+}

@@ -1,0 +1,211 @@
+#!/usr/bin/env python3
+"""Root-run disposable capture; actual owner RED is required before any DDL."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+from urllib.parse import parse_qsl, unquote, urlsplit
+
+CARGO = '/Users/jasonlee/.cargo/bin/cargo'
+PSQL = '/opt/homebrew/bin/psql'
+PROBE = 'account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability'
+HERE = Path(__file__).resolve().parent
+PRIOR = ['c4582399f122012f1bf7e0edc0fe7639c6403d30d4ce6d78bd6864c50ad3a531',
+         '7429d460a604d3dfe5bf9472fefcb8505371f6060efbf07aa5bdc477e66dcf31']
+NAME = 'account_company_setup_eligibility_v1'
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def frozen(name):
+    data = (HERE / name).read_bytes()
+    assert digest(data) == INPUTS[name], 'capture source drift'
+    return data.decode()
+
+
+def private_write(name, data):
+    path = HERE / name
+    # Refuse symlinks or existing evidence; never overwrite earlier captures.
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, 'w') as stream:
+        stream.write(data)
+
+
+def sql_literal(value):
+    return "'" + value.replace("'", "''") + "'"
+
+
+def query(sql):
+    result = subprocess.run([PSQL, '-X', '-w', '-qAt', '-v', 'ON_ERROR_STOP=1'],
+                            input=sql, env=ENV, capture_output=True, text=True, timeout=60)
+    if result.returncode:
+        # Retain exact diagnostic evidence privately without printing protected rows.
+        private_write('FAILED-UNVERIFIED-command.sql', sql)
+        private_write('FAILED-UNVERIFIED-stdout.log', result.stdout)
+        private_write('FAILED-UNVERIFIED-stderr.log', result.stderr)
+        raise RuntimeError('guarded capture SQL failed; private UNVERIFIED evidence retained; transaction disconnected and rolled back')
+    return result.stdout
+
+
+def scalar(source):
+    return source.strip().removesuffix(';')
+
+
+def captured_profile(source):
+    return "SELECT jsonb_build_object('snapshot',p.snapshot,'snapshot_text',p.snapshot::text,'sha256',p.snapshot_sha256) FROM (\n" + scalar(source) + '\n) p'
+
+
+def stage(label):
+    return f"""
+DO $capture_rows$
+DECLARE relation record; raw text; rows jsonb := '{{}}'::jsonb; total integer := 0;
+BEGIN
+    FOR relation IN SELECT relname FROM pg_class
+        WHERE relnamespace='public'::regnamespace AND relkind IN ('r','p')
+        ORDER BY relname COLLATE "C" LOOP
+        total := total + 1;
+        IF total > 1024 THEN RAISE EXCEPTION 'capture.table_bound'; END IF;
+        EXECUTE format('SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text COLLATE "C"),''[]''::jsonb)::text FROM public.%I t',relation.relname) INTO raw;
+        rows := rows || jsonb_build_object(relation.relname,raw);
+    END LOOP;
+    IF total=0 THEN RAISE EXCEPTION 'capture.empty_roster'; END IF;
+    INSERT INTO capture_evidence(stage,metadata,business,historical,prospective)
+    VALUES({sql_literal(label)},({scalar(METADATA)}),rows,
+        ({captured_profile(HISTORICAL)}),({captured_profile(PROSPECTIVE)}));
+END
+$capture_rows$;
+"""
+
+
+def guard(database):
+    return f"""
+DO $guard$
+BEGIN
+    IF current_database() IS DISTINCT FROM {sql_literal(database)}
+        OR session_user IS DISTINCT FROM 'console_buck_admin' OR current_user IS DISTINCT FROM session_user
+        OR current_setting('console.sqlx_test_bootstrap',true) IS DISTINCT FROM 'buck-sqlx-superuser-v1'
+        OR current_setting('server_version_num') IS DISTINCT FROM '180004'
+        OR NOT EXISTS(SELECT 1 FROM pg_roles WHERE rolname=session_user AND rolsuper)
+        OR EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()) THEN
+        RAISE EXCEPTION 'capture.disposable_guard';
+    END IF;
+END
+$guard$;
+"""
+
+
+def capture(variant):
+    observer = OBSERVER if variant else ''
+    expected = PRIOR[variant]
+    sql = f"""BEGIN;
+SET LOCAL search_path=pg_catalog,pg_temp;
+SET LOCAL statement_timeout='45s';
+SET LOCAL lock_timeout='5s';
+{guard(DATABASE)}
+CREATE TEMP TABLE capture_evidence(stage text PRIMARY KEY,metadata jsonb,business jsonb,historical jsonb,prospective jsonb) ON COMMIT DROP;
+{stage('original')}
+DO $predecessor$
+BEGIN
+    IF ({captured_profile(HISTORICAL)})->>'sha256' IS DISTINCT FROM {sql_literal(PRIOR[0])} THEN
+        RAISE EXCEPTION 'capture.plain_predecessor';
+    END IF;
+END
+$predecessor$;
+{observer}
+{stage('before')}
+DO $variant$
+BEGIN
+    IF (SELECT historical->>'sha256' FROM capture_evidence WHERE stage='before') IS DISTINCT FROM {sql_literal(expected)}
+        OR (SELECT historical->'snapshot'->'deployment_operator_boundary'->'startup_final_rights_valid' FROM capture_evidence WHERE stage='before') IS DISTINCT FROM 'true'::jsonb
+        OR EXISTS(SELECT 1 FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname={sql_literal(NAME)}) THEN
+        RAISE EXCEPTION 'capture.exact_predecessor';
+    END IF;
+END
+$variant$;
+{INSTALL}
+{stage('after')}
+SELECT jsonb_build_object('variant',{sql_literal('observer' if variant else 'plain')},
+ 'checked_helper',(SELECT count(*)=1 AND bool_and(valid) FROM ({scalar(CHECKED)}) checked(valid)),
+ 'stages',(SELECT jsonb_object_agg(stage,jsonb_build_object('metadata',metadata,'business',business,'historical',historical,'prospective',prospective)) FROM capture_evidence));
+ROLLBACK;
+"""
+    private_write(('observer' if variant else 'plain') + '-capture.sql', sql)
+    raw = query(sql)
+    private_write(('observer' if variant else 'plain') + '-UNVERIFIED-capture.json', raw)
+    data = json.loads(raw)
+    assert data['checked_helper'] is True
+    before, after = [data['stages'][key] for key in ('before', 'after')]
+    assert before['business'] == after['business'], 'public row mutation'
+    assert set(before['business']) == {r['name'] for r in before['metadata']['relations']}
+    assert set(after['business']) == {r['name'] for r in after['metadata']['relations']}
+    assert before['historical']['sha256'] == expected
+    addition = [row for row in after['metadata']['functions'] if row['proname'] == NAME]
+    assert len(addition) == 1 and addition[0]['prosrc'] == INSTALL.split('$body$')[1]
+    assert not any(row['proname'] == NAME for row in before['metadata']['functions'])
+    stripped = dict(after['metadata'])
+    stripped['functions'] = [row for row in stripped['functions'] if row != addition[0]]
+    assert stripped == before['metadata'], 'metadata changed beyond exact checked helper'
+    for state in data['stages'].values():
+        for key in ('historical', 'prospective'):
+            profile = state[key]
+            assert digest(profile['snapshot_text'].encode()) == profile['sha256']
+            assert json.loads(profile['snapshot_text']) == profile['snapshot']
+    assert before['prospective']['snapshot']['deployment_operator_boundary']['startup_final_rights_valid'] is False
+    assert after['prospective']['snapshot']['deployment_operator_boundary']['startup_final_rights_valid'] is True
+    # A new connection proves transaction rollback removed function and cluster role/grant effects.
+    restore_sql = f"""BEGIN;
+SET LOCAL search_path=pg_catalog,pg_temp;
+SET LOCAL statement_timeout='45s';
+{guard(DATABASE)}
+CREATE TEMP TABLE capture_evidence(stage text PRIMARY KEY,metadata jsonb,business jsonb,historical jsonb,prospective jsonb) ON COMMIT DROP;
+{stage('restored')}
+SELECT jsonb_build_object('metadata',metadata,'business',business,'historical',historical,'prospective',prospective) FROM capture_evidence;
+ROLLBACK;
+"""
+    restore_raw = query(restore_sql)
+    private_write(('observer' if variant else 'plain') + '-UNVERIFIED-restored.json', restore_raw)
+    restored = json.loads(restore_raw)
+    assert restored == data['stages']['original'], 'rollback preservation failed'
+    data['rollback_restored_exact_original'] = True
+    private_write(('observer' if variant else 'plain') + '-capture.json', json.dumps(data, indent=2) + '\n')
+    return [before['prospective']['sha256'], after['prospective']['sha256']]
+
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    if '--no-run' in args or PROBE not in args:
+        os.execv(CARGO, [CARGO, *args])
+    assert '--exact' in args and '--test-threads=1' in args
+    os.umask(0o077)
+    INPUTS = json.loads((HERE / 'inputs.json').read_text())
+    INSTALL, PROSPECTIVE, HISTORICAL, METADATA, CHECKED, OBSERVER = [
+        frozen(name) for name in ('install.sql', 'prospective.sql', 'historical.sql', 'metadata.sql', 'checked.sql', 'observer.sql')]
+    result = subprocess.run([CARGO, *args], capture_output=True, text=True)
+    private_write('owner-red.stdout.log', result.stdout)
+    private_write('owner-red.stderr.log', result.stderr)
+    assert result.returncode == 101 and 'NATIVE_COMPANY_ELIGIBILITY_OWNER' in result.stdout + result.stderr
+    assert '0 passed; 1 failed;' in result.stdout + result.stderr
+    uri = urlsplit(os.environ['DATABASE_URL'])
+    assert uri.hostname == '127.0.0.1' and uri.username == 'console_buck_admin' and uri.port
+    assert parse_qsl(uri.query) == [('options[console.sqlx_test_bootstrap]', 'buck-sqlx-superuser-v1')]
+    ENV = {k: v for k, v in os.environ.items() if not k.startswith('PG')}
+    ENV.update(PGHOST=uri.hostname, PGPORT=str(uri.port), PGUSER=uri.username,
+               PGPASSWORD=unquote(uri.password), PGDATABASE=unquote(uri.path[1:]),
+               PGOPTIONS='-c console.sqlx_test_bootstrap=buck-sqlx-superuser-v1')
+    names = query("SELECT datname FROM pg_database WHERE datname LIKE '\\_sqlx\\_test\\_%' ESCAPE '\\';").splitlines()
+    assert len(names) == 1 and re.fullmatch(r'_sqlx_test_[A-Za-z0-9_]{52}', names[0])
+    DATABASE = names[0]
+    ENV['PGDATABASE'] = DATABASE
+    hashes = {variant: capture(i) for i, variant in enumerate(('plain', 'observer'))}
+    assert len({h for pair in hashes.values() for h in pair}) == 4
+    private_write('capture-result.json', json.dumps({'source_inputs': INPUTS, 'profiles': hashes,
+        'owner_red_exit': result.returncode, 'transactions_rolled_back': 2,
+        'status': 'CAPTURED_NOT_INDEPENDENTLY_APPROVED'}, indent=2) + '\n')
+    print('ELIGIBILITY_PROSPECTIVE_CAPTURE_COMPLETE: 2 variants, 4 source-bound hashes, exact rollback; independent review required', flush=True)
+    # Preserve the real test outcome. Capture does not convert an owner RED to GREEN.
+    sys.exit(result.returncode)

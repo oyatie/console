@@ -1,0 +1,139 @@
+{
+  "base_sha": "17443500fb44a4026208cbe5c685dbfd2f55b348",
+  "owner": "/root",
+  "status": "Exactsource-bound fourprospective hashes independently approved; production finalizer notyetimplemented",
+  "capture": "2rollback-only guarded disposablePG18.4variants; all307public tables unchanged; sole vetted function addition; freshconnection exactrollback; actualownerRED remains0passed1failed",
+  "files": {
+    "observer.sql": {
+      "stored": "observer.sql",
+      "original_sha256": "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc",
+      "original_bytes": 9323,
+      "stored_sha256": "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc"
+    },
+    "owner-red.stdout.log": {
+      "stored": "owner-red.stdout.log",
+      "original_sha256": "580fb266f1529c3412d6a00d6b3f7754e21f83b3183ae622fd60e18ffef5212c",
+      "original_bytes": 1014,
+      "stored_sha256": "580fb266f1529c3412d6a00d6b3f7754e21f83b3183ae622fd60e18ffef5212c"
+    },
+    "plain-capture.sql": {
+      "stored": "plain-capture.sql",
+      "original_sha256": "2ad015a16ae09857f03cb0652af491ad2146de019e1f04f19b78e7edc7e44a7a",
+      "original_bytes": 499485,
+      "stored_sha256": "2ad015a16ae09857f03cb0652af491ad2146de019e1f04f19b78e7edc7e44a7a"
+    },
+    "capture-result.json": {
+      "stored": "capture-result.json",
+      "original_sha256": "5ae082f67689b5858069ddd5b609051c5d84e940af8ad8f16486e1de966a5360",
+      "original_bytes": 1029,
+      "stored_sha256": "5ae082f67689b5858069ddd5b609051c5d84e940af8ad8f16486e1de966a5360"
+    },
+    "plain-capture.json": {
+      "stored": "plain-capture.json.gz",
+      "original_sha256": "7321f0a631a71fbf3b9a284b2168b0e129e7d8fde06ed798cc703e029f22a330",
+      "original_bytes": 66610817,
+      "stored_sha256": "c43cfeecb577f79646419c785133dad79cd27dfa57e3d3418bc72b0bd9000e29"
+    },
+    "observer-UNVERIFIED-restored.json": {
+      "stored": "observer-UNVERIFIED-restored.json.gz",
+      "original_sha256": "4e94e1389d6c13e2534fa40a12c1c1bd8bd61672ef272b43ec7ab1fa970fd4ca",
+      "original_bytes": 13158180,
+      "stored_sha256": "9863c5868dd39c39102d9b96266b9e3261e3d201f6d85b2ed812a28f11b550e6"
+    },
+    "prospective.sql": {
+      "stored": "prospective.sql",
+      "original_sha256": "30926503535a2ca60199c14548d1d78faaaa0967b45ca96a2ea9ee1b003c687c",
+      "original_bytes": 68961,
+      "stored_sha256": "30926503535a2ca60199c14548d1d78faaaa0967b45ca96a2ea9ee1b003c687c"
+    },
+    "cargo": {
+      "stored": "cargo",
+      "original_sha256": "53e17b62843c9f16562d155ed2c26923373b24646562c9d40cb3b5655825a0f9",
+      "original_bytes": 10429,
+      "stored_sha256": "53e17b62843c9f16562d155ed2c26923373b24646562c9d40cb3b5655825a0f9"
+    },
+    "README.md": {
+      "stored": "README.md",
+      "original_sha256": "2cdfe3ffe170b531e2140fa872fffd688358fb49ed57ea39e1a0617583f73c80",
+      "original_bytes": 3918,
+      "stored_sha256": "2cdfe3ffe170b531e2140fa872fffd688358fb49ed57ea39e1a0617583f73c80"
+    },
+    "observer-UNVERIFIED-capture.json": {
+      "stored": "observer-UNVERIFIED-capture.json.gz",
+      "original_sha256": "a45318bb6abbb6770aa28bd8a3a2e0c51327d78fecdf1be3de641b6aee3ae32a",
+      "original_bytes": 39511511,
+      "stored_sha256": "a4d87079b70306d0fb4da2be2a8c4e8338808a24ca7d09aa1409c521e4527b39"
+    },
+    "owner-red.stderr.log": {
+      "stored": "owner-red.stderr.log",
+      "original_sha256": "0d2014ab4fa454cfce6c17d15e0df7704efe66e388bf584ff74412292b59d86e",
+      "original_bytes": 1114,
+      "stored_sha256": "0d2014ab4fa454cfce6c17d15e0df7704efe66e388bf584ff74412292b59d86e"
+    },
+    "inputs.json": {
+      "stored": "inputs.json",
+      "original_sha256": "071c4bebe612e5d482c3a30f49035bd5c29e7354d51a2876d069c9270456c0ba",
+      "original_bytes": 522,
+      "stored_sha256": "071c4bebe612e5d482c3a30f49035bd5c29e7354d51a2876d069c9270456c0ba"
+    },
+    "install.sql": {
+      "stored": "install.sql",
+      "original_sha256": "4209d4ed37cd725eddcce9fc8a26b582e030081205718020fa534345a60f9d87",
+      "original_bytes": 4655,
+      "stored_sha256": "4209d4ed37cd725eddcce9fc8a26b582e030081205718020fa534345a60f9d87"
+    },
+    "observer-capture.sql": {
+      "stored": "observer-capture.sql",
+      "original_sha256": "429fde539fedbec3f0602be5eb1222c83d5609315935460f7735a5225f537ee0",
+      "original_bytes": 508811,
+      "stored_sha256": "429fde539fedbec3f0602be5eb1222c83d5609315935460f7735a5225f537ee0"
+    },
+    "manifest.json": {
+      "stored": "manifest.json",
+      "original_sha256": "2961aca74226eebec0235ce6fb7251a8749ecb6f3ef2999e75c07749ebabab04",
+      "original_bytes": 804,
+      "stored_sha256": "2961aca74226eebec0235ce6fb7251a8749ecb6f3ef2999e75c07749ebabab04"
+    },
+    "plain-UNVERIFIED-capture.json": {
+      "stored": "plain-UNVERIFIED-capture.json.gz",
+      "original_sha256": "38a21a52ca9ce3de3cc075b602e2d5ab872507e5e4aca299af76da0c27ab47da",
+      "original_bytes": 39482876,
+      "stored_sha256": "621b6b1a0a5e6e0f92ee217903562c9a173202287037d47863af33d8d0fdff53"
+    },
+    "historical.sql": {
+      "stored": "historical.sql",
+      "original_sha256": "c714e36583e8d95c28e5aeb29d189df18be011945e30ef228f96cb43bc87bc31",
+      "original_bytes": 68864,
+      "stored_sha256": "c714e36583e8d95c28e5aeb29d189df18be011945e30ef228f96cb43bc87bc31"
+    },
+    "metadata.sql": {
+      "stored": "metadata.sql",
+      "original_sha256": "3f22d440d46f3aaec27016e36df625e7aa1e0728795da52311fb4af508b35f06",
+      "original_bytes": 1937,
+      "stored_sha256": "3f22d440d46f3aaec27016e36df625e7aa1e0728795da52311fb4af508b35f06"
+    },
+    "plain-UNVERIFIED-restored.json": {
+      "stored": "plain-UNVERIFIED-restored.json.gz",
+      "original_sha256": "4e94e1389d6c13e2534fa40a12c1c1bd8bd61672ef272b43ec7ab1fa970fd4ca",
+      "original_bytes": 13158180,
+      "stored_sha256": "9863c5868dd39c39102d9b96266b9e3261e3d201f6d85b2ed812a28f11b550e6"
+    },
+    "checked.sql": {
+      "stored": "checked.sql",
+      "original_sha256": "161c13709aa6c7cb33f55c79f327084ea011ae00e8cf0b9793db4641734e8b6c",
+      "original_bytes": 1277,
+      "stored_sha256": "161c13709aa6c7cb33f55c79f327084ea011ae00e8cf0b9793db4641734e8b6c"
+    },
+    "observer-capture.json": {
+      "stored": "observer-capture.json.gz",
+      "original_sha256": "829037b10132f29ffbb247f3744dc2a8b9d894d6e401887d33ddf413b677d7f5",
+      "original_bytes": 66653808,
+      "stored_sha256": "1f48d85fb2a39c765563d7165bafa47db92bdee56b6422e2da223599071b40f6"
+    }
+  },
+  "remaining_holds": [
+    "Finite finalizer/currentstate implementation andreview",
+    "All9directowner plus5migrationhistories and2HTTP tests",
+    "Companyworkflow/fullreleaseacceptance"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE bounded disposable capture execution only",
+  "packet": "/private/tmp/console-company-eligibility-capture-driver-20260919-round3",
+  "manifest_sha256": "2961aca74226eebec0235ce6fb7251a8749ecb6f3ef2999e75c07749ebabab04",
+  "driver_sha256": "53e17b62843c9f16562d155ed2c26923373b24646562c9d40cb3b5655825a0f9",
+  "findings": [],
+  "evidence": [
+    "All manifest entries independently hashed; Python AST parsed.",
+    "INSTALL and prospective query byte-identical to separately approved owner-source packet. Historical SQL exact current business_session_snapshot_query output plus terminating semicolon/newline. Observer SQL exact ops/postgres-install-durability-observer.sql.",
+    "Requires actual named owner RED101, marker,0passed/1failed; only target exact test flags intercepted. Preserves RED101 even after successful capture.",
+    "Loopback console_buck_admin, exact SQLx bootstrap option, sole exact SQLx-shaped database, PostgreSQL18.4, superuser and no other database backend verified before each capture/restore transaction.",
+    "Exact plain/observer prior fingerprint required. DDL rolls back and new connection compares original metadata/public rows/historical+prospective snapshots. Only checked exact helper addition permitted before rollback; signature,owner,ACL,config,body checked.",
+    "All evidence files0600 exclusive create; raw UNVERIFIED capture and restored outputs precede assertions; failing SQL stderr retained privately. No credentials printed."
+  ],
+  "limits": [
+    "No SQL or Cargo executed by reviewer. Parent sole runner.",
+    "Capture results and four future fingerprint constants still require separate source-bound independent review.",
+    "No production/runtime serving, helper integration or release acceptance.",
+    "Raw timeout diagnostic behavior is bounded by subprocess timeout/disconnection; no successful capture claimed on timeout."
+  ]
+}
