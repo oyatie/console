@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact separate fixture prerequisite repair",
+  "base_sha": "a0d3556fecc5d67cb1fe06ef6ac62fbe45bd43c5",
+  "manifest_sha256": "e6009da49535064b7e6d20675d30db27e19784ad5cac64b9e647833686fc4aeb",
+  "candidate_sha256": "8ac044b5f0528370b021bb04a2866739a79eae0f1b56b6e818a8cd3e7e9b828c",
+  "patch_sha256": "595e124b4814770b29498924dfd83eeca14ee42b692697205af82025f2c547f8",
+  "old_fixture_sha256": "29a7c4fb9341e4c19ade8eeed672d96950d082e803eb659e31068b8604fc711b",
+  "findings": [],
+  "evidence": [
+    "All seven executed DB-backed failures identify missing explicit durability config before router; 7 passed, 7 failed, 1 preexisting ignored, 6.47 seconds.",
+    "Independent exact inverse removes only three durability settings and recovers approved historical fixture byte-for-byte. Every assertion and ignore annotation unchanged.",
+    "Uses same local_development JSON policy as auth_rest.rs existing configured fixture; unreachable DB constructor uses equivalent existing typed constructor. NoDB helper unchanged.",
+    "No production durability guard change and no new ignored tests."
+  ],
+  "log_sha256": "bc6da2f1cadcecf482f1c6c2e3f713eb83ab811c018d8322fd79a65abbb7eda9",
+  "scope_limits": [
+    "Separate test-fixture amendment; original source lane excludes tests, so preserve distinct receipt and patch scope.",
+    "Rerun full health suite to establish runtime result. This approval does not assume runtime success."
+  ]
+}
