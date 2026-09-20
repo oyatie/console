@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_OPERATOR_JIT_SOURCE_AND_TARGETED_GREEN_PENDING_RETAINED_TRANSITIONS",
+  "base_sha": "755271767e3553b12fe822dac740fac0e376ae76",
+  "source_hashes": {
+    "ops/postgres-finalize-account-custody.sh": {
+      "before": "1d08778a6cd56d5b1d718ba2ea8710524b3cc5bdcc187a785d8252021c6176b1",
+      "after": "013daaa72fb7df994d417421aa11f3879d1b968d98c8f7788dabf90e9259ec29"
+    },
+    "backend/app/tests/auth_rest/audit_account_transition.rs": {
+      "before": "4406eff69d862fa7b8b290132eed3049dd9c8f7af2dace67fba5ab33101384d7",
+      "after": "34e80b006c22ce00eb2c2d50f6365fa48384afadd3213416c5d271fbc3274c2e"
+    }
+  },
+  "checks": [
+    "Mechanical exact2setting substitutions verified; entire tracked diff from admittedcleanbase contains only these2files. Therefore allhistoricalSQL,migrations,generator/serializer/fixture/commandbytes and custodyfingerprints are unchanged.",
+    "Production jitoff is fixed scrubbed childPGOPTIONS beforeSQLstatement begins, preserves60000/5000/searchpath/TLS/identity/transaction. Matchinghelper usesSETLOCAL only, preserves60s/5s and originaltest assertions.",
+    "ActualSQLxlocalGUC/scope testGREEN1/1 after intendedRED; restoredouterJITon proves no connection-state escape.",
+    "RealPG18.4TLS actualpsql default+observer profiles RED2/2 specifically childoptions afterexactidentityrefusal; GREEN2/2 withactualwrapperinvocations2.",
+    "Independentlychecked rawTLSpositive observations,exactidentityrefusal and childenvironment observations forbothprofiles; GREENsourcecustodystable and ownedcleanupemptyfailures.",
+    "InitialTLSfalse prerequisitefailure remains distinct, not counted asownerRED."
+  ],
+  "evidence_sha256": {
+    "wrapper_red_report": "a785ddc1594b2dbf34e1fa60a97d27603c357717d2faf730c65d87fd21d993e0",
+    "wrapper_green_report": "ce1ed31af4502be8d705a8b766778fff2d934197bf38b5f28c4e141ece0ea0be",
+    "owner_green_log": "eb27986b97251fe4b7fa8e08fdecf32663683cc4f49eb1ea22aada7a34cded0f"
+  },
+  "remaining_holds": [
+    "Retained fourBusinesspredecessor and sixeligibilitytransitions required before boundedfinalizer acceptance.",
+    "Wrapperconfigprobe intentionally refusesidentity before schema; doesnot establish fullinstalledfinalizer or PostgreSQL18.6 compatibility.",
+    "No workload/productionqualification or releasemilestone acceptance."
+  ]
+}

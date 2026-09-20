@@ -115,7 +115,7 @@ env -i LC_ALL=C \
   PGPASSFILE="${private_dir}/pgpass" PGSSLMODE=verify-full PGGSSENCMODE=disable PGSSLROOTCERT="${PGSSLROOTCERT}" \
   PGSSLCERT="${private_dir}/no-client-cert" PGSSLKEY="${private_dir}/no-client-key" \
   PGSERVICEFILE="${private_dir}/no-service" PGCONNECT_TIMEOUT=10 \
-  PGOPTIONS='-c search_path=pg_catalog,pg_temp -c statement_timeout=60000 -c lock_timeout=5000' \
+  PGOPTIONS='-c search_path=pg_catalog,pg_temp -c statement_timeout=60000 -c lock_timeout=5000 -c jit=off' \
   "${psql_binary}" -X -w --quiet --set ON_ERROR_STOP=1 --single-transaction \
   --host "${POSTGRES_HOST}" --port "${POSTGRES_PORT}" \
   --username "${POSTGRES_ADMIN_USER}" --dbname "${POSTGRES_DB}" \

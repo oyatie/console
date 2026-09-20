@@ -75,7 +75,7 @@ mod audit_account_transition {
                 true
             )
         );
-        sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='60s'; SET LOCAL lock_timeout='5s'")
+        sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='60s'; SET LOCAL lock_timeout='5s'; SET LOCAL jit=off")
             .execute(connection).await.unwrap();
     }
 
