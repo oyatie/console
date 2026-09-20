@@ -1,0 +1,8 @@
+test binaries defined         : 386
+reachable from a CI step      : 386
+declared test attrs in reachable sources: 3072  (static; cfg/ignore-unaware)
+executed nowhere              : 1
+reachable only through buck2  : 17  (--gap to list; the Buck2 exit has to wire these)
+  dark  backend/crates/platform/storage/tests/seaweedfs_worm.rs
+
+1 reachable test source(s) gained declared test attributes. Run --update to lock the gain in before merge.
