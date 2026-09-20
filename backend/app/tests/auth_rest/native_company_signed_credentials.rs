@@ -526,4 +526,251 @@ mod signed_credentials {
         f.business.close().await;
         f.startup.close().await;
     }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_signed_ids_take_no_authority_locks_and_read_retains_both(pool: PgPool) {
+        use sqlx::Connection as _;
+        use std::time::Duration as Wait;
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let credentials = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let probes = [
+            (
+                "SELECT account_id FROM public.account_security WHERE account_id=$1 FOR NO KEY UPDATE",
+                f.account,
+            ),
+            (
+                "SELECT id FROM public.auth_refresh_token_families WHERE id=$1 FOR NO KEY UPDATE",
+                f.session,
+            ),
+        ];
+        let mut tx = f.business.begin().await.unwrap();
+        let login: bool =
+            sqlx::query_scalar("SELECT session_user=current_user AND current_user='console_rt'")
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+        assert!(
+            login,
+            "wrapper must run through actual restricted Business login"
+        );
+        assert_eq!(
+            credentials
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap(),
+            (f.account, f.session)
+        );
+        // Exact competing non-key write locks succeed before the IDs transaction
+        // ends. NOWAIT fails promptly if either authority guard was acquired.
+        for (query, id) in probes {
+            let mut observer = sqlx::PgConnection::connect_with(&pool.connect_options())
+                .await
+                .unwrap();
+            let mut probe = observer.begin().await.unwrap();
+            let no_wait = format!("{query} NOWAIT");
+            let result: Result<Uuid, _> = sqlx::query_scalar(sqlx::AssertSqlSafe(no_wait))
+                .bind(id)
+                .fetch_one(&mut *probe)
+                .await;
+            probe.rollback().await.unwrap();
+            assert_eq!(result.unwrap(), id);
+        }
+        tx.rollback().await.unwrap();
+        // Positive controls use the same actual rows and lock modes. A resolver
+        // that merely returns IDs cannot satisfy these exact PID witnesses.
+        for (query, id) in probes {
+            let mut tx = f.business.begin().await.unwrap();
+            let current = credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap();
+            assert_eq!(
+                (current.account_id, current.session_id),
+                (f.account, f.session)
+            );
+            let claims = signed_claims(&f.access, &f.key).unwrap();
+            assert_eq!(current.security_generation, claim_generation(&claims));
+            assert_eq!(
+                current.auth_time.unix_timestamp(),
+                claims["auth_time"].as_i64().unwrap()
+            );
+            assert_eq!(
+                current.expires_at.unix_timestamp(),
+                claims["exp"].as_i64().unwrap()
+            );
+            let holder: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+                .fetch_one(&mut *tx)
+                .await
+                .unwrap();
+            let mut observer = sqlx::PgConnection::connect_with(&pool.connect_options())
+                .await
+                .unwrap();
+            let waiter: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+                .fetch_one(&mut observer)
+                .await
+                .unwrap();
+            assert_ne!(holder, waiter);
+            let mut work = tokio::spawn(async move {
+                let mut probe = observer.begin().await.unwrap();
+                sqlx::raw_sql("SET LOCAL statement_timeout='12s'; SET LOCAL lock_timeout='0'")
+                    .execute(&mut *probe)
+                    .await
+                    .unwrap();
+                let result: Result<Uuid, _> = sqlx::query_scalar(query)
+                    .bind(id)
+                    .fetch_one(&mut *probe)
+                    .await;
+                probe.rollback().await.unwrap();
+                result
+            });
+            let reached = tokio::time::timeout(Wait::from_secs(4), async {
+                loop {
+                    let blocked: bool = sqlx::query_scalar("SELECT $2=ANY(pg_catalog.pg_blocking_pids($1)) AND EXISTS(SELECT 1 FROM pg_catalog.pg_stat_activity WHERE pid=$1 AND query=$3)")
+                        .bind(waiter).bind(holder).bind(query).fetch_one(&pool).await.unwrap();
+                    if blocked { break true; }
+                    if work.is_finished() { break false; }
+                    tokio::time::sleep(Wait::from_millis(10)).await;
+                }
+            }).await;
+            tx.rollback().await.unwrap();
+            let completed = tokio::time::timeout(Wait::from_secs(5), &mut work).await;
+            if completed.is_err() {
+                work.abort();
+                let _ = tokio::time::timeout(Wait::from_secs(5), &mut work).await;
+            }
+            assert!(
+                matches!(reached, Ok(true)),
+                "exact authority row writer must wait on retained read transaction"
+            );
+            assert_eq!(
+                completed
+                    .expect("writer completes after reader rollback")
+                    .unwrap()
+                    .unwrap(),
+                id
+            );
+        }
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_wrapper_rejects_real_revocation_and_signed_wrong_binding(pool: PgPool) {
+        let f = fixture(&pool, true).await;
+        let before = all_rows(&pool).await;
+        let credentials = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mut tx = f.business.begin().await.unwrap();
+        // Signed namespace is intentionally not current authority.
+        assert_eq!(
+            credentials
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap(),
+            (f.account, f.session)
+        );
+        assert!(matches!(
+            credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await,
+            Err(AccountOperationError::AuthenticationInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        let mut wrong = signed_claims(&f.access, &f.key).unwrap();
+        let foreign = signed_claims(&f.foreign_csrf, &f.key).unwrap();
+        let foreign_family = Uuid::parse_str(foreign["sid"].as_str().unwrap()).unwrap();
+        assert_ne!(foreign["sub"], wrong["sub"]);
+        // Bind the Account's genuine signed subject to another real Account's
+        // existing native family; a nonexistent UUID is not this oracle.
+        wrong["sid"] = foreign["sid"].clone();
+        let access = sign_proof_claims(&wrong, &f.key);
+        let credentials = AccountEnrollmentCredentials::for_read(&access).unwrap();
+        let mut tx = f.business.begin().await.unwrap();
+        assert_eq!(
+            credentials
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap(),
+            (f.account, foreign_family)
+        );
+        assert!(matches!(
+            credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await,
+            Err(AccountOperationError::AuthenticationInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_wrappers_reject_invalid_and_expired_signed_access(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let claims = signed_claims(&f.access, &f.key).unwrap();
+        let wrong_key = sign_proof_claims(&claims, &SigningKey::random(&mut OsRng));
+        let expiry = claims["iat"].as_i64().unwrap() + 1;
+        sqlx::query("SELECT pg_sleep(GREATEST(0.0,$1::double precision-extract(epoch FROM clock_timestamp()))+0.025)").bind(expiry as f64).execute(&pool).await.unwrap();
+        let mut expired = claims;
+        expired["exp"] = json!(expiry);
+        let expired = sign_proof_claims(&expired, &f.key);
+        assert!(matches!(
+            f.verifier
+                .verify_account_access_token(&expired, now(&pool).await)
+                .unwrap(),
+            console_platform_auth::AccountAccessVerification::Expired(_)
+        ));
+        for access in [wrong_key, f.csrf.clone(), expired] {
+            let credentials = AccountEnrollmentCredentials::for_read(&access).unwrap();
+            let mut tx = f.business.begin().await.unwrap();
+            assert!(matches!(
+                credentials
+                    .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                    .await,
+                Err(AccountOperationError::AuthenticationInvalid)
+            ));
+            assert!(matches!(
+                credentials
+                    .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                    .await,
+                Err(AccountOperationError::AuthenticationInvalid)
+            ));
+            tx.rollback().await.unwrap();
+        }
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_read_wrappers_reject_nonpositive_ttl_without_effects(pool: PgPool) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        for credentials in [&read, &mutation] {
+            for ttl in [time::Duration::ZERO, time::Duration::seconds(-1)] {
+                let mut tx = f.business.begin().await.unwrap();
+                assert!(matches!(
+                    credentials
+                        .session_ids_in_tx(&mut tx, &f.verifier, ttl)
+                        .await,
+                    Err(AccountOperationError::AuthorityUnavailable)
+                ));
+                assert!(matches!(
+                    credentials
+                        .read_session_in_tx(&mut tx, &f.verifier, ttl)
+                        .await,
+                    Err(AccountOperationError::AuthorityUnavailable)
+                ));
+                tx.rollback().await.unwrap();
+            }
+        }
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
 }
