@@ -1,0 +1,12 @@
+{
+  "kind": "platform-group-topology-list-owner-design-proposal",
+  "base_sha": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "files_sha256": {
+    "CENSUS.md": "fcae984dd22a9f56c8e5e90e08cefa3c123ebec62846d56a650339064ef9c4ef",
+    "DESIGN.md": "c66cd03505ad56950089cf3ecc6693c6989ba0db089a605c12c665cfef295cb9",
+    "source-pins.json": "b83defb394faef58f31bbdcc0fa529ff2a763698d4f65ba84a137a6a1c2f516d"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "four_independent_design_rounds_required": true
+}

@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root",
+  "round": 1,
+  "design_manifest_sha256": "87e3bb9a52de7998ff3b73da6ed3e01bd55cad3da4fdaad2ddc4526ef41c59b3",
+  "decision": "approve direction; require reviewed malformed-members JSON failure refinement before final design consensus",
+  "checks": [
+    "All17pinned source files equal immutablebase/current tree",
+    "Actual final0225SQL identity/order/sentinel/member-count behavior verified",
+    "Existing group_from_row typed JSON decode creates real mapping boundary needing distinct503 acceptance",
+    "Closed third PlatformRead case reuses canonical source guard and current finite Cedar tuple",
+    "Four fresh checks preserve authorization across projection/audit waits without detached permits",
+    "Only two obsolete Group-as-unselected-sibling examples may be replaced after explicit test review; retain all other assertions",
+    "Current rawSQL grants/groupaccount/mutation gaps explicitly remain open"
+  ],
+  "implementation_admitted": false,
+  "tests_executed": 0,
+  "holds": [
+    "Remaining three independent design rounds and exactconsensus",
+    "Reviewed tests and realRED admission",
+    "Unresolved source-snapshot intermittency",
+    "Milestones0-10 unfinished"
+  ]
+}

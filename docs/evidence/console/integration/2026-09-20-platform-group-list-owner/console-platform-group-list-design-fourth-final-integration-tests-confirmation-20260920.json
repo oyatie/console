@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/integration_tests",
+  "role": "design author; fourth/final author confirmation, not a substitute for independent security review",
+  "round": 4,
+  "decision": "CONFIRM exact round2 design and reviewed cleanup ordering; ready for root design consensus only; no tests or implementation admitted",
+  "manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "design_sha256": "a1d858465156868aee8c81a983edbda0497df3fc44b8b291cac5ce9a4888b72c",
+  "observed_compatible_head": "95e48111ad23abc1ebec7f1a0bd396b2deca4871",
+  "checks": [
+    "All4packet members and all17source pins verified; existing source/policy/Company/ops bytes unchanged through observed head.",
+    "Existing strict original-credential retained source and closed Cedar GroupManage/Groups/ReadProjection tuple reused; no new source bridge, policy/schema, custody or historical SQL change.",
+    "Four fresh transaction checkpoints cover projection and audit waits, strict actual DB signed/family time and commit; caller identity/time-only owner overload removed only after approved tests and actual RED.",
+    "Group-specific decoder witness requires SQL-success wellformedJSONB containing invalid typed nested member id, observed owning query and independent genuineBusiness rawresult control; mock/SQL exception/pureoracle cannot qualify.",
+    "Direct unavailable plus mounted finite503/GET nondisclosure/HEADempty, exact publicstate/rawaudit equality, source/catalog restoration and same-token same-database recovery remain required.",
+    "Future fixture cleanup implementation must release its barriers and boundedly cancel/join remaining request/control tasks; verify owned transaction/PID/dependentwait cleanup BEFORE blocking DDL source/catalog restoration. Restore before outcome assertion/rethrow and recovery. Independently review concrete source before integration.",
+    "Retained Group CRUD/grant leaf keeps every assertion and identity; only genuine Business/Auth fixture setup/currentTTLpolicy injection changed under separate semantic source review.",
+    "Two previous groupsGET sibling examples replaced with real-shaped Groupaccounts descendant under independent review; old Company/ops selection assertions retained and affirmative Group GET/HEAD/query/noheader tests added.",
+    "Source-supported currentMEMBER disclosure remains a hypothesis until reviewed mounted positive/demotion/denial/recovery probe runs at actual boundary; no missing schema/API compilation error or oldfixture prerequisite failure admits lane."
+  ],
+  "verified_prior_receipts_sha256": {
+    "/private/tmp/console-platform-group-list-design-round1-security-review-20260920.json": "e11a1f46e655903f838a185f9048b6283389853419f4cf14d14059c3941129fc",
+    "/private/tmp/console-platform-group-list-design-round2-security-review-20260920.json": "6f6f9ad194acd9553d4e03f79c7df4680c14bf45eb50b8ec3fcd25908494d625",
+    "/private/tmp/console-platform-group-list-design-round3-security-review-20260920.json": "129b3251cbc12b93f41a05fc7542c02c4761060bca459268337c73cb49dded72",
+    "/private/tmp/console-platform-group-list-design-round3-root-review-20260920.json": "66e257ec9caeff9389cc6a342eace5f02b015f613b844ab929ae19d1ca33ff11"
+  },
+  "runtime_executed": 0,
+  "tests_authored": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Root final revision-bound design consensus before test authoring.",
+    "Independent concrete test/fixture/oracle/semantic sibling review before integration.",
+    "Actual owner RED and fanout lane admission before implementation.",
+    "Raw SQL grants, Groupaccounts/mutation/context owners, source-snapshot intermittency, fullrelease acceptance."
+  ]
+}

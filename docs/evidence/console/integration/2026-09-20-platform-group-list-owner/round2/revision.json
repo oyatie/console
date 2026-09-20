@@ -1,0 +1,11 @@
+{
+  "parent_manifest_sha256": "87e3bb9a52de7998ff3b73da6ed3e01bd55cad3da4fdaad2ddc4526ef41c59b3",
+  "parent_design_sha256": "c66cd03505ad56950089cf3ecc6693c6989ba0db089a605c12c665cfef295cb9",
+  "incorporated_receipt": "/private/tmp/console-platform-group-list-design-round1-security-review-20260920.json",
+  "incorporated_receipt_sha256": "e11a1f46e655903f838a185f9048b6283389853419f4cf14d14059c3941129fc",
+  "resolved_refinement": "GROUP-LIST-DECODE-503",
+  "change": "Add actual SQL-success nested JSON decoding failure, exact finite503/no effects, reversible observed query/catalog fixture and same-credential recovery acceptance",
+  "prior_source_pins_unchanged": true,
+  "runtime_executed": 0,
+  "tests_authored": 0
+}

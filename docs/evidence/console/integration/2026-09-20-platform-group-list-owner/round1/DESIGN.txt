@@ -1,0 +1,73 @@
+# Platform Group topology listing: current authority at the existing owner
+
+Private design proposal only, source base 7976d26a3854ec6bb50e5a5e31ae935634ad1cf4. Root owns repository, runtime, migrations, generated artifacts and admission. Four independent design review rounds and revision-bound consensus precede independently reviewed tests. No tests authored or executed by this packet, no implementation admitted, no claim that the hypothesized RED has run. Root is completing Company/ops qualification separately.
+
+## Bounded outcome and rationale
+
+Converge GET/HEAD /api/platform/groups on the existing PlatformProvisioner::list_groups owner. This is the next concrete workspace Group discovery dependency: its topology is cross-Company and its existing caller still authorizes with the unconditional PlatformPrincipal::authorize. Reuse the now-demonstrated Company/ops original-credential, retained-source and finite-Cedar read contract. Preserve native Group/Company identity and the exact existing bare-array wire shape. No new Group ObjectKey or second roadmap is needed.
+
+Source facts: the mounted handler passes only optional actor and host time to an owner that immediately runs platform_list_groups(). Current platform middleware parses current roles but discards the set; MEMBER is a valid parsed role. Existing GroupManage policy instead requires current SUPER_ADMIN. The current owner cannot verify original credentials or selected-family revocation because those inputs are absent. A current-MEMBER disclosure and audit is therefore a source-supported hypothesis; only a real owner-bound probe may establish RED. There is no current release-qualified native Group UI claim in this assessment. Exact references and caller census are in CENSUS.md.
+
+## Owning interface and invariant
+
+Replace, rather than overload, the actor/time-only API with:
+
+```rust
+pub async fn list_groups(
+    &self,
+    pool: &PgPool,
+    verifier: &JwtVerifier,
+    access: &str,
+    absolute_family_ttl: Duration,
+    policy: &PlatformPolicy,
+) -> Result<Vec<GroupSummary>, ProvisioningError>
+```
+
+The sole HTTP caller supplies the exact raw Bearer header and existing server-composed dependencies. No caller actor, clock, feature, target, tenant identifier, detached policy permit or Principal grants authority. No alternate unauthenticated listing helper may remain public. Existing Company/ops owning signatures remain byte-compatible.
+
+One explicit READ COMMITTED Business transaction uses live_legacy_platform_source_in_tx unchanged and retains its established Company KEY SHARE → User UPDATE → Account UPDATE → exact selected family SHARE guards through projection, mapping, audit and COMMIT. The fixed decision tuple is Direct / GroupManage / Groups / ReadProjection / DirectPlatformOwner. Existing Cedar/schema and source bridge already admit that tuple; their bytes, generation, fingerprints and truth-table contracts remain unchanged. Historical unbound credentials may read only while original signed source remains valid; an invalid present binding never falls back. Current roles are decided by Cedar, not a Rust role check. This transaction provides retained authorization; it does not promise immutable topology across requests.
+
+Obtain fresh actual DB time and recheck the retained source/current policy (a) after source acquisition and before platform_list_groups SQL; (b) immediately after that SQL and before mapping; (c) after mapping and immediately before constructing/inserting audit; (d) immediately after audit INSERT and before COMMIT. Every SQL or audit wait is followed by fresh strict signed/family time checks. Audit time is check(c)'s DB time. No response rows are returned until COMMIT acknowledgement. Lost/ambiguous acknowledgement is unavailable with no projection and no automatic retry; explicit caller recovery is a separate read, which may produce a separate audit.
+
+## Projection and audit preserved
+
+Reuse the existing query and mapping: each Group has exactly id, slug, name, status, created_at, updated_at, member_count, members; each member has exactly id, slug, name, status. Wire timestamps remain RFC3339; bare array remains bare array. Empty Groups remain present with members=[]/member_count=0. The sentinel platform Group and sentinel Company are excluded under the existing SQL semantics. Preserve Group ordering by created_at,id and member ordering by Company created_at,id; preserve all lifecycle statuses and Unicode text. No phone, roles, passkey, Account details or Company business data are introduced. Do not change platform_list_groups or its migrations.
+
+Audit remains action platform.group.list / target_type groups / target_id list / org NULL / after_snap {"count": n}; verified source subject is actor and fresh DB time is timestamp. Preserve all remaining audit fields, exact one event per acknowledged successful read, raw historical audit bytes and all other public tables. Rejected source, policy, projection/mapping/audit failures must produce no committed read audit or other effects. Genuine COMMIT acknowledgement loss is distinguished: exactly one audit may be durable although the caller gets unavailable. No command codec, historical record or custody rewrite is authorized.
+
+## Shared code and finite error mapping
+
+Extend only the existing private closed PlatformRead discriminator with GroupTopology, mapped to GroupManage/Groups. Preserve existing Companies and OperationsHealth tuples, source/error mappings, check placement, audit/wire bytes and tests. Keep the same fixed ReadProjection/DirectPlatformOwner mapping; no generic operation parameter or new policy API. No App SQL, transport handling or lifecycle transitions move into composition.
+
+Add PlatformGroupListUnauthorized, PlatformGroupListForbidden, PlatformGroupListUnavailable public error variants. Preserve all existing variants. Map Auth Unauthorized→GroupListUnauthorized, Auth Unavailable→GroupListUnavailable; Cedar Allow→fresh now; InvalidMaterial or PolicyDenied→GroupListForbidden; EvaluatorUnavailable or impossible read UpgradeRequired→GroupListUnavailable. Acquisition/isolation/projection/mapping/audit/clock/COMMIT errors→GroupListUnavailable. Existing auth-rest exhaustive consumer adds these variants to the same static unavailable arm without changing old cases.
+
+Exact JSON error bodies:
+- 401 {"error":{"code":"unauthorized","message":"invalid bearer token"}}
+- 403 {"error":{"code":"forbidden","message":"platform principal cannot list groups"}}
+- 503 {"error":{"code":"service_unavailable","message":"platform group list is unavailable"}}
+
+Do not echo errors, claims, credentials, SQL, group IDs or policy text. Handler precedence matches accepted Company/ops: exactly one valid-shaped original Bearer header first; required server policy/TTL next; verifier next; owner source validation next. Existing upstream platform middleware may refuse earlier under its unchanged contract; no middleware bypass is implied. Nonpositive configured TTL remains accepted by existing parser and rejected by source with503 after signed-source validation; startup positivity is not added here.
+
+## Transport privacy and mounted boundaries
+
+Extend existing outer with_platform_list_transport selection to exact GET/HEAD /api/platform/groups, including query strings. Enforce private/no-store, Vary Authorization, no validators, and empty HEAD through outer error/408 rewriting. No cookie fallback or alternate header parsing. Trailing slash, descendant routes (including Group accounts), non-GET/HEAD methods and other routes retain their existing behavior. Company/ops retain all existing selected paths, methods, privacy and finite errors.
+
+Two existing test cases intentionally identify exact GET /api/platform/groups as an unselected sibling. The new reviewed selection makes those two expectations obsolete. Under independent semantic test review, retain each test and every Company/ops assertion; replace that sibling example with exact Group accounts descendant and keep all trailing-slash/method controls. Add affirmative Group GET/HEAD/query selection cases and no-header401 cases separately. This is a reviewed boundary extension, not removal of isolation coverage or blanket waiver of old tests. No source implementation begins before this test adjustment is approved.
+
+## Admission, acceptance and prerequisites
+
+Initial proposed mounted probe uses the existing genuine finalized Business/Auth login + OTP/passkey fixture, strict original bearer, real Account root and populated Groups. Include multiple ordinary Groups, empty Group, Group-of-one, multiple member Companies, lifecycle statuses, Unicode long names and tied created_at ordering. Independently derive exact8/4field projection from fixture/raw rows, never platform_list_groups or owner response. Authorized positive → committed current MEMBER demotion → exact403/no effects → exact role restoration → same-token recovery. Proposed marker PLATFORM_GROUP_LIST_CURRENT_ROLE_REQUIRED. Strict20field audit, real DB time window and full public-table/raw-history comparisons remain; marker ordering must expose current-role failure before the known old host-clock audit discrepancy. Missing schema, missing sourcebridge, unsupported hypothetical API, missing reviews or compile failure is not RED.
+
+Supplemental acceptance must exercise direct owner and mounted boundaries: invalid credentials/derived flags and malformed headers; current inactive/fenced/missing Account and role changes; genuine bound rotation, exact-family logout/reuse, live sibling and malformed correlation; actual configured family TTL vs signed expiry; source-first and reader-first canonical revocation histories; exact selected-family guard retained during topology SQL; actual projection and audit INSERT waits crossing signed expiry; cancellation and owned PID/dependent wait cleanup; unrelated genuine operator progress; actual GET/HEAD outer408 while blocked; genuine infrastructure503 and genuine acknowledged-COMMIT loss with exact durable audit/explicit recovery. Reuse approved list/ops fixtures, wait/relay machinery and all-state/oracle controls; avoid copying a new relay or auth fixture. Exact counts follow reviewed test authoring, not this proposal.
+
+Topology lock fixture should block the actual groups read and observe its console_rt query/blocker edge. A post-query-expiry test must keep a separate audit barrier held:401 must finish before release to prove check(b), rather than passing only from final audit check. Retained-source/company/user/account/selected-family lock probes must prove exact owned rows, not merely any concurrent lock. Pure positive and omission/corruption controls must cover every projection field, missing/extra/reordered Groups/members, count inconsistency, sentinel disclosure, wrong actor/action/time, missing/extra audit and changed historical bytes/non-audit tables.
+
+Retain platform_groups::platform_group_crud_assigns_subsidiaries_and_audits and all existing group-of-one/Company/ops regressions. Its current standalone setup finalizes Account custody but uses SET ROLE for its serving pool and lacks read TTL/policy injection; a separately reviewed fixture-only change must use genuine Business/Auth transports and inject existing read authority while preserving every CRUD/grant assertion. It remains an existing unbound mutation regression: this read conversion does not change mutation issuance or UpgradeRequired behavior. New owner RED uses known-good App fixture, so unrelated old group fixture problems cannot qualify admission. Group accounts endpoint and mutations remain explicit independent gaps.
+
+## Scope, recovery and stop rules
+
+Production scope: provisioning owner/private discriminator; platform-rest handler/error/transport; mechanical auth-rest exhaustive match. App already supplies verifier/current policy/configured TTL, so composition changes are unnecessary unless a demonstrated build integration requires mechanical naming only. Tests extend approved App harness and repair retained group fixture only through source review. No new dependency, lockfile, migration, generated wire contract, policy/schema, raw SQL grant cutover, UI screen, Group grant writer, Company onboarding, status/delete, context mint, payments or production exposure.
+
+Direct console_rt EXECUTE on platform_list_groups remains an explicitly unclosed SQL capability; application-owner qualification must not claim raw database-grant closure. Other Group/Company operations still use old detached actor APIs and remain release blockers. Root serializes all commits, generated artifacts and authority/evidence records.
+
+Pre-mortem: detached actor path survives; stale MEMBER or revoked selected family sees topology; audit wait outlives signed authority; new tuple changes Company/ops policy; transport breaks sibling paths or HEAD privacy; metadata oracle misses topology/sentinel/history corruption; fixture SET ROLE gives false privilege evidence. Detection: exact sole-caller census, actual mounted roleRED/direct original-token tests, canonical family and observed SQL/audit waits, full existing Company/ops regressions, selected-vs-sibling controls, exact8/4/20field independent oracle+injection, genuine login validation. Blast radius one read owner and finite shared discriminator/transport extension. Rollback is a source revert that restores a known authorization gap; fence unqualified serving rather than calling it safe release. Stop on unexpected caller, unreviewed semantic test change, missing prerequisite/RED, changed source/policy/history bytes or insufficient independent review. Milestones0–10 and exposure remain open.

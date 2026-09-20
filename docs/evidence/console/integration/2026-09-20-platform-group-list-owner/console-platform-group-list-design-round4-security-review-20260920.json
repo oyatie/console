@@ -1,0 +1,42 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 4,
+  "decision": "APPROVE exact final design for root consensus and independently reviewed initial test preparation only; NOT implementation admission",
+  "manifest_sha256": "18577f463b51a03ba900350076a5ac73f595561e3e513eb32050581efe425ea2",
+  "design_sha256": "a1d858465156868aee8c81a983edbda0497df3fc44b8b291cac5ce9a4888b72c",
+  "source_base": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "source_compatibility_verified_through": "95e48111ad23abc1ebec7f1a0bd396b2deca4871",
+  "prior_design_reviews": {
+    "/private/tmp/console-platform-group-list-design-round1-security-review-20260920.json": "e11a1f46e655903f838a185f9048b6283389853419f4cf14d14059c3941129fc",
+    "/private/tmp/console-platform-group-list-design-round2-security-review-20260920.json": "6f6f9ad194acd9553d4e03f79c7df4680c14bf45eb50b8ec3fcd25908494d625",
+    "/private/tmp/console-platform-group-list-design-round3-security-review-20260920.json": "129b3251cbc12b93f41a05fc7542c02c4761060bca459268337c73cb49dded72"
+  },
+  "accepted_ops_dependency": {
+    "head": "645c2d7d429003096b4e6b6b23927c03d09d2474",
+    "receipt_sha256": "ad958810559d7eb2c6fa7f99ee6c01185d49707a832f45e6c77a7e3d8e0f41f4",
+    "evidence": "58distinct operations/list/legacy tests pass; all-target clippy pass; unchanged source/profile/SQL contract allows distinct Group owner lane, without clearing source-transition reliability HOLD"
+  },
+  "reconciled_requirements": [
+    "Replace sole public detached-actor/time read interface; exactoriginaltoken/currentserverpolicy/TTL establish authority inside one ownedBusiness transaction.",
+    "Private closed GroupTopology variant only; existing Direct/GroupManage/Groups/read/DirectPlatformOwner tuple; currentrole decisions remain Cedar.",
+    "FourfreshDBchecks cover source, projection, mapping/audit and postINSERT; unknownCOMMITack no rows/nohiddenretry.",
+    "Exact originalSQL,8Group/4member shape, barearray/timestamps/order/emptyGroups/sentinels; strict20fieldaudit/history/alltable effects.",
+    "Actual Group nestedJSONdecode503 witness retained: real SQLsuccess+malformedUUID, observedownerquery, rawBusinesscontrol, directGETHEADfinitefailure, boundedcleanup beforeDDLrestore, exactsamecredentialrecovery.",
+    "ExactGETHEADgroups privacy only; independently reviewed two-sibling semantic replacements preserve every Company/ops assertion and descendant/write isolation.",
+    "Genuine Business/Auth fixture repair preserves retainedCRUD/grant tests; original unbound mutation gaps remain open.",
+    "CanonicalSQL/profile/migrations/commandbytes/custody/generator inputs/tests unchanged except exact approved additions; root solewriter serializesgeneratedoutputs."
+  ],
+  "stop_conditions": [
+    "Missing/nonexecutable/green probe or missingprerequisites is not lane admission.",
+    "Unexpected caller, changed sourcepolicy/historybytes, weakened assertion, uncontrolled lock/DDL cleanup or unreviewed semantic test edit stops integration.",
+    "Four design reviews are not runtime evidence; tests require separate concrete independent approval and actualcleanownerRED before implementer admission."
+  ],
+  "rollback": "Source revert restores a known authorization gap, so fence unqualified service and retain failed evidence; never describe this as safe production rollback. Test fixture restoration must restore same database/source/catalog and original credential behavior.",
+  "findings": [],
+  "remaining_holds": [
+    "Directconsole_rt rawSQL EXECUTE grants remain open independent capability.",
+    "Other Groupaccounts/mutations, Company lifecycle/seeding recovery and contextmint bypasses require separate owned workflows.",
+    "PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT remains unresolved cause; latergreen not waiver.",
+    "No nativeGroupUI, fullinventory, milestone0-10 or assembledproduction/exposure qualification."
+  ]
+}
