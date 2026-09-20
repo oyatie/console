@@ -961,7 +961,7 @@ describe("CI preflight contract", () => {
       preflight: 33,
       "domain-unit": 2,
       // -1: the expand/contract rehearsal moved to its own job.
-      backend: 25,
+      backend: 30,
       "migration-expand-contract": 5,
       "kubernetes-manifests": 8,
       "repo-gates": 26,
@@ -1034,9 +1034,9 @@ describe("CI preflight contract", () => {
     // 2026-08-25: +1 always-on Buck impact planner regression. This closes the
     // previously dark 13-test suite and subjects the new step to all bypasses.
     // 2026-08-28: +1 rust-fmt presubmit run step (oyatie lint analog).
-    assert.equal(runStepCount, 132, "required and planned job run-step coverage must not shrink");
-    // Three mutations per run step: 132*3 = 396.
-    assert.equal(mutationCount, 396, "exhaustive bypass matrix must not shrink");
+    assert.equal(runStepCount, 137, "required and planned job run-step coverage must not shrink");
+    // Three mutations per run step: 137*3 = 411.
+    assert.equal(mutationCount, 411, "exhaustive bypass matrix must not shrink");
   });
 
   it("rejects every setup-action condition and soft-failure bypass", () => {

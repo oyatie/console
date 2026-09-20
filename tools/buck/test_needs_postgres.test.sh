@@ -72,6 +72,20 @@ cat >"${scratch}/buck" <<'BUCK'
 #!/usr/bin/env bash
 { printf 'buck'; printf ' %q' "$@"; printf '\n'; } >>"${HARNESS_LOG}"
 printf 'buck-isolation %s\n' "${BUCK_ISOLATION_DIR-<unset>}" >>"${HARNESS_LOG}"
+# Optional test-only argv recorder; observes the real harness's Buck handoff.
+if [[ -n "${BROWSER_ARGV_CAPTURE_DIR:-}" ]]; then
+  python3 - "${BROWSER_ARGV_CAPTURE_DIR}" "$@" <<'PY_BROWSER_ARGV' || exit 1
+import json, pathlib, sys
+root = pathlib.Path(sys.argv[1])
+args = sys.argv[2:]
+(root / (args[0] + ".json")).write_text(json.dumps(args))
+if args[0] == "test":
+    values = [value.split("=", 1)[1] for value in args if value.startswith("CONSOLE_BUCK_POSTGRES_ENV_FILE=")]
+    assert len(values) == 1
+    keys = {line.split("=", 1)[0] for line in pathlib.Path(values[0]).read_text().splitlines()}
+    assert keys == {"DATABASE_URL", "CONSOLE_APALIS_OWNER_DATABASE_URL", "CONSOLE_APALIS_RUNTIME_DATABASE_URL", "CONSOLE_APALIS_ADMIN_DATABASE_URL", "CONSOLE_TEST_AUTH_DATABASE_URL", "CONSOLE_STARTUP_AUTH_DATABASE_URL", "CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL", "CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL", "CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL"}, "browser config polluted credential file"
+PY_BROWSER_ARGV
+fi
 env_file=""; for arg in "$@"; do case "${arg}" in CONSOLE_BUCK_POSTGRES_ENV_FILE=*) env_file="${arg#*=}";; esac; done
 [[ -f "${env_file}" && "$(stat -f '%Lp' "${env_file}")" == 600 ]]
 grep -Fq 'DATABASE_URL=postgres://console_buck_admin:' "${env_file}"
@@ -268,5 +282,65 @@ PATH="${fake_bin}:${PATH}" HARNESS_LOG="${pull_cached_log}" \
   "${harness}" //tools/buck:pr473-ontology-key-revision-postgres
 [[ "$(grep -c '^docker pull' "${pull_cached_log}")" == 0 ]]
 [[ "$(grep -c '^docker run' "${pull_cached_log}")" == 1 ]]
+
+# Browser variants explicitly transport only reviewed public driver configuration.
+# This mocks Docker/Buck dispatch only; native Rust missing-driver failures remain
+# a separately required actual-binary negative control, never inferred here.
+python3 - "${scratch}" "${fake_bin}" "${harness}" <<'PY_BROWSER_ENV'
+import json, os, pathlib, subprocess, sys
+scratch, fake_bin, harness = map(pathlib.Path, sys.argv[1:])
+prefixes = ["CONSOLE_BROWSER_JOURNEY", "CONSOLE_COMPANY_BROWSER", "CONSOLE_COMPANY_PREVIEW_BROWSER", "CONSOLE_HYDRATION_BROWSER"]
+keys = [prefix + "_" + suffix for prefix in prefixes for suffix in ("DRIVER", "SHA256", "OUTPUT")]
+base = dict(os.environ)
+for key in keys:
+    base.pop(key, None)
+marker = scratch / "browser-env-must-not-execute"
+public_values = {}
+for prefix in prefixes:
+    public_values[prefix + "_DRIVER"] = str(scratch / (prefix + " driver $(touch " + str(marker) + ");literal.cjs"))
+    public_values[prefix + "_SHA256"] = "a" * 64
+    public_values[prefix + "_OUTPUT"] = str(scratch / (prefix + " output with spaces"))
+for case, target, supplied in [
+    ("all-auth", "app-auth-rest-browser-pg", public_values),
+    ("all-hydration", "app-health-readiness-browser-pg", public_values),
+    ("all-root-auth", "root//tools/buck:app-auth-rest-browser-pg", public_values),
+    ("missing", "app-auth-rest-browser-pg", {}),
+    ("empty", "app-auth-rest-browser-pg", {key: "" for key in keys}),
+    ("ordinary", "app-auth-rest-pg", public_values),
+]:
+    capture = scratch / ("browser-" + case)
+    capture.mkdir()
+    env = dict(base, PATH=str(fake_bin) + os.pathsep + base["PATH"],
+               HARNESS_LOG=str(capture / "calls.log"),
+               CONSOLE_BUCK_NEEDS_POSTGRES_TEST_BUCK=str(scratch / "buck"),
+               CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT="actual_browser_leaf",
+               BROWSER_ARGV_CAPTURE_DIR=str(capture),
+               CONSOLE_HYDRATION_BROWSER_ARBITRARY="must-not-be-forwarded", **supplied)
+    label = target if target.startswith("root//") else "//tools/buck:" + target
+    result = subprocess.run([str(harness), label], env=env,
+                            text=True, capture_output=True, timeout=30)
+    assert result.returncode == 0, "browser harness fixture failed: " + case
+    build = json.loads((capture / "build.json").read_text())
+    tested = json.loads((capture / "test.json").read_text())
+    assert build[0] == "build" and tested[0] == "test"
+    assert not any(arg.startswith(tuple(prefixes)) for arg in build), "runtime config entered build argv"
+    boundary = tested.index("--")
+    forwarded = {}
+    for index in range(boundary + 1, len(tested)):
+        if tested[index] == "--env":
+            key, value = tested[index + 1].split("=", 1)
+            assert key not in forwarded, "duplicate runtime variable"
+            forwarded[key] = value
+    expected = public_values if case.startswith("all-") else {}
+    actual = {key: value for key, value in forwarded.items() if key in keys}
+    assert actual == expected, "NATIVE_BROWSER_ENV_REQUIRED: " + case
+    assert "CONSOLE_HYDRATION_BROWSER_ARBITRARY" not in forwarded
+    assert set(forwarded) == set(expected) | {"CONSOLE_BUCK_POSTGRES_ENV_FILE", "RUST_TEST_THREADS", "CONSOLE_BUCK_RUST_TEST_EXACT"}
+    assert forwarded["RUST_TEST_THREADS"] == "1"
+    assert forwarded["CONSOLE_BUCK_RUST_TEST_EXACT"] == "actual_browser_leaf"
+    assert not any("postgres://" in arg or "secret-" in arg for arg in build + tested)
+    assert not marker.exists(), "environment value was evaluated as shell code"
+    assert not pathlib.Path(forwarded["CONSOLE_BUCK_POSTGRES_ENV_FILE"]).exists(), "credential cleanup omitted"
+PY_BROWSER_ENV
 
 echo 'test_needs_postgres: PASS'

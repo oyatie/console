@@ -1434,5 +1434,159 @@ class ExplicitBinaryTargetTests(unittest.TestCase):
 
 
 
+
+class BrowserIntegrationVariantsTests(unittest.TestCase):
+    """Exercise real App generation without writing its shared BUCK file."""
+
+    @staticmethod
+    def _target_nodes(rendered):
+        targets = {}
+        for statement in ast.parse(rendered).body:
+            if not isinstance(statement, ast.Expr) or not isinstance(statement.value, ast.Call):
+                continue
+            call = statement.value
+            fields = {field.arg: field.value for field in call.keywords}
+            if "name" not in fields:
+                continue
+            name = ast.literal_eval(fields["name"])
+            if name in targets:
+                raise AssertionError("duplicate generated target: " + name)
+            targets[name] = (call.func.id, fields, ast.get_source_segment(rendered, statement))
+        return targets
+
+    def _render_app(self, invalid_feature=None):
+        # Importantly, no replacement emit() implementation or future API assumption.
+        # Only the final BUCK write is captured; real manifest/source/dependency reads run.
+        app = Path(GENERATOR.REPO) / "backend/app"
+        manifest = GENERATOR.load(app)
+        first_party = {
+            GENERATOR.load(directory)["package"]["name"]:
+                "//{}:{}".format(Path(directory).relative_to(GENERATOR.REPO).as_posix(),
+                                 GENERATOR.load(directory)["package"]["name"])
+            for directory in GENERATOR.find_members()
+        }
+        deps, named = GENERATOR.map_deps(manifest.get("dependencies"), first_party)
+        dev_deps, dev_named = GENERATOR.map_deps(manifest.get("dev-dependencies"), first_party)
+        written = []
+        class Capture:
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                return False
+            def write(self, value):
+                written.append(value)
+                return len(value)
+        builtin_open = open
+        def guarded_open(filename, mode="r", *args, **kwargs):
+            if "w" in mode or "a" in mode or "+" in mode or "x" in mode:
+                self.assertEqual(app / "BUCK", Path(filename))
+                self.assertEqual("w", mode)
+                return Capture()
+            return builtin_open(filename, mode, *args, **kwargs)
+        original_load = GENERATOR.load
+        def load(directory):
+            data = original_load(directory)
+            if Path(directory) == app and invalid_feature is not None:
+                data["features"] = dict(data.get("features", {}))
+                if invalid_feature == "missing":
+                    data["features"].pop("test-browser", None)
+                else:
+                    data["features"]["test-browser"] = ["dev-auth"]
+            return data
+        before = (app / "BUCK").read_bytes()
+        with patch.object(GENERATOR, "open", guarded_open, create=True), \
+             patch.object(GENERATOR, "load", load):
+            GENERATOR.emit(str(app), "console-app", sorted(deps), named,
+                           sorted(dev_deps), dev_named, version=manifest["package"].get("version"))
+        self.assertEqual(before, (app / "BUCK").read_bytes(), "generator test wrote shared BUCK")
+        self.assertEqual(1, len(written))
+        return written[0]
+
+    def test_real_app_browser_variants_clone_only_selected_native_test_targets(self):
+        manifest = GENERATOR.load(Path(GENERATOR.REPO) / "backend/app")
+        self.assertEqual([], manifest["features"]["test-browser"])
+        targets = self._target_nodes(self._render_app())
+        selected = ["auth_rest", "health_readiness"]
+        expected = {"console-app-itest-" + stem + "-browser" for stem in selected}
+        actual = {name for name, (_, fields, _) in targets.items()
+                  if "features" in fields
+                  and "test-browser" in ast.literal_eval(fields["features"])}
+        self.assertEqual(expected, actual,
+                         "NATIVE_BROWSER_VARIANTS_REQUIRED: actual generator must emit exactly two browser Rust tests")
+        for stem in selected:
+            ordinary = "console-app-itest-" + stem
+            browser = ordinary + "-browser"
+            ordinary_kind, ordinary_fields, _ = targets[ordinary]
+            kind, fields, _ = targets[browser]
+            self.assertEqual("rust_test", ordinary_kind)
+            self.assertEqual("rust_test", kind)
+            self.assertNotIn("test-browser", ast.literal_eval(ordinary_fields["features"])
+                             if "features" in ordinary_fields else [])
+            self.assertEqual(["test-browser"], ast.literal_eval(fields["features"]))
+            # The library graph and every declared compile-time resource stay identical.
+            ordinary_attrs = {key: ast.dump(value) for key, value in ordinary_fields.items()
+                              if key not in {"name", "features"}}
+            browser_attrs = {key: ast.dump(value) for key, value in fields.items()
+                             if key not in {"name", "features"}}
+            self.assertEqual(ordinary_attrs, browser_attrs)
+            deps = ast.literal_eval(fields["deps"])
+            self.assertIn(":console-app-lib", deps)
+            self.assertFalse(any("browser" in dependency for dependency in deps))
+            labels = ast.literal_eval(fields["labels"])
+            self.assertIn("test.integration", labels)
+            self.assertIn("resource.postgres", labels)
+            self.assertIn("needs-postgres", labels)
+            if stem == "auth_rest":
+                self.assertIn("generated", labels)
+        # Production and ordinary test targets are byte-preserved against the exact
+        # current generated face. Root separately compares every preimage block at integration.
+        current = self._target_nodes((Path(GENERATOR.REPO) / "backend/app/BUCK").read_text())
+        for name, (_, _, block) in current.items():
+            if name not in expected:
+                self.assertEqual(block, targets[name][2], "ordinary target drift: " + name)
+        self.assertEqual(set(current) | expected, set(targets))
+
+    def test_browser_variant_requires_an_explicit_inert_manifest_feature(self):
+        for fault in ("missing", "dependent"):
+            with self.subTest(fault=fault), self.assertRaisesRegex(ValueError, "inert.*test-browser|test-browser.*inert"):
+                self._render_app(invalid_feature=fault)
+
+    def test_browser_wrappers_and_real_ci_producer_preserve_native_leaf_execution(self):
+        root = Path(GENERATOR.REPO)
+        wrappers = self._target_nodes((root / "tools/buck/BUCK").read_text())
+        for stem, slug in (("auth_rest", "auth-rest"), ("health_readiness", "health-readiness")):
+            name = "app-" + slug + "-browser-pg"
+            self.assertIn(name, wrappers, "NATIVE_BROWSER_WRAPPER_REQUIRED: " + name)
+            kind, fields, _ = wrappers[name]
+            self.assertEqual("sh_test", kind)
+            target = "//backend/app:console-app-itest-" + stem + "-browser"
+            self.assertEqual("run_test_with_postgres_env.sh", ast.literal_eval(fields["test"]))
+            self.assertEqual(["$(location " + target + ")"], ast.literal_eval(fields["args"]))
+            self.assertEqual([target], ast.literal_eval(fields["deps"]))
+            self.assertEqual(["test.integration", "resource.postgres", "needs-postgres"],
+                             ast.literal_eval(fields["labels"]))
+        # Parse the actual scheduled workflow: text/comment presence is insufficient.
+        node = "const fs=require('node:fs'),yaml=require('js-yaml');process.stdout.write(JSON.stringify(yaml.load(fs.readFileSync('.github/workflows/ci.yml','utf8'))));"
+        parsed = subprocess.run(["node", "-e", node], cwd=root, check=True,
+                                capture_output=True, text=True)
+        workflow = json.loads(parsed.stdout)
+        self.assertEqual(17, len(workflow["jobs"]))
+        backend = workflow["jobs"]["backend"]
+        self.assertEqual(["cargo", "buck-app", "buck-dev-auth"], backend["strategy"]["matrix"]["leg"])
+        expected = [{'name': 'Install pinned native browser prerequisites', 'id': 'browser-prerequisites', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'tools/browser/prepare_native_browser.sh'}, {'name': 'Native Account browser', 'id': 'account-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg'}, {'name': 'Native Company creation browser', 'id': 'company-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg'}, {'name': 'Native Company preview browser', 'id': 'company-preview-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg'}, {'name': 'Native payroll hydration browser', 'id': 'hydration-browser', 'if': "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}", 'working-directory': '.', 'run': 'CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg'}]
+        steps = backend["steps"]
+        producer_indices = []
+        for wanted in expected:
+            matches = [(index, step) for index, step in enumerate(steps) if step.get("name") == wanted["name"]]
+            self.assertEqual(1, len(matches), "REAL_NATIVE_BROWSER_PRODUCER_REQUIRED: " + wanted["name"])
+            index, actual = matches[0]
+            self.assertEqual(wanted, actual, "browser producer execution contract differs")
+            producer_indices.append(index)
+        self.assertEqual(list(range(producer_indices[0], producer_indices[0] + 5)), producer_indices)
+        self.assertEqual("Collect failures", steps[producer_indices[-1] + 1]["name"])
+        prerequisite = root / "tools/browser/prepare_native_browser.sh"
+        self.assertTrue(prerequisite.is_file(), "PINNED_BROWSER_PREREQUISITE_PRODUCER_REQUIRED")
+
+
 if __name__ == "__main__":
     unittest.main()
