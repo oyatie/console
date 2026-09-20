@@ -993,4 +993,577 @@ mod intake_owner {
         business.close().await;
         startup.close().await;
     }
+
+    // P4 catalog/default-ACL subset only; actual serving-login refusal and current
+    // credential histories remain independent required acceptance tests.
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_sql_custom_default_acl_is_removed_and_oracle_detects_corruption(
+        pool: PgPool,
+    ) {
+        const EXACT_ACL: &str = r#"
+WITH expected_routines(signature) AS (VALUES
+ ('public.company_enrollment_session_material_v1(uuid,uuid,uuid,bytea)'),
+ ('public.company_enrollment_prepare_v1(uuid,uuid,uuid,bytea)'),
+ ('public.company_enrollment_status_v1(uuid,uuid,uuid)'),
+ ('public.company_enrollment_cancel_v1(uuid,uuid,uuid)')),
+routines AS (
+ SELECT p.* FROM expected_routines e JOIN pg_catalog.pg_proc p
+ ON p.oid=pg_catalog.to_regprocedure(e.signature)
+), expected AS (
+ SELECT p.oid,'console_account_owner'::text AS grantor,grantee,
+ 'EXECUTE'::text AS privilege_type,false AS grantable
+ FROM routines p CROSS JOIN (VALUES ('console_account_owner'::text),('console_rt'::text)) roles(grantee)
+), actual AS (
+ SELECT p.oid,pg_catalog.pg_get_userbyid(a.grantor)::text AS grantor,
+ CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_catalog.pg_get_userbyid(a.grantee)::text END AS grantee,
+ a.privilege_type,a.is_grantable AS grantable
+ FROM routines p CROSS JOIN LATERAL pg_catalog.aclexplode(
+ COALESCE(p.proacl,pg_catalog.acldefault('f',p.proowner))) a
+), delta AS (
+ (SELECT * FROM actual EXCEPT SELECT * FROM expected)
+ UNION ALL (SELECT * FROM expected EXCEPT SELECT * FROM actual)
+)
+SELECT (SELECT count(*) FROM routines)=4
+ AND NOT EXISTS(SELECT 1 FROM routines WHERE pg_catalog.pg_get_userbyid(proowner)<>'console_account_owner')
+ AND NOT EXISTS(SELECT 1 FROM delta)
+"#;
+        let (_app, _account, _cookies, startup, _designation) = designated(&pool).await;
+        let before = all_rows(&pool).await;
+        let mut admin = pool.acquire().await.unwrap();
+        let identity: (String, String, bool) = sqlx::query_as("SELECT session_user::text,current_user::text,current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user)")
+            .fetch_one(&mut *admin).await.unwrap();
+        assert_eq!(
+            identity,
+            (
+                "console_buck_admin".into(),
+                "console_buck_admin".into(),
+                true
+            )
+        );
+        profiles(
+            &mut admin,
+            "account_custody.native_finalized",
+            "account_credentials.native_finalized",
+        )
+        .await;
+        // All catalog changes, including cluster-wide test role, roll back together.
+        // UUID-simple alphabet is fixed hex and never a caller-controlled SQL identifier.
+        let sentinel = format!("company_intake_acl_{}", Uuid::new_v4().simple());
+        sqlx::raw_sql("BEGIN; SET LOCAL statement_timeout='10s'; SET LOCAL lock_timeout='1s'")
+            .execute(&mut *admin)
+            .await
+            .unwrap();
+        for source in [PARSER, SCHEMA] {
+            sqlx::raw_sql(source).execute(&mut *admin).await.unwrap();
+        }
+        for fixture in [
+            format!("CREATE ROLE {sentinel} NOLOGIN NOSUPERUSER NOBYPASSRLS"),
+            format!(
+                "ALTER DEFAULT PRIVILEGES FOR ROLE console_buck_admin IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO {sentinel}"
+            ),
+        ] {
+            sqlx::query(sqlx::AssertSqlSafe(fixture))
+                .execute(&mut *admin)
+                .await
+                .unwrap();
+        }
+        sqlx::raw_sql("CREATE FUNCTION public.company_intake_acl_default_control() RETURNS boolean LANGUAGE sql AS 'SELECT true'")
+            .execute(&mut *admin).await.unwrap();
+        let inherited:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p CROSS JOIN LATERAL pg_catalog.aclexplode(p.proacl) a JOIN pg_catalog.pg_roles r ON r.oid=a.grantee WHERE p.oid='public.company_intake_acl_default_control()'::regprocedure AND r.rolname=$1 AND a.privilege_type='EXECUTE')")
+            .bind(&sentinel).fetch_one(&mut *admin).await.unwrap();
+        assert!(
+            inherited,
+            "positive control must prove actual creator default ACL inheritance"
+        );
+        sqlx::raw_sql(INTAKE).execute(&mut *admin).await.unwrap();
+        let exact: bool = sqlx::query_scalar(EXACT_ACL)
+            .fetch_one(&mut *admin)
+            .await
+            .unwrap();
+        assert!(
+            exact,
+            "all four functions have only exact owner/runtime EXECUTE ACL"
+        );
+        profiles(
+            &mut admin,
+            "account_native.profile_mismatch",
+            "account_native.profile_mismatch",
+        )
+        .await;
+        let mut mutations = 0;
+        for signature in [
+            "public.company_enrollment_session_material_v1(uuid,uuid,uuid,bytea)",
+            "public.company_enrollment_prepare_v1(uuid,uuid,uuid,bytea)",
+            "public.company_enrollment_status_v1(uuid,uuid,uuid)",
+            "public.company_enrollment_cancel_v1(uuid,uuid,uuid)",
+        ] {
+            for mutation in [
+                format!("GRANT EXECUTE ON FUNCTION {signature} TO {sentinel}"),
+                format!("GRANT EXECUTE ON FUNCTION {signature} TO PUBLIC"),
+                format!("REVOKE EXECUTE ON FUNCTION {signature} FROM console_rt"),
+                format!("GRANT EXECUTE ON FUNCTION {signature} TO console_rt WITH GRANT OPTION"),
+                format!("ALTER FUNCTION {signature} OWNER TO console_terms_owner"),
+            ] {
+                sqlx::raw_sql("SAVEPOINT intake_acl_corruption")
+                    .execute(&mut *admin)
+                    .await
+                    .unwrap();
+                sqlx::query(sqlx::AssertSqlSafe(mutation))
+                    .execute(&mut *admin)
+                    .await
+                    .unwrap();
+                let corrupt: bool = sqlx::query_scalar(EXACT_ACL)
+                    .fetch_one(&mut *admin)
+                    .await
+                    .unwrap();
+                assert!(
+                    !corrupt,
+                    "catalog oracle must reject injected actual ACL/owner corruption"
+                );
+                sqlx::raw_sql("ROLLBACK TO SAVEPOINT intake_acl_corruption; RELEASE SAVEPOINT intake_acl_corruption")
+                    .execute(&mut *admin).await.unwrap();
+                let restored: bool = sqlx::query_scalar(EXACT_ACL)
+                    .fetch_one(&mut *admin)
+                    .await
+                    .unwrap();
+                assert!(
+                    restored,
+                    "catalog positive control must return after each rollback"
+                );
+                mutations += 1;
+            }
+        }
+        assert_eq!(mutations, 20);
+        sqlx::raw_sql("ROLLBACK")
+            .execute(&mut *admin)
+            .await
+            .unwrap();
+        let retained:bool=sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=$1) OR pg_catalog.to_regprocedure('public.company_intake_acl_default_control()') IS NOT NULL OR pg_catalog.to_regprocedure('public.company_enrollment_prepare_v1(uuid,uuid,uuid,bytea)') IS NOT NULL")
+            .bind(&sentinel).fetch_one(&mut *admin).await.unwrap();
+        assert!(
+            !retained,
+            "fixture and private install must fully roll back"
+        );
+        profiles(
+            &mut admin,
+            "account_custody.native_finalized",
+            "account_credentials.native_finalized",
+        )
+        .await;
+        assert!(
+            before == all_rows(&pool).await,
+            "catalog fixture must preserve all original business histories"
+        );
+        startup.close().await;
+    }
+
+    // Direct SQL entrypoints deliberately do not call material first: each owner
+    // must enforce its own family boundary even when its adapter is bypassed.
+    async fn p4_direct(
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        entry: usize,
+        account: Option<Uuid>,
+        session: Option<Uuid>,
+        command: Option<Uuid>,
+        input: &[u8],
+    ) -> Result<Vec<sqlx::postgres::PgRow>, sqlx::Error> {
+        match entry {
+            0 => {
+                sqlx::query(
+                    "SELECT * FROM public.company_enrollment_session_material_v1($1,$2,$3,$4)",
+                )
+                .bind(account)
+                .bind(session)
+                .bind(command)
+                .bind(input)
+                .fetch_all(tx.as_mut())
+                .await
+            }
+            1 => {
+                sqlx::query("SELECT * FROM public.company_enrollment_prepare_v1($1,$2,$3,$4)")
+                    .bind(account)
+                    .bind(session)
+                    .bind(command)
+                    .bind(input)
+                    .fetch_all(tx.as_mut())
+                    .await
+            }
+            2 => {
+                sqlx::query("SELECT * FROM public.company_enrollment_status_v1($1,$2,$3)")
+                    .bind(account)
+                    .bind(session)
+                    .bind(command)
+                    .fetch_all(tx.as_mut())
+                    .await
+            }
+            3 => {
+                sqlx::query("SELECT * FROM public.company_enrollment_cancel_v1($1,$2,$3)")
+                    .bind(account)
+                    .bind(session)
+                    .bind(command)
+                    .fetch_all(tx.as_mut())
+                    .await
+            }
+            _ => panic!("closed four-entrypoint roster"),
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_sql_actual_login_boundaries_preserve_all_history(pool: PgPool) {
+        let (_app, account, _cookies, startup, designation) = designated(&pool).await;
+        let session = family(&pool, account.account).await;
+        let business = install(&pool).await;
+        let command = Uuid::new_v4();
+        let input = bytes(account.account, command, account.account);
+        let lower = now(&pool).await;
+        assert_eq!(
+            prepare(&business, account.account, session, command, &input)
+                .await
+                .unwrap(),
+            ("PENDING".into(), None)
+        );
+        pending(
+            &pool,
+            account.account,
+            session,
+            command,
+            &input,
+            designation.command,
+            lower,
+            now(&pool).await,
+        )
+        .await;
+        let before = all_rows(&pool).await;
+        // Positive direct execution controls. Cancellation is genuinely reached,
+        // checked for the cancelled response, then rolled back.
+        for entry in 0..4 {
+            let mut tx = business.begin().await.unwrap();
+            let rows = p4_direct(
+                &mut tx,
+                entry,
+                Some(account.account),
+                Some(session),
+                Some(command),
+                &input,
+            )
+            .await
+            .unwrap();
+            assert_eq!(rows.len(), 1);
+            if entry == 0 {
+                assert_eq!(
+                    rows[0].get::<Option<Uuid>, _>("planned_recipient"),
+                    Some(account.account)
+                );
+                assert_eq!(
+                    rows[0].get::<Option<Vec<u8>>, _>("planned_input_digest"),
+                    Some(Sha256::digest(&input).to_vec())
+                );
+            } else {
+                assert_eq!(
+                    rows[0].get::<String, _>("state"),
+                    if entry == 3 { "CANCELLED" } else { "PENDING" }
+                );
+                assert!(rows[0].get::<Option<Uuid>, _>("receipt_id").is_none());
+            }
+            tx.rollback().await.unwrap();
+            assert!(
+                before == all_rows(&pool).await,
+                "positive rollback preserves every table"
+            );
+        }
+        let auth = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
+        let leave = login_test_pool(&pool, TestDatabaseLogin::LeaveCommand).await;
+        let ontology = login_test_pool(&pool, TestDatabaseLogin::OntologyCommand).await;
+        let force = login_test_pool(&pool, TestDatabaseLogin::PlatformForceCommand).await;
+        let mut owner_refusals = 0;
+        for login in [&auth, &startup, &leave, &ontology, &force] {
+            for entry in 0..4 {
+                let mut tx = login.begin().await.unwrap();
+                let result = p4_direct(
+                    &mut tx,
+                    entry,
+                    Some(account.account),
+                    Some(session),
+                    Some(command),
+                    &input,
+                )
+                .await;
+                tx.rollback().await.unwrap();
+                refused(result, "42501", None);
+                assert!(
+                    before == all_rows(&pool).await,
+                    "denied direct owner call changed durable history"
+                );
+                owner_refusals += 1;
+            }
+        }
+        assert_eq!(owner_refusals, 20);
+        let mut private_refusals = 0;
+        for login in [&business, &auth, &startup, &leave, &ontology, &force] {
+            let mut tx = login.begin().await.unwrap();
+            let result = sqlx::query("SELECT * FROM public.company_enrollment_decode_input_v1($1)")
+                .bind(&input)
+                .fetch_all(tx.as_mut())
+                .await;
+            tx.rollback().await.unwrap();
+            refused(result, "42501", None);
+            assert!(
+                before == all_rows(&pool).await,
+                "denied private decoder changed history"
+            );
+            private_refusals += 1;
+            for table in [
+                "company_enrollment_requests",
+                "company_enrollment_request_events",
+                "company_enrollment_receipts",
+            ] {
+                // Closed hard-coded identifier roster; no user-controlled SQL.
+                for statement in [
+                    format!("SELECT * FROM public.{table}"),
+                    format!("INSERT INTO public.{table} SELECT * FROM public.{table}"),
+                    format!("UPDATE public.{table} SET account_id=account_id"),
+                    format!("DELETE FROM public.{table}"),
+                    format!("TRUNCATE public.{table}"),
+                ] {
+                    let mut tx = login.begin().await.unwrap();
+                    let result = sqlx::query(sqlx::AssertSqlSafe(statement))
+                        .execute(tx.as_mut())
+                        .await;
+                    tx.rollback().await.unwrap();
+                    refused(result, "42501", None);
+                    assert!(
+                        before == all_rows(&pool).await,
+                        "denied private table call changed durable history"
+                    );
+                    private_refusals += 1;
+                }
+            }
+        }
+        assert_eq!(private_refusals, 96);
+        for login in [business, auth, startup, leave, ontology, force] {
+            login.close().await;
+        }
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_sql_direct_current_family_and_isolation_refusals_preserve_history(
+        pool: PgPool,
+    ) {
+        let (app, account, _cookies, startup, designation) = designated(&pool).await;
+        let session = family(&pool, account.account).await;
+        let (other, _) = enrolled(&app).await;
+        let foreign = family(&pool, other.account).await;
+        let (logged_out, logged_out_cookies) = enrolled(&app).await;
+        let revoked = family(&pool, logged_out.account).await;
+        let logout_before = snapshot(&pool, logged_out.account).await;
+        let csrf = proof(&app, &logged_out_cookies).await;
+        let logout = request(
+            &app,
+            "POST",
+            "/api/v2/auth/logout",
+            &logged_out_cookies,
+            Some(json!({})),
+            &[("X-Console-CSRF", &csrf)],
+        )
+        .await;
+        assert_eq!(logout.json(StatusCode::OK), json!({"outcome":"COMMITTED"}));
+        assert_logout_transition(
+            &logout_before,
+            &snapshot(&pool, logged_out.account).await,
+            logged_out.account,
+        );
+        let business = install(&pool).await;
+        let command = Uuid::new_v4();
+        let input = bytes(account.account, command, account.account);
+        let revoked_input = bytes(logged_out.account, command, logged_out.account);
+        let lower = now(&pool).await;
+        assert_eq!(
+            prepare(&business, account.account, session, command, &input)
+                .await
+                .unwrap(),
+            ("PENDING".into(), None)
+        );
+        pending(
+            &pool,
+            account.account,
+            session,
+            command,
+            &input,
+            designation.command,
+            lower,
+            now(&pool).await,
+        )
+        .await;
+        let before = all_rows(&pool).await;
+        let mut refusals = 0;
+        for entry in 0..4 {
+            for (caller, family, requested, encoded) in [
+                (
+                    Some(account.account),
+                    Some(foreign),
+                    Some(command),
+                    input.as_slice(),
+                ),
+                (
+                    Some(account.account),
+                    Some(Uuid::new_v4()),
+                    Some(command),
+                    input.as_slice(),
+                ),
+                (
+                    Some(account.account),
+                    Some(Uuid::nil()),
+                    Some(command),
+                    input.as_slice(),
+                ),
+                (Some(account.account), None, Some(command), input.as_slice()),
+                (
+                    Some(Uuid::nil()),
+                    Some(session),
+                    Some(command),
+                    input.as_slice(),
+                ),
+                (None, Some(session), Some(command), input.as_slice()),
+                (
+                    Some(account.account),
+                    Some(session),
+                    Some(Uuid::nil()),
+                    input.as_slice(),
+                ),
+                (Some(account.account), Some(session), None, input.as_slice()),
+                (
+                    Some(logged_out.account),
+                    Some(revoked),
+                    Some(command),
+                    revoked_input.as_slice(),
+                ),
+            ] {
+                let mut tx = business.begin().await.unwrap();
+                let result = p4_direct(&mut tx, entry, caller, family, requested, encoded).await;
+                tx.rollback().await.unwrap();
+                refused(result, "P0001", Some("account.authentication_invalid"));
+                assert!(
+                    before == all_rows(&pool).await,
+                    "invalid family/namespace call changed durable history"
+                );
+                refusals += 1;
+            }
+            for isolation in [
+                "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ",
+                "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+            ] {
+                let mut tx = business.begin().await.unwrap();
+                sqlx::raw_sql(isolation).execute(tx.as_mut()).await.unwrap();
+                let result = p4_direct(
+                    &mut tx,
+                    entry,
+                    Some(account.account),
+                    Some(session),
+                    Some(command),
+                    &input,
+                )
+                .await;
+                tx.rollback().await.unwrap();
+                refused(result, "P0001", Some("account.authority_unavailable"));
+                assert!(
+                    before == all_rows(&pool).await,
+                    "wrong isolation changed durable history"
+                );
+                refusals += 1;
+            }
+        }
+        assert_eq!(refusals, 44);
+        // Valid family still reopens the original exact retained input afterwards.
+        assert_eq!(
+            status(&business, account.account, session, command)
+                .await
+                .unwrap(),
+            Some(("PENDING".into(), Some(input)))
+        );
+        assert!(before == all_rows(&pool).await);
+        business.close().await;
+        startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_sql_command_fence_timeout_preserves_history_and_reopens(pool: PgPool) {
+        let (_app, account, _cookies, startup, _) = designated(&pool).await;
+        let session = family(&pool, account.account).await;
+        let business = install(&pool).await;
+        let command = Uuid::new_v4();
+        let input = bytes(account.account, command, account.account);
+        prepare(&business, account.account, session, command, &input)
+            .await
+            .unwrap();
+        let before = all_rows(&pool).await;
+        let mut blocker = pool.begin().await.unwrap();
+        let blocker_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+            .fetch_one(blocker.as_mut())
+            .await
+            .unwrap();
+        sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended('console.company.enrollment.command/1:'||$1::uuid::text||':'||$2::uuid::text,0))")
+            .bind(account.account).bind(command).execute(blocker.as_mut()).await.unwrap();
+        let mut connection = business.acquire().await.unwrap();
+        let waiter_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+            .fetch_one(&mut *connection)
+            .await
+            .unwrap();
+        let actor = account.account;
+        let task = tokio::spawn(async move {
+            let mut tx = connection.begin().await.unwrap();
+            sqlx::raw_sql("SET LOCAL statement_timeout='5s'")
+                .execute(tx.as_mut())
+                .await
+                .unwrap();
+            let result = sqlx::query("SELECT * FROM public.company_enrollment_status_v1($1,$2,$3)")
+                .bind(actor)
+                .bind(session)
+                .bind(command)
+                .fetch_all(tx.as_mut())
+                .await;
+            tx.rollback().await.unwrap();
+            result
+        });
+        let mut observed = false;
+        for _ in 0..100 {
+            let pids: Vec<i32> = sqlx::query_scalar("SELECT pg_blocking_pids($1)")
+                .bind(waiter_pid)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+            if pids.contains(&blocker_pid) {
+                observed = true;
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+        }
+        let timed = tokio::time::timeout(std::time::Duration::from_secs(5), task).await;
+        blocker.rollback().await.unwrap();
+        assert!(observed, "actual command fence blocking required");
+        refused(timed.unwrap().unwrap(), "55P03", None);
+        assert!(
+            before == all_rows(&pool).await,
+            "timeout is not a cancellation or authoritative absence"
+        );
+        assert_eq!(
+            status(&business, account.account, session, command)
+                .await
+                .unwrap(),
+            Some(("PENDING".into(), Some(input.clone())))
+        );
+        assert_eq!(
+            prepare(&business, account.account, session, command, &input)
+                .await
+                .unwrap(),
+            ("PENDING".into(), None)
+        );
+        assert!(
+            before == all_rows(&pool).await,
+            "reconciliation must preserve the original history"
+        );
+        business.close().await;
+        startup.close().await;
+    }
+
+    include!("native_company_signed_credentials.rs");
 }
