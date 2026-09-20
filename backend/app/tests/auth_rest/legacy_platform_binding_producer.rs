@@ -458,7 +458,7 @@ async fn platform_direct_self_passkeys_revocation_preserves_historical_and_other
         json!({"refresh_token":f.login.refresh_token.as_deref().unwrap()}),
     )
     .await;
-    assert!(logout.status() == StatusCode::OK);
+    assert_eq!(logout.status(), StatusCode::NO_CONTENT);
     let revoked: bool = sqlx::query_scalar(
         "SELECT revoked_at IS NOT NULL FROM public.auth_refresh_token_families WHERE id=$1",
     )

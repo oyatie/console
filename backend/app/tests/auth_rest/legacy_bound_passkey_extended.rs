@@ -504,7 +504,7 @@ async fn historical_and_bound_platform_self_preserve_current_family_checks(pool:
         json!({"refresh_token": issued.token.as_str()}),
     )
     .await;
-    assert!(logout.status() == StatusCode::OK);
+    assert_eq!(logout.status(), StatusCode::NO_CONTENT);
     let revoked: bool = sqlx::query_scalar(
         "SELECT revoked_at IS NOT NULL FROM public.auth_refresh_token_families WHERE id=$1",
     )
