@@ -389,23 +389,23 @@ function validateReleaseInventory(registry, resolveSource) {
   // Frozen reference inventory only; no runtime semantics or Console support is qualified.
   const fusion = matrices.runtimes.entries.find((row) => row.runtime === 'Fusion formula functions');
   require(fusion, 'Fusion formula function catalogue is required');
-  const fusionKeys = (value, keys, detail) => {
-    record(value, `Fusion ${detail}`);
+  const catalogueKeys = (value, keys, detail, catalogue = 'Fusion') => {
+    record(value, `${catalogue} ${detail}`);
     const actual = Object.keys(value);
-    require(actual.length === keys.length && keys.every((key) => actual.includes(key)), `Fusion ${detail} keys differ from frozen reference`);
+    require(actual.length === keys.length && keys.every((key) => actual.includes(key)), `${catalogue} ${detail} keys differ from frozen reference`);
   };
-  fusionKeys(fusion, ['runtime','reference_status','source','console_acceptance','command','function_catalog','semantics_status','unqualified_semantics'], 'runtime');
+  catalogueKeys(fusion, ['runtime','reference_status','source','console_acceptance','command','function_catalog','semantics_status','unqualified_semantics'], 'runtime');
   require(fusion.source === 'fusion-function-library'
     && fusion.reference_status === 'Frozen 202-entry reference catalogue; lifecycle labels preserved; Console execution unverified'
     && fusion.console_acceptance === 'not established' && fusion.command === null
     && fusion.semantics_status === 'not_bound', 'Fusion runtime must retain unqualified reference status');
-  fusionKeys(fusion.unqualified_semantics, ['runtime_and_library_versions','type_and_coercion','null_and_error','optional_and_variadic_arguments','locale_timezone_precision','dependency_recalculation','effects_authority_and_recovery','concurrency_reconnect','lifecycle_successor_equivalence'], 'semantics');
+  catalogueKeys(fusion.unqualified_semantics, ['runtime_and_library_versions','type_and_coercion','null_and_error','optional_and_variadic_arguments','locale_timezone_precision','dependency_recalculation','effects_authority_and_recovery','concurrency_reconnect','lifecycle_successor_equivalence'], 'semantics');
   require(Object.values(fusion.unqualified_semantics).every((value) => value === null), 'Fusion semantics remain unqualified');
   require(Array.isArray(fusion.function_catalog) && fusion.function_catalog.length === 202, 'Fusion catalogue must contain 202 ordered entries');
   for (const row of fusion.function_catalog) {
     // Check own keys before JSON hashing: undefined/function values disappear in JSON.
-    fusionKeys(row, ['section','signature','reference_lifecycle','required_leaf','console_acceptance','source_binding'], 'catalogue entry');
-    fusionKeys(row.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'catalogue binding');
+    catalogueKeys(row, ['section','signature','reference_lifecycle','required_leaf','console_acceptance','source_binding'], 'catalogue entry');
+    catalogueKeys(row.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'catalogue binding');
   }
   require(canonicalJsonDigest(fusion.function_catalog) === '520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee', 'Fusion catalogue differs from frozen reviewed records');
   for (const row of fusion.function_catalog) {
@@ -413,6 +413,30 @@ function validateReleaseInventory(registry, resolveSource) {
       && row.console_acceptance === 'not established', 'Fusion catalogue leaf or acceptance invalid');
     binding(row.source_binding);
     require(bindings[row.required_leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(row.source_binding)), 'Fusion catalogue exact shared source binding is required');
+  }
+  for (const [runtime, source, count, leaf, digest] of [
+    ['Quiver time-series cards', 'quiver-cards-index-time-series', 39, 'F08.time-series-transform-library', 'fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945'],
+    ['Quiver chart cards', 'quiver-cards-index-charts', 21, 'F08.chart-library', '3b34ea79d416110e8ddb259566a80cf53073747d4a3325a4ee938df1a714bc5a'],
+  ]) {
+    const row = matrices.runtimes.entries.find((entry) => entry.runtime === runtime);
+    require(row, `Quiver catalogue ${runtime} is required`);
+    catalogueKeys(row, ['runtime','reference_status','source','console_acceptance','command','analytical_card_catalog','semantics_status','unqualified_semantics'], 'runtime', 'Quiver');
+    require(row.source === source && row.reference_status === `Frozen ${count}-entry index catalogue; label/path tuples preserved; individual semantics and Console execution unverified`
+      && row.console_acceptance === 'not established' && row.command === null && row.semantics_status === 'not_bound', 'Quiver runtime must retain unqualified reference status');
+    catalogueKeys(row.unqualified_semantics, ['runtime_and_library_versions','input_types_and_nulls','numeric_and_time_semantics','limits_and_performance','refresh_and_reproducibility','effects_authority_and_disclosure','collaboration_and_recovery','lifecycle_and_successor_equivalence'], 'semantics', 'Quiver');
+    require(Object.values(row.unqualified_semantics).every((value) => value === null), 'Quiver semantics remain unqualified');
+    require(Array.isArray(row.analytical_card_catalog) && row.analytical_card_catalog.length === count, `Quiver catalogue must contain ${count} ordered entries`);
+    for (const card of row.analytical_card_catalog) {
+      catalogueKeys(card, ['category','operation','reference_path','required_leaf','scope','source_binding'], 'card', 'Quiver');
+      catalogueKeys(card.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'binding', 'Quiver');
+    }
+    // Keep distinct labels sharing a path: the pin binds original ordered tuples.
+    require(canonicalJsonDigest(row.analytical_card_catalog) === digest, 'Quiver catalogue differs from frozen reviewed records');
+    for (const card of row.analytical_card_catalog) {
+      require(card.category === source && card.source_binding.source_id === source && card.required_leaf === leaf && leaves.has(leaf), 'Quiver card source or leaf invalid');
+      binding(card.source_binding);
+      require(bindings[leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(card.source_binding)), 'Quiver catalogue exact shared source binding is required');
+    }
   }
   if (Object.hasOwn(matrices, 'models_administration')) {
     for (const row of uniqueRecords(matrices.models_administration, 'dimension', 'models administration matrix').values()) {

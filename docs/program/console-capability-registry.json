@@ -56573,6 +56573,946 @@
               "concurrency_reconnect": null,
               "lifecycle_successor_equivalence": null
             }
+          },
+          {
+            "runtime": "Quiver time-series cards",
+            "reference_status": "Frozen 39-entry index catalogue; label/path tuples preserved; individual semantics and Console execution unverified",
+            "source": "quiver-cards-index-time-series",
+            "console_acceptance": "not established",
+            "command": null,
+            "analytical_card_catalog": [
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Align series to event set",
+                "reference_path": "/docs/foundry/quiver/card-align-series-to-event-set/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Align series to event set",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Align to date",
+                "reference_path": "/docs/foundry/quiver/card-align-to-date/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Align to date",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Coalesce time series",
+                "reference_path": "/docs/foundry/quiver/card-coalesce-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Coalesce time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Combine time series",
+                "reference_path": "/docs/foundry/quiver/card-combine-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Combine time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Cumulative aggregate",
+                "reference_path": "/docs/foundry/quiver/card-cumulative-aggregate/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Cumulative aggregate",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Derivative",
+                "reference_path": "/docs/foundry/quiver/card-derivative/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Derivative",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "DSP filter",
+                "reference_path": "/docs/foundry/quiver/card-dsp-filter/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "DSP filter",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Event indicator series",
+                "reference_path": "/docs/foundry/quiver/card-event-indicator-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Event indicator series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Event statistics",
+                "reference_path": "/docs/foundry/quiver/card-event-statistics/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Event statistics",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Extract time series bound",
+                "reference_path": "/docs/foundry/quiver/card-extract-time-series-bound/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Extract time series bound",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Filter time series",
+                "reference_path": "/docs/foundry/quiver/card-filter-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Filter time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Integral",
+                "reference_path": "/docs/foundry/quiver/card-integral/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Integral",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Linear aggregation",
+                "reference_path": "/docs/foundry/quiver/card-linear-aggregation/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Linear aggregation",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Periodic aggregate",
+                "reference_path": "/docs/foundry/quiver/card-periodic-aggregate/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Periodic aggregate",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Relative time series",
+                "reference_path": "/docs/foundry/quiver/card-relative-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Relative time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Rolling aggregate",
+                "reference_path": "/docs/foundry/quiver/card-rolling-aggregate/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Rolling aggregate",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Sample",
+                "reference_path": "/docs/foundry/quiver/card-sample/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Sample",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Segment statistics",
+                "reference_path": "/docs/foundry/quiver/card-segment-statistics/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Segment statistics",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Shift time series",
+                "reference_path": "/docs/foundry/quiver/card-shift-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Shift time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series forecast",
+                "reference_path": "/docs/foundry/quiver/card-time-series-forecast/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series forecast",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series formula",
+                "reference_path": "/docs/foundry/quiver/card-time-series-formula/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series formula",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series regression",
+                "reference_path": "/docs/foundry/quiver/card-time-series-regression/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series regression",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Linked series aggregation",
+                "reference_path": "/docs/foundry/quiver/card-linked-series-aggregation/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Linked series aggregation",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Numeric series formula",
+                "reference_path": "/docs/foundry/quiver/card-numeric-series-formula/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Numeric series formula",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series property",
+                "reference_path": "/docs/foundry/quiver/card-time-series-property/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series property",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Tabular time series",
+                "reference_path": "/docs/foundry/quiver/card-tabular-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Tabular time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series sync",
+                "reference_path": "/docs/foundry/quiver/card-time-series-sync/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series sync",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Bollinger bands",
+                "reference_path": "/docs/foundry/quiver/card-bollinger-bands/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Bollinger bands",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Reference profile bounds",
+                "reference_path": "/docs/foundry/quiver/card-reference-profile-bounds/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Reference profile bounds",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series bounds",
+                "reference_path": "/docs/foundry/quiver/card-time-series-bounds/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series bounds",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Event comparison plot",
+                "reference_path": "/docs/foundry/quiver/card-event-comparison-plot/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Event comparison plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Grouped time series",
+                "reference_path": "/docs/foundry/quiver/card-grouped-time-series-plot/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Grouped time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Enum value at time",
+                "reference_path": "/docs/foundry/quiver/card-enum-value-at-time/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Enum value at time",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Latest value for enum time series",
+                "reference_path": "/docs/foundry/quiver/card-latest-value-for-enum-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Latest value for enum time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series numeric aggregation",
+                "reference_path": "/docs/foundry/quiver/card-time-series-numeric-aggregation/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series numeric aggregation",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Time series unit",
+                "reference_path": "/docs/foundry/quiver/card-time-series-unit/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Time series unit",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Value at time",
+                "reference_path": "/docs/foundry/quiver/card-value-at-time/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Value at time",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Backing object from time series",
+                "reference_path": "/docs/foundry/quiver/card-backing-object-from-time-series/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Backing object from time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-time-series",
+                "operation": "Code function time series",
+                "reference_path": "/docs/foundry/quiver/card-code-function-timeseries/",
+                "required_leaf": "F08.time-series-transform-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-time-series",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz",
+                  "sha256": "76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a",
+                  "quote": "Code function time series",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              }
+            ],
+            "semantics_status": "not_bound",
+            "unqualified_semantics": {
+              "runtime_and_library_versions": null,
+              "input_types_and_nulls": null,
+              "numeric_and_time_semantics": null,
+              "limits_and_performance": null,
+              "refresh_and_reproducibility": null,
+              "effects_authority_and_disclosure": null,
+              "collaboration_and_recovery": null,
+              "lifecycle_and_successor_equivalence": null
+            }
+          },
+          {
+            "runtime": "Quiver chart cards",
+            "reference_status": "Frozen 21-entry index catalogue; label/path tuples preserved; individual semantics and Console execution unverified",
+            "source": "quiver-cards-index-charts",
+            "console_acceptance": "not established",
+            "command": null,
+            "analytical_card_catalog": [
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Bar chart",
+                "reference_path": "/docs/foundry/quiver/card-bar-chart/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Bar chart",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Line chart",
+                "reference_path": "/docs/foundry/quiver/card-line-chart/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Line chart",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Pie chart",
+                "reference_path": "/docs/foundry/quiver/card-pie-chart/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Pie chart",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Categorical scatter plot",
+                "reference_path": "/docs/foundry/quiver/card-categorical-scatter-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Categorical scatter plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Numerical scatter plot",
+                "reference_path": "/docs/foundry/quiver/card-numerical-scatter-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Numerical scatter plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Heat grid",
+                "reference_path": "/docs/foundry/quiver/card-heat-grid/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Heat grid",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Map",
+                "reference_path": "/docs/foundry/quiver/card-map/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Map",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Waterfall plot",
+                "reference_path": "/docs/foundry/quiver/card-waterfall-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Waterfall plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Code function categorical plot",
+                "reference_path": "/docs/foundry/quiver/card-function-on-objects-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Code function categorical plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Correlation matrix",
+                "reference_path": "/docs/foundry/quiver/card-correlation-matrix/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Correlation matrix",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Media property",
+                "reference_path": "/docs/foundry/quiver/card-media-property/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Media property",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Categorical plot from transform table",
+                "reference_path": "/docs/foundry/quiver/card-transform-table-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Categorical plot from transform table",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Vega plot",
+                "reference_path": "/docs/foundry/quiver/card-vega-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Vega plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Categorical plot from dataset",
+                "reference_path": "/docs/foundry/quiver/card-categorical-plot-dataset/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Categorical plot from dataset",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Categorical formula plot",
+                "reference_path": "/docs/foundry/quiver/card-categorical-formula-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Categorical formula plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Overlay chart",
+                "reference_path": "/docs/foundry/quiver/card-overlay-chart/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Overlay chart",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Segment formula plot",
+                "reference_path": "/docs/foundry/quiver/card-segment-formula-plot/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Segment formula plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Scatter plot regression",
+                "reference_path": "/docs/foundry/quiver/card-scatter-plot-regression/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Scatter plot regression",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Time series distribution",
+                "reference_path": "/docs/foundry/quiver/card-time-series-distribution/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Time series distribution",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Time series heat grid",
+                "reference_path": "/docs/foundry/quiver/card-time-series-heat-grid/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Time series heat grid",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "quiver-cards-index-charts",
+                "operation": "Time series scatter plot",
+                "reference_path": "/docs/foundry/quiver/card-scatter-plot-regression/",
+                "required_leaf": "F08.chart-library",
+                "scope": "Documented index entry only; exact semantics, limits and Console acceptance require individual review",
+                "source_binding": {
+                  "source_id": "quiver-cards-index-charts",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz",
+                  "sha256": "f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495",
+                  "quote": "Time series scatter plot",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              }
+            ],
+            "semantics_status": "not_bound",
+            "unqualified_semantics": {
+              "runtime_and_library_versions": null,
+              "input_types_and_nulls": null,
+              "numeric_and_time_semantics": null,
+              "limits_and_performance": null,
+              "refresh_and_reproducibility": null,
+              "effects_authority_and_disclosure": null,
+              "collaboration_and_recovery": null,
+              "lifecycle_and_successor_equivalence": null
+            }
           }
         ],
         "required_dimensions": [
