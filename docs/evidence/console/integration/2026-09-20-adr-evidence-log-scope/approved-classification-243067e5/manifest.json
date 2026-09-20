@@ -1,0 +1,14 @@
+{
+  "kind": "approved-ADR-raw-log-classification-local-verification",
+  "files_sha256": {
+    "lane.json": "07d3b981483a8ab2925e9340d7ca5e7404cf1b1ef6631aeaf2eb3a43ca1046c0",
+    "admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "before-tests.log": "eff95f92e29b702e53d006deac9fd4c19f0284e659d6403c7fa6cccc948ce0de",
+    "before-owner.log": "f0febe1c91255e267cd1820871d84edcbb12277b668cc6d1fa5059798094fbb7",
+    "after-tests.log": "005136f119f7cf1789b238ec9483e7431cfd8c7f96287e02494ccbe77ffc2049",
+    "after-owner.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995",
+    "verification.json": "592ac00018fa0d5ed0d308687f02fe5044a94e1fa9b74bcaef47303eeb2d5ce6",
+    "source-review.json": "3fa928b255872b66acc0410da463209b741bfc6b6afdea2da2f4ab522bce8176",
+    "preserved-evidence-sha256.json": "a5dccd8364f06a22de5dcf27b664eb50f4a0c2c8f98fc79ff57d472a2124bbf2"
+  }
+}

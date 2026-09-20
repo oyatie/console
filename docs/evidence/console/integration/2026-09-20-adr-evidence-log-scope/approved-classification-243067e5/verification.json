@@ -1,0 +1,72 @@
+{
+  "base_sha": "243067e5cf8cc22766a1eaed55fc847303ce18d1",
+  "source_sha256": "c6144bea0ab9c6527ce86a010674ee0a2f18f95c0eed51fd5948a8db08a00d6d",
+  "test_sha256": "1a30fa9a379d2452d7404b86f802b2bafccd4882bce96e3683e7710dcc0e55ec",
+  "authorization": "User approved the previously described class-wide rule with go ahead; prior single-file approval remains a separate immutable receipt.",
+  "scope": "Only exact lowercase final .log extension beneath docs/evidence is excluded from retired-reference scanning. Other formats, locations, governance validations and security scanners are unchanged.",
+  "verification": [
+    {
+      "command": "python3 tools/lanes/fanout.py admit --spec /private/tmp/console-adr-classification-authorized-lane-20260920.json",
+      "exit": 0,
+      "result": "Named owner probe red on clean base"
+    },
+    {
+      "command": "node --test scripts/check-adrs.test.mjs",
+      "phase": "before",
+      "exit": 1,
+      "discovered": 33,
+      "executed": 33,
+      "passed": 31,
+      "failed": 2,
+      "skipped": 0,
+      "failures": "Only intended raw-log classification cases"
+    },
+    {
+      "command": "node scripts/check-adrs.mjs",
+      "phase": "before",
+      "exit": 1,
+      "findings": 35
+    },
+    {
+      "command": "node --test scripts/check-adrs.test.mjs",
+      "phase": "after",
+      "exit": 0,
+      "discovered": 33,
+      "executed": 33,
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "corruption_findings_asserted": 64
+    },
+    {
+      "command": "node scripts/check-adrs.mjs",
+      "phase": "after",
+      "exit": 0,
+      "adrs": 44,
+      "design_notes": 8
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "phase": "after archiving raw output",
+      "exit": 2,
+      "result": "Four whitespace-only diagnostic lines in immutable before-tests.log; raw output preserved without normalization. Source diff whitespace check passed before archiving."
+    }
+  ],
+  "preservation": {
+    "tracked_evidence_artifacts_checked": 2133,
+    "changed": 0,
+    "canonical_tests_unchanged": true
+  },
+  "environment": {
+    "node": "v26.7.0"
+  },
+  "remaining_holds": [
+    "Protected dev integration and hosted checks not performed by this local change",
+    "Complete client release qualification remains incomplete"
+  ],
+  "rollback": "Revert only the checker classification condition; preserve historical evidence and tests."
+}

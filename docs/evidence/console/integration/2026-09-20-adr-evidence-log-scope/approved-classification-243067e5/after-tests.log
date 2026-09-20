@@ -1,0 +1,45 @@
+▶ ADR governance gate
+  ✔ uses node:path primitives instead of POSIX-only path splitting (0.509834ms)
+  ✔ accepts a complete corpus and the reserved never-issued ADR-0013 index row (9.384ms)
+  ✔ rejects duplicate ADR IDs (1.724208ms)
+  ✔ rejects missing required id frontmatter (1.202333ms)
+  ✔ rejects missing required status frontmatter (0.654083ms)
+  ✔ rejects missing required doc_status frontmatter (1.277584ms)
+  ✔ rejects missing required date frontmatter (0.821583ms)
+  ✔ rejects missing required owner frontmatter (1.397333ms)
+  ✔ rejects missing required related frontmatter (0.891042ms)
+  ✔ rejects malformed and nonexistent local ADR relationship references (1.008916ms)
+  ✔ rejects an impossible ADR calendar date (1.152083ms)
+  ✔ rejects an impossible design-note calendar date (1.327333ms)
+  ✔ rejects one-sided amend and supersession relationships (1.048458ms)
+  ✔ rejects a proposed ADR that claims amendment or supersession authority (1.159166ms)
+  ✔ rejects an accepted record that treats a proposed ADR as its superseder (0.85525ms)
+  ✔ rejects an accepted ADR that amends a non-accepted target (1.245584ms)
+  ✔ rejects an ADR that declares a superseder without becoming superseded (1.358083ms)
+  ✔ rejects index status that promotes a proposed ADR to accepted (1.300958ms)
+  ✔ rejects an index link that does not target the indexed ADR file (1.158291ms)
+  ✔ rejects Markdown files that evade the ADR or design-note filename contracts (1.252792ms)
+  ✔ rejects stale cross-repository references that still use ADR-0022 for portability (1.430083ms)
+  ✔ scans tracked IaC text for retired ADR identities (1.290791ms)
+  ✔ rejects a proposed ADR whose prose claims active supersession (1.066208ms)
+  ✔ rejects a proposed ADR whose subject ID claims active supersession in prose (1.487708ms)
+  ✔ rejects a proposed ADR whose bold subject ID claims active supersession (1.057875ms)
+  ✔ rejects a proposed ADR whose inline-code subject ID claims active supersession (1.151875ms)
+  ✔ allows conditional proposal language and ADR references in a design-note index row (0.974291ms)
+  ✔ rejects design notes without a valid parent ADR (1.08225ms)
+  ✔ rejects issuing the reserved ADR-0013 number (1.214958ms)
+✔ ADR governance gate (42.375333ms)
+▶ ADR retained evidence log scope
+  ✔ preserves raw evidence logs without treating transcript text as authority (traversal) (2.476458ms)
+  ✔ still detects normative evidence, source, IaC and outside-log corruption (traversal) (4.441042ms)
+  ✔ preserves raw evidence logs without treating transcript text as authority (tracked Git) (28.382167ms)
+  ✔ still detects normative evidence, source, IaC and outside-log corruption (tracked Git) (30.382166ms)
+✔ ADR retained evidence log scope (65.807917ms)
+ℹ tests 33
+ℹ suites 2
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 147.699709
