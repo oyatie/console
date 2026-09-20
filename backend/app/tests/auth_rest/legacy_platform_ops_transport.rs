@@ -179,7 +179,20 @@ async fn ops_transport_selection_preserves_list_and_sibling_routes_and_methods()
         (Method::GET, "/api/platform/orgs", true),
         (Method::HEAD, "/api/platform/orgs", true),
         (Method::GET, "/api/platform/ops/", false),
-        (Method::GET, "/api/platform/groups", false),
+        (
+            Method::GET,
+            "/api/platform/groups/00000000-0000-0000-0000-000000000001/accounts",
+            false,
+        ),
+        (Method::GET, "/api/platform/groups", true),
+        (Method::HEAD, "/api/platform/groups", true),
+        (Method::GET, "/api/platform/groups?display=all", true),
+        (Method::HEAD, "/api/platform/groups?display=all", true),
+        (Method::GET, "/api/platform/groups/", false),
+        (Method::HEAD, "/api/platform/groups/", false),
+        (Method::POST, "/api/platform/groups", false),
+        (Method::PATCH, "/api/platform/groups", false),
+        (Method::DELETE, "/api/platform/groups", false),
         (Method::POST, "/api/platform/ops", false),
         (Method::PUT, "/api/platform/ops", false),
     ] {
@@ -226,6 +239,38 @@ async fn ops_transport_selection_preserves_list_and_sibling_routes_and_methods()
                     && headers[header::VARY] == "Origin",
                 "unrelated route and method transport bytes retained"
             );
+        }
+    }
+    for method in [Method::GET, Method::HEAD] {
+        for path in ["/api/platform/groups", "/api/platform/groups?display=all"] {
+            let response = router
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(method.clone())
+                        .uri(path)
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let (status, headers, body) = response_parts(response).await;
+            assert_eq!(status, StatusCode::UNAUTHORIZED);
+            // No credential was supplied. The nonempty fixture sentinel keeps the
+            // shared privacy oracle strict; it does not claim credential-reflection coverage.
+            assert!(private_response(
+                &headers,
+                &body,
+                &["group-no-credential-transport-fixture-sentinel".to_owned()],
+            ));
+            if method == Method::HEAD {
+                assert!(body.is_empty());
+            } else {
+                assert_eq!(
+                    serde_json::from_slice::<Value>(&body).unwrap(),
+                    json!({"error":{"code":"unauthorized","message":"invalid bearer token"}})
+                );
+            }
         }
     }
 }

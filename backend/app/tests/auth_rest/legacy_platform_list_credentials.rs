@@ -554,7 +554,10 @@ async fn list_transport_selection_preserves_sibling_routes_and_methods() {
         console_platform_rest::with_platform_list_transport(axum::Router::new().fallback(sibling));
     for (method, path) in [
         (Method::GET, "/api/platform/orgs/"),
-        (Method::GET, "/api/platform/groups"),
+        (
+            Method::GET,
+            "/api/platform/groups/00000000-0000-0000-0000-000000000001/accounts",
+        ),
         (Method::POST, PATH),
         (Method::PUT, PATH),
     ] {
