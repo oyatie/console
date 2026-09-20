@@ -627,4 +627,130 @@ mod legacy_family_binding {
         platform["legacy_session"]["home_org"] = platform["org"].clone();
         fixture.refused(&platform, "platform sentinel requires platform flag");
     }
+
+    // These are valid signed controls for relationship mutations below. Acting
+    // role vocabulary remains owned by Authz; only existing supported fixtures
+    // are used here, without reproducing its Role enum in the JWT parser suite.
+    fn supplemental_bound_claims(fixture: &Fixture, kind: &str) -> Value {
+        let mut claims = fixture.bound();
+        claims["legacy_session"]["kind"] = json!(kind);
+        match kind {
+            "direct" => {}
+            "group_admin" => {
+                let home = uuid::Uuid::new_v4().to_string();
+                claims["legacy_session"]["home_org"] = json!(home);
+                claims["actor_home_org"] = json!(home);
+                claims["tenant_context"] = json!("group_admin");
+                claims["group_context_id"] = json!(uuid::Uuid::new_v4().to_string());
+                claims["group_roles"] = json!(["GROUP_ADMIN"]);
+                claims["roles"] = json!(["ADMIN"]);
+            }
+            "platform_view_as" | "platform_tenant_context" => {
+                claims["legacy_session"]["home_org"] = json!(OrgId::platform().to_string());
+                let view_as = kind == "platform_view_as";
+                claims["view_as"] = json!(view_as);
+                claims["read_only"] = json!(view_as);
+                claims["roles"] = if view_as {
+                    json!(["ADMIN"])
+                } else {
+                    json!(["SUPER_ADMIN"])
+                };
+            }
+            _ => panic!("unsupported supplemental fixture kind"),
+        }
+        claims
+    }
+
+    #[test]
+    fn complete_positional_bindings_are_rejected_with_valid_object_controls() {
+        let fixture = Fixture::new();
+        for kind in [
+            "direct",
+            "group_admin",
+            "platform_view_as",
+            "platform_tenant_context",
+        ] {
+            let control = supplemental_bound_claims(&fixture, kind);
+            fixture.accepted(&control, control.get("legacy_session"));
+            let binding = &control["legacy_session"];
+            let mut positional = control.clone();
+            // All four values are valid and in declared struct order. An empty
+            // array alone would not detect serde's positional struct decoding.
+            positional["legacy_session"] = json!([
+                binding["version"],
+                binding["family_id"],
+                binding["home_org"],
+                binding["kind"],
+            ]);
+            fixture.refused(&positional, "complete positional binding must not decode");
+            fixture.accepted(&control, control.get("legacy_session"));
+        }
+    }
+
+    #[test]
+    fn valid_derived_bindings_reject_individual_relationship_mutations() {
+        let fixture = Fixture::new();
+        let platform = OrgId::platform().to_string();
+        let nil = uuid::Uuid::nil().to_string();
+        for kind in ["group_admin", "platform_view_as", "platform_tenant_context"] {
+            let control = supplemental_bound_claims(&fixture, kind);
+            fixture.accepted(&control, control.get("legacy_session"));
+            let mut mutations = if kind == "group_admin" {
+                vec![
+                    ("/legacy_session/home_org", json!(platform)),
+                    ("/legacy_session/home_org", json!(nil)),
+                    (
+                        "/legacy_session/home_org",
+                        json!(uuid::Uuid::new_v4().to_string()),
+                    ),
+                    ("/org", json!(platform)),
+                    ("/org", json!(nil)),
+                    ("/actor_home_org", Value::Null),
+                    ("/actor_home_org", json!(nil)),
+                    ("/actor_home_org", json!(uuid::Uuid::new_v4().to_string())),
+                    ("/tenant_context", Value::Null),
+                    ("/group_context_id", Value::Null),
+                    ("/group_context_id", json!(nil)),
+                    ("/group_context_id", json!("not-a-uuid")),
+                    ("/platform", json!(true)),
+                    ("/view_as", json!(true)),
+                    ("/read_only", json!(true)),
+                    ("/roles", json!([])),
+                    ("/roles", json!(["ADMIN", "MEMBER"])),
+                    ("/group_roles", json!([])),
+                ]
+            } else {
+                let view_as = kind == "platform_view_as";
+                vec![
+                    ("/legacy_session/home_org", json!(OrgId::knl().to_string())),
+                    ("/legacy_session/home_org", json!(nil)),
+                    ("/org", json!(platform)),
+                    ("/org", json!(nil)),
+                    ("/platform", json!(true)),
+                    ("/tenant_context", json!("group_admin")),
+                    ("/group_context_id", json!(uuid::Uuid::new_v4().to_string())),
+                    ("/actor_home_org", json!(uuid::Uuid::new_v4().to_string())),
+                    ("/group_roles", json!(["GROUP_ADMIN"])),
+                    ("/roles", json!([])),
+                    ("/roles", json!([""])),
+                    ("/roles", json!(["ADMIN", "SUPER_ADMIN"])),
+                    ("/view_as", json!(!view_as)),
+                    ("/read_only", json!(!view_as)),
+                ]
+            };
+            if kind == "platform_tenant_context" {
+                mutations.push(("/roles", json!(["ADMIN"])));
+            }
+            for (path, value) in mutations {
+                let mut invalid = control.clone();
+                if let Some(field) = path.strip_prefix("/legacy_session/") {
+                    invalid["legacy_session"][field] = value;
+                } else {
+                    invalid[path.strip_prefix('/').unwrap()] = value;
+                }
+                fixture.refused(&invalid, &format!("{kind}: {path}"));
+            }
+            fixture.accepted(&control, control.get("legacy_session"));
+        }
+    }
 }

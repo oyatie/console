@@ -1,0 +1,18 @@
+{
+  "owner": "/root",
+  "source_candidate": "430257b67b6e246a81e5dce29ca2d54400d3c6d4",
+  "test_review": "supplement-tests-root-review.json",
+  "actual_tests": {
+    "parser_subset": {
+      "executed": 9,
+      "passed": 9
+    },
+    "all_retained_unique": {
+      "executed": 49,
+      "passed": 49,
+      "ignored": 0
+    }
+  },
+  "production_changes": "None; approved source hashes retained",
+  "full_verification": "4b11ea01 sandbox run finished with12 failed steps including Git metadata/index and local socket denials. Unchanged preflight passed scoped metadata access. Full appropriately authorized rerun pending; no fullGREEN claim."
+}

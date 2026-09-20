@@ -1,0 +1,7 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_MECHANICAL_RUSTFMT_ONLY",
+  "source_packet_sha256": "40c70d6bfe1858d75fe356c1fb23f9f6aadf4d0a32682ecf477c58544938dfff",
+  "formatted_sha256": "70558c133ee87d4b5b7ad619493eb21c76a2cf71caadfd421ac1b1c6399c7274",
+  "change": "Remove one extra blank line at supplemental insertion. No token or existing-test change; hook refusal preserved and hooks remain enabled."
+}
