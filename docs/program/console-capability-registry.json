@@ -57513,6 +57513,688 @@
               "collaboration_and_recovery": null,
               "lifecycle_and_successor_equivalence": null
             }
+          },
+          {
+            "runtime": "Media operations and reference compute rates",
+            "reference_status": "Frozen 44-row public operation/rate catalogue: 43 required references and 1 explicit Intelligence exclusion; vendor usage units are not Console price, latency or throughput; executable semantics unverified",
+            "source": "media-sets-advanced-formats-media-usage-limits",
+            "console_acceptance": "not established",
+            "command": null,
+            "media_transform_catalog": [
+              {
+                "category": "All",
+                "operation": "Download / stream",
+                "reference_compute_seconds_per_gb": 2,
+                "required_leaf": "F04.media-capacity-recovery",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Download / stream",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Generate PDF",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Generate PDF",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Resize",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Resize",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Resize within bounding box",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Resize within bounding box",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Rotate",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Rotate",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Adjust contrast",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Adjust contrast",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Annotate",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Annotate",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Crop / chip",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Crop / chip",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Encryption / decryption",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Encryption / decryption",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Geo tile",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Geo tile",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Grayscale",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Grayscale",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Render DICOM image layer",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Render DICOM image layer",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Extract text (OCR)",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text (OCR)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Generate embedding",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F12.inference",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Generate embedding",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Extract text v2 (OCR)",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text v2 (OCR)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Images",
+                "operation": "Extract layout aware v2",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.image-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract layout aware v2",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Audio",
+                "operation": "Chunk",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.audio-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Chunk",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Audio",
+                "operation": "Select channel",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.audio-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Select channel",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Audio",
+                "operation": "Stream with HLS",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.audio-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Stream with HLS",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Audio",
+                "operation": "Transcode",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.audio-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Transcode",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Audio",
+                "operation": "Waveform generation",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.audio-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Waveform generation",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Audio",
+                "operation": "Transcription",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.audio-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Transcription",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Get timestamps for scene frames",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Get timestamps for scene frames",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Extract audio",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract audio",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Extract frames at timestamp",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract frames at timestamp",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Chunk",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Chunk",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Extract all scene frames",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract all scene frames",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Stream with HLS",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Stream with HLS",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Video",
+                "operation": "Transcode",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.video-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Transcode",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Get PDF page count",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Get PDF page count",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Get PDF page dimensions",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Get PDF page dimensions",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Render page as image",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Render page as image",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Render page as image within bounding box",
+                "reference_compute_seconds_per_gb": 40,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Render page as image within bounding box",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract all text (raw)",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract all text (raw)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract form fields",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract form fields",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract table of contents",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract table of contents",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract text from pages to array (raw)",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text from pages to array (raw)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract text on page (raw)",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text on page (raw)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Slice PDF range",
+                "reference_compute_seconds_per_gb": 75,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Slice PDF range",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract text (OCR)",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text (OCR)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract text from pages to array (OCR)",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text from pages to array (OCR)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract layout aware text (raw / OCR)",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.document-transform-library",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract layout aware text (raw / OCR)",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Documents",
+                "operation": "Extract text using VLM *",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": null,
+                "scope": "Excluded generative/model-specific operation; Intelligence roadmap authority required",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Extract text using VLM *",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              },
+              {
+                "category": "Spreadsheets",
+                "operation": "Convert sheet to JSON",
+                "reference_compute_seconds_per_gb": 275,
+                "required_leaf": "F04.spreadsheet-extraction",
+                "scope": "Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority",
+                "source_binding": {
+                  "source_id": "media-sets-advanced-formats-media-usage-limits",
+                  "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-transforms/media-sets-advanced-formats-media-usage-limits.html.gz",
+                  "sha256": "816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460",
+                  "quote": "Convert sheet to JSON",
+                  "matching": "HTML page body text with whitespace normalization",
+                  "scope": "Public reference only; Console implementation and acceptance not established; target date interpreted as America/New_York."
+                }
+              }
+            ],
+            "reference_rate_unit": "Foundry compute-seconds per GB processed",
+            "semantics_status": "not_bound",
+            "unqualified_semantics": {
+              "operation_semantics": null,
+              "format_codec_and_version_support": null,
+              "runtime_and_model_versions": null,
+              "limits_and_resource_accounting": null,
+              "authorization_and_source_restrictions": null,
+              "output_publication_and_partial_failure": null,
+              "cancellation_and_recovery": null,
+              "retention_and_deletion": null,
+              "lifecycle_and_successor_equivalence": null
+            }
           }
         ],
         "required_dimensions": [

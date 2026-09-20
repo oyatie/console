@@ -438,6 +438,38 @@ function validateReleaseInventory(registry, resolveSource) {
       require(bindings[leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(card.source_binding)), 'Quiver catalogue exact shared source binding is required');
     }
   }
+  const media = matrices.runtimes.entries.find((row) => row.runtime === 'Media operations and reference compute rates');
+  require(media, 'Media operation catalogue is required');
+  catalogueKeys(media, ['runtime','reference_status','source','console_acceptance','command','media_transform_catalog','reference_rate_unit','semantics_status','unqualified_semantics'], 'runtime', 'Media');
+  require(media.source === 'media-sets-advanced-formats-media-usage-limits'
+    && media.reference_status === 'Frozen 44-row public operation/rate catalogue: 43 required references and 1 explicit Intelligence exclusion; vendor usage units are not Console price, latency or throughput; executable semantics unverified'
+    && media.console_acceptance === 'not established' && media.command === null
+    && media.reference_rate_unit === 'Foundry compute-seconds per GB processed'
+    && media.semantics_status === 'not_bound', 'Media runtime must retain unqualified reference status and units');
+  catalogueKeys(media.unqualified_semantics, ['operation_semantics','format_codec_and_version_support','runtime_and_model_versions','limits_and_resource_accounting','authorization_and_source_restrictions','output_publication_and_partial_failure','cancellation_and_recovery','retention_and_deletion','lifecycle_and_successor_equivalence'], 'semantics', 'Media');
+  require(Object.values(media.unqualified_semantics).every((value) => value === null), 'Media semantics remain unqualified');
+  require(Array.isArray(media.media_transform_catalog) && media.media_transform_catalog.length === 44, 'Media catalogue must contain 44 ordered entries');
+  for (const row of media.media_transform_catalog) {
+    catalogueKeys(row, ['category','operation','reference_compute_seconds_per_gb','required_leaf','scope','source_binding'], 'card', 'Media');
+    catalogueKeys(row.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'binding', 'Media');
+  }
+  // Bind category/name/rate tuples, including repeated names and the retained exclusion.
+  require(canonicalJsonDigest(media.media_transform_catalog) === '76e13ccb2918a75b6612415d891f68fd8695667f6e3539d68806281934b17504', 'Media catalogue differs from frozen reviewed records');
+  let excludedMediaRows = 0;
+  for (const row of media.media_transform_catalog) {
+    require(row.source_binding.source_id === media.source, 'Media catalogue source invalid');
+    binding(row.source_binding);
+    if (row.required_leaf === null) {
+      excludedMediaRows += 1;
+      require(row.category === 'Documents' && row.operation === 'Extract text using VLM *'
+        && row.reference_compute_seconds_per_gb === 275
+        && row.scope === 'Excluded generative/model-specific operation; Intelligence roadmap authority required', 'Media exclusion must retain the reviewed VLM scope');
+    } else {
+      require(leaves.has(row.required_leaf) && ['F04.media-capacity-recovery','F04.image-transform-library','F04.audio-transform-library','F04.video-transform-library','F04.document-transform-library','F04.spreadsheet-extraction','F12.inference'].includes(row.required_leaf), 'Media catalogue leaf invalid');
+      require(bindings[row.required_leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(row.source_binding)), 'Media catalogue exact shared source binding is required');
+    }
+  }
+  require(excludedMediaRows === 1, 'Media catalogue must retain exactly one explicit exclusion');
   if (Object.hasOwn(matrices, 'models_administration')) {
     for (const row of uniqueRecords(matrices.models_administration, 'dimension', 'models administration matrix').values()) {
       strings(row.values, 'model support values'); text(row.reference_support, 'model reference support'); binding(row.source_binding); consoleAcceptance(row);
