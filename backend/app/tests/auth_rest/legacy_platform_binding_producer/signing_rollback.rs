@@ -79,7 +79,11 @@ async fn install_refresh_insert_witness(pool: &PgPool, subject: UserId) {
         subject,
         OrgId::platform()
     );
-    sqlx::raw_sql(&trigger).execute(pool).await.unwrap();
+    // Both interpolated values are typed UUIDs; no request text enters this DDL.
+    sqlx::raw_sql(sqlx::AssertSqlSafe(trigger))
+        .execute(pool)
+        .await
+        .unwrap();
 }
 
 async fn assert_one_refresh_insert_witness(pool: &PgPool) {
