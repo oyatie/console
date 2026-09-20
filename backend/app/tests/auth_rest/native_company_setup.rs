@@ -1725,6 +1725,8 @@ pub(crate) mod company_setup {
         startup.close().await;
     }
 
+    include!("native_company_input_parser.rs");
+
     #[cfg(feature = "test-browser")]
     include!("native_company_browser.rs");
 }

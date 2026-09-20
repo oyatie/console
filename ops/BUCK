@@ -18,3 +18,9 @@ export_file(
     name = "postgres-install-durability-observer.sql",
     visibility = ["PUBLIC"],
 )
+
+# Pure Company decoder candidate, deliberately uninstalled by serving finalizer.
+export_file(
+    name = "postgres-company-enrollment-input.sql",
+    visibility = ["PUBLIC"],
+)

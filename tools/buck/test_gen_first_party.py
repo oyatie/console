@@ -23,6 +23,20 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_private_company_parser_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-input.sql"),
+            "ops/postgres-company-enrollment-input.sql",
+        )
+        for path in [
+            "tests/auth_rest/fixtures/company-enrollment-input-golden.sql",
+            "tests/auth_rest/fixtures/company-enrollment-input-malformed.sql",
+            "tests/auth_rest/fixtures/company-enrollment-input-boundary.sql",
+        ]:
+            self.assertIn(path, config["srcs"])
+            self.assertTrue((Path(GENERATOR.REPO) / "backend/app" / path).is_file())
+
     def test_auth_rest_maps_literal_fixture_inputs(self) -> None:
         app = Path(GENERATOR.REPO) / "backend/app"
         fixture_root = (app / "tests/auth_rest/fixtures").resolve()
