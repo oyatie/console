@@ -1,0 +1,73 @@
+{
+  "kind": "independent-container-root-pin-build-and-process-smoke-review-round2",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:35:41.789104+00:00",
+  "decision": "APPROVE_BOUNDED_LINUX_BUILDER_IMAGE_AND_NO_DATABASE_PROCESS_SMOKE",
+  "source_commit": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+  "source_sha256": {
+    "backend/Dockerfile": "17d9100b79f29aa725c754e8ef836f9183bc0e62fb9d69cc3aebab63d446783a",
+    ".dockerignore": "39432cda3acdb68894c365e062f7e5b7ede889aa3765d148ce23fa2ecacf87f1",
+    "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28"
+  },
+  "source_review_sha256": "e8042ee784eefe03c29e2c846f4c3372ac2e983347228a4031976681012f22a0",
+  "artifact": {
+    "image_manifest_list": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7",
+    "image_platform_manifest": "sha256:5dc2c4e1836907e21a56af6e78ada48a460d061ca30caf44f3355c7852d4ab8b",
+    "image_config": "sha256:9c1467f4c5ea0aca0038a606e800b2d0fd66c4973ff596947a7e891cee578e25",
+    "binary_sha256": "fbbdf3e96420c1633fc179cda8bb3a649badd50ed52bab312cd6f598ec4b26f1",
+    "architecture": "arm64",
+    "os": "linux",
+    "runtime_uid": 10001
+  },
+  "evidence_sha256": {
+    "builder-green.log": "33683c21ac6e4122951cc0791bf5a32eb5d206b9fea2b279e84fe601b21a8cb1",
+    "full-image.log": "2ad2b53efed6157e4cca913b5584e7fde571acf3e2597aedd20f69b6563f5412",
+    "identity.log": "42f9efccc2a0e2ac0e31e309e465569b5797fe42de50595bebceca8157d830c6",
+    "links.log": "12da85c6e9cd41ea083c48d6576d251a026d8a9b438aaf66ba2824aa17fc1962",
+    "binary-sha256.log": "000904c297b4bd0c54eae029c228796621db636020abbf5765f10b56d58b52dc",
+    "image-inspect.json": "8a4e913ba01596f1af4862b6ccc2aac7f524e670ad7425084695be9c312ddb4f",
+    "no-database-healthz.log": "59b7ebf7324fef15614c26347192d72a6d12b5d88dba9ffd9701e33cd102e9f5",
+    "no-database-readyz.log": "ec481eb8b5f122cb67664ecbc8ea23c130e2e6fba98d3d14e3cc0eedbaaddffe",
+    "no-database-startup.log": "22a0c8ebf7bd26715c2a8a42a65720930928da7f934b4833d57b920633a3bc39",
+    "runtime_smoke.py": "cdc837ffb1bce8e73c8dfc610f677ba8cfb590a3e00084af7c08cdf5eda46983",
+    "runtime-smoke.json": "033e54fbde12b6b06caede26cd46aa0dd11369c1c695582c1c9b31bed588861a",
+    "initial-smoke-expectation-failure.json": "e9e28a97cd8d5aab8d2841f181fe9ac5c76ea8991e57294ba3b5e3ad0b5a3adf",
+    "runtime-smoke-cleanup-case-failure.json": "ac9efa22ae5618ce34fba50da5211b8a14791b84ef0a7550ab0283fd96128753"
+  },
+  "independent_live_readonly_checks": [
+    {
+      "command": "/opt/homebrew/bin/docker --context colima-console-release-20260919 image inspect sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7 --format {{.Id}} {{.Architecture}} {{.Os}} {{.Config.User}}",
+      "exit": 0,
+      "stdout": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7 arm64 linux 10001\n"
+    },
+    {
+      "command": "/opt/homebrew/bin/docker --context colima-console-release-20260919 container ls --all --filter ancestor=sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7 --format {{.ID}} {{.Names}} {{.Status}}",
+      "exit": 0,
+      "stdout": ""
+    }
+  ],
+  "verified": [
+    "Exact reviewed two-file source committed; root pin1.98.1 remains canonical parent of backend cwd, original immutable image digests unchanged.",
+    "Actual builder rustc1.98.1 commit48a229cea... hostaarch64-unknown-linux-gnu; locked release console-app completes7m52. Finalimage uses cached identical builder and completes runtimeCOPY/export.",
+    "Inspect digest matches final export. Runtimeid10001/gid999, ldd resolves all listed runtime libraries.",
+    "Logged processstartup with no credentials/DB; healthz200 and readyz200/allnot_configured. Source readiness logic explicitly allows unconfiguredApiDB; existing readiness test also pins noDB200 underWorker. Initial expected503 was a smoke-oracle error, no source correction indicated.",
+    "Independent live Docker image readback confirms digest/platform/user and current ancestor-filtered container listing is empty.",
+    "Latest root-collected runtime receipt02067... binds HostConfigNetworkModenone,emptyPortBindings,uid10001 and exact e2fimage; loopback healthz/readyz200,removeexit0 then exactIDabsence. Reviewer independently rechecked imageancestor listing after this latestrun: empty.",
+    "Initial incorrectready503 expectation and case-sensitivecleanuporacle failure preserved in separate JSON records. Latest cleanup uses case-normalized exactcontainerID absence; no source/readiness test changes."
+  ],
+  "evidence_limits": [
+    "Builder/fullimage/process logs and latestsmokescript executed by root; independent reviewer checked exactbytes and sourcecontract, plus direct readonly actualimage/currentcontainerabsence.",
+    "Initial adhoc smoke failure record is a truthful reconstructed summary with explicit missing initialHostConfigcustody; later isolatedsmoke independently establishes its own network/cleanup facts.",
+    "Current latestreceipt Image equals exactbuiltimage by independent review. At this reviewtime script uses mutabletag and recordsratherthanassertsImage; root requested to pin immutableimage or add equality assertion before treating script as reusableartifactverifier.",
+    "Processpass field in preservedcleanup-case-failure record does not mean harnesspassed: root reports postreceipt assertion failed oncase sensitivity, corrected forlatestexecution."
+  ],
+  "remaining_holds": [
+    "0business/runtimeworkflowtests executed by this build/smoke evidence. No configuredPostgres/auth/policy/workflow/migration/load/recovery qualification.",
+    "NoDatabase200 readiness is processcontract only, not DB-backed deployreadiness.",
+    "EmbeddedSSR/WASM generation/browsercompatibility remain separate; TLS/network/integration behavior not tested by ldd.",
+    "No allarchitecture/x86Linux/fullrelease/productionexposure qualification."
+  ],
+  "repository_edits_by_reviewer": 0,
+  "prior_review_sha256": "8908923faad3340fa705d2b1f65b20a44279f28b660a362844a5fe355e12e60e",
+  "latest_smoke_container": "02067f66bf10e61249ff5fe6694e81cf8ca9b1c072d161de17241c4587f397e6"
+}

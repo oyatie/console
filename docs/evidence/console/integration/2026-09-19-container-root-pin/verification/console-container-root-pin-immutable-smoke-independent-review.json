@@ -1,0 +1,37 @@
+{
+  "kind": "independent-container-immutable-smoke-final-addendum",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:36:35.483169+00:00",
+  "decision": "APPROVE_IMMUTABLE_ARTIFACT_PROCESS_SMOKE_NO_REMAINING_BOUNDED_REVIEW_FINDINGS",
+  "supersedes_mutable_tag_limitation_in_review_sha256": "27fdd2353d55d7a2640edeb532d5d5d199541d2a2cebf13953e7c3dcf5bf0fbb",
+  "source_commit": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+  "image": "sha256:e2f1a0a06026c104902cd4b94ba6e594db957952cf058a9f91de3ee534b1fbc7",
+  "smoke_container": "956d3b01b9ec8ab366c2316dde6f9e1944a873d350b117a2017c1f691dd468f4",
+  "evidence_sha256": {
+    "runtime_smoke.py": "d55442829b0e1e836f29ff89e19111d030f021a047cf00324ffb658ac56eeb04",
+    "runtime-smoke.json": "ba23e56cd5f03f30e40ec27d0f614267c241ac8a32ce3b2ba5577c7103e44c1e",
+    "runtime_smoke_tag_predecessor.py": "cdc837ffb1bce8e73c8dfc610f677ba8cfb590a3e00084af7c08cdf5eda46983",
+    "runtime-smoke-tag-predecessor.json": "033e54fbde12b6b06caede26cd46aa0dd11369c1c695582c1c9b31bed588861a",
+    "initial-smoke-expectation-failure.json": "e9e28a97cd8d5aab8d2841f181fe9ac5c76ea8991e57294ba3b5e3ad0b5a3adf",
+    "runtime-smoke-cleanup-case-failure.json": "ac9efa22ae5618ce34fba50da5211b8a14791b84ef0a7550ab0283fd96128753"
+  },
+  "checks": [
+    "Only smoke changes are immutableimage run selector and exact inspectImage equality; previousscript/receipt preserved.",
+    "Latest root run binds exactexpectedimage, networknone/nohostports/uid10001, health200 andnotconfiguredready200, successfulremoval andexactIDabsence.",
+    "Reviewer extracted actual four inspection assertions viaPythonAST without executing Docker commands; positivecontrol passes, injectedstaleimage/wrongnetwork/publishedport/rootuser allrefuse."
+  ],
+  "independent_assertion_controls": {
+    "positive": 1,
+    "negative_detected": [
+      "image",
+      "network",
+      "ports",
+      "user"
+    ]
+  },
+  "retained_limits": [
+    "Prior builder/source/artifact/link/compiler review reused unchanged.",
+    "NoDBprocess smoke only;0businessverification, noDBauth/policy/migration/load/recovery/browser/fullrelease/exposurequalification.",
+    "Latest smoke executedbyroot; reviewer source/receiptchecks and extractedassertioncontrols independent."
+  ]
+}
