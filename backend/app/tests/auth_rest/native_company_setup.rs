@@ -1288,10 +1288,69 @@ mod company_setup {
             let current = request(&app, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
             current.private();
             assert!(current.json(StatusCode::OK)["account_id"] == json!(account.account));
-            let _csrf = proof(&app, &cookies).await;
             assert!(
                 before == all_rows(&pool).await,
-                "eligibility failure erased identity or made durable effects"
+                "eligibility document/me reads erased identity or made durable effects"
+            );
+            // The real CSRF proof remains available during eligibility failure.
+            // Its admitted auth rate limiter is a separate, precisely bounded
+            // effect; document and current-Account reads above must stay inert.
+            let prior_limits: Vec<Value> =
+                serde_json::from_str(&before["auth_rate_limit"]).unwrap();
+            assert!(
+                prior_limits
+                    .iter()
+                    .all(|row| row["endpoint"] != "account_csrf")
+            );
+            let proof_started = OffsetDateTime::now_utc().unix_timestamp();
+            let _csrf = proof(&app, &cookies).await;
+            let proof_finished = OffsetDateTime::now_utc().unix_timestamp();
+            assert!(proof_started <= proof_finished);
+            let after_proof = all_rows(&pool).await;
+            let limits = added_rows(&before["auth_rate_limit"], &after_proof["auth_rate_limit"])
+                .expect("CSRF fetch altered or omitted existing limiter history");
+            assert_eq!(
+                limits.len(),
+                2,
+                "one IP and one global CSRF increment required"
+            );
+            let mut clients = BTreeSet::new();
+            let mut windows = BTreeSet::new();
+            for row in limits {
+                exact_keys(
+                    &row,
+                    &["client_key", "endpoint", "window_start", "attempts"],
+                );
+                assert!(row["endpoint"] == "account_csrf" && row["attempts"] == 1);
+                assert!(clients.insert(row["client_key"].as_str().unwrap().to_owned()));
+                let window = OffsetDateTime::parse(
+                    row["window_start"].as_str().unwrap(),
+                    &time::format_description::well_known::Rfc3339,
+                )
+                .unwrap();
+                assert_eq!(window.nanosecond(), 0);
+                let seconds = window.unix_timestamp();
+                assert!(
+                    seconds.rem_euclid(60) == 0
+                        && seconds >= proof_started - proof_started.rem_euclid(60)
+                        && seconds <= proof_finished - proof_finished.rem_euclid(60)
+                );
+                windows.insert(seconds);
+            }
+            assert!(clients == BTreeSet::from(["global".to_owned(), "ip:127.0.0.1".to_owned()]));
+            assert_eq!(
+                windows.len(),
+                1,
+                "both limiter buckets use one owner timestamp"
+            );
+            let mut expected_after_proof = before.clone();
+            expected_after_proof.insert(
+                "auth_rate_limit".to_owned(),
+                after_proof["auth_rate_limit"].clone(),
+            );
+            assert!(
+                expected_after_proof == after_proof,
+                "CSRF fetch made effects beyond its exact two limiter increments"
             );
             sqlx::query("GRANT EXECUTE ON FUNCTION public.account_company_setup_eligibility_v1(uuid) TO console_auth_rt").execute(&pool).await.unwrap();
             assert!(
@@ -1308,7 +1367,10 @@ mod company_setup {
                 .unwrap()
             );
             preview(&document(&app, ENTRY, &cookies).await);
-            assert!(before == all_rows(&pool).await);
+            assert!(
+                after_proof == all_rows(&pool).await,
+                "restored eligibility document changed the validated post-CSRF state"
+            );
             runtime.close().await;
             startup.close().await;
         }
