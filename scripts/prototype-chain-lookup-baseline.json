@@ -20,7 +20,7 @@
     },
     {
       "file": "scripts/console/validate-console-truth-ledger.mjs",
-      "line": 303,
+      "line": 454,
       "kind": "optional-computed",
       "key": "area",
       "snippet": "for (const area of ['identity_scope', 'object_action_workflow', 'search', 'audit_lineage', 'interoperability']) nonempty(omni.required_outcomes?.[area], `shared omni-platform gate ${area}`);",
