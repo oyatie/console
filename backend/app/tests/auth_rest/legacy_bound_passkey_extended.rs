@@ -302,6 +302,7 @@ async fn explicit_derived_shapes_refuse_even_with_live_sibling_family(pool: PgPo
     let base = claims(&f, &f.access_a);
     let mut derived = Vec::new();
     let mut group = base.clone();
+    group["roles"] = json!(["ADMIN"]);
     group["tenant_context"] = json!("group_admin");
     group["actor_home_org"] = json!(OrgId::knl().to_string());
     group["group_context_id"] = json!(Uuid::new_v4().to_string());
@@ -605,3 +606,6 @@ async fn missing_actual_projection_returns_503_preserves_rows_and_recovers(pool:
     assert!(before == all_rows(&pool).await);
     f.auth.close().await;
 }
+
+#[path = "legacy_bound_passkey_histories.rs"]
+mod histories;

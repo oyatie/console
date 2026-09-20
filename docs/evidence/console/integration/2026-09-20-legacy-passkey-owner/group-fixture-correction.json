@@ -1,0 +1,14 @@
+{
+  "predecessor_manifest_sha256": "473be83abb05ccd7ef443e65ccf95c7d80086c661c196dc97668759e87a7df88",
+  "observed_head": "112e1e45d6598bc7f768ad5afb0334b563f3e3d9",
+  "observed_source_sha256": {
+    "backend/crates/platform/auth/src/jwt.rs": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs": "1711dc00594d5b4cb512f4b9fbf022a8dd809a134d0bc9e6b4e5730ef1631217"
+  },
+  "failure_log": "/private/tmp/console-legacy-passkey-suite16-20260920.log",
+  "observed_result": "16 executed: 15 passed, 1 failed; failed Group valid-shape prerequisite, not owner denial",
+  "root_writer_only": true,
+  "correction": "Add group[\"roles\"] = json!([\"ADMIN\"]); immediately after group = base.clone().",
+  "reason": "Actual JwtVerifier::validate_tenant_context requires exactly one ADMIN role; inherited MECHANIC was not a valid Group credential. Fixture now matches retained codec; every signature-validity,401/noecho/private/noeffects assertion remains intact.",
+  "verification_by_author": "source tracing and private rustfmt only; no Cargo or database execution"
+}

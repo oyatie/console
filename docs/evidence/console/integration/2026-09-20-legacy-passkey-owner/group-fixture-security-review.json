@@ -1,0 +1,16 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_ONE_LINE_GROUP_FIXTURE_SEMANTIC_CORRECTION",
+  "manifest_sha256": "1ac83b0eebb38e2826362c0d49be84b8129fae1aae254cf21a2d4d04027f56aa",
+  "source_sha256": "a9adc0cd14fb2c1584c47494c68f4c82c1f0f5b76b6d6641e88f5d803e90fc6d",
+  "patch_sha256": "38100675f0af535fc2819f60b9f37e71ffb22373a2c3af2e161823bb8f39d67c",
+  "reason": "Actual validate_tenant_context requires the exact ADMIN Company-role shape for GroupAdmin tokens. Existing derived fixture inherited MECHANIC and failed the explicit verifier-valid prerequisite, before reaching owner refusal.",
+  "preservation": "Independently confirmed exact one-line addition only to test vector. Every verifier-validity, owner refusal, privacy, full-state and sibling-positive assertion remains byte-identical. No verifier/production/source policy changed.",
+  "observed_prior_runtime": {
+    "log": "/private/tmp/console-legacy-passkey-suite16-20260920.log",
+    "sha256": "233f8e56f662b61ccca99671e1308e84eabf241cd4deb3dd462d1a7a92b21d2d",
+    "counts": "16 executed, 15 passed, 1 failed at valid signed derived shape prerequisite, 375 filtered, 110.76 seconds"
+  },
+  "required_next": "Root integrates exact correction and approved histories include, then executes actual retained16 plus7histories. No successor runtime success claimed.",
+  "scope": "Fixture repair approval only; neither weakened denial nor owner behavior change."
+}
