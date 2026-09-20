@@ -1,0 +1,7 @@
+{
+  "head": "1b4fbbcbb5a9e4122e7ca343a6ab1373464f1c0c",
+  "test_patch_applies_exactly": true,
+  "changed_prerequisite": "native_account.rs now uses reviewed shared private document response; nativeCSP/status/body remain exact and adds Authorization to Vary as explicitly required by this round2 test packet",
+  "native_document_sha256": "2bf15ae2e0813583ee5636721305bacf3b33469c7b747162fdc78f6dec766ab1",
+  "scope": "Future-helper unit is frozen but not executable before implementation and NEVER admission RED. Mounted App dependency compiles without request-context cfg(test)."
+}

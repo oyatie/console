@@ -1223,6 +1223,136 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn envelope_preserves_only_trusted_single_html_413_and_existing_json() {
+        #[derive(Clone, Debug, PartialEq, Eq)]
+        struct RetainedExtension;
+        const BODY: &str = r#"{"fixture":"exact preserved response bytes"}"#;
+        fn rendered(status: StatusCode, types: &[&'static str]) -> Response {
+            let mut response = Response::new(Body::from(BODY));
+            *response.status_mut() = status;
+            response.headers_mut().insert(
+                header::CONTENT_LENGTH,
+                HeaderValue::from_str(&BODY.len().to_string()).unwrap(),
+            );
+            for value in types {
+                response
+                    .headers_mut()
+                    .append(header::CONTENT_TYPE, HeaderValue::from_static(value));
+            }
+            response
+                .headers_mut()
+                .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+            response
+                .headers_mut()
+                .insert(header::PRAGMA, HeaderValue::from_static("no-cache"));
+            response
+                .headers_mut()
+                .append(header::VARY, HeaderValue::from_static("Cookie"));
+            response
+                .headers_mut()
+                .append(header::VARY, HeaderValue::from_static("Origin"));
+            response.headers_mut().insert(
+                header::CONTENT_SECURITY_POLICY,
+                HeaderValue::from_static("frame-ancestors 'none'"),
+            );
+            response
+                .headers_mut()
+                .insert("x-original", HeaderValue::from_static("preserve-exactly"));
+            response.extensions_mut().insert(RetainedExtension);
+            response
+        }
+        for (status, types, preserved) in [
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/html; charset=utf-8"],
+                true,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["Text/Html; charset=utf-8"],
+                true,
+            ),
+            (StatusCode::PAYLOAD_TOO_LARGE, vec!["text/plain"], false),
+            (StatusCode::PAYLOAD_TOO_LARGE, vec![], false),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/html", "text/html"],
+                false,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/html", "application/json"],
+                false,
+            ),
+            // Preserve the prior JSON classifier: first JSON is still JSON.
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["application/json", "text/html"],
+                true,
+            ),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["application/json"],
+                true,
+            ),
+            (StatusCode::REQUEST_TIMEOUT, vec!["text/html"], false),
+            (StatusCode::TOO_MANY_REQUESTS, vec!["text/html"], false),
+        ] {
+            let expected_headers = rendered(status, &types).headers().clone();
+            let mut app = with_http_error_envelope(axum::Router::new().route(
+                "/",
+                get(move || {
+                    let types = types.clone();
+                    async move { preserve_native_html_error(rendered(status, &types)) }
+                }),
+            ));
+            let response = Service::call(
+                &mut app,
+                Request::builder().uri("/").body(Body::empty()).unwrap(),
+            )
+            .await
+            .unwrap();
+            assert_eq!(response.status(), status);
+            if preserved {
+                assert_eq!(response.headers(), &expected_headers);
+                assert_eq!(
+                    response.extensions().get::<RetainedExtension>(),
+                    Some(&RetainedExtension)
+                );
+                assert_eq!(
+                    axum::body::to_bytes(response.into_body(), 4096)
+                        .await
+                        .unwrap()
+                        .as_ref(),
+                    BODY.as_bytes()
+                );
+            } else {
+                assert_eq!(
+                    response.headers().get(header::CONTENT_TYPE).unwrap(),
+                    "application/json"
+                );
+                assert!(!response.headers().contains_key("x-original"));
+                let (code, message) = match status {
+                    StatusCode::REQUEST_TIMEOUT => ("request_timeout", "request timed out"),
+                    StatusCode::TOO_MANY_REQUESTS => {
+                        assert_eq!(response.headers().get(header::RETRY_AFTER).unwrap(), "60");
+                        ("too_many_requests", "too many requests; please retry later")
+                    }
+                    _ => ("payload_too_large", "request body too large"),
+                };
+                let expected = format!(r#"{{"error":{{"code":"{code}","message":"{message}"}}}}"#);
+                assert_eq!(
+                    axum::body::to_bytes(response.into_body(), 4096)
+                        .await
+                        .unwrap()
+                        .as_ref(),
+                    expected.as_bytes()
+                );
+            }
+        }
+    }
+
+    #[tokio::test]
     async fn envelope_rewrites_plain_408_and_413_to_json_error_body() {
         for (status, code, message) in [
             (

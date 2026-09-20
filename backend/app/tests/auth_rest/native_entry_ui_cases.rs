@@ -702,28 +702,17 @@ async fn native_root_expired_and_revoked_access_never_consumes_refresh(pool: PgP
 }
 
 fn native_root_parser_refusal(response: &Response, expected: StatusCode) {
+    let html = native_entry_html(response, expected);
     if expected == StatusCode::PAYLOAD_TOO_LARGE {
-        // The retained outer HTTP envelope replaces native HTML413 with JSON.
-        // Pin the actual mounted contract; do not pretend its privacy headers survive.
-        assert!(
-            response.json(expected)
-                == json!({"error": {
-                    "code": "payload_too_large", "message": "request body too large"
-                }})
-        );
-        assert!(
-            response
-                .headers
-                .get(header::CONTENT_TYPE)
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .starts_with("application/json")
-        );
-        assert!(!response.headers.contains_key(header::SET_COOKIE));
-        response.no_literal_echo();
-    } else {
-        native_entry_html(response, expected);
+        assert!(html.contains("이 요청을 열 수 없습니다"));
+        for forbidden in [
+            "<form",
+            "data-account-state",
+            "data-company-setup",
+            "data-native-action",
+        ] {
+            assert!(!html.contains(forbidden), "native413 exposed {forbidden}");
+        }
     }
 }
 

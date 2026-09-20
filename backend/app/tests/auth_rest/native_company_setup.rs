@@ -1521,6 +1521,210 @@ mod company_setup {
     }
 
     include!("native_company_eligibility.rs");
+
+    fn native_413_headers_are_private(headers: &http::HeaderMap) -> bool {
+        let vary: Vec<_> = headers.get_all(header::VARY).iter().collect();
+        let valid_vary = vary.len() == 1
+            && vary[0].to_str().is_ok_and(|value| {
+                let tokens: Vec<_> = value
+                    .split(',')
+                    .map(|part| part.trim().to_ascii_lowercase())
+                    .collect();
+                tokens.len() == 3
+                    && tokens.into_iter().collect::<BTreeSet<_>>()
+                        == BTreeSet::from([
+                            "authorization".to_owned(),
+                            "cookie".to_owned(),
+                            "origin".to_owned(),
+                        ])
+            });
+        valid_vary && [
+            ("content-type", "text/html; charset=utf-8"),
+            ("cache-control", "no-store"),
+            ("pragma", "no-cache"),
+            ("x-content-type-options", "nosniff"),
+            ("referrer-policy", "no-referrer"),
+            ("content-security-policy", "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"),
+        ]
+        .into_iter()
+        .all(|(name, expected)| {
+            let mut values = headers.get_all(name).iter();
+            values.next().is_some_and(|value| value == expected) && values.next().is_none()
+        }) && !headers.contains_key(header::SET_COOKIE)
+    }
+
+    #[test]
+    fn native_413_header_oracle_rejects_omitted_changed_and_duplicate_values() {
+        let positive = console_payroll_ui::native_account::document(
+            console_payroll_ui::native_account::Page::Refused,
+            StatusCode::PAYLOAD_TOO_LARGE,
+        );
+        assert!(native_413_headers_are_private(positive.headers()));
+        for name in [
+            "content-type",
+            "cache-control",
+            "pragma",
+            "vary",
+            "x-content-type-options",
+            "referrer-policy",
+            "content-security-policy",
+        ] {
+            let mut missing = positive.headers().clone();
+            missing.remove(name);
+            assert!(!native_413_headers_are_private(&missing), "omitted {name}");
+            let mut changed = positive.headers().clone();
+            changed.insert(name, http::HeaderValue::from_static("corrupt"));
+            assert!(!native_413_headers_are_private(&changed), "corrupt {name}");
+            let mut duplicated = positive.headers().clone();
+            duplicated.append(name, positive.headers().get(name).unwrap().clone());
+            assert!(
+                !native_413_headers_are_private(&duplicated),
+                "duplicate {name}"
+            );
+        }
+        let mut reordered = positive.headers().clone();
+        reordered.insert(
+            header::VARY,
+            http::HeaderValue::from_static("origin, AUTHORIZATION, Cookie"),
+        );
+        assert!(native_413_headers_are_private(&reordered));
+        for wrong in [
+            "Cookie, Origin",
+            "Authorization, Origin",
+            "Authorization, Cookie",
+            "Authorization, Cookie, Origin, Cookie",
+            "Authorization, Cookie, Origin, Accept",
+        ] {
+            let mut changed = positive.headers().clone();
+            changed.insert(header::VARY, http::HeaderValue::from_static(wrong));
+            assert!(
+                !native_413_headers_are_private(&changed),
+                "invalid Vary key set"
+            );
+        }
+        let mut cookie = positive.headers().clone();
+        cookie.insert(
+            header::SET_COOKIE,
+            http::HeaderValue::from_static("unexpected=value"),
+        );
+        assert!(!native_413_headers_are_private(&cookie));
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_cookie_413_preserves_document_privacy_and_api_json(pool: PgPool) {
+        let (app, account, cookies, startup, _designation) = designated(&pool).await;
+        let before = all_rows(&pool).await;
+        let large = format!("theme={}", "x".repeat(16 * 1024 + 1));
+        let first = format!("theme_a={}", "y".repeat(8500));
+        let second = format!("theme_b={}", "z".repeat(8500));
+        let mut refused_bytes = None;
+        for route in ["/", "/account", "/account/register", ENTRY] {
+            for extra in [
+                vec![("Cookie", large.as_str())],
+                vec![("Cookie", first.as_str()), ("Cookie", second.as_str())],
+            ] {
+                let response = native_entry_get(
+                    &app,
+                    route,
+                    &cookies,
+                    "same-origin",
+                    "navigate",
+                    "document",
+                    &extra,
+                )
+                .await;
+                assert_eq!(response.status, StatusCode::PAYLOAD_TOO_LARGE);
+                assert!(
+                    native_413_headers_are_private(&response.headers),
+                    "native owner413 lost its rendered privacy/security envelope"
+                );
+                let html = native_entry_html(&response, StatusCode::PAYLOAD_TOO_LARGE);
+                assert!(html.contains("이 요청을 열 수 없습니다"));
+                for forbidden in [
+                    "<form",
+                    "data-account-state",
+                    "data-company-setup",
+                    "data-native-action",
+                    "data-island",
+                    "/_ui",
+                ] {
+                    assert!(
+                        !html.contains(forbidden),
+                        "denied document leaked {forbidden}"
+                    );
+                }
+                assert!(!html.contains(&account.account.to_string()));
+                if let Some(bytes) = &refused_bytes {
+                    assert_eq!(
+                        &response.bytes, bytes,
+                        "same owner refusal differs by document route"
+                    );
+                } else {
+                    refused_bytes = Some(response.bytes.clone());
+                }
+                assert!(
+                    before == all_rows(&pool).await,
+                    "oversized Cookie changed durable owner state"
+                );
+            }
+            let recovered = native_entry_get(
+                &app,
+                route,
+                &cookies,
+                "same-origin",
+                "navigate",
+                "document",
+                &[],
+            )
+            .await;
+            native_entry_html(&recovered, StatusCode::OK);
+            assert!(
+                before == all_rows(&pool).await,
+                "document recovery consumed session or changed history"
+            );
+        }
+        let api = request(
+            &app,
+            "GET",
+            "/api/v2/accounts/me",
+            &cookies,
+            None,
+            &[
+                ("Cookie", large.as_str()),
+                ("Accept", "text/html"),
+                ("X-Console-Native-Error", "true"),
+            ],
+        )
+        .await;
+        api.error(StatusCode::PAYLOAD_TOO_LARGE, "request_too_large");
+        assert!(
+            api.headers
+                .get(header::CONTENT_TYPE)
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .starts_with("application/json")
+        );
+        request(
+            &app,
+            "GET",
+            "/api/v2/accounts/me",
+            &cookies,
+            None,
+            &[
+                ("Cookie", large.as_str()),
+                ("Authorization", "Bearer oversized-ambiguity-marker"),
+            ],
+        )
+        .await
+        .error(StatusCode::BAD_REQUEST, "ambiguous_credentials");
+        assert!(
+            before == all_rows(&pool).await,
+            "API refusal changed durable owner state"
+        );
+        startup.close().await;
+    }
+
     #[cfg(feature = "test-browser")]
     include!("native_company_browser.rs");
 }

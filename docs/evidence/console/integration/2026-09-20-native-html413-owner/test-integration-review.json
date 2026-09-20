@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVED_FOR_ROOT_INTEGRATION_AND_ACTUAL_OWNER_DISCOVERY_RED",
+  "packet": "/private/tmp/console-native-html413-tests-20260920-round2",
+  "manifest_sha256": "39fe4d89c95ccbc9957730102b803a07708e7e32b4da03a7bb9f10ca91b91ad2",
+  "supersedes_for_exact_bytes": "/private/tmp/console-native-html413-tests-independent-integration-review-20260920.json",
+  "checks": {
+    "manifest_files": 18,
+    "hash_failures": 0,
+    "rustfmt_changed_candidate": "1.98.1 exit0",
+    "node_syntax": "exit0",
+    "machinery_positive": 1,
+    "machinery_corruptions_detected": 21,
+    "cargo": 0,
+    "DB": 0,
+    "browser": 0
+  },
+  "findings": [],
+  "conclusion": "Exact round2 delta aligns native Vary with independently owned SSR privacy repair: one field, case-insensitive exact Authorization/Cookie/Origin set, no duplicates/extras. Five additional wrong sets reject and reordered keys positive. Six leaves and earlier review conclusions otherwise preserved.",
+  "dependencies": [
+    "Native renderer positive requires actual shared SSR Authorization Vary repair first; do not admit its unrelated prior failure as HTML413 owner RED.",
+    "Future-helper unit still intentionally not preimplementation admission RED; actual App mounted test must discover/run on working prerequisites.",
+    "No runtime acceptance or source implementation approved."
+  ]
+}
