@@ -798,3 +798,253 @@ async fn committed_finalization_survives_unobserved_cli_response_and_retry(pool:
     assert_eq!(before, snapshot(&pool).await);
     assert_backfilled_empty_security(&pool, &expected_roots).await;
 }
+
+// Exercise the shared wrapper transaction, not an extracted historical SQL body.
+async fn helper_actor(pool: &PgPool) -> (PgPool, i32) {
+    let options = pool
+        .connect_options()
+        .as_ref()
+        .clone()
+        .options([("default_transaction_isolation", "repeatable read")]);
+    let actor = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .connect_with(options)
+        .await
+        .unwrap();
+    let (pid, isolation): (i32, String) =
+        sqlx::query_as("SELECT pg_backend_pid(), current_setting('transaction_isolation')")
+            .fetch_one(&actor)
+            .await
+            .unwrap();
+    assert_eq!(
+        isolation, "repeatable read",
+        "positive control for explicit helper isolation"
+    );
+    (actor, pid)
+}
+
+async fn require_helper_read_committed(pool: &PgPool) {
+    sqlx::raw_sql(
+        r#"
+        CREATE FUNCTION public.lc_helper_isolation() RETURNS event_trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            IF current_setting('transaction_isolation') <> 'read committed' THEN
+                RAISE EXCEPTION 'LC_HELPER_REQUIRES_READ_COMMITTED';
+            END IF;
+        END $$;
+        CREATE EVENT TRIGGER lc_helper_isolation ON ddl_command_start
+        WHEN TAG IN ('ALTER TABLE') EXECUTE FUNCTION public.lc_helper_isolation();
+    "#,
+    )
+    .execute(pool)
+    .await
+    .unwrap();
+}
+
+async fn helper_anchor_wait(pool: &PgPool, actor: i32, peer: i32, holder: i32) {
+    tokio::time::timeout(Duration::from_secs(3), async {
+        loop {
+            let observed: bool = sqlx::query_scalar(r#"
+                SELECT EXISTS(SELECT 1 FROM pg_stat_activity a WHERE a.pid=$1
+                  AND a.query LIKE '%pg_catalog.pg_authid%'
+                  AND a.query LIKE '%console_account_owner%'
+                  AND a.wait_event_type='Lock'
+                  AND ($3=ANY(pg_blocking_pids(a.pid))
+                    OR ($2=ANY(pg_blocking_pids(a.pid)) AND $3=ANY(pg_blocking_pids($2)))))
+                AND EXISTS(SELECT 1 FROM pg_locks WHERE pid=$1
+                  AND relation='pg_catalog.pg_authid'::regclass AND database=0
+                  AND mode='RowShareLock' AND granted)
+            "#).bind(actor).bind(peer).bind(holder).fetch_one(pool).await.unwrap();
+            if observed { break; }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    }).await.expect("actual helper must wait on shared Account owner anchor (directly or behind its known peer)");
+}
+
+async fn custody_profiles(pool: &PgPool) -> (String, String) {
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::raw_sql(include_str!("../../src/account_custody_session.sql"))
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    let root = sqlx::query_scalar(include_str!("../../src/account_custody_state.sql"))
+        .fetch_one(tx.as_mut())
+        .await
+        .unwrap();
+    let credentials = sqlx::query_scalar(include_str!(
+        "../../src/account_credential_custody_state.sql"
+    ))
+    .fetch_one(tx.as_mut())
+    .await
+    .unwrap();
+    tx.rollback().await.unwrap();
+    (root, credentials)
+}
+
+async fn cross_database_helpers(pool: PgPool, both_serving: bool) {
+    staged(&pool).await;
+    let unique = uuid::Uuid::new_v4().simple().to_string();
+    let database = format!("_sqlx_test_{unique}{}", &unique[..20]);
+    let outcome = std::panic::AssertUnwindSafe(async {
+        sqlx::query(sqlx::AssertSqlSafe(format!("CREATE DATABASE \"{database}\"")))
+            .execute(&pool).await.unwrap();
+        let other = sqlx::postgres::PgPoolOptions::new().max_connections(4)
+            .connect_with(pool.connect_options().as_ref().clone().database(&database))
+            .await.unwrap();
+        prepare_http_database_staging(&other).await;
+        require_helper_read_committed(&pool).await;
+        require_helper_read_committed(&other).await;
+        let before = snapshot(&pool).await;
+        let other_before = snapshot(&other).await;
+        let credential_role_before: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='console_credential_owner')"
+        ).fetch_one(&pool).await.unwrap();
+        println!("HELPER_FIRST_CREDENTIAL_ROLE_CREATION={}", !credential_role_before);
+        let (root_actor, root_pid) = helper_actor(&pool).await;
+        let (serving_actor, serving_pid) = helper_actor(&other).await;
+        let mut holder = pool.begin().await.unwrap();
+        let holder_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+            .fetch_one(&mut *holder).await.unwrap();
+        let _: String = sqlx::query_scalar(
+            "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE"
+        ).fetch_one(&mut *holder).await.unwrap();
+        let root_connection = root_actor.clone();
+        let serving_connection = serving_actor.clone();
+        let mut root_task = tokio::spawn(async move {
+            if both_serving { console_platform_test_support::finalize_serving_account_custody(&root_connection).await; }
+            else { console_platform_test_support::finalize_account_custody(&root_connection).await; }
+        });
+        let mut serving_task = tokio::spawn(async move {
+            console_platform_test_support::finalize_serving_account_custody(&serving_connection).await;
+        });
+        let mut root_joined = false;
+        let mut serving_joined = false;
+        let concurrent = std::panic::AssertUnwindSafe(async {
+            let observation_start = std::time::Instant::now();
+            tokio::time::timeout(Duration::from_secs(4), async {
+                tokio::join!(
+                    helper_anchor_wait(&pool, root_pid, serving_pid, holder_pid),
+                    helper_anchor_wait(&pool, serving_pid, root_pid, holder_pid));
+                assert!(!root_task.is_finished() && !serving_task.is_finished());
+                let (root_snapshot, serving_snapshot) = tokio::join!(snapshot(&pool), snapshot(&other));
+                assert_eq!(before, root_snapshot);
+                assert_eq!(other_before, serving_snapshot);
+            }).await.expect("observe both blocked helpers and unpublished state within lock budget");
+            println!("HELPER_ANCHOR_OBSERVATION_MS={}", observation_start.elapsed().as_millis());
+            holder.rollback().await.unwrap();
+            let root_result = tokio::time::timeout(Duration::from_secs(65), &mut root_task).await;
+            root_joined = root_result.is_ok();
+            let serving_result = tokio::time::timeout(Duration::from_secs(65), &mut serving_task).await;
+            serving_joined = serving_result.is_ok();
+            let requests = [("root", root_result.unwrap().is_ok()),
+                ("serving", serving_result.unwrap().is_ok())];
+            assert!(complete_successful_requests(&["root", "serving"], &requests));
+            assert_owners(&pool, true).await;
+            assert_owners(&other, true).await;
+            assert_eq!(custody_profiles(&pool).await.0, if both_serving { "account_custody.native_finalized" } else { "account_custody.finalized" });
+            if both_serving {
+                assert_eq!(custody_profiles(&pool).await.1, "account_credentials.native_finalized");
+            }
+            assert_eq!(custody_profiles(&other).await,
+                ("account_custody.native_finalized".to_owned(), "account_credentials.native_finalized".to_owned()));
+            let credential_role_after: bool = sqlx::query_scalar(
+                "SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname='console_credential_owner')"
+            ).fetch_one(&pool).await.unwrap();
+            assert!(credential_role_after);
+        }).catch_unwind().await;
+        stop_finalizer(&pool, &mut root_task, root_pid, root_joined).await;
+        stop_finalizer(&pool, &mut serving_task, serving_pid, serving_joined).await;
+        root_actor.close().await;
+        serving_actor.close().await;
+        other.close().await;
+        if let Err(panic) = concurrent { std::panic::resume_unwind(panic); }
+    }).catch_unwind().await;
+    sqlx::query(sqlx::AssertSqlSafe(format!(
+        "DROP DATABASE IF EXISTS \"{database}\" WITH (FORCE)"
+    )))
+    .execute(&pool)
+    .await
+    .unwrap();
+    if let Err(panic) = outcome {
+        std::panic::resume_unwind(panic);
+    }
+}
+
+#[sqlx::test(migrations = false)]
+async fn helper_finalizers_share_anchor_across_databases(pool: PgPool) {
+    cross_database_helpers(pool, false).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn helper_finalizers_serialize_credential_creation_across_databases(pool: PgPool) {
+    cross_database_helpers(pool, true).await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn helper_finalizers_release_anchor_after_failure_and_retry(pool: PgPool) {
+    staged(&pool).await;
+    require_helper_read_committed(&pool).await;
+    for serving in [false, true] {
+        let before = snapshot(&pool).await;
+        let profiles_before = custody_profiles(&pool).await;
+        let (actor, pid) = helper_actor(&pool).await;
+        let mut holder = pool.begin().await.unwrap();
+        let holder_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
+            .fetch_one(&mut *holder)
+            .await
+            .unwrap();
+        sqlx::raw_sql("LOCK TABLE public.accounts IN ACCESS EXCLUSIVE MODE")
+            .execute(&mut *holder)
+            .await
+            .unwrap();
+        let connection = actor.clone();
+        let mut task = tokio::spawn(async move {
+            if serving {
+                console_platform_test_support::finalize_serving_account_custody(&connection).await;
+            } else {
+                console_platform_test_support::finalize_account_custody(&connection).await;
+            }
+        });
+        let mut joined = false;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            wait_for_blocker(&pool, pid, holder_pid).await;
+            let mut anchor_probe = pool.begin().await.unwrap();
+            let error = sqlx::query_scalar::<_, String>(
+                "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE NOWAIT"
+            ).fetch_one(&mut *anchor_probe).await.expect_err("blocked helper must hold shared anchor until rollback");
+            assert_eq!(error.as_database_error().unwrap().code().as_deref(), Some("55P03"));
+            anchor_probe.rollback().await.unwrap();
+            let result = tokio::time::timeout(Duration::from_secs(8), &mut task).await;
+            joined = result.is_ok();
+            let panic = result.unwrap().expect_err("actual helper must time out on held business relation").into_panic();
+            let message = panic.downcast_ref::<String>().map(String::as_str)
+                .or_else(|| panic.downcast_ref::<&str>().copied()).unwrap_or("");
+            assert!(message.contains("55P03"), "wrong helper failure: {message}");
+            holder.rollback().await.unwrap();
+            // Acquiring the pooled backend flushes SQLx's queued rollback.
+            let _: i32 = sqlx::query_scalar("SELECT 1::int").fetch_one(&actor).await.unwrap();
+            let mut retry = pool.begin().await.unwrap();
+            let _: String = sqlx::query_scalar(
+                "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE NOWAIT"
+            ).fetch_one(&mut *retry).await.unwrap();
+            retry.rollback().await.unwrap();
+            assert_eq!(before, snapshot(&pool).await);
+            assert_eq!(profiles_before, custody_profiles(&pool).await);
+            if serving { console_platform_test_support::finalize_serving_account_custody(&actor).await; }
+            else { console_platform_test_support::finalize_account_custody(&actor).await; }
+            assert_owners(&pool, true).await;
+        }).catch_unwind().await;
+        stop_finalizer(&pool, &mut task, pid, joined).await;
+        actor.close().await;
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+    }
+    assert_eq!(
+        custody_profiles(&pool).await,
+        (
+            "account_custody.native_finalized".to_owned(),
+            "account_credentials.native_finalized".to_owned()
+        )
+    );
+}

@@ -1,0 +1,47 @@
+{
+  "kind": "finalizer-concurrency-design-test-review",
+  "design_sha256": "750efde956ee1d2fe88b84255910d17bd098c68e46184940858a51244266188a",
+  "owner": "root sole repository writer",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "reference_inventory",
+      "verdict": "approved narrow exact design; actual helper proof required"
+    },
+    {
+      "round": 2,
+      "reviewer": "integration_security",
+      "verdict": "approved narrow exact design; actual helper proof required"
+    },
+    {
+      "round": 3,
+      "reviewer": "integration_tests",
+      "verdict": "approved narrow exact design; actual helper proof required"
+    },
+    {
+      "round": 4,
+      "reviewer": "audit_review",
+      "verdict": "approved narrow exact design; actual helper proof required"
+    }
+  ],
+  "test_addition_sha256": "407873895af5832b7f9aa2dc2e76620a0c69dfb7664c144d7c5d31ab8cbbb85d",
+  "test_review": {
+    "reviewer": "integration_tests",
+    "verdict": "approved exact append to unchanged lifecycle module",
+    "new_sqlx_cases": 3,
+    "corrections": [
+      "PostgreSQL blocker chains may include peer waiter.",
+      "Root-only finalized classifier differs from native serving classifier.",
+      "Separate serving/serving history required to prove first creation.",
+      "Single4s observer envelope within unchanged5s lock timeout."
+    ]
+  },
+  "remaining": [
+    "Actual RED admission pending; no implementation approved by this receipt.",
+    "First credential-owner creation requires fresh filtered cluster run and captured true marker.",
+    "Missing-anchor runtime scenario not executed; ordinary cluster anchor must not be removed.",
+    "Full ordinary nextest consumer qualification remains required."
+  ],
+  "full_test_file_sha256": "1cf40b10f3d0679f940ebeec792ae9dd395683a27b77340597dac4c04e6d70e0",
+  "preserved_original_prefix_sha256": "c305394e6b1ae2ebe6cf8ca16837ab634fd82ffe3b336d0c423b5b978eb33593"
+}
