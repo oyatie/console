@@ -711,6 +711,12 @@ pub(crate) mod company_setup {
         let requests = after_effects
             .remove("company_enrollment_requests")
             .expect("durable input request required after composition failure");
+        let old_events = before_effects
+            .remove("company_enrollment_request_events")
+            .expect("admitted request event owner must exist before submission");
+        let events = after_effects
+            .remove("company_enrollment_request_events")
+            .expect("durable preparation event required after composition failure");
         assert!(
             before_effects == after_effects,
             "failed composition retained partial Company/Group/catalog/grant/context/receipt/audit effect"
@@ -721,6 +727,71 @@ pub(crate) mod company_setup {
             added[0]["account_id"] == json!(account.account)
                 && added[0]["command_id"] == json!(command)
                 && added[0]["state"] == "PENDING"
+        );
+        // Prepare commits exactly one request/event pair before the effect
+        // transaction. Neither prior history nor any other effect is excluded.
+        let added_events =
+            added_rows(&old_events, &events).expect("request event history preserved");
+        assert_eq!(
+            added_events.len(),
+            1,
+            "exactly one durable preparation event"
+        );
+        let tokens: Vec<Value> = serde_json::from_str(&before["auth_refresh_tokens"]).unwrap();
+        let token_hash = format!(
+            "\\x{}",
+            hex::encode(Sha256::digest(cookies.0[REFRESH].as_bytes()))
+        );
+        let tokens: Vec<_> = tokens
+            .iter()
+            .filter(|token| token["token_hash"] == token_hash)
+            .collect();
+        assert_eq!(
+            tokens.len(),
+            1,
+            "submitted cookie must identify one original token"
+        );
+        let token = tokens[0];
+        assert!(
+            token["user_id"] == json!(account.account)
+                && token["used_at"].is_null()
+                && token["revoked_at"].is_null()
+        );
+        let families: Vec<Value> =
+            serde_json::from_str(&before["auth_refresh_token_families"]).unwrap();
+        let families: Vec<_> = families
+            .iter()
+            .filter(|family| family["id"] == token["family_id"])
+            .collect();
+        assert_eq!(
+            families.len(),
+            1,
+            "original token must identify one native session"
+        );
+        let family = families[0];
+        assert!(
+            family["user_id"] == json!(account.account)
+                && family["protocol"] == "ACCOUNT_V1"
+                && family["revoked_at"].is_null()
+        );
+        assert!(
+            added[0]["created_at"].is_string(),
+            "request must retain authoritative creation time"
+        );
+        assert_eq!(
+            added_events[0],
+            json!({
+                "account_id": account.account,
+                "command_id": command,
+                "event_revision": 1,
+                "from_state": null,
+                "to_state": "PENDING",
+                "occurred_at": added[0]["created_at"],
+                "actor_account_id": account.account,
+                "session_id": family["id"],
+                "reason_code": "PREPARED"
+            }),
+            "only the exact request-correlated preparation event may survive"
         );
         let pending = request(
             &app,
