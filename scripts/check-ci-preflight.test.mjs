@@ -9,6 +9,7 @@ import {
   readdirSync,
   readlinkSync,
   rmSync,
+  symlinkSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -171,7 +172,7 @@ function addUnexpectedActionInput(step) {
 
 function mutateActionInput(step, input, replacement) {
   const escaped = input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const pattern = new RegExp(`^          ${escaped}: .*\\n`, "m");
+  const pattern = new RegExp(`^          ${escaped}: [^\\n]*\\n(?:^            [^\\n]*\\n)*`, "m");
   assert.match(step, pattern, `missing action input ${input}`);
   return step.replace(pattern, replacement === null
     ? ""
@@ -1047,7 +1048,7 @@ describe("CI preflight contract", () => {
     const requiredActionStepCounts = {
       preflight: 3,
       "domain-unit": 3,
-      backend: 3,
+      backend: 4,
       "migration-expand-contract": 3,
       "kubernetes-manifests": 1,
       "repo-gates": 2,
@@ -1093,9 +1094,9 @@ describe("CI preflight contract", () => {
     // 2026-08-18: -7, exactly the Free runner disk steps removed from ci.yml
     // (5 postgres shards + backend + company-conformance) and no more.
     // 2026-08-28: +2 rust-fmt setup actions (checkout + rust-toolchain).
-    assert.equal(actionStepCount, 40, "required and planned job setup-action coverage must not shrink");
-    // 40 actions x 2 bypass mutations = 80.
-    assert.equal(mutationCount, 80, "setup-action bypass matrix must not shrink");
+    assert.equal(actionStepCount, 41, "required and planned job setup-action coverage must not shrink");
+    // One retained-evidence action adds2 bypasses:41 actions x2 =82.
+    assert.equal(mutationCount, 82, "setup-action bypass matrix must not shrink");
   });
 
   it("locks every setup action's identity, inputs, totality, and interleaving", () => {
@@ -1192,7 +1193,8 @@ describe("CI preflight contract", () => {
     // re-proves it on the runner with RUSTUP_TOOLCHAIN unset, failing if rustup
     // still has anything to download. Lower this number only with the same
     // accounting.
-    assert.equal(mutationCount, 236, "setup-action identity/input/interleaving matrix must not shrink");
+    // Upload adds3 identity +10 input +1 action-order mutations.
+    assert.equal(mutationCount, 250, "setup-action identity/input/interleaving matrix must not shrink");
   });
 
   it("locks the setup-rust action body, which is now the only namer of a Rust version", () => {
@@ -2639,5 +2641,99 @@ describe("CI preflight contract", () => {
       ),
       "backend must preserve the locked fail-fast step multiset and failure semantics",
     );
+  });
+});
+
+// Retention qualification is separate from browser/product correctness.
+describe("native browser evidence retention", () => {
+  const families = [
+    ["Native Account browser", "CONSOLE_BROWSER_JOURNEY_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-sign-in.png", "05-account-returned.png"]],
+    ["Native Company creation browser", "CONSOLE_COMPANY_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-created.png", "05-company-workspace.png"]],
+    ["Native Company preview browser", "CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "01-public.png", "02-terms.png", "03-account-enrolled.png", "04-company-preview-input-preserved.png"]],
+    ["Native payroll hydration browser", "CONSOLE_HYDRATION_BROWSER_OUTPUT", ["result.json", "owner-receipt.json", "authorized-before.png", "authorized-filter-1.png", "authorized-filter-2.png", "authorized-filter-3.png"]],
+  ];
+
+  it("retains exactly26 public files in one pinned action before failure collection", () => {
+    const model = yaml.load(workflow);
+    const steps = model.jobs.backend.steps;
+    assert.equal(Object.keys(model.jobs).length, 17);
+    const uploads = steps.filter((step) => step.uses?.startsWith("actions/upload-artifact@"));
+    assert.equal(uploads.length, 1);
+    const step = uploads[0];
+    assert.equal(steps.indexOf(step), 32);
+    assert.equal(steps[31].name, "Native payroll hydration browser");
+    assert.equal(steps[33].name, "Collect failures");
+    assert.equal(step.id, "native-browser-evidence");
+    assert.equal(step.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+    assert.equal(step.if, "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}");
+    const paths = families.flatMap(([, variable, files]) => files.map((file) => `\${{ env.${variable} }}/${file}`));
+    assert.equal(paths.length, 26);
+    assert.equal(new Set(paths).size, 26);
+    assert.deepEqual(step.with, {
+      name: "native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}",
+      path: paths.join("\n") + "\n",
+      "if-no-files-found": "error",
+      "retention-days": 7,
+      "include-hidden-files": false,
+    });
+    assert.ok(!Object.hasOwn(step, "continue-on-error"));
+    for (const replacement of ["${{ runner.temp }}/**", "${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/../runtime/**", "${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/*.json"]) {
+      const changed = mutateNamedStep(workflow, "backend", step.name, (source) => source.replace(paths[0], replacement));
+      const { failures } = evaluateCiPreflight(changed);
+      assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
+    }
+    for (const other of ["Native payroll hydration browser", "Collect failures"]) {
+      const { failures } = evaluateCiPreflight(swapNamedSteps(workflow, "backend", step.name, other));
+      assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
+    }
+    for (const replacement of [null, '"changed-path"']) {
+      const changed = mutateNamedStep(workflow, "backend", step.name, (source) => mutateActionInput(source, "path", replacement));
+      // A deleted/changed multiline input must remain parseable: stale child
+      // lines cannot make malformed YAML masquerade as action-lock coverage.
+      assert.doesNotThrow(() => yaml.load(changed));
+      const { failures } = evaluateCiPreflight(changed);
+      assert.ok(failures.some((failure) => failure.startsWith("backend setup action step")));
+    }
+  });
+
+  it("fails every successful-leaf evidence guard on a missing empty or symlinked allowlisted file", () => {
+    const directory = mkdtempSync(join(tmpdir(), "console-browser-retention-"));
+    const steps = yaml.load(workflow).jobs.backend.steps;
+    let executions = 0;
+    try {
+      for (const [name, variable, files] of families) {
+        const step = steps.find((item) => item.name === name);
+        const marker = "# Require the retained evidence from a successful browser leaf.";
+        assert.equal(step.run.split(marker).length, 2);
+        const guard = step.run.slice(step.run.indexOf(marker));
+        const output = join(directory, variable + " path with spaces");
+        mkdirSync(output);
+        for (const file of files) writeFileSync(join(output, file), "synthetic public fixture\n");
+        const run = () => {
+          executions += 1;
+          return spawnSync("/bin/bash", ["-eu", "-c", guard], {
+            env: { PATH: process.env.PATH, [variable]: output }, encoding: "utf8",
+          });
+        };
+        assert.equal(run().status, 0, name + " complete evidence must pass");
+        const target = join(directory, "symlink-target-" + variable);
+        writeFileSync(target, "synthetic nonempty target\n");
+        for (const file of files) {
+          const path = join(output, file);
+          unlinkSync(path);
+          assert.equal(run().status, 1, name + " missing " + file);
+          writeFileSync(path, "");
+          assert.equal(run().status, 1, name + " empty " + file);
+          unlinkSync(path);
+          symlinkSync(target, path);
+          assert.equal(run().status, 1, name + " symlink " + file);
+          unlinkSync(path);
+          writeFileSync(path, "synthetic public fixture\n");
+        }
+      }
+      assert.equal(executions, 82, "4positive plus26each missing/empty/symlink probes");
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });
