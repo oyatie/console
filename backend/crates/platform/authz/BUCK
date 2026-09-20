@@ -15,7 +15,7 @@ export_file(
 
 rust_library(
     name = "console-platform-authz",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
         "//docs/specs:cedar-pbac-map": "docs/specs/cedar-pbac-coexistence-map.json",
     }),
     crate = "console_platform_authz",
@@ -31,13 +31,14 @@ rust_library(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )
 
 rust_test(
     name = "console-platform-authz-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", glob(["src/**/*.rs", "src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/platform_policy/truth-table.json"]), external = {
         "//docs/specs:cedar-pbac-map": "docs/specs/cedar-pbac-coexistence-map.json",
     }),
     crate = "console_platform_authz",
@@ -54,6 +55,7 @@ rust_test(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )
@@ -75,6 +77,7 @@ rust_test(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
         ":console-platform-authz",
     ],
@@ -97,6 +100,7 @@ rust_test(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
         ":console-platform-authz",
     ],
@@ -119,6 +123,7 @@ rust_test(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
         ":console-platform-authz",
     ],
@@ -141,6 +146,7 @@ rust_test(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
         ":console-platform-authz",
     ],
@@ -165,6 +171,7 @@ rust_test(
         "//third-party/rust:serde_json",
         "//third-party/rust:sha2",
         "//third-party/rust:sqlx",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
         ":console-platform-authz",
     ],

@@ -181,6 +181,7 @@ RESOURCE_CONFIG = {
     },
     "console-platform-test-support": {"external": {'//ops:postgres-finalize-account-custody.sql': 'ops/postgres-finalize-account-custody.sql', '//ops:postgres-finalize-account-credentials.sql': 'ops/postgres-finalize-account-credentials.sql'}},
     "console-platform-authz": {
+        "srcs": ["src/platform_policy/*.cedar", "src/platform_policy/*.cedarschema", "src/platform_policy/truth-table.json"],
         "external": {
             "//docs/specs:cedar-pbac-map":
                 "docs/specs/cedar-pbac-coexistence-map.json",

@@ -868,6 +868,11 @@ impl RestError {
 
     fn from_provisioning(error: ProvisioningError) -> Self {
         match error {
+            ProvisioningError::PlatformListUnauthorized
+            | ProvisioningError::PlatformListForbidden
+            | ProvisioningError::PlatformListUnavailable => {
+                Self::unavailable("platform listing unavailable on the legacy transport")
+            }
             // Generic, non-revealing message for any OTP-redeem rejection so the
             // client cannot distinguish unknown vs expired vs already-used.
             ProvisioningError::InvalidBootstrapCredential => {

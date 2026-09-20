@@ -1,0 +1,62 @@
+// Proposed immutable legacy-platform schema. Design artifact only; not compiled here.
+namespace ConsoleLegacyPlatformV1 {
+  entity Subject = {
+    "home_org": String,
+    "roles": Set<String>,
+    "active": Bool,
+    "account_fenced": Bool
+  };
+  entity Resource = {
+    "platform_scope": String,
+    "kind": String,
+    "key": String
+  };
+  action "tenant_create" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "tenant_list" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "tenant_suspend" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "tenant_remove" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "tenant_health_read" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "tenant_manage" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "group_manage" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+  action "platform_audit_read" appliesTo {
+    principal: [Subject], resource: [Resource],
+    context: { "policy_version": String, "session_mode": String,
+               "source_kind": String, "use_kind": String,
+               "call_site": String, "source_company": String }
+  };
+}

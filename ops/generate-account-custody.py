@@ -1570,7 +1570,7 @@ GRANT EXECUTE ON FUNCTION public.account_company_deactivation_guard_v1(uuid,uuid
 def credential_generated_files():
     query = credential_state_query()
     root_query = root_state_query()
-    native_query = company_eligibility_state_query()
+    native_query = platform_source_state_query()
     root_inspect = 'root_state := (\n' + root_query + '\n);'
     inspect = 'state := (\n' + query + '\n);'
     native_inspect = 'native_state := (\n' + native_query + '\n);'
@@ -1622,6 +1622,17 @@ BEGIN
     {root_inspect}
     {inspect}
     IF root_state='account_custody.native_finalized' AND state='account_credentials.native_finalized' THEN RETURN; END IF;
+    <<prepare_platform_source>>
+    BEGIN
+    -- Exact populated predecessor skips historical installers and retains every row.
+    IF root_state='account_custody.native_upgrade_required'
+       AND state='account_credentials.native_upgrade_required'
+       AND COALESCE((SELECT snapshot_sha256 IN ({','.join("'" + value + "'" for value in platform_source_fingerprints()[0])})
+           FROM (
+{platform_source_snapshot_query()}
+           ) captured),false) THEN
+        EXIT prepare_platform_source;
+    END IF;
     <<prepare_company_eligibility>>
     BEGIN
     -- The exact current Business-session predecessor may already hold live
@@ -1718,6 +1729,8 @@ BEGIN
 {business_session_upgrade_sql()}
     END prepare_company_eligibility;
 {company_eligibility_upgrade_sql()}
+    END prepare_platform_source;
+{platform_source_upgrade_sql()}
     {native_inspect}
     IF native_state IS DISTINCT FROM 'account_native.finalized' THEN
         RAISE EXCEPTION 'account_native.profile_mismatch';
@@ -2095,6 +2108,145 @@ SELECT CASE WHEN (SELECT snapshot_sha256 FROM current_profile) IN ({final_litera
  ELSE (SELECT historical.state FROM historical) END AS state"""
 
 
+PLATFORM_SOURCE_INSTALL = r"""-- Prospective retained source facts; installed only by the locked custody finalizer.
+CREATE FUNCTION public.auth_legacy_platform_source_material_v1(p_subject uuid,p_family uuid)
+RETURNS TABLE(roles text[],family_id uuid,family_user_id uuid,family_org_id uuid,
+    family_protocol text,family_created_at timestamptz,family_revoked_at timestamptz,
+    family_account_security_generation bigint,family_auth_time timestamptz,family_assurance text)
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on
+AS $body$
+DECLARE
+    home constant uuid := '00000000-0000-0000-0000-00000000face';
+    current_roles text[];
+    guarded boolean;
+BEGIN
+    IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy.unsupported_isolation';
+    END IF;
+    IF home IS DISTINCT FROM NULLIF(current_setting('app.current_org',true),'')::uuid THEN
+        RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='auth_legacy.company_context_mismatch';
+    END IF;
+    IF p_subject IS NULL OR p_subject='00000000-0000-0000-0000-000000000000'::uuid
+        OR p_family='00000000-0000-0000-0000-000000000000'::uuid THEN
+        RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='auth_legacy_platform.invalid_identity';
+    END IF;
+    PERFORM public.auth_legacy_company_lock_v1(home);
+    SELECT public.account_company_deactivation_guard_v1(home,p_subject) INTO guarded;
+    IF guarded IS NULL THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_platform.invalid_guard';
+    END IF;
+    IF NOT guarded THEN
+        RAISE EXCEPTION USING ERRCODE='28000',MESSAGE='auth_legacy_platform.source_fenced';
+    END IF;
+    SELECT public.auth_legacy_user_active_v1(home,p_subject) INTO guarded;
+    IF guarded IS NULL THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_platform.invalid_guard';
+    END IF;
+    IF NOT guarded THEN
+        RAISE EXCEPTION USING ERRCODE='28000',MESSAGE='auth_legacy_platform.source_inactive';
+    END IF;
+    SELECT c.roles INTO STRICT current_roles FROM public.auth_legacy_session_context_v1(home,p_subject) c;
+    IF current_roles IS NULL THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_platform.invalid_roles';
+    END IF;
+    IF cardinality(current_roles)=0 THEN
+        RAISE EXCEPTION USING ERRCODE='28000',MESSAGE='auth_legacy.subject_has_no_roles';
+    END IF;
+    IF p_family IS NULL THEN
+        RETURN QUERY SELECT current_roles,NULL::uuid,NULL::uuid,NULL::uuid,NULL::text,
+            NULL::timestamptz,NULL::timestamptz,NULL::bigint,NULL::timestamptz,NULL::text;
+    ELSE
+        RETURN QUERY SELECT current_roles,f.id,f.user_id,f.org_id,f.protocol,f.created_at,
+            f.revoked_at,f.account_security_generation,f.auth_time,f.assurance
+            FROM public.auth_refresh_token_families f WHERE f.id=p_family FOR SHARE OF f;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION USING ERRCODE='P0002',MESSAGE='auth_legacy_platform.family_not_found';
+        END IF;
+    END IF;
+END
+$body$;
+ALTER FUNCTION public.auth_legacy_platform_source_material_v1(uuid,uuid) OWNER TO console_credential_owner;
+REVOKE ALL ON FUNCTION public.auth_legacy_platform_source_material_v1(uuid,uuid)
+    FROM PUBLIC,console_app,console_rt,console_auth_rt,console_auth_startup,
+        console_account_owner,console_terms_owner,console_credential_owner,
+        console_leave_cmd,console_ontology_cmd,console_platform_force_cmd;
+GRANT EXECUTE ON FUNCTION public.auth_legacy_platform_source_material_v1(uuid,uuid)
+    TO console_credential_owner,console_rt;
+GRANT EXECUTE ON FUNCTION public.auth_legacy_session_context_v1(uuid,uuid) TO console_credential_owner;
+"""
+
+
+def platform_source_snapshot_query():
+    # Historical serializers and their pins retain their original meaning.
+    query = company_eligibility_snapshot_query()
+    replacements = [
+        ("OR (n.nspname='public' AND p.proname IN (", "OR (n.nspname='public' AND p.proname IN ('auth_legacy_platform_source_material_v1',"),
+        ("   ('public.account_context_presence_v1(uuid)'),", "   ('public.auth_legacy_platform_source_material_v1(uuid,uuid)'),\n   ('public.account_context_presence_v1(uuid)'),"),
+        ("count(*)=60 AND bool_and(present", "count(*)=61 AND bool_and(present"),
+    ]
+    for before, after in replacements:
+        if query.count(before) != 1:
+            raise ValueError('Platform source snapshot anchor missing or duplicate')
+        query = query.replace(before, after)
+    return query
+
+
+
+# Filled only from independently reviewed source-bound captures.
+PLATFORM_SOURCE_PRIOR_SHA256 = ('0f2db80a4afeacb1d6d6aaf0bbaef9d8f7968e77500322cf691774f02d88e8ea', '93236c9a9e850db234f4dc777553e4eb829bbb76a0f6cc27551f761cc28bffe7')
+PLATFORM_SOURCE_FINALIZED_SHA256 = ('5aee358ff0bea94268d40b5f16f86779952ea95a74cab48cbf99984eedf6e2da', '475c1f9a43b402539e0469f31adc6f06848669abfa34c08350aa1ee006664103')
+
+
+def platform_source_fingerprints():
+    values = (*PLATFORM_SOURCE_PRIOR_SHA256, *PLATFORM_SOURCE_FINALIZED_SHA256)
+    if any(not isinstance(value, str) or len(value) != 64
+           or any(c not in '0123456789abcdef' for c in value) for value in values):
+        raise SystemExit('Platform source fingerprints require independent source/capture review')
+    if len(set(values)) != 4:
+        raise SystemExit('Platform source plain/observer prior/finalized profiles must be distinct')
+    return PLATFORM_SOURCE_PRIOR_SHA256, PLATFORM_SOURCE_FINALIZED_SHA256
+
+
+def platform_source_state_query():
+    prior, finalized = platform_source_fingerprints()
+    prior_literals = ','.join("'" + value + "'" for value in prior)
+    final_literals = ','.join("'" + value + "'" for value in finalized)
+    return f"""WITH current_profile AS (
+{platform_source_snapshot_query()}
+), historical AS (
+{company_eligibility_state_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM current_profile) IN ({final_literals})
+ AND (SELECT snapshot->'deployment_operator_boundary'->'startup_final_rights_valid' FROM current_profile)='true'::jsonb
+ THEN 'account_native.finalized'
+ WHEN (SELECT snapshot_sha256 FROM current_profile) IN ({prior_literals})
+ THEN 'account_native.extension_required'
+ WHEN EXISTS(SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+ WHERE n.nspname='public' AND p.proname='auth_legacy_platform_source_material_v1')
+ THEN 'account_native.profile_mismatch'
+ WHEN (SELECT historical.state FROM historical) IN ('account_native.finalized','account_native.extension_required')
+ THEN 'account_native.extension_required'
+ ELSE (SELECT historical.state FROM historical) END AS state"""
+
+
+def platform_source_upgrade_sql():
+    prior, finalized = platform_source_fingerprints()
+    prior_literals = ','.join("'" + value + "'" for value in prior)
+    final_literals = ','.join("'" + value + "'" for value in finalized)
+    inspect = '(\n' + platform_source_snapshot_query() + '\n)'
+    return f"""
+    IF NOT COALESCE((SELECT snapshot_sha256 IN ({prior_literals}) FROM {inspect} captured),false) THEN
+        RAISE EXCEPTION 'auth_legacy_platform.predecessor_mismatch';
+    END IF;
+{PLATFORM_SOURCE_INSTALL}
+    IF NOT COALESCE((SELECT snapshot_sha256 IN ({final_literals})
+        AND snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb
+        FROM {inspect} captured),false) THEN
+        RAISE EXCEPTION 'auth_legacy_platform.profile_mismatch';
+    END IF;
+"""
+
 def company_eligibility_upgrade_sql():
     prior, finalized = company_eligibility_fingerprints()
     prior_literals = ','.join("'" + value + "'" for value in prior)
@@ -2197,7 +2349,7 @@ DO $account_native_postcondition$
 BEGIN
     PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     IF (
-{company_eligibility_state_query()}
+{platform_source_state_query()}
     ) IS DISTINCT FROM 'account_native.finalized' THEN
         RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_native.finalization_incomplete';
     END IF;
@@ -2207,7 +2359,7 @@ $account_native_postcondition$;
 
 
 def root_state_query():
-    return f"""WITH native AS ({company_eligibility_state_query()})
+    return f"""WITH native AS ({platform_source_state_query()})
 SELECT CASE WHEN (SELECT native.state FROM native)='account_native.finalized' THEN 'account_custody.native_finalized'
  WHEN (SELECT native.state FROM native)='account_native.extension_required' THEN 'account_custody.native_upgrade_required'
  WHEN (SELECT native.state FROM native)='account_native.profile_mismatch' THEN 'account_native.profile_mismatch'
@@ -2216,7 +2368,7 @@ SELECT CASE WHEN (SELECT native.state FROM native)='account_native.finalized' TH
 
 def credential_state_query():
     legacy = CREDENTIAL_STATE_QUERY.strip().removesuffix(';')
-    return f"""WITH native AS ({company_eligibility_state_query()})
+    return f"""WITH native AS ({platform_source_state_query()})
 SELECT CASE WHEN (SELECT native.state FROM native)='account_native.finalized' THEN 'account_credentials.native_finalized'
  WHEN (SELECT native.state FROM native)='account_native.extension_required' THEN 'account_credentials.native_upgrade_required'
  WHEN (SELECT native.state FROM native)='account_native.profile_mismatch' THEN 'account_native.profile_mismatch'

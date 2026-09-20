@@ -41,6 +41,13 @@ pub enum ProvisioningError {
     #[error("Account terms acknowledgments do not match the current manifest")]
     AccountTermsAcknowledgments,
 
+    #[error("platform authentication refused")]
+    PlatformListUnauthorized,
+    #[error("platform policy refused")]
+    PlatformListForbidden,
+    #[error("platform listing is unavailable")]
+    PlatformListUnavailable,
+
     #[error("database error: {0}")]
     Sqlx(#[from] sqlx::Error),
 
@@ -1129,16 +1136,32 @@ impl PlatformProvisioner {
         })
     }
 
-    /// List all tenants (cross-tenant read) via the SECURITY DEFINER
-    /// `platform_list_organizations` so the platform tier sees every org even
-    /// though `organizations` is RLS-gated for `console_rt`. Audited by the caller.
+    /// Retain verified source authority through projection, audit and commit.
     pub async fn list_tenants(
         &self,
         pool: &PgPool,
-        actor: Option<UserId>,
-        now: OffsetDateTime,
+        verifier: &console_platform_auth::JwtVerifier,
+        access: &str,
+        absolute_family_ttl: Duration,
+        policy: &console_platform_authz::platform_policy::PlatformPolicy,
     ) -> Result<Vec<OrganizationSummary>, ProvisioningError> {
-        let mut tx = pool.begin().await?;
+        let mut tx = pool
+            .begin()
+            .await
+            .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
+        sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+            .execute(tx.as_mut())
+            .await
+            .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
+        let source = console_platform_auth::live_legacy_platform_source_in_tx(
+            &mut tx,
+            verifier,
+            access,
+            absolute_family_ttl,
+        )
+        .await
+        .map_err(platform_list_source_error)?;
+        check_platform_list_authority(&mut tx, &source, absolute_family_ttl, policy).await?;
         let rows = sqlx::query(
             r#"
             SELECT
@@ -1149,7 +1172,8 @@ impl PlatformProvisioner {
             "#,
         )
         .fetch_all(tx.as_mut())
-        .await?;
+        .await
+        .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
 
         let summaries = rows
             .into_iter()
@@ -1166,23 +1190,34 @@ impl PlatformProvisioner {
                     group_name: row.try_get("group_name")?,
                 })
             })
-            .collect::<Result<Vec<_>, ProvisioningError>>()?;
+            .collect::<Result<Vec<_>, sqlx::Error>>()
+            .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
 
         // Audited cross-tenant read. This is a PLATFORM-tier event (no single
         // target tenant), so it carries org_id = NULL — the audit_events WITH
         // CHECK allows a NULL-org platform row even with no tenant GUC armed.
+        let now =
+            check_platform_list_authority(&mut tx, &source, absolute_family_ttl, policy).await?;
         let event = AuditEvent::new(
-            actor,
-            AuditAction::new("platform.tenant.list")?,
+            Some(source.subject()),
+            AuditAction::new("platform.tenant.list")
+                .map_err(|_| ProvisioningError::PlatformListUnavailable)?,
             "organizations",
             "list",
             TraceContext::generate(),
             now,
         )
         .with_snapshots(None, Some(serde_json::json!({ "count": summaries.len() })));
-        insert_audit_event(&mut tx, &event).await?;
+        insert_audit_event(&mut tx, &event)
+            .await
+            .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
+        check_platform_list_authority(&mut tx, &source, absolute_family_ttl, policy).await?;
 
-        tx.commit().await?;
+        // A lost COMMIT acknowledgement is unavailable, not a known rollback.
+        // Do not retry this attempt or disclose its collected rows.
+        tx.commit()
+            .await
+            .map_err(|_| ProvisioningError::PlatformListUnavailable)?;
         Ok(summaries)
     }
 
@@ -2592,4 +2627,83 @@ fn fill_random() -> [u8; 16] {
 
 fn hash_token(token: &str) -> Vec<u8> {
     Sha256::digest(token.as_bytes()).to_vec()
+}
+
+fn platform_list_source_error(
+    error: console_platform_auth::LegacyPlatformSourceError,
+) -> ProvisioningError {
+    match error {
+        console_platform_auth::LegacyPlatformSourceError::Unauthorized => {
+            ProvisioningError::PlatformListUnauthorized
+        }
+        console_platform_auth::LegacyPlatformSourceError::Unavailable => {
+            ProvisioningError::PlatformListUnavailable
+        }
+    }
+}
+
+async fn check_platform_list_authority(
+    tx: &mut Transaction<'_, Postgres>,
+    source: &console_platform_auth::LegacyPlatformSource,
+    absolute_family_ttl: Duration,
+    policy: &console_platform_authz::platform_policy::PlatformPolicy,
+) -> Result<OffsetDateTime, ProvisioningError> {
+    use console_platform_authz::{PlatformFeature, platform_policy::*};
+    let now = console_platform_auth::ensure_legacy_platform_source_fresh_in_tx(tx, source)
+        .await
+        .map_err(platform_list_source_error)?;
+    let input = PlatformPolicyInput {
+        credential: PlatformCredentialFacts {
+            subject: source.subject(),
+            home: source.home(),
+            source_kind: PlatformSourceKind::Direct,
+            source_company: None,
+            iat: source.issued_at_seconds(),
+            nbf: source.not_before_seconds(),
+            exp: source.expires_at_seconds(),
+            binding: source.binding().map(|binding| PlatformBindingFacts {
+                version: binding.version,
+                family_id: binding.family_id,
+                home: OrgId::from_uuid(binding.home_org),
+                kind: PlatformSourceKind::Direct,
+            }),
+        },
+        current: Some(PlatformCurrentFacts {
+            subject: source.current_subject(),
+            home: source.current_home(),
+            roles: Some(source.current_roles().to_vec()),
+            active: Some(source.current_active()),
+            account_fenced: Some(source.current_account_fenced()),
+        }),
+        family: source.family().map(|family| PlatformFamilyFacts {
+            id: family.id(),
+            user_id: family.user_id(),
+            org_id: family.org_id(),
+            protocol: family.protocol().to_owned(),
+            created_at: family.created_at(),
+            revoked_at: family.revoked_at(),
+            account_security_generation: family.account_security_generation(),
+            auth_time: family.auth_time(),
+            assurance: family.assurance().map(str::to_owned),
+        }),
+        absolute_family_ttl,
+        now,
+        feature: PlatformFeature::TenantList,
+        target: PlatformTarget::Companies,
+        use_kind: PlatformUse::ReadProjection,
+        call_site: PlatformCallSite::DirectPlatformOwner,
+    };
+    match policy.evaluate_current(&input) {
+        PlatformPolicyDecision::Allow { .. } => Ok(now),
+        PlatformPolicyDecision::Deny {
+            reason:
+                PlatformPolicyDenyReason::InvalidMaterial | PlatformPolicyDenyReason::PolicyDenied,
+        } => Err(ProvisioningError::PlatformListForbidden),
+        PlatformPolicyDecision::Deny {
+            reason: PlatformPolicyDenyReason::EvaluatorUnavailable,
+        }
+        | PlatformPolicyDecision::UpgradeRequired => {
+            Err(ProvisioningError::PlatformListUnavailable)
+        }
+    }
 }

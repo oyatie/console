@@ -30,9 +30,11 @@ pub use jwt::{
     SignedAccountToken, TenantAccessContext,
 };
 pub use legacy::{
+    LegacyPlatformFamily, LegacyPlatformSource, LegacyPlatformSourceError,
     LegacySelfPasskeyReadError, LegacySelfPasskeySummary, LegacySessionContext,
-    LegacySessionContextError, append_legacy_auth_audit_in_tx, guard_legacy_subject_in_tx,
-    legacy_session_context_in_tx, read_legacy_self_passkeys,
+    LegacySessionContextError, append_legacy_auth_audit_in_tx,
+    ensure_legacy_platform_source_fresh_in_tx, guard_legacy_subject_in_tx,
+    legacy_session_context_in_tx, live_legacy_platform_source_in_tx, read_legacy_self_passkeys,
 };
 pub use refresh::{RefreshToken, RefreshTokenIssue, RefreshTokenStore, RefreshTokenUseError};
 pub use session::SessionVerification;

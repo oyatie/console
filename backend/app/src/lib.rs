@@ -1511,6 +1511,7 @@ pub enum DatabaseDependency {
 
 #[derive(Clone)]
 pub struct AppState {
+    platform_policy: Arc<console_platform_authz::platform_policy::PlatformPolicy>,
     config: AppConfig,
     database: DatabaseDependency,
     /// Narrow command pool for leave mutations. It is intentionally separate
@@ -1572,6 +1573,10 @@ pub struct AppState {
 
 impl AppState {
     pub fn new(config: AppConfig, database: DatabaseDependency) -> Result<Self, AppError> {
+        let platform_policy = Arc::new(
+            console_platform_authz::platform_policy::PlatformPolicy::compile_current()
+                .map_err(|_| AppError::Config("platform policy compilation failed".to_owned()))?,
+        );
         if matches!(&database, DatabaseDependency::Postgres(_)) {
             config.require_database_durability()?;
         }
@@ -1626,6 +1631,7 @@ impl AppState {
         let realtime_hub = realtime_hub_from_database(&database);
 
         Ok(Self {
+            platform_policy,
             config,
             database,
             leave_command_database: DatabaseDependency::NotConfigured,
@@ -3751,19 +3757,25 @@ pub fn build_router(state: AppState) -> Router {
             // ingress `/api`→backend rule route it while the SPA keeps the bare
             // browser routes `/platform/*`. This is the only path that creates org
             // rows.
-            let platform_router = console_platform_rest::router(
-                PlatformRestState::new(
-                    pool.clone(),
-                    session_verification.clone(),
-                    PlatformProvisioner::new(state.config.coldstart_otp_ttl),
-                )
-                .with_view_as_issuer(state.view_as_issuer.clone())
-                .with_force_remove_command_pool(match &state.platform_force_command_database {
-                    DatabaseDependency::Postgres(pool) => Some(pool.clone()),
-                    DatabaseDependency::NotConfigured => None,
-                })
-                .with_tenant_config_seeder(platform_tenant_config_seeder),
-            );
+            let platform_state = PlatformRestState::new(
+                pool.clone(),
+                session_verification.clone(),
+                PlatformProvisioner::new(state.config.coldstart_otp_ttl),
+            )
+            .with_view_as_issuer(state.view_as_issuer.clone())
+            .with_force_remove_command_pool(match &state.platform_force_command_database {
+                DatabaseDependency::Postgres(pool) => Some(pool.clone()),
+                DatabaseDependency::NotConfigured => None,
+            })
+            .with_tenant_config_seeder(platform_tenant_config_seeder);
+            let platform_state = match state.config.auth_rest.as_ref() {
+                Some(config) => platform_state.with_platform_list_authority(
+                    config.refresh_family_absolute_ttl,
+                    state.platform_policy.clone(),
+                ),
+                None => platform_state,
+            };
+            let platform_router = console_platform_rest::router(platform_state);
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
             // routes, the tenant domain routers, the platform tier, and the
             // pre-auth login/refresh endpoints. These are all short-lived
@@ -3855,6 +3867,7 @@ pub fn build_router(state: AppState) -> Router {
     // Retry-After. Applied after those layers so the rewrite sees the status.
     // Auth 401/403 mapping is unchanged (fail-closed).
     let router = console_platform_request_context::with_http_error_envelope(router);
+    let router = console_platform_rest::with_platform_list_transport(router);
     with_metrics(router, &state)
 }
 

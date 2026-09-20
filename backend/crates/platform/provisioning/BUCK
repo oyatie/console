@@ -24,6 +24,7 @@ rust_library(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//third-party/rust:serde",
         "//third-party/rust:serde_json",
@@ -47,6 +48,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -77,6 +79,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -107,6 +110,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -137,6 +141,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -167,6 +172,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -197,6 +203,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -227,6 +234,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",
@@ -257,6 +265,7 @@ rust_test(
     deps = [
         "//backend/crates/kernel/core:console-kernel-core",
         "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/test-support:console-platform-test-support",
         "//third-party/rust:serde",

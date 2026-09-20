@@ -141,8 +141,8 @@ action audit_stream_access_log_read appliesTo {
 #[derive(Debug, Clone)]
 pub struct CompiledBundle {
     pub key: CompiledBundleCacheKey,
-    schema: Schema,
-    policies: PolicySet,
+    pub(crate) schema: Schema,
+    pub(crate) policies: PolicySet,
 }
 
 /// Generate the Cedar policy text for `feature` directly from the legacy

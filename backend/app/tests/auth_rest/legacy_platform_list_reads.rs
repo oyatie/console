@@ -711,3 +711,6 @@ fn list_audit_full_state_oracle_rejects_missing_effects_and_history_corruption()
         );
     }
 }
+
+#[path = "legacy_platform_list_histories.rs"]
+mod histories;
