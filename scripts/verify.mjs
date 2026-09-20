@@ -348,7 +348,7 @@ export function stepMirrorDisposition(name) {
   return PLAN.get(name) ?? null;
 }
 
-function run(command, env, cwd = ".") {
+export function run(command, env, cwd = ".") {
   const result = spawnSync("bash", ["-o", "pipefail", "-c", command], {
     stdio: "inherit",
     env,
