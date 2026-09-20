@@ -183,7 +183,7 @@
     "backend/crates/identity/adapter-postgres/tests/region_branch_crud_rls_surfaces_as_runtime_role.rs": 6,
     "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": 3,
     "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs": 3,
-    "backend/crates/identity/application/src/lib.rs": 2,
+    "backend/crates/identity/application/src/lib.rs": 10,
     "backend/crates/identity/domain/src/lib.rs": 7,
     "backend/crates/identity/rest/src/lib.rs": 19,
     "backend/crates/identity/rest/tests/org_setup.rs": 40,

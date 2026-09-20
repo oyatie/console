@@ -6,7 +6,10 @@
 //! identity-provider contracts.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod company;
 mod org;
+
+pub use company::CompanyEnrollmentV1;
 
 pub use org::{
     AccountStatus, ActivateUserCommand, BranchSummary, CreateBranchCommand,
