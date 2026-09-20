@@ -675,19 +675,21 @@ async fn list_orgs(
 /// GET /api/platform/groups — list all top-level groups and their member org identities.
 async fn list_groups(
     State(state): State<PlatformRestState>,
-    Extension(principal): Extension<PlatformPrincipal>,
+    headers: HeaderMap,
 ) -> Result<Response, PlatformError> {
-    principal
-        .authorize(PlatformFeature::GroupManage)
-        .map_err(|_| PlatformError::forbidden("platform principal cannot list groups"))?;
-
+    let access = platform_list_bearer(&headers).ok_or_else(platform_list_unauthorized)?;
+    let (ttl, policy) = state
+        .list_authority
+        .as_ref()
+        .ok_or_else(platform_group_list_unavailable)?;
+    let verifier = state
+        .session_verification
+        .as_ref()
+        .map(SessionVerification::token_verifier)
+        .ok_or_else(platform_group_list_unavailable)?;
     let groups = state
         .provisioner
-        .list_groups(
-            &state.pool,
-            Some(principal.user_id),
-            OffsetDateTime::now_utc(),
-        )
+        .list_groups(&state.pool, verifier, access, *ttl, policy)
         .await
         .map_err(PlatformError::from_provisioning)?;
 
@@ -1061,6 +1063,11 @@ impl PlatformError {
                 Self::forbidden("platform principal cannot read tenant health")
             }
             ProvisioningError::PlatformHealthUnavailable => platform_health_unavailable(),
+            ProvisioningError::PlatformGroupListUnauthorized => platform_list_unauthorized(),
+            ProvisioningError::PlatformGroupListForbidden => {
+                Self::forbidden("platform principal cannot list groups")
+            }
+            ProvisioningError::PlatformGroupListUnavailable => platform_group_list_unavailable(),
             // Caller-facing input problems map to 422; everything else is logged
             // and collapsed to a generic 500 so no DB/constraint detail leaks.
             ProvisioningError::InvalidRoster(message) => Self::validation(message),
@@ -1136,6 +1143,14 @@ fn platform_health_unavailable() -> PlatformError {
     )
 }
 
+fn platform_group_list_unavailable() -> PlatformError {
+    PlatformError::new(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "service_unavailable",
+        "platform group list is unavailable",
+    )
+}
+
 fn platform_list_bearer(headers: &HeaderMap) -> Option<&str> {
     let mut values = headers.get_all(header::AUTHORIZATION).iter();
     let value = values.next()?;
@@ -1162,8 +1177,10 @@ pub fn with_platform_list_transport(router: Router) -> Router {
 
 async fn platform_list_transport(request: Request, next: Next) -> Response {
     let is_head = request.method() == Method::HEAD;
-    if !matches!(request.uri().path(), PLATFORM_ORGS_PATH | PLATFORM_OPS_PATH)
-        || !(request.method() == Method::GET || is_head)
+    if !matches!(
+        request.uri().path(),
+        PLATFORM_ORGS_PATH | PLATFORM_OPS_PATH | PLATFORM_GROUPS_PATH
+    ) || !(request.method() == Method::GET || is_head)
     {
         return next.run(request).await;
     }

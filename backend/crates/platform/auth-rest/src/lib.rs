@@ -873,7 +873,10 @@ impl RestError {
             | ProvisioningError::PlatformListUnavailable
             | ProvisioningError::PlatformHealthUnauthorized
             | ProvisioningError::PlatformHealthForbidden
-            | ProvisioningError::PlatformHealthUnavailable => {
+            | ProvisioningError::PlatformHealthUnavailable
+            | ProvisioningError::PlatformGroupListUnauthorized
+            | ProvisioningError::PlatformGroupListForbidden
+            | ProvisioningError::PlatformGroupListUnavailable => {
                 Self::unavailable("platform listing unavailable on the legacy transport")
             }
             // Generic, non-revealing message for any OTP-redeem rejection so the

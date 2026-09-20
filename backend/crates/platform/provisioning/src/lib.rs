@@ -53,6 +53,12 @@ pub enum ProvisioningError {
     PlatformHealthForbidden,
     #[error("platform health is unavailable")]
     PlatformHealthUnavailable,
+    #[error("platform authentication refused")]
+    PlatformGroupListUnauthorized,
+    #[error("platform policy refused")]
+    PlatformGroupListForbidden,
+    #[error("platform group list is unavailable")]
+    PlatformGroupListUnavailable,
 
     #[error("database error: {0}")]
     Sqlx(#[from] sqlx::Error),
@@ -1420,10 +1426,35 @@ impl PlatformProvisioner {
     pub async fn list_groups(
         &self,
         pool: &PgPool,
-        actor: Option<UserId>,
-        now: OffsetDateTime,
+        verifier: &console_platform_auth::JwtVerifier,
+        access: &str,
+        absolute_family_ttl: Duration,
+        policy: &console_platform_authz::platform_policy::PlatformPolicy,
     ) -> Result<Vec<GroupSummary>, ProvisioningError> {
-        let mut tx = pool.begin().await?;
+        let mut tx = pool
+            .begin()
+            .await
+            .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?;
+        sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
+            .execute(tx.as_mut())
+            .await
+            .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?;
+        let source = console_platform_auth::live_legacy_platform_source_in_tx(
+            &mut tx,
+            verifier,
+            access,
+            absolute_family_ttl,
+        )
+        .await
+        .map_err(|error| PlatformRead::GroupTopology.source_error(error))?;
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::GroupTopology,
+        )
+        .await?;
         let rows = sqlx::query(
             r#"
             SELECT id, slug, name, status, created_at, updated_at, member_count, members
@@ -1431,25 +1462,58 @@ impl PlatformProvisioner {
             "#,
         )
         .fetch_all(tx.as_mut())
+        .await
+        .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?;
+
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::GroupTopology,
+        )
         .await?;
 
         let groups = rows
             .into_iter()
             .map(group_from_row)
-            .collect::<Result<Vec<_>, ProvisioningError>>()?;
+            .collect::<Result<Vec<_>, ProvisioningError>>()
+            .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?;
 
+        let now = check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::GroupTopology,
+        )
+        .await?;
         let event = AuditEvent::new(
-            actor,
-            AuditAction::new("platform.group.list")?,
+            Some(source.subject()),
+            AuditAction::new("platform.group.list")
+                .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?,
             "groups",
             "list",
             TraceContext::generate(),
             now,
         )
         .with_snapshots(None, Some(serde_json::json!({ "count": groups.len() })));
-        insert_audit_event(&mut tx, &event).await?;
+        insert_audit_event(&mut tx, &event)
+            .await
+            .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?;
+        check_platform_read_authority(
+            &mut tx,
+            &source,
+            absolute_family_ttl,
+            policy,
+            PlatformRead::GroupTopology,
+        )
+        .await?;
 
-        tx.commit().await?;
+        // A lost COMMIT acknowledgement is unavailable; do not retry or disclose rows.
+        tx.commit()
+            .await
+            .map_err(|_| ProvisioningError::PlatformGroupListUnavailable)?;
         Ok(groups)
     }
 
@@ -2731,6 +2795,7 @@ fn hash_token(token: &str) -> Vec<u8> {
 enum PlatformRead {
     Companies,
     OperationsHealth,
+    GroupTopology,
 }
 
 impl PlatformRead {
@@ -2742,6 +2807,7 @@ impl PlatformRead {
             console_platform_auth::LegacyPlatformSourceError::Unauthorized => match self {
                 Self::Companies => ProvisioningError::PlatformListUnauthorized,
                 Self::OperationsHealth => ProvisioningError::PlatformHealthUnauthorized,
+                Self::GroupTopology => ProvisioningError::PlatformGroupListUnauthorized,
             },
             console_platform_auth::LegacyPlatformSourceError::Unavailable => self.unavailable(),
         }
@@ -2751,6 +2817,7 @@ impl PlatformRead {
         match self {
             Self::Companies => ProvisioningError::PlatformListForbidden,
             Self::OperationsHealth => ProvisioningError::PlatformHealthForbidden,
+            Self::GroupTopology => ProvisioningError::PlatformGroupListForbidden,
         }
     }
 
@@ -2758,6 +2825,7 @@ impl PlatformRead {
         match self {
             Self::Companies => ProvisioningError::PlatformListUnavailable,
             Self::OperationsHealth => ProvisioningError::PlatformHealthUnavailable,
+            Self::GroupTopology => ProvisioningError::PlatformGroupListUnavailable,
         }
     }
 }
@@ -2779,6 +2847,7 @@ async fn check_platform_read_authority(
             PlatformFeature::TenantHealthRead,
             PlatformTarget::Operations,
         ),
+        PlatformRead::GroupTopology => (PlatformFeature::GroupManage, PlatformTarget::Groups),
     };
     let input = PlatformPolicyInput {
         credential: PlatformCredentialFacts {
