@@ -1,0 +1,10 @@
+{
+  "head": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+  "command": [
+    "npm",
+    "run",
+    "verify"
+  ],
+  "log": "/private/tmp/console-company-guards-fast-verify-20260920.log",
+  "exit": 1
+}

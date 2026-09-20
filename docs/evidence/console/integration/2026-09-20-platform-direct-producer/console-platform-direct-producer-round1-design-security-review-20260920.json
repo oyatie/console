@@ -1,0 +1,24 @@
+{
+  "reviewer": "integration_security",
+  "decision": "DESIGN_ACCEPTABLE_PENDING_ROLLBACK_CLARIFICATION_AND_EXACT_TEST_REVIEW",
+  "design": "/private/tmp/console-platform-direct-producer-20260920-round1/DESIGN.md",
+  "design_sha256": "913b9107f49d0dd0731947a6eb9a7106d3a4e83a026bf871afdd4db62ba287b1",
+  "source_lock_sha256": "76e95ac78c4eff3d2e2476fc5628dc6bccba7527b2dd9d5b59fde05cd6d0ce51",
+  "verified_source_count": 8,
+  "accepted": [
+    "ExistingoptionalLegacySessionBinding/validation/ES256issuer reused; old issuer callsNone unchanged.",
+    "NewplatformDirectissuer checks actualreturnedRefreshTokenIssue subject/org/familynonnil and expiration correlation.",
+    "Actualfamilyfirst,signafter,in sameAuthtransaction; refresh reusesrotate result, ordinary/group semantics preserved.",
+    "ExplicitWebAuthn/OTP/devicehandoff/dev-auth scope; correlation not assurance/currentoperationauthority.",
+    "Narrowself-read change removesboundplatformreject only, retains actualcurrentfamily/subject/fence/clock checks.",
+    "Historicaltestsuccessors strip onlyadditivebinding in testownedsigninghelper and preserve oldassertions; boundrefusalpin gets separately reviewedstrongerpositive+negative successor."
+  ],
+  "finding": {
+    "location": "DESIGN.md rollback paragraph",
+    "problem": "Reverting reader change restores boundplatformself-list refusal for already-issued tokens. Existing decoder acceptance does not preserve that capability through full rollback.",
+    "required_clarification": "Retain compatible reader while rolling back producer, or explicitly document real refresh/re-auth recovery to unbound token after full rollback; do not imply transparent capability preservation."
+  },
+  "admission": "Concrete reviewed tests,cleanownerRED and implementation review still required; this review does not admit implementation.",
+  "tests_executed_by_reviewer": 0,
+  "repository_writes": 0
+}

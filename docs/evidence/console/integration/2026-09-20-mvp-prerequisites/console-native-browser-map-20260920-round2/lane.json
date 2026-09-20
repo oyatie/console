@@ -1,0 +1,36 @@
+[
+  {
+    "lane": "native-browser-classification",
+    "base": "f6e21a80a790422d76b969d7d2a11f383a4be062",
+    "owner": "/root",
+    "allow": [
+      "tools/ci/check-product-buck-residual.mjs",
+      "tools/ci/check-postgres-cargo-map.mjs",
+      "tools/ci/postgres-cargo-map.json"
+    ],
+    "immutable_target": "Two reviewed native browser wrappers classified independently while every old residual and unknown guard remains enforced",
+    "mechanical_guide": "/private/tmp/console-native-browser-map-20260920-round2/CONTRACT.md",
+    "probe": "node --test tools/ci/check-product-buck-residual.test.mjs tools/ci/check-postgres-cargo-map.test.mjs > /private/tmp/console-native-browser-classification-probe-20260920.log 2>&1",
+    "pre_mortem": [
+      "arbitrary native label bypasses legacy ratchet",
+      "native test moved to Cargo",
+      "missing count silently accepted"
+    ],
+    "detection": [
+      "13existing+reviewed tests",
+      "native graph and exactCI producer tests",
+      "fullpreflight"
+    ],
+    "rollback": "Revert three prospective classification files; retain tests and failed evidence",
+    "stop_conditions": [
+      "unknown native accepted",
+      "ceiling raised",
+      "Cargo scheduling changes",
+      "source drift"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ]
+  }
+]

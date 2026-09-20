@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_ASSEMBLED_TEST_SOURCE_FOR_SERIALIZED_ADOPTION",
+  "manifest_sha256": "4cb6832038625002a5ddf95e39c81eb3a403596b2d6808cace30dfecb06b5dde",
+  "verified": {
+    "packet_members": 15,
+    "source_locks": 9,
+    "new_sqlx_sources": 7,
+    "new_pure_sources": 2,
+    "retained_semantic_successors": 4
+  },
+  "findings": [
+    "Independently reconstructed3new source files from approved producer round3 and signing-rollback round1, adding only exact standard path module and child use-super import. Pinned rustfmt1.98.1 edition2024 yields byte-identical assembled files.",
+    "All retained historical originals, three historical fixture successors/patch and self-pin original/successor copied byte-exact. Self-pin integration patch changes only reviewed function.",
+    "Registration patch adds ordinary child modules under auth_rest and cfg(test)jwt sibling; no include/source-inclusion workaround, schema, production semantics or new dependency.",
+    "Auth unit source glob covers new sibling; root must regenerate actual app Buck mapped sources for main/nested test files."
+  ],
+  "limits": [
+    "Formatting is not compilation, constructor execution, real SQLx execution or workflow acceptance.",
+    "Missing new issuer method is not executable owner RED; retain approved enclosing full Company lane/admission scope and stage verification appropriately.",
+    "Root owns serialized tests/generated-artifact integration and real execution after active verifier.",
+    "No producer/Company/milestone/release completion."
+  ],
+  "execution": {
+    "product_tests": 0,
+    "builds": 0,
+    "sql": 0,
+    "repository_mutations": 0,
+    "private_format_command": "rustup run 1.98.1 rustfmt --edition 2024 <reconstructed private main> <reconstructed private pure>",
+    "private_format_exit": 0,
+    "private_scratch": "/private/tmp/console-producer-assembly-security-pn5ed21y"
+  }
+}

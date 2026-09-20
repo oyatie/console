@@ -1,0 +1,12 @@
+{
+  "path": "/private/tmp/console-client-release-20260919/buck-out/v2/art/root/39893c7e49283da4/backend/app/__console-app-itest-auth_rest__/auth_rest",
+  "sha256": "36cccc6d629f0222ce0b6936b389b3e9d3834795ca209b9eaf1badad97f16bda",
+  "bytes": 401181624,
+  "discovered": 500,
+  "executed_affected": 3,
+  "passed": 3,
+  "failed": 0,
+  "skipped": 0,
+  "results": "/private/tmp/console-company-intake-lint-native-results-20260920.json",
+  "discovery": "/private/tmp/console-company-intake-lint-native-discovery-20260920.log"
+}

@@ -1,0 +1,466 @@
+{
+  "status": "PREREQUISITE_REPAIRS_VERIFIED_FAST_TIER_ONLY",
+  "members": [
+    {
+      "path": "console-company-guards-fast-verify-counts-20260920.json",
+      "sha256": "2af03e8d92117132613337bafdc0d30bbe8e343bfb288ba5a0961492f67d3bd6",
+      "original_path": "/private/tmp/console-company-guards-fast-verify-counts-20260920.json",
+      "original_sha256": "2af03e8d92117132613337bafdc0d30bbe8e343bfb288ba5a0961492f67d3bd6",
+      "original_bytes": 34308
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round1/CONTRACT.md.log.gz",
+      "sha256": "aa7bbfe508093d9811655304bc7b7821988b0c08d8219d0a4483e2963e7fe61a",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round1/CONTRACT.md",
+      "original_sha256": "448c78acf006af2348a62efb8886597bf343db9c5a4bff4696fb1839b20b2108",
+      "original_bytes": 616
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round1/changes.patch.log.gz",
+      "sha256": "5748a3d07869d74b3b8420d3bfb6b545bf4a4bca77dd8b574cfbb2e1dfccd83e",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round1/changes.patch",
+      "original_sha256": "52db3bbd0166da9713acab31f009b17ab543541a224d4bb093e282c16823e01f",
+      "original_bytes": 5356
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round1/lane.json",
+      "sha256": "0cb0480afcf025e39bc802bfd70cf8c9a58a291a31a9f22c90ec9838f5e420e6",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round1/lane.json",
+      "original_sha256": "0cb0480afcf025e39bc802bfd70cf8c9a58a291a31a9f22c90ec9838f5e420e6",
+      "original_bytes": 1256
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round1/native_company_intake_guards.rs.log.gz",
+      "sha256": "f2bfd36b7dcfa6e9d82b10588a33e19a25b3aa634ee3b038ec828ca4a88100c8",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round1/native_company_intake_guards.rs",
+      "original_sha256": "0ef8c18891527813f3eb20866e35298327e3b4995bf599907c16c5c012943879",
+      "original_bytes": 29238
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round1/native_company_intake_owner.rs.log.gz",
+      "sha256": "cdfaea7500e471df9dffbdcca2b5777127d9fccc9c27425fe8f875fc81616640",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round1/native_company_intake_owner.rs",
+      "original_sha256": "2f4e13baf77683d452fc81dd6d411884e13f08c62bea2b46b1648c6ae43e3d79",
+      "original_bytes": 62688
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round1/source-lock.json",
+      "sha256": "7e01e4bdf4002890f8735cfca0913fc9928cda36d7241a405d9de3aad0be3bc3",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round1/source-lock.json",
+      "original_sha256": "7e01e4bdf4002890f8735cfca0913fc9928cda36d7241a405d9de3aad0be3bc3",
+      "original_bytes": 478
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/CONTRACT.md.log.gz",
+      "sha256": "e7128e6cb3568bfb78652b2dd19c39daa34606c6ceca36814c8bed66cbb034c1",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/CONTRACT.md",
+      "original_sha256": "0a21a2cb643908bfad778924f6f89c226d59c64f9a5cd3a8d96a67e168f73525",
+      "original_bytes": 812
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/changes.patch.log.gz",
+      "sha256": "61c822f6ce3abcddcbd0da3cdac9d7f1539438db8f57b19635927a7b697f6ce3",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/changes.patch",
+      "original_sha256": "28b196124a05b800f7472f1c8191b5238f8aa59de796fc341db2d95a3543ad0a",
+      "original_bytes": 5733
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/lane.json",
+      "sha256": "fa54c47f33eb29741dfb6e5db7faa3f970a5f8d383ec5a5774dac5fb3164269f",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/lane.json",
+      "original_sha256": "fa54c47f33eb29741dfb6e5db7faa3f970a5f8d383ec5a5774dac5fb3164269f",
+      "original_bytes": 1337
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/native_company_intake_guards.rs.log.gz",
+      "sha256": "f2bfd36b7dcfa6e9d82b10588a33e19a25b3aa634ee3b038ec828ca4a88100c8",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/native_company_intake_guards.rs",
+      "original_sha256": "0ef8c18891527813f3eb20866e35298327e3b4995bf599907c16c5c012943879",
+      "original_bytes": 29238
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/native_company_intake_owner.rs.log.gz",
+      "sha256": "cdfaea7500e471df9dffbdcca2b5777127d9fccc9c27425fe8f875fc81616640",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/native_company_intake_owner.rs",
+      "original_sha256": "2f4e13baf77683d452fc81dd6d411884e13f08c62bea2b46b1648c6ae43e3d79",
+      "original_bytes": 62688
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/native_company_signed_credentials.rs.log.gz",
+      "sha256": "51511cf808e92ff2460b6cbee39743487417f25ee7321ead1c150da2f8569f1a",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/native_company_signed_credentials.rs",
+      "original_sha256": "db2b0bfef636095ac15be526298b4838b04d77790d4a07944f4bff634166fee4",
+      "original_bytes": 23201
+    },
+    {
+      "path": "console-company-intake-lint-20260920-round2/source-lock.json",
+      "sha256": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a",
+      "original_path": "/private/tmp/console-company-intake-lint-20260920-round2/source-lock.json",
+      "original_sha256": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a",
+      "original_bytes": 721
+    },
+    {
+      "path": "console-company-intake-lint-dev-auth-20260920.log.gz",
+      "sha256": "8cc35d094755b56b620db22325a8145e85808e50eafce24724aad7c6612bfc30",
+      "original_path": "/private/tmp/console-company-intake-lint-dev-auth-20260920.log",
+      "original_sha256": "ada478e12bb19c3343fca736a093db5f35b9b46169c736e8591b4792bc335eac",
+      "original_bytes": 419
+    },
+    {
+      "path": "console-company-intake-lint-final-integration-tests-review-20260920.json",
+      "sha256": "64a83e6e4ef65b424dc11504279352f393798e902d5bf73dacc1ff64ca8f9506",
+      "original_path": "/private/tmp/console-company-intake-lint-final-integration-tests-review-20260920.json",
+      "original_sha256": "64a83e6e4ef65b424dc11504279352f393798e902d5bf73dacc1ff64ca8f9506",
+      "original_bytes": 1536
+    },
+    {
+      "path": "console-company-intake-lint-final-security-review-20260920.json",
+      "sha256": "b4e4b6dac09f16f86a3ced4f238cb4b4b8afaff142f61321cb8f926c4bcdfa9a",
+      "original_path": "/private/tmp/console-company-intake-lint-final-security-review-20260920.json",
+      "original_sha256": "b4e4b6dac09f16f86a3ced4f238cb4b4b8afaff142f61321cb8f926c4bcdfa9a",
+      "original_bytes": 2278
+    },
+    {
+      "path": "console-company-intake-lint-integration-tests-review-20260920.json",
+      "sha256": "2a18fb37ec1d29158b3fa19909c8adf2fae021eea80dfbe1696cef7bb6818923",
+      "original_path": "/private/tmp/console-company-intake-lint-integration-tests-review-20260920.json",
+      "original_sha256": "2a18fb37ec1d29158b3fa19909c8adf2fae021eea80dfbe1696cef7bb6818923",
+      "original_bytes": 1638
+    },
+    {
+      "path": "console-company-intake-lint-native-1-20260920.log.gz",
+      "sha256": "1e29f815a99ac871deb6eae24a2ef3912978d0e86a7d79de3487a958b30b5692",
+      "original_path": "/private/tmp/console-company-intake-lint-native-1-20260920.log",
+      "original_sha256": "663c261be055660f0e035b74db641c2a757f03e2d322ff96085e2bf30b631c4e",
+      "original_bytes": 3855
+    },
+    {
+      "path": "console-company-intake-lint-native-2-20260920.log.gz",
+      "sha256": "ba4c3dfd26a4f879215687001a6f49ef37127f3ebe730c2b28a879e766397cbe",
+      "original_path": "/private/tmp/console-company-intake-lint-native-2-20260920.log",
+      "original_sha256": "aba7dfb0cc8f10c7a42ceaaf07fd099ad7914e87b2f2dadc66553830b8116fe6",
+      "original_bytes": 3018
+    },
+    {
+      "path": "console-company-intake-lint-native-3-20260920.log.gz",
+      "sha256": "37aea4b8d140e683a456e93368246e60025b2a1d4c418515ed25bd31eaefae64",
+      "original_path": "/private/tmp/console-company-intake-lint-native-3-20260920.log",
+      "original_sha256": "a501d3c188e081aa1352ca6ae1a34881a86353a8047f435197a59ccc622d7a0d",
+      "original_bytes": 3147
+    },
+    {
+      "path": "console-company-intake-lint-native-binary-20260920.json",
+      "sha256": "b21ca07790162704a04c68e7a09b2087909ed33810e16e7984fd40cc2d603135",
+      "original_path": "/private/tmp/console-company-intake-lint-native-binary-20260920.json",
+      "original_sha256": "b21ca07790162704a04c68e7a09b2087909ed33810e16e7984fd40cc2d603135",
+      "original_bytes": 523
+    },
+    {
+      "path": "console-company-intake-lint-native-discovery-20260920.log.gz",
+      "sha256": "755b9a2186a2b87eb39598a9a85836bc475c878c85ea350566c2cb9829315911",
+      "original_path": "/private/tmp/console-company-intake-lint-native-discovery-20260920.log",
+      "original_sha256": "baed2da93c0ce076c740d973c986b67eb6b261d1749fa6217734a32e5279c586",
+      "original_bytes": 57264
+    },
+    {
+      "path": "console-company-intake-lint-native-results-20260920.json",
+      "sha256": "22cb1eb80a22a67c2b30101f52a02da923884ea1181adac834f12469d14a1a2d",
+      "original_path": "/private/tmp/console-company-intake-lint-native-results-20260920.json",
+      "original_sha256": "22cb1eb80a22a67c2b30101f52a02da923884ea1181adac834f12469d14a1a2d",
+      "original_bytes": 1085
+    },
+    {
+      "path": "console-company-intake-lint-probe-20260920.log.gz",
+      "sha256": "1f6d5797dc53c2f972d53e9cdf9a5f999501c9a2502a432836e78a6e418119a8",
+      "original_path": "/private/tmp/console-company-intake-lint-probe-20260920.log",
+      "original_sha256": "0f0c79400d385ed401e72561c8b0f36943828e8108fc816e8dae5982a7324dd4",
+      "original_bytes": 3677
+    },
+    {
+      "path": "console-company-intake-lint-probe-round2-20260920.log.gz",
+      "sha256": "b8cd392c64e1fb9d858f3afd4ca7a519dc10a57687ab72724c068b193ec6e5d8",
+      "original_path": "/private/tmp/console-company-intake-lint-probe-round2-20260920.log",
+      "original_sha256": "50a4f413101ba4f93c032c9a28daf9c0cef7336383bece05c4a346df5feda347",
+      "original_bytes": 418
+    },
+    {
+      "path": "console-company-intake-lint-red-round1-20260920.log.gz",
+      "sha256": "1f6d5797dc53c2f972d53e9cdf9a5f999501c9a2502a432836e78a6e418119a8",
+      "original_path": "/private/tmp/console-company-intake-lint-red-round1-20260920.log",
+      "original_sha256": "0f0c79400d385ed401e72561c8b0f36943828e8108fc816e8dae5982a7324dd4",
+      "original_bytes": 3677
+    },
+    {
+      "path": "console-company-intake-lint-red-round2-20260920.log.gz",
+      "sha256": "b47ccb3a5fe78b8384872c93cf3a85254431ce8385b8e2f017ed9fc442cb5a60",
+      "original_path": "/private/tmp/console-company-intake-lint-red-round2-20260920.log",
+      "original_sha256": "c34329dd95581413c9f31ce0b59eefae293f6a2232539bc04a4449a5504bd28a",
+      "original_bytes": 1417
+    },
+    {
+      "path": "console-company-intake-lint-round2-integration-tests-review-20260920.json",
+      "sha256": "09ef2091b6d0a4137e27890c7aea5f703e0ef62c1a07ab9c8b66a6350aafa696",
+      "original_path": "/private/tmp/console-company-intake-lint-round2-integration-tests-review-20260920.json",
+      "original_sha256": "09ef2091b6d0a4137e27890c7aea5f703e0ef62c1a07ab9c8b66a6350aafa696",
+      "original_bytes": 2006
+    },
+    {
+      "path": "console-company-intake-lint-round2-security-review-20260920.json",
+      "sha256": "058efdc53e38c17b839018c9d53a5d31ff68a62306ac1c9087e4d27390608948",
+      "original_path": "/private/tmp/console-company-intake-lint-round2-security-review-20260920.json",
+      "original_sha256": "058efdc53e38c17b839018c9d53a5d31ff68a62306ac1c9087e4d27390608948",
+      "original_bytes": 1774
+    },
+    {
+      "path": "console-company-intake-lint-verification-20260920.json",
+      "sha256": "9af03332a7caf7c582f96c27292cb66319827a069b0e51398cdcc2f775c5ac4f",
+      "original_path": "/private/tmp/console-company-intake-lint-verification-20260920.json",
+      "original_sha256": "9af03332a7caf7c582f96c27292cb66319827a069b0e51398cdcc2f775c5ac4f",
+      "original_bytes": 1789
+    },
+    {
+      "path": "console-native-browser-classification-admission-red-20260920.log.gz",
+      "sha256": "c05f035015969ee7dacfdde02aafcd62db72645a1e2574450c34b44079942bda",
+      "original_path": "/private/tmp/console-native-browser-classification-admission-red-20260920.log",
+      "original_sha256": "778644f440fcbf313d75b06b0ee1b8bf8580c3d5465615b9d795eb778b463c8f",
+      "original_bytes": 5170
+    },
+    {
+      "path": "console-native-browser-classification-final-integration-tests-review-20260920.json",
+      "sha256": "5affcc30b1c40fb2f3ad0e6bf2f438251377420686cf4cf4787de9245e539376",
+      "original_path": "/private/tmp/console-native-browser-classification-final-integration-tests-review-20260920.json",
+      "original_sha256": "5affcc30b1c40fb2f3ad0e6bf2f438251377420686cf4cf4787de9245e539376",
+      "original_bytes": 1470
+    },
+    {
+      "path": "console-native-browser-classification-final-security-review-20260920.json",
+      "sha256": "af752eddd76fbb6a313bc6ac16346c0eabe14f9c34e909654ecbd57ea82bee8a",
+      "original_path": "/private/tmp/console-native-browser-classification-final-security-review-20260920.json",
+      "original_sha256": "af752eddd76fbb6a313bc6ac16346c0eabe14f9c34e909654ecbd57ea82bee8a",
+      "original_bytes": 1262
+    },
+    {
+      "path": "console-native-browser-classification-implementation-20260920.json",
+      "sha256": "21b9af9a8fae6cbc0110ffd1cc2abc5ea85ea1de76ebbbe413b5752e305051b0",
+      "original_path": "/private/tmp/console-native-browser-classification-implementation-20260920.json",
+      "original_sha256": "21b9af9a8fae6cbc0110ffd1cc2abc5ea85ea1de76ebbbe413b5752e305051b0",
+      "original_bytes": 1162
+    },
+    {
+      "path": "console-native-browser-classification-native-contract-20260920.log.gz",
+      "sha256": "3912e6d02bcce9c28a9a2bb173663100b7e1b10513945927497ad5f3cfc3679a",
+      "original_path": "/private/tmp/console-native-browser-classification-native-contract-20260920.log",
+      "original_sha256": "d83cff09c17b51a8c38f6e03a60c556e22f94fd1df1453361c87ccb4725e6147",
+      "original_bytes": 1066
+    },
+    {
+      "path": "console-native-browser-classification-native-contract-round2-20260920.log.gz",
+      "sha256": "870c00b794ec193532db94aa7a88a2deba2058ca66d06f95e53f8d03a7fc6c7f",
+      "original_path": "/private/tmp/console-native-browser-classification-native-contract-round2-20260920.log",
+      "original_sha256": "1b9a4e0e5350d5b29af00e135266ab03840265e8dd11e6913363ce1cb5485152",
+      "original_bytes": 100
+    },
+    {
+      "path": "console-native-browser-classification-preflight-20260920.log.gz",
+      "sha256": "077c0e58142865fd903d5fea16c82f27842df95fa4dd61498bcb55e97ad72bfa",
+      "original_path": "/private/tmp/console-native-browser-classification-preflight-20260920.log",
+      "original_sha256": "012c81cd63b18b32f3e35d53f29b44dce313f5599584804325bb079b0c278728",
+      "original_bytes": 7463
+    },
+    {
+      "path": "console-native-browser-classification-preflight-round2-20260920.log.gz",
+      "sha256": "339c9616f724a34b45bd921e1ae2124e193ebfa851b0002c1b1f56c546899a1e",
+      "original_path": "/private/tmp/console-native-browser-classification-preflight-round2-20260920.log",
+      "original_sha256": "1880ef23d52729b74f436be800e180f96d3a055ab0e1b1603d0f88184ac09623",
+      "original_bytes": 627
+    },
+    {
+      "path": "console-native-browser-classification-probe-20260920.log.gz",
+      "sha256": "e5fff39fcdecad47db38c513e86452fa1d0495475bb6632b4a4b39e61f6f476a",
+      "original_path": "/private/tmp/console-native-browser-classification-probe-20260920.log",
+      "original_sha256": "d35b3b8ef18bec42c6768b7a629070ec18937f06d481ba34803ca2500edea467",
+      "original_bytes": 1033
+    },
+    {
+      "path": "console-native-browser-classification-source-security-review-20260920.json",
+      "sha256": "bb0d8369c2a97f7474cefc7ee7d156726953dd68fc174dbec23f7f095cf6662b",
+      "original_path": "/private/tmp/console-native-browser-classification-source-security-review-20260920.json",
+      "original_sha256": "bb0d8369c2a97f7474cefc7ee7d156726953dd68fc174dbec23f7f095cf6662b",
+      "original_bytes": 2077
+    },
+    {
+      "path": "console-native-browser-classification-tests-red-20260920.log.gz",
+      "sha256": "02c0b143b875f39f2e493e9e808b62b1328baf56d657f323d277486c38af398d",
+      "original_path": "/private/tmp/console-native-browser-classification-tests-red-20260920.log",
+      "original_sha256": "178bec1481a700367a5d9eef6ef2d821e866ebb6d152016d35fe0e572380211d",
+      "original_bytes": 5169
+    },
+    {
+      "path": "console-native-browser-classification-verification-20260920.json",
+      "sha256": "65ba825f55f65dd8612da5e77b5217c050ca984bb1fbb52fa004e74d3fc0a8b6",
+      "original_path": "/private/tmp/console-native-browser-classification-verification-20260920.json",
+      "original_sha256": "65ba825f55f65dd8612da5e77b5217c050ca984bb1fbb52fa004e74d3fc0a8b6",
+      "original_bytes": 2197
+    },
+    {
+      "path": "console-native-browser-map-20260920-round1/CONTRACT.md.log.gz",
+      "sha256": "149a13b289ca9aef562ea6fc087c157e1f41d2628122788c54ccaf937f7fd52c",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round1/CONTRACT.md",
+      "original_sha256": "a32838ef462a745a1337cb02fce3761c9d43d046298e4226c35e5d0b845e537b",
+      "original_bytes": 1029
+    },
+    {
+      "path": "console-native-browser-map-20260920-round1/changes.patch.log.gz",
+      "sha256": "de8f32963c4d6fcaaac477078d79463574b3d0660275e0f1f8d7cb3d65290a09",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round1/changes.patch",
+      "original_sha256": "9d7236a096fe9a168076b1327822b38fc8f572ec7e26f001b528f2912b5ce41b",
+      "original_bytes": 1316
+    },
+    {
+      "path": "console-native-browser-map-20260920-round1/lane.json",
+      "sha256": "883ebf9fe67950115fcba1c0a534f86a5a6300153c6a4b3f55cd32546b271fed",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round1/lane.json",
+      "original_sha256": "883ebf9fe67950115fcba1c0a534f86a5a6300153c6a4b3f55cd32546b271fed",
+      "original_bytes": 1147
+    },
+    {
+      "path": "console-native-browser-map-20260920-round1/postgres-cargo-map.json",
+      "sha256": "93b71810215e83e1b5d15291949e8df32712ddd58215bf03fee63eee98fd5ea8",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round1/postgres-cargo-map.json",
+      "original_sha256": "93b71810215e83e1b5d15291949e8df32712ddd58215bf03fee63eee98fd5ea8",
+      "original_bytes": 186305
+    },
+    {
+      "path": "console-native-browser-map-20260920-round1/source-lock.json",
+      "sha256": "f3949b3b18e5b085fbab005a81dc895914f83f3350fd8caab9c8e4acc2ecd0fa",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round1/source-lock.json",
+      "original_sha256": "f3949b3b18e5b085fbab005a81dc895914f83f3350fd8caab9c8e4acc2ecd0fa",
+      "original_bytes": 214
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/CONTRACT.md.log.gz",
+      "sha256": "dbcc086a7a8f27276e196f50e93473689604fd041563e959e9e654e8941ee453",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/CONTRACT.md",
+      "original_sha256": "1fcee2489acceb7e128884f45fb10bc2f72162889c3f214812690644be37de2d",
+      "original_bytes": 2569
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/count-test-addition.mjs.log.gz",
+      "sha256": "318acf8b52e1f57a77b8ba13dcfb3fba8896671f535c4d189f33d187eddbe08e",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/count-test-addition.mjs",
+      "original_sha256": "ca9ba8b71d9fa9efdc17aac23f02674745ef416ed87ad7a3c94706cf67a8f9a5",
+      "original_bytes": 578
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/lane.json",
+      "sha256": "0c5ef0cc06cf04848ad080082a49dc8e46fa8e98a4dce70e1d095b7cf40b8a48",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/lane.json",
+      "original_sha256": "0c5ef0cc06cf04848ad080082a49dc8e46fa8e98a4dce70e1d095b7cf40b8a48",
+      "original_bytes": 1360
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/manifest.json",
+      "sha256": "c68de073e83c9ae4af953abcb44f9afcd77f4e090b561ad54031a3863fb6a652",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/manifest.json",
+      "original_sha256": "c68de073e83c9ae4af953abcb44f9afcd77f4e090b561ad54031a3863fb6a652",
+      "original_bytes": 472
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/postgres-cargo-map.json",
+      "sha256": "5fe9f0990e931ce9e297b9d8332e32abdab6e0d4a4e96fe7f158932b3ebc88b7",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/postgres-cargo-map.json",
+      "original_sha256": "5fe9f0990e931ce9e297b9d8332e32abdab6e0d4a4e96fe7f158932b3ebc88b7",
+      "original_bytes": 186340
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/residual-test-addition.mjs.log.gz",
+      "sha256": "55f852e31eafb911c778f76c0abc18aab737f3d89bc3fbb4dd62e39ada0e184b",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/residual-test-addition.mjs",
+      "original_sha256": "3de43aa6613a9bb40f0c9f89c2ee57197908b6b565a7fc776c43aab5f2e8cb49",
+      "original_bytes": 2407
+    },
+    {
+      "path": "console-native-browser-map-20260920-round2/source-lock.json",
+      "sha256": "bffd0c913e7fc80d465454273d52ffa5ae5e004effcd706e0949cf9528d37ff1",
+      "original_path": "/private/tmp/console-native-browser-map-20260920-round2/source-lock.json",
+      "original_sha256": "bffd0c913e7fc80d465454273d52ffa5ae5e004effcd706e0949cf9528d37ff1",
+      "original_bytes": 569
+    },
+    {
+      "path": "console-native-browser-map-integration-tests-review-20260920.json",
+      "sha256": "44b81151aed37aa1eb57a2f363d9c843b73c86a02c5748422218e5e26702ae62",
+      "original_path": "/private/tmp/console-native-browser-map-integration-tests-review-20260920.json",
+      "original_sha256": "44b81151aed37aa1eb57a2f363d9c843b73c86a02c5748422218e5e26702ae62",
+      "original_bytes": 1353
+    },
+    {
+      "path": "console-native-browser-map-probe-20260920.log.gz",
+      "sha256": "d11b322464220fb0eab838c0c6aa9211342cb8786f5c2fc9ac5e2990e5613253",
+      "original_path": "/private/tmp/console-native-browser-map-probe-20260920.log",
+      "original_sha256": "db307df1e14a51a09003eee71252ba59c1bec61c36afd073c1fa5ed737956ed7",
+      "original_bytes": 2166
+    },
+    {
+      "path": "console-native-browser-map-red-20260920.log.gz",
+      "sha256": "41eb1c68d8ece1bd567306e4063b22d0ba751860c59e383633a0fea5366f715c",
+      "original_path": "/private/tmp/console-native-browser-map-red-20260920.log",
+      "original_sha256": "eb3fd617be101fc3cb483d0ca203adc9ac101db769df71a153ef014265bc9b60",
+      "original_bytes": 1736
+    },
+    {
+      "path": "console-native-browser-map-round1-failed-ceiling-20260920.log.gz",
+      "sha256": "d11b322464220fb0eab838c0c6aa9211342cb8786f5c2fc9ac5e2990e5613253",
+      "original_path": "/private/tmp/console-native-browser-map-round1-failed-ceiling-20260920.log",
+      "original_sha256": "db307df1e14a51a09003eee71252ba59c1bec61c36afd073c1fa5ed737956ed7",
+      "original_bytes": 2166
+    },
+    {
+      "path": "console-native-browser-map-round1-security-review-20260920.json",
+      "sha256": "476c8010cb23942d012aed32e3c2a0240a958c4a05949270b3fb34be36423c2f",
+      "original_path": "/private/tmp/console-native-browser-map-round1-security-review-20260920.json",
+      "original_sha256": "476c8010cb23942d012aed32e3c2a0240a958c4a05949270b3fb34be36423c2f",
+      "original_bytes": 1634
+    },
+    {
+      "path": "console-native-browser-map-round1-verification-security-review-20260920.json",
+      "sha256": "ec79a3ffc7902950b621a1b74df3465954bbd7650ed0e6d12ae0747fb9f7abbf",
+      "original_path": "/private/tmp/console-native-browser-map-round1-verification-security-review-20260920.json",
+      "original_sha256": "ec79a3ffc7902950b621a1b74df3465954bbd7650ed0e6d12ae0747fb9f7abbf",
+      "original_bytes": 988
+    },
+    {
+      "path": "console-native-browser-map-round2-integration-tests-review-20260920.json",
+      "sha256": "80fff6ec23494e58fe9f91c03fc8cef68be75fa0ee263aaaa6718a6766967da9",
+      "original_path": "/private/tmp/console-native-browser-map-round2-integration-tests-review-20260920.json",
+      "original_sha256": "80fff6ec23494e58fe9f91c03fc8cef68be75fa0ee263aaaa6718a6766967da9",
+      "original_bytes": 2336
+    },
+    {
+      "path": "console-native-browser-map-round2-test-security-review-20260920.json",
+      "sha256": "7b16303466235acbc374dc534516d277bbd6427dedd9d95bf75ff68630ac87a6",
+      "original_path": "/private/tmp/console-native-browser-map-round2-test-security-review-20260920.json",
+      "original_sha256": "7b16303466235acbc374dc534516d277bbd6427dedd9d95bf75ff68630ac87a6",
+      "original_bytes": 1588
+    },
+    {
+      "path": "console-mvp-prerequisite-fast-verify-847045f7-20260920.log.gz",
+      "sha256": "67d2f4b90eba5732c6316a2001bb82ee792d1a264f01eb08e33c8520ca378bc2",
+      "original_path": "/private/tmp/console-mvp-prerequisite-fast-verify-847045f7-20260920.log",
+      "original_sha256": "1cbbd191f4796166096429fcccc6aed433ed885f76f502b34b97b59edbcf413d",
+      "original_bytes": 673402
+    },
+    {
+      "path": "console-mvp-prerequisite-fast-verify-847045f7-20260920.json",
+      "sha256": "43964375124f60cc007326399129cd5a05a46be08b02bd97701c152515d4f37f",
+      "original_path": "/private/tmp/console-mvp-prerequisite-fast-verify-847045f7-20260920.json",
+      "original_sha256": "43964375124f60cc007326399129cd5a05a46be08b02bd97701c152515d4f37f",
+      "original_bytes": 425
+    }
+  ],
+  "candidate": "847045f7a20091c63e6e7cccccc86361d9f4688c",
+  "limits": [
+    "Not browser/database workflow acceptance",
+    "Not full Buck-native or MVP qualification",
+    "Earlier failures retained without reinterpretation"
+  ]
+}

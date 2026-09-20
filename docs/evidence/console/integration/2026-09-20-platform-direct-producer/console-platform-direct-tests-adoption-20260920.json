@@ -1,0 +1,20 @@
+{
+  "base": "847045f7a20091c63e6e7cccccc86361d9f4688c",
+  "kind": "tests_first_approved_source_adoption",
+  "review": "/private/tmp/console-platform-direct-assembled-tests-round1-security-review-20260920.json",
+  "files": {
+    "backend/app/BUCK": "903762f8a47a290c82713bb263b3190433768b1319432e4480fed98d34f47350",
+    "backend/app/tests/auth_rest.rs": "a5f311db345793f852f57756e73b27154d7dab0c6175a9a2ea049de8a4e6ca7c",
+    "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs": "568b3b0857bea428739cb1b61c263491ba3e80cdb1f558b55e8faa911aafee79",
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "e30de655650e6613fbd7540733ecf149cde404ffd439c164555f60e58f468a90",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "3c383463db37a34b70a7a9c3b0fdb9065212ee510b631fc45a35beb4d15349b1",
+    "backend/app/tests/auth_rest/legacy_platform_list_reads.rs": "d6f4097655d88c3a4e38b05ed300a4869c71d5ea1c74d3a23b93fb3243a54b4a",
+    "backend/crates/platform/auth/src/jwt.rs": "0094dd7859d9a5201aec46c5f2fce41ed54897f3f2ac6131a20a771b99fac1af",
+    "backend/app/tests/auth_rest/legacy_platform_binding_producer.rs": "dabe89315edda6d48082cf69f103111dbed7ddfb2fac30beca8dec57b3cd19de",
+    "backend/app/tests/auth_rest/legacy_platform_binding_producer/signing_rollback.rs": "1e67619879e54c881b88b37c7c0509356468ac4062cefdd8811c8dd7b0e2a69b",
+    "backend/crates/platform/auth/src/jwt_platform_binding_producer_tests.rs": "96d7e4d1779e73d40d33b4ba9f88b155ae392065fdfc668a90d74335fc782bd7"
+  },
+  "format": "rustup run 1.98.1 rustfmt --edition 2024; existing successors formatting only",
+  "generated": "python3 tools/buck/gen_first_party.py",
+  "tests_executed": 0
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "base": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+    "owner": "/root",
+    "allow": [
+      "scripts/verify.mjs",
+      "scripts/verify.test.mjs"
+    ],
+    "immutable_target": "Local verifier recognizes all native browser CI steps and preserves actual browser execution in database tier",
+    "mechanical_guide": "Use existing PLAN Map; add5 entries only. Commit reviewed regression first. No command overrides, runner/workflow changes or prerequisites weakening.",
+    "pre_mortem": [
+      "misclassifying browser tests as ci-only would hide them",
+      "pretending hosted bootstrap executes locally would create false success"
+    ],
+    "detection": [
+      "native journey db-tier regression",
+      "existing CI completeness guard",
+      "npm run verify"
+    ],
+    "rollback": "Revert only these two prospective verifier files; retain evidence and CI commands",
+    "stop_conditions": [
+      "unreviewed test semantic changes",
+      "missing actual Buck browser commands",
+      "source drift"
+    ],
+    "reviewers": [
+      "/root/integration_security"
+    ],
+    "probe": "node --test scripts/verify.test.mjs",
+    "lane": "native-browser-verifier-mirror"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "docs/current/PRODUCT.md": {
+    "before": "57e88283204471127306a9f3d20ac39baa58a066fda50be99a41275ed4d63472",
+    "candidate": "229a3b20a602d557e72ad8c4c2d70102c78d4a08ac61dbe8aa5be75a14adc30f"
+  },
+  "docs/current/ROADMAP.md": {
+    "before": "630047f5c57df9d1a46449080b3a853ebbdb3be44b5cfbb26dfb0f07118c9848",
+    "candidate": "7e030fcb5ae6617651fe5317259cb7fbad5cffaae2a8f617edb6d4e6b746b423"
+  }
+}

@@ -1,0 +1,639 @@
+{
+  "reviewer": "integration_security",
+  "decision": "ACCEPT_READ_ONLY_RUNTIME_SOURCE_COMPARISON_NOT_CUSTODY_ADMISSION",
+  "source_head": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+  "capture_receipt": "/private/tmp/console-company-effect-runtime-census-20260920.json",
+  "capture_receipt_sha256": "91ffc8acaeb5a8b342598382a10613eeae14d38f890d5b863ce98567d780d7fc",
+  "capture_output_sha256": "2488c816189d9c97ff581d9847e779ce716be32359159f2afff2081d5bc566dd",
+  "snapshot_sha256": "654857ec23042c654a6fb2cc241c43414a921f85fd6427ffd0aec373b36436e3",
+  "sql_sha256": "c3ae6a4eb47afaf6be80c1079014eeb88cd4d53401bcb11f4198d001eabc4b1c",
+  "runner_sha256": "7f1aba27b80086baab0640d354669fcf07684f4639637808fceaad5af4689176",
+  "fixture_log_sha256": "03d825e7b8192934889f9b969ee3d6792253dfb05343fed899759b88317788a6",
+  "observed_counts": {
+    "relations": 24,
+    "functions": 62,
+    "fixture_executed": 1,
+    "fixture_passed": 1,
+    "fixture_ignored": 0,
+    "fixture_filtered": 499
+  },
+  "capture_validation": [
+    "Approved round4 SQL hash matches; runner only executes read-only pg_database/pg_proc readiness queries plus approved read-only metadata capture.",
+    "Output file hash, embedded snapshot SHA256,exact24expected-relation census and fixture exit0/pass log independently checked.",
+    "Runner waits for four private intake routines to commit; this signed-positive fixture does not install the subsequent six-function guard resource. Snapshot is scoped to finalized Account plus parser/schema/intake prerequisite.",
+    "All62captured function body payloads are byte-identical to declared repository migration/generated source occurrences; each matched source file independently matches immutable source_head Git blob.",
+    "Ontology/policy owner/definer/ACL facts checked against0165/0204/0205/0206 declarations; not inferred safe merely because observed."
+  ],
+  "body_bindings": [
+    {
+      "signature": "leave_api.protected_audit_writer_guard()",
+      "body_sha256": "f49ecfe3b41863db5250cb5c2d439335dea1f12fa3daee576390fa984d8d02e7",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql"
+      ],
+      "observed_owner": "console_leave_definer",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "ont_policy_api.attach_object_policy(uuid,uuid,uuid,text,jsonb,text,text,text)",
+      "body_sha256": "21be513f955afe18f70ba4af51c90a54256dea283c4b2111426074d651eeddff",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0206_ont_policy_api_attach_command_role.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ont_policy_api.attach_object_policy_rows(uuid,uuid,uuid,text,jsonb,text)",
+      "body_sha256": "8b00c884fe803e46ebc2f3426bd3653b1a66f122221b37bd3b4d90864f5e65cb",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0205_ont_policy_api_attach_writer.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.assert_write_context(uuid,uuid,text,text)",
+      "body_sha256": "74e84f2541672ee3312503b4b259b19a1c0b816622fd75410c8d581aedc946c9",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.create_object_type(uuid,jsonb,uuid,text,text)",
+      "body_sha256": "01a4d97431cb1d4558bc56e545a8d35357a87c3ff0ee171ab8cccb5fed2b9788",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.insert_children(uuid,uuid,jsonb,boolean)",
+      "body_sha256": "746d1d212eed6b9930f21281ac2c9d0b40e4a6a3a829dfa99db0fcf69e243111",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.install_builtin_catalog(uuid,text,jsonb,uuid,text,text)",
+      "body_sha256": "40f452c32c6faf9e1ec231b910a76e347122b8c3a48d0dec61a259fea6e01140",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0204_ontology_catalog_additive_upgrade.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.invoker_role()",
+      "body_sha256": "9f1cd2cc1bea1bee9e44b37518d02945dcc973de3565ed45137f041f4d078517",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "ontology_api.prepare_legacy_object_type_write()",
+      "body_sha256": "5dee3ebc1697c40bfc861858d3ee73b13ebe9f152f043b3e618e05b7dddfaf1a",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.protected_audit_writer_guard()",
+      "body_sha256": "d7b2dfd2aadd9952705de72b6571c768f9508bbaeca2198bcc0a31e979e1839e",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.require_current_transaction_audit()",
+      "body_sha256": "b5aaef42b0cd7e3f4e367c238ec7b116bbab5399d5845c5463c65bb2d9952cd1",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.stage_object_type(uuid,text,uuid,bigint,jsonb,uuid,text,text)",
+      "body_sha256": "56ebb59bb5b3f5c9a402e04ba5118cdd98e31f443f99ad1b5f8cc839c1e33bc1",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.transition_object_type(uuid,uuid,uuid,bigint,text,uuid,text,text)",
+      "body_sha256": "c948f8e2e583dc12b4b8f965456d1dbed635d53b2b3ec1f7e0d65be5ce200f48",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "ontology_api.write_audit(uuid,uuid,text,uuid,jsonb,jsonb,text,text,timestamp with time zone)",
+      "body_sha256": "54dee23a2d41fffceaa82b0c6ed203616a5f12315b0bfd2750b5d832367aaa69",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql"
+      ],
+      "observed_owner": "console_ontology_writer",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "\"RI_FKey_cascade_del\"()",
+      "body_sha256": "cb707bf687ab9c93a070362e30893e7ef02254969eccc216279c39b51be66693",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "\"RI_FKey_check_ins\"()",
+      "body_sha256": "c7d3cb0e7da60ad104d23855d5c4706fc5adec81a52ac04d903eb2e0e59c1320",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql",
+        "ops/postgres-finalize-account-custody.sql",
+        "ops/postgres-verify-account-native.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "\"RI_FKey_check_upd\"()",
+      "body_sha256": "94ab317bbd11988d53472ae31f8bce5e46edde004cb89f6a91c68176b61fb4b3",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql",
+        "ops/postgres-finalize-account-custody.sql",
+        "ops/postgres-verify-account-native.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "\"RI_FKey_noaction_del\"()",
+      "body_sha256": "4ffbfbc6ff38962d9c39a1a4940135ccd4e46e61d400e2e157be1217ce5fb4f7",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "\"RI_FKey_noaction_upd\"()",
+      "body_sha256": "be4d637c94a9aab4f10f1e19d7e16b5e35f397eacf2ad6ac606f6056848a841d",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "\"RI_FKey_restrict_del\"()",
+      "body_sha256": "e33de01aabce0d344c59dd01c73dc748fb170463137e9f207215cdee0792c7e5",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql",
+        "ops/postgres-finalize-account-custody.sql",
+        "ops/postgres-verify-account-native.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "\"RI_FKey_restrict_upd\"()",
+      "body_sha256": "a58f14103640e8e465919b298a753d08032457c8486387864d88da19638dab9f",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql",
+        "ops/postgres-finalize-account-custody.sql",
+        "ops/postgres-verify-account-native.sql"
+      ],
+      "observed_owner": "console_buck_admin",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.account_context_presence_v1(uuid)",
+      "body_sha256": "cd5c61ae245a0ff42e5a412ca72e54226fdf6e25243b15a77e40701a3f955cfb",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.audit_events_immutable()",
+      "body_sha256": "59c5bab7d09512fcb4909787549176637e23a8e76212a469136fe48f0341638a",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0051_platform_remove_organization.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.cedar_policy_attach_append_only()",
+      "body_sha256": "9757ece13a391a8a30480f25e2276e83f91d3afaa366a0ec954ea3bb75f7abd5",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0154_create_cedar_object_property_policies.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.company_enrollment_cancel_v1(uuid,uuid,uuid)",
+      "body_sha256": "dad4b4cb9622786e77be7c417e7bce1d68a47ee910e25ba5f67adea05ea2c39e",
+      "exact_source_matches": [
+        "ops/postgres-company-enrollment-intake.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.company_enrollment_decode_input_v1(bytea)",
+      "body_sha256": "422487596ccecc5a0bf05212901fd2653fdc766bc2ac38c217859655ed2b43dc",
+      "exact_source_matches": [
+        "ops/postgres-company-enrollment-input.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.company_enrollment_prepare_v1(uuid,uuid,uuid,bytea)",
+      "body_sha256": "4d71f4d6a826b90c0611aa5291d0ae9524001dd8fc1310158fb1c9ae661fda4b",
+      "exact_source_matches": [
+        "ops/postgres-company-enrollment-intake.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.company_enrollment_receipts_immutable_v1()",
+      "body_sha256": "35c645107db5604e9fdc53bb6b8104a043a0db519cc20ab439f85e25d3f0f158",
+      "exact_source_matches": [
+        "ops/postgres-company-enrollment-schema.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.company_enrollment_session_material_v1(uuid,uuid,uuid,bytea)",
+      "body_sha256": "dc0ebab1b9238f1de2225c82e81c1028577028d2b4c99bf13b3df5d447098e4c",
+      "exact_source_matches": [
+        "ops/postgres-company-enrollment-intake.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.company_enrollment_status_v1(uuid,uuid,uuid)",
+      "body_sha256": "cc2c6365d0d66a47363c6b13874ce3e302d94de1ccbf1481b580be1527ad100e",
+      "exact_source_matches": [
+        "ops/postgres-company-enrollment-intake.sql"
+      ],
+      "observed_owner": "console_account_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.enforce_ont_object_policy_effect_matches_catalog()",
+      "body_sha256": "0afd5d7914412f057af08caa7f32f098e1e77566b6a82989683dd4a72711f1f6",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0205_ont_policy_api_attach_writer.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.enforce_org_id_immutable()",
+      "body_sha256": "a46ee31ccf7fae026153b8bea7419777f055a4028e9ecfe0632e262a6f41f3ba",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.organizations_after_insert_attach_membership()",
+      "body_sha256": "8559e278120a2aa2b263923d173dc3f5358584aa54d017ce39a69efcfdec0b57",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.organizations_before_insert_mint_group()",
+      "body_sha256": "f15c4e2849b6c7b9e18f86ff4021cb8b34cf0593d23753a7446d0e2495e159fb",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_append_only_immutable()",
+      "body_sha256": "8411bb833e00e2d53f8fcde7fdad121a9e8d8b26218d23bb16e3957ac5d88026",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0107_create_period_locks_versioning_lifecycle.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": false
+    },
+    {
+      "signature": "public.platform_assign_org_to_group(uuid,uuid)",
+      "body_sha256": "c55c03cc7d8dcd010d563aa8ad1b247766b005b5ea9e54c4d57ddde0d4c6f1c4",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0062_platform_group_management.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_attach_group_of_one(uuid)",
+      "body_sha256": "044d66da698d3cc1367517d558191bcccc30f844f86329e71e0cf6c3f9cf9bb4",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_attach_membership(uuid,uuid)",
+      "body_sha256": "fd20908064502de386f19f8ff68408b2004713cb81b7f92d341aa8b11de43998",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_console_route_adoption()",
+      "body_sha256": "f78994519ce69cb55a1ef20677f15e5e00bda5b4c3ee2b07702b761b9b2f863b",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0145_console_route_telemetry.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_create_group(text,text)",
+      "body_sha256": "c97fb252992b2270943d2f0a099de4a9e40301fb24123019e01f24ee758df050",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0062_platform_group_management.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_create_group_account(uuid,uuid,text,text,text[],text,uuid)",
+      "body_sha256": "e4e32b8d194c689ed8d28ca4589e0adcafe30fbe1822e79f2c2e470854a9ccb0",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_create_organization(text,text)",
+      "body_sha256": "876f58867d87b539f860b6b7a706f5c3205b992e63c610ccb5bcf8fb0402c703",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0036_platform_onboarding.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_force_remove_direct_org_children(uuid)",
+      "body_sha256": "77fde115be5e5de1f1e75f84e86b59cf82496d5dd063cd3b9fe9f6f7ceff6b95",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_force_remove_organization(uuid)",
+      "body_sha256": "ef0d500cef7ee5d283e6d471587bb96bbe1e0d6aa391524cda9acdd4277d4797",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_force_remove_organization_command(uuid,uuid,character,character,timestamp with time zone)",
+      "body_sha256": "685a0b1d873b20d673a0d0d5b3c884056bca54ad53570f8e6123101a5b633116",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0196_platform_force_command_and_fk_closure.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_get_group(uuid)",
+      "body_sha256": "3da2abcd2b109726b9b144b84864865f511f8c3ffa1e3679b54abc009811c570",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0062_platform_group_management.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_get_organization(uuid)",
+      "body_sha256": "fc3e4cae5edede5465f0237f0602ab643c6623c04ef8078b948ad5e9c7230183",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_list_group_accounts(uuid)",
+      "body_sha256": "27f6f2f8fc4f8326bb5274fc1faf03d682cfe5be72000ca6e5653625087ba88b",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_list_groups()",
+      "body_sha256": "5cf3b58b7f4b53852447e4af6e2b410f75602bdb7a52e0b2b6afb180fa6a3763",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_list_organizations()",
+      "body_sha256": "f112ecdfc8ac0f8d11e1de04af0f18d4690572f8a68f2fb73bea59dc8c17ebfb",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_mint_group_row(uuid,text,text)",
+      "body_sha256": "09388d49740f958be1f2e0e807023ff07d7a3de2d6f22a49daa4aa068171e942",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_mint_missing_group_of_one(uuid)",
+      "body_sha256": "36342a788fb752f91f9b1c166f8903c35e57bb0df030f34862ade061d5ab0550",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_org_health()",
+      "body_sha256": "3f5dab54c7685ae612393ff67250b8ebdf2b605df42650a4d42a46451ec3d765",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_remove_org_from_group(uuid,uuid)",
+      "body_sha256": "2a51a6777e14df60e1a3be9382525d2c7f35763ec29cd1cea57550a4d48a4bf9",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_remove_organization(uuid)",
+      "body_sha256": "57c4a8b2ad1fe05a9a620d0d45dfaeaaaac24f006c9f6a97937ead5fb48db21a",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_resolve_bootstrap_org(bytea)",
+      "body_sha256": "c6b61cbb4aae4f8fb1daee70995be892020e5b906c46f0f327a30404ff87e7e7",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_credential_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_resolve_credential_org(text)",
+      "body_sha256": "58b08df5e3f2a7b171ec80098832bd394d16b3d9f4a0a286639e7f1417808312",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_credential_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_resolve_token_org(bytea)",
+      "body_sha256": "300cbab098531971f5832bba377e0c9d1e14bb94dd4035a0c2e86c3d7d1b5bfb",
+      "exact_source_matches": [
+        "ops/postgres-finalize-account-credentials.sql"
+      ],
+      "observed_owner": "console_credential_owner",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_revoke_group_role(uuid,uuid,text)",
+      "body_sha256": "7cd922a281fde76298edd5cb9822b7454647c51196d69bd7a83361d5056a31d9",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_set_organization_status(uuid,text)",
+      "body_sha256": "d478e0bd8b1fe337d19afdcb5f56b335c55116f1046a4811a073f15c38cad7aa",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0036_platform_onboarding.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_update_group(uuid,text,text)",
+      "body_sha256": "63a229ec27c763d9131de18ec418b4618f8652e674a87d242666612c8983a3c9",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0062_platform_group_management.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    },
+    {
+      "signature": "public.platform_update_group(uuid,text,text,text)",
+      "body_sha256": "474cbd5bc4e5c304a4903687a1174a32f896e4b15cc2e2d0f1cf4cd9e9e853ef",
+      "exact_source_matches": [
+        "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql"
+      ],
+      "observed_owner": "console_app",
+      "observed_security_definer": true
+    }
+  ],
+  "source_files_matching_git": {
+    "backend/crates/platform/db/migrations/0031_runtime_role_and_immutable_org.sql": "f2b9537ef1c063f55fcbfe7519a4769690bfd3f613eb8704c6cd36dbda062329",
+    "backend/crates/platform/db/migrations/0036_platform_onboarding.sql": "0db125de6f76569fe0c02b5c59bf163474947cc34cb7c657a07451c66f57680c",
+    "backend/crates/platform/db/migrations/0051_platform_remove_organization.sql": "7d066c3d064e09102645029e82f5d0804e0fea01003e73e86c3549d54885a74f",
+    "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql": "64c88d4901d34e304cf9387fda8137891a47917c6ff275683d16dd70bbd669c3",
+    "backend/crates/platform/db/migrations/0062_platform_group_management.sql": "5e80cf2acb9fe66e95c758b16337ad9161c9333442d6ff34c8c603794d8912c2",
+    "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql": "c921c73376ec604a76bf1b46061ab1818b571803e16c39b9bd6ed1baf4aee6b4",
+    "backend/crates/platform/db/migrations/0107_create_period_locks_versioning_lifecycle.sql": "e720e5f2159916cf2cc06e31a5aad50582fac98ce54fb4b5431fab9a9b1894e1",
+    "backend/crates/platform/db/migrations/0145_console_route_telemetry.sql": "dbf68ee8974b2d41f2dec57e46d09a061a25cb45734f6f978a4a8480f2b3bd03",
+    "backend/crates/platform/db/migrations/0154_create_cedar_object_property_policies.sql": "5f4f44ec5f11a19780122c37f848ff2ad9a6fa7c7ca345684c10452a4c95a2ef",
+    "backend/crates/platform/db/migrations/0165_ontology_object_type_key_revisions.sql": "1bf3bb5f45c56b4c91bc6b105d6810cd94b2f3da557784a8532f3dc40a471ff2",
+    "backend/crates/platform/db/migrations/0166_leave_exact_charge_and_home_branch.sql": "ec392fd637fab3629bf1435ff3a4333aa7326fa08c7bdb1ffc04f40a324dca35",
+    "backend/crates/platform/db/migrations/0196_platform_force_command_and_fk_closure.sql": "63088204bcbfcd1922674e0f0a9eec3eb6518a26edcf0a9bdc2a6448201b7f9c",
+    "backend/crates/platform/db/migrations/0204_ontology_catalog_additive_upgrade.sql": "95204e5a31ba53849cf1843db9dd094ba27d224c9eb141c99e280185d2fecd3e",
+    "backend/crates/platform/db/migrations/0205_ont_policy_api_attach_writer.sql": "78fd55fa2947518ce6c8971f685d9e0a5a5271dfe5114f0b29bfe68037b9d469",
+    "backend/crates/platform/db/migrations/0206_ont_policy_api_attach_command_role.sql": "4122d505e57e032d44ccf53c40cad9a23a6eef2495603b5c03341531ad8ae0b5",
+    "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql": "90ded6b338aa92907dc98bf74bc1fa563e05a4a8acb5d748aa24a44e237ff720",
+    "ops/postgres-company-enrollment-input.sql": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+    "ops/postgres-company-enrollment-schema.sql": "7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb",
+    "ops/postgres-finalize-account-credentials.sql": "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9",
+    "ops/postgres-finalize-account-custody.sql": "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8",
+    "ops/postgres-verify-account-native.sql": "c4e30ee9560b4d443acad1813a63667cbab9a32aadfbd893542f4b054bf6b308"
+  },
+  "confirmed_participant_facts": [
+    "audit_events.actor FK targets accounts with DELETE RESTRICT; do not add User aliases or redundant Account actor.",
+    "Catalog installer/assert_write_context still requires active same-Company legacy User. ont_object_types.created_by and ont_builtin_catalog_installs.installed_by retain composite User/Company FKs. Native branch/attribution required.",
+    "All ontology_api and ont_policy_api routines owned by no-login/non-superuser/non-bypassrls console_ontology_writer; public command EXECUTE grants confined to console_ontology_cmd plus owner. Private helpers owner only. console_app inherits writer membership in this fixture.",
+    "Protected ontology audit invoker branch accepts admitted legacy console_rt mutations or ontology command identity, and rejects native builtin install from console_rt; native protected provenance branch remains required.",
+    "Identity roots/permissions/conditions remain console_app-owned,FORCE-RLS,console_rt SELECT/INSERT/UPDATE/DELETE; native discriminator/guards must close broad legacy writers. Assignment user_id and attributed metadata retain User FKs.",
+    "Topology owners remain console_app; raw create/move/remove/status/group-role functions retain console_rt EXECUTE. Native origin fences and authenticated compatible legacy commands remain required.",
+    "Both organization/group slug CHECKs remain3\u201340 grammar while approved native codec is1\u201363; additive compatible widening required without trimming command bytes.",
+    "CompanyActor/context hints remain account-owned and serving table privileges absent. Current account_context_presence_v1 source is unchanged; populated current loader still needed.",
+    "Private intake tables have owner-limited privileges and no console_rt table DML; owner functions retain admitted runtime EXECUTE."
+  ],
+  "limits": [
+    "Observed bytes are dependency evidence only; do not turn snapshot into custody classifier or approve drift/reseal.",
+    "No approval of unchosen native identity/catalog/topology/legacy session schema or implementation.",
+    "All62body comparisons do not claim exhaustive whole-database object/privilege closure; census has declared24relation/scope roster.",
+    "Disposable fixture/observer test is neither production durability/performance nor complete Company HTTP/browser acceptance."
+  ],
+  "reviewer_tests_executed": 0,
+  "reviewer_sql_executed": 0,
+  "repository_writes": 0
+}

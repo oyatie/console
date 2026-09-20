@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_SEMANTIC_SUCCESSORS_AND_PROPOSED_TESTS_WITH_ADMISSION_HOLDS",
+  "packet": "/private/tmp/console-platform-direct-producer-tests-20260920-round3",
+  "manifest_sha256": "a0b8a3ef745628d41723b403cfa21e55756bc3f4a95fd5cadbc3a0a6ad3a90a1",
+  "source_hashes_verified": true,
+  "approved": [
+    "Five genuine HTTP leaves correlate exact returned refresh hash with real family, retain protocol shape, cover older-family/body/cookie refresh, real passkey-approved handoff, historical upgrade, exact nonempty self-list/revoke and ordinary group-role compatibility.",
+    "Self-list successor changes only valid bound platform outcome, preserves old malformed/historical/tenant assertions and adds actual logout-family readback/denial.",
+    "Three historical full-file successors preserve all previous assertions; helper strips only additive binding from verified real login claims in test memory, proves all retained claim values exact, and leaves original expiry unchanged. Historical-shape fixture is not mixed-version deployment evidence.",
+    "Two pure issuer unit leaves clearly distinguish synthetic shape fixture from live authority and cover old APIs, exact valid binding/time/freshness/group claims, wrong correlation/scope/expiry/group-role cases.",
+    "Nonempty self-list now checks exact independently stored timestamps, id and field roster plus zero durable effects."
+  ],
+  "holds": [
+    "Signing-failure transaction rollback test remains unprepared: demonstrate no committed family/token/handoff consumption when actual producer rejects.",
+    "All proposed sources are uncompiled/unexecuted. A missing new issuer symbol is not owner RED; root must stage/admit executable HTTP boundary probes with functioning prerequisites, then serialize pure-test registration appropriately.",
+    "Full affected historical descendants and default/dev-auth verification required after producer integration.",
+    "Legacy mutation-boundary family authority, topology effects, full Company workflow and release remain incomplete."
+  ],
+  "execution": "Read-only source, exact full-file diff and hash verification only; no tests/builds/SQL/runtime executed."
+}

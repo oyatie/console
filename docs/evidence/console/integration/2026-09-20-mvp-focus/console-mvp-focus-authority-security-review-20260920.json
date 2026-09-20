@@ -1,0 +1,33 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_AUTHORITY_RECONCILIATION",
+  "packet": "/private/tmp/console-mvp-focus-authority-20260920",
+  "packet_sha256": {
+    "PRODUCT.md": "229a3b20a602d557e72ad8c4c2d70102c78d4a08ac61dbe8aa5be75a14adc30f",
+    "changes.patch": "4f746504fa4cdd38b510daba26d2bc911ebe3c6ca56b120d30a30b08225c171b",
+    "ROADMAP.md": "7e030fcb5ae6617651fe5317259cb7fbad5cffaae2a8f617edb6d4e6b746b423",
+    "source-lock.json": "f1663857f25ba2418c617c1fb4359663f346ccc62dc630f479bf56d347fec7ac"
+  },
+  "authorization_source": {
+    "kind": "parent reports exact original user messages visible in root current conversation",
+    "reported_by": "/root",
+    "messages": [
+      "resume work (forget oyatie for now)",
+      "and making sure we are buck2 native?",
+      "I want you to deliver the polished MVP and focus on it",
+      "payroll, people, employment, organization, approval. they all have to exist"
+    ],
+    "date": "2026-09-20",
+    "reviewer_limitation": "Original newer messages are outside this fork; parent provided exact direct quotations and confirmed seeing originals, not merely a summary."
+  },
+  "conclusions": [
+    "Two additive paragraphs accurately reconcile immediate five-workflow polished native MVP/Buck2 focus into existing PRODUCT/ROADMAP authorities.",
+    "Explicitly preserves all five workflows, real owner persistence/reopen/current policy/recovery/accessibility, existing release inventory and wider outstanding release scope.",
+    "Does not create competing roadmap, claim implementation/acceptance, widen policy authority, authorize exposure or direct payments.",
+    "Both exact source/candidate hashes verified; no other authority edits approved."
+  ],
+  "limits": [
+    "Root serializes authority writes after active verification, with normal relevant checks.",
+    "No product implementation or workflow/release acceptance."
+  ]
+}

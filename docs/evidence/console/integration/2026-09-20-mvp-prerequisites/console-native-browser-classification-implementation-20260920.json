@@ -1,0 +1,23 @@
+{
+  "test_commit": "f6e21a80a790422d76b969d7d2a11f383a4be062",
+  "source_sha256": {
+    "tools/ci/check-product-buck-residual.mjs": "a8faf39216d42112a835410c9f95c51cf73ba76abbe5b0347a29db14a85d3419",
+    "tools/ci/check-postgres-cargo-map.mjs": "3e6aa5fae3005b958318a5e3f05e950344809e375882c851a836e63d1a409061",
+    "tools/ci/postgres-cargo-map.json": "5fe9f0990e931ce9e297b9d8332e32abdab6e0d4a4e96fe7f158932b3ebc88b7",
+    "tools/ci/check-product-buck-residual.test.mjs": "e4f419ac43daca6a10f9380d4247d82c4efe67daaae300cdc5c6bc43325054fe",
+    "tools/ci/check-postgres-cargo-map.test.mjs": "5f0d2bfa340526293a3e06b9e536911bbca7749836d37bf2cb8ad3be965d5805"
+  },
+  "red": "/private/tmp/console-native-browser-classification-tests-red-20260920.log",
+  "green": "/private/tmp/console-native-browser-classification-probe-20260920.log",
+  "tests": {
+    "executed": 13,
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0
+  },
+  "limitations": [
+    "Native CI graph contracts verify wiring, not browser workflow success",
+    "Full preflight currently running",
+    "Original map candidate failed9>7 and was restored; successor preserves7legacy plus2native"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_METADATA_CLASSIFICATION",
+  "packet": "/private/tmp/console-native-browser-map-20260920-round1",
+  "source_lock": {
+    "tools/ci/postgres-cargo-map.json": {
+      "before": "5dd97d9e3e3b99723b541b8eafa05602fdfe0eca6e6bbe78977109b09dd1aacd",
+      "candidate": "93b71810215e83e1b5d15291949e8df32712ddd58215bf03fee63eee98fd5ea8"
+    }
+  },
+  "findings": [],
+  "evidence": [
+    "JSON preservation calculation: only2new unmapped rows and derived count3to5 differ; all238entries,3oldrows,223workflow memberships and measurements are unchanged.",
+    "Both wrapper names and exact test-browser native targets are present in tools/buck/BUCK and backend/app/BUCK.",
+    "No checker, executable command, Cargo partition or browser evidence behavior changes.",
+    "Existing residual checker retains unknown-wrapper denial and reason requirement."
+  ],
+  "note": "test_gen_first_party.py proves declared graph and CI command wiring; actual browser execution remains separately evidenced, as CONTRACT.md explicitly states. Do not cite this metadata classification as runtime acceptance.",
+  "required_verification": [
+    "Original residual suite/gate RED becomes green.",
+    "Map suite/gate and full preflight pass or remaining failures are recorded."
+  ],
+  "executed_by_reviewer": 0
+}

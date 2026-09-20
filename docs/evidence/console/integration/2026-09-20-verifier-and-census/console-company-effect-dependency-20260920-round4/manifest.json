@@ -1,0 +1,23 @@
+{
+  "author": "reference_inventory",
+  "status": "SOURCE_INVESTIGATION_NOT_IMPLEMENTATION_ADMISSION",
+  "predecessor_manifest_sha256": "c248c9a2e0715d7e33da467c9361b6e7d59a2bc670ab5baa5c6ccf54fa07bf15",
+  "tests_authored": 0,
+  "tests_executed": 0,
+  "sql_executed": 0,
+  "repository_files_changed": 0,
+  "files": [
+    {
+      "path": "CANDIDATE.md",
+      "sha256": "c0c13d7e7be428662f599d1cea1ad1f2ec469515e2907748e81262b40af3d753"
+    },
+    {
+      "path": "runtime_census.sql",
+      "sha256": "c3ae6a4eb47afaf6be80c1079014eeb88cd4d53401bcb11f4198d001eabc4b1c"
+    },
+    {
+      "path": "source-locks.json",
+      "sha256": "48a7d2494a84ce66b4dbfd11085cd16f8e9e9f6b5f712f49e392997222c80ca7"
+    }
+  ]
+}

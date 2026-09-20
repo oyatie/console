@@ -1,0 +1,114 @@
+{
+  "status": "PRIVATE_ASSEMBLED_TEST_SOURCE_PENDING_ROLLBACK_SECURITY_REVIEW",
+  "author": "/root/integration_tests",
+  "base": "847045f7a20091c63e6e7cccccc86361d9f4688c",
+  "new_sqlx_leaves": 7,
+  "new_pure_leaves": 2,
+  "retained_semantic_successors": 4,
+  "product_tests_executed": 0,
+  "format": {
+    "command": "rustup run 1.98.1 rustfmt --edition 2024 <private main producer module> <private jwt test sibling>",
+    "exit": 0,
+    "child_module_formatted": true
+  },
+  "files": [
+    {
+      "path": "ASSEMBLY.md",
+      "sha256": "47842142028144705f259388e32a0f1e785f516617e0e0f8e2c37c95c8271fb9"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/legacy_platform_binding_producer/signing_rollback.rs",
+      "sha256": "1e67619879e54c881b88b37c7c0509356468ac4062cefdd8811c8dd7b0e2a69b"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/legacy_platform_binding_producer.rs",
+      "sha256": "dabe89315edda6d48082cf69f103111dbed7ddfb2fac30beca8dec57b3cd19de"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/jwt_platform_binding_producer_tests.rs",
+      "sha256": "96d7e4d1779e73d40d33b4ba9f88b155ae392065fdfc668a90d74335fc782bd7"
+    },
+    {
+      "path": "registration.patch",
+      "sha256": "d4c16683c3fa13c2ab917920b55b188d655410748e8206af5f8a63436581c066"
+    },
+    {
+      "path": "retained/historical-fixture-successors.patch",
+      "sha256": "2a8140775810a01e6233a5581515ad0cbd5e53f723845bca7f0e40487b423fe6"
+    },
+    {
+      "path": "retained/legacy_platform_list_expiry_progress.rs.original",
+      "sha256": "2949c236fb98c54f51c759b237b08d1fbdd19a8b66a7d69e33da9a197d738c48"
+    },
+    {
+      "path": "retained/legacy_platform_list_expiry_progress.rs.successor",
+      "sha256": "6fb6cd10910534f0d937adceee498dd18ca784107d0234e9ada7b03652bfde32"
+    },
+    {
+      "path": "retained/legacy_platform_list_histories.rs.original",
+      "sha256": "f3bdc2e5ceb6d0c3e069655077c36d813fb381abb27c75312679ca3d5163314b"
+    },
+    {
+      "path": "retained/legacy_platform_list_histories.rs.successor",
+      "sha256": "27d91946278d9333ceb4a71b5e35b0499bbd604a2f793589865dfd4413e321d5"
+    },
+    {
+      "path": "retained/legacy_platform_list_reads.rs.original",
+      "sha256": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145"
+    },
+    {
+      "path": "retained/legacy_platform_list_reads.rs.successor",
+      "sha256": "93a387c2c3c392ea1ba4deebf94ca2861f28dccb894114804bd7705deb3288d2"
+    },
+    {
+      "path": "retained/platform_self_pin_original.rs",
+      "sha256": "11dedbc2ddf4985c4d624d12026fe1afd2f640265394dfc31a152a7e00f9d586"
+    },
+    {
+      "path": "retained/platform_self_pin_successor.rs",
+      "sha256": "f1cca3e4977a18ffc9360b75a48302ac63af8004f81bf927e3bd27e94975bf82"
+    },
+    {
+      "path": "self-pin-successor.patch",
+      "sha256": "cb3d9afede93083a5331dcd8275aca404646b8bd420a53542ec430c0c527f913"
+    }
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/tests/auth_rest.rs",
+      "sha256": "0f30cd64c5811204a7ced422dac5bfa3a721f77b23b858d45e06a9ebf1feb1e2"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/src/jwt.rs",
+      "sha256": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs",
+      "sha256": "5e7b95ae648b143c64e70bcaa70261cee03f489eb0fd1a7bfd6ed373d40f92f5"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/BUCK",
+      "sha256": "72ae6c9e19fd3b7842962cc3a96af614d2e7a3f08bd2a8bb93a416c8512fa251"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/BUCK",
+      "sha256": "92e0ae62109535979023bd7b61409ba851db812200428dbdfb0789d2792db02d"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/tools/buck/BUCK",
+      "sha256": "7285aa961af3125d8510524a99b20c5187a0770a0fc5fbac15cc67db7bce72a7"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/rust-toolchain.toml",
+      "sha256": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28"
+    },
+    {
+      "path": "/private/tmp/console-platform-direct-producer-tests-20260920-round3/manifest.json",
+      "sha256": "a0b8a3ef745628d41723b403cfa21e55756bc3f4a95fd5cadbc3a0a6ad3a90a1"
+    },
+    {
+      "path": "/private/tmp/console-platform-direct-signing-rollback-20260920-round1/manifest.json",
+      "sha256": "8d0f5f2e7e03d22394ecbc342b5f2eaba059ea227b16de31cc54a96124212f51"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "status": "VERIFIER_REPAIR_VERIFIED_BROADER_CHECK_FAILED",
+  "members": [
+    {
+      "path": "console-native-browser-mirror-final-integration-tests-review-20260920.json",
+      "sha256": "67f1e9d80f4b4ead12424c084e1ea19cf0c80d0f2fbf0e1f95e1ce1832d015c5",
+      "original_path": "/private/tmp/console-native-browser-mirror-final-integration-tests-review-20260920.json",
+      "original_sha256": "67f1e9d80f4b4ead12424c084e1ea19cf0c80d0f2fbf0e1f95e1ce1832d015c5",
+      "original_bytes": 1912
+    },
+    {
+      "path": "console-native-browser-mirror-final-security-review-20260920.json",
+      "sha256": "5bd51a46ab801ac4dfb736ea5ed14e30f6cd82c5a134914c0ae7783d43de9d40",
+      "original_path": "/private/tmp/console-native-browser-mirror-final-security-review-20260920.json",
+      "original_sha256": "5bd51a46ab801ac4dfb736ea5ed14e30f6cd82c5a134914c0ae7783d43de9d40",
+      "original_bytes": 2050
+    },
+    {
+      "path": "console-native-browser-mirror-implementation-20260920.json",
+      "sha256": "fe033e518f459e6b892cb9dd2c3d9d66544b8d7ead8821323a8eedc281337a7b",
+      "original_path": "/private/tmp/console-native-browser-mirror-implementation-20260920.json",
+      "original_sha256": "fe033e518f459e6b892cb9dd2c3d9d66544b8d7ead8821323a8eedc281337a7b",
+      "original_bytes": 427
+    },
+    {
+      "path": "console-native-browser-mirror-round1-security-review-20260920.json",
+      "sha256": "22ca017c4ca4577f95d2b7e30105733c3a525e6f6c6659aad9f5a5c5363ffbad",
+      "original_path": "/private/tmp/console-native-browser-mirror-round1-security-review-20260920.json",
+      "original_sha256": "22ca017c4ca4577f95d2b7e30105733c3a525e6f6c6659aad9f5a5c5363ffbad",
+      "original_bytes": 2603
+    },
+    {
+      "path": "console-native-browser-mirror-round2-integration-tests-review-20260920.json",
+      "sha256": "12c9ae464c77fae2080d104dc3e23dbc9d8b72e6dee3c141de8d5e25842c88b0",
+      "original_path": "/private/tmp/console-native-browser-mirror-round2-integration-tests-review-20260920.json",
+      "original_sha256": "12c9ae464c77fae2080d104dc3e23dbc9d8b72e6dee3c141de8d5e25842c88b0",
+      "original_bytes": 2653
+    },
+    {
+      "path": "console-native-browser-mirror-round2-security-review-20260920.json",
+      "sha256": "3e98329072291044a58b83a9d7f32bb05d3332e55e78578b59ef86876fb71deb",
+      "original_path": "/private/tmp/console-native-browser-mirror-round2-security-review-20260920.json",
+      "original_sha256": "3e98329072291044a58b83a9d7f32bb05d3332e55e78578b59ef86876fb71deb",
+      "original_bytes": 2225
+    },
+    {
+      "path": "console-native-browser-mirror-tests-green-20260920.log.gz",
+      "sha256": "4c754959a8a340a121fa96f699e54fb18e0bff9e34c3c384a7b614ce42054d4c",
+      "original_path": "/private/tmp/console-native-browser-mirror-tests-green-20260920.log",
+      "original_sha256": "cb3c79babbe3c80cdbab347905b705012cf7aadc8b56ff4a9454743256eab4ac",
+      "original_bytes": 1458
+    },
+    {
+      "path": "console-native-browser-mirror-tests-red-20260920.log.gz",
+      "sha256": "cbe81816725a6434bd3d45b76d03e878c268890d2239956cdeca955d177c76b6",
+      "original_path": "/private/tmp/console-native-browser-mirror-tests-red-20260920.log",
+      "original_sha256": "f7ef7479e075990995a542e6f530a8fae79403b182c94553ebbffe87de69f7cc",
+      "original_bytes": 7440
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round1/CONTRACT.md.log.gz",
+      "sha256": "c8396838e4f34ffefbfd93eab487712d66dd0e2b1aeb31d9a93757942b188830",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round1/CONTRACT.md",
+      "original_sha256": "cf663da2fe30401006ef599a2c941eb709afe1dab22a7e2db2ab2b7cf36a719e",
+      "original_bytes": 736
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round1/lane.json",
+      "sha256": "489e6bec2239fd154334d9b4d0aaef0ac4a6874f76d4966b764e7af1d7d806c3",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round1/lane.json",
+      "original_sha256": "489e6bec2239fd154334d9b4d0aaef0ac4a6874f76d4966b764e7af1d7d806c3",
+      "original_bytes": 1190
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round1/red.log.gz",
+      "sha256": "366e33e849ada7cdd06a730115bcdf55f7111d0a3f8c01f8ce6f06917e26f5af",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round1/red.log",
+      "original_sha256": "04bcd368e0734c8375e15023a5f8560e607aef836f2a5987236fb53fecba86f7",
+      "original_bytes": 5323
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round1/source-lock.json",
+      "sha256": "65216e69ae26d01fe8605a97d7dce7393ebdd36534b5095d0cf3555ecfef822e",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round1/source-lock.json",
+      "original_sha256": "65216e69ae26d01fe8605a97d7dce7393ebdd36534b5095d0cf3555ecfef822e",
+      "original_bytes": 192
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round1/test-addition.mjs.log.gz",
+      "sha256": "69f6ab0b4986db63837c2a3277b0bbf53d8e2678d8e4f5184a598749192250b8",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round1/test-addition.mjs",
+      "original_sha256": "74d3fbad12c10000e98df4be92d2ff8cf118c8a1c9de2cd34bc1cf3d82f8a6d7",
+      "original_bytes": 889
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round2/CONTRACT.md.log.gz",
+      "sha256": "662999d003cf19ea4b5de94b34ae93ece61430cf7a9e5df724f92b0097c27c3b",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round2/CONTRACT.md",
+      "original_sha256": "22ac9ba332eeb9de2c57040f271aa5248d0e9ecd7ffee2441af58b4a780d432e",
+      "original_bytes": 1436
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round2/lane.json",
+      "sha256": "272fa83ef5cc18928f092f4f3df68ee90c451dc36e4b5e6dd2a128e959ba387e",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round2/lane.json",
+      "original_sha256": "272fa83ef5cc18928f092f4f3df68ee90c451dc36e4b5e6dd2a128e959ba387e",
+      "original_bytes": 1449
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round2/source-lock.json",
+      "sha256": "65216e69ae26d01fe8605a97d7dce7393ebdd36534b5095d0cf3555ecfef822e",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round2/source-lock.json",
+      "original_sha256": "65216e69ae26d01fe8605a97d7dce7393ebdd36534b5095d0cf3555ecfef822e",
+      "original_bytes": 192
+    },
+    {
+      "path": "console-native-browser-mirror-20260920-round2/test-addition.mjs.log.gz",
+      "sha256": "38f37e822c7c7f6a4bf2a84246fe8958a079bb7088997b2a7d748e000cf396aa",
+      "original_path": "/private/tmp/console-native-browser-mirror-20260920-round2/test-addition.mjs",
+      "original_sha256": "7f8e48ccd37d55e32dabfef057c25c344ec4d27f87275852e81d16a6bd80a64f",
+      "original_bytes": 1677
+    },
+    {
+      "path": "console-company-guards-fast-verify-20260920.log.gz",
+      "sha256": "97832d6815d1ce5ac699276c33e880c120ac662ac764c6712032bf36c990004b",
+      "original_path": "/private/tmp/console-company-guards-fast-verify-20260920.log",
+      "original_sha256": "4582662c3ed71dd743da32a8627ef171673ad64fc66fbb5e4003e1857b9de3e9",
+      "original_bytes": 361
+    },
+    {
+      "path": "console-company-guards-fast-verify-20260920.json",
+      "sha256": "1287429a29bb4061c98de7acc3da95082c17bd3755896c0c713ad503fa87bc96",
+      "original_path": "/private/tmp/console-company-guards-fast-verify-20260920.json",
+      "original_sha256": "1287429a29bb4061c98de7acc3da95082c17bd3755896c0c713ad503fa87bc96",
+      "original_bytes": 198
+    },
+    {
+      "path": "console-company-guards-generation-check-status-20260920.json",
+      "sha256": "cfc637d198ba909535f3d0393d876fe67d3c6212c329ef81591959c7dde7f1a2",
+      "original_path": "/private/tmp/console-company-guards-generation-check-status-20260920.json",
+      "original_sha256": "cfc637d198ba909535f3d0393d876fe67d3c6212c329ef81591959c7dde7f1a2",
+      "original_bytes": 434
+    },
+    {
+      "path": "console-company-effect-runtime-census-20260920.json",
+      "sha256": "91ffc8acaeb5a8b342598382a10613eeae14d38f890d5b863ce98567d780d7fc",
+      "original_path": "/private/tmp/console-company-effect-runtime-census-20260920.json",
+      "original_sha256": "91ffc8acaeb5a8b342598382a10613eeae14d38f890d5b863ce98567d780d7fc",
+      "original_bytes": 784
+    },
+    {
+      "path": "console-company-effect-runtime-census-20260920.log.gz",
+      "sha256": "cd10d91666c7c716f4b1b85f85a123a16bb9ce6dc77038c631e6422841e71bd3",
+      "original_path": "/private/tmp/console-company-effect-runtime-census-20260920.log",
+      "original_sha256": "2488c816189d9c97ff581d9847e779ce716be32359159f2afff2081d5bc566dd",
+      "original_bytes": 1158065
+    },
+    {
+      "path": "console-company-effect-runtime-census-security-review-20260920.json",
+      "sha256": "1f4ccd228bd4160c227408444fc451e716d8542dfcddb94413a4edd63840d0d2",
+      "original_path": "/private/tmp/console-company-effect-runtime-census-security-review-20260920.json",
+      "original_sha256": "1f4ccd228bd4160c227408444fc451e716d8542dfcddb94413a4edd63840d0d2",
+      "original_bytes": 31102
+    },
+    {
+      "path": "console-company-effect-census-fixture-20260920.log.gz",
+      "sha256": "cf2ca2cabde9b6a3eea141f9c1f8678eb365eee087b2fceac70fae9feea9cf0e",
+      "original_path": "/private/tmp/console-company-effect-census-fixture-20260920.log",
+      "original_sha256": "03d825e7b8192934889f9b969ee3d6792253dfb05343fed899759b88317788a6",
+      "original_bytes": 4248
+    },
+    {
+      "path": "console-company-effect-census-runner-20260920.py.log.gz",
+      "sha256": "6fae67d59cf55f5657e3ece46c6ac52fbd4d8f706c61b3e0793c22e77d724240",
+      "original_path": "/private/tmp/console-company-effect-census-runner-20260920.py",
+      "original_sha256": "7f1aba27b80086baab0640d354669fcf07684f4639637808fceaad5af4689176",
+      "original_bytes": 3378
+    },
+    {
+      "path": "console-company-effect-dependency-20260920-round4/runtime_census.sql.log.gz",
+      "sha256": "34ff94eebf61174057a90db30b93f1cc6579f7db471aa01669f65e0852e9550c",
+      "original_path": "/private/tmp/console-company-effect-dependency-20260920-round4/runtime_census.sql",
+      "original_sha256": "c3ae6a4eb47afaf6be80c1079014eeb88cd4d53401bcb11f4198d001eabc4b1c",
+      "original_bytes": 7831
+    },
+    {
+      "path": "console-company-effect-dependency-20260920-round4/manifest.json",
+      "sha256": "c6818f70b0badaf15e6959edad2b4433561c00979572fed0a7dc5b27a909ddd9",
+      "original_path": "/private/tmp/console-company-effect-dependency-20260920-round4/manifest.json",
+      "original_sha256": "c6818f70b0badaf15e6959edad2b4433561c00979572fed0a7dc5b27a909ddd9",
+      "original_bytes": 710
+    },
+    {
+      "path": "console-company-guards-fast-verify-round2-20260920.log.gz",
+      "sha256": "88742f0e99b79f9100b4880327d632b98ea49466dd8d47d73cb92ecc2f3b1f57",
+      "original_path": "/private/tmp/console-company-guards-fast-verify-round2-20260920.log",
+      "original_sha256": "6ce13feac9d60709c79b9d6bf290ad82704b76644da0223cd8019a9ffdbcf1fb",
+      "original_bytes": 713707
+    },
+    {
+      "path": "console-company-guards-fast-verify-round2-20260920.json",
+      "sha256": "b1008fc05e732b7cf7d83f5a550c370ce00935b56e15c2848bc8b7647244684c",
+      "original_path": "/private/tmp/console-company-guards-fast-verify-round2-20260920.json",
+      "original_sha256": "b1008fc05e732b7cf7d83f5a550c370ce00935b56e15c2848bc8b7647244684c",
+      "original_bytes": 312
+    }
+  ],
+  "implementation_commit": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "test_commit": "48c8f13ef1c7ba30e9fe3c8504fcf389369d5a5c",
+  "focused_tests": {
+    "discovered": 17,
+    "executed": 17,
+    "passed": 17,
+    "failed": 0,
+    "skipped": 0
+  },
+  "broader_check": {
+    "command": "npm run verify",
+    "exit": 1,
+    "failures": [
+      "CI preflight: two native browser wrappers absent from map",
+      "Strict Clippy: pending too_many_arguments and catalog tuple type_complexity"
+    ],
+    "log": "console-company-guards-fast-verify-round2-20260920.log.gz"
+  },
+  "limits": [
+    "Browser db tier classified but not executed by focused verifier tests",
+    "Broader checks retain transitional Cargo producers; not Buck-native release qualification",
+    "Read-only census is not Company workflow acceptance",
+    "Company creation and all five MVP workflows remain incomplete"
+  ]
+}

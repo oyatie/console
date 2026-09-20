@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_TWO_STATUS_ORACLE_CORRECTIONS",
+  "record_sha256": "984755c56b092ad1ff59bc491e4d35e90d1fd206219936b47082552f0edcaa94",
+  "patch_sha256": "0ff4ceee66f904a35af8ebbe072c1fe6cf81f840a501a6e2b447ea29022be608",
+  "failure_log_sha256": "878827f4f5e33a5c0257530af746a1230a03d27133fd55d499649449426bee35",
+  "findings": [
+    "Existing actual auth-rest logout invokes family revocation then returns204NO_CONTENT in both transport branches. Production owner is unchanged.",
+    "Two new assertions incorrectly expected200; exact candidate changes only those assertions to explicit204equality. All family revocation/readback/denial/historical/other-family checks remain.",
+    "Both current/Gitbase original hashes and mechanically derived candidate hashes verified.",
+    "Prior source review missed the old204transport contract; its approval of200expectations is explicitly superseded here, with historical packets/failures preserved."
+  ],
+  "requirements": [
+    "Apply only after current frozen native matrix finishes; rerun affected full leaves and preserve original failure.",
+    "No production response change/test skip/history rewrite authorized.",
+    "Runtime acceptance remains pending."
+  ],
+  "execution": "Read-only source/Git/hash/log review; no tests/builds/SQL/runtime executed."
+}

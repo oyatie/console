@@ -1,0 +1,47 @@
+{
+  "status": "MVP_FOCUS_ONLY_NO_CAPABILITY_PROMOTION",
+  "members": [
+    {
+      "path": "console-mvp-focus-authority-security-review-20260920.json",
+      "sha256": "f0f3357d84cf06f2adc13215a9c9c0992a66621470244daa76f787899d1c1a71",
+      "original_path": "/private/tmp/console-mvp-focus-authority-security-review-20260920.json",
+      "original_sha256": "f0f3357d84cf06f2adc13215a9c9c0992a66621470244daa76f787899d1c1a71",
+      "original_bytes": 1922
+    },
+    {
+      "path": "console-platform-direct-and-prerequisite-archives-integration-tests-review-20260920.json",
+      "sha256": "b97eedde0199495672d33e1f4d6e24267c62be1ccf8c1c2522e9282d5b2d5ab5",
+      "original_path": "/private/tmp/console-platform-direct-and-prerequisite-archives-integration-tests-review-20260920.json",
+      "original_sha256": "b97eedde0199495672d33e1f4d6e24267c62be1ccf8c1c2522e9282d5b2d5ab5",
+      "original_bytes": 4126
+    },
+    {
+      "path": "PRODUCT.md.log.gz",
+      "sha256": "7efb70cc14e984ca3c70486aa57fbb6d7924955852b0011ee6a38aa20e951a31",
+      "original_path": "/private/tmp/console-mvp-focus-authority-20260920/PRODUCT.md",
+      "original_sha256": "229a3b20a602d557e72ad8c4c2d70102c78d4a08ac61dbe8aa5be75a14adc30f",
+      "original_bytes": 26406
+    },
+    {
+      "path": "changes.patch.log.gz",
+      "sha256": "662f171340d3879570efbf9c376d5cf2c35cc368a9d0f1754d7e698580481591",
+      "original_path": "/private/tmp/console-mvp-focus-authority-20260920/changes.patch",
+      "original_sha256": "4f746504fa4cdd38b510daba26d2bc911ebe3c6ca56b120d30a30b08225c171b",
+      "original_bytes": 3982
+    },
+    {
+      "path": "ROADMAP.md.log.gz",
+      "sha256": "071c5b33136531cfdfabdd985e4610ac97b22e011b39aa5f69d8214fb4fd006c",
+      "original_path": "/private/tmp/console-mvp-focus-authority-20260920/ROADMAP.md",
+      "original_sha256": "7e030fcb5ae6617651fe5317259cb7fbad5cffaae2a8f617edb6d4e6b746b423",
+      "original_bytes": 20183
+    },
+    {
+      "path": "source-lock.json",
+      "sha256": "f1663857f25ba2418c617c1fb4359663f346ccc62dc630f479bf56d347fec7ac",
+      "original_path": "/private/tmp/console-mvp-focus-authority-20260920/source-lock.json",
+      "original_sha256": "f1663857f25ba2418c617c1fb4359663f346ccc62dc630f479bf56d347fec7ac",
+      "original_bytes": 407
+    }
+  ]
+}

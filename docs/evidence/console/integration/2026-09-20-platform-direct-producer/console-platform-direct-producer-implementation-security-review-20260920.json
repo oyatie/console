@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_PRODUCTION_SOURCE_PENDING_ORACLE_CORRECTION_AND_RUNTIME_GREEN",
+  "record_sha256": "5d3a141506a292ee463756e28f4be604131840f3eaf72d9a3444db04a36f8bbf",
+  "patch_sha256": "208323da20f5d08d85b6c0469175b26e1dd0cee372d9da68de7f4d16e619d138",
+  "source_sha256": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "red_log_sha256": {
+    "owner_red": "a5af0fd712160902453259d7cf6b4077f3af971588f420f6928178b0ed0c0ffb",
+    "signing_prerequisite": "c3489a75e4c581c3cc36f66b8d75c6afbe928e50e501332d8495ac5e4fc022c0"
+  },
+  "findings": [
+    "All3declared production hashes and complete actual git diff match immutable packet; no other dirty source files.",
+    "Only new platform-direct API carries existing strict version1 binding: nonnil family, exact subject/org, platform sentinel/marker, non-viewas/nonreadonly and unexpired issued credential. Shared owner validates existing codec before signing.",
+    "All5shared-claims callers traced: new method supplies binding; four old call paths supplyNone and retain prior scope/group/tenant-context arguments. No historical parser/codec/command/family protocol alteration.",
+    "All shared issuance callers traced: passkey finish, OTPredeem, devicehandoffpoll and dev-auth await family-first issue/sign inside owning Auth transaction before commit. Refresh passes exact owner rotate result. Ordinary Company/group producers retain unbound issuance; no family lookup/newest-family heuristic.",
+    "Self-reader diff removes only platform rejection after existing strict marker/scope checks; exact subject/org/protocol/revocation/family locks and DB-clock checks before/after projection remain.",
+    "Actual owner RED log executes1and fails missing binding,506filtered. Actual signing prerequisite executes1and reaches exact encoder then fails insertion witness under original sign-first code,506filtered; neither is a compile/fixture error."
+  ],
+  "required_test_correction": {
+    "file": "backend/app/tests/auth_rest/legacy_platform_binding_producer.rs:149",
+    "problem": "Approved test mistakenly expects family.protocol LEGACY_USER; immutable current Auth7 actual family protocol is LEGACY_COMPANY. Identity root discriminator and credential protocol are distinct.",
+    "evidence": [
+      "ops/postgres-finalize-account-credentials.sql34939DEFAULT and34944CHECK",
+      "backend/crates/platform/auth/src/legacy.rs validate_legacy_self_read_family"
+    ],
+    "action": "Verify actual row and approve narrow test-literal successor. Preserve original packet and any failure; do not alter production protocol.",
+    "reviewer_note": "Prior source-test review missed this oracle distinction; this receipt corrects that claim explicitly."
+  },
+  "limits": [
+    "Runtime GREEN and retained compatibility/rollback/default/dev-auth verification pending.",
+    "Binding is correlation, not passkey assurance or universal revocation enforcement. Existing authenticated_user_context mutation-boundary HOLD remains.",
+    "Producer-only rollback retaining compatible reader preserves issued self-service; reader rollback requires actual refresh/re-auth to historical unbound route.",
+    "No Company workflow/milestone/release acceptance."
+  ],
+  "execution": "Read-only source/Git/hash/log review only; zero runtime/build/test/SQL execution."
+}

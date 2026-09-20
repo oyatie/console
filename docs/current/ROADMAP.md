@@ -22,6 +22,10 @@ The first client release is the assembled full inventory in PRODUCT. Account set
 
 After shared contracts are established, people/payroll, communications and data-platform lanes may progress independently under DELIVERY admission and one-writer rules. Dataset/application/model/package version identities precede their executions. Continue to the next ready dependency after an accepted milestone; a missing prerequisite, green probe or missing executable stops that lane, not unrelated admitted work.
 
+## Immediate MVP sequence
+
+Per the owner's 2026-09-20 focus, complete Account/Company/current-policy prerequisites, then deliver the connected payroll, people, employment, organization and approval workflows with their native Leptos interfaces and recovery paths. These five are one MVP acceptance scope, drawing from milestones 1–5 above; none is optional. Buck2-native build and test convergence stays in this work. Continue the broader Foundry sequence after that MVP is accepted. Record capability states in the existing release inventory only; neither this ordering nor MVP acceptance closes the full release or authorizes exposure.
+
 ## Baseline evidence and inherited gaps (not a second delivery sequence)
 
 1. **Documentation custody and active authority**

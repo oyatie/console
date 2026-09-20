@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python3",
+    "ops/generate-account-custody.py",
+    "--check"
+  ],
+  "cwd": "/private/tmp/console-client-release-20260919",
+  "head": "9d19dd53a251d57252163df3051cd9f47ca9e2ef",
+  "exit": 0,
+  "stdout": "",
+  "stderr": "",
+  "generator_sha256": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+  "reason": "Explicit machine-readable exit evidence supplements original empty successful log"
+}

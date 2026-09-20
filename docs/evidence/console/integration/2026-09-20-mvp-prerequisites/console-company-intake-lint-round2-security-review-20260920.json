@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "base_sha": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "decision": "APPROVE_EXACT_MECHANICAL_CANDIDATE_PENDING_ROOT_VERIFICATION",
+  "packet": "/private/tmp/console-company-intake-lint-20260920-round2",
+  "packet_hashes": {
+    "CONTRACT.md": "0a21a2cb643908bfad778924f6f89c226d59c64f9a5cd3a8d96a67e168f73525",
+    "changes.patch": "28b196124a05b800f7472f1c8191b5238f8aa59de796fc341db2d95a3543ad0a",
+    "lane.json": "fa54c47f33eb29741dfb6e5db7faa3f970a5f8d383ec5a5774dac5fb3164269f",
+    "native_company_intake_guards.rs": "0ef8c18891527813f3eb20866e35298327e3b4995bf599907c16c5c012943879",
+    "native_company_intake_owner.rs": "2f4e13baf77683d452fc81dd6d411884e13f08c62bea2b46b1648c6ae43e3d79",
+    "native_company_signed_credentials.rs": "db2b0bfef636095ac15be526298b4838b04d77790d4a07944f4bff634166fee4",
+    "source-lock.json": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a"
+  },
+  "findings": [
+    "Round1 omitted signed_credentials tenth caller and was not approved. Round2 includes it and expands exact source locks.",
+    "All three before hashes equal exact Git base; candidate hashes match. Ten callers preserve argument evaluation order, bounds, assertions and SQL. Type alias names the existing exact eight-field catalog tuple without changing representation.",
+    "No removed tests/assertions, allow attributes, SQL or production changes."
+  ],
+  "limits": [
+    "Root must re-admit three-file scope against real strict Clippy RED and rerun same command plus affected native SQLx tests.",
+    "No Company workflow, milestone or release acceptance."
+  ],
+  "execution": "Read-only source/Git review and hash comparisons; no product tests, builds, SQL or runtime executed by reviewer."
+}

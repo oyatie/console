@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_IMPLEMENTATION",
+  "test_commit": "48c8f13ef1c7ba30e9fe3c8504fcf389369d5a5c",
+  "candidate_identity": "test_commit plus exact source files below; local uncommitted implementation reviewed",
+  "source_sha256": {
+    "scripts/verify.mjs": "1124540d147f97f8c1c067b5599e42881d88c143ab44b6453417bcb6c6004a69",
+    "scripts/verify.test.mjs": "326c88971d54a272ec586984b9e95fef63d2af008a5151c29fce639b0a017387"
+  },
+  "evidence_sha256": {
+    "/private/tmp/console-native-browser-mirror-implementation-20260920.json": "fe033e518f459e6b892cb9dd2c3d9d66544b8d7ead8821323a8eedc281337a7b",
+    "/private/tmp/console-native-browser-mirror-tests-red-20260920.log": "f7ef7479e075990995a542e6f530a8fae79403b182c94553ebbffe87de69f7cc",
+    "/private/tmp/console-native-browser-mirror-tests-green-20260920.log": "cb3c79babbe3c80cdbab347905b705012cf7aadc8b56ff4a9454743256eab4ac"
+  },
+  "findings": [],
+  "checks": [
+    "Exact implementation diff is five PLAN entries and bash -e addition retaining pipefail; no command override or browser source change.",
+    "Test commit contains only export visibility, existsSync import and two independently approved tests. Text calculation confirms old15tests unchanged and new2match approved packet.",
+    "Recorded node --test scripts/verify.test.mjs: RED17executed11passed6failed0skipped; GREEN17executed17passed0failed0skipped. New failures identify missing db disposition and actual shell false-green before fix.",
+    "Final live hashes match implementation source lock.",
+    "No reviewer builds/tests/browser/DB execution."
+  ],
+  "limits": [
+    "Broader npm run verify still in progress at review; no whole-tree green claim.",
+    "17unit tests do not execute database/browser journeys.",
+    "Approval is bounded verifier repair/local commit only, not Company/workspace/release/exposure acceptance."
+  ]
+}

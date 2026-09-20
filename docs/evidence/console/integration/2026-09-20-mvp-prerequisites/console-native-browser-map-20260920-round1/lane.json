@@ -1,0 +1,32 @@
+[
+  {
+    "lane": "native-browser-transition-map",
+    "base": "4d6451836eb379d9a4b711e02d770d1608db0033",
+    "owner": "/root",
+    "allow": [
+      "tools/ci/postgres-cargo-map.json"
+    ],
+    "immutable_target": "Existing required native browser wrappers are truthfully classified without a Cargo producer or gate bypass",
+    "mechanical_guide": "/private/tmp/console-native-browser-map-20260920-round1/CONTRACT.md",
+    "probe": "node --test tools/ci/check-product-buck-residual.test.mjs > /private/tmp/console-native-browser-map-probe-20260920.log 2>&1",
+    "pre_mortem": [
+      "browser accidentally scheduled by Cargo",
+      "unknown target silently accepted"
+    ],
+    "detection": [
+      "unchanged fail-closed gate tests",
+      "exact metadata diff",
+      "existing native generator producer tests"
+    ],
+    "rollback": "Remove only two added rows and restore derived count",
+    "stop_conditions": [
+      "changed Cargo argv or membership",
+      "native wrapper target mismatch",
+      "unreviewed checker exclusion"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ]
+  }
+]

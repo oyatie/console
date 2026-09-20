@@ -1,0 +1,63 @@
+{
+  "status": "PROPOSED_ADDITIVE_SOURCE_NOT_EXECUTED",
+  "author": "/root/integration_tests",
+  "sqlx_leaves_authored": 2,
+  "tests_executed": 0,
+  "repository_mutations": 0,
+  "files": [
+    {
+      "path": "signing_rollback_tests.rs",
+      "sha256": "06ace973be9413bf47d029b7dc301efa11045fe0102149915e5ace79bd261546"
+    },
+    {
+      "path": "REVIEW.md",
+      "sha256": "4fb693abf98d429129976118b640d1d6171145c08f7811076e325d2d72fabcbe"
+    }
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/src/jwt.rs",
+      "sha256": "45db0df601ed1ba67c247c95cebf2a380cc601d93df9d0fbcd75b350b055a53b"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/src/error.rs",
+      "sha256": "7a9007565f11bd2036f57503d5eda1d206e8b7f07c5a32ea265dbba00bb3c8cb"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/src/refresh.rs",
+      "sha256": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth-rest/src/lib.rs",
+      "sha256": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/tests/auth_rest.rs",
+      "sha256": "0f30cd64c5811204a7ced422dac5bfa3a721f77b23b858d45e06a9ebf1feb1e2"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/Cargo.lock",
+      "sha256": "2395fe296c6bb1529223a95c89ca660e546be8ff1ff6f04cf0c9b391a5e44f72"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/Cargo.toml",
+      "sha256": "4d566b31cb64b02dd8107d92e4926291e9afdf9d20bcf2cd53abee80f12dc064"
+    },
+    {
+      "path": "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jsonwebtoken-11.0.0/src/pem/decoder.rs",
+      "sha256": "93b57adaff3d3f2a985945b93cc9ae238ae7f427ed8309fbd9d3acb4b338c204"
+    },
+    {
+      "path": "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jsonwebtoken-11.0.0/src/encoding.rs",
+      "sha256": "9cac8a7eee379a78a13084b0734e21da5f1b0eab3b13e43dbd3bf608dfdfed3b"
+    },
+    {
+      "path": "/Users/jasonlee/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/jsonwebtoken-11.0.0/src/crypto/rust_crypto/ecdsa.rs",
+      "sha256": "c436e742ff56f8ddb10a5d520e46369085309629b67e4362cb04f27400bbf101"
+    },
+    {
+      "path": "/private/tmp/console-platform-direct-producer-tests-20260920-round3/producer_tests.rs",
+      "sha256": "830a7ee7b64e094627e30990e6ad589b514bf80aa6569c96cd5b39ff1f8b51bd"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_NATIVE_CLASSIFICATION_REPAIR_AND_COMMIT",
+  "verification_sha256": "65ba825f55f65dd8612da5e77b5217c050ca984bb1fbb52fa004e74d3fc0a8b6",
+  "source_review_sha256": "bb0d8369c2a97f7474cefc7ee7d156726953dd68fc174dbec23f7f095cf6662b",
+  "verified": [
+    "All5current source hashes and7retained log hashes match final verification.",
+    "Same-probe13tests pass; corrected native graph contract executes2cases and passes; unchanged-source gate-sweep finishes16passed/0failed.",
+    "Retains original9vs7candidate failure, wrong unittest-class2loadererrors/0actualcases, and sandbox provenance failure before authorized Git-access rerun."
+  ],
+  "counts": {
+    "targeted_tests_executed": 13,
+    "targeted_tests_passed": 13,
+    "native_graph_cases_executed": 2,
+    "native_graph_cases_passed": 2,
+    "preflight_checks_passed": 16,
+    "preflight_checks_failed": 0
+  },
+  "limits": [
+    "Classification/native graph wiring accepted only; actual browser journeys and full npm verify are outside this bounded result.",
+    "No Company workflow/milestone/release completion."
+  ],
+  "execution": "Independent source/hash/log review only; no tests/builds/SQL/runtime executed by reviewer."
+}

@@ -26,6 +26,10 @@ Console targets the functional breadth of Foundry, Ontology, Actions and Fusion 
 
 The first internal implementation vertical is native nonpayable payroll, with Account/current-context, policy, durable source entry, drafts, evidence, review, transfer, historical correction and selected-Company Group-operation dependencies. Account setup and this vertical are internal milestones, not the first client release. The release contract below controls the required scope; existing code and historical shipping claims do not establish integration acceptance or production qualification.
 
+## Current delivery focus
+
+The owner narrowed immediate delivery on 2026-09-20 to a polished, connected native Leptos MVP containing **payroll, people, employment, organization, and approvals**. All five are required working workflows; Account, Company, current policy and workspace entry are prerequisites. Buck2-native delivery remains required. An account screen, payroll-only slice, static destination or passing subset does not complete this MVP. Complete its real browser-to-owner persistence, reopening, current authorization, correction/recovery and accessibility acceptance before returning to the broader Foundry delivery sequence. The full release inventory remains outstanding; this focus does not mark its other capabilities accepted or authorize production exposure or direct payment execution.
+
 ## Product invariants
 
 - Commands are deterministic and revision-aware, with replay-safe receipts and auditable mutations.

@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_IMPLEMENTATION_AND_TARGETED_GREEN_PENDING_PREFLIGHT",
+  "test_commit": "f6e21a80a790422d76b969d7d2a11f383a4be062",
+  "implementation_record_sha256": "21b9af9a8fae6cbc0110ffd1cc2abc5ea85ea1de76ebbbe413b5752e305051b0",
+  "source_sha256": {
+    "tools/ci/check-product-buck-residual.mjs": "a8faf39216d42112a835410c9f95c51cf73ba76abbe5b0347a29db14a85d3419",
+    "tools/ci/check-postgres-cargo-map.mjs": "3e6aa5fae3005b958318a5e3f05e950344809e375882c851a836e63d1a409061",
+    "tools/ci/postgres-cargo-map.json": "5fe9f0990e931ce9e297b9d8332e32abdab6e0d4a4e96fe7f158932b3ebc88b7",
+    "tools/ci/check-product-buck-residual.test.mjs": "e4f419ac43daca6a10f9380d4247d82c4efe67daaae300cdc5c6bc43325054fe",
+    "tools/ci/check-postgres-cargo-map.test.mjs": "5f0d2bfa340526293a3e06b9e536911bbca7749836d37bf2cb8ad3be965d5805"
+  },
+  "logs_sha256": {
+    "red": "178bec1481a700367a5d9eef6ef2d821e866ebb6d152016d35fe0e572380211d",
+    "green": "d35b3b8ef18bec42c6768b7a629070ec18937f06d481ba34803ca2500edea467"
+  },
+  "findings": [
+    "Exact three-file implementation matches round2 design: finite approved pair roster, wrong target/reason/duplicate/legacy overlap/stale CI refusal, separate native output and unchanged legacyceiling7.",
+    "All238Cargo entries,223memberships,3oldunmapped and historical metadata remain; only native array and nativecount2 added.",
+    "All old test bytes preserved; actual committed tests equal original files plus exact previously approved additions.",
+    "Observed same-probe13executed/13passed/0failed/0skipped; retained RED includes missing classification/native count/control failures."
+  ],
+  "limits": [
+    "Full preflight and corrected native graph-contract cases pending; prior wrong-class zero-case errors must be retained.",
+    "Classification and wiring do not prove actual browser workflow success.",
+    "No Company workflow/milestone/release acceptance."
+  ],
+  "execution": "Independent source/Git/hash/log review only; no runtime tests/builds/SQL executed."
+}

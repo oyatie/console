@@ -1,0 +1,249 @@
+{
+  "head": "5e9522f8fc8bc77dd64369ab8122f9acb5e4d8ce",
+  "source_files": {
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/jwt.rs": "491bb361fc007583a1d4d9b0bd4a760f29984e9819fb72e96abba9a12e0418d0",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+  },
+  "selected": [
+    "legacy_platform_binding_producer::platform_direct_otp_login_and_both_refresh_transports_bind_exact_family",
+    "legacy_platform_binding_producer::signing_rollback::platform_direct_login_signing_failure_rolls_back_real_family_and_exact_assertion_retries",
+    "legacy_platform_binding_producer::signing_rollback::platform_direct_refresh_signing_failure_rolls_back_rotation_and_original_token_retries",
+    "legacy_platform_binding_producer::platform_direct_handoff_poll_binds_consumed_family_once",
+    "legacy_platform_binding_producer::platform_historical_unbound_refresh_upgrades_without_rewriting_original",
+    "legacy_platform_binding_producer::platform_direct_self_passkeys_revocation_preserves_historical_and_other_family",
+    "legacy_platform_binding_producer::ordinary_group_role_issuance_and_refresh_stay_unbound",
+    "legacy_bound_passkey_reads::extended::historical_and_bound_platform_self_preserve_current_family_checks",
+    "legacy_platform_list_reads::mounted_platform_list_same_bearer_current_member_denies_and_restores",
+    "legacy_platform_list_reads::histories::mounted_list_waits_for_source_then_denies_committed_demotion",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::legacy_platform_list_locks::legacy_platform_list_expiry_progress::unrelated_operator_completes_while_one_list_source_is_blocked",
+    "legacy_bound_passkey_reads::revoked_exact_family_cannot_read_or_borrow_live_sibling",
+    "otp_first_signin_then_passkey_enrollment_then_usernameless_login"
+  ],
+  "results": [
+    {
+      "leaf": "legacy_platform_binding_producer::platform_direct_otp_login_and_both_refresh_transports_bind_exact_family",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::platform_direct_otp_login_and_both_refresh_transports_bind_exact_family",
+      "exit": 0,
+      "seconds": 96.47,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/01.log",
+      "log_sha256": "b20fdf1386e0144811fb508b4f8f056914c6db84cb240ddc19328f6bed700dbb",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 7.16s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_binding_producer::signing_rollback::platform_direct_login_signing_failure_rolls_back_real_family_and_exact_assertion_retries",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::signing_rollback::platform_direct_login_signing_failure_rolls_back_real_family_and_exact_assertion_retries",
+      "exit": 0,
+      "seconds": 66.93,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/02.log",
+      "log_sha256": "effdea5af8b1cdf408d2d6f607035e2a56de11b43575612d2e2f4cbb55103656",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 9.42s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_binding_producer::signing_rollback::platform_direct_refresh_signing_failure_rolls_back_rotation_and_original_token_retries",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::signing_rollback::platform_direct_refresh_signing_failure_rolls_back_rotation_and_original_token_retries",
+      "exit": 0,
+      "seconds": 58.47,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/03.log",
+      "log_sha256": "fc7c7dc97c2f8557c79da15dc545f1902790d9f24b9ff1051993b4c5008b7328",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 9.38s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_binding_producer::platform_direct_handoff_poll_binds_consumed_family_once",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::platform_direct_handoff_poll_binds_consumed_family_once",
+      "exit": 0,
+      "seconds": 66.5,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/04.log",
+      "log_sha256": "2417c78a2ddddee1e727d7bb8bdf3bbb9fb65fc3a13b76a8ab2be62f3513408a",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 8.25s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_binding_producer::platform_historical_unbound_refresh_upgrades_without_rewriting_original",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::platform_historical_unbound_refresh_upgrades_without_rewriting_original",
+      "exit": 0,
+      "seconds": 67.87,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/05.log",
+      "log_sha256": "287ec751177c5ae65bfbbd23cd55171ae1042a64d5b7e6c355734943e6c3b264",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 10.87s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_binding_producer::platform_direct_self_passkeys_revocation_preserves_historical_and_other_family",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::platform_direct_self_passkeys_revocation_preserves_historical_and_other_family",
+      "exit": 32,
+      "seconds": 63.57,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/06.log",
+      "log_sha256": "878827f4f5e33a5c0257530af746a1230a03d27133fd55d499649449426bee35",
+      "summaries": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 506 filtered out; finished in 13.27s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_binding_producer::ordinary_group_role_issuance_and_refresh_stay_unbound",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_binding_producer::ordinary_group_role_issuance_and_refresh_stay_unbound",
+      "exit": 0,
+      "seconds": 69.1,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/07.log",
+      "log_sha256": "69990a9fa66abb39e83d57293b4852fc994eedb6b2416cd37b15348db97c4912",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 9.12s"
+      ]
+    },
+    {
+      "leaf": "legacy_bound_passkey_reads::extended::historical_and_bound_platform_self_preserve_current_family_checks",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_bound_passkey_reads::extended::historical_and_bound_platform_self_preserve_current_family_checks",
+      "exit": 32,
+      "seconds": 51.25,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/08.log",
+      "log_sha256": "86106e2ebd314f336ac7ac13aeb8f3f27c7df24e5dbf8f68ca36ec786717038a",
+      "summaries": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 506 filtered out; finished in 10.08s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_list_reads::mounted_platform_list_same_bearer_current_member_denies_and_restores",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_list_reads::mounted_platform_list_same_bearer_current_member_denies_and_restores",
+      "exit": 0,
+      "seconds": 58.59,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/09.log",
+      "log_sha256": "841600a72db9a19737c6c84bf624c8cf802b4595046e8a9bba503978db6262d3",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 9.71s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_list_reads::histories::mounted_list_waits_for_source_then_denies_committed_demotion",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_list_reads::histories::mounted_list_waits_for_source_then_denies_committed_demotion",
+      "exit": 0,
+      "seconds": 51.67,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/10.log",
+      "log_sha256": "ce190294ff5e0ab9cd8328ffc3488903617f90c4312c55fa10f91773423a5aec",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 10.87s"
+      ]
+    },
+    {
+      "leaf": "legacy_platform_list_reads::histories::legacy_platform_list_credentials::legacy_platform_list_locks::legacy_platform_list_expiry_progress::unrelated_operator_completes_while_one_list_source_is_blocked",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_platform_list_reads::histories::legacy_platform_list_credentials::legacy_platform_list_locks::legacy_platform_list_expiry_progress::unrelated_operator_completes_while_one_list_source_is_blocked",
+      "exit": 0,
+      "seconds": 67.97,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/11.log",
+      "log_sha256": "c093eb56c747c1905c9eb7c75b2e6d16c013da272cb7bd426583e6359d876b20",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 12.16s"
+      ]
+    },
+    {
+      "leaf": "legacy_bound_passkey_reads::revoked_exact_family_cannot_read_or_borrow_live_sibling",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "legacy_bound_passkey_reads::revoked_exact_family_cannot_read_or_borrow_live_sibling",
+      "exit": 0,
+      "seconds": 64.23,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/12.log",
+      "log_sha256": "a7ebca0e265ffc6b17908e40909931a623701311bbf4383a9de1de92bde8a2d3",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 12.86s"
+      ]
+    },
+    {
+      "leaf": "otp_first_signin_then_passkey_enrollment_then_usernameless_login",
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter": "otp_first_signin_then_passkey_enrollment_then_usernameless_login",
+      "exit": 0,
+      "seconds": 63.04,
+      "log": "/private/tmp/console-platform-direct-native-matrix-20260920/13.log",
+      "log_sha256": "6c681b8aa7709e7bb6b5f22e471e13cb838f3f4b3ce097179e7d9036dc71d343",
+      "summaries": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 506 filtered out; finished in 7.77s"
+      ]
+    }
+  ],
+  "limits": [
+    "Native PostgreSQL owner tests, not browser/MVP acceptance"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "status": "PROPOSED_NARROW_ORACLE_SUCCESSOR_PENDING_INDEPENDENT_REVIEW",
+  "author": "/root/integration_tests",
+  "base": "1db7a17477572bb1a3b5642fa68ab0cdc9702019",
+  "target": "backend/app/tests/auth_rest/legacy_platform_binding_producer.rs",
+  "before_sha256": "dabe89315edda6d48082cf69f103111dbed7ddfb2fac30beca8dec57b3cd19de",
+  "successor_sha256": "1856feed1824d7e6ab534641491a73397dca19d973b478a1c1f8cf6f91327372",
+  "semantic_changes": 1,
+  "tests_executed": 0,
+  "files": [
+    {
+      "path": "REVIEW.md",
+      "sha256": "ea3c2cc57904a77dc1d66c5b0bb67a264494d81a4b40934e025e67468b246873"
+    },
+    {
+      "path": "changes.patch",
+      "sha256": "49aa8528cace8334cbc3f45029c8249a6db7fd1fa92893f316ebc0abd13fbf5e"
+    },
+    {
+      "path": "original.rs",
+      "sha256": "dabe89315edda6d48082cf69f103111dbed7ddfb2fac30beca8dec57b3cd19de"
+    },
+    {
+      "path": "successor.rs",
+      "sha256": "1856feed1824d7e6ab534641491a73397dca19d973b478a1c1f8cf6f91327372"
+    }
+  ],
+  "sources": [
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/tests/auth_rest/legacy_platform_binding_producer.rs",
+      "sha256": "dabe89315edda6d48082cf69f103111dbed7ddfb2fac30beca8dec57b3cd19de"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/ops/postgres-finalize-account-credentials.sql",
+      "sha256": "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/src/refresh.rs",
+      "sha256": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/crates/platform/auth/src/legacy.rs",
+      "sha256": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b"
+    },
+    {
+      "path": "/private/tmp/console-client-release-20260919/backend/app/tests/auth_rest/legacy_bound_passkey_reads.rs",
+      "sha256": "8e0aa6ab499b1b74e68af4d86f85b47985a802242b2322d44a102047acb249ea"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "FAILED_SAME_PROBE_NO_ACCEPTANCE",
+  "prior_conditional_source_receipt_sha256": "476c8010cb23942d012aed32e3c2a0240a958c4a05949270b3fb34be36423c2f",
+  "verification_log_sha256": "db307df1e14a51a09003eee71252ba59c1bec61c36afd073c1fa5ed737956ed7",
+  "observed": {
+    "executed": 6,
+    "passed": 5,
+    "failed": 1,
+    "skipped": 0,
+    "legacy_ceiling": 7,
+    "candidate_classified_residual": 9
+  },
+  "cause": "Two intentional native browser targets were classified as legacy Cargo-transition residual, yielding9against7. Prior source review failed to independently count current wrappers and accepted the incorrect stated ceiling assumption.",
+  "recovery": "Root reports byte-exact restoration of the one metadata file. Preserve failed packet and source receipt. Review same-registry native category successor with exact target/execution-contract validation and no legacy-ceiling increase.",
+  "release_acceptance": false
+}

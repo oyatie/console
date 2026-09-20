@@ -1,0 +1,48 @@
+[
+  {
+    "lane": "platform-direct-session-producer",
+    "base": "1db7a17477572bb1a3b5642fa68ab0cdc9702019",
+    "owner": "/root",
+    "immutable_target": "Actual platform Direct login and refresh sign exact owner-returned refresh family, with compatible current self-service and rollback",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=legacy_platform_binding_producer::platform_direct_otp_login_and_both_refresh_transports_bind_exact_family bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg > /private/tmp/console-platform-direct-producer-probe-current-20260920.log 2>&1",
+    "allow": [
+      "backend/crates/platform/auth/src/jwt.rs",
+      "backend/crates/platform/auth/src/legacy.rs",
+      "backend/crates/platform/auth-rest/src/lib.rs"
+    ],
+    "mechanical_guide": "Extend shared existing issuer with optional strict LegacySessionBinding. Only platform Direct producer uses actual Auth return after insertion, same transaction; refresh passes actual rotated family. Remove only bound platform self-list refusal while preserving checks. No other producer schema or business authority change. Tests remain exact approved source. Root only writer.",
+    "pre_mortem": [
+      "Wrong family signed",
+      "New token breaks platform self-service",
+      "Signing failure commits credentials"
+    ],
+    "detection": [
+      "Actual production login/refresh family hash correlation",
+      "Current-family logout and historical compatibility tests",
+      "Observed insert then full rollback and exact retry"
+    ],
+    "rollback": "Revert producer while retaining compatible reader; full reader rollback requires real refresh/re-auth to unbound access. Preserve histories.",
+    "stop_conditions": [
+      "Prerequisite failure is not runtime RED",
+      "Unexpected ordinary Company token behavior",
+      "Source/contract disagreement"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "reviews": [
+      "/private/tmp/console-platform-direct-producer-round2-design-security-review-20260920.json",
+      "/private/tmp/console-platform-direct-producer-round3-test-security-review-20260920.json",
+      "/private/tmp/console-platform-direct-signing-rollback-round1-security-review-20260920.json",
+      "/private/tmp/console-platform-direct-assembled-tests-round1-security-review-20260920.json",
+      "/private/tmp/console-platform-direct-signing-sqlsafe-security-review-20260920.json"
+    ],
+    "remaining_holds": [
+      "Not all legacy mutation routes enforce family revocation",
+      "Company enrollment and all five MVP workflows incomplete",
+      "No exposure or payment execution"
+    ],
+    "original_test_base": "ea9f6aa4721bff9e86b02a5e0cdbced10c8ee40c"
+  }
+]

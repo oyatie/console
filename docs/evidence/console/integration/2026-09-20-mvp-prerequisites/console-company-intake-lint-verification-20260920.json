@@ -1,0 +1,36 @@
+{
+  "base": "4d6451836eb379d9a4b711e02d770d1608db0033",
+  "source_lock": "/private/tmp/console-company-intake-lint-20260920-round2/source-lock.json",
+  "source_lock_sha256": "b212d8a2d6773770092ee6ad11fc3c2d4979ef692088f0cd53c7d280b584b73a",
+  "changes": "10callers paired unchanged time bounds; named exact existing catalog row tuple",
+  "admission": "fanout.py admit --spec /private/tmp/console-company-intake-lint-20260920-round2/lane.json",
+  "clippy_red": "/private/tmp/console-company-intake-lint-red-round2-20260920.log",
+  "clippy_green": "/private/tmp/console-company-intake-lint-probe-round2-20260920.log",
+  "native_binary": "/private/tmp/console-company-intake-lint-native-binary-20260920.json",
+  "native_results": "/private/tmp/console-company-intake-lint-native-results-20260920.json",
+  "native_discovered": 500,
+  "native_executed": 3,
+  "native_passed": 3,
+  "native_failed": 0,
+  "native_ignored": 0,
+  "limits": [
+    "Test-helper semantics-preserving refactor only",
+    "Strict Clippy is retained transitional Cargo tooling, native transaction tests execute Buck artifacts",
+    "Full verifier still blocked by native browser classification until successor repair; MVP incomplete"
+  ],
+  "clippy_checks": [
+    {
+      "command": "SQLX_OFFLINE=true cargo clippy --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings",
+      "exit": 0,
+      "log": "/private/tmp/console-company-intake-lint-probe-round2-20260920.log"
+    },
+    {
+      "command": "SQLX_OFFLINE=true cargo clippy --manifest-path backend/Cargo.toml -p console-app --test auth_rest --features dev-auth -- -D warnings",
+      "exit": 0,
+      "log": "/private/tmp/console-company-intake-lint-dev-auth-20260920.log"
+    }
+  ],
+  "format_and_diff_checks": {
+    "exit": 0
+  }
+}

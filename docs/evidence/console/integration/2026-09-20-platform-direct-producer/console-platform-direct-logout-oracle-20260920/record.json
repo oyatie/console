@@ -1,0 +1,22 @@
+{
+  "base": "5e9522f8fc8bc77dd64369ab8122f9acb5e4d8ce",
+  "files": [
+    {
+      "path": "backend/app/tests/auth_rest/legacy_platform_binding_producer.rs",
+      "original_sha256": "1856feed1824d7e6ab534641491a73397dca19d973b478a1c1f8cf6f91327372",
+      "candidate_sha256": "b644f18a3959f3574ab3c18b2162ce062e483ac93582c9561000a129c7869a59"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/legacy_bound_passkey_extended.rs",
+      "original_sha256": "568b3b0857bea428739cb1b61c263491ba3e80cdb1f558b55e8faa911aafee79",
+      "candidate_sha256": "ad04f03d04bf5f330b2165a4d07a41a466def8baea3b096fa4e6b02cd375995d"
+    }
+  ],
+  "reason": "Existing auth-rest logout returns204NO_CONTENT for both transports. New two tests wrongly expected200; production owner unchanged. All actual logout/family/readback/denial assertions retained. Exact status assertion reports only status.",
+  "observed_failure": "/private/tmp/console-platform-direct-native-matrix-20260920/06.log",
+  "counts": {
+    "executed": 1,
+    "failed": 1,
+    "filtered": 506
+  }
+}
