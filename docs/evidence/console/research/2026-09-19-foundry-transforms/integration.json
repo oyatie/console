@@ -1,0 +1,21 @@
+{
+  "base_registry_sha256": "c56885b6a3dc4fc83fcc2515de0c2b1b01dba8b21580d3d1a40df2039198424b",
+  "owner": "root sole writer",
+  "reviewer": "integration_tests",
+  "leaves_before": 211,
+  "leaves_after": 245,
+  "source_snapshots_after": 135,
+  "preservation": "Exact additive rebase independently reviewed; all211existing leaves and prior values preserved.",
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "seconds": 9.946365791
+  },
+  "limitations": [
+    "Reference inventory remains partial.",
+    "New leaves planned/not_bound; no implementation or release state advanced.",
+    "Media VLM text extraction excluded as Intelligence; embedding model-family support remains qualified."
+  ]
+}
