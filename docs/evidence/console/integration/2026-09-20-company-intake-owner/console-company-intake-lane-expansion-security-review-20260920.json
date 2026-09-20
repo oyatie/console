@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_BOUNDED_PRIVATE_INTAKE_PATH_EXPANSION_WITHIN_EXISTING_ENROLLMENT_LANE",
+  "current_base": "66b2e949ba1e80005d50e205d8ecd2f04516254e",
+  "enclosing_lane": "native-company-enrollment",
+  "original_base": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+  "owner": "/root",
+  "added_paths": [
+    "ops/postgres-company-enrollment-intake.sql",
+    "backend/app/tests/auth_rest/native_company_intake_owner.rs"
+  ],
+  "approved_contract_and_tests": {
+    "receipt": "/private/tmp/console-company-intake-owner-round2-security-review-20260920.json",
+    "sha256": "47728eaa64b0147f10069c257c53883774b6cce859c2ac40a27d732d687e13c1"
+  },
+  "approved_resource_tests": {
+    "receipt": "/private/tmp/console-company-intake-generator-tests-security-review-20260920.json",
+    "sha256": "3f8b9bd97f2c6c15dbcbbeec314eae4b5d9defd424c1ecbc1a815a13234b836d"
+  },
+  "conditions": [
+    "Retain original admitted real authenticated Company HTTP404vs201 owner probe and immutable complete enrollment target; private function absence is prerequisite failure, not separate owner RED.",
+    "Root remains sole repository/runtime/generated writer. Separate UNINSTALLED ninth output; all eight predecessor outputs byte-identical. No profile reseal, serving activation, historical migration, command byte reinterpretation or Company topology/policy writer admitted by this refinement.",
+    "Generated output body requires exact independent source/runtime review; this receipt approves paths and reviewed contract/test preparation, not unseen implementation.",
+    "Record amendment to lane mechanical guide, reviews and remaining HOLDs before implementation; no new lane or green substitution."
+  ],
+  "remaining_holds": [
+    "Original complete enrollment lane remains RED",
+    "P4 login/ACL/catalog/current and revoked session bypasses",
+    "P5 lock classes, timeout/replan/unknown and unrelated progress",
+    "P6 global256 lacks legitimate reachable fixture under genesis-only designation",
+    "P7 deterministic expiry/maintenance without timestamp rewriting",
+    "P8 Auth-owned signed access, CSRF and Origin after waits, actual HTTP/browser",
+    "Full Company effects, native assignment revisions, catalog, receipts, contexts and browser creation",
+    "All assembled release milestones and production qualification; no exposure or direct payment authorization"
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVED_FORMAT_ONLY_SUCCESSOR_AND_SINGLE_INCLUDE",
+  "approved_source_sha256": "2ef863a2aecf8d9a4a794cf9eca35428eaf37108bca321ada985aead7aa39945",
+  "installed_source_sha256": "edf78dca4fd37d54a43c7308255d2897fc1a7edba075d59852de93c40aedef76",
+  "setup_postimage_sha256": "46d132ab76777cfdab8db769a2c0ce615ca965ffc59b159a402981d4b9b1072a",
+  "checks": [
+    "All string literals including SQL and assertion messages byte-identical and ordered identically.",
+    "All function names and all6test identities unchanged:5SQLx+1pure.",
+    "Lexical token delta contains only51optional trailing commas,5semicolons after return false in diverging let-else blocks, and3removed optional match-arm commas; surrounding token contexts independently inspected. Other differences whitespace/layout only.",
+    "Current native_company_setup.rs differs from HEAD solely by include!(native_company_intake_owner.rs) immediately after existing intake-schema include.",
+    "No oracle, input, expected output, fixture, query, timeout, transaction boundary, test attribute or failure path changed."
+  ],
+  "executed_tests": 0,
+  "repository_writes": false,
+  "remaining_holds": [
+    "Native compilation/discovery/execution by root",
+    "Independent source/security review of actual private SQL implementation",
+    "All broader owner/authentication/effect/release limitations in round2review persist"
+  ]
+}

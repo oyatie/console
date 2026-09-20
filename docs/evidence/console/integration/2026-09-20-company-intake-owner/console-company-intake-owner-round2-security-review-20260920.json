@@ -1,0 +1,62 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_NARROW_PRIVATE_INTAKE_REFINEMENT_AND_SIX_TEST_SOURCES",
+  "packet": "/private/tmp/console-native-company-intake-owner-refinement-20260920-round2",
+  "manifest_sha256": "353a905291a6d4494c0c9876122816421e7b3af188ea805444353580f3f39df8",
+  "rust_source_sha256": "2ef863a2aecf8d9a4a794cf9eca35428eaf37108bca321ada985aead7aa39945",
+  "source_head": "66b2e949ba1e80005d50e205d8ecd2f04516254e",
+  "namespace_evidence": {
+    "path": "/private/tmp/console-company-intake-lock-namespace-20260920.log",
+    "sha256": "0db047f8013abd552f3ba8ef47c97bcb1cd07c630a137eeeaa02cf88ac2630a5",
+    "postgres_version": "18.4",
+    "audit_namespace": 1069617922,
+    "proposed_enrollment_namespace": 1128615506,
+    "distinct": true
+  },
+  "resolved_round1_findings": [
+    "INTAKE-P3-HISTORY: cancel_successor preserves non-intake tables exactly and every non-target request RawValue; clones full target and permits only state=PENDING\u2192CANCELLED and terminal_at. All prior events preserved by added_rows; exactly one complete nine-field revision2 event, occurred_at equals terminal_at/current caller session. cancel_checked independently bounds terminal_at by real DB clocks and original created_at.",
+    "INTAKE-P6-HISTORY: all16 admitted commands checked individually for exact input/digest/origin/event and actual creation-time bounds; original global request/event census gains exactly16 rows each. Cancellation uses complete transition oracle; replacement preserves every prior raw row and adds exactly one validated loser request/event. Remaining15 initial pending commands rechecked;16/1/18counts supplementary.",
+    "INTAKE-RESULT-SHAPE: fetch_all followed by exact one material/prepare/existing-cancel row or zero-or-one status. Material planned recipient and digest returned/validated, with new/existing/changed-recipient/recovery/absent projections asserted."
+  ],
+  "checks": [
+    "Every member hash and all nine actual source-lock preimages independently verified; five authored SQLx leaves plus one authored pure test, zero execution inferred.",
+    "Pure cancellation oracle has one valid control and13explicit corruptions:6immutable target fields;3missing/extra/rewritten other request histories;3missing-initial/wrong-time/duplicate events;1unrelated large-number byte corruption.",
+    "Real designated Account/family and foreign Account precede private parser/schema/intake install; actual console_rt login identity verifies non-superuser/non-bypass. No product credential or successful business effects fabricated.",
+    "Event-fault sequence witnesses real pending request before event-trigger error; precise fault removed before full rollback assertion, then exact original command retry and read/replay no-effect checks retained.",
+    "Foreign-session and codec namespace errors use exact SQLSTATE/message; missing function/table/transport cannot satisfy refused helper. After designation revoke, existing pending replay/cancel remains recoverable while new intake forbidden.",
+    "Concurrent final per-Account slot test uses actual owner calls; exactly one16th request wins and measured capacity error loses. Same-command test observes pg_blocking_pids before releasing first transaction, then requires single durable request/event. This proves real owner blocking, not a specific advisory lock.",
+    "No new private/helper stub, production mutation, serving finalizer, custody reseal, historical codec reinterpretation or supplied-success facade is part of test packet."
+  ],
+  "approved_narrow_contract_choices": [
+    "NULL input is internal recovery planning only: caller Account EXCLUSIVE then actual family SHARE; no command/capacity fence in material helper, planned recipient NULL and immutable prior digest or NULL.",
+    "Submit uses immutable original affected-Account plan and sorted EXCLUSIVE Account guards, then current caller family; material stops before designation/capacity/fence. Prepare must revalidate its actual owner guards and restart entire transaction if original plan changes.",
+    "NEW material planned_input_digest NULL; existing material returns original digest and original retained recipient even if candidate retry differs. Cleared terminal input may never reconstruct new recipient authority.",
+    "PENDING status exact codec1/input; terminal CANCELLED/EXPIRED hides bytes/result IDs. Absence returns zero rows within authenticated namespace; COMMITTED full correlated readback remains later requirement.",
+    "Lazy expiry under fence is a durable PENDING\u2192EXPIRED transition with cleared input and null system actor/session; no extension/resurrection. This semantic choice is accepted, but exact boundary/maintenance tests remain unimplemented and cannot be certified by five pending tests.",
+    "Capacity namespace(1128615506,1) differs current only other two-int audit namespace on measured PG18.4. One-bigint command hash only serializes; collision may cause conservative contention but never aliases full Account/command identity.",
+    "P0001 conflict/forbidden/capacity/group_unavailable and22023invalid_input are bounded diagnostics;55P03or lost commit remains unresolved OutcomeUnknown in future adapter, not authoritative absent/conflict."
+  ],
+  "limits": [
+    "Source/contract approval only; root must admit actual owner tests, implement exact private SQL, run and retain failures/successes. A missing private resource/function is prerequisite failure, not owner acceptance.",
+    "Pure helper synthetics test evidence machinery only, not genuine Account/Company effects.",
+    "Security P4 current/revoked/role/ACL/metadata direct-call tests, remaining lock classes/deadline/replan P5, global256 P6, expiry/maintenance P7, opaque signed-credential/HTTP P8 remain required before complete intake acceptance.",
+    "Current genesis-only designation cannot transfer or re-designate after its tombstone; one real operator\u00d716cap cannot populate256. No legitimate designation-transfer/configurable-lower-global-limit fixture is admitted; global hypothesis remains unqualified.",
+    "SQL receives service-trusted identifiers; this is not browser authentication. Current signed access, CSRF/Origin, expiry after waits and effect-transaction authority must be independently implemented/revalidated later.",
+    "Unchanged profiles must continue rejecting partial install. No Company/Group/catalog/grant/receipt effect, workflow milestone, production or full client release acceptance."
+  ],
+  "findings": [],
+  "execution": {
+    "reviewer_tests": 0,
+    "reviewer_builds": 0,
+    "reviewer_sql": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

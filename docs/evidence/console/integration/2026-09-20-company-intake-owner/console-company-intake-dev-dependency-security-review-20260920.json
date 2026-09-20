@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_TEST_DEPENDENCY_REPAIR_AND_LANE_PATH_EXPANSION",
+  "base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "added_paths": [
+    "backend/app/Cargo.toml",
+    "backend/Cargo.lock"
+  ],
+  "owner": "/root",
+  "scope": "One console-identity-application workspace dev-dependency in app, its single console-app lockfile edge, and generated existing BUCK test dependency projections. No new crate/version/package/checksum/normal app dependency permitted.",
+  "checks": [
+    "Existing approved SQLx source imports actual application-owned CompanyEnrollmentV1; missing direct dev dependency is compile prerequisite defect, not product RED.",
+    "Existing workspace path points to crates/identity/application; dependency closure has domain/kernel/serde/serde_json/uuid only, no app cycle.",
+    "Actual current manifest/lock diff inspected; approved tests unchanged."
+  ],
+  "files": {
+    "backend/app/Cargo.toml": "1f6f03fcd38373d322eb56918f09b338dc26ee6c8f78edfced396c6439cce039",
+    "backend/Cargo.lock": "2395fe296c6bb1529223a95c89ca660e546be8ff1ff6f04cf0c9b391a5e44f72"
+  },
+  "limits": [
+    "Root serializes lockfile/generated writer and records failed E0432 build with zero executed tests.",
+    "Generated successor bytes need review; rerun actual native owner tests. Enclosing full enrollment lane remains RED, all current HOLDs retained."
+  ],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}

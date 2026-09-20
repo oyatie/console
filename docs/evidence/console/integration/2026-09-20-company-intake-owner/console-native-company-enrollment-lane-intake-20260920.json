@@ -1,0 +1,80 @@
+[
+  {
+    "lane": "native-company-enrollment",
+    "base": "fd1cc393a4ba5dc163280786c083ca67085ad40c",
+    "owner": "/root",
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg",
+    "allow": [
+      "backend/crates/identity/application/src/company.rs",
+      "backend/crates/identity/application/src/company",
+      "backend/crates/identity/application/src/lib.rs",
+      "backend/crates/identity/application/src/company_enrollment_tests.rs",
+      "ops/generate-account-custody.py",
+      "ops/postgres-company-enrollment-input.sql",
+      "ops/test_company_enrollment_input_generator.py",
+      "ops/BUCK",
+      "backend/app/tests/auth_rest/native_company_input_parser.rs",
+      "backend/app/tests/auth_rest/native_company_setup.rs",
+      "backend/app/tests/auth_rest/fixtures/company-enrollment-input-boundary.sql",
+      "backend/app/tests/auth_rest/fixtures/company-enrollment-input-golden.sql",
+      "backend/app/tests/auth_rest/fixtures/company-enrollment-input-malformed.sql",
+      "backend/app/BUCK",
+      "tools/buck/gen_first_party.py",
+      "tools/buck/test_gen_first_party.py",
+      "ops/postgres-company-enrollment-intake.sql",
+      "backend/app/tests/auth_rest/native_company_intake_owner.rs",
+      "backend/app/Cargo.toml",
+      "backend/Cargo.lock"
+    ],
+    "immutable_target": "authenticated native Company enrollment commits once, reopens, preserves Account credentials and exposes current authorized Company context",
+    "mechanical_guide": "Reuse accepted consolidated Company contract v1/v2/v6 and retained company_setup acceptance. Implement reviewed codec substep first; additions to participant, transport, SQL, generated custody and context owners require exact independent candidate review before path expansion. Never count codec-only GREEN as lane completion. Root is sole repository/runtime/generated writer. Pure parser substep: integrate exact reviewed SQLx packet round1; generator emits only separate UNINSTALLED helper. Preserve all six existing generated outputs byte-for-byte. Never reseal/install partial serving profile; one isolated SQLx database must detect mismatch. Canonical enclosing enrollment RED remains open. Approved private intake dependency: implement four uninstalled session_material/prepare/status/cancel owners; freeze all eight predecessor outputs. Root sole writer. Six new leaves do not close enclosing HTTP RED or missing P4-P8 acceptance. Retain private schema mismatch and no serving activation.",
+    "pre_mortem": [
+      "receipt or response claimed before durable effects",
+      "decoded Account treated as authority",
+      "normalized or reinterpreted historical command bytes"
+    ],
+    "detection": [
+      "retained real authenticated Company enrollment SQLx acceptance",
+      "independent exact byte codec oracles",
+      "current policy, replay and receipt closure probes before complete lane acceptance"
+    ],
+    "rollback": "Revert only this lane candidate; preserve historical migrations/evidence and Account credential streams. No schema mutation is admitted by initial codec scope. Parser experiment rolled back by disposal of SQLx database; helper output not wired into production.",
+    "stop_conditions": [
+      "missing prerequisite or zero executed test",
+      "unreviewed codec semantics",
+      "any history or security contract regression"
+    ],
+    "reviewers": [
+      "/root/integration_security"
+    ],
+    "reviews": [
+      "/private/tmp/console-native-company-enrollment-lane-boundary-review-20260920.json",
+      "/private/tmp/console-native-company-parser-sqlx-tests-round1-security-review-20260920.json",
+      "/private/tmp/console-company-intake-owner-round2-security-review-20260920.json",
+      "/private/tmp/console-company-intake-lane-expansion-security-review-20260920.json",
+      "/private/tmp/console-company-intake-dev-dependency-security-review-20260920.json"
+    ],
+    "remaining_holds": [
+      "full enrollment owner lane is RED",
+      "SQL participants/schema/custody not admitted by codec scope",
+      "all five MVP workflows still require complete integration",
+      "production exposure and payment execution not authorized"
+    ],
+    "test_candidate": {
+      "manifest_sha256": "820dc2376fe778eb4450c79c3621599475a4e61de1eb3a3b1b116de60100212e",
+      "source_sha256": "91a919cc22d7b6cf0fce16060c0e7e4b47f2c5cdc9ff40d4e3bb81a1040723b6",
+      "review": "/private/tmp/console-native-company-codec-tests-round2-security-review-20260920.json",
+      "format_review": "/private/tmp/console-native-company-codec-format-successor-security-review-20260920.json"
+    },
+    "observed_red": {
+      "log": "/private/tmp/console-company-owner-red-20260920.log",
+      "executed": 1,
+      "failed": 1,
+      "filtered": 475,
+      "actual_http": 404,
+      "expected_http": 201,
+      "prerequisite_failure": false
+    },
+    "implementation_successor_base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5"
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_SIX_PRIVATE_OWNER_LEAF_RUNTIME_RESULTS_AND_GENERATED_DEV_DEPENDENCY_SUCCESSOR",
+  "base": "e61f6857acd33f28e100cd9d9bb9aeac99f664b5",
+  "files": {
+    "backend/Cargo.lock": "2395fe296c6bb1529223a95c89ca660e546be8ff1ff6f04cf0c9b391a5e44f72",
+    "backend/app/BUCK": "5b2c471b641a3ddcd17d3496cd2468e1d9bfc83c307d8f3df2509eef684ed2cd",
+    "backend/app/Cargo.toml": "1f6f03fcd38373d322eb56918f09b338dc26ee6c8f78edfced396c6439cce039",
+    "ops/BUCK": "e3e22c78b92ddc4eb0690f00e61e7b0305aaf0b1f2b42ca6da34c94c87aa68b2",
+    "ops/generate-account-custody.py": "419c30ed6f010e3a6b73424d57a8690f22eeee530f5a1f4649f451e567ee231c",
+    "ops/postgres-company-enrollment-intake.sql": "2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532",
+    "tools/buck/gen_first_party.py": "abca07c051a039a398a019ba931957f00e4847e7713acfda3d0f845022bc8a1b"
+  },
+  "tests_sha256": "edf78dca4fd37d54a43c7308255d2897fc1a7edba075d59852de93c40aedef76",
+  "source_lock_sha256": "416b53a0e0daffbf22de17da8cacb99267265bd9728ff3dc09dbe785b3db15e0",
+  "runtime": {
+    "executed": 6,
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0,
+    "kind": "five SQLx owner leaves plus one pure evidence-oracle leaf",
+    "each_filtered": 483,
+    "logs": {
+      "/private/tmp/console-company-intake-atomic-native-round2-20260920.log": "49aaec0c79851605c6343e0db6dc151ebbdea16e0f09735f7a02aeb0a66b65fc",
+      "/private/tmp/console-company_intake_cancel_oracle_rejects_missing_and_rewritten_history-native-20260920.log": "54d749b608bd47da6c2076ba58b539440d69f1766aaa17ab64b9050e87e426c8",
+      "/private/tmp/console-company_intake_sql_conflict_namespace_and_foreign_recovery_preserve_history-native-20260920.log": "00a9cb12fc22024d861e5360549f41bff418ad8c8634c558a1fbdf9d131f483e",
+      "/private/tmp/console-company_intake_sql_cancel_survives_designation_revoke_and_never_reopens-native-20260920.log": "c23dae06ed22cd49c87f48863f9325df3ba030a5740e6b03ce06fac418a275ee",
+      "/private/tmp/console-company_intake_sql_capacity_is_atomic_and_cancel_releases_one_slot-native-20260920.log": "c933512b912fdda5f4a073abbeefbac44116e731598174954c5ce0a22fd55448",
+      "/private/tmp/console-company_intake_sql_same_command_waits_then_replays_one_durable_history-native-20260920.log": "fd248bf58c3884b900343c870dde5dbd6612d17922a4ad611832c2a6c91b8d9d"
+    }
+  },
+  "checks": [
+    "All seven actual implementation/source locks plus approved test source hash independently matched.",
+    "Generated appBUCK has69source additions,2intake resource mappings,71identity-application dependency additions, all71only rust_test targets. Removing just those additions yields exact base appBUCK bytes. Manifest/lock change remain one existing workspace dev edge and no package/version change.",
+    "Native retained logs each show one distinct fully qualified reviewed leaf passed with0ignored/483filtered; first actual atomicity run31.19s. This is6tests, not all484.",
+    "Retained initial E0432 unresolved console_identity_application is build prerequisite failure with0executed tests; dependency repair does not conceal it.",
+    "Root preservation log1/1 and Buck generator successor67/67 inspected. Source implements exact limited pending/replay/conflict/cancel/per-Account-capacity/current-session scope and all old generator code preserved."
+  ],
+  "logs_auxiliary": {
+    "/private/tmp/console-company-intake-atomic-native-20260920.log": "954271b5052998b050793cf5e8e2acc5127840b1bb4162b1c7a072a5054b5b11",
+    "/private/tmp/console-company-intake-preservation-20260920.log": "a146ffbdf9b07bb226ef66ce59c2a411149b39de43ba5ad86bc5ec9e95a7fb61",
+    "/private/tmp/console-company-intake-buck-generator-round2-20260920.log": "5320c6ff8cd548fcc9e6d213f6767a32cb115f54a824f9ab5f74c3de8a4d0b20"
+  },
+  "limits": [
+    "Exact candidate commit binding remains next; this receipt binds working staged source hashes and retained local execution only.",
+    "Native artifact manifest currently empty; no hashed complete release artifact or deployed qualification is established.",
+    "P4 custom-default/login/current-revoked/metadata, remaining P5lock/replan/unknown/unrelated work, global256P6, expiry/cleanupP7, signed Auth+HTTPP8, full Company effect/receipt/context/browser remain mandatory.",
+    "Original enclosing full authenticated Company owner lane still RED; six-leaf acceptance is private prerequisite progress, no milestone/release/exposure acceptance."
+  ],
+  "findings": [],
+  "reviewer_tests": 0,
+  "repository_writes": 0
+}
