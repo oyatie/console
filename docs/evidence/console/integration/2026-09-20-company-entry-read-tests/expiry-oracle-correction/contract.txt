@@ -1,0 +1,7 @@
+# Preserve historical invalid-registration presentation in expiry oracle
+
+Exact bounded semantic test correction, not production change. Both parent and independent security source inspection identify an error in the newly approved optional-eligibility expiry test: existing account_entry.rs225 AuthenticationInvalid returns SignIn, while no-cookie /account/register shows Registration terms. App maps invalid PublicRoot SignIn to native Public. The inherited owner contract must remain unchanged.
+
+Only that test's comparison route changes for /account/register: compare expired register body to actual anonymous /account SignIn; additionally assert login present/register absent and positive fresh anonymous registration still presents actual registration form. Account and Root comparison destinations unchanged. All original witnessed head wait, actual elapsed token expiry, exact200 privacy, no active identity/logout/setup CTA, whole-state equality, and still-valid original-session positive controls remain. No test skipped/deleted; no product branch altered.
+
+This corrects the test author's and round3 reviewer's mistaken anonymous-registration equivalence; it does not weaken required invalid-session denial or turn expiration into an active/unavailable response. Independent exact review required before root integration; author runtime0. Parent sole writer and actual HTTP regression owner.

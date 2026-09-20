@@ -1,0 +1,9 @@
+{
+  "backend/app/tests/auth_rest/native_company_setup.rs": {
+    "preimage_sha256": "ec6a41648ff7bb99bfeb61a674623d11ecb24199459c8290e41df12571e09dff",
+    "candidate_sha256": "fb064988585257e12027783d48ba3c58b7ddd493d81722abac9ffb088daa25d5"
+  },
+  "backend/crates/platform/auth-rest/src/account_entry.rs": {
+    "observed_sha256": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3"
+  }
+}

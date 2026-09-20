@@ -1424,7 +1424,22 @@ mod company_setup {
                 assert!(!html.contains("data-account-state=\"active\""));
                 assert!(!html.contains("data-native-action=\"logout\""));
                 assert!(!html.contains("href=\"/account/companies/new\""));
-                let anonymous = document(&app, route, &Cookies::default()).await;
+                // Preserve the existing owner distinction: invalid registration
+                // access returns SignIn; fresh anonymous registration shows terms.
+                let anonymous_route = if route == "/account/register" {
+                    assert!(html.contains("data-native-action=\"login\""));
+                    assert!(!html.contains("data-native-action=\"register\""));
+                    let fresh_registration =
+                        document(&app, "/account/register", &Cookies::default()).await;
+                    assert!(
+                        native_entry_html(&fresh_registration, StatusCode::OK)
+                            .contains("data-native-action=\"register\"")
+                    );
+                    "/account"
+                } else {
+                    route
+                };
+                let anonymous = document(&app, anonymous_route, &Cookies::default()).await;
                 native_entry_html(&anonymous, StatusCode::OK);
                 assert!(
                     response.bytes == anonymous.bytes,
