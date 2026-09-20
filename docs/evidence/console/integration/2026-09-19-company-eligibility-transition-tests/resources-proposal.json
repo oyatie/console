@@ -1,0 +1,21 @@
+{
+  "kind": "additive-reviewed-eligibility-sql-fixture-resource-registration",
+  "source_path": "tools/buck/gen_first_party.py",
+  "source_preimage_sha256": "0e68ebd0502ea608b58928893d42a4fef8c1e1328b24f820b036ad4680859f0f",
+  "candidate_sha256": "34752e99eb3688276007e87d3c3e8ecca7bc1a97ea25993599ce6f9f1e845bb4",
+  "added_paths": [
+    "tests/auth_rest/fixtures/account-business-session-c613626e-credential-state.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-credentials.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-root-state.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-root.sql",
+    "tests/auth_rest/fixtures/account-business-session-c613626e-verify.sql"
+  ],
+  "transition_manifest_sha256": "02fe345a3f7167ed3c8fcef71ad4d313ee1d215768bce303ced907614ad4738e",
+  "changes": "Exactly five string constants added to console-app tests/auth_rest.rs srcs. No generator algorithm change. Existing .rs discovery remains unchanged. Root runs generator once after reviewed test+resource integration.",
+  "verification": [
+    "Python ast parse passes",
+    "Removing exactly five added strings reproduces full source preimage byte-for-byte"
+  ],
+  "repository_edits": 0,
+  "generator_runs": 0
+}

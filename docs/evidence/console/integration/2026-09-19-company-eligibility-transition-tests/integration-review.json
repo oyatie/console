@@ -1,0 +1,55 @@
+{
+  "kind": "independent-integrated-eligibility-transition-test-enrollment-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:23:24.163858+00:00",
+  "decision": "APPROVE_EXACT_TEST_RESOURCE_AND_GENERATED_INPUT_COMMIT",
+  "base_sha": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+  "checks": {
+    "base": "8efec5b0f03b4266beb694c238ae9ddc24e1e099",
+    "files": [
+      "audit_business_session_transition.rs",
+      "audit_company_eligibility_transition.rs",
+      "fixtures/account-business-session-c613626e-root.sql",
+      "fixtures/account-business-session-c613626e-credentials.sql",
+      "fixtures/account-business-session-c613626e-verify.sql",
+      "fixtures/account-business-session-c613626e-root-state.sql",
+      "fixtures/account-business-session-c613626e-credential-state.sql"
+    ],
+    "counts": {
+      "tests/auth_rest/audit_company_eligibility_transition.rs": 67,
+      "tests/auth_rest/fixtures/account-business-session-c613626e-root.sql": 1,
+      "tests/auth_rest/fixtures/account-business-session-c613626e-credentials.sql": 1,
+      "tests/auth_rest/fixtures/account-business-session-c613626e-verify.sql": 1,
+      "tests/auth_rest/fixtures/account-business-session-c613626e-root-state.sql": 1,
+      "tests/auth_rest/fixtures/account-business-session-c613626e-credential-state.sql": 1
+    },
+    "buck_sha256": "49828e239ead46cbc63073874da36eff51907b3d72a1e5862e6ebb30f951f4d9"
+  },
+  "test_review_sha256": "a8c1b9c0f6df3d4b53a7bbe8b3bfddcb11dedaacd6b5a0cb7a540068f8b1815d",
+  "resource_review_sha256": "0c7f08ffd1ccaaca431d494fd48fa5273708f416bbc3bcb83c0d90f9ab982ad0",
+  "logs_sha256": {
+    "console-company-eligibility-transition-discovery.log": "2d19986f6a841ed747b8adea574e24c8dc53a2146476d2a14d462165ee859d24",
+    "console-company-eligibility-oracle-control.log": "3b09deba5311026647110aae1225e82d0a99adec3d0ac14432c44dc4e45eb2b0",
+    "console-company-eligibility-generated-input-tests.log": "2e137f0c72fb65b20c11adb3a87d1fca68695b99171e6f78cb2764e6e865bde7"
+  },
+  "verified": [
+    "Parent and new child exactly approved round2 bytes. All5new historical fixtures equal approved packet and current operator/classifier bytes.",
+    "Resource generator exactly approved34752e... candidate. Current production custody generator and retained11eligibility tests unchanged.",
+    "Generated appBUCK adds child source to67mapped_srcs plus each5resource once; removing only those strings recovers exact base BUCK. No removed/altered other inputs.",
+    "Compiler discovers359tests, with all6new exact leaves once. Pure comparator executes1/1,358filtered,0.03s; generator59/59."
+  ],
+  "new_test_names": [
+    "eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence",
+    "populated_business_session_eligibility_upgrade_preserves_history_and_replays",
+    "initialized_observer_business_session_eligibility_upgrade_preserves_history",
+    "malformed_eligibility_helpers_refuse_without_repair_and_actual_install_is_atomic",
+    "finalized_eligibility_body_acl_and_overload_drift_are_never_resealed",
+    "corrupt_designation_target_or_missing_receipt_is_unavailable_not_ineligible"
+  ],
+  "claim_limits": [
+    "Only one pure new oracle executed; five new database tests not executed by this evidence.",
+    "No production eligibility helper installed or accepted. Root must commit tests then execute clean meaningful ownerRED/admit before implementation.",
+    "No Company/full-release acceptance."
+  ],
+  "repository_edits_by_reviewer": 0
+}

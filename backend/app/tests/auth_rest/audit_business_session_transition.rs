@@ -192,7 +192,13 @@ mod business_session_transition {
         before: &Value,
         after: &Value,
     ) -> Value {
-        strip_exact_additions(before, after, &checked_additions(connection).await)
+        let without_eligibility =
+            eligibility_transition::without_checked_addition(connection, before, after).await;
+        strip_exact_additions(
+            before,
+            &without_eligibility,
+            &checked_additions(connection).await,
+        )
     }
 
     #[test]
@@ -383,9 +389,10 @@ mod business_session_transition {
             compose(&mut rollback).await.unwrap();
             assert_final(&mut rollback).await;
             checked_additions(&mut rollback).await;
+            eligibility_transition::checked_addition(&mut rollback).await;
             assert!(after == metadata(&mut rollback).await);
             assert_preserved(&before_rows, &rows(&mut rollback).await);
-            sqlx::raw_sql("DROP FUNCTION public.account_session_shared_material_v1(uuid,uuid) RESTRICT; DROP FUNCTION public.auth_account_session_shared_material_v1(uuid,uuid) RESTRICT;")
+            sqlx::raw_sql("DROP FUNCTION public.account_company_setup_eligibility_v1(uuid) RESTRICT; DROP FUNCTION public.account_session_shared_material_v1(uuid,uuid) RESTRICT; DROP FUNCTION public.auth_account_session_shared_material_v1(uuid,uuid) RESTRICT;")
                 .execute(&mut *rollback).await.unwrap();
             audited_state(&mut rollback).await;
             assert!(
@@ -575,4 +582,5 @@ mod business_session_transition {
         tx.rollback().await.unwrap();
         drop(app);
     }
+    include!("audit_company_eligibility_transition.rs");
 }

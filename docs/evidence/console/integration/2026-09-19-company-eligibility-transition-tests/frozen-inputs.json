@@ -1,0 +1,32 @@
+[
+  {
+    "name": "root",
+    "path": "fixtures/account-business-session-c613626e-root.sql",
+    "source": "ops/postgres-finalize-account-custody.sql",
+    "sha256": "ee152286a79ceb6432724befe426d90e89dc4c41b40b4cbbb7618b8ce1e5459a"
+  },
+  {
+    "name": "credentials",
+    "path": "fixtures/account-business-session-c613626e-credentials.sql",
+    "source": "ops/postgres-finalize-account-credentials.sql",
+    "sha256": "3212d5ecf6f9d9310c5d2f3514464e425238b79f00806b5748bd029b33679905"
+  },
+  {
+    "name": "verify",
+    "path": "fixtures/account-business-session-c613626e-verify.sql",
+    "source": "ops/postgres-verify-account-native.sql",
+    "sha256": "5bd40cbf253365934d7175b65106b9d8a91b85c3d345182aa9c15c0a64899893"
+  },
+  {
+    "name": "root-state",
+    "path": "fixtures/account-business-session-c613626e-root-state.sql",
+    "source": "backend/app/src/account_custody_state.sql",
+    "sha256": "f67f391d0828aa8b35182b6bc324f46f66f57e027f9ea06a68b6e1d07a86af8e"
+  },
+  {
+    "name": "credential-state",
+    "path": "fixtures/account-business-session-c613626e-credential-state.sql",
+    "source": "backend/app/src/account_credential_custody_state.sql",
+    "sha256": "019a4a51caf28e1f744ac254e043f60cc06d2148b495c02350bae1dc4f2d8679"
+  }
+]

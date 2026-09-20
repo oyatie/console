@@ -1,0 +1,18 @@
+{
+  "integration-review.json": "2c0fad7b91595133b1876560098b161370c536a50f73affcbac3eeb8540aab3e",
+  "resources-proposal.json": "001aa747e9c75fa1d2b31c703ce54ad1739416f555394da6c36dd2fed4edc030",
+  "tests-round2-review.json": "a8c1b9c0f6df3d4b53a7bbe8b3bfddcb11dedaacd6b5a0cb7a540068f8b1815d",
+  "sequencing-amendment.md": "811aac3f00a135598510d36823821aa496453623dd22736f357000e1c193ae8c",
+  "parent-composition.patch": "061b74cd195eba05adcea64849336a6e5167cca64e1f7d78170b2f7461073e2e",
+  "frozen-inputs.json": "729392c78e8b458747fdf0ce8ae94614d48f1eb090fb13370f32159b13dd1b0a",
+  "discovery.log": "2d19986f6a841ed747b8adea574e24c8dc53a2146476d2a14d462165ee859d24",
+  "resources-review.json": "0c7f08ffd1ccaaca431d494fd48fa5273708f416bbc3bcb83c0d90f9ab982ad0",
+  "oracle-control.log": "3b09deba5311026647110aae1225e82d0a99adec3d0ac14432c44dc4e45eb2b0",
+  "tests-round1-review.json": "936ee18e5ac324e5720d37ef468beaffac5887a5583e6628b6f866cb3a161bd4",
+  "generator-tests.log": "2e137f0c72fb65b20c11adb3a87d1fca68695b99171e6f78cb2764e6e865bde7",
+  "sequencing-review.json": "951e613a4585b4ba7053310c5ba08532d799fef0654de3cb98e1bd5f9b4fa689",
+  "manifest.json": "02fe345a3f7167ed3c8fcef71ad4d313ee1d215768bce303ced907614ad4738e",
+  "verification.json": "cd0e4559e3ccf4b4abe626bd4bea4f9f2e7c7b0f6007f7b4170f0f46a786eb34",
+  "PROPOSAL.md": "bb5c18794ead102fa723b043ab44dfe4695ed5367123968804c799cb0e23bf21",
+  "resources.patch": "44930745cdf11da28ae846da51431fdda26bec56d659d3dd30c63eddadb975a7"
+}

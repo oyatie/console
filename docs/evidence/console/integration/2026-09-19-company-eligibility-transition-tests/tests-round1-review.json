@@ -1,0 +1,43 @@
+{
+  "kind": "independent-company-eligibility-transition-test-review-round1",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:07:55.403451+00:00",
+  "status": "HOLD_TWO_REQUIRED_RECOVERY_ORACLES",
+  "manifest_sha256": "9eb41788e34375dc2552f1e0198a4dee63e4cf61b69189986ab5294be45cd5f7",
+  "test_sha256": "b6198f23d38afb917105e8ac900e3589c6d80c4d13d6bde60a590c39e0795690",
+  "checks": {
+    "candidate_files": 10,
+    "input_hashes": 5,
+    "frozen_source_byte_pairs": 5,
+    "parent_patch_reproduces_candidate": true,
+    "sqlx_source_count": 5,
+    "pure_source_count": 1,
+    "retained_11eligibility_tests_unchanged": true,
+    "runtime_executions": 0
+  },
+  "findings": [
+    {
+      "id": "ET1",
+      "location": "audit_company_eligibility_transition.rs:malformed_eligibility_helpers_refuse_without_repair_and_actual_install_is_atomic",
+      "problem": "Fault currently raises after CREATE FUNCTION, before final owner/ACL assignments; it does not meet approved post-CREATE/ACL pre-validation fault boundary.",
+      "required": "Add actual catalog-checked owner/ACL-complete fault with independent witness, retain complete rollback equality and remove-fault retry."
+    },
+    {
+      "id": "ET2",
+      "location": "audit_company_eligibility_transition.rs:upgrade committed inverse",
+      "problem": "After committed helper-only inverse, current startup rejects then test reapplies; no unchanged compatible Account/session operation executes while helper absent.",
+      "required": "Execute existing live Account/session owner under authentic Business credentials in committed predecessor state, bind original Account/family, close/drain before reapply."
+    }
+  ],
+  "accepted_elements": [
+    "One exact independently vetted helper subtraction composes with unchanged strict two-helper parent oracle; old controls preserved.",
+    "Full public business rows/column ownership/RLS/ACL plus builtin pg_control_system and inherited pg_proc/role snapshots preserve history.",
+    "Wrong body/ACL/owner/overload refusals, exact rerun and corrupted-target tests restore trigger metadata before read.",
+    "Nine pure injected comparator faults and positive control strengthen evidence machinery."
+  ],
+  "limits": [
+    "Parent semantic patch not yet approved to integrate until corrected exact successor review.",
+    "Test inverse is disposable operator-locked recovery proof, not a shipped production rollback procedure.",
+    "Exact source body and prospective dual metadata-variant fingerprints require independent source review; no self-sealing permitted."
+  ]
+}
