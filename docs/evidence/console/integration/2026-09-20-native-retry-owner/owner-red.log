@@ -1,0 +1,29 @@
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+warning: `console-app` (test "health_readiness") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.34s
+warning: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/health_readiness.rs (/private/tmp/console-rust1981-owner-target/debug/deps/health_readiness-caf7069a8d531044)
+
+running 1 test
+test ui_shell_serves_empty_ssr_html ... FAILED
+
+failures:
+
+---- ui_shell_serves_empty_ssr_html stdout ----
+
+thread 'ui_shell_serves_empty_ssr_html' (65633159) panicked at app/tests/health_readiness.rs:184:21:
+assertion failed: html.contains("<a class=\"button primary\" href=\"\">다시 시도</a>")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ui_shell_serves_empty_ssr_html
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p console-app --test health_readiness`

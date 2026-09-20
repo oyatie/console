@@ -150,7 +150,7 @@ fn body(page: Page) -> AnyView {
             <section class="entry-card" role="alert">
                 <p class="eyebrow">"잠시 기다려 주세요"</p><h1>"지금은 계정을 확인할 수 없습니다"</h1>
                 <p class="lead">"계정이나 약관 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."</p>
-                <a class="button primary" href="/account">"다시 시도"</a>
+                <a class="button primary" href="">"다시 시도"</a>
                 <a class="text-link" href="/">"시작 화면으로"</a>
             </section>
         }.into_any(),
