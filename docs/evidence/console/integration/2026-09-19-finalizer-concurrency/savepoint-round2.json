@@ -1,0 +1,21 @@
+{
+  "kind": "reconstructed-independent-design-review",
+  "reviewer": "/root/integration_security",
+  "round": 2,
+  "verdict": "APPROVE_BOUNDED_PROTOCOL_FOR_TEST_AUTHORING_NOT_RUNTIME_ACCEPTANCE",
+  "design_path": "/private/tmp/console-finalizer-savepoint-review/design.md",
+  "design_sha256": "5880a91c4ad3481af2986277a08badbabbbe7817704c70681bebf4f5fa355135",
+  "reconstruction": "Persisted now from this agent conversation record of the prior independent round2 approval; not represented as a contemporaneously created file.",
+  "basis": [
+    "Rechecked sole historical shared role creation in credential finalizer and no role DDL in root finalizer.",
+    "Reviewed protected role/membership fingerprint versus database-local owner/ACL sections and topology provisioning.",
+    "Savepoint before anchor; separate post-wait READ COMMITTED recheck; rollback-to plus release on present path releases subtransaction lock; release-only on absent path retains it through owning transaction.",
+    "Unchanged complete historical finalizers/classifiers execute on either path; presence is synchronization only."
+  ],
+  "required_evidence": [
+    "Independent semantic test approval and named actual RED.",
+    "Cold and warm full-helper and unchanged ordinary fifteen-case concurrency histories within original five-second lock and sixty-second statement deadlines.",
+    "Actual first-create marker true, rollback/cancellation cleanup and corruption controls."
+  ],
+  "limits": "Protocol design approval only; no runtime, performance, production or release acceptance."
+}

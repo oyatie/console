@@ -361,6 +361,41 @@ pub fn account_custody_finalizer_sql() -> String {
         .expect("ACCOUNT_CUSTODY_FINALIZER_PREREQUISITE: production SQL file missing")
 }
 
+// Both disposable helpers share this protocol. Configuration and administrator
+// checks precede it so a savepoint rollback cannot undo those settings.
+async fn coordinate_initial_account_role(tx: &mut sqlx::Transaction<'_, sqlx::Postgres>) {
+    sqlx::query("SAVEPOINT account_initial_role")
+        .execute(tx.as_mut())
+        .await
+        .expect("begin disposable shared-role coordination");
+    let _: String = sqlx::query_scalar(
+        "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE",
+    )
+    .fetch_one(tx.as_mut())
+    .await
+    .expect("lock preexisting disposable Account owner topology");
+    // This separate READ COMMITTED statement sees a creator that committed
+    // while we waited. Existence controls coordination, never custody validity.
+    let committed: bool = sqlx::query_scalar(
+        "SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_credential_owner')",
+    )
+    .fetch_one(tx.as_mut())
+    .await
+    .expect("recheck committed disposable credential owner after lock wait");
+    if committed {
+        sqlx::query("ROLLBACK TO SAVEPOINT account_initial_role")
+            .execute(tx.as_mut())
+            .await
+            .expect("release warm shared-role lock before database-local work");
+    }
+    // Without rollback the cold lock survives RELEASE through outer completion.
+    // The complete unchanged historical SQL still validates both paths.
+    sqlx::query("RELEASE SAVEPOINT account_initial_role")
+        .execute(tx.as_mut())
+        .await
+        .expect("finish disposable shared-role coordination");
+}
+
 pub async fn finalize_account_custody(pool: &PgPool) {
     let mut tx = pool.begin().await.expect("begin disposable finalization");
     sqlx::query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
@@ -386,15 +421,7 @@ pub async fn finalize_account_custody(pool: &PgPool) {
         .execute(tx.as_mut())
         .await
         .expect("bound disposable finalization lock wait");
-    // Roles and their custody fingerprints are cluster-wide even when each
-    // test owns a separate database. Hold the preexisting topology row until
-    // this whole finalization transaction commits or rolls back.
-    let _: String = sqlx::query_scalar(
-        "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE",
-    )
-    .fetch_one(tx.as_mut())
-    .await
-    .expect("lock preexisting disposable Account owner topology");
+    coordinate_initial_account_role(&mut tx).await;
     sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
         .execute(tx.as_mut())
         .await
@@ -438,15 +465,7 @@ pub async fn finalize_serving_account_custody(pool: &PgPool) {
             true
         )
     );
-    // Roles and their custody fingerprints are cluster-wide even when each
-    // test owns a separate database. Hold the preexisting topology row until
-    // this whole finalization transaction commits or rolls back.
-    let _: String = sqlx::query_scalar(
-        "SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE",
-    )
-    .fetch_one(tx.as_mut())
-    .await
-    .expect("lock preexisting disposable Account owner topology");
+    coordinate_initial_account_role(&mut tx).await;
     sqlx::raw_sql(sqlx::AssertSqlSafe(account_custody_finalizer_sql()))
         .execute(tx.as_mut())
         .await

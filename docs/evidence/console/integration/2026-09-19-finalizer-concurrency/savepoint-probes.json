@@ -1,0 +1,94 @@
+{
+  "probe": {
+    "map_sha256": "208b5566517b5ff053925329ba0ba538bda358d80b7c9f25d692a86613047a10",
+    "cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "--",
+      "--test-threads=1",
+      "helper_finalizers_",
+      "--nocapture"
+    ]
+  },
+  "first-create": {
+    "map_sha256": "85069133a37dd3f7b9fa9565ec4031429a393af77069980380047aeb84b73bd9",
+    "cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "--",
+      "--test-threads=1",
+      "helper_finalizers_serialize_credential_creation_across_databases",
+      "--nocapture"
+    ]
+  },
+  "cold-failure": {
+    "map_sha256": "b990aa144d997b3a0d42135c302727b94dc89c741d84651b55157c3249ffcbec",
+    "cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "account_custody_lifecycle::helper_finalizers_release_anchor_after_failure_and_retry",
+      "--",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ]
+  },
+  "lifecycle": {
+    "map_sha256": "1ab69cb693d82c6296c214b3d07dd6cef293aecc86a8731a313ccd5254bd59f6",
+    "cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "--",
+      "--test-threads=1",
+      "account_custody_lifecycle",
+      "--nocapture"
+    ]
+  },
+  "raw-concurrency": {
+    "map_sha256": "531473ab5d6dcaa774b56ee015e04a7cd41e591db04495f232b592c1dd38cee4",
+    "cargo_argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-app",
+      "--test",
+      "auth_rest",
+      "--",
+      "--test-threads=1",
+      "account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state",
+      "--exact",
+      "--nocapture"
+    ]
+  }
+}

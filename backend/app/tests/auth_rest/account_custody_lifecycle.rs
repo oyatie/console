@@ -506,7 +506,15 @@ async fn concurrent_finalizers_have_complete_request_outcomes_and_one_final_stat
     let expected_roots = super::account_root_transition::expected_roots_after_backfill(&pool).await;
     let sql = account_custody_finalizer_sql();
     let mut first = pool.begin().await.unwrap();
+    sqlx::query("SET LOCAL jit=off")
+        .execute(&mut *first)
+        .await
+        .unwrap();
     let mut second = PgConnection::connect_with(&pool.connect_options())
+        .await
+        .unwrap();
+    sqlx::query("SET SESSION jit=off")
+        .execute(&mut second)
         .await
         .unwrap();
     let first_pid: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")

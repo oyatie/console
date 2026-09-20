@@ -1,0 +1,90 @@
+{
+  "kind": "conditional-finalizer-implementation-progress",
+  "test_base_sha": "8510a9ba0f33dd3df7a6ae59d48d4f0b42908020",
+  "owner": "root sole repository writer",
+  "source_sha256": "bb4ace9c9864db932253ae3013114e9aac9681da72192c1058ff7de6b57f414c",
+  "test_sha256": "c8479e9a9624a5c22d19a9049b79ed3ed3093c9e7c870244337900dc75699ef1",
+  "verdict": "TARGETED GREEN; WORKLOAD QUALIFICATION FAILED; lane incomplete",
+  "source_review": "integration_security approved source conformance; workload result does not authorize lane acceptance",
+  "red": {
+    "executed": 6,
+    "passed": 2,
+    "failed": 4,
+    "filtered": 326,
+    "seconds": 48.07
+  },
+  "green": {
+    "executed": 6,
+    "passed": 6,
+    "failed": 0,
+    "filtered": 326,
+    "seconds": 61.71,
+    "postwait_cold_markers": [
+      true,
+      true,
+      true
+    ],
+    "warm_local_progress_ms": [
+      72,
+      141
+    ]
+  },
+  "cold_failure_retry": {
+    "executed": 1,
+    "passed": 1,
+    "seconds": 18.76,
+    "root_cold": true,
+    "serving_cold": true
+  },
+  "cold_first_create": {
+    "executed": 1,
+    "passed": 1,
+    "seconds": 9.77,
+    "first_creation": true
+  },
+  "retained_lifecycle": {
+    "executed": 28,
+    "passed": 28,
+    "failed": 0,
+    "filtered": 304,
+    "seconds": 181.19,
+    "raw_sql_concurrent_case": "passed"
+  },
+  "corruption_controls": {
+    "executed": 5,
+    "intended_failures_detected": 5,
+    "approved_source_restored": true
+  },
+  "ordinary_nextest": {
+    "cold": {
+      "executed": 15,
+      "passed": 1,
+      "failed": 14,
+      "skipped": 0
+    },
+    "warm": {
+      "executed": 15,
+      "passed": 0,
+      "failed": 15,
+      "skipped": 0
+    },
+    "observed_server_version": "180004",
+    "same_cluster": true,
+    "role_absent_before_cold": true,
+    "role_present_before_warm": true,
+    "failures": "credential finalizer UnexpectedEof; cause unknown, server evidence required",
+    "concurrency_and_deadlines": "unchanged"
+  },
+  "raw_fixture_change": {
+    "reviewer": "root independent of integration_tests author",
+    "red_executed": 1,
+    "red_failed": 1,
+    "red_seconds": 17.74,
+    "scope": "JIT off in explicit first transaction and dedicated second unpooled connection; assertions/SQL/deadlines unchanged"
+  },
+  "holds": [
+    "Capture PostgreSQL server evidence for29EOF workload failures and repair actual cause.",
+    "Do not claim release, production qualification or milestone0 complete.",
+    "Missing-anchor runtime scenario remains unexecuted."
+  ]
+}

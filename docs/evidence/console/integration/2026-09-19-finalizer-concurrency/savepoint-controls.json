@@ -1,0 +1,97 @@
+[
+  {
+    "name": "warm-retained",
+    "mutant_sha256": "1aea3364ce44fb940b5409c53a86a3caa9781b1935aa3cd2dc86bf23bf308afe",
+    "command": [
+      "tools/ci/cargo_needs_postgres.sh",
+      "--map",
+      "/private/tmp/console-finalizer-savepoint-controls/warm-retained-map.json",
+      "--only",
+      "app-auth-rest-pg",
+      "--runner",
+      "cargo"
+    ],
+    "returncode": 1,
+    "seconds": 64.518,
+    "one_intended_failure": true,
+    "matched_markers": [
+      "actual PostgreSQL lock dependency not observed"
+    ]
+  },
+  {
+    "name": "skipped-anchor",
+    "mutant_sha256": "3f7994f0eb4e5b5b45fa5339e971a1cece53fdb507231277e9218653b0192a1e",
+    "command": [
+      "tools/ci/cargo_needs_postgres.sh",
+      "--map",
+      "/private/tmp/console-finalizer-savepoint-controls/skipped-anchor-map.json",
+      "--only",
+      "app-auth-rest-pg",
+      "--runner",
+      "cargo"
+    ],
+    "returncode": 1,
+    "seconds": 60.227,
+    "one_intended_failure": true,
+    "matched_markers": [
+      "actual helper must wait on shared Account owner anchor"
+    ]
+  },
+  {
+    "name": "prewait-authoritative",
+    "mutant_sha256": "60ec3d0a40a2dde005833038fc485010b35cdb16dcbe3e5ac9f22bd921db6ec9",
+    "command": [
+      "tools/ci/cargo_needs_postgres.sh",
+      "--map",
+      "/private/tmp/console-finalizer-savepoint-controls/prewait-authoritative-map.json",
+      "--only",
+      "app-auth-rest-pg",
+      "--runner",
+      "cargo"
+    ],
+    "returncode": 1,
+    "seconds": 57.421,
+    "one_intended_failure": true,
+    "matched_markers": [
+      "warm helper must release anchor before database-local work"
+    ]
+  },
+  {
+    "name": "forced-present",
+    "mutant_sha256": "863777a86bffa715b62a4c2141e8a18ed8cd48c8da596bce9c894d64fe2af20c",
+    "command": [
+      "tools/ci/cargo_needs_postgres.sh",
+      "--map",
+      "/private/tmp/console-finalizer-savepoint-controls/forced-present-map.json",
+      "--only",
+      "app-auth-rest-pg",
+      "--runner",
+      "cargo"
+    ],
+    "returncode": 1,
+    "seconds": 36.625,
+    "one_intended_failure": true,
+    "matched_markers": [
+      "cold helper must retain the anchor"
+    ]
+  },
+  {
+    "name": "omitted-read-committed",
+    "mutant_sha256": "7f979f487b23d56b6163b0a7b7550f2e02784d2e71ecb213035b2d1a9513c9a0",
+    "command": [
+      "tools/ci/cargo_needs_postgres.sh",
+      "--map",
+      "/private/tmp/console-finalizer-savepoint-controls/omitted-read-committed-map.json",
+      "--only",
+      "app-auth-rest-pg",
+      "--runner",
+      "cargo"
+    ],
+    "returncode": 1,
+    "seconds": 38.127,
+    "one_intended_failure": true,
+    "matched_markers": [
+      "LC_HELPER_REQUIRES_READ_COMMITTED"
+    ]
+  }
+]
