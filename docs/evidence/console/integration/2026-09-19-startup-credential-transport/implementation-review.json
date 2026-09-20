@@ -1,0 +1,82 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_BOUNDED_SOURCE_AND_CARGO_OWNER_EVIDENCE",
+  "test_base_commit": "6d2f085dd30c036119ef8ff416a65746441e1a23",
+  "design_sha256": "d38567a7bebf8d2f0729bbe92c4482f07d051f6fafa61846226816ac87273a8f",
+  "test_manifest_sha256": "82756fadb2378044a65a7ed1cd2e0dc249baba0ce7772da72c05e4edd9afadcb",
+  "source_sha256": {
+    "tools/ci/cargo_needs_postgres.sh": "0cad14fc74a61c09afd26edba2f926c6593bb06e108aeef1f733bedcc85b5b49",
+    "tools/buck/test_needs_postgres.sh": "dab2d09477de84e658d766382edead131247200c4401fdd74e51418bb2c1ef93",
+    "tools/buck/run_test_with_postgres_env.sh": "76a14a44c8fa46a461dacd5691e1ec370dfeb01ea2c33a0f55f165bca6a67647"
+  },
+  "unchanged_owner_and_test_custody_verified": true,
+  "diff": {
+    "files": 3,
+    "insertions": 11,
+    "deletions": 1,
+    "diff_check_exit": 0
+  },
+  "review_lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "source_conclusions": [
+    "Exactlyone freshstartupsecret per harness, same existinggenerator; Buck pairwiseguard addsit; Cargo realtopology pairwiseguard unchanged.",
+    "Startupsecret transported only existing0600topology/testfiles; queryfreefragmentfreeURL uses fixedconsole_auth_startup/same loopbackhostport/database.",
+    "Buck optionalkey counter/duplicatecase only; existing4mandatoryand4optional keys/valuepattern/modecheck/exactforwardingunchanged.",
+    "No topologySQL/grants/custody/Rusttestbody/toolchain/productionchanges; no secondarywriter or secretsinargv added.",
+    "Lifecycle/cleanup/readiness/selection/runnerbehavior unchanged."
+  ],
+  "reviewed_evidence": {
+    "red": {
+      "cargo": "1executed,intendedmissingstartuptopologykey",
+      "buck": "scriptfailedatmissingstartuptopologykey",
+      "loader": "scriptfailedunexpectednewstartupkey"
+    },
+    "admission": "all3fanoutadmissionlogsrecord namedprobeRED",
+    "same_probes_green": {
+      "cargo": 1,
+      "buck_script": "PASS",
+      "loader_script": "PASS"
+    },
+    "cargo_argument_and_isolation_suite": {
+      "executed": 24,
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    "real_cargo_designation_owner": {
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 352,
+      "elapsed_seconds": 5.29,
+      "test": "account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects"
+    }
+  },
+  "evidence_logs_sha256": {
+    "/private/tmp/console-startup-buck-green.log": "95740b80e4e45e819eab7beb773bcc21fcfce2879525ee06a0c723d64ea253c2",
+    "/private/tmp/console-startup-buck-red-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-startup-buck-red.log": "839c3b155e1d2d00b82679f410861d7158bf6c44d6c279b760f7c241876f0868",
+    "/private/tmp/console-startup-cargo-full-green.log": "d5975c7561352be53452b9c3c9fd8aa346018b78ec8bdeb29afe03b3d1840970",
+    "/private/tmp/console-startup-cargo-green.log": "1028fb0dd22624ce7e4b589721bbc768828145df75678ee9cdf2897851ea07f5",
+    "/private/tmp/console-startup-cargo-red-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-startup-cargo-red.log": "c3e83046e156dd0acfcc57a30df7b176e024487d0f365a78ae786bcadd4ad92b",
+    "/private/tmp/console-startup-designation-green.log": "2ac3c72dca2fe638034401045f757ca2186c07f435c670301aabcc992dd5d0a0",
+    "/private/tmp/console-startup-loader-green.log": "adf3af0ca26b6b4717d79b4a1ed25663bea8ca5cee09f2677852b9045be0915d",
+    "/private/tmp/console-startup-loader-red-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-startup-loader-red.log": "1ebc342caacb88c14cd34e1e4b750f35ffdafced0121f3cb0ffd6579f6b666a1"
+  },
+  "execution_disclosure": "Tests above were executed by root; independently reviewed exact source/test custody and retained logs. No redundant runtime rerun by reviewer.",
+  "remaining_holds": [
+    "RebuiltBuck realowner/executor evidence not yet supplied; mockBuck transportPASS alone is not actualBuckPostgreSQLownerproof.",
+    "Companyentry must rerun after repairedprerequisite and reach actualownerRED beforeCompanyadmission; this review is notCompanyacceptance.",
+    "Inheritednightlytoolchain is notrequiredRust1.98.1qualification.",
+    "Buckfakebuild retains preexisting empty-env grepdiagnostics; PASS doesnotclaim fixtureoutputclean.",
+    "No complete Account/milestone/release/productionqualification."
+  ]
+}

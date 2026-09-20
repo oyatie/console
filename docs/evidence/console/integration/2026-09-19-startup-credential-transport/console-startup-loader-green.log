@@ -1,0 +1,7 @@
+buck-postgres: environment file must be mode 0600
+buck-postgres: exact Rust test name contains unsupported characters
+buck-postgres: duplicate environment key
+buck-postgres: duplicate environment key
+buck-postgres: duplicate environment key
+buck-postgres: duplicate environment key
+run_test_with_postgres_env: PASS

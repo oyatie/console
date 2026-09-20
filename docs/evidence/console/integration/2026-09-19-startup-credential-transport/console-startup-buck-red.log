@@ -1,0 +1,5 @@
+buck-postgres: raw backend test targets bypass the credential loader; use a //tools/buck PostgreSQL wrapper
+Traceback (most recent call last):
+  File "<stdin>", line 6, in <module>
+  File "<stdin>", line 6, in <genexpr>
+KeyError: 'CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD'

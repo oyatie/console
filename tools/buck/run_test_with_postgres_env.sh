@@ -25,6 +25,7 @@ have_owner_url=0
 have_runtime_url=0
 have_admin_url=0
 have_auth_url=0
+have_startup_auth_url=0
 have_leave_url=0
 have_ontology_url=0
 have_force_url=0
@@ -50,6 +51,9 @@ while IFS= read -r line || [[ -n "${line}" ]]; do
     CONSOLE_TEST_AUTH_DATABASE_URL)
       [[ "${have_auth_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_auth_url=1 ;;
+    CONSOLE_STARTUP_AUTH_DATABASE_URL)
+      [[ "${have_startup_auth_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
+      have_startup_auth_url=1 ;;
     CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL)
       [[ "${have_leave_url}" == 0 ]] || { echo "buck-postgres: duplicate environment key" >&2; exit 1; }
       have_leave_url=1 ;;

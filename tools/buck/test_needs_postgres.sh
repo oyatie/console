@@ -55,10 +55,11 @@ admin_password="$(secret)"
 app_password="$(secret)"
 runtime_password="$(secret)"
 auth_password="$(secret)"
+startup_auth_password="$(secret)"
 leave_command_password="$(secret)"
 ontology_command_password="$(secret)"
 platform_force_command_password="$(secret)"
-passwords=("${auth_password}" "${admin_password}" "${app_password}" "${runtime_password}" "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}")
+passwords=("${auth_password}" "${admin_password}" "${app_password}" "${runtime_password}" "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}" "${startup_auth_password}")
 for ((i = 0; i < ${#passwords[@]}; i++)); do
   for ((j = i + 1; j < ${#passwords[@]}; j++)); do
     if [[ "${passwords[i]}" == "${passwords[j]}" ]]; then
@@ -75,6 +76,7 @@ chmod 600 "${container_env_file}"
   printf 'POSTGRES_DB=%s\nPOSTGRES_USER=console_buck_admin\nPOSTGRES_PASSWORD=%s\n' "${database}" "${admin_password}"
   printf 'POSTGRES_HOST=127.0.0.1\nPOSTGRES_PORT=5432\nPOSTGRES_ADMIN_USER=console_buck_admin\nPOSTGRES_ADMIN_PASSWORD=%s\n' "${admin_password}"
   printf 'CONSOLE_AUTH_POSTGRES_PASSWORD=%s\n' "${auth_password}"
+  printf 'CONSOLE_STARTUP_AUTH_POSTGRES_PASSWORD=%s\n' "${startup_auth_password}"
   printf 'CONSOLE_APP_POSTGRES_PASSWORD=%s\nCONSOLE_RT_POSTGRES_PASSWORD=%s\n' "${app_password}" "${runtime_password}"
   printf 'CONSOLE_LEAVE_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_ONTOLOGY_COMMAND_POSTGRES_PASSWORD=%s\nCONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD=%s\n' "${leave_command_password}" "${ontology_command_password}" "${platform_force_command_password}"
 } >"${container_env_file}"
@@ -144,6 +146,7 @@ chmod 600 "${test_env_file}"
   printf 'CONSOLE_APALIS_RUNTIME_DATABASE_URL=%s\n' "${apalis_runtime_database_url}"
   printf 'CONSOLE_APALIS_ADMIN_DATABASE_URL=%s\n' "${database_url}"
   printf 'CONSOLE_TEST_AUTH_DATABASE_URL=postgres://console_auth_rt:%s@127.0.0.1:%s/%s\n' "${auth_password}" "${port}" "${database}"
+  printf 'CONSOLE_STARTUP_AUTH_DATABASE_URL=postgres://console_auth_startup:%s@127.0.0.1:%s/%s\n' "${startup_auth_password}" "${port}" "${database}"
   printf 'CONSOLE_TEST_LEAVE_COMMAND_DATABASE_URL=postgres://console_leave_cmd:%s@127.0.0.1:%s/%s\n' "${leave_command_password}" "${port}" "${database}"
   printf 'CONSOLE_TEST_ONTOLOGY_COMMAND_DATABASE_URL=postgres://console_ontology_cmd:%s@127.0.0.1:%s/%s\n' "${ontology_command_password}" "${port}" "${database}"
   printf 'CONSOLE_TEST_PLATFORM_FORCE_COMMAND_DATABASE_URL=postgres://console_platform_force_cmd:%s@127.0.0.1:%s/%s\n' "${platform_force_command_password}" "${port}" "${database}"
