@@ -1,0 +1,41 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_EXACT_EMPTY_FIELD_REPRESENTATION_CORRECTION_RUNTIME_PENDING",
+  "candidate": "/private/tmp/console-company-cedar-empty-predicate-20260920/native_company_contract_probe.rs",
+  "candidate_sha256": "52397c9cf42d10322d19ef8617fc3a8f926137f89fcabe729f3c47f49b6fa8dd",
+  "amendment_sha256": "9b81de9fd0a87632ab1cb3b63fee8f0ae716fd7498cd189e9e3b0a60b2d32cca",
+  "failure_log": {
+    "path": "/private/tmp/console-company-cedar-native-focused-20260920.log",
+    "sha256": "7880b47239869c1a0068ffc1e8834ffadb85b26637d2f6875f5b491cbdfce448",
+    "executed": 7,
+    "passed": 5,
+    "failed": 2,
+    "filtered": 110
+  },
+  "reviewed": [
+    "Only policy() test helper changed; all preceding schema/literals and succeeding seven tests byte-identical",
+    "For empty allowed field set requested_fields.isEmpty() has the same intended set-subset predicate while avoiding strict Cedar forbidden empty literal",
+    "For nonempty allowed field set emitted literal.containsAll(requested_fields) text remains byte-equivalent",
+    "Exact Account/Company/type/action bindings, all allow/deny assertions, compiler strict validation and warning rejection unchanged",
+    "No production policy compiler implementation, stored policies, history, migration or custody fingerprint changed"
+  ],
+  "required_runtime": [
+    "Rerun unchanged seven leaves at actual compile_bundle_from_sources boundary",
+    "Full117test authz regression; preserve original2failure log"
+  ],
+  "limits": [
+    "Source approval of semantic representation correction, not current native policy authority or Company integration acceptance",
+    "Empty requested set authorizes action only; projection must still disclose zero properties",
+    "No historical policy bytes may be rewritten to this encoding"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "reviewer_tests_executed": 0
+}

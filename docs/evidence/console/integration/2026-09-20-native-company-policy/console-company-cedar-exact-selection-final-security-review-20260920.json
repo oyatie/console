@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_CEDAR_PREREQUISITE_TESTS_EXACT_FLOOR_GAIN_AND_EXACT_SELECTION_EVIDENCE_STORAGE",
+  "head": "41133ad20342ee7a1361d52ccb8e247a8dcccef6",
+  "cedar": {
+    "source": {
+      "backend/crates/platform/authz/src/cedar_pbac/engine.rs": "9e1d3caea66393abe90fc0554c38389a7a70dcbbd79aec2fec522960b4ee6220",
+      "backend/crates/platform/authz/src/cedar_pbac/native_company_contract_probe.rs": "52397c9cf42d10322d19ef8617fc3a8f926137f89fcabe729f3c47f49b6fa8dd"
+    },
+    "source_match": "Exact approved round2engine append and exact reviewed empty-predicate successor; original production engine bytes unchanged.",
+    "results": {
+      "focused_passed": 7,
+      "focused_filtered": 110,
+      "full_distinct_passed": 117,
+      "failed": 0,
+      "ignored": 0,
+      "full_filtered": 0,
+      "counting": "Seven focused repeated in117full, never124distinct."
+    },
+    "logs": {
+      "/private/tmp/console-company-cedar-native-successor-focused-20260920.log": "3a25a6936cf16bfc1efbce2d3219da632943ae827f7e34957b35dc859b48586d",
+      "/private/tmp/console-company-cedar-native-successor-full-20260920.log": "f53f0048c725a1ce5cd7823c4cd69e9b3ec3bec10d2b9024d13c9f0e5fee58ea"
+    },
+    "preserved_failure": "/private/tmp/console-company-cedar-native-focused-20260920.log",
+    "floor": {
+      "path": "docs/program/executed-tests-baseline.json",
+      "key": "backend/crates/platform/authz/src/lib.rs",
+      "old": 110,
+      "new": 117,
+      "old_sha256": "ec5c148fa0fbbe857889001bf09a5f189c9109b7159d4979c6e47c37a2edec71",
+      "exact_candidate_sha256": "85ccd20f77a432014aab6011f542dd2d9ecc395af694e94f26f2fa1444ba406f",
+      "other_bytes": "must remain identical"
+    },
+    "scope": "Existing real strict compiler/SDK prerequisites only; no native Company policy loader or enrollment implementation acceptance."
+  },
+  "exact_selection_bundle": {
+    "path": "docs/evidence/console/integration/2026-09-20-native-exact-test-selection",
+    "receipt_sha256": "6f13da5d0bc25a118add983ac46813e4ba8f94584850cc0fea529a790ba2e061",
+    "members": 9,
+    "total_files": 10,
+    "gzip_files": 5,
+    "custody": "Every stored hash matches manifest; every decompressed/raw source equals private original; gzipmtime0; no extra file.",
+    "source_commits": "Source hashes match41133ad20 implementation; test hash matches90257f0a3.",
+    "preserved_failures": true,
+    "limits": "One real native pass; missing selection refused; no ignored/PG/browser execution claim."
+  },
+  "findings": [],
+  "reviewer_tests_executed": 0
+}
