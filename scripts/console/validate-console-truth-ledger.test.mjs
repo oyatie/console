@@ -1213,3 +1213,20 @@ for (const [id, name, mutations, diagnostic] of fusionMalformed) {
     }
   });
 }
+
+// Exact enumerable keys, including swaps that preserve own-key count.
+test('Fusion catalogue rejects nonenumerable required key replaced by omitted extra', () => {
+  for (const extra of [undefined, () => 'unreviewed']) {
+    assertFusionRejection((value) => {
+      const target = fusionRuntime(value);
+      const count = Object.keys(target).length;
+      Object.defineProperty(target, 'command', { value: null, enumerable: false, configurable: true, writable: true });
+      target.extraFusionProperty = extra;
+      assert.equal(Object.hasOwn(target, 'command'), true);
+      assert.equal(Object.keys(target).includes('command'), false);
+      assert.equal(Object.hasOwn(target, 'extraFusionProperty'), true);
+      assert.equal(Object.keys(target).includes('extraFusionProperty'), true);
+      assert.equal(Object.keys(target).length, count, 'fault preserves enumerable key count');
+    }, { label: `required key replaced by ${typeof extra} extra` });
+  }
+});

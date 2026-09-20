@@ -386,6 +386,34 @@ function validateReleaseInventory(registry, resolveSource) {
       }
     }
   }
+  // Frozen reference inventory only; no runtime semantics or Console support is qualified.
+  const fusion = matrices.runtimes.entries.find((row) => row.runtime === 'Fusion formula functions');
+  require(fusion, 'Fusion formula function catalogue is required');
+  const fusionKeys = (value, keys, detail) => {
+    record(value, `Fusion ${detail}`);
+    const actual = Object.keys(value);
+    require(actual.length === keys.length && keys.every((key) => actual.includes(key)), `Fusion ${detail} keys differ from frozen reference`);
+  };
+  fusionKeys(fusion, ['runtime','reference_status','source','console_acceptance','command','function_catalog','semantics_status','unqualified_semantics'], 'runtime');
+  require(fusion.source === 'fusion-function-library'
+    && fusion.reference_status === 'Frozen 202-entry reference catalogue; lifecycle labels preserved; Console execution unverified'
+    && fusion.console_acceptance === 'not established' && fusion.command === null
+    && fusion.semantics_status === 'not_bound', 'Fusion runtime must retain unqualified reference status');
+  fusionKeys(fusion.unqualified_semantics, ['runtime_and_library_versions','type_and_coercion','null_and_error','optional_and_variadic_arguments','locale_timezone_precision','dependency_recalculation','effects_authority_and_recovery','concurrency_reconnect','lifecycle_successor_equivalence'], 'semantics');
+  require(Object.values(fusion.unqualified_semantics).every((value) => value === null), 'Fusion semantics remain unqualified');
+  require(Array.isArray(fusion.function_catalog) && fusion.function_catalog.length === 202, 'Fusion catalogue must contain 202 ordered entries');
+  for (const row of fusion.function_catalog) {
+    // Check own keys before JSON hashing: undefined/function values disappear in JSON.
+    fusionKeys(row, ['section','signature','reference_lifecycle','required_leaf','console_acceptance','source_binding'], 'catalogue entry');
+    fusionKeys(row.source_binding, ['source_id','artifact_path','sha256','quote','matching','scope'], 'catalogue binding');
+  }
+  require(canonicalJsonDigest(fusion.function_catalog) === '520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee', 'Fusion catalogue differs from frozen reviewed records');
+  for (const row of fusion.function_catalog) {
+    require(leaves.has(row.required_leaf) && ['F09.formula-action-library','F09.formula-chart-library','F09.formula-core-library','F09.formula-timeseries-library','F09.formula-validation-library'].includes(row.required_leaf)
+      && row.console_acceptance === 'not established', 'Fusion catalogue leaf or acceptance invalid');
+    binding(row.source_binding);
+    require(bindings[row.required_leaf]?.some((item) => canonicalJsonDigest(item) === canonicalJsonDigest(row.source_binding)), 'Fusion catalogue exact shared source binding is required');
+  }
   if (Object.hasOwn(matrices, 'models_administration')) {
     for (const row of uniqueRecords(matrices.models_administration, 'dimension', 'models administration matrix').values()) {
       strings(row.values, 'model support values'); text(row.reference_support, 'model reference support'); binding(row.source_binding); consoleAcceptance(row);
