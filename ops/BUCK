@@ -24,3 +24,8 @@ export_file(
     name = "postgres-company-enrollment-input.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "postgres-company-enrollment-schema.sql",
+    visibility = ["PUBLIC"],
+)
