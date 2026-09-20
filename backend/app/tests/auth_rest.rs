@@ -56,6 +56,8 @@ mod auth_target_parser;
 mod historical227;
 #[path = "auth_rest/legacy_bound_passkey_reads.rs"]
 mod legacy_bound_passkey_reads;
+#[path = "auth_rest/legacy_platform_list_reads.rs"]
+mod legacy_platform_list_reads;
 #[path = "auth_rest/publication_privileges.rs"]
 mod publication_privileges;
 

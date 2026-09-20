@@ -1,0 +1,13 @@
+{
+  "head": "0c493a255bba21852973756e13bccb5602b0c268",
+  "design_manifest_sha256": "3f3b77eb13e194a11b451635226988912062c38b235341ca745d560b5ac877a7",
+  "design_sha256": "464d7ef09142363c05b091903d247f9f4bed576415502288f7b495ba00edb549",
+  "source_sha256": {
+    "backend/app/tests/auth_rest.rs": "b860feb1a78f3f53b7e44d2254e6c79043266d04d4227cc38678071f0cb47a40"
+  },
+  "allowed_repo_changes": [
+    "backend/app/tests/auth_rest.rs",
+    "backend/app/tests/auth_rest/legacy_platform_list_reads.rs"
+  ],
+  "original_bytes_restoration_proven": true
+}
