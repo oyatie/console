@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_HYDRATION_TEST_SUCCESSOR_FOR_ACTUAL_EXECUTION",
+  "manifest_sha256": "1a1f1f588b2f70e9411640797760c88cb599e0fdc91f149ea78aab9e95d9f453",
+  "driver_sha256": "042c8f474cb01c606e676f8ae7793e9032b18100c91b2cb8f6fd92b5e67fc6e4",
+  "test_candidate_sha256": "4a892e0e95cda7a225e22fe1d3539d3da45b12607e7d7c357e2624c2571ef420",
+  "checks": [
+    "Entire existing health test source reconstructed byte-exact; current preimage matches.",
+    "PinnedRustfmtcheck0 and Node syntax0; independent machinery2positive/36corruptions pass.",
+    "Actual local executable independently hashed a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282; --version returns153.0.8010.12; Playwright1.63.0 existing path verified. This intentionally differs from Companypreview151 executable.",
+    "Same original ElementHandles remain connected/identical during filter; exact authorizedIDset and visibility retained.",
+    "Five real payroll contexts, exact current JS/WASM bytes/MIME, native selectevents and JavaScript-off positive control reviewed.",
+    "Per-request CDP Fetch origin barrier precedes fixtureBearer insertion on every intercepted redirecthop; token-containing URLs rejected before artifact emission.",
+    "Additional TEST_ONLY redirectroute never replaces businesshandler; actual positive sinkHTTP observation/reset, source302 with expectedBearer and zero foreignsink traffic checked independently by Rust.",
+    "Fullpublictables unchanged except exact3plain read-audit rows; exact20keys/nullcontext/distinctIDs/actororg/target/trace checked with prior rawrow preservation.",
+    "Owned browser/source and bothlistener cleanup failclosed; failures retained rather than converted to successful browser receipt."
+  ],
+  "limits": [
+    "No Cargo compilation, actualdatabase/browser run or hydration acceptance performed in this review.",
+    "TEST_ONLY status fixture and signedBearer prove projection/artifact integration only, not nativeAccount or payablepayroll workflow.",
+    "LoopbackHTTP and synthetic fixtures do not qualify productionTLS/HA, accessibility/userstudies or release.",
+    "Actualresponse envelopes and auditshape must match; failures require diagnosis and independently reviewed correction, not weak assertions.",
+    "If current rebuiltartifact already passes, record verification; no invented productRED."
+  ]
+}

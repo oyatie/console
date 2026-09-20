@@ -1211,6 +1211,413 @@ mod authorized {
         assert_ui_invariants(&super_html);
     }
 
+    #[cfg(feature = "test-browser")]
+    #[sqlx::test(migrations = false)]
+    async fn authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser(
+        pool: PgPool,
+    ) {
+        use futures::FutureExt;
+        use serde_json::Value;
+        use sha2::{Digest, Sha256};
+        use std::collections::{BTreeMap, BTreeSet};
+        use std::path::PathBuf;
+        use std::process::Stdio;
+        use std::sync::{
+            Arc,
+            atomic::{AtomicUsize, Ordering},
+        };
+        use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt};
+
+        async fn rows(pool: &PgPool) -> BTreeMap<String, String> {
+            let tables: Vec<String> = sqlx::query_scalar("SELECT relname::text FROM pg_class WHERE relnamespace='public'::regnamespace AND relkind IN ('r','p') ORDER BY relname COLLATE \"C\"").fetch_all(pool).await.unwrap();
+            assert!(!tables.is_empty() && tables.len() <= 1024);
+            let mut captured = BTreeMap::new();
+            for table in tables {
+                let quoted = table.replace('"', "\"\"");
+                let sql = format!(
+                    "SELECT COALESCE(jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)::text COLLATE \"C\"),'[]'::jsonb)::text FROM public.\"{quoted}\" t"
+                );
+                let value: String = sqlx::query_scalar(sqlx::AssertSqlSafe(sql))
+                    .fetch_one(pool)
+                    .await
+                    .unwrap();
+                assert!(captured.insert(table, value).is_none());
+            }
+            assert!(
+                captured.contains_key("_sqlx_migrations")
+                    && captured.contains_key("audit_events")
+                    && captured.contains_key("payroll_draft_runs")
+                    && captured.contains_key("accounts")
+            );
+            captured
+        }
+        fn audit_delta(before: &str, after: &str) -> Vec<Value> {
+            use serde_json::value::RawValue;
+            let before: Vec<&RawValue> = serde_json::from_str(before).unwrap();
+            let after: Vec<&RawValue> = serde_json::from_str(after).unwrap();
+            let mut retained: BTreeSet<_> = before.iter().map(|r| r.get()).collect();
+            assert_eq!(retained.len(), before.len());
+            let mut seen = BTreeSet::new();
+            let mut added = Vec::new();
+            for row in after {
+                assert!(seen.insert(row.get()));
+                if !retained.remove(row.get()) {
+                    added.push(serde_json::from_str(row.get()).unwrap());
+                }
+            }
+            assert!(
+                retained.is_empty(),
+                "prior audit history was changed or omitted"
+            );
+            added
+        }
+        async fn event(reader: &mut tokio::io::BufReader<tokio::process::ChildStdout>) -> Value {
+            let mut line = String::new();
+            let size = tokio::time::timeout(Duration::from_secs(100), reader.read_line(&mut line))
+                .await
+                .unwrap()
+                .unwrap();
+            assert!(size > 0 && size < 4096, "bounded browser protocol required");
+            serde_json::from_str(&line).unwrap()
+        }
+        fn alive(pid: u32) -> bool {
+            assert!(pid > 1);
+            std::process::Command::new("/bin/kill")
+                .args(["-0", &pid.to_string()])
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status()
+                .unwrap()
+                .success()
+        }
+
+        let driver = PathBuf::from(
+            std::env::var_os("CONSOLE_HYDRATION_BROWSER_DRIVER").expect("reviewed driver required"),
+        );
+        let expected = std::env::var("CONSOLE_HYDRATION_BROWSER_SHA256")
+            .expect("reviewed driver hash required");
+        assert!(
+            driver.is_absolute()
+                && std::fs::symlink_metadata(&driver)
+                    .unwrap()
+                    .file_type()
+                    .is_file()
+        );
+        let driver_bytes = std::fs::read(&driver).unwrap();
+        assert_eq!(hex::encode(Sha256::digest(&driver_bytes)), expected);
+        let output = PathBuf::from(
+            std::env::var_os("CONSOLE_HYDRATION_BROWSER_OUTPUT").expect("fresh output required"),
+        );
+        assert!(output.is_absolute() && !output.exists());
+        console_platform_test_support::prepare_account_test_database(&pool).await;
+        let keys = keys();
+        let org = OrgId::knl();
+        let admin = UserId::new();
+        let member = UserId::new();
+        seed_user(&pool, org, admin, "SUPER_ADMIN").await;
+        seed_user(&pool, org, member, "MEMBER").await;
+        let first = seed_run(&pool, org, admin).await;
+        let port = PgPayRunPort::new(
+            runtime_role_pool(&pool).await,
+            tokio::runtime::Handle::current(),
+        );
+        let command = PayRunCommand {
+            org_id: org,
+            command_id: CommandId::from_uuid(Uuid::new_v4()),
+            actor_id: admin,
+            query: PayRunQuery::CreateRun {
+                run_id: Uuid::new_v4(),
+                period_start: date!(2026 - 06 - 01),
+                period_end: date!(2026 - 06 - 30),
+                connector: Some("m2".to_owned()),
+                job: Some("hydration-distinct-presentation".to_owned()),
+            },
+            action_key: "create_run".to_owned(),
+            object_type_id: Uuid::nil(),
+        };
+        let created = tokio::task::spawn_blocking(move || port.execute(&command))
+            .await
+            .unwrap()
+            .unwrap();
+        assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+        let second: Uuid = created.result()["draft_run_id"]
+            .as_str()
+            .unwrap()
+            .parse()
+            .unwrap();
+        assert_ne!(first, second);
+        // TEST_ONLY rendering fixture, as in retained PayRun port tests. This does
+        // not claim that a payroll calculation or legal transition was completed.
+        assert_eq!(
+            sqlx::query(
+                "UPDATE payroll_draft_runs SET status='CALCULATED' WHERE id=$1 AND status='BLOCKED_LEGAL_GATE'"
+            )
+            .bind(second)
+            .execute(&pool)
+            .await
+            .unwrap()
+            .rows_affected(),
+            1
+        );
+        let statuses: Vec<(Uuid, String)> =
+            sqlx::query_as("SELECT id,status FROM payroll_draft_runs WHERE id=ANY($1) ORDER BY id")
+                .bind(vec![first, second])
+                .fetch_all(&pool)
+                .await
+                .unwrap();
+        assert_eq!(statuses.len(), 2);
+        assert!(
+            statuses
+                .iter()
+                .any(|(id, status)| *id == first && status == "BLOCKED_LEGAL_GATE")
+                && statuses
+                    .iter()
+                    .any(|(id, status)| *id == second && status == "CALCULATED")
+        );
+        let foreign_org = OrgId::from_uuid(Uuid::new_v4());
+        sqlx::query(
+            "INSERT INTO organizations (id,slug,name) VALUES ($1,$2,'Hydration empty Company')",
+        )
+        .bind(*foreign_org.as_uuid())
+        .bind(format!("hydration-{}", foreign_org.as_uuid().simple()))
+        .execute(&pool)
+        .await
+        .unwrap();
+        let foreign = UserId::new();
+        seed_user(&pool, foreign_org, foreign, "SUPER_ADMIN").await;
+        let state = jwt_app_state(&pool, keys.public_pem.clone()).await;
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let (stop, stopped) = tokio::sync::oneshot::channel();
+        let admin_token = bearer(&keys, org, admin, "SUPER_ADMIN");
+        // TEST_ONLY real foreign-origin sink. A credential-free TCP/HTTP request
+        // below must prove observation before the redirect's zero-request claim.
+        let sink_listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let sink_address = sink_listener.local_addr().unwrap();
+        let sink_url = format!("http://{sink_address}/__test__/hydration/sink");
+        let sink_counts = Arc::new([AtomicUsize::new(0), AtomicUsize::new(0)]);
+        let observed_sink = sink_counts.clone();
+        let sink_router = axum::Router::new().fallback(move |headers: http::HeaderMap| {
+            let counts = observed_sink.clone();
+            async move {
+                counts[0].fetch_add(1, Ordering::SeqCst);
+                if headers.contains_key(http::header::AUTHORIZATION) {
+                    counts[1].fetch_add(1, Ordering::SeqCst);
+                }
+                (StatusCode::OK, "TEST_ONLY_SINK_OBSERVED")
+            }
+        });
+        let (sink_stop, sink_stopped) = tokio::sync::oneshot::channel();
+        let mut sink_server = tokio::spawn(async move {
+            axum::serve(sink_listener, sink_router)
+                .with_graceful_shutdown(async {
+                    let _ = sink_stopped.await;
+                })
+                .await
+        });
+        let source_counts = Arc::new([AtomicUsize::new(0), AtomicUsize::new(0)]);
+        let observed_source = source_counts.clone();
+        let expected_authorization = format!("Bearer {admin_token}");
+        let target = sink_url.clone();
+        // This additional fixture route never replaces a production response.
+        let router = build_router(state.clone()).route(
+            "/__test__/hydration/redirect",
+            axum::routing::get(move |headers: http::HeaderMap| {
+                let counts = observed_source.clone();
+                let expected = expected_authorization.clone();
+                let target = target.clone();
+                async move {
+                    counts[0].fetch_add(1, Ordering::SeqCst);
+                    if headers
+                        .get(http::header::AUTHORIZATION)
+                        .and_then(|v| v.to_str().ok())
+                        == Some(expected.as_str())
+                    {
+                        counts[1].fetch_add(1, Ordering::SeqCst);
+                    }
+                    (StatusCode::FOUND, [(http::header::LOCATION, target)])
+                }
+            }),
+        );
+        let mut server = tokio::spawn(async move {
+            axum::serve(
+                listener,
+                router.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+            )
+            .with_graceful_shutdown(async {
+                let _ = stopped.await;
+            })
+            .await
+        });
+        let before = rows(&pool).await;
+        let js_hash = hex::encode(Sha256::digest(console_payroll_ui::payroll_ui_js()));
+        let wasm_hash = hex::encode(Sha256::digest(console_payroll_ui::payroll_ui_wasm()));
+        let payload = json!({"origin":format!("http://{address}"),"admin":admin_token,"redirect_sink":sink_url,"member":bearer(&keys,org,member,"MEMBER"),"foreign":bearer(&keys,foreign_org,foreign,"SUPER_ADMIN"),"runs":statuses.iter().map(|(id,status)|json!({"id":id,"status":status})).collect::<Vec<_>>(),"assets":{"js":js_hash,"wasm":wasm_hash}});
+        let mut child = tokio::process::Command::new("node")
+            .arg(&driver)
+            .arg(&output)
+            .env_remove("DEBUG")
+            .env_remove("PWDEBUG")
+            .env_remove("NODE_DEBUG")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .kill_on_drop(true)
+            .spawn()
+            .unwrap();
+        let mut input = child.stdin.take().unwrap();
+        let mut reader = tokio::io::BufReader::new(child.stdout.take().unwrap());
+        let mut owned_pid = None;
+        let mut checkpoint_ok = false;
+        let mut sink_positive = false;
+        let outcome = std::panic::AssertUnwindSafe(async {
+            let mut positive = tokio::time::timeout(Duration::from_secs(5), tokio::net::TcpStream::connect(sink_address)).await.unwrap().unwrap();
+            let request = format!("GET /__test__/hydration/sink HTTP/1.1\r\nHost: {sink_address}\r\nConnection: close\r\n\r\n");
+            positive.write_all(request.as_bytes()).await.unwrap();
+            let mut response = Vec::new();
+            tokio::time::timeout(Duration::from_secs(5), positive.read_to_end(&mut response)).await.unwrap().unwrap();
+            assert!(response.starts_with(b"HTTP/1.1 200 ") && response.windows(b"TEST_ONLY_SINK_OBSERVED".len()).any(|w| w == b"TEST_ONLY_SINK_OBSERVED"));
+            assert_eq!(sink_counts[0].load(Ordering::SeqCst), 1);
+            assert_eq!(sink_counts[1].load(Ordering::SeqCst), 0);
+            sink_counts[0].store(0, Ordering::SeqCst);
+            sink_positive = true;
+            let mut bytes = serde_json::to_vec(&payload).unwrap();
+            bytes.push(b'\n');
+            input.write_all(&bytes).await.unwrap();
+            input.flush().await.unwrap();
+            bytes.fill(0);
+            let owned = event(&mut reader).await;
+            assert!(
+                owned["kind"] == "BROWSER_OWNED"
+                    && owned["executable_sha256"]
+                        == "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+            );
+            let pid = u32::try_from(owned["pid"].as_u64().unwrap()).unwrap();
+            assert!(alive(pid));
+            owned_pid = Some(pid);
+            let result = event(&mut reader).await;
+            assert!(
+                result["kind"] == "RESULT" && result["status"] == "PASSED",
+                "actual hydration browser proof failed; inspect sanitized result"
+            );
+            assert_eq!(source_counts[0].load(Ordering::SeqCst), 1);
+            assert_eq!(source_counts[1].load(Ordering::SeqCst), 1);
+            assert_eq!(sink_counts[0].load(Ordering::SeqCst), 0);
+            assert_eq!(sink_counts[1].load(Ordering::SeqCst), 0);
+            let after = rows(&pool).await;
+            assert_eq!(
+                before.keys().collect::<Vec<_>>(),
+                after.keys().collect::<Vec<_>>()
+            );
+            for (name, value) in &before {
+                if name != "audit_events" {
+                    assert!(
+                        after[name] == *value,
+                        "browser changed non-audit durable facts"
+                    );
+                }
+            }
+            let delta = audit_delta(&before["audit_events"], &after["audit_events"]);
+            assert_eq!(
+                delta.len(),
+                3,
+                "exact authorized document read audit count required"
+            );
+            let mut actors = BTreeMap::new();
+            let mut new_audit_ids = BTreeSet::new();
+            for row in delta {
+                assert_eq!(row.as_object().unwrap().keys().map(String::as_str).collect::<BTreeSet<_>>(), BTreeSet::from([
+                    "id", "actor", "action", "target_type", "target_id", "branch_id", "before_snap", "after_snap", "trace_id", "span_id", "occurred_at", "created_at", "org_id", "ip", "user_agent", "auth_method", "device", "classification_badges", "anomaly", "reason"
+                ]));
+                for name in ["branch_id", "before_snap", "after_snap", "ip", "user_agent", "auth_method", "device", "classification_badges", "anomaly", "reason"] {
+                    assert!(row[name].is_null(), "plain list audit contains unexpected context");
+                }
+                let audit_id = Uuid::parse_str(row["id"].as_str().unwrap()).unwrap();
+                assert!(!audit_id.is_nil() && new_audit_ids.insert(audit_id));
+                assert!(
+                    row["action"] == "payroll_run.list_read"
+                        && row["target_type"] == "payroll_draft_run"
+                        && row["target_id"] == "query"
+                );
+                let actor: Uuid = row["actor"].as_str().unwrap().parse().unwrap();
+                let expected_org = if actor == *admin.as_uuid() {
+                    *org.as_uuid()
+                } else {
+                    assert_eq!(actor, *foreign.as_uuid());
+                    *foreign_org.as_uuid()
+                };
+                assert_eq!(row["org_id"], json!(expected_org));
+                for (name, length) in [("trace_id", 32), ("span_id", 16)] {
+                    let value = row[name].as_str().unwrap();
+                    assert!(
+                        value.len() == length
+                            && value.bytes().all(|b| b.is_ascii_hexdigit())
+                            && value.bytes().any(|b| b != b'0')
+                    );
+                }
+                assert!(row["occurred_at"].is_string() && row["created_at"].is_string());
+                *actors.entry(actor).or_insert(0usize) += 1;
+            }
+            assert_eq!(
+                actors,
+                BTreeMap::from([(*admin.as_uuid(), 2), (*foreign.as_uuid(), 1)])
+            );
+            checkpoint_ok = true;
+        })
+        .catch_unwind()
+        .await;
+        if outcome.is_err() {
+            let _ = input.write_all(b"{\"kind\":\"ABORT\"}\n").await;
+            let _ = input.flush().await;
+        }
+        drop(input);
+        let child_status = tokio::time::timeout(Duration::from_secs(25), child.wait()).await;
+        if child_status.is_err() {
+            let _ = child.kill().await;
+        }
+        let _ = stop.send(());
+        let server_clean = matches!(
+            tokio::time::timeout(Duration::from_secs(5), &mut server).await,
+            Ok(Ok(Ok(())))
+        );
+        if !server_clean {
+            server.abort();
+            let _ = server.await;
+        }
+        let _ = sink_stop.send(());
+        let sink_clean = matches!(
+            tokio::time::timeout(Duration::from_secs(5), &mut sink_server).await,
+            Ok(Ok(Ok(())))
+        );
+        if !sink_clean {
+            sink_server.abort();
+            let _ = sink_server.await;
+        }
+        state.shutdown_realtime().await;
+        let source_unchanged = std::fs::read(&driver).is_ok_and(|bytes| bytes == driver_bytes);
+        let browser_exited = owned_pid.is_some_and(|pid| !alive(pid));
+        let exit_ok = matches!(child_status,Ok(Ok(status)) if status.success());
+        let receipt = json!({"kind":"INDEPENDENT_HYDRATION_DATABASE_EFFECTS","driver_sha256":expected,"driver_source_unchanged":source_unchanged,"browser_pid":owned_pid,"browser_exited":browser_exited,"driver_exit_success":exit_ok,"server_stopped":server_clean,"redirect_control":{"sink_stopped":sink_clean,"sink_positive_observed_then_reset":sink_positive,"source_requests":source_counts[0].load(Ordering::SeqCst),"source_expected_authorization":source_counts[1].load(Ordering::SeqCst),"sink_requests":sink_counts[0].load(Ordering::SeqCst),"sink_authorization":sink_counts[1].load(Ordering::SeqCst)},"exact_durable_effects_accepted":checkpoint_ok,"expected_authorized_read_audits":3,"embedded_assets":{"js":js_hash,"wasm":wasm_hash},"limits":"Fixture Bearer only; TEST_ONLY status projection; no native Account/Company/payroll workflow or release acceptance"});
+        if output.is_dir() {
+            std::fs::write(
+                output.join("owner-receipt.json"),
+                serde_json::to_vec_pretty(&receipt).unwrap(),
+            )
+            .unwrap();
+        }
+        assert!(
+            source_unchanged
+                && server_clean
+                && sink_clean
+                && (owned_pid.is_none() || browser_exited),
+            "owned cleanup/source verification failed"
+        );
+        if let Err(panic) = outcome {
+            std::panic::resume_unwind(panic);
+        }
+        assert!(exit_ok && browser_exited && checkpoint_ok);
+    }
+
     /// Proposed-until-accepted ADR-0042 option 1 assertions. The ADR decides
     /// nothing. Live `/api/v1` Cookie deny is `cookie_does_not_authorize_json_api`,
     /// not this ignored module.
