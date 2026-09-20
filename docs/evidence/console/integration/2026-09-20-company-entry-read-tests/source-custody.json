@@ -1,0 +1,19 @@
+{
+  "backend/app/tests/auth_rest/native_company_setup.rs": {
+    "preimage_sha256": "41c3af6900cab5d8de0fe905d7b37df875abb3918e6f3073e285b5ac053189be",
+    "candidate_sha256": "ec6a41648ff7bb99bfeb61a674623d11ecb24199459c8290e41df12571e09dff"
+  },
+  "backend/app/tests/auth_rest/native_company_browser.rs": {
+    "preimage_sha256": "c7782959d55ccd0d7f205e96e232b6379b9c00ac1c3d0ef87f7f711829866e1d",
+    "candidate_sha256": "372206ba75bc1cf0fba23800bf150bac0156af2c06eead8acc94a081d7d849c7"
+  },
+  "backend/app/tests/auth_rest/native_company_eligibility.rs": {
+    "unchanged_sha256": "c25a58ee1b8f4760d3b9ad3a8cc8ab4817b7b271fe0f7413941cd7fa0f17294d"
+  },
+  "backend/app/tests/auth_rest/native_entry_ui_cases.rs": {
+    "unchanged_sha256": "d86781610aaae305cd7ba662f3b9fcd0484e0f5c3a453c11ca897f5c3801ad29"
+  },
+  "backend/app/tests/auth_rest/native_document_cases.rs": {
+    "unchanged_sha256": "4e8a270385142431b9d393c36201c5e20c344c439d2c7cac1873c051191800bf"
+  }
+}

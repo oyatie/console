@@ -1,0 +1,787 @@
+--- /private/tmp/console-client-release-20260919/backend/app/tests/auth_rest/native_company_setup.rs	2026-09-19 22:02:21
++++ /private/tmp/console-company-entry-read-tests-20260920-round3/native_company_setup.rs	2026-09-20 00:30:44
+@@ -930,7 +930,519 @@
+             "foreign command use disclosed or changed original request"
+         );
+         startup.close().await;
++    }
++    // Additive read-only dependency. Existing Company command and browser tests
++    // remain required unchanged; none are replaced by these entry projections.
++    mod entry_read {
++        use super::*;
++
++        async fn owner_ready(pool: &PgPool) {
++            let present: bool = sqlx::query_scalar("SELECT to_regprocedure('public.account_company_setup_eligibility_v1(uuid)') IS NOT NULL")
++                    .fetch_one(pool).await.unwrap();
++            assert!(
++                present,
++                "PREREQUISITE: finalized real eligibility owner required"
++            );
++        }
++
++        fn preview(response: &Response) {
++            let html = native_entry_html(response, StatusCode::OK);
++            for required in [
++                "data-company-setup",
++                "name=\"name\"",
++                "name=\"slug\"",
++                "회사 이름",
++                "업무 공간 식별자",
++                "내 계정",
++                "기존 회사가 사용할 콘솔 업무 공간을 등록합니다.",
++            ] {
++                assert!(
++                    html.contains(required),
++                    "native Company preview missing required subject/input"
++                );
++            }
++            for forbidden in [
++                "<form",
++                "type=\"submit\"",
++                "data-native-action=",
++                "<leptos-island",
++                "/_ui",
++                "name=\"role\"",
++                "name=\"root_secret\"",
++            ] {
++                assert!(
++                    !html.contains(forbidden),
++                    "unreleased preview must not submit or invent authority"
++                );
++            }
++            native_entry_no_business_navigation(html);
++        }
++
++        fn denied(response: &Response, status: StatusCode, account: Option<Uuid>) {
++            let html = native_entry_html(response, status);
++            for forbidden in [
++                "data-company-setup",
++                "name=\"name\"",
++                "name=\"slug\"",
++                "data-account-state=",
++                "data-native-action=",
++                "deployment_operator",
++                "account_company_setup_eligibility",
++                "console_auth_rt",
++            ] {
++                assert!(
++                    !html.contains(forbidden),
++                    "denied setup leaked protected projection or diagnostics"
++                );
++            }
++            if let Some(account) = account {
++                assert!(
++                    !html.contains(&account.to_string()),
++                    "denied setup leaked Account reference"
++                );
++            }
++            native_entry_no_business_navigation(html);
++        }
++
++        #[sqlx::test(migrations = false)]
++        async fn company_entry_anonymous_and_ordinary_reads_are_private_and_effect_free(
++            pool: PgPool,
++        ) {
++            let app = fixture(&pool).await;
++            owner_ready(&pool).await;
++            let (account, cookies) = enrolled(&app).await;
++            let before = all_rows(&pool).await;
++            denied(
++                &document(&app, ENTRY, &Cookies::default()).await,
++                StatusCode::UNAUTHORIZED,
++                Some(account.account),
++            );
++            denied(
++                &document(&app, ENTRY, &cookies).await,
++                StatusCode::NOT_FOUND,
++                Some(account.account),
++            );
++            let current = document(&app, "/account", &cookies).await;
++            let html = native_entry_html(&current, StatusCode::OK);
++            assert!(html.contains("data-account-state=\"active\""));
++            assert!(html.contains("data-native-action=\"logout\""));
++            assert!(!html.contains("href=\"/account/companies/new\""));
++            assert!(
++                before == all_rows(&pool).await,
++                "read refusal changed durable state"
++            );
++        }
++
++        #[sqlx::test(migrations = false)]
++        async fn company_entry_preview_metadata_cookie_and_method_contract_is_current(
++            pool: PgPool,
++        ) {
++            let (app, account, cookies, startup, _) = designated(&pool).await;
++            owner_ready(&pool).await;
++            let before = all_rows(&pool).await;
++            for site in ["none", "same-origin", "same-site", "cross-site"] {
++                preview(
++                    &native_entry_get(&app, ENTRY, &cookies, site, "navigate", "document", &[])
++                        .await,
++                );
++                assert!(before == all_rows(&pool).await);
++            }
++            preview(&native_entry_get(&app, ENTRY, &cookies, "", "", "", &[]).await);
++            for (site, mode, dest, extra, expected) in [
++                (
++                    "cross-site",
++                    "no-cors",
++                    "image",
++                    vec![],
++                    StatusCode::FORBIDDEN,
++                ),
++                (
++                    "same-origin",
++                    "navigate",
++                    "iframe",
++                    vec![],
++                    StatusCode::FORBIDDEN,
++                ),
++                (
++                    "same-origin",
++                    "",
++                    "document",
++                    vec![],
++                    StatusCode::BAD_REQUEST,
++                ),
++                (
++                    "same-origin",
++                    "navigate",
++                    "document",
++                    vec![("Origin", "https://foreign.invalid")],
++                    StatusCode::FORBIDDEN,
++                ),
++                (
++                    "same-origin",
++                    "navigate",
++                    "document",
++                    vec![("Sec-Fetch-User", "?0")],
++                    StatusCode::BAD_REQUEST,
++                ),
++            ] {
++                denied(
++                    &native_entry_get(&app, ENTRY, &cookies, site, mode, dest, &extra).await,
++                    expected,
++                    Some(account.account),
++                );
++                assert!(before == all_rows(&pool).await);
++            }
++            for name in [ACCESS, REFRESH, ENROLLMENT, LOGIN] {
++                let value = if name == ACCESS {
++                    cookies.0[ACCESS].clone()
++                } else {
++                    "company-unused-proof-marker".to_owned()
++                };
++                let presented = Cookies(BTreeMap::from([(name.to_owned(), value)]));
++                let response = document(&app, ENTRY, &presented).await;
++                if name == ACCESS {
++                    preview(&response);
++                } else {
++                    denied(&response, StatusCode::UNAUTHORIZED, Some(account.account));
++                }
++                let head = request(
++                    &app,
++                    "HEAD",
++                    ENTRY,
++                    &presented,
++                    None,
++                    &[
++                        ("Sec-Fetch-Mode", "navigate"),
++                        ("Sec-Fetch-Dest", "document"),
++                    ],
++                )
++                .await;
++                assert_eq!(head.status, StatusCode::METHOD_NOT_ALLOWED);
++                assert!(head.bytes.is_empty() && !head.headers.contains_key(header::SET_COOKIE));
++                head.private();
++                for value in [
++                    format!("{name}="),
++                    format!("{name} =company-proof-marker"),
++                    format!("{name}=company-proof-marker; {name}=company-proof-marker"),
++                ] {
++                    denied(
++                        &native_entry_get(
++                            &app,
++                            ENTRY,
++                            &Cookies::default(),
++                            "none",
++                            "navigate",
++                            "document",
++                            &[("Cookie", &value)],
++                        )
++                        .await,
++                        StatusCode::BAD_REQUEST,
++                        Some(account.account),
++                    );
++                }
++                let header = format!("{name}=company-proof-marker");
++                for extras in [
++                    vec![("Cookie", header.as_str()), ("Cookie", header.as_str())],
++                    vec![
++                        ("Cookie", header.as_str()),
++                        ("Authorization", "Bearer company-mixed-marker"),
++                    ],
++                ] {
++                    denied(
++                        &native_entry_get(
++                            &app,
++                            ENTRY,
++                            &Cookies::default(),
++                            "none",
++                            "navigate",
++                            "document",
++                            &extras,
++                        )
++                        .await,
++                        StatusCode::BAD_REQUEST,
++                        Some(account.account),
++                    );
++                }
++                assert!(
++                    before == all_rows(&pool).await,
++                    "native credential admission consumed or changed state"
++                );
++            }
++            let oversized = format!("theme={}", "x".repeat(16 * 1024 + 1));
++            let response = native_entry_get(
++                &app,
++                ENTRY,
++                &Cookies::default(),
++                "none",
++                "navigate",
++                "document",
++                &[("Cookie", &oversized)],
++            )
++            .await;
++            native_root_parser_refusal(&response, StatusCode::PAYLOAD_TOO_LARGE);
++            assert!(before == all_rows(&pool).await);
++            startup.close().await;
++        }
++
++        #[sqlx::test(migrations = false)]
++        async fn company_entry_actual_auth_outage_and_repair_preserve_status_and_history(
++            pool: PgPool,
++        ) {
++            let (mut app, key) = signed_fixture(&pool).await;
++            owner_ready(&pool).await;
++            let auth = logout_auth_pool(&pool).await;
++            let state = state_with_key(&pool, app._artifacts.root.clone(), &key).await;
++            app.service = build_router(state.with_auth_database(auth.clone()));
++            let (account, cookies) = enrolled(&app).await;
++            let startup = startup(&pool).await;
++            designate(&startup, &designation(&pool, account.account).await)
++                .await
++                .unwrap();
++            let before = all_rows(&pool).await;
++            preview(&document(&app, ENTRY, &cookies).await);
++            auth.close().await;
++            assert!(auth.is_closed());
++            for presented in [&cookies, &Cookies::default()] {
++                denied(
++                    &document(&app, ENTRY, presented).await,
++                    StatusCode::SERVICE_UNAVAILABLE,
++                    Some(account.account),
++                );
++                assert!(before == all_rows(&pool).await);
++            }
++            // Metadata admission precedes the failed transport, not vice versa.
++            denied(
++                &native_entry_get(&app, ENTRY, &cookies, "cross-site", "no-cors", "image", &[])
++                    .await,
++                StatusCode::FORBIDDEN,
++                Some(account.account),
++            );
++            let recovered = logout_auth_pool(&pool).await;
++            let state = state_with_key(&pool, app._artifacts.root.clone(), &key).await;
++            app.service = build_router(state.with_auth_database(recovered.clone()));
++            preview(&document(&app, ENTRY, &cookies).await);
++            assert!(
++                before == all_rows(&pool).await,
++                "actual transport replacement changed state"
++            );
++            recovered.close().await;
++            startup.close().await;
++        }
++
++        async fn eligibility_metadata(pool: &PgPool) -> String {
++            sqlx::query_scalar("SELECT jsonb_build_object('definition',pg_get_functiondef(p.oid),'owner',pg_get_userbyid(p.proowner),'config',p.proconfig,'acl',(SELECT jsonb_agg(jsonb_build_array(pg_get_userbyid(a.grantor),CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,a.privilege_type,a.is_grantable) ORDER BY a.grantee,a.privilege_type,a.is_grantable) FROM aclexplode(p.proacl) a))::text FROM pg_proc p WHERE p.oid='public.account_company_setup_eligibility_v1(uuid)'::regprocedure")
++                    .fetch_one(pool).await.unwrap()
++        }
++
++        #[sqlx::test(migrations = false)]
++        async fn company_entry_eligibility_sql_outage_keeps_current_account_and_restores_exact_owner(
++            pool: PgPool,
++        ) {
++            let (app, account, cookies, startup, _) = designated(&pool).await;
++            owner_ready(&pool).await;
++            let runtime = login_test_pool(&pool, TestDatabaseLogin::Auth).await;
++            let original_metadata = eligibility_metadata(&pool).await;
++            let before = all_rows(&pool).await;
++            let original: bool =
++                sqlx::query_scalar("SELECT public.account_company_setup_eligibility_v1($1)")
++                    .bind(account.account)
++                    .fetch_one(&runtime)
++                    .await
++                    .unwrap();
++            assert!(original);
++            preview(&document(&app, ENTRY, &cookies).await);
++            // Fixture-only real permission failure, with exact restoration below.
++            sqlx::query("REVOKE EXECUTE ON FUNCTION public.account_company_setup_eligibility_v1(uuid) FROM console_auth_rt").execute(&pool).await.unwrap();
++            let failed = sqlx::query_scalar::<_, bool>(
++                "SELECT public.account_company_setup_eligibility_v1($1)",
++            )
++            .bind(account.account)
++            .fetch_one(&runtime)
++            .await
++            .unwrap_err();
++            assert!(failed.as_database_error().unwrap().code().as_deref() == Some("42501"));
++            assert!(original_metadata != eligibility_metadata(&pool).await);
++            for route in ["/account", "/account/register", "/"] {
++                let response = document(&app, route, &cookies).await;
++                let html = native_entry_html(&response, StatusCode::SERVICE_UNAVAILABLE);
++                assert!(
++                    html.contains("data-account-state=\"active\"")
++                        && html.contains("data-context-state=\"empty\"")
++                );
++                assert!(html.contains("data-native-action=\"logout\""));
++                assert!(
++                    !html.contains("href=\"/account/companies/new\"")
++                        && !html.contains("data-company-setup")
++                );
++                assert!(
++                    !html.contains("console_auth_rt")
++                        && !html.contains("account_company_setup_eligibility")
++                );
++                native_entry_no_business_navigation(html);
++            }
++            denied(
++                &document(&app, ENTRY, &cookies).await,
++                StatusCode::SERVICE_UNAVAILABLE,
++                Some(account.account),
++            );
++            let current = request(&app, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
++            current.private();
++            assert!(current.json(StatusCode::OK)["account_id"] == json!(account.account));
++            let _csrf = proof(&app, &cookies).await;
++            assert!(
++                before == all_rows(&pool).await,
++                "eligibility failure erased identity or made durable effects"
++            );
++            sqlx::query("GRANT EXECUTE ON FUNCTION public.account_company_setup_eligibility_v1(uuid) TO console_auth_rt").execute(&pool).await.unwrap();
++            assert!(
++                original_metadata == eligibility_metadata(&pool).await,
++                "fixture did not restore exact capability metadata"
++            );
++            assert!(
++                sqlx::query_scalar::<_, bool>(
++                    "SELECT public.account_company_setup_eligibility_v1($1)"
++                )
++                .bind(account.account)
++                .fetch_one(&runtime)
++                .await
++                .unwrap()
++            );
++            preview(&document(&app, ENTRY, &cookies).await);
++            assert!(before == all_rows(&pool).await);
++            runtime.close().await;
++            startup.close().await;
++        }
++
++        #[sqlx::test(migrations = false)]
++        async fn company_entry_independent_eligibility_survives_real_context_proof_failure(
++            pool: PgPool,
++        ) {
++            let (app, account, cookies, startup, _) = designated(&pool).await;
++            owner_ready(&pool).await;
++            preview(&document(&app, ENTRY, &cookies).await);
++            assert_eq!(sqlx::query("UPDATE public.account_security SET context_generation=2,revision=revision+1,updated_at=clock_timestamp() WHERE account_id=$1 AND context_generation=1").bind(account.account).execute(&pool).await.unwrap().rows_affected(), 1);
++            let before = all_rows(&pool).await;
++            let auth = logout_auth_pool(&pool).await;
++            let failed = sqlx::query("SELECT * FROM public.account_context_presence_v1($1)")
++                .bind(account.account)
++                .fetch_one(&auth)
++                .await
++                .unwrap_err();
++            assert!(
++                failed.as_database_error().unwrap().message() == "account.navigation_unavailable"
++            );
++            auth.close().await;
++            for route in ["/account", "/account/register", "/"] {
++                let response = document(&app, route, &cookies).await;
++                let html = native_entry_html(&response, StatusCode::SERVICE_UNAVAILABLE);
++                assert!(
++                    html.contains("data-account-state=\"active\"")
++                        && html.contains("data-context-state=\"unavailable\"")
++                );
++                assert!(
++                    html.contains("data-native-action=\"logout\"")
++                        && html.contains("href=\"/account/companies/new\"")
++                );
++            }
++            preview(&document(&app, ENTRY, &cookies).await);
++            assert_no_company_identity(&pool, account.account).await;
++            assert!(
++                before == all_rows(&pool).await,
++                "independent projection made context or identity effects"
++            );
++            startup.close().await;
++        }
++        #[sqlx::test(migrations = false)]
++        async fn company_entry_optional_eligibility_expiry_never_retains_active_identity(
++            pool: PgPool,
++        ) {
++            let (app, signer) = signed_fixture(&pool).await;
++            owner_ready(&pool).await;
++            let (account, cookies) = enrolled(&app).await;
++            let startup = startup(&pool).await;
++            designate(&startup, &designation(&pool, account.account).await)
++                .await
++                .unwrap();
++            for route in ["/account", "/account/register", "/"] {
++                // Complete census before starting the intentionally short token lifetime.
++                let before = all_rows(&pool).await;
++                let now: OffsetDateTime = sqlx::query_scalar("SELECT clock_timestamp()")
++                    .fetch_one(&pool)
++                    .await
++                    .unwrap();
++                let expires = now.unix_timestamp() + 6;
++                let mut claims = signed_claims(&cookies.0[ACCESS], &signer).unwrap();
++                claims["exp"] = json!(expires);
++                let mut short = cookies.clone();
++                short
++                    .0
++                    .insert(ACCESS.into(), sign_proof_claims(&claims, &signer));
++                assert!(
++                    native_entry_html(&document(&app, route, &short).await, StatusCode::OK)
++                        .contains("data-account-state=\"active\"")
++                );
++                let mut blocker = pool.begin().await.unwrap();
++                let holder: i32 = sqlx::query_scalar("SELECT pg_backend_pid()")
++                    .fetch_one(&mut *blocker)
++                    .await
++                    .unwrap();
++                sqlx::query(
++                    "SELECT receipt_id FROM public.deployment_operator_head WHERE singleton=1 FOR UPDATE",
++                )
++                .fetch_one(&mut *blocker)
++                .await
++                .unwrap();
++                let observation = async {
++                    let reached = tokio::time::timeout(std::time::Duration::from_secs(3), async {
++                        loop {
++                            let waiting: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_stat_activity a WHERE a.datname=current_database() AND a.usename='console_auth_rt' AND a.wait_event_type='Lock' AND $1=ANY(pg_catalog.pg_blocking_pids(a.pid))) AND extract(epoch FROM clock_timestamp()) < $2::bigint")
++                                .bind(holder).bind(expires).fetch_one(&pool).await.unwrap();
++                            if waiting { break; }
++                            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
++                        }
++                    }).await;
++                    let elapsed = if reached.is_ok() {
++                        tokio::time::timeout(std::time::Duration::from_secs(7), sqlx::query("SELECT pg_sleep(GREATEST(0.0,$1::double precision-extract(epoch FROM clock_timestamp()))+0.025)")
++                            .bind(expires as f64).execute(&pool)).await.is_ok_and(|r| r.is_ok())
++                    } else {
++                        false
++                    };
++                    blocker.rollback().await.unwrap();
++                    (reached.is_ok(), elapsed)
++                };
++                let (response, witness) =
++                    tokio::time::timeout(std::time::Duration::from_secs(15), async {
++                        tokio::join!(document(&app, route, &short), observation)
++                    })
++                    .await
++                    .expect("bounded document and lock release");
++                assert!(
++                    witness == (true, true),
++                    "actual designation-head wait before expiry required"
++                );
++                let html = native_entry_html(&response, StatusCode::OK);
++                assert!(!html.contains("data-account-state=\"active\""));
++                assert!(!html.contains("data-native-action=\"logout\""));
++                assert!(!html.contains("href=\"/account/companies/new\""));
++                let anonymous = document(&app, route, &Cookies::default()).await;
++                native_entry_html(&anonymous, StatusCode::OK);
++                assert!(
++                    response.bytes == anonymous.bytes,
++                    "expired optional eligibility retained Account identity"
++                );
++                assert!(
++                    before == all_rows(&pool).await,
++                    "expired projection changed persistent state"
++                );
++                assert!(
++                    native_entry_html(&document(&app, route, &cookies).await, StatusCode::OK)
++                        .contains("data-account-state=\"active\"")
++                );
++            }
++            startup.close().await;
++        }
+     }
++
+     include!("native_company_eligibility.rs");
+     #[cfg(feature = "test-browser")]
+     include!("native_company_browser.rs");
+--- /private/tmp/console-client-release-20260919/backend/app/tests/auth_rest/native_company_browser.rs	2026-09-19 22:02:21
++++ /private/tmp/console-company-entry-read-tests-20260920-round3/native_company_browser.rs	2026-09-20 00:19:41
+@@ -323,3 +323,262 @@
+         "browser did not exit successfully with its owned PID absent after all checkpoints"
+     );
+ }
++
++// Included inside company_setup only with test-browser. Existing verified browser helpers remain unchanged.
++#[sqlx::test(migrations = false)]
++async fn native_company_real_browser_preview_preserves_enter_without_commands(pool: PgPool) {
++    use futures::FutureExt;
++    use std::process::Stdio;
++    // Explicit local evidence prerequisites, never a silently skipped browser test.
++    let driver = PathBuf::from(
++        std::env::var_os("CONSOLE_COMPANY_PREVIEW_BROWSER_DRIVER")
++            .expect("reviewed browser driver required"),
++    );
++    let expected = std::env::var("CONSOLE_COMPANY_PREVIEW_BROWSER_SHA256")
++        .expect("reviewed driver SHA256 required");
++    assert!(
++        driver.is_absolute()
++            && !std::fs::symlink_metadata(&driver)
++                .unwrap()
++                .file_type()
++                .is_symlink()
++    );
++    let driver_bytes = std::fs::read(&driver).unwrap();
++    assert_eq!(
++        hex::encode(Sha256::digest(&driver_bytes)),
++        expected,
++        "reviewed browser source differs"
++    );
++    let output = PathBuf::from(
++        std::env::var_os("CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT")
++            .expect("fresh browser output required"),
++    );
++    assert!(
++        output.is_absolute() && !output.exists(),
++        "browser output must be a fresh owned directory"
++    );
++    prepare_http_database(&pool).await;
++    seed_terms(&pool).await;
++    let artifacts = Artifacts::new();
++    let key = SigningKey::random(&mut OsRng);
++    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
++    let address = listener.local_addr().unwrap();
++    let baseline = native_extension_rows(&pool).await;
++    let business_baseline = browser_business_rows(&pool).await;
++    let mut child = tokio::process::Command::new("node")
++        .arg(&driver)
++        .arg(address.port().to_string())
++        .arg(&output)
++        .env_remove("DEBUG")
++        .env_remove("PWDEBUG")
++        .env_remove("NODE_DEBUG")
++        .stdin(Stdio::piped())
++        .stdout(Stdio::piped())
++        .stderr(Stdio::null())
++        .kill_on_drop(true)
++        .spawn()
++        .expect("browser driver launch prerequisite");
++    let mut input = child.stdin.take().unwrap();
++    let mut events = tokio::io::BufReader::new(child.stdout.take().unwrap());
++    let mut server = None;
++    let mut shutdown = None;
++    let mut state_to_close = None;
++    let mut checkpoint_receipts = Vec::new();
++    let mut owned_browser_pid = None;
++    let mut browser_seen_alive = false;
++    let outcome = std::panic::AssertUnwindSafe(async {
++        let ready = browser_owner_event(&mut events).await;
++        exact_keys(
++            &ready,
++            &[
++                "kind",
++                "origin",
++                "rp_id",
++                "tls_spki_sha256",
++                "upstream_port",
++            ],
++        );
++        assert!(ready["kind"] == "READY" && ready["rp_id"] == "localhost");
++        assert_eq!(
++            ready["upstream_port"].as_u64(),
++            Some(u64::from(address.port()))
++        );
++        let origin = ready["origin"].as_str().unwrap();
++        let parsed = url::Url::parse(origin).unwrap();
++        assert!(
++            parsed.scheme() == "https"
++                && parsed.host_str() == Some("localhost")
++                && parsed.port().is_some()
++                && parsed.username().is_empty()
++                && parsed.password().is_none()
++                && parsed.path() == "/"
++                && parsed.query().is_none()
++                && parsed.fragment().is_none()
++        );
++        assert_eq!(
++            base64::engine::general_purpose::STANDARD
++                .decode(ready["tls_spki_sha256"].as_str().unwrap())
++                .unwrap()
++                .len(),
++            32
++        );
++        let mut config = account_browser_config(&pool, artifacts.root.clone(), &key);
++        let auth = config.auth_rest.as_mut().unwrap();
++        auth.rp_id = "localhost".to_owned();
++        auth.rp_origin = origin.to_owned();
++        auth.cookie_secure = true;
++        let state = AppState::from_config(config)
++            .await
++            .expect("real native browser app prerequisite");
++        state_to_close = Some(state.clone());
++        let router = build_router(state);
++        let (stop, stopped) = tokio::sync::oneshot::channel();
++        shutdown = Some(stop);
++        server = Some(tokio::spawn(async move {
++            axum::serve(
++                listener,
++                router.into_make_service_with_connect_info::<SocketAddr>(),
++            )
++            .with_graceful_shutdown(async {
++                let _ = stopped.await;
++            })
++            .await
++        }));
++        assert!(
++            native_extension_rows_equal(&baseline, &native_extension_rows(&pool).await),
++            "serving startup changed Account data"
++        );
++        assert!(
++            browser_business_rows_equal(&business_baseline, &browser_business_rows(&pool).await),
++            "startup changed Company identity state"
++        );
++        input.write_all(b"{\"kind\":\"START\"}\n").await.unwrap();
++        input.flush().await.unwrap();
++        let owned = browser_owner_event(&mut events).await;
++        exact_keys(&owned, &["kind", "pid", "executable_sha256"]);
++        assert!(
++            owned["kind"] == "BROWSER_OWNED" && owned["pid"].as_u64().is_some_and(|pid| pid > 1)
++        );
++        assert_eq!(
++            owned["executable_sha256"],
++            "7687bff7cb2db075f250e6d5848bbc8838cac3802ac3952a899c574f8eccab45"
++        );
++
++        let pid = u32::try_from(owned["pid"].as_u64().unwrap()).unwrap();
++        owned_browser_pid = Some(pid);
++        browser_seen_alive = browser_pid_alive(pid) == Some(true);
++        assert!(browser_seen_alive, "owned browser PID not observed alive");
++
++        let enrolled_event = browser_owner_event(&mut events).await;
++        let account = browser_checkpoint(&enrolled_event, "ENROLLED");
++        let ceremonies: Vec<Uuid> =
++            sqlx::query_scalar("SELECT id FROM auth_webauthn_ceremonies WHERE user_id=$1")
++                .bind(account)
++                .fetch_all(&pool)
++                .await
++                .unwrap();
++        assert_eq!(ceremonies.len(), 1);
++        assert_account_committed_ids(&pool, account, ceremonies[0]).await;
++        let enrolled_global = native_extension_rows(&pool).await;
++        assert!(
++            browser_global_effects(
++                &baseline,
++                &enrolled_global,
++                account,
++                BrowserCheckpointPhase::Enrolled,
++                origin
++            ),
++            "enrollment changed unowned global state or omitted an effect"
++        );
++        let enrolled = snapshot(&pool, account).await;
++        assert_eq!(enrolled["tokens"].as_array().unwrap().len(), 1);
++        assert!(
++            enrolled["families"][0]["revoked_at"].is_null()
++                && enrolled["tokens"][0]["revoked_at"].is_null()
++        );
++        assert!(
++            browser_business_rows_equal(&business_baseline, &browser_business_rows(&pool).await),
++            "ENROLLED changed unrelated legacy users, Companies or Groups"
++        );
++        checkpoint_receipts.push("ENROLLED");
++
++        let startup = startup(&pool).await;
++        let designation = designation(&pool, account).await;
++        let designated = designate(&startup, &designation).await.unwrap();
++        assert!(!designated.0.is_nil() && designated.1 == 1 && !designated.2);
++        startup.close().await;
++        let before_company = all_rows(&pool).await;
++        // The actual browser is still paused; eligibility is now current via the
++        // same restricted deployment designation owner used by operators.
++        browser_owner_continue(&mut input, "DESIGNATED").await;
++        let observed = browser_owner_event(&mut events).await;
++        assert_eq!(browser_checkpoint(&observed, "PREVIEW_PRESERVED"), account);
++        assert!(
++            before_company == all_rows(&pool).await,
++            "preview typing/Enter made durable effects"
++        );
++        assert_no_company_identity(&pool, account).await;
++        checkpoint_receipts.push("PREVIEW_PRESERVED");
++        browser_owner_continue(&mut input, "PREVIEW_PRESERVED").await;
++        let final_event = browser_owner_event(&mut events).await;
++        exact_keys(&final_event, &["kind", "status", "result_path"]);
++        assert!(
++            final_event["kind"] == "RESULT" && final_event["status"] == "BROWSER_LEAF_PASSED",
++            "browser leaf failed; inspect sanitized result"
++        );
++        assert_eq!(
++            final_event["result_path"].as_str(),
++            output.join("result.json").to_str()
++        );
++    })
++    .catch_unwind()
++    .await;
++
++    // Even failed assertions close stdin so the owner-controlled browser driver
++    // cleans up its exact browser/TLS relay before this test propagates failure.
++    drop(input);
++    let child_status = tokio::time::timeout(std::time::Duration::from_secs(40), child.wait()).await;
++    if child_status.is_err() {
++        let _ = child.kill().await;
++    }
++    if let Some(stop) = shutdown {
++        let _ = stop.send(());
++    }
++    let mut server_clean = true;
++    if let Some(mut task) = server {
++        match tokio::time::timeout(std::time::Duration::from_secs(5), &mut task).await {
++            Ok(Ok(Ok(()))) => {}
++            _ => {
++                server_clean = false;
++                task.abort();
++                let _ = task.await;
++            }
++        }
++    }
++    if let Some(state) = state_to_close {
++        state.shutdown_realtime().await;
++    }
++    let browser_exit_observation = owned_browser_pid.and_then(browser_pid_alive);
++    let browser_exit_confirmed = browser_seen_alive && browser_exit_observation == Some(false);
++    let source_unchanged = std::fs::read(&driver).is_ok_and(|bytes| bytes == driver_bytes);
++    let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
++    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_PREVIEW_DATABASE_CHECKPOINTS","checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/preview only; no Company command or release acceptance; no human usability/WCAG/production exposure"});
++    if output.is_dir() {
++        std::fs::write(
++            output.join("owner-receipt.json"),
++            serde_json::to_vec_pretty(&receipt).unwrap(),
++        )
++        .unwrap();
++    }
++    assert!(
++        source_unchanged && server_clean && (owned_browser_pid.is_none() || browser_exit_confirmed),
++        "browser source or owned app/browser PID cleanup failed"
++    );
++    if let Err(panic) = outcome {
++        std::panic::resume_unwind(panic);
++    }
++    assert!(
++        exit_ok && browser_exit_confirmed,
++        "browser did not exit successfully with its owned PID absent after all checkpoints"
++    );
++}

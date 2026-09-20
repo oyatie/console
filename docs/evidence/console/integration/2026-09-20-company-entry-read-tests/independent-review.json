@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_TEST_PACKET_FOR_REAL_RED_RUN_NOT_WORKFLOW_ACCEPTANCE",
+  "manifest_sha256": "bd15a346833a594cd55bb08f058b0391cf0813c30a127526c03cbe34ad8e303b",
+  "driver_sha256": "46e9ed85d0434d2e51a0515c142660c2a86bd8d8df8ed1271907458719505e0f",
+  "checks": [
+    "Six additive HTTP SQLx tests and one gated real-browser SQLx test; original test bytes mechanically preserved.",
+    "Five source preimages verified on round2; round3 fullfile formatting successor checked.",
+    "Real cookie-class/metadata precedence, owner outage, helper ACL permission failure/restoration, context independence, witnessed lock expiry and full durable row snapshots reviewed.",
+    "Browser enrolls via real WebAuthn owner, verifies exact global effects, restricted designation owner then no-effect preview checkpoint.",
+    "Formless preview Enter requires no request, unchanged URL/history/inputs on both typed fields.",
+    "Real browser PID/executable, TLS relay/App listener, two owner-acknowledged checkpoints, mutation/document census and cleanup reviewed.",
+    "Node syntax and evidence controls independently pass: 1 positive,12 corruptions; 0 runtime browser/database executions by reviewer.",
+    "Both full candidate rustfmt checks pass."
+  ],
+  "holds": [
+    "Must run real owner-bound RED before admission; source implementation and runtime results still need review.",
+    "Preview is intermediate; canonical Company command and retained full create/replay/reopen browser journey remain mandatory.",
+    "320px geometry and synthetic authenticator do not establish human usability, IME, screen-reader, real-device or release qualification.",
+    "Enter no-request observation is a bounded350ms check on static preview, not general delayed-effect proof."
+  ]
+}
