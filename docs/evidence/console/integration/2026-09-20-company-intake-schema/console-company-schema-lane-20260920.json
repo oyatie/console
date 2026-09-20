@@ -1,0 +1,48 @@
+[
+  {
+    "lane": "native-company-private-schema",
+    "base": "1046feea32e0ad7ddbe97590edefa3175e101cda",
+    "owner": "/root",
+    "probe": "python3 ops/test_company_enrollment_input_generator.py",
+    "immutable_target": "Generate the approved private empty Company request, receipt, event schema and prove its actual ACL/FK/immutable boundary with Buck-native SQLx",
+    "allow": [
+      "ops/generate-account-custody.py",
+      "ops/postgres-company-enrollment-schema.sql",
+      "ops/BUCK",
+      "tools/buck/gen_first_party.py",
+      "backend/app/BUCK"
+    ],
+    "mechanical_guide": "Reuse approved round4 DDL exactly; install only receipt immutable guard. Schema stays UNINSTALLED outside serving finalizer; preserve all seven predecessor outputs. Root sole writer. Run exact approved SQLx leaf with six serving logins; no stub functions or fake business rows.",
+    "pre_mortem": [
+      "private partial schema accidentally served",
+      "mutable receipt owner permission",
+      "changed historical custody bytes"
+    ],
+    "detection": [
+      "exact output digests",
+      "private SQLx catalog ACL and12FK tuples",
+      "90actual-login denials",
+      "two corruption controls",
+      "complete old-row census"
+    ],
+    "rollback": "Revert prospective schema/generator/resource additions; disposable SQLx database only; retain all historical files.",
+    "stop_conditions": [
+      "historical/parser byte drift",
+      "serving profile reseal",
+      "unexpected grants",
+      "missing independent review"
+    ],
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "remaining_holds": [
+      "native assignment revision FK",
+      "request/event transitions",
+      "prepare/status/cancel/effect",
+      "Company browser acceptance",
+      "all five MVP workflows",
+      "production exposure"
+    ]
+  }
+]

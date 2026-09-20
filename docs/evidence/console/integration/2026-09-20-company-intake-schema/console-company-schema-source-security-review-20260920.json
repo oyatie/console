@@ -1,0 +1,49 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_UNINSTALLED_EMPTY_COMPANY_SCHEMA_SOURCE_ONLY",
+  "review_head": "689af318e7a54eaafb74226e377c92c57b13e024",
+  "base": "1046feea32e0ad7ddbe97590edefa3175e101cda",
+  "source_sha256": {
+    "ops/generate-account-custody.py": "3892a65afb3208e764701ce423b3302986535dd0a146388dbf3c4cf3f02c50b1",
+    "ops/postgres-company-enrollment-schema.sql": "7e1dbee080cb3f09d0133ac9a30857ee5101a076e1cec171ec06849116e672bb",
+    "ops/BUCK": "54972cfef71f526be2f46a6c2952737578e478d8d44ca10f54cf726e6015e730",
+    "tools/buck/gen_first_party.py": "37fb41f71d6f37863ed7551e9d89c6599479aab18765fb22a1cdf8e61b509c54",
+    "backend/app/BUCK": "e869850ccd1fea496c186bf64710c144fbc771372221309dc0217846eb1c86de"
+  },
+  "checks": [
+    "Python AST comparison proves existing custody generator unchanged except one new output key and one literal-return schema function; emitted SQL file exactly equals that literal without executing generator.",
+    "Three table declarations, three indexes and circular receipt/request FK declarations byte-identical to approved round4 schema-contract.sql declaration section. No substitute Account/assignment table invented.",
+    "Receipt immutable trigger SECURITY INVOKER, owner console_account_owner, fixed pg_catalog/pg_temp search_path, unconditional P0001 company_enrollment_receipts.immutable; BEFORE UPDATE/DELETE/TRUNCATE FOR EACH STATEMENT, ENABLE ALWAYS installed before narrow UPDATE(receipt_id) grant.",
+    "Known roles/PUBLIC revoked; existing migration0228 ACL enumeration reused for every direct table grantee, extended to actual column ACL grantees including PUBLIC; dynamic identifier names escaped with format %I or quote_ident. Exact final table SELECT/INSERT and narrow request UPDATE columns only for nonlogin owner.",
+    "No serving participant/grant/finalizer/profile activation; generator output remains separate UNINSTALLED file, included only in private SQLx compiler resources. Existing seven custody/parser files independently hash-verified unchanged.",
+    "ops/BUCK adds exactly one export; resource config adds exactly two approved fixture inputs and one schema mapping for auth_rest.",
+    "Generated app BUCK AST has69 changed mapped-source nodes: all gain the new common included schema-test Rust source through existing emitter; only ordinary/browser auth_rest additionally gain two fixture globs and schema export mapping. Removing these exact additions restores entire prior AST; no target/dependency/feature/environment change."
+  ],
+  "findings": [],
+  "evidence": {
+    "admission": "/private/tmp/console-company-schema-admission-20260920.log",
+    "lane": "/private/tmp/console-company-schema-lane-20260920.json",
+    "initial_native_build": "/private/tmp/console-company-schema-native-runtime-20260920.log"
+  },
+  "limits": [
+    "Initial native attempt compiled no test binary due E0521 in literal corruption helper; zero executed SQLx tests. Exact static-lifetime successor separately approved; actual native execution pending.",
+    "Approves private empty schema only. No populated receipt/key-share/FK locking, request/event transition guard, native assignment revision reference, session correlation or complete COMMITTED effect closure acceptance.",
+    "ALWAYS trigger guards DML, not an administrative/superuser or owning-DDL adversary; existing ownership/role security assumptions remain.",
+    "Table ACL cleanup addresses direct ACL entries, not revocation of role memberships; unchanged topology and current profile controls govern effective authority.",
+    "No historical migrations, command bytes, profile reseal, serving activation, legal payroll or full client release claim."
+  ],
+  "execution": {
+    "reviewer_tests": 0,
+    "reviewer_builds": 0,
+    "reviewer_sql": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

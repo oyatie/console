@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "EXACT_COMMIT_BINDING_OF_ACCEPTED_BOUNDED_REVIEW",
+  "commit": "ff785782971d3aaf46a566a56aea643a6a5a6c18",
+  "accepted_review": "/private/tmp/console-native-browser-producer-final-security-review-20260920.json",
+  "accepted_review_sha256": "c6c17afdede112fd6f0c791bbe31514b0ddcab6392c0d68657c00baa5175f37c",
+  "source_sha256": {
+    "tools/buck/gen_first_party.py": "ac4a1ec444d6588cf0b99e6ed9320e307a394bb3a547874af00e6b37ee6fac36",
+    "tools/buck/test_needs_postgres.sh": "7f8173acc6fbd05d0658336c3bf23fa02498ee2a6483da779be740deb8d32e74",
+    "tools/buck/BUCK": "7285aa961af3125d8510524a99b20c5187a0770a0fc5fbac15cc67db7bce72a7",
+    ".github/workflows/ci.yml": "58328feaf707cdd01a5295e2bc75dacec27c8753c9a86497bf728f984e316d84",
+    "scripts/check-ci-preflight.mjs": "363a98836b8c5af580f2183ca12f947a258f7808a009e8be514e72dbd5388784",
+    "backend/app/BUCK": "69e79ff1038749d54ec883b1c0712aa2d5fea4da7b231b594a6a735c879601e1",
+    "backend/app/tests/auth_rest/native_entry_browser.rs": "0540ddb5aac4aaa77d19125c1644498bdb5406d65424d967f0b96e4888fe31ff",
+    "backend/app/tests/auth_rest/native_company_browser.rs": "5741d4a033be256f3f274726e96379b48ef674e9603d5ab5291beca0afb52018",
+    "backend/app/tests/health_readiness.rs": "0d7ea0d47f304b18f7078eab19de6a6af5ae6ba9ae9d1dac25558c7d00bbf6d8",
+    "tools/browser/account.cjs": "1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664",
+    "tools/browser/company.cjs": "7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57",
+    "tools/browser/company-preview.cjs": "7e52a48f2e851457dba7d55fa0874fc10dc516506bdd5701b086f2fac4ee0ce6",
+    "tools/browser/hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
+    "scripts/check-ci-preflight.test.mjs": "482c9e94181e8faa5a8343e6bdf1ab8d2475446258e595f33c19b672c49835ef",
+    "tools/buck/test_gen_first_party.py": "4c34fe6e3f648fa4871dc1042cae62af24a0939f904bdb6c2b84f205893e222e",
+    "tools/browser/prepare_native_browser.sh": "46e4c2210c73a4bc89f53292b8dd05bc5729a127b48df1208c86be762c0d8cde"
+  },
+  "checks": [
+    "Every accepted implementation/test source hash matches both current file and exact committed Git blob.",
+    "No new test/runtime claim; all findings, counts, sanitization limits and remaining HOLDs from accepted final review retained."
+  ],
+  "repository_writes": 0
+}

@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_LITERAL_ONLY_SQL_CORRUPTION_PARAMETER_LIFETIME_SUCCESSOR",
+  "source_preimage_sha256": "3dde80db2be7e8cdc9b964ae6b08146951a2caff8f47eab1051de0a1675af4a7",
+  "proposed_unformatted_sha256": "d4c55190792e5cee6e90b833a10097a50a7c1d52e5518d5effdd823b934e102c",
+  "approved_change": "Only corrupt_acl parameter mutation: &str becomes mutation: &'static str; standard rustfmt whitespace allowed, no SQL/assertion/call-site changes.",
+  "reason": "Retained native build E0521 proves sqlx::raw_sql requires static SQL. Both mutation calls supply compile-time string literals; narrowing signature preserves literal SQL custody without AssertSqlSafe runtime escape.",
+  "retained_oracles": [
+    "Both corruption SQL strings and exact P0001 messages unchanged",
+    "BEGIN/timeout/mutation/ACL-rejection/ROLLBACK/ACL-pass sequence unchanged",
+    "All90 actual-login42501 attempts,12FK oracle and complete rows/profile mismatch checks unchanged"
+  ],
+  "limits": [
+    "Compile failure executes zero SQLx tests, not product acceptance. Root must compile and execute unchanged selected leaf."
+  ],
+  "repository_writes": 0,
+  "reviewer_tests": 0
+}

@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_SCHEMA_GENERATOR_PRESERVATION_AND_RESOURCE_TEST_SOURCE_ONLY",
+  "packet": "/private/tmp/console-native-company-schema-generator-tests-20260920-round1",
+  "manifest_sha256": "00748d1707af15289c2340cb2e07289fd0268493c469ae4024515ce9fba7e5e5",
+  "observed_integration_commit": "1046feea32e0ad7ddbe97590edefa3175e101cda",
+  "candidate_sha256": {
+    "ops/test_company_enrollment_input_generator.py": "d6275ff6b7215e422b36d91f5808adb5ad43230e72c4e3cb1321928406ddacaf",
+    "tools/buck/test_gen_first_party.py": "2e1922aef32b4c3dfe3b4b81b68ceea69acc9663478f9afe3d9a43a1f8b798cc"
+  },
+  "checks": [
+    "Every packet member verified; six locked preimages verified against exact prior commit ff785782971d3aaf46a566a56aea643a6a5a6c18. Root integrated tests during review; current two test files match exact applied approved proposals, not a changed successor.",
+    "Six historical output SHA constants and byte/disk/function comparisons preserved; current parser gains fixed SHA cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290 verified against actual accepted file.",
+    "Output set admits exactly eight files: six historical, existing parser, one new UNINSTALLED schema. Existing parser marker/exclusion checks retained; schema three-table declarations excluded from all seven predecessor outputs.",
+    "All65 existing Buck test methods byte-identical; exact single new method makes66. Requires real integration_resource_config schema external resource and two fixture inputs; checks fixture and integrated SQLx source exist. Existing parser-resource and health/browser/retention assertions remain untouched.",
+    "No runtime generator, schema body, ops export, database profile, migration or production source authorized by this test-only receipt. Actual empty-schema SQLx semantics remain those separately approved in af58719e367e368d719b7abc2edfbc6dcd57ba67f335932ced96e4d909f52c22."
+  ],
+  "findings": [],
+  "limits": [
+    "Declaration markers prove generator separation only, not SQL guard correctness or schema acceptance.",
+    "Root must integrate approved SQLx test/resources and independently reviewed exact generated schema/guard source, record prerequisite RED separately from actual-owner execution, and obtain native runtime evidence.",
+    "All seven predecessor bytes, old profiles and expected profile_mismatch remain fixed; no historical custody reseal or serving activation permitted.",
+    "Native assignment revision references, populated FK behavior, request/event transitions, prepare/status/cancel/recovery/effect closure remain unaccepted."
+  ],
+  "execution": {
+    "reviewer_tests": 0,
+    "reviewer_builds": 0,
+    "reviewer_sql": 0,
+    "repository_writes": 0
+  },
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ]
+}

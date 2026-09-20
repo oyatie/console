@@ -1,0 +1,52 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_BOUNDED_EMPTY_SCHEMA_TEST_SOURCE_ONLY",
+  "packet": "/private/tmp/console-native-company-schema-sqlx-tests-20260920-round1",
+  "manifest_sha256": "af58719e367e368d719b7abc2edfbc6dcd57ba67f335932ced96e4d909f52c22",
+  "files": {
+    "CONTRACT.md": "aca26fe08abbc0887ae68ec15102ca73cf60d6e05edd579b1eef9f3ab2a7a260",
+    "company-enrollment-schema-acl.sql": "757d00081adb2df23c55444028642a05001efaa6054954f16b81d54432ba677a",
+    "company-enrollment-schema-references.sql": "ae5783e1123075e4579be8efd94ed3d1fb774fdc8b42376f58b9f3170487c37c",
+    "native_company_intake_schema.rs": "38970eb071249f0d1b292a5cbd56d4ec1fbae83b50d645ecc64983294472414c"
+  },
+  "base_head": "4dad954dcd387252e1eb885f31f5266d5ae47915",
+  "reviewed": [
+    "Fourmemberhashes exact; original round4 ACL DO oracle byte-preserved, only psql/transaction wrappers removed for caller-owned rollback",
+    "Real designated Account/session/startupfixture and unchanged positive classifiers precede private parser+schema install; bothprofiles must mismatch afterward and remainmismatched",
+    "12exact FKcolumn/target/deferred tuples; no missing/extra FK; RESTRICTupdate/delete,validated,simplematch,initiallydeferred iffdeferrable,publictarget; no fictitiousnative revisiontable",
+    "Six authentic restrictedLOGINpools each5operations on3tables=90exact42501denials; no SETROLE substituted for serving tests",
+    "Explicit nonloginowner SETLOCALROLE only for emptytable keyshare privilegepositive and zero-row UPDATE immutableguard P0001 company_enrollment_receipts.immutable",
+    "Two transaction-local corruptioncontrols require exact expected ACL/ALWAYS errors then rollback and passing unchangedoracle",
+    "Complete all_rows census subtracts only3newtables after eachmustbeempty; everyexistingtable/history preserved",
+    "No participant signatures/Company/Group/assignment/receiptfixture rows fabricated; helper resource remains UNINSTALLED and sevenprior generatedoutputs mustremainexact"
+  ],
+  "new_error_contract": "Accept P0001 company_enrollment_receipts.immutable for immutable receipt statement guard, matching existing owner convention.",
+  "limits": [
+    "Testsource approval only; no schema/install/body/runtimeacceptance",
+    "Emptykeyshare proves SQLprivilege, not populatedFK lockbehavior",
+    "Request/event guards, authenticatedprepare/status/cancel/recovery/concurrency and fullclosure pending",
+    "Real nativeassignmentrevision FK and Companycorrelation still required before anyCOMMITTED/effectacceptance",
+    "Exact root-generatedschema/guard/Buckresource source mustbe independentlyreviewed; no newservingprofile",
+    "No fixture failure or zeroexecutedtest count as acceptance"
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Chesterton\u2019s Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "pre_mortem": "Empty schema could mask missing transitionclosure or fake populatedeffect; explicit scope limits and realdenial/corruptioncontrols prevent this claim.",
+  "blast_radius": "One disposableSQLx database with3emptytables/privateparser/receiptguard only.",
+  "rollback": "DiscardDB; retain historicalmigrations/fingerprints and originaltestpackets.",
+  "stop_conditions": [
+    "Unexpectedservingparticipant",
+    "Changedhistoricalbytes",
+    "WrongSQLSTATE",
+    "Classifierunexpectedlyacceptspartialinstall",
+    "Fixtureoracledrift"
+  ],
+  "findings": [],
+  "reviewer_runtime_or_tests_executed": 0
+}
