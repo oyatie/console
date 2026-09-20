@@ -405,3 +405,6 @@ async fn direct_and_mounted_group_present_family_faults_do_not_fall_back_to_hist
     auth.close().await;
     close_groups(f).await;
 }
+
+#[path = "legacy_platform_group_decoder.rs"]
+mod legacy_platform_group_decoder;

@@ -169,8 +169,8 @@ async fn ops_transport_selection_preserves_list_and_sibling_routes_and_methods()
             .body(Body::from("fixture sibling"))
             .unwrap()
     }
-    let router =
-        console_platform_rest::with_platform_list_transport(axum::Router::new().fallback(sibling));
+    let unwrapped = axum::Router::new().fallback(sibling);
+    let router = console_platform_rest::with_platform_list_transport(unwrapped.clone());
     for (method, path, selected) in [
         (Method::GET, "/api/platform/ops", true),
         (Method::GET, "/api/platform/ops?display=all", true),
@@ -232,12 +232,60 @@ async fn ops_transport_selection_preserves_list_and_sibling_routes_and_methods()
                 assert!(body == b"fixture sibling");
             }
         } else {
+            // Prove the framework's response independently of Console's wrapper.
+            // Axum 0.8.9 strips HEAD bodies at its top-level RouteFuture, including
+            // fallback handlers; unselected routes still preserve that behavior.
+            let control = unwrapped
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(method.clone())
+                        .uri(path)
+                        .header(header::AUTHORIZATION, "Bearer transport-fixture-token")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let (control_status, control_headers, control_body) = response_parts(control).await;
+            assert_eq!(
+                control_status,
+                StatusCode::IM_A_TEAPOT,
+                "unwrapped status: {method} {path}"
+            );
+            if method == Method::HEAD {
+                assert!(
+                    control_body.is_empty(),
+                    "unwrapped Axum HEAD is empty: {path}"
+                );
+                assert!(body.is_empty(), "unselected HEAD remains empty: {path}");
+            } else {
+                assert!(
+                    control_body == b"fixture sibling",
+                    "unwrapped non-HEAD body: {method} {path}"
+                );
+                assert!(
+                    body == b"fixture sibling",
+                    "unselected non-HEAD body: {method} {path}"
+                );
+            }
             assert!(
-                body == b"fixture sibling"
-                    && headers[header::CACHE_CONTROL] == "max-age=17"
+                headers[header::CACHE_CONTROL] == "max-age=17"
                     && headers[header::ETAG] == "fixture-validator"
                     && headers[header::VARY] == "Origin",
-                "unrelated route and method transport bytes retained"
+                "unrelated route and method transport headers retained: {method} {path}"
+            );
+            assert_eq!(
+                status, control_status,
+                "wrapper leaves unselected status unchanged: {method} {path}"
+            );
+            assert_eq!(
+                headers, control_headers,
+                "wrapper leaves all unselected headers unchanged: {method} {path}"
+            );
+            assert_eq!(
+                body, control_body,
+                "wrapper leaves unselected framework body unchanged: {method} {path}"
             );
         }
     }
