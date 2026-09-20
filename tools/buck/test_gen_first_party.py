@@ -23,6 +23,28 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_auth_rest_maps_literal_fixture_inputs(self) -> None:
+        app = Path(GENERATOR.REPO) / "backend/app"
+        fixture_root = (app / "tests/auth_rest/fixtures").resolve()
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        declared = {
+            resource.resolve()
+            for pattern in config["srcs"]
+            for resource in app.glob(pattern)
+        }
+        required = set()
+        for source in (app / "tests/auth_rest").rglob("*.rs"):
+            for literal in re.findall(r'include_(?:str|bytes)!\(\s*"([^"]+)"', source.read_text()):
+                resource = (source.parent / literal).resolve()
+                if resource.is_relative_to(fixture_root):
+                    self.assertTrue(resource.is_file(), f"missing fixture: {resource}")
+                    required.add(resource)
+        self.assertTrue(required, "must examine actual compile-time fixture inputs")
+        self.assertEqual(
+            [], sorted(str(path.relative_to(app)) for path in required - declared),
+            "auth_rest has undeclared compile-time fixture inputs",
+        )
+
     def test_layer_ratchet_receives_current_workspace_manifests_and_sources(self) -> None:
         """The real-workspace ratchet must not run against an empty Buck input tree."""
         external = GENERATOR.integration_external_resources(
