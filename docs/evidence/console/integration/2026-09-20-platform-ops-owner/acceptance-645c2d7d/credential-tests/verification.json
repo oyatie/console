@@ -1,0 +1,11 @@
+{
+  "base_rust_head": "cfd16748349d0b3f4cab811a0809703ad24fb255",
+  "sqlx_leaves": 3,
+  "plain_leaves": 0,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 edition2024 passed",
+  "only_shared_helper_change": "three pub(super) prefixes; bodies and all test/include bytes preserved",
+  "root_unavailable_sibling": "legacy_platform_list_histories.rs not changed; existing unavailable declaration preserved",
+  "direct_api_status": "proposed approved API; initial mounted RED remains separate"
+}

@@ -1,0 +1,10 @@
+{
+  "parent_prefix_preserved": true,
+  "additive_parent_lines": 3,
+  "rust_sqlx_leaves": 1,
+  "rust_plain_leaves": 2,
+  "runtime_executed": 0,
+  "cargo_executed": false,
+  "database_executed": false,
+  "production_changes": false
+}

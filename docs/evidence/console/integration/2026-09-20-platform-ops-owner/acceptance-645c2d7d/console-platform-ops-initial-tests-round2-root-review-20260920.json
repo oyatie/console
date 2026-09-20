@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVE_INITIAL_RED_TEST_SOURCE_ONLY",
+  "base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "manifest_sha256": "fd184197ded5c49f26bdbb16ebc7a993e1f8b728e8c49f3c4f8c575887536372",
+  "checks": [
+    "exact additive module placement; reuse real restricted-logins and OTP/passkey fixture",
+    "raw rows independently reconstruct14/6field projection against SQL migration0061/0145 semantics",
+    "asymmetric statuses,p95,null,tie ordering and Company/Group/sentinel cases",
+    "strict20field audit/full row byte preservation; actual role403 marker before unrelated old host-clock assertion",
+    "pure controls preserve positive fixtures and reject every field omission/corruption"
+  ],
+  "execution": 0,
+  "conditions": [
+    "independent approval receipt",
+    "seal current list acceptance before integration",
+    "actual clean candidate RED at PLATFORM_OPS_CURRENT_ROLE_REQUIRED before lane admission"
+  ],
+  "limits": [
+    "not ops acceptance",
+    "extra projection wait/family/clock/privacy/COMMIT histories and retained ops tests remain required"
+  ]
+}

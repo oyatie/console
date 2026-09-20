@@ -1,0 +1,11 @@
+{
+  "composes_C1": "464e8790860d1009d26b0ec29a67a23bd1c83b2bdf35a5ef11fb95acf7a8253c",
+  "composes_B_round2": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31",
+  "sqlx_leaves": 5,
+  "plain_leaves": 1,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 edition2024 passed",
+  "shared_changes": "three list helper visibility prefixes and reexport; ops_task visibility prefix; all existing bodies/tests/includes preserved",
+  "histories_unavailable_unchanged": true
+}

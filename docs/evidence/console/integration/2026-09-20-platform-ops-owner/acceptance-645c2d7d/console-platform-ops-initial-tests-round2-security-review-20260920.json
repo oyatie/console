@@ -1,0 +1,37 @@
+{
+  "reviewer": "/root/integration_security",
+  "author": "/root/integration_tests",
+  "decision": "approved-initial-owner-RED-test-source-only",
+  "manifest_sha256": "fd184197ded5c49f26bdbb16ebc7a993e1f8b728e8c49f3c4f8c575887536372",
+  "design_manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "OPS-RED-EXECUTION-CONTRACT",
+      "finding": "Round1 used filename legacy_platform_list_histories instead of Rust enclosing module histories; root-Cargo command omitted locked backend manifest.",
+      "resolution": "Round2 README fixes exact filter and locked backend manifest command; all test/source/patch bytes unchanged."
+    }
+  ],
+  "checks": [
+    "All6 file hashes independently verified; candidate includes only additive ops module and new test file.",
+    "Actual0061 health and0145 telemetry projection contracts compared with independently persisted-row oracle; existing schema/FK/status/required-column constraints inspected.",
+    "Genuine App/OTP/passkey fixture, same raw bearer200/demoteMEMBER403/restore200, distinct Companies/Groups and nontrivial work/telemetry; no proposed API needed before implementation.",
+    "Independent20sample discrete p95 differs frommax; errors excluded; null/tied cycles and descending ordering explicit; all14health/6adoption values/keys and sentinel exclusion compared exactly.",
+    "Strict20field health audit original action/target verified before reusing identical list schema validator; exact full-table effects and raw historical JSON preservation.",
+    "Host-clock positive/recovery audit assertions remain strict after intended role marker; no tolerance or hidden assertion deletion.",
+    "Two pure positive/corruption leaves check every projection/audit field plus omission, reordering, crossCompany, scope/time, table effects and historical byte rewrites."
+  ],
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "required_discovery": {
+    "sqlx": 1,
+    "pure": 2
+  },
+  "exact_leaf": "legacy_platform_list_reads::histories::legacy_platform_ops_reads::mounted_ops_current_member_denies_and_recovers",
+  "remaining_holds": [
+    "Seal current list candidate first. Root serialize parent additive unavailable-test declaration and this ops include; preserve both reviewed children and regenerate BUCK.",
+    "Compile/discover3, execute2pure controls and actual clean-tree1ownerRED at PLATFORM_OPS_CURRENT_ROLE_REQUIRED; prerequisite/compiler/schema failure or zero execution is not admission.",
+    "Ops acceptance still requires reviewed supplemental direct/bound/locks/both-query expiry/privacy/unknowncommit evidence, retained ops2/telemetry1 and original list regression.",
+    "No implementation/merge/release acceptance from source approval."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-ops-family-history-acceptance-source-only",
+  "manifest_sha256": "fec0bf3f5c3bdf19ce43b5a7339f3761b77db35359157e80ebf5d7fcb3d3f6b8",
+  "candidate_sha256": "6a9ba1b30fe37ab5b86ebdca9e71a0676f35d8aca9fb35b1f94bb5becffb5297",
+  "checks": [
+    "All twelve packet hashes and exact C1/Bround2preimages verified; helper bodies/test bytes preserved by visibility-only prefixes and additive reexport/child.",
+    "Canonical revoker-first logout/reuse transactions produce actual waiting console_rt sourcequery; committed revoke yields401, exact canonical effects/nohealthaudit, sibling remains usable.",
+    "Reader-first secondprojection barrier retains actual source/family; independent exactfamily FORUPDATE and canonical Authlogout wait behind reader, all tasks pending before release and ownedPID cleanup required.",
+    "Historical/bound5second signed expiry stalls actual auditINSERT while projections complete, observes actualDBdeadline then demands401/noeffects and originalbearer recovery.",
+    "health_revocation_delta validates complete original health20fields before adapting only newevent action/target; historical rawbytes forwarded unchanged, exactly one health event required. Unchanged underlying oracle preserves exact family/token/sibling/state and event-count/identity/time checks.",
+    "Pure controls retain four reason/read positives and reject priorhistory serialization changes, validlistspoof, omissions/deletions/businesschange, selected/sibling corruption and every20auditfield omission/corruption."
+  ],
+  "findings": [],
+  "source_declared_tests": {
+    "sqlx": 5,
+    "pure": 1
+  },
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Actual sixleaf runtime/compilation/discovery and bounded timing prerequisites remain rootverification; source inspection is not concurrency proof.",
+    "Acceptance-only futureAPI; reviewed initial mountedownerRED/admission remains required.",
+    "ConfiguredTTL/unrelatedprogress/COMMIT loss and complete ops/release qualification outstanding."
+  ]
+}

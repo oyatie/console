@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-mechanical-typed-observer-borrow-fix-and-composition",
+  "source_path": "backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs",
+  "preimage_sha256": "a320265c7755fc8e9c2c46e711eab1059157e6f422dcdcfb2f1257412c950837",
+  "candidate_sha256": "6a28fec0c4979a3a2c28ed89affa8a2b31675940f12170fa4cab8662a7a1d38d",
+  "exact_change": "Only line275 .fetch_one(&mut *observer) to .fetch_one(&mut observer); four helper reborrows remain unchanged.",
+  "checks": [
+    "At275 observer is owned PgConnection created with connect_with, not Deref poollease; &mut observer is correct Executor borrow.",
+    "Four other &mut *observer sites take mutable-reference helper parameters and retain correct reborrowing; not a global replacement.",
+    "One unnecessary dereference removed; query bytes,DBclock comparison,deadline,alloracles/lockwitnesses unchanged.",
+    "All14composed source hashes currently match integration inventory with only two declared rustfmt successors.",
+    "No productionfile change or runtime result claimed; compilerE0614 is prerequisite defect and failedlog retained."
+  ],
+  "generated_requirement": "Root serialized existing tools/buck/gen_first_party.py must enumerate matching new testmodules in backend/app/BUCK; inspect exact additive generateddiff and preserve unrelated bytes, no source inclusion workaround.",
+  "runtime_tests_executed": 0,
+  "remaining_holds": [
+    "Root apply exactcandidate,rerun compile/clippy and actualops/list/legacy tests.",
+    "Exact generatedBUCKdiff still requires followup inspection.",
+    "All prior source-only limits remain; no waived test or semantic expectation change."
+  ]
+}

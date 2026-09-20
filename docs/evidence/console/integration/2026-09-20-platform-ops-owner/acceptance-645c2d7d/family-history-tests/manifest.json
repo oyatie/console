@@ -1,0 +1,19 @@
+{
+  "kind": "ops-canonical-family-audit-expiry-private-proposal",
+  "files_sha256": {
+    "README.md": "246aa2db5d450e9a1bcafef1f5606b6ce82060857e8c95d92b9524f8afcdb06e",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "8ced48be7a5b1845c34daea86bfad66fcf801924006eabeba0af6445d2d902b1",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "efbab26a4a0f779f31c82c9214a8378d3b1f2790e7644158f564ebaa704cc457",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "aeb4f0f96fc2fa8528e992ad74fb8a91ae0a22d3e38680abdbd0c1ced5b48b51",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs": "6a9ba1b30fe37ab5b86ebdca9e71a0676f35d8aca9fb35b1f94bb5becffb5297",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "46baf534433dd37a5d9fc1919d0b87e5b1ce46e9a8be1b63cefa318d5cab0436",
+    "candidate.patch": "b6cb0da982e400af44a2740a36a59b7bbdf7d415210ac870014304e05ef57976",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "f6fcd6b50e07881fcfc047b10e85cb8128e75f2d9e2010fe22c02603b2e0d20d",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "f6491d4fd00c9c5f8df8c2356487715964b0df8de13ed950cb31387f03ed3024",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "4ef86f895b09fa8e41c4a1e1d6a9a419888fae11c2606573d59330a5ac89eef3",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "9d5e06f103dfccb788d2d85c5399a4fef02fb900f593b45a91cf58f8a14f3e79",
+    "verification.json": "165ebeae6c816501e3ea22b0788301e70a7cc6094c74067334ab05e80089fb6f"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

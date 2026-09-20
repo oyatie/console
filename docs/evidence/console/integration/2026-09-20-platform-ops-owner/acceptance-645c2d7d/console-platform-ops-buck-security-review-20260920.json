@@ -1,0 +1,54 @@
+{
+  "reviewer": "/root/integration_security",
+  "scope": "Generated BUCK source inclusion only",
+  "decision": "APPROVE exact additive generated source composition; no runtime qualification",
+  "base": "4b31c70eaeb5623bb417ae7749a21fbcae0d98e8",
+  "observed_head": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "before_sha256": "3d34350289dd8b7b724164983ee64aa8bda7638d5b1b8589cbd9cd3348b32933",
+  "after_sha256": "fc91447444ffe533cbccb19f31e1142c72cd5f6b7947a4f4dc6076cdf80fe07b",
+  "checks": {
+    "exact_preimage_after_literal_removal": true,
+    "each_of_eight_literals_added_to_67_arrays": true,
+    "all_source_files_exist": true,
+    "generator_unchanged": true,
+    "only_changed_BUCK": "backend/app/BUCK"
+  },
+  "literal_counts": {
+    "\"tests/auth_rest/legacy_platform_ops_commit_loss.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_credentials.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_current_source.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_expiry_progress.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_family_histories.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_projection_waits.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_reads.rs\", ": {
+      "before": 0,
+      "after": 67
+    },
+    "\"tests/auth_rest/legacy_platform_ops_transport.rs\", ": {
+      "before": 0,
+      "after": 67
+    }
+  },
+  "limitations": [
+    "Does not establish test execution or operations integration acceptance.",
+    "Does not resolve PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT."
+  ]
+}

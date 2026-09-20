@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-bounded-ops-configured-expiry-and-progress-acceptance-source-only",
+  "manifest_sha256": "3c16ca966e0fd93cf0379efb1541206103f26fdcb6c425e32235a8a6623d814b",
+  "candidate_sha256": "9a1b9c17601315ee57820497e9922955b3dd4cafd1217af87e6d99ebb34b4388",
+  "checks": [
+    "All fourteen packet hashes and exact C2/currenthelper preimages verified; sharedfunction bodies retained with narrowly scoped visibility/reexports/additive child.",
+    "Actual AppConfig10secondfamilyTTL/30secondrequesttimeout built and checked before realfamily issuance; signedexpiry outlives deadline. Genuine sourcewait observed before realDBfamily deadline and retained across it, then401/noeffects.",
+    "Sameboundtoken succeeds under original config and unboundtoken under narrow config; distinguishes configuredfamily expiry from signature/projection defect.",
+    "Separate genuinely enrolled/authenticated operator completes fullopsprojection and exact ownactor healthaudit while originalsource wait remains observed/pending.",
+    "Afterrelease original source completes once, preserves independently completed audit/history and all other state; observedPID/dependentcleanup required."
+  ],
+  "findings": [],
+  "source_declared_sqlx_leaves": 2,
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Actual runtime/compilation/counts/timing and currentcomposition remain rootverification.",
+    "Acceptance-only futureownerAPI; compile failure not initialRED.",
+    "ActualCOMMITackloss and fullops/release qualification outstanding."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "kind": "bounded-platform-ops-two-projection-retention-expiry-test-proposal",
+  "initial_ops_manifest": "fd184197ded5c49f26bdbb16ebc7a993e1f8b728e8c49f3c4f8c575887536372",
+  "design_manifest": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "files_sha256": {
+    "README.md": "fd315ae2e9d641e7d87c22f7366b9453fedc3eb0be0f19d613569111e0cd6c79",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_projection_waits.rs": "a320265c7755fc8e9c2c46e711eab1059157e6f422dcdcfb2f1257412c950837",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "a339fe3072a073ada5ebd51ffbff4064bb07f4e7df72a7e983e717542e7bf2cb",
+    "candidate.patch": "174d1cffc405d808fc2099d3d4f3bf9aeda58a1e17f223d3e64cfd95a33a5fa7",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "a74b2fefcabf18bd97bb1f66de01907b833456fa0f51c6309b865bfe02c00d79",
+    "verification.json": "ebdb28f176c59758aea2a15ec236d6cf89f2ff5cfb8c9ba8511396f0e51cf928"
+  },
+  "implementation_admitted": false
+}

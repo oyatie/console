@@ -1,0 +1,21 @@
+{
+  "kind": "ops-configured-family-expiry-independent-progress-private-proposal",
+  "files_sha256": {
+    "README.md": "b84b57f0556ba051b39ff83a2b2ce5c7822a589e42a12126e1ab02973373ef05",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "5b430d59636f432364e139c77695554b60af53fca7f1b2d8cabc84a8b7639b2e",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "5b3d782778a937572f6b4ef96dc75aed42bab7642bd4c5e261f01b9455700496",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "00144d6cbbff0aa339f2ca1aae3023462c06583645d6ee1f45fc47c1c81bbc93",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "6fb10d9862278e9f5a1071b87bb8b2cbc042a5954bf946a8ae63e84842a81c29",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_expiry_progress.rs": "9a1b9c17601315ee57820497e9922955b3dd4cafd1217af87e6d99ebb34b4388",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs": "31fc766da7b7b8d0a49e391fefa529b1685b1ad5e492cc5ced6d121cd123bfe4",
+    "candidate.patch": "1f4d70f4c9cac695a293b79a22908cef84bed45327f785b61f3e90765adc5753",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "8ced48be7a5b1845c34daea86bfad66fcf801924006eabeba0af6445d2d902b1",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "85b201eaed524e830b52d428f79d1caaf2aa601b1c1ec5df0b446b4ebaeb6578",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "efbab26a4a0f779f31c82c9214a8378d3b1f2790e7644158f564ebaa704cc457",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "aeb4f0f96fc2fa8528e992ad74fb8a91ae0a22d3e38680abdbd0c1ced5b48b51",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_family_histories.rs": "6a9ba1b30fe37ab5b86ebdca9e71a0676f35d8aca9fb35b1f94bb5becffb5297",
+    "verification.json": "633175b2be7ce14f3516677e015920702702eb7f867f6fed30914954b05b416e"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

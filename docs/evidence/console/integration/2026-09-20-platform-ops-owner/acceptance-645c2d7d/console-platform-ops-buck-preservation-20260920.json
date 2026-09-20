@@ -1,0 +1,18 @@
+{
+  "owner": "/root",
+  "generator": "tools/buck/gen_first_party.py unchanged",
+  "before_sha256": "3d34350289dd8b7b724164983ee64aa8bda7638d5b1b8589cbd9cd3348b32933",
+  "after_sha256": "fc91447444ffe533cbccb19f31e1142c72cd5f6b7947a4f4dc6076cdf80fe07b",
+  "added_source_literals": [
+    "\"tests/auth_rest/legacy_platform_ops_commit_loss.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_credentials.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_current_source.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_expiry_progress.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_family_histories.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_projection_waits.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_reads.rs\", ",
+    "\"tests/auth_rest/legacy_platform_ops_transport.rs\", "
+  ],
+  "removing_only_added_literals_equals_exact_preimage": true,
+  "all_other_generated_files": "unchanged"
+}

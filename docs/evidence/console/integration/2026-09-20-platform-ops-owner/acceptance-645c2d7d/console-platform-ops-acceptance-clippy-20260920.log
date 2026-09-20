@@ -1,0 +1,9 @@
+    Checking console-app v0.1.0 (/private/tmp/console-client-release-20260919/backend/app)
+error[E0614]: type `sqlx::PgConnection` cannot be dereferenced
+   --> app/tests/auth_rest/legacy_platform_ops_projection_waits.rs:275:33
+    |
+275 |                 .fetch_one(&mut *observer)
+    |                                 ^^^^^^^^^ can't be dereferenced
+
+For more information about this error, try `rustc --explain E0614`.
+error: could not compile `console-app` (test "auth_rest") due to 1 previous error

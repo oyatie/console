@@ -1,0 +1,19 @@
+{
+  "kind": "ops-genuine-acknowledged-commit-loss-private-proposal",
+  "files_sha256": {
+    "README.md": "ed22d0f33427cc96d23ce5bd2aff59b717ff92f9d2a368b26b0edf3971b966da",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs": "0b0a7106afd6695c366c3f40b8520ca7d66b5d79cc2d0d9ab9d28d9753cab207",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "463b82646f4678eaea4ef014361636ec62009de4cb973ed22aee12817fc9f610",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "3b82337acd9886b09a370dc35111e4bdd81af1a52b2a0331a4b3ad865c601a2d",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_commit_loss.rs": "ef8de9dffa9815b15783538bf17b060acb5a4b4dba2ace9b4b5d17afdf0c0a49",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "bf9e3c6d436dee39c650336676dc1f5c3a8e6b336ba4d926e40c533772947f56",
+    "candidate.patch": "193dd9f520cc5654795af654af2335273f2e088a5fd582c2c6406a954e4063ce",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs": "f1e57e98abb246eb78666f2c2e89088b4ef4ac64473a86d920b97c0b2698dfcc",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "5b430d59636f432364e139c77695554b60af53fca7f1b2d8cabc84a8b7639b2e",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "00144d6cbbff0aa339f2ca1aae3023462c06583645d6ee1f45fc47c1c81bbc93",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "6fb10d9862278e9f5a1071b87bb8b2cbc042a5954bf946a8ae63e84842a81c29",
+    "verification.json": "456652774be909926a098bc01e333fea04476e9d2e05be2173033b6afdd6115b"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}

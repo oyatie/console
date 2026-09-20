@@ -1,0 +1,14 @@
+{
+  "owner": "/root",
+  "change": "native Rust1.98.1 edition2024 formatting after exact packet composition; no semantic edit",
+  "files": {
+    "backend/app/tests/auth_rest/legacy_platform_list_locks.rs": {
+      "before_sha256": "3b82337acd9886b09a370dc35111e4bdd81af1a52b2a0331a4b3ad865c601a2d",
+      "after_sha256": "b4dff5d4853297655ea3a10bc6b6c78af7ff7ffe55af2ec346a1bb6602e712e4"
+    },
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": {
+      "before_sha256": "5b3d782778a937572f6b4ef96dc75aed42bab7642bd4c5e261f01b9455700496",
+      "after_sha256": "2949c236fb98c54f51c759b237b08d1fbdd19a8b66a7d69e33da9a197d738c48"
+    }
+  }
+}

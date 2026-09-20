@@ -1,0 +1,8 @@
+{
+  "sqlx_leaves": 2,
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "pinned_rustfmt": "1.98.1 edition2024 passed",
+  "existing_shared_bodies_tests_includes_preserved": true,
+  "composes_C2": "fec0bf3f5c3bdf19ce43b5a7339f3761b77db35359157e80ebf5d7fcb3d3f6b8"
+}

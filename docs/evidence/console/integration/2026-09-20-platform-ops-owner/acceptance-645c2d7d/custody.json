@@ -1,0 +1,250 @@
+{
+  "console-platform-ops-initial-tests-dependency-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-initial-tests-dependency-root-review-20260920.json",
+    "sha256": "08c4024945134300c672919d4e68c5f99b5906e06f494d012c725bc988d112f4"
+  },
+  "console-platform-ops-initial-tests-round2-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-initial-tests-round2-root-review-20260920.json",
+    "sha256": "2ec9983fa7651202d81374c5e1086422f91266148df2855cae634565998df731"
+  },
+  "console-platform-ops-initial-tests-round2-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-initial-tests-round2-security-review-20260920.json",
+    "sha256": "67fe3ba9dcaed547a0d3f902de5da1109225ba5cf7a79d24a4df4bc3c638dcb4"
+  },
+  "console-platform-ops-owner-source-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-owner-source-round1-security-review-20260920.json",
+    "sha256": "1e704b6db3d7aa17036170649895479cd86c90c2b522b93c8af0cc1c18e364b4"
+  },
+  "console-platform-ops-acceptance-integration-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-acceptance-integration-20260920.json",
+    "sha256": "c1ac9d9a047e90c4355463e614c3908e1c140494245e8c0e3c5a2a5c2e6b1761"
+  },
+  "console-platform-ops-acceptance-rustfmt-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-acceptance-rustfmt-20260920.json",
+    "sha256": "b394bc1d370f63f886f256af98202ffe9d0859c8e4904ee5cd430d864ae3921a"
+  },
+  "console-platform-ops-observer-borrow-fix-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-observer-borrow-fix-security-review-20260920.json",
+    "sha256": "c167715b9f32846ba0fd6a6ee41cc7ea257140fc14940e6a8886344a0bf597fe"
+  },
+  "console-platform-ops-buck-preservation-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-buck-preservation-20260920.json",
+    "sha256": "53cf22c3841d468a4be68dc64bafb5b27359406053f989823cc1123a010895ee"
+  },
+  "console-platform-ops-buck-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-buck-security-review-20260920.json",
+    "sha256": "a93a5ad95adc8f7c58dd71e897df08c8a46add74edef2eb966a7225d73bbca74"
+  },
+  "console-platform-ops-projection-tests-round1-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-projection-tests-round1-root-review-20260920.json",
+    "sha256": "0488d0bdd8be420cffa978b8c5a3ef6733e7bdf2494395459932546da283154e"
+  },
+  "console-platform-ops-projection-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-projection-tests-round1-security-review-20260920.json",
+    "sha256": "8b660992d8a3eb08ac9a5a2dd92f049deaea7bd90dd8bdee9402bb5060f9e8a0"
+  },
+  "console-platform-ops-credential-tests-round1-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-credential-tests-round1-root-review-20260920.json",
+    "sha256": "3d0ce9c57bcdbf7deeaed410e04a52a778b7d5afa5d102d6387df272651815a2"
+  },
+  "console-platform-ops-credential-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-credential-tests-round1-security-review-20260920.json",
+    "sha256": "4f3bb035ecba4fe732eaef1aa024ced4b08b0343aad385d130a478f586b6a8c7"
+  },
+  "console-platform-ops-transport-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-transport-tests-round1-security-review-20260920.json",
+    "sha256": "15dd2fa3698a08c6d41269a78bc004a7e42db18d50e4823b01afbad5b0593960"
+  },
+  "console-platform-ops-transport-tests-round2-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-transport-tests-round2-root-review-20260920.json",
+    "sha256": "3be84484ae20070a5e6ef6c79c0aef3190bc94890c03fb45910114f48f11ebdb"
+  },
+  "console-platform-ops-transport-tests-round2-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-transport-tests-round2-security-review-20260920.json",
+    "sha256": "b8c55f42692fcba50d4de102d97db964ee439ff92d7516ccfbb91946fa9833f1"
+  },
+  "console-platform-ops-current-source-tests-round1-root-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-current-source-tests-round1-root-review-20260920.json",
+    "sha256": "b5ff881fc0afb5faf2b0648cff4d842da010b62b69de7181214f548026b38017"
+  },
+  "console-platform-ops-current-source-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-current-source-tests-round1-security-review-20260920.json",
+    "sha256": "70deb73c29ebf75a58fb96bc6ea02bd8e266ba2a8b9747dd918cc9955195afa3"
+  },
+  "console-platform-ops-family-history-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-family-history-tests-round1-security-review-20260920.json",
+    "sha256": "bde4c5abe6f9a14d027fb1cee9057bfa4fcf83203b6839b67b1965ccf3b9aa2d"
+  },
+  "console-platform-ops-expiry-progress-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-expiry-progress-tests-round1-security-review-20260920.json",
+    "sha256": "5391a3661704a514bcab6a235a3125ca6c4fbc7dd9e4e874f368dbd8f922b8c3"
+  },
+  "console-platform-ops-commit-loss-tests-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-commit-loss-tests-round1-security-review-20260920.json",
+    "sha256": "230e1b1b58b56428cc832a9e800bc12bc721ef4d866f694717681c2d131b4f2f"
+  },
+  "console-platform-ops-retained-fixtures-round1-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-retained-fixtures-round1-security-review-20260920.json",
+    "sha256": "0b10d570341bb16f5d80c4bcb11d1164fa46bd9af994f79a86783b9407ed290a"
+  },
+  "console-platform-ops-owner-red-10269cc6-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-owner-red-10269cc6-20260920.log",
+    "sha256": "211b5c680c8e8150d62dd680b5f622eff5a6ca0fbe4ce092bda96b639af529a8"
+  },
+  "console-platform-ops-owner-admission-10269cc6-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-owner-admission-10269cc6-20260920.log",
+    "sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  },
+  "console-platform-ops-owner-green-initial-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-owner-green-initial-20260920.log",
+    "sha256": "424bbed191cdf8dfd831192228a7ce139a7a8b6330b7165209bcc94806522b30"
+  },
+  "console-platform-ops-owner-clippy-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-owner-clippy-20260920.log",
+    "sha256": "c9eff1a111cd16a3ebc9df55505f78c3f4a37f5ad2fb429ba18276b131d6cdbc"
+  },
+  "console-platform-ops-acceptance-clippy-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-acceptance-clippy-20260920.log",
+    "sha256": "cba66e3c67fe4ea4899803cc5df93dab82808ecd6964d0dcd1788f5068b79c1d"
+  },
+  "console-platform-ops-acceptance-clippy-fixed-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-acceptance-clippy-fixed-20260920.log",
+    "sha256": "5cc675ac346d30e7800b4640554e6d5bc8184b48a17b3ac60454fcb82022fb36"
+  },
+  "console-platform-ops-buck-generation-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-buck-generation-20260920.log",
+    "sha256": "c2dbc476e1d1e34e2167bafa00898b4fcabd04d0cabf3270904143c6a1e96e98"
+  },
+  "console-platform-ops-owner-lane-scope3-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-owner-lane-scope3-20260920.json",
+    "sha256": "dbe4ec4b1055da908c9651c14009494280d1d4eb6aafac158950a64713ee468c"
+  },
+  "console-platform-ops-acceptance-map-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-acceptance-map-20260920.json",
+    "sha256": "c4c2066462c512920144945503a7267b43cd17a09a74c3c1b9c976523489c2b8"
+  },
+  "initial-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-initial-tests-20260920-round2/README.md",
+    "sha256": "d58fc293bd92fb607c0ee4ebdd7c77a43bbc0606524a8b25b2193b3919c127f7"
+  },
+  "initial-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-initial-tests-20260920-round2/manifest.json",
+    "sha256": "fd184197ded5c49f26bdbb16ebc7a993e1f8b728e8c49f3c4f8c575887536372"
+  },
+  "initial-tests/structural-checks.json": {
+    "source": "/private/tmp/console-platform-ops-initial-tests-20260920-round2/structural-checks.json",
+    "sha256": "6b0bb422a79addb17b59f5718390e612f979f15448af323a0203790a7b5fa85b"
+  },
+  "projection-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-projection-tests-20260920-round1/README.md",
+    "sha256": "fd315ae2e9d641e7d87c22f7366b9453fedc3eb0be0f19d613569111e0cd6c79"
+  },
+  "projection-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-projection-tests-20260920-round1/manifest.json",
+    "sha256": "5be5a8a8f754ee792b1a8355c72b92524a3b48078beb34b0d8ab80584bcdeca0"
+  },
+  "projection-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-projection-tests-20260920-round1/verification.json",
+    "sha256": "ebdb28f176c59758aea2a15ec236d6cf89f2ff5cfb8c9ba8511396f0e51cf928"
+  },
+  "credential-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-credential-tests-20260920-round1/README.md",
+    "sha256": "f3bb279532bbf1673fc2c807f4c0ece863d63e1eeb4608b96c77eb1911b6a0cb"
+  },
+  "credential-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-credential-tests-20260920-round1/manifest.json",
+    "sha256": "036033e304d76bee15d4b4fbea13cb29acc4cd37718599fa70974133892da257"
+  },
+  "credential-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-credential-tests-20260920-round1/verification.json",
+    "sha256": "0c73cfd82a9f14217e4f636da9da3b700715467fa43e94517f7574be9899d501"
+  },
+  "transport-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-transport-tests-20260920-round2/README.md",
+    "sha256": "478b1e3b84d6d7eff1a05e061b3732f3da412fc84ef07b5cdaa285ba3c1ec7c9"
+  },
+  "transport-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-transport-tests-20260920-round2/manifest.json",
+    "sha256": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31"
+  },
+  "transport-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-transport-tests-20260920-round2/verification.json",
+    "sha256": "929142b45f6b0dcb7902f6e7979d39358730f8d8949fb606ca9ee0d10c39b317"
+  },
+  "current-source-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-current-source-tests-20260920-round1/README.md",
+    "sha256": "269eaa22d62f7772caff58527c5a6e8213246c8785c1cf8cb89088cf81b92a80"
+  },
+  "current-source-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-current-source-tests-20260920-round1/manifest.json",
+    "sha256": "464e8790860d1009d26b0ec29a67a23bd1c83b2bdf35a5ef11fb95acf7a8253c"
+  },
+  "current-source-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-current-source-tests-20260920-round1/verification.json",
+    "sha256": "dabc6d5b8706a230066b755db0371f8de3572dbba58aee3cafcc64e7acea73aa"
+  },
+  "family-history-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-family-history-tests-20260920-round1/README.md",
+    "sha256": "246aa2db5d450e9a1bcafef1f5606b6ce82060857e8c95d92b9524f8afcdb06e"
+  },
+  "family-history-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-family-history-tests-20260920-round1/manifest.json",
+    "sha256": "fec0bf3f5c3bdf19ce43b5a7339f3761b77db35359157e80ebf5d7fcb3d3f6b8"
+  },
+  "family-history-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-family-history-tests-20260920-round1/verification.json",
+    "sha256": "165ebeae6c816501e3ea22b0788301e70a7cc6094c74067334ab05e80089fb6f"
+  },
+  "expiry-progress-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-expiry-progress-tests-20260920-round1/README.md",
+    "sha256": "b84b57f0556ba051b39ff83a2b2ce5c7822a589e42a12126e1ab02973373ef05"
+  },
+  "expiry-progress-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-expiry-progress-tests-20260920-round1/manifest.json",
+    "sha256": "3c16ca966e0fd93cf0379efb1541206103f26fdcb6c425e32235a8a6623d814b"
+  },
+  "expiry-progress-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-expiry-progress-tests-20260920-round1/verification.json",
+    "sha256": "633175b2be7ce14f3516677e015920702702eb7f867f6fed30914954b05b416e"
+  },
+  "commit-loss-tests/README.txt": {
+    "source": "/private/tmp/console-platform-ops-commit-loss-tests-20260920-round1/README.md",
+    "sha256": "ed22d0f33427cc96d23ce5bd2aff59b717ff92f9d2a368b26b0edf3971b966da"
+  },
+  "commit-loss-tests/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-commit-loss-tests-20260920-round1/manifest.json",
+    "sha256": "f9fdd692d4b6caecfda79e1bbb5992417718b2a6d2af5ed5346d0fe906e38b0f"
+  },
+  "commit-loss-tests/verification.json": {
+    "source": "/private/tmp/console-platform-ops-commit-loss-tests-20260920-round1/verification.json",
+    "sha256": "456652774be909926a098bc01e333fea04476e9d2e05be2173033b6afdd6115b"
+  },
+  "retained-fixtures/README.txt": {
+    "source": "/private/tmp/console-platform-ops-retained-fixtures-20260920-round1/README.md",
+    "sha256": "9550a00df773d3e954f30190266cd981231c57072c21eec471b0eaeaaf0da6ff"
+  },
+  "retained-fixtures/manifest.json": {
+    "source": "/private/tmp/console-platform-ops-retained-fixtures-20260920-round1/manifest.json",
+    "sha256": "f8337558ad6106d00753d412979ba8f56e92ff411bc2a52e100e8f8679aa3027"
+  },
+  "retained-fixtures/verification.json": {
+    "source": "/private/tmp/console-platform-ops-retained-fixtures-20260920-round1/verification.json",
+    "sha256": "c22fdd0369d356c35283342fbb90569be8cf1dfde11e35af53cf44d2b3a2ee27"
+  },
+  "console-platform-ops-full55-retained-run1-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-full55-retained-run1-20260920.log",
+    "sha256": "ba3c7b19ea4e0955a9986e1f504ef3e4b2dbb16ff47eafb73d954d18bfcfddee"
+  },
+  "console-platform-ops-645c2d7d-source-coverage-security-review-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-645c2d7d-source-coverage-security-review-20260920.json",
+    "sha256": "743e9ea49ced0caf54eac4b7d452f9519ec64d5d54ca5a8a42ce102e0bfb318e"
+  },
+  "console-platform-ops-final-clippy-20260920.log": {
+    "source": "/private/tmp/console-platform-ops-final-clippy-20260920.log",
+    "sha256": "63b7b785b68c283262492f896bd0db713a22a878321dab178b5826b688fb4637"
+  },
+  "console-platform-ops-final-security-audit-20260920.json": {
+    "source": "/private/tmp/console-platform-ops-final-security-audit-20260920.json",
+    "sha256": "ad958810559d7eb2c6fa7f99ee6c01185d49707a832f45e6c77a7e3d8e0f41f4"
+  }
+}

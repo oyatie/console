@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-corrected-bounded-ops-transport-acceptance-source-only",
+  "manifest_sha256": "ee488d50855733c747fc629b37d896e03f3d5b8d3cefcb8e47182d2e8ab45e31",
+  "candidate_transport_sha256": "9d5e06f103dfccb788d2d85c5399a4fef02fb900f593b45a91cf58f8a14f3e79",
+  "supersedes_review_sha256": "15dd2fa3698a08c6d41269a78bc004a7e42db18d50e4823b01afbad5b0593960",
+  "correction": "Root found pure wrapper test lacked Authorization, so current selected orgs route returns401 before intended fallback418. Prior security source approval missed this prerequisite; old receipt retained and superseded.",
+  "checks": [
+    "All eight corrected packet hashes verified. Exact candidate delta is valid-shaped Bearer transport-fixture-token for pure controlled-fallback requests plus privacy oracle checking that same token.",
+    "Actual platform_list_bearer/current transport code independently reread: token meets exact syntax, selected request reaches next; fallback has no verifier, so no authentication claim.",
+    "All mounted malformed-header, actual four503 stage, actual GET/HEAD timeout and restoration/effect code unchanged from previously inspected packet. Shared source preimages/helper bodies/additive child unchanged."
+  ],
+  "findings": [],
+  "source_declared_tests": {
+    "sqlx": 4,
+    "tokio": 1
+  },
+  "runtime_tests_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Actual execution remains required and can discover further prerequisite/compiler defects; source-only approval does not claim5tests pass.",
+    "Root compose current source and integrate only admitted reviewed implementation; initial mountedRED separate.",
+    "Retained list transport regression and remaining ops concurrency/COMMIT packets still required; no whole release acceptance."
+  ]
+}

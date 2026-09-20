@@ -1,0 +1,28 @@
+{
+  "owner": "/root",
+  "full_run_candidate": "3908eefcda5fb5263b3b3accf6bc446f91c38031",
+  "observed": {
+    "owner_probe": {
+      "passed": 1,
+      "failed": 0,
+      "seconds": 10.44
+    },
+    "retained_transition_suite": {
+      "passed": 52,
+      "failed": 0,
+      "filtered": 392,
+      "seconds": 671.14
+    },
+    "focused_repeated_diagnostic": {
+      "invocations": 5,
+      "passed": 5
+    }
+  },
+  "decision": "separate operations conversion may proceed per independent dependency receipt; transition reliability NOT accepted",
+  "limits": [
+    "Original cfd run4 retained suite51pass1fail remains unresolved",
+    "No diagnostic difference observed during successful runs; cause not established",
+    "No test guard, normalization, snapshot weakening or proposed read guard applied",
+    "Full release remains blocked on the unresolved intermittent snapshot failure"
+  ]
+}

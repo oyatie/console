@@ -1,0 +1,16 @@
+{
+  "kind": "initial-platform-ops-current-role-owner-red-test-proposal",
+  "production_base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "design_manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "files_sha256": {
+    "README.md": "d58fc293bd92fb607c0ee4ebdd7c77a43bbc0606524a8b25b2193b3919c127f7",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "deb204d546ac072ab95ee73ca416ebab02f3375553df62ebb884e0644ae47e39",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_reads.rs": "a74b2fefcabf18bd97bb1f66de01907b833456fa0f51c6309b865bfe02c00d79",
+    "candidate.patch": "418b9ff1c665d703c6a8224ddf519364b89c780a8b473a1c287bcd26293ea6b9",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "1fb70485b4cc8e4478d7d4b309e2f3c292205dd023218a0682f330df540bcca3",
+    "structural-checks.json": "6b0bb422a79addb17b59f5718390e612f979f15448af323a0203790a7b5fa85b"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "supersedes_manifest_sha256": "2c7a49883ff2f4b2ce62636feb4a4608860f032e3afa93ac8cdbd49155de2bc6"
+}

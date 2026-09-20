@@ -1,0 +1,16 @@
+{
+  "kind": "ops-mounted-transport-infrastructure-recovery-private-proposal",
+  "files_sha256": {
+    "README.md": "478b1e3b84d6d7eff1a05e061b3732f3da412fc84ef07b5cdaa285ba3c1ec7c9",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "a9cdcac672647e638228388a5d2b2b40aa2483bfdf8f50a1cce1f2a4fdcb28c0",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "372d67328e79b415196525c45a3a6fb9632e964b67420ed21e7de5a8d233d9e9",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "9d5e06f103dfccb788d2d85c5399a4fef02fb900f593b45a91cf58f8a14f3e79",
+    "candidate.patch": "05f7fc55720c696700da2ad364149cecefbe2a018f6337a6504e7f1ba51ad60b",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "be1e533fdc070a338295e07e7f781127e4e3c4eeff25ab300059fa3b32482e7b",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "07a1c948713e3687e70e5fd0565044d46149e435ef0552e8972e540810e9b68b",
+    "verification.json": "929142b45f6b0dcb7902f6e7979d39358730f8d8949fb606ca9ee0d10c39b317"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "supersedes_manifest_sha256": "7fdd4642f2437f9850fc53d269a13c80e831cf5e475eafd12f6fc82ad7422f47"
+}

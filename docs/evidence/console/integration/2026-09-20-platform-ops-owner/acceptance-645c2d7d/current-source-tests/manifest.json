@@ -1,0 +1,17 @@
+{
+  "kind": "ops-current-source-corruption-recovery-private-proposal",
+  "files_sha256": {
+    "README.md": "269eaa22d62f7772caff58527c5a6e8213246c8785c1cf8cb89088cf81b92a80",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "f6fcd6b50e07881fcfc047b10e85cb8128e75f2d9e2010fe22c02603b2e0d20d",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "f6491d4fd00c9c5f8df8c2356487715964b0df8de13ed950cb31387f03ed3024",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "4ef86f895b09fa8e41c4a1e1d6a9a419888fae11c2606573d59330a5ac89eef3",
+    "candidate/backend/app/tests/auth_rest/legacy_platform_ops_current_source.rs": "9c7950154d25027333a17f565d4b2afacb2f3d987500eed776ebd938ca30988a",
+    "candidate.patch": "ae61c8ce9148cbf633aef79bb9a9b6c2b27828727001fc912bd61c5e5624c105",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "a9cdcac672647e638228388a5d2b2b40aa2483bfdf8f50a1cce1f2a4fdcb28c0",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "e40d55dfe2c273dad509cf21e6b1fcefcc1736331030678ab483042199a707f7",
+    "preimage/backend/app/tests/auth_rest/legacy_platform_ops_credentials.rs": "372d67328e79b415196525c45a3a6fb9632e964b67420ed21e7de5a8d233d9e9",
+    "verification.json": "dabc6d5b8706a230066b755db0371f8de3572dbba58aee3cafcc64e7acea73aa"
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false
+}
