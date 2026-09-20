@@ -23,6 +23,14 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_private_company_intake_guards_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-guards.sql"),
+            "ops/postgres-company-enrollment-guards.sql",
+        )
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_guards.rs").is_file())
+
     def test_private_company_intake_auth_rest_resources_are_complete(self) -> None:
         config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
         self.assertEqual(

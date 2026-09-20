@@ -1566,4 +1566,5 @@ SELECT (SELECT count(*) FROM routines)=4
     }
 
     include!("native_company_signed_credentials.rs");
+    include!("native_company_intake_guards.rs");
 }
