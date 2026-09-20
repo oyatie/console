@@ -78,3 +78,15 @@ test("adding an entry without updating counts is caught", () => {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /counts\.mapped declares \d+ but the file contains \d+/);
 });
+
+test("native inventory counts are checked against actual native rows", () => {
+  const result = withMap((map) => {
+    map.native = [
+      { wrapper: "app-auth-rest-browser-pg", loc: "//backend/app:console-app-itest-auth_rest-browser", reason: "required native" },
+      { wrapper: "app-health-readiness-browser-pg", loc: "//backend/app:console-app-itest-health_readiness-browser", reason: "required native" },
+    ];
+    map.counts.native = 1;
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /counts\.native declares 1 but the file contains 2/);
+});
