@@ -1570,7 +1570,7 @@ GRANT EXECUTE ON FUNCTION public.account_company_deactivation_guard_v1(uuid,uuid
 def credential_generated_files():
     query = credential_state_query()
     root_query = root_state_query()
-    native_query = native_state_query()
+    native_query = company_eligibility_state_query()
     root_inspect = 'root_state := (\n' + root_query + '\n);'
     inspect = 'state := (\n' + query + '\n);'
     native_inspect = 'native_state := (\n' + native_query + '\n);'
@@ -1622,6 +1622,18 @@ BEGIN
     {root_inspect}
     {inspect}
     IF root_state='account_custody.native_finalized' AND state='account_credentials.native_finalized' THEN RETURN; END IF;
+    <<prepare_company_eligibility>>
+    BEGIN
+    -- The exact current Business-session predecessor may already hold live
+    -- Accounts, sessions and receipts. Skip only its historical installers.
+    IF root_state='account_custody.native_upgrade_required'
+       AND state='account_credentials.native_upgrade_required'
+       AND COALESCE((SELECT snapshot_sha256 IN ({','.join("'" + value + "'" for value in company_eligibility_fingerprints()[0])})
+           FROM (
+{company_eligibility_snapshot_query()}
+           ) captured),false) THEN
+        EXIT prepare_company_eligibility;
+    END IF;
     <<prepare_business_session>>
     BEGIN
     IF root_state='account_custody.native_upgrade_required'
@@ -1704,6 +1716,8 @@ BEGIN
 {audit_attribution_upgrade_sql()}
     END prepare_business_session;
 {business_session_upgrade_sql()}
+    END prepare_company_eligibility;
+{company_eligibility_upgrade_sql()}
     {native_inspect}
     IF native_state IS DISTINCT FROM 'account_native.finalized' THEN
         RAISE EXCEPTION 'account_native.profile_mismatch';
@@ -1937,6 +1951,169 @@ SELECT CASE WHEN (SELECT snapshot_sha256 FROM current_profile) IN ({final_litera
  ELSE (SELECT historical.state FROM historical) END AS state"""
 
 
+
+# Exact reviewed single-owner source; no history or privilege repair.
+COMPANY_ELIGIBILITY_INSTALL = r"""-- One prospective read owner. Apply only after exact predecessor validation
+-- inside the existing custody finalizer transaction; never standalone rollout.
+CREATE FUNCTION public.account_company_setup_eligibility_v1(p_account uuid)
+RETURNS boolean
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on
+AS $body$
+DECLARE
+    control record;
+    head public.deployment_operator_head%ROWTYPE;
+    receipt public.deployment_operator_receipts%ROWTYPE;
+BEGIN
+    IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authority_unavailable';
+    END IF;
+    IF p_account IS NULL OR p_account='00000000-0000-0000-0000-000000000000'::uuid THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authentication_invalid';
+    END IF;
+    BEGIN
+        SELECT * INTO STRICT control FROM public.account_security_lock_shared_v1(p_account);
+    EXCEPTION WHEN no_data_found THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authentication_invalid';
+    END;
+    IF control.security_state IS DISTINCT FROM 'ACTIVE' THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authentication_invalid';
+    END IF;
+    IF control.security_generation IS NULL OR control.security_generation < 1
+        OR control.revision IS NULL OR control.revision < 1
+        OR control.context_generation IS NULL OR control.context_generation < 1 THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authority_unavailable';
+    END IF;
+
+    -- Account SHARE also serializes an absent head against same-Account genesis.
+    -- Keep the selected head SHARE until the caller's transaction ends.
+    SELECT h.* INTO head FROM public.deployment_operator_head h
+        WHERE h.singleton=1 AND h.account_id=p_account FOR SHARE OF h;
+    IF NOT FOUND THEN RETURN false; END IF;
+
+    -- Separate SPI statement gets fresh visibility after a possible head wait.
+    SELECT r.* INTO receipt FROM public.deployment_operator_receipts r
+        WHERE r.receipt_id=head.receipt_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authority_unavailable';
+    END IF;
+    IF (receipt.receipt_id,receipt.revision,receipt.account_id,
+            receipt.system_identifier,receipt.database_name,receipt.database_oid)
+        IS DISTINCT FROM
+        (head.receipt_id,head.revision,p_account,
+            head.system_identifier,head.database_name,head.database_oid)
+        OR head.system_identifier IS DISTINCT FROM
+            (SELECT c.system_identifier::text FROM pg_catalog.pg_control_system() c)
+        OR head.database_name IS DISTINCT FROM pg_catalog.current_database()::text
+        OR head.database_oid IS DISTINCT FROM
+            (SELECT d.oid::bigint FROM pg_catalog.pg_database d
+                WHERE d.datname=pg_catalog.current_database())
+        OR receipt.receipt_id='00000000-0000-0000-0000-000000000000'::uuid
+        OR receipt.command_id='00000000-0000-0000-0000-000000000000'::uuid
+        OR receipt.revision < 1 OR receipt.expected_revision < 0
+        OR receipt.expected_revision IS DISTINCT FROM receipt.revision-1 THEN
+        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authority_unavailable';
+    END IF;
+    IF receipt.kind='DESIGNATE'
+        AND receipt.revision=1 AND receipt.expected_revision=0
+        AND receipt.expected_security_generation IS NOT NULL
+        AND receipt.expected_security_generation > 0 AND receipt.reason IS NULL THEN
+        -- Admission generation is immutable provenance, not a live-session fence.
+        RETURN true;
+    END IF;
+    IF receipt.kind='REVOKE' AND receipt.revision > 1
+        AND receipt.expected_security_generation IS NULL
+        AND receipt.reason IS NOT NULL
+        AND pg_catalog.octet_length(receipt.reason) BETWEEN 1 AND 512
+        AND pg_catalog.length(pg_catalog.btrim(receipt.reason,E' \t\n\r\f\013')) > 0 THEN
+        RETURN false;
+    END IF;
+    RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account.authority_unavailable';
+END
+$body$;
+ALTER FUNCTION public.account_company_setup_eligibility_v1(uuid) OWNER TO console_account_owner;
+REVOKE ALL ON FUNCTION public.account_company_setup_eligibility_v1(uuid)
+    FROM PUBLIC,console_app,console_rt,console_auth_rt,console_auth_startup,
+        console_account_owner,console_terms_owner,console_credential_owner,
+        console_leave_cmd,console_ontology_cmd,console_platform_force_cmd;
+GRANT EXECUTE ON FUNCTION public.account_company_setup_eligibility_v1(uuid)
+    TO console_account_owner,console_auth_rt;
+"""
+
+
+def company_eligibility_snapshot_query():
+    # Extend the unchanged Business-session serializer; historical bytes and
+    # fingerprints stay valid only for the historical contract they describe.
+    query = business_session_snapshot_query()
+    replacements = [
+        ("OR (n.nspname='public' AND p.proname IN (", "OR (n.nspname='public' AND p.proname IN ('account_company_setup_eligibility_v1',"),
+        ("   ('public.account_context_presence_v1(uuid)'),", "   ('public.account_company_setup_eligibility_v1(uuid)'),\n   ('public.account_context_presence_v1(uuid)'),"),
+        ("count(*)=59 AND bool_and(present", "count(*)=60 AND bool_and(present"),
+    ]
+    for before, after in replacements:
+        if query.count(before) != 1:
+            raise ValueError('Company eligibility snapshot anchor missing or duplicate')
+        query = query.replace(before, after)
+    return query
+
+
+# Prospective plain/observer profiles captured from exact reviewed source.
+# Historical Business-session serializers and fingerprint tuples stay unchanged.
+COMPANY_ELIGIBILITY_PRIOR_SHA256 = ('e60fe3970fbf628d292791a645ac69856ef0f4d3a5179adeea8b8fbe6367d1e9', '548bb9642cee4cd3c31d8ad6475575a78f0560e9f08c0f60b49163dc07d9f9f2')
+COMPANY_ELIGIBILITY_FINALIZED_SHA256 = ('ffdd70fc9ea8f96509a9614826415226896d7deed857930b1257f47d920a6131', '88a0df75fdb3e18280b9a64951fb12fea491febb1ec3868c8016b86f8ea8f963')
+
+
+def company_eligibility_fingerprints():
+    values = (*COMPANY_ELIGIBILITY_PRIOR_SHA256, *COMPANY_ELIGIBILITY_FINALIZED_SHA256)
+    if any(not isinstance(value, str) or len(value) != 64
+           or any(c not in '0123456789abcdef' for c in value) for value in values):
+        raise SystemExit('Company eligibility fingerprints require independent source/capture review')
+    if len(set(values)) != 4:
+        raise SystemExit('Company eligibility plain/observer prior/finalized profiles must be distinct')
+    return COMPANY_ELIGIBILITY_PRIOR_SHA256, COMPANY_ELIGIBILITY_FINALIZED_SHA256
+
+
+def company_eligibility_state_query():
+    prior, finalized = company_eligibility_fingerprints()
+    prior_literals = ','.join("'" + value + "'" for value in prior)
+    final_literals = ','.join("'" + value + "'" for value in finalized)
+    return f"""WITH current_profile AS (
+{company_eligibility_snapshot_query()}
+), historical AS (
+{native_state_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM current_profile) IN ({final_literals})
+ AND (SELECT snapshot->'deployment_operator_boundary'->'startup_final_rights_valid' FROM current_profile)='true'::jsonb
+ THEN 'account_native.finalized'
+ WHEN (SELECT snapshot_sha256 FROM current_profile) IN ({prior_literals})
+ THEN 'account_native.extension_required'
+ WHEN EXISTS(SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+ WHERE n.nspname='public' AND p.proname='account_company_setup_eligibility_v1')
+ THEN 'account_native.profile_mismatch'
+ WHEN (SELECT historical.state FROM historical) IN ('account_native.finalized','account_native.extension_required')
+ THEN 'account_native.extension_required'
+ ELSE (SELECT historical.state FROM historical) END AS state"""
+
+
+def company_eligibility_upgrade_sql():
+    prior, finalized = company_eligibility_fingerprints()
+    prior_literals = ','.join("'" + value + "'" for value in prior)
+    final_literals = ','.join("'" + value + "'" for value in finalized)
+    inspect = '(\n' + company_eligibility_snapshot_query() + '\n)'
+    return f"""
+    IF NOT COALESCE((SELECT snapshot_sha256 IN ({prior_literals}) FROM {inspect} captured),false) THEN
+        RAISE EXCEPTION 'account_company_eligibility.predecessor_mismatch';
+    END IF;
+{COMPANY_ELIGIBILITY_INSTALL}
+    IF NOT COALESCE((SELECT snapshot_sha256 IN ({final_literals})
+        AND snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb
+        FROM {inspect} captured),false) THEN
+        RAISE EXCEPTION 'account_company_eligibility.profile_mismatch';
+    END IF;
+"""
+
+
+
 def business_session_upgrade_sql():
     prior_literals = ",".join("'" + value + "'" for value in BUSINESS_SESSION_PRIOR_SHA256)
     final_literals = ",".join("'" + value + "'" for value in BUSINESS_SESSION_FINALIZED_SHA256)
@@ -2020,7 +2197,7 @@ DO $account_native_postcondition$
 BEGIN
     PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
     IF (
-{native_state_query()}
+{company_eligibility_state_query()}
     ) IS DISTINCT FROM 'account_native.finalized' THEN
         RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='account_native.finalization_incomplete';
     END IF;
@@ -2030,7 +2207,7 @@ $account_native_postcondition$;
 
 
 def root_state_query():
-    return f"""WITH native AS ({native_state_query()})
+    return f"""WITH native AS ({company_eligibility_state_query()})
 SELECT CASE WHEN (SELECT native.state FROM native)='account_native.finalized' THEN 'account_custody.native_finalized'
  WHEN (SELECT native.state FROM native)='account_native.extension_required' THEN 'account_custody.native_upgrade_required'
  WHEN (SELECT native.state FROM native)='account_native.profile_mismatch' THEN 'account_native.profile_mismatch'
@@ -2039,7 +2216,7 @@ SELECT CASE WHEN (SELECT native.state FROM native)='account_native.finalized' TH
 
 def credential_state_query():
     legacy = CREDENTIAL_STATE_QUERY.strip().removesuffix(';')
-    return f"""WITH native AS ({native_state_query()})
+    return f"""WITH native AS ({company_eligibility_state_query()})
 SELECT CASE WHEN (SELECT native.state FROM native)='account_native.finalized' THEN 'account_credentials.native_finalized'
  WHEN (SELECT native.state FROM native)='account_native.extension_required' THEN 'account_credentials.native_upgrade_required'
  WHEN (SELECT native.state FROM native)='account_native.profile_mismatch' THEN 'account_native.profile_mismatch'

@@ -1,0 +1,52 @@
+{
+  "old_generator_sha256": "66d0a814b0b736d18be1f16c4172fb8eb456c64760af7c296b7577952f3af1e8",
+  "candidate_sha256": "6aaf9b2edb40b1588ffa88ad956f5988b1224ff827bd39029fec6acb62970c94",
+  "changed_existing_functions": [
+    "credential_generated_files",
+    "native_postcondition_sql",
+    "root_state_query",
+    "credential_state_query"
+  ],
+  "all_original_assignment_bytes_preserved": true,
+  "historical_function_sources_preserved": [
+    "audit_attribution_fingerprints",
+    "audit_attribution_snapshot_query",
+    "audit_attribution_upgrade_sql",
+    "audit_native_state_query",
+    "business_session_snapshot_query",
+    "business_session_upgrade_sql",
+    "deployment228_snapshot_query",
+    "deployment_fingerprints",
+    "deployment_upgrade_sql",
+    "generated_files",
+    "main",
+    "native227_state_query",
+    "native_state_query"
+  ],
+  "historical_query_outputs_verified": 7,
+  "reviewed_install_and_snapshot_bytes_equal": true,
+  "expected_generated_outputs": {
+    "backend/app/src/account_custody_state.sql": {
+      "sha256": "89261eaa382aea8e61284878ef4318b556396b0462ea6466fefb858a8910905f",
+      "bytes": 301518
+    },
+    "ops/postgres-finalize-account-custody.sql": {
+      "sha256": "ce195636a182721c027c689a6a021de03eafa17ff30e59607257c963903afb9e",
+      "bytes": 921265
+    },
+    "ops/postgres-verify-account-native.sql": {
+      "sha256": "a498b59d41bc9c64b82a61a3deeb1f4652bf4441b81e17f538ccca6a04025151",
+      "bytes": 262153
+    },
+    "backend/app/src/account_credential_custody_state.sql": {
+      "sha256": "b00737128fe9edd77406fbb68f53a9eb768c16485d22c77efae620f4dab8965d",
+      "bytes": 379465
+    },
+    "ops/postgres-finalize-account-credentials.sql": {
+      "sha256": "f1925281a6e175214c5ff647419a3428fca9faae79f461a161a5938bf6b02253",
+      "bytes": 3413752
+    }
+  },
+  "generated_files_written": 0,
+  "database_runs": 0
+}

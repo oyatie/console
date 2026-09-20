@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact finite eligibility finalizer source for admitted integration",
+  "manifest_sha256": "05f278d10beda113314d522700853e6f0538ab1a8002328a28e37c9667c8fa96",
+  "candidate_sha256": "6aaf9b2edb40b1588ffa88ad956f5988b1224ff827bd39029fec6acb62970c94",
+  "preimage_sha256": "66d0a814b0b736d18be1f16c4172fb8eb456c64760af7c296b7577952f3af1e8",
+  "independent_checker_sha256": "44b029bb3ed26dd27633b72dd9a8d833175ecf2e2c63612ba5f458098290724f",
+  "findings": [],
+  "evidence": [
+    "Independent Python AST/source comparison checks all old function definitions, assignments AND annotated assignments; only4declared current-consumer functions change. Every old constant, historical serializer and historical upgrade definition remains exact.",
+    "9historical emitted query/upgrade outputs byte-identical; approved INSTALL/prospective serializer and all4independently approved capture hashes exact.",
+    "Independent generation into memory yields exactly5changed outputs with hashes/sizes matching preservation.json; no generated files written by reviewer.",
+    "5/5injected generator corruptions refused: empty/nonhex/duplicate fingerprints and missing/duplicate serializer anchors.",
+    "Current state wrapper accepts only exact prospective successors+complete mandatory rights; exact prospective predecessors need extension; any unknown named helper/overload mismatches before historical fallback.",
+    "Finalizer retains original operator/locking and exact successor no-op return. Outer skip requires both classifiersupgrade_required plus exact prospective predecessor; all older accepted paths retain historical upgrades. Finite CREATE follows exact predecessor check, then exact successor+complete-rights check in enclosing transaction. No repair/reseal or startup write."
+  ],
+  "limits": [
+    "Source approval only. Root must regenerate canonical5outputs and verify exact hashes/checkmode.",
+    "Actual owner catalog RED\u2192GREEN, direct-owner cases,5SQLxtransition histories, corruption comparator, retained migration/session regressions remain required.",
+    "Two HTTP projection cases require later owning Rust/UI dependency; this is not Company setup acceptance.",
+    "No production rollback/readmission or release acceptance."
+  ]
+}

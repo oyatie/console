@@ -1,0 +1,36 @@
+{
+  "owner": "/root",
+  "private_candidate_author": "/root/integration_tests",
+  "base_sha": "c659210e37f3f0fa5b8dc7d3b9ed7b8e07b7d139",
+  "immutable_target": "Install exact current-authority read owner through one prospective59to60custody layer; preserve all historical serializers and bytes; reviewed behavior/transition tests must pass",
+  "allowed_paths": [
+    "ops/generate-account-custody.py",
+    "ops/postgres-finalize-account-custody.sql",
+    "ops/postgres-finalize-account-credentials.sql",
+    "ops/postgres-verify-account-native.sql",
+    "backend/app/src/account_custody_state.sql",
+    "backend/app/src/account_credential_custody_state.sql"
+  ],
+  "forbidden": "Historical migrations/fingerprints, unrelated SQL, role grants/tables, all lockfiles or authority records",
+  "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-company-eligibility-map.json --only app-auth-rest-pg --runner cargo",
+  "mechanical_guide": "Approved retained eligibility-v3 contract plus committed sequencing amendment and exact reviewed transition tests; only additive helper/newserializer and source-bound new finite hashes. Root serializes all generated writes and real DB captures; candidate author writes private files only. Never infer new profile by resealing old serializer.",
+  "reviewer": "/root/integration_security",
+  "pre_mortem": "Stale designation or broadACL allows setup; unknown profile resealed; partial install passes readiness",
+  "blast_radius": "One read-only Account owner function and prospective metadata transition in disposable tests",
+  "detection": "ActualcatalogRED,9directowner tests,5migration histories,oldsessionrollback,currentrowlocks,exactsource/capture review and later2HTTPprojectiontests",
+  "rollback": "Tested drained prospective inverse only; preserve business and historical metadata records",
+  "stop_conditions": [
+    "Missingexactbodyornewprofile independentreview",
+    "Any old hash reinterpreted",
+    "Metadata drift outside one function",
+    "Missingprerequisite mistaken for behaviorfailure"
+  ],
+  "remaining_holds": [
+    "Two HTTP projection tests and actual Company submission/workspace stayrequired",
+    "Source-bound prospective hashes notyetderived",
+    "Fullrelease incomplete"
+  ],
+  "prior_admitted_base_sha": "a86dac710a1daab97caacf17ee2f429f4ac072c5",
+  "rebind": "Only independently reviewed root routing/health fixture and evidence commits since initial admission. Exact approved eligibility tests, generator and historical SQL unchanged.",
+  "generator_sha256": "66d0a814b0b736d18be1f16c4172fb8eb456c64760af7c296b7577952f3af1e8"
+}
