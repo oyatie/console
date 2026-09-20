@@ -1,0 +1,47 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_CORRECTED_PARSER_SOURCE_RUNTIME_PENDING_AND_CEDAR_EVIDENCE_STORAGE",
+  "parser": {
+    "generator_sha256": "9cb4056a18e94a3821fbcb1237d7553d519f2be3db24b5b8d52dd0d466e8263b",
+    "generated_helper_sha256": "cbc685bff861fec809b930e57673cce5426a771a236323471955510de0631290",
+    "resolved": [
+      "29byte header/version compared exactly; AccountFROM30/commandFROM46/discriminator61/cursor62/GroupFROM63/groupcursor78; exact total88..421",
+      "CASE expression parenthesized as upper BETWEEN bound; first runtime42601 retained as function-creation failure, not executed offsetoracle failure"
+    ],
+    "source_preservation": "AST removal of only new helper function and one generated_files key restores complete prior generator AST; function return literal equals emitted SQL bytes.",
+    "reviewed": [
+      "bigint length arithmetic, bounded availablebytes and fieldlimits before decode/allocation",
+      "nonnil IDs, exact0/1group discriminator, UTF8 decode with sanitized22023, suffix rejection",
+      "Ccollation exact ASCII slug and explicit Rust-equivalent controls/whitespace; original valid Unicode preserved in UTF8 database",
+      "No tableaccess/SQL mutation in decoder; immutable invoker, fixedsearchpath, privateAccountowner and noPUBLICexecute",
+      "Separate UNINSTALLED output, existing classifiers/finalizers unchanged"
+    ],
+    "runtime_pending": true,
+    "first_failure_log": {
+      "path": "/private/tmp/console-company-parser-native-runtime-20260920.log",
+      "sha256": "f6504f459e078771535a219258361a13230077b592e490517dd554742b54780e",
+      "executed": 1,
+      "failed": 1,
+      "filtered": 476,
+      "stage": "CREATE FUNCTION42601; parseroracles not reached"
+    },
+    "original_sources_preserved": "/private/tmp/console-company-parser-offset-failure-20260920"
+  },
+  "cedar_bundle": {
+    "path": "docs/evidence/console/integration/2026-09-20-native-company-policy",
+    "receipt_sha256": "d160188ab4cba789554890a97a7208642a453a18c90eca26f72a5902ab3d3e88",
+    "members": 7,
+    "total_files": 8,
+    "gzip": 4,
+    "custody": "Every storedhash/sourcehash/sourcebytecount exact; allprivate originals match; gzipmtime0. Test source52397c9c matches commit79a0da316.",
+    "counts": "7focused+117full with117distinct, initial5pass2fail preserved",
+    "limits": "Existing compiler prerequisites only, not Companyworkflow/fullrelease acceptance"
+  },
+  "remaining_holds": [
+    "Corrected native SQLx execution and exact710cases/6login denials/classifier and rowpreservation",
+    "Company completeowner and browserjourney",
+    "Separate productionqualification/exposure"
+  ],
+  "findings": [],
+  "reviewer_tests_executed": 0
+}

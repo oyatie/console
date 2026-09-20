@@ -1,0 +1,195 @@
+{
+  "implementation_commit": "4dad954dc",
+  "test_commit": "2f11f2f4f",
+  "status": "PRIVATE_PARSER_VERIFIED_NOT_COMPANY_WORKFLOW_ACCEPTED",
+  "members": [
+    {
+      "path": "console-company-parser-native-runtime-20260920.log.gz",
+      "sha256": "d4fd85b7caeb420816dd3d8510f4abe9088508265586a4174404c24b9656dfd2",
+      "original_path": "/private/tmp/console-company-parser-native-runtime-20260920.log",
+      "original_sha256": "f6504f459e078771535a219258361a13230077b592e490517dd554742b54780e",
+      "original_bytes": 8222
+    },
+    {
+      "path": "console-company-parser-native-successor-runtime-20260920.log.gz",
+      "sha256": "864095596b6b57e7bc41681f887ca3c0942a8060d2900e969c65eb963060dcc1",
+      "original_path": "/private/tmp/console-company-parser-native-successor-runtime-20260920.log",
+      "original_sha256": "60adb3b4870d5fc6c2ed2774a2675a0b2ede976e25b7b320c9243b9ce5d028e6",
+      "original_bytes": 4304
+    },
+    {
+      "path": "console-company-parser-buck-generator-20260920.log.gz",
+      "sha256": "874d33aea0849a24cb15cc0ad1e106b13aa4e7c53125d13b8ba95178fefb056b",
+      "original_path": "/private/tmp/console-company-parser-buck-generator-20260920.log",
+      "original_sha256": "cf6bd6e1e5ca59c141dc9e641d301cf99ad92d81dc1e9abf771751bd6d0ae240",
+      "original_bytes": 882
+    },
+    {
+      "path": "console-company-parser-buck-generator-staged-20260920.log.gz",
+      "sha256": "aff46255bbe12df139cb58f1252199b245e66c75dd32d7990586dd115bf567ac",
+      "original_path": "/private/tmp/console-company-parser-buck-generator-staged-20260920.log",
+      "original_sha256": "0fff96256842b30ea12fda007929967eff10cd3632446aa71aa343c2c3b63735",
+      "original_bytes": 160
+    },
+    {
+      "path": "console-company-parser-reachability-20260920.log.gz",
+      "sha256": "7159625266a8ced88a05cf18803c12e7b0645981a25b61853dcaa29507c1b5f4",
+      "original_path": "/private/tmp/console-company-parser-reachability-20260920.log",
+      "original_sha256": "f513a183e274d7c3c7365ec29b0ef1f84ee81f1224f0caf4361880d18127aeb9",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-company-parser-runtime-receipt-20260920.json",
+      "sha256": "8cf17bfb33762022ff3c19b45460d5328ff28ef54ac9bf46b2a187b617a4d87d",
+      "original_path": "/private/tmp/console-company-parser-runtime-receipt-20260920.json",
+      "original_sha256": "8cf17bfb33762022ff3c19b45460d5328ff28ef54ac9bf46b2a187b617a4d87d",
+      "original_bytes": 1756
+    },
+    {
+      "path": "console-native-company-enrollment-lane-parser-20260920.json",
+      "sha256": "35203d108c9fa158ff3062e098055130ef59e64ba1e000b5f7731bd1d3de516c",
+      "original_path": "/private/tmp/console-native-company-enrollment-lane-parser-20260920.json",
+      "original_sha256": "35203d108c9fa158ff3062e098055130ef59e64ba1e000b5f7731bd1d3de516c",
+      "original_bytes": 4543
+    },
+    {
+      "path": "console-native-company-parser-sqlx-tests-round1-security-review-20260920.json",
+      "sha256": "69243e90655b4e0939d691ce373f0416987a7fc325535a6ef25011121aaf9f6f",
+      "original_path": "/private/tmp/console-native-company-parser-sqlx-tests-round1-security-review-20260920.json",
+      "original_sha256": "69243e90655b4e0939d691ce373f0416987a7fc325535a6ef25011121aaf9f6f",
+      "original_bytes": 5640
+    },
+    {
+      "path": "console-native-company-parser-sqlx-round1-integration-tests-review-20260920.json",
+      "sha256": "5784c095f1621bea811d9af9f8f592949e66cfdd7914ea871eb3af6b9de94c28",
+      "original_path": "/private/tmp/console-native-company-parser-sqlx-round1-integration-tests-review-20260920.json",
+      "original_sha256": "5784c095f1621bea811d9af9f8f592949e66cfdd7914ea871eb3af6b9de94c28",
+      "original_bytes": 4640
+    },
+    {
+      "path": "console-native-company-parser-format-lane-security-review-20260920.json",
+      "sha256": "12c6a39aca236fe16207d8e7d9339748d8f313082fbe2cee893b0a9f2f0ccca4",
+      "original_path": "/private/tmp/console-native-company-parser-format-lane-security-review-20260920.json",
+      "original_sha256": "12c6a39aca236fe16207d8e7d9339748d8f313082fbe2cee893b0a9f2f0ccca4",
+      "original_bytes": 1764
+    },
+    {
+      "path": "console-company-parser-offsets-security-hold-20260920.json",
+      "sha256": "0eb5c618e50cbf49c3594ee3b803f24bb16c95e68172973d2d00404f104046af",
+      "original_path": "/private/tmp/console-company-parser-offsets-security-hold-20260920.json",
+      "original_sha256": "0eb5c618e50cbf49c3594ee3b803f24bb16c95e68172973d2d00404f104046af",
+      "original_bytes": 2315
+    },
+    {
+      "path": "console-company-parser-successor-source-cedar-storage-security-review-20260920.json",
+      "sha256": "c234e8de3c538ab4e563136133c9f0c0676c1e25cbcfa7bbc56e81ff1b715474",
+      "original_path": "/private/tmp/console-company-parser-successor-source-cedar-storage-security-review-20260920.json",
+      "original_sha256": "c234e8de3c538ab4e563136133c9f0c0676c1e25cbcfa7bbc56e81ff1b715474",
+      "original_bytes": 2739
+    },
+    {
+      "path": "console-company-parser-final-security-review-20260920.json",
+      "sha256": "e168c4e40e460faa536a3e9c23a8429b249f76988204952a462fc318468be25a",
+      "original_path": "/private/tmp/console-company-parser-final-security-review-20260920.json",
+      "original_sha256": "e168c4e40e460faa536a3e9c23a8429b249f76988204952a462fc318468be25a",
+      "original_bytes": 5325
+    },
+    {
+      "path": "approved-test-source.tar.gz",
+      "sha256": "a99904681d4d8e9ead5f326188e28362d078e641ae400c7939af161d38e79e53",
+      "original_directory": "/private/tmp/console-native-company-parser-sqlx-tests-20260920-round1",
+      "members": [
+        {
+          "path": "GUIDE.md",
+          "sha256": "afbd1eb99e6b3ee45f2dd7f64e82aca76813eaaaf4298b8b8b7d22b8885a2a27"
+        },
+        {
+          "path": "company-enrollment-input-boundary.sql",
+          "sha256": "3404dd5a604e91029f21250be9f1324575942e7ec122237eb6b8652708965c67"
+        },
+        {
+          "path": "company-enrollment-input-golden.sql",
+          "sha256": "2a6d065d71d580aa6113dd7332d02574c1bc2f588a079bf4d963a9d7f96d83d5"
+        },
+        {
+          "path": "company-enrollment-input-malformed.sql",
+          "sha256": "4a2d570e0f7eaca200bfdbc0bd54b86bc6b0b0a61c7891eaf03c4cca8fdd5d27"
+        },
+        {
+          "path": "existing-generated-output-sha256.json",
+          "sha256": "caaa39298469dab799abd2166d0b54aa0ba7fe3026345c89416b14317bc34002"
+        },
+        {
+          "path": "gen_first_party.py.after",
+          "sha256": "60675731ee7dd1b5d38f0517fb3888ce85d4a327208af40edfaab40c8edbe4a5"
+        },
+        {
+          "path": "gen_first_party.py.before",
+          "sha256": "279e0c12e989371a44f4137005367b9306a0966334a8ef2980675a14cc9f9f02"
+        },
+        {
+          "path": "manifest.json",
+          "sha256": "4bfd3dd57dca0ad8ab7cbadacfe24ae7aa055173f2cf3f42a9a8e32f9712c381"
+        },
+        {
+          "path": "native_company_input_parser.rs",
+          "sha256": "492552cd86725cd32d7789ed571e5cc41341457d92daa673505c0b2c2873abce"
+        },
+        {
+          "path": "ops.BUCK.after",
+          "sha256": "2701da35995228d4f590a7f008fa9935e7760dc18c7ce148537368f9ec80c73f"
+        },
+        {
+          "path": "ops.BUCK.before",
+          "sha256": "a5d126542516bf2918f0b2689c844a9211c1c851669a117800325e14b97c80a3"
+        },
+        {
+          "path": "sql-adaptation.json",
+          "sha256": "4fb33cdd562d5f69773fdb58931d36b160a0c8306d413c8bb59201780c39fe09"
+        },
+        {
+          "path": "test_company_enrollment_input_generator.py",
+          "sha256": "8d506011077396a050c6a6405b12143d6e04b00bc5a15a8a8d2aea11fbe08988"
+        },
+        {
+          "path": "test_gen_first_party.py.after",
+          "sha256": "cb60f924252560cd6d827e0f99218ccf75ae0f45bc7ac12e50be3f6ec1f923a3"
+        },
+        {
+          "path": "test_gen_first_party.py.before",
+          "sha256": "b0e7acf0cefd413b7fc3d06e00f524cd973238d9d1054496e1ffc0a4e8444f06"
+        }
+      ]
+    },
+    {
+      "path": "rejected-parser-source.tar.gz",
+      "sha256": "a456e6d9408116322dbecc191ef27758d82c3e67b94a4a4e9e99e8619ec94a12",
+      "original_directory": "/private/tmp/console-company-parser-offset-failure-20260920",
+      "members": [
+        {
+          "path": "generate-account-custody.py",
+          "sha256": "015b14cfc1c0042e65a709813641f7b8cada72ce14593b0fc4c60e010cde7f20"
+        },
+        {
+          "path": "postgres-company-enrollment-input.sql",
+          "sha256": "39bcff328babf3150bb1ef9485d322782c333eccd107c558685fad69e12a55c1"
+        }
+      ]
+    }
+  ],
+  "historical_failures_preserved": [
+    "first decoder install failed42601 before parser vectors",
+    "independent review caught two version bytes missing from offsets",
+    "generator drift test failed on unstaged generated output then passed61/61 after staging"
+  ],
+  "owner": "/root",
+  "reviewers": [
+    "/root/integration_security",
+    "/root/integration_tests"
+  ],
+  "remaining": [
+    "helper deliberately uninstalled",
+    "enrollment request/effect/current-context owner missing",
+    "all five native browser business workflows and qualification remain required"
+  ]
+}
