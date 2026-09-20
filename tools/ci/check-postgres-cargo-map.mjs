@@ -80,6 +80,7 @@ if (usesCargo) {
   const observed = {
     mapped: (map.entries ?? []).length,
     unmapped: (map.unmapped ?? []).length,
+    native: (map.native ?? []).length,
     workflow_targets: mapped.size,
     workflow_mapped: mapped.size,
     workflow_missing: 0,

@@ -4,6 +4,7 @@
   "counts": {
     "mapped": 238,
     "unmapped": 3,
+    "native": 2,
     "workflow_targets": 223,
     "workflow_mapped": 223,
     "workflow_missing": 0
@@ -5692,6 +5693,18 @@
         "--test-threads=1"
       ],
       "in_workflow_postgres_job": true
+    }
+  ],
+  "native": [
+    {
+      "wrapper": "app-auth-rest-browser-pg",
+      "loc": "//backend/app:console-app-itest-auth_rest-browser",
+      "reason": "Required native Buck2 browser variant with test-browser feature, executed by CI Account and Company browser steps; intentionally no Cargo producer. Not dark. Native graph and CI execution are checked by tools/buck/test_gen_first_party.py."
+    },
+    {
+      "wrapper": "app-health-readiness-browser-pg",
+      "loc": "//backend/app:console-app-itest-health_readiness-browser",
+      "reason": "Required native Buck2 browser variant with test-browser feature, executed by CI payroll hydration browser step; intentionally no Cargo producer. Not dark. Native graph and CI execution are checked by tools/buck/test_gen_first_party.py."
     }
   ],
   "unmapped": [
