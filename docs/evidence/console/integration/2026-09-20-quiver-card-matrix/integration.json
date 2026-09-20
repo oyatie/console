@@ -1,0 +1,44 @@
+{
+  "owner": "/root",
+  "implementation_candidate": "e15334488c452684e9c3c6dffbe858317113d265",
+  "test_candidate": "7976d26a3854ec6bb50e5a5e31ae935634ad1cf4",
+  "result": "bounded reference catalogue validated; no state promotion",
+  "preservation": {
+    "preimage_sha256": "d16cebf023d9ce19e473841815b068ce68c4a9a937eb9bbf32f78bd0724e717c",
+    "remove_only_two_appended_rows_equals_entire_preimage": true,
+    "runtime_rows_before": 89,
+    "runtime_rows_after": 91,
+    "ordered_card_records": 60,
+    "all_prior_leaf_states_unchanged": true
+  },
+  "verification": {
+    "positive_prerequisites": 4,
+    "named_owner_red": {
+      "executed": 1,
+      "failed": 1
+    },
+    "named_owner_green": {
+      "executed": 1,
+      "passed": 1
+    },
+    "owner_suite": {
+      "executed": 169,
+      "passed": 169,
+      "failed": 0,
+      "skipped": 0,
+      "negative_histories": 121
+    },
+    "planner_suite": {
+      "executed": 29,
+      "passed": 29,
+      "failed": 0
+    }
+  },
+  "limits": [
+    "Reference catalogues do not qualify execution, analytical semantics or successor equivalence",
+    "Full Foundry reference freeze remains incomplete",
+    "All401release leaves retain prior states; no milestone or release completion",
+    "Platform source snapshot intermittent failure remains unresolved",
+    "Final independent audit recorded separately"
+  ]
+}

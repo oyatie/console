@@ -1,0 +1,207 @@
+{
+  "kind": "proposed design oracles only; no code authored or executed",
+  "positive_controls": [
+    "Both exact prospective rows on actual-registry clone validate, remain unchanged, and attest successfully.",
+    "Fixed proposal/independent-review hashes and both gzip/raw hashes/lengths;60ordered entries split39/21;source/leaf/binding memberships exact.",
+    "Both Scatter plot regression and Time series scatter plot remain distinct labels with identical original target; no path uniqueness or semantic alias inference.",
+    "All401leaves remain planned only; partial_snapshot and unqualified semantics persist.",
+    "Root integration-only removal of exactly two new runtime rows restores complete exact registry preimage, including prior Fusion data and tests."
+  ],
+  "negative_groups": [
+    {
+      "id": "N01",
+      "case": "Delete either runtime row and both rows",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N02",
+      "case": "Duplicate either exact runtime identity",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N03",
+      "case": "Rename either runtime identity",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N04",
+      "case": "Change source to another existing valid source, including opposite index",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N05",
+      "case": "Change conservative reference_status",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N06",
+      "case": "Claim Console support or nonnull command; preserve existing generic support diagnostic",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N07",
+      "case": "Add runtime state/receipt/expected digest override field",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N08",
+      "case": "Remove/change semantics_status",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N09",
+      "case": "Remove/add/fill semantic dimension",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N10",
+      "case": "Empty or nonarray catalogue",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N11",
+      "case": "Omit first/middle/last card from either array",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N12",
+      "case": "Append duplicate or replace same-length card with another existing card",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N13",
+      "case": "Reorder records within either catalogue",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N14",
+      "case": "Change operation literal/type/whitespace; named owner RED",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N15",
+      "case": "Change reference_path including rewriting one ambiguous scatter path",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N16",
+      "case": "Change category to opposite source or invent category",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N17",
+      "case": "Change required_leaf to opposite existing leaf",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N18",
+      "case": "Change scope to imply semantics or Console support",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N19",
+      "case": "Remove a card key or add JSON-visible/invisible own enumerable key",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N20",
+      "case": "Change any source_binding source/path/digest/quote/matching/scope field",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N21",
+      "case": "Remove a binding key or add JSON-visible/invisible own enumerable key, including contradictory digest",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N22",
+      "case": "Remove exact shared binding while catalogue stays intact",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N23",
+      "case": "Change shared nonempty quote while catalogue stays intact",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N24",
+      "case": "Drop either same-path chart label, collapse pair, replace operation with other label, or invent unique path",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N25",
+      "case": "Change catalogue plus candidate-supplied digest; must not override checker pin",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both runtime catalogues where applicable; shared-path controls target charts"
+    },
+    {
+      "id": "N26",
+      "case": "runtime: keep command:null value but make required key nonenumerable; add one neutral enumerable undefined/function extra so Object.keys count is unchanged",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both catalogues and both undefined/function extra variants",
+      "required_behavior": "Prove required key still own but absent from Object.keys, extra own/enumerable, count unchanged, canonical bytes CHANGED, prevalidation false; actual Quiver exact-key rejection before digest/status; same-object positive shape/bytes restoration remains false until explicit revalidation."
+    },
+    {
+      "id": "N27",
+      "case": "unqualified_semantics: keep first null dimension value but make required key nonenumerable; add one neutral enumerable undefined/function extra so Object.keys count is unchanged",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both catalogues and both undefined/function extra variants",
+      "required_behavior": "Prove required key still own but absent from Object.keys, extra own/enumerable, count unchanged, canonical bytes CHANGED, prevalidation false; actual Quiver exact-key rejection before digest/status; same-object positive shape/bytes restoration remains false until explicit revalidation."
+    },
+    {
+      "id": "N28",
+      "case": "card: keep operation string value but make required key nonenumerable; add one neutral enumerable undefined/function extra so Object.keys count is unchanged",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both catalogues and both undefined/function extra variants",
+      "required_behavior": "Prove required key still own but absent from Object.keys, extra own/enumerable, count unchanged, canonical bytes CHANGED, prevalidation false; actual Quiver exact-key rejection before digest/status; same-object positive shape/bytes restoration remains false until explicit revalidation."
+    },
+    {
+      "id": "N29",
+      "case": "source_binding: keep quote string value but make required key nonenumerable; add one neutral enumerable undefined/function extra so Object.keys count is unchanged",
+      "boundary": "validateConsoleTruthLedger",
+      "coverage": "Both catalogues and both undefined/function extra variants",
+      "required_behavior": "Prove required key still own but absent from Object.keys, extra own/enumerable, count unchanged, canonical bytes CHANGED, prevalidation false; actual Quiver exact-key rejection before digest/status; same-object positive shape/bytes restoration remains false until explicit revalidation."
+    }
+  ],
+  "required_probe_name": "Quiver catalogue rejects changed operation",
+  "required_named_attestation_history": "Quiver catalogue failed revalidation revokes attestation after same-object restoration",
+  "visible_history": "same-object positive true -> changed canonical bytes and prevalidation false -> actual owner rejection/false -> exact positive shape/bytes restored in place on SAME outer object without validation -> still false -> explicit successful revalidation true",
+  "invisible_history": "same-object positive true -> neutral own enumerable undefined/function extra persists in memory and canonical bytes unchanged; no prevalidation false requirement -> actual exact-key rejection/false -> remove extra and exact shape/bytes restored on SAME outer object without validation -> still false -> explicit successful revalidation true",
+  "invisible_cases": "N19 card rows and N21 bindings, each undefined/function variant and both catalogues; apply same distinction to any other invisible extra-key variant",
+  "forbidden_shortcuts": [
+    "Replacement outer object",
+    "Private attestation reset helper",
+    "Implicit revalidation during restoration",
+    "JSON roundtrip erasing injected fault",
+    "Path deduplication or fabricated alias correction",
+    "Candidate supplied expected digest",
+    "Using source-prerequisite failure or zero executed tests as RED"
+  ],
+  "shared_binding_scope": "Canonical frozen-binding membership under exact existing leaf; not shared-array multiplicity or generic JS object graph validation",
+  "execution_counts": "Not authored/executed; root reports actual discovered/executed counts after approved tests exist.",
+  "key_guard_contract": "Compare actual enumerable own key membership AND count at runtime/semantics/card/binding levels. Object.hasOwn with count alone is insufficient. N26-N29 are digest-visible, unlike extra-only N19/N21 invisible variants."
+}

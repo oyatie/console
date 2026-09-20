@@ -1,0 +1,42 @@
+{
+  "kind": "private-additive-Quiver-test-candidate",
+  "round": 1,
+  "observed_head_sha": "10269cc6d5b9841d22869810f6a00fd095a703f8",
+  "design_manifest_sha256": "3d4074e3ab3e7850e68dc7cfc127b220e708c851cdede4394ebe5a00faa342f0",
+  "root_design_consensus_sha256": "c6f7e6b9012e50dfd565568b0e00cecd6f5e2ef470fdbac89419164b12d8f2f3",
+  "target": "scripts/console/validate-console-truth-ledger.test.mjs",
+  "target_preimage_sha256": "14e17a51766f6bbe4d946a054da6cf81b9a80f3a7ce1e8194bfbee34cbcf21e9",
+  "source_pins": {
+    "README.md": "1122d61fbf4f0f6df3fa2ce412ca127ea02b730c68edba90795c9f31ad30ea43",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+    "docs/current/ROADMAP.md": "f37adb9e9e487e19deb7753934a1f0fd7a0b4e9667f3db4ff136165e9434398c",
+    "docs/current/DELIVERY.md": "2a746d23c9ac7864013a8f3b3a33a37df2b667a00395776575031a107a45dc20",
+    "docs/program/console-capability-registry.json": "d16cebf023d9ce19e473841815b068ce68c4a9a937eb9bbf32f78bd0724e717c",
+    "scripts/console/validate-console-truth-ledger.mjs": "863d4a24910d021127433b6c124fe0dd59699c4a5a2118dc0c9932d79826c75c",
+    "scripts/console/validate-console-truth-ledger.test.mjs": "14e17a51766f6bbe4d946a054da6cf81b9a80f3a7ce1e8194bfbee34cbcf21e9",
+    "scripts/console/plan-fanout.mjs": "a8a53569d9eb68ac86b5fa77a122729e1a06f52302963205244f732302e5db44",
+    "scripts/console/verify-console-authority-train.mjs": "3809bde7bf9bd085e5376ea0deba2d5e5cf576f945235fd3d502d3af9bead20b",
+    "tools/ci/assess-tip-contention.mjs": "4f93632242b2a428b8ea8d1246e3e7c1e4f1ab57ac15fd20e14421179f27d8c5",
+    ".github/workflows/ci.yml": "3fde3529edf7c59c6f3bd489e68907a54dc78250d658c152a5ce75957d301cb8",
+    "package.json": "86f60cf9c4e1954c4fdfab25ef270d8592d8dc7d8ec535f625002f5a5bd3f391",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/proposal.json": "b205746d1400a1bd9a663826545c7ec97bf4b09bacd5fb13893ab6e405776d59",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/independent-review.json": "803eb52dcf238307b62b5ed0f8ad29558ab743a71c98170379bb2fb8426f6de2",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/integration.json": "c494b8304825513d48a78fe7e37d8689edb93f17bd6c11a1287c6dd69ca3289a",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-time-series.html.gz": "55804771bed958fa5f512ea4d58f4fe2d22934aa15b641af9b8faaf960d5ca25",
+    "docs/evidence/console/research/2026-09-19-foundry-analysis/quiver-cards-index-charts.html.gz": "70fedbe46c7104d5972c89d0ededd93d4eab12c8925e501487c5e5b3b47d5423"
+  },
+  "expected_discovered_count": 169,
+  "expected_new_test_leaves": 34,
+  "expected_rejection_histories": 121,
+  "tests_executed": 0,
+  "implementation_admitted": false,
+  "files": {
+    "README.md": "d06277dc9af6237609c03d049748502cb2b53afb135a7185feb494d4a60af1a8",
+    "additive-tests.mjs": "f97d262f1ca42dc945754f31dcffa3513b19fe7f5e1e64974c6acb6899f38793",
+    "coverage.json": "03776afb2f159ef27e6168883d1026a85313795abfe032c176bd5a5782b55d0e",
+    "design-manifest.json": "3d4074e3ab3e7850e68dc7cfc127b220e708c851cdede4394ebe5a00faa342f0",
+    "root-design-consensus.json": "c6f7e6b9012e50dfd565568b0e00cecd6f5e2ef470fdbac89419164b12d8f2f3",
+    "source-checks.json": "f16be7e6668fa5d3a4bbcd5ada82919c69031e58abd889e2953a357601819428",
+    "validate-console-truth-ledger.test.mjs": "382e5bc05fce7e8c78f65fdf5989e8548de98f20a946a2d9f03ca8623eb2efaf"
+  }
+}
