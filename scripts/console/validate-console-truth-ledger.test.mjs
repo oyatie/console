@@ -1230,3 +1230,310 @@ test('Fusion catalogue rejects nonenumerable required key replaced by omitted ex
     }, { label: `required key replaced by ${typeof extra} extra` });
   }
 });
+
+// Frozen Quiver index tuples only. Reuse the existing canonical JSON/hash helpers.
+const QUIVER_SPECS = [
+  {
+    runtime: 'Quiver time-series cards', source: 'quiver-cards-index-time-series',
+    leaf: 'F08.time-series-transform-library', count: 39,
+    catalogueSha: 'fe9892f6fdd0efe6808255cb8a7cad7d3530d9482538277689b498e695d55945',
+    compressedBytes: 54563, rawBytes: 455140,
+    compressedSha: '55804771bed958fa5f512ea4d58f4fe2d22934aa15b641af9b8faaf960d5ca25',
+    rawSha: '76b049393e6f60a79d83a4c305ada8430cc3d37c44a007558e08581ad946da5a',
+  },
+  {
+    runtime: 'Quiver chart cards', source: 'quiver-cards-index-charts',
+    leaf: 'F08.chart-library', count: 21,
+    catalogueSha: '3b34ea79d416110e8ddb259566a80cf53073747d4a3325a4ee938df1a714bc5a',
+    compressedBytes: 54057, rawBytes: 451643,
+    compressedSha: '70fedbe46c7104d5972c89d0ededd93d4eab12c8925e501487c5e5b3b47d5423',
+    rawSha: 'f9d9bccc26226a8d4aa4c62ef583f3bf3903a2fb441c1eb618f9a35839ee3495',
+  },
+];
+const quiverRows = (value) => value.release_inventory.support_matrices.runtimes.entries;
+const quiverRuntime = (value, spec) => quiverRows(value).find((row) => row.runtime === spec.runtime);
+const quiverCard = (runtime) => runtime.analytical_card_catalog[0];
+const QUIVER_SCATTER_PATH = '/docs/foundry/quiver/card-scatter-plot-regression/';
+const QUIVER_SCATTER_LABELS = ['Scatter plot regression', 'Time series scatter plot'];
+
+function frozenQuiverRows() {
+  const relative = 'docs/evidence/console/research/2026-09-19-foundry-analysis';
+  const directory = path.join(repoRoot, relative);
+  const proposalBytes = readFileSync(path.join(directory, 'proposal.json'));
+  assert.equal(fusionHash(proposalBytes), 'b205746d1400a1bd9a663826545c7ec97bf4b09bacd5fb13893ab6e405776d59', 'Quiver prerequisite: reviewed proposal custody');
+  const reviewBytes = readFileSync(path.join(directory, 'independent-review.json'));
+  assert.equal(fusionHash(reviewBytes), '803eb52dcf238307b62b5ed0f8ad29558ab743a71c98170379bb2fb8426f6de2', 'Quiver prerequisite: retained independent tuple review');
+  const review = JSON.parse(reviewBytes);
+  assert.equal(review.checks.card_entries_verified, 60);
+  assert.equal(review.checks.card_entries_exact, true);
+  const original = JSON.parse(proposalBytes).analytical_card_catalog;
+  assert.equal(original.length, 60);
+  assert.equal(fusionHash(fusionCanonical(original)), '8a5a2f82f724e5d3d41b5f9a96e6d6ffe2746367c19aaf323ae286c84b4af82e', 'Quiver prerequisite: ordered 60 original tuples');
+  assert.equal(new Set(original.map((card) => fusionCanonical([card.category, card.operation, card.reference_path]))).size, 60);
+  const rows = QUIVER_SPECS.map((spec) => {
+    const compressed = readFileSync(path.join(directory, `${spec.source}.html.gz`));
+    assert.equal(compressed.length, spec.compressedBytes, 'Quiver prerequisite: complete compressed source');
+    assert.equal(fusionHash(compressed), spec.compressedSha, 'Quiver prerequisite: compressed source custody');
+    const raw = gunzipSync(compressed);
+    assert.equal(raw.length, spec.rawBytes, 'Quiver prerequisite: complete raw source');
+    assert.equal(fusionHash(raw), spec.rawSha, 'Quiver prerequisite: raw source custody');
+    const source = releaseFreeze(registry).sources.find((item) => item.id === spec.source);
+    assert.ok(source, `Quiver prerequisite: existing source ${spec.source}`);
+    assert.equal(source.path, `${relative}/${spec.source}.html.gz`);
+    assert.equal(source.bytes, spec.rawBytes);
+    assert.equal(source.sha256, spec.rawSha);
+    assert.equal(source.compressed_sha256, spec.compressedSha);
+    assert.ok(registry.release_inventory.leaves.some((leaf) => leaf.id === spec.leaf));
+    const analytical_card_catalog = original.filter((card) => card.category === spec.source);
+    assert.equal(analytical_card_catalog.length, spec.count);
+    assert.equal(fusionHash(fusionCanonical(analytical_card_catalog)), spec.catalogueSha);
+    for (const card of analytical_card_catalog) {
+      assert.equal(card.required_leaf, spec.leaf);
+      assert.equal(card.source_binding.source_id, spec.source);
+      assert.ok(releaseFreeze(registry).source_bindings[spec.leaf]?.some((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)), `Quiver prerequisite: exact shared binding ${card.operation}`);
+    }
+    return {
+      runtime: spec.runtime,
+      reference_status: `Frozen ${spec.count}-entry index catalogue; label/path tuples preserved; individual semantics and Console execution unverified`,
+      source: spec.source,
+      console_acceptance: 'not established', command: null, analytical_card_catalog,
+      semantics_status: 'not_bound',
+      unqualified_semantics: {
+        runtime_and_library_versions: null, input_types_and_nulls: null, numeric_and_time_semantics: null,
+        limits_and_performance: null, refresh_and_reproducibility: null, effects_authority_and_disclosure: null,
+        collaboration_and_recovery: null, lifecycle_and_successor_equivalence: null,
+      },
+    };
+  });
+  assert.deepEqual(rows.flatMap((row) => row.analytical_card_catalog), original, 'Quiver prerequisite: exact original order and values');
+  assert.deepEqual(original.filter((card) => card.reference_path === QUIVER_SCATTER_PATH).map((card) => card.operation), QUIVER_SCATTER_LABELS, 'Quiver prerequisite: retain both distinct same-path labels');
+  return rows;
+}
+
+function quiverFixture() {
+  const expected = frozenQuiverRows(), value = structuredClone(registry);
+  for (const row of expected) {
+    const existing = quiverRows(value).filter((item) => item.runtime === row.runtime);
+    if (existing.length === 0) quiverRows(value).push(row);
+    else {
+      assert.equal(existing.length, 1, 'Quiver prerequisite: one integrated row per identity');
+      assert.deepEqual(existing[0], row, 'Quiver prerequisite: integrated row equals reviewed data');
+    }
+  }
+  return value;
+}
+
+function assertQuiverRejection(spec, mutate, { label, invisible = false, keySwap = false, diagnostic = /release inventory.*Quiver/i } = {}) {
+  const value = quiverFixture(), sameObject = value, before = structuredClone(value);
+  const acceptedBytes = fusionCanonical(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before, `${label}: positive validation is read-only`);
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: actual owner positive prerequisite`);
+  const injected = mutate(value, quiverRuntime(value, spec));
+  if (invisible) {
+    assert.equal(Object.hasOwn(injected, 'extraQuiverProperty'), true, `${label}: own extra persists`);
+    assert.ok(Object.keys(injected).includes('extraQuiverProperty'), `${label}: extra enumerable`);
+    assert.equal(fusionCanonical(value), acceptedBytes, `${label}: invisible extra keeps canonical bytes`);
+    // Do not demand pre-revalidation false from the existing digest-only API.
+  } else {
+    assert.notEqual(fusionCanonical(value), acceptedBytes, `${label}: changed canonical bytes`);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: changed-content binding revoked`);
+  }
+  if (keySwap) {
+    const { target, key, count, original } = injected;
+    assert.equal(Object.hasOwn(target, key), true, `${label}: required key still own`);
+    assert.equal(target[key], original, `${label}: required value unchanged`);
+    assert.equal(Object.keys(target).includes(key), false, `${label}: required key no longer enumerable`);
+    assert.equal(Object.keys(target).length, count, `${label}: misleading enumerable count preserved`);
+    assert.equal(Object.hasOwn(target, 'extraQuiverProperty'), true);
+    assert.ok(Object.keys(target).includes('extraQuiverProperty'));
+  }
+  assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), diagnostic, `${label}: actual owning rejection`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: failed revalidation revokes attestation`);
+  for (const key of Object.keys(value)) delete value[key];
+  Object.assign(value, structuredClone(before));
+  assert.strictEqual(value, sameObject);
+  assert.deepEqual(value, before, `${label}: exact restored positive shape/keys`);
+  assert.equal(fusionCanonical(value), acceptedBytes, `${label}: original canonical bytes restored`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: same-object restoration cannot resurrect attestation`);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: only explicit successful validation restores attestation`);
+}
+
+test('Quiver catalogue frozen proposal and both captured indexes retain reviewed custody', () => {
+  assert.equal(frozenQuiverRows().flatMap((row) => row.analytical_card_catalog).length, 60);
+});
+
+test('Quiver catalogue exact rows validate without mutation or promotion', () => {
+  const value = quiverFixture(), before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.states.planned && ['implemented', 'integration_accepted', 'production_qualified', 'released'].every((stage) => leaf.states[stage] === false)));
+  for (const spec of QUIVER_SPECS) {
+    assert.equal(quiverRuntime(value, spec).semantics_status, 'not_bound');
+    assert.ok(Object.values(quiverRuntime(value, spec).unqualified_semantics).every((cell) => cell === null));
+  }
+});
+
+test('Quiver catalogue fixture preserves every unrelated registry value', () => {
+  const value = quiverFixture();
+  for (const spec of QUIVER_SPECS) {
+    if (!quiverRuntime(registry, spec)) quiverRows(value).splice(quiverRows(value).findIndex((row) => row.runtime === spec.runtime), 1);
+  }
+  assert.deepEqual(value, registry);
+  // Root additionally removes only the two integrated rows to compare against the exact preimage.
+});
+
+test('Quiver catalogue accepts both distinct scatter labels sharing the original path', () => {
+  const value = quiverFixture();
+  const cards = quiverRuntime(value, QUIVER_SPECS[1]).analytical_card_catalog;
+  assert.deepEqual(cards.filter((card) => card.reference_path === QUIVER_SCATTER_PATH).map((card) => card.operation), QUIVER_SCATTER_LABELS);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+});
+
+const quiverChangedOperation = (_value, row) => { quiverCard(row).operation += ' changed'; };
+test('Quiver catalogue failed revalidation revokes attestation after same-object restoration', () => {
+  for (const spec of QUIVER_SPECS) assertQuiverRejection(spec, quiverChangedOperation, { label: `${spec.runtime} named restore history` });
+});
+
+const quiverMalformed = [
+  ['N01', 'missing runtime rows', [
+    (v, row) => { quiverRows(v).splice(quiverRows(v).indexOf(row), 1); },
+    (v) => { v.release_inventory.support_matrices.runtimes.entries = quiverRows(v).filter((row) => !QUIVER_SPECS.some((spec) => row.runtime === spec.runtime)); },
+  ]],
+  ['N02', 'duplicate runtime identity', [
+    (v, row) => { quiverRows(v).push(structuredClone(row)); },
+  ]],
+  ['N03', 'renamed runtime identity', [
+    (_v, row) => { row.runtime += ' renamed'; },
+  ]],
+  ['N04', 'changed valid source', [
+    (_v, row) => { row.source = QUIVER_SPECS.find((spec) => spec.source !== row.source).source; },
+  ]],
+  ['N05', 'nonconservative reference status', [
+    (_v, row) => { row.reference_status = 'All analytical semantics qualified'; },
+  ]],
+  ['N06', 'invented support or command', [
+    (_v, row) => { row.console_acceptance = 'supported'; },
+    (_v, row) => { row.command = 'true'; },
+  ], /release inventory: support cell claims unverified Console acceptance/],
+  ['N07', 'extra runtime promotion keys', [
+    (_v, row) => { row.state = 'released'; },
+    (_v, row) => { row.receipt = { verdict: 'approved' }; },
+  ]],
+  ['N08', 'missing or changed semantics status', [
+    (_v, row) => { delete row.semantics_status; },
+    (_v, row) => { row.semantics_status = 'qualified'; },
+  ]],
+  ['N09', 'removed extra or nonnull semantic dimension', [
+    (_v, row) => { delete row.unqualified_semantics.input_types_and_nulls; },
+    (_v, row) => { row.unqualified_semantics.extra = null; },
+    (_v, row) => { row.unqualified_semantics.input_types_and_nulls = 'verified'; },
+  ]],
+  ['N10', 'empty or nonarray catalogue', [
+    (_v, row) => { row.analytical_card_catalog = []; },
+    (_v, row) => { row.analytical_card_catalog = {}; },
+  ]],
+  ['N11', 'omitted first middle or last card', [
+    ...['first', 'middle', 'last'].map((position) => (_v, row) => {
+      const cards = row.analytical_card_catalog;
+      cards.splice(position === 'first' ? 0 : position === 'last' ? cards.length - 1 : Math.floor(cards.length / 2), 1);
+    }),
+  ]],
+  ['N12', 'duplicate or same length replaced card', [
+    (_v, row) => { row.analytical_card_catalog.push(structuredClone(quiverCard(row))); },
+    (_v, row) => { row.analytical_card_catalog[1] = structuredClone(quiverCard(row)); },
+  ]],
+  ['N13', 'reordered cards', [
+    (_v, row) => { row.analytical_card_catalog.reverse(); },
+  ]],
+  ['N14', 'changed operation', [
+    quiverChangedOperation,
+    (_v, row) => { quiverCard(row).operation = 42; },
+    (_v, row) => { quiverCard(row).operation += ' '; },
+  ]],
+  ['N15', 'changed reference path', [
+    (_v, row) => { quiverCard(row).reference_path = '/docs/foundry/quiver/invented-card/'; },
+  ]],
+  ['N16', 'changed category', [
+    (_v, row) => { quiverCard(row).category = QUIVER_SPECS.find((spec) => spec.source !== row.source).source; },
+    (_v, row) => { quiverCard(row).category = 'invented-category'; },
+  ]],
+  ['N17', 'changed existing leaf', [
+    (_v, row) => { quiverCard(row).required_leaf = QUIVER_SPECS.find((spec) => spec.source !== row.source).leaf; },
+  ]],
+  ['N18', 'changed card scope', [
+    (_v, row) => { quiverCard(row).scope = 'Executable semantics and Console support established'; },
+  ]],
+  ['N19', 'extra or removed card key', [
+    (_v, row) => { delete quiverCard(row).operation; },
+    (_v, row) => { quiverCard(row).extraQuiverProperty = 'unreviewed'; },
+  ]],
+  ['N20', 'changed source binding fields', [
+    (_v, row) => { quiverCard(row).source_binding.source_id = QUIVER_SPECS.find((spec) => spec.source !== row.source).source; },
+    (_v, row) => { quiverCard(row).source_binding.artifact_path = 'README.md'; },
+    (_v, row) => { quiverCard(row).source_binding.sha256 = '0'.repeat(64); },
+    (_v, row) => { quiverCard(row).source_binding.quote += ' changed'; },
+    (_v, row) => { quiverCard(row).source_binding.matching = 'unreviewed matching'; },
+    (_v, row) => { quiverCard(row).source_binding.scope = 'unrestricted claim'; },
+  ]],
+  ['N21', 'extra or removed binding key', [
+    (_v, row) => { delete quiverCard(row).source_binding.quote; },
+    (_v, row) => { quiverCard(row).source_binding.extraQuiverProperty = 'unreviewed'; },
+    (_v, row) => { quiverCard(row).source_binding.artifact_uncompressed_sha256 = '0'.repeat(64); },
+  ]],
+  ['N22', 'removed exact shared binding', [
+    (v, row) => { const card = quiverCard(row), bindings = releaseFreeze(v).source_bindings[card.required_leaf]; const index = bindings.findIndex((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)); assert.ok(index >= 0); bindings.splice(index, 1); },
+  ]],
+  ['N23', 'changed shared quote', [
+    (v, row) => { const card = quiverCard(row); releaseFreeze(v).source_bindings[card.required_leaf].find((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)).quote += ' changed'; },
+  ]],
+  ['N24', 'deduplicated relabelled or rewritten scatter pair', [
+    ...QUIVER_SCATTER_LABELS.map((label) => (_v, row) => { const cards = row.analytical_card_catalog; cards.splice(cards.findIndex((card) => card.operation === label), 1); }),
+    (_v, row) => { row.analytical_card_catalog = row.analytical_card_catalog.filter((card) => card.reference_path !== QUIVER_SCATTER_PATH); },
+    (_v, row) => { row.analytical_card_catalog.find((card) => card.operation === QUIVER_SCATTER_LABELS[1]).operation = QUIVER_SCATTER_LABELS[0]; },
+    (_v, row) => { row.analytical_card_catalog.find((card) => card.operation === QUIVER_SCATTER_LABELS[1]).reference_path = '/docs/foundry/quiver/invented-unique-scatter/'; },
+  ]],
+  ['N25', 'caller supplied expected digest', [
+    (v, row) => { quiverChangedOperation(v, row); row.expected_catalogue_sha256 = fusionHash(fusionCanonical(row.analytical_card_catalog)); },
+  ]],
+];
+for (const [id, name, mutations, diagnostic] of quiverMalformed) {
+  test(`Quiver catalogue rejects ${name}`, () => {
+    for (const spec of id === 'N24' ? [QUIVER_SPECS[1]] : QUIVER_SPECS) {
+      for (const [index, mutate] of mutations.entries()) assertQuiverRejection(spec, mutate, { label: `${id} ${spec.runtime} variant ${index + 1}`, diagnostic });
+      if (id === 'N19' || id === 'N21') {
+        for (const extra of [undefined, () => 'unreviewed']) {
+          assertQuiverRejection(spec, (_v, row) => {
+            const target = id === 'N19' ? quiverCard(row) : quiverCard(row).source_binding;
+            target.extraQuiverProperty = extra;
+            return target;
+          }, { label: `${id} ${spec.runtime} ${typeof extra} own key`, invisible: true, diagnostic: /release inventory.*Quiver.*keys/i });
+        }
+      }
+    }
+  });
+}
+
+for (const [id, level, select, key] of [
+  ['N26', 'runtime', (row) => row, 'command'],
+  ['N27', 'semantics', (row) => row.unqualified_semantics, 'runtime_and_library_versions'],
+  ['N28', 'card', (row) => quiverCard(row), 'operation'],
+  ['N29', 'binding', (row) => quiverCard(row).source_binding, 'quote'],
+]) {
+  test(`Quiver catalogue rejects count preserving ${level} key substitution`, () => {
+    for (const spec of QUIVER_SPECS) {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertQuiverRejection(spec, (_v, row) => {
+          const target = select(row), count = Object.keys(target).length, original = target[key];
+          Object.defineProperty(target, key, { value: original, enumerable: false, writable: true, configurable: true });
+          target.extraQuiverProperty = extra;
+          return { target, key, count, original };
+        }, { label: `${id} ${spec.runtime} ${typeof extra} key swap`, keySwap: true, diagnostic: /release inventory.*Quiver.*keys/i });
+      }
+    }
+  });
+}
