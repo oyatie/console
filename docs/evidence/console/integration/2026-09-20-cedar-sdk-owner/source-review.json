@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_CEDAR_SDK_IDENTITY_SOURCE_WITH_BOUNDED_GREEN",
+  "base_test_commit": "079fae23e09fe047ff84903654074cd7fb865e79",
+  "source_path": "backend/crates/platform/authz/src/cedar_pbac/engine.rs",
+  "source_before_sha256": "3662f177d01cce19f9636b9563206af3dfc35a4284b5d923d6bb71d5e6cbf912",
+  "source_after_sha256": "8e1f29ca5845e52b7e038804a1e581908443250b48dffec3278a1ba72fcc88d5",
+  "test_review_reused": "/private/tmp/console-cedar-sdk-tests-root-review-20260920.json",
+  "evidence_sha256": {
+    "console-cedar-sdk-owner-red-20260920.log": "e4934f20a6b24eeb31881499e294ed702c16a863cd2eb78116d33068469b1e19",
+    "console-cedar-sdk-owner-green-20260920.log": "0c358ba2a0ca613e64d10baf0f69c1c2de48473ac926213efd2f0aefbb0dbf77",
+    "console-cedar-sdk-regressions-20260920.log": "a81a8d236426464f1b9d7c779a08e9fd31a5b09cf55eeea367fcbe7cc01fd94c"
+  },
+  "checks": [
+    "Exactmechanical2line substitution only: publicSDKconstant and its dependencycomment4.11.2to4.12.0.",
+    "Manifest and lock actuallypin CedarSDK/core/formatter4.12.0; unchanged strict compiler usesconstant for allshared currentbundlepaths.",
+    "Cachekey equality,language4.5,schema/source digest,serialization/historicalexplicitkeys/currentpolicy guards unchanged.",
+    "ActuallinkedSDK oracle2tests RED2/2 thenGREEN2/2; actualevaluation currentmapAllow and SDK-only historicalmapDeny with historicalauditbytes preserved.",
+    "Additional authz library96/96,fail-closed diagnostic5/5,modecontract5/5 passed."
+  ],
+  "holds": [
+    "Broader policy target36passed/9failed due missingDATABASE_URL; nineSQLx cases did not reach databaseprerequisites. Preserve failure and qualify through actualDB runner before broader regressionacceptance.",
+    "This corrects currentprovenance, not nativeCompany policy/completeCedar/release acceptance.",
+    "Historical bundles/records must never be relabeled to newSDK; software rollback requires matchingqualified artifact/map."
+  ]
+}

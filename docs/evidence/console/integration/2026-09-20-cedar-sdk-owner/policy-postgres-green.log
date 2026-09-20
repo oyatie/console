@@ -1,0 +1,83 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_32082" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_32082, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.62s
+[1m[92m  Executable[0m unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_platform_authz-3106da887e48cc3e)
+[1m[92m  Executable[0m tests/cedar_diagnostic_fail_closed.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_diagnostic_fail_closed-a4d9465ba94a751e)
+[1m[92m  Executable[0m tests/cedar_pbac_legacy_only_observe_and_record.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_pbac_legacy_only_observe_and_record-6c52042e8e2f4fbb)
+[1m[92m  Executable[0m tests/cedar_pbac_readiness_cases.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_pbac_readiness_cases-f15c7f7529390a0e)
+[1m[92m  Executable[0m tests/cedar_sdk_identity.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_sdk_identity-8aafb91acc6fb01c)
+[1m[92m  Executable[0m tests/policy.rs (/private/tmp/console-rust1981-owner-target/debug/deps/policy-01b5263af10392d1)
+cargo-postgres: === platform-authz-policy-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-platform-authz --test policy -- --test-threads=1
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.16s
+[1m[92m     Running[0m tests/policy.rs (/private/tmp/console-rust1981-owner-target/debug/deps/policy-01b5263af10392d1)
+
+running 45 tests
+test a_missing_resource_row_is_a_typed_refusal_not_a_branchless_pass ... ok
+test a_resource_branch_looked_up_by_id_decides_as_the_resources_branch ... ok
+test a_resource_branch_lookup_cannot_resolve_another_tenants_resource ... ok
+test a_resource_branch_read_under_another_tenant_does_not_authorize ... ok
+test assignment_validity_is_stamped_only_while_the_schema_has_no_intervals ... ok
+test cedar_compiled_bundle_cache_key_requires_versioned_identity ... ok
+test cedar_pbac_boundary_denies_cedar_errors ... ok
+test cedar_pbac_boundary_denies_cross_org_resource_before_policy_allow ... ok
+test cedar_pbac_boundary_denies_malformed_map_action_before_policy_allow ... ok
+test cedar_pbac_boundary_denies_malformed_map_domain_before_policy_allow ... ok
+test cedar_pbac_boundary_denies_missing_coexistence_map ... ok
+test cedar_pbac_boundary_denies_missing_freshness_before_policy_allow ... ok
+test cedar_pbac_boundary_denies_missing_rls_scope_proof_before_policy_allow ... ok
+test cedar_pbac_boundary_denies_stale_policy_bundle ... ok
+test cedar_pbac_boundary_denies_stale_subject_before_legacy_allow ... ok
+test cedar_pbac_compare_mode_denies_engine_disagreement ... ok
+test cedar_pbac_legacy_contract_preserves_current_authorize_behavior ... ok
+test cedar_pbac_observation_preserves_raw_cedar_reason_detail ... ok
+test cedar_pbac_observation_records_metric_labels_and_full_audit_context ... ok
+test cedar_pbac_readiness_fixture_cases_are_structurally_typed ... ok
+test cedar_pbac_shadow_mode_cannot_use_cedar_allow_to_grant ... ok
+test cedar_pbac_shadow_mode_denies_cedar_deny_before_legacy_allow ... ok
+test cedar_pbac_shadow_mode_denies_cedar_error_before_legacy_allow ... ok
+test cross_branch_reads_and_writes_are_denied_by_default ... ok
+test daily_plan_list_gate_requires_daily_plan_or_org_wide_triage ... ok
+test default_authorize_requires_full_allowance_and_matching_branch_scope ... ok
+test effective_custom_grant_extends_authorize_without_widening_branch_scope ... ok
+test effective_custom_grant_honors_permission_level_semantics ... ok
+test empty_scope_denies_even_allowed_features ... ok
+test every_resource_kind_names_a_table_and_branch_column_that_exist ... ok
+test executive_is_read_only_even_with_all_branch_scope ... ok
+test exit_workflow_capabilities_enforce_separation_of_duties ... ok
+test member_role_is_default_deny_except_login ... ok
+test org_wide_authorize_rejects_builtin_admin_even_with_all_branch_scope ... ok
+test org_wide_authorize_uses_effective_grants_but_never_widens_branch_grants ... ok
+test org_wide_queue_triage_is_executive_and_super_admin_only ... ok
+test permission_matrix_is_exhaustive_and_matches_inherited_table ... ok
+test repository_filter_helper_is_default_deny_and_uses_binds ... ok
+test repository_filter_rejects_unsafe_column_names ... ok
+test request_only_permission_can_use_request_action_but_not_full_action ... ok
+test resolves_active_custom_policy_role_grants_fail_closed ... ok
+test resolves_super_admin_to_all_scope_without_memberships ... ok
+test resolves_user_branch_scope_from_memberships ... ok
+test role_enum_uses_canonical_database_codes ... ok
+test super_admin_spans_branches ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.01s
+
+cargo-postgres-timing: {"name": "platform-authz-policy-pg", "package": "console-platform-authz", "seconds": 9.209, "shard": "", "status": "pass"}
+
+cargo-postgres: summary
+  PASS  platform-authz-policy-pg
+cargo-postgres: 1 passed, 0 failed
+cargo-postgres: all 1 invocations passed

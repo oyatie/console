@@ -1,0 +1,10 @@
+   Compiling console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.93s
+     Running tests/cedar_sdk_identity.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_sdk_identity-8aafb91acc6fb01c)
+
+running 2 tests
+test current_sdk_evaluation_rejects_historical_key_without_relabeling_it ... ok
+test compiled_bundle_keys_name_the_actual_linked_cedar_sdk ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
