@@ -1,0 +1,20 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: RELEASE_RUST_PIN: the explicit release contract requires Rust 1.98.1
++ actual - expected
+
++ 'nightly-2026-09-10'
+- '1.98.1'
+
+    at file:///private/tmp/console-client-release-20260919/docs/evidence/console/integration/2026-09-19-rust1981-transition/probe.mjs:9:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'nightly-2026-09-10',
+  expected: '1.98.1',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.7.0

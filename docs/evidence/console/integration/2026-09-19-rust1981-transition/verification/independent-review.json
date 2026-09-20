@@ -1,0 +1,45 @@
+{
+  "kind": "independent-rust1981-source-transition-final-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:03:31.092986+00:00",
+  "decision": "APPROVE_EXACT_ROOT_PIN_AND_GENERATED_LOCK_TRANSITION",
+  "test_base_sha": "15f35209bfbfa9f5ef72a4f472917ec31223d52d",
+  "source_sha256": {
+    "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
+    "toolchains/rust/lock.bzl": "ec7f7c7b1a0ea4e3bd67cec7eb9fa70820e7b13eb41af75c605a006451b629d9",
+    "scripts/check-toolchain-pin.test.mjs": "72792dd9ed107c10e7dd3062a8257c046720c9f9636140f8024334ae427ed1e9",
+    "scripts/check-toolchain-pin.mjs": "eefd13d947bc2f4d43e329160ffa4a216ef922a15b4a1542f4bafe8933172ec5",
+    "scripts/lock-rust-toolchain.mjs": "0fa93d675407b212243725891063a9140694c201c9d4f29df6202e8cc541c9a6"
+  },
+  "evidence_sha256": {
+    "lane.json": "2dc7eb496d31245be777ff2d753915e53e66775d8896e34ed626478a61087fb3",
+    "revised-test-red.log": "ecb8f1810149b56abd3d661ee8781bc10781299db50aa687e45d186006282827",
+    "revised-test-admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "green.log": "0a4362eb6f009b28d2168fa51517afe5965e8312e7405e3511d88380132dfb93",
+    "default-rustc.log": "e2211d4c0760a2a3b03eab88e42f8848952b7aa2ed649277a8fdbf3ce1838fd4",
+    "default-app-check.log": "f44f64f1223be2e0deb0bdb431729781406a6915c545aceed28b00fe369c9a46",
+    "default-wasm-build.log": "5706e61ed0498263ebcff64011e70e1a3d1ee1659584b6abeb1c79c6456563fb",
+    "revised-default-owner.log": "abcc7623362dff94dfe746b48c688c5ff8b789fe93a2a9f5bfb0d5d62f1ef3cf",
+    "revised-toolchain-tests.log": "a295ac382282281b426f9b22d86deb23e381a739555d3b935b179569b12e80e0",
+    "live-lock-check.log": "90125ffacbf87151b6cd7b159f308205eed2bff3d9243b7b0801455844ccc878",
+    "pin-gate.log": "b0cd7a0091199203396e0db9f7635f791748e20066b14b77ecb2be752ec6c094"
+  },
+  "checks": [
+    "Only two dirty source paths; root channel-only delta preserves clippy/rustfmt/wasm. Exact pin and lock match independently approved candidate.",
+    "All13 lock artifacts retain3hosts and wasm; existing generator reproduces exact candidate using reviewed official manifest. Prior independent tomllib/installed1.98.1 manifest pairs all match; no new hashes invented.",
+    "Fixture semantic correction independently approved and committed before revised clean RED admission; all prior assertions retained plus nightly positive.",
+    "Same configuration probe independently re-executed GREEN; unchanged runtime gate independently re-executed GREEN.",
+    "Default root rustc reports1.98.1 without version override; default app check completes1.06s and default release WASM build completes0.24s. These are builds,0 runtime tests.",
+    "Exact revised candidate Account designation owner1passed0failed0ignored352filtered4.49s; root harness1/1invocations.",
+    "Corrected toolchain suite39/39zero skips; independent private suites39/39 under nightly and stable, four URL-check bypass mutants detected."
+  ],
+  "review_provenance": "Design had four focused rounds by this one independent reviewer, not four distinct reviewers. Root collected app/WASM/owner logs; reviewer bound source and read back logs. Independent local config/generator and fixture controls executed by reviewer.",
+  "remaining_holds": [
+    "Container Docker pin/COPY repair and deployment-equivalent Linux/runtime qualification required.",
+    "Full workspace/browser bundle and assembled release qualification incomplete.",
+    "No claim of mac nextest LEAK resolution; prior rebuilt-nextest experiment still fails leak qualification.",
+    "Build warnings preserved: future-incompatible proc-macro-error2 and existing app warnings.",
+    "No Company/milestone0-10/full-release acceptance or exposure authorization."
+  ],
+  "repository_edits_by_reviewer": 0
+}

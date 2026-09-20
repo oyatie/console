@@ -1,0 +1,909 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_5381" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_5381, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[92m   Compiling[0m proc-macro2 v1.0.106
+[1m[92m   Compiling[0m unicode-ident v1.0.24
+[1m[92m   Compiling[0m quote v1.0.45
+[1m[92m   Compiling[0m libc v0.2.186
+[1m[92m   Compiling[0m cfg-if v1.0.4
+[1m[92m   Compiling[0m serde v1.0.229
+[1m[92m   Compiling[0m serde_core v1.0.229
+[1m[92m   Compiling[0m memchr v2.8.2
+[1m[92m   Compiling[0m equivalent v1.0.2
+[1m[92m   Compiling[0m hashbrown v0.17.1
+[1m[92m   Compiling[0m itoa v1.0.18
+[1m[92m   Compiling[0m thiserror v2.0.20
+[1m[92m   Compiling[0m zmij v1.0.23
+[1m[92m   Compiling[0m getrandom v0.4.2
+[1m[92m   Compiling[0m rand_core v0.10.1
+[1m[92m   Compiling[0m serde_json v1.0.151
+[1m[92m   Compiling[0m version_check v0.9.5
+[1m[92m   Compiling[0m pin-project-lite v0.2.17
+[1m[92m   Compiling[0m typenum v1.20.1
+[1m[92m   Compiling[0m time-core v0.1.9
+[1m[92m   Compiling[0m num-conv v0.2.2
+[1m[92m   Compiling[0m powerfmt v0.2.0
+[1m[92m   Compiling[0m futures-core v0.3.34
+[1m[92m   Compiling[0m portable-atomic v1.13.1
+[1m[92m   Compiling[0m critical-section v1.2.0
+[1m[92m   Compiling[0m time-macros v0.2.32
+[1m[92m   Compiling[0m futures-task v0.3.34
+[1m[92m   Compiling[0m futures-io v0.3.34
+[1m[92m   Compiling[0m bytes v1.12.1
+[1m[92m   Compiling[0m futures-sink v0.3.34
+[1m[92m   Compiling[0m slab v0.4.12
+[1m[92m   Compiling[0m log v0.4.32
+[1m[92m   Compiling[0m shlex v2.0.1
+[1m[92m   Compiling[0m find-msvc-tools v0.1.9
+[1m[92m   Compiling[0m indexmap v2.14.0
+[1m[92m   Compiling[0m futures-channel v0.3.34
+[1m[92m   Compiling[0m autocfg v1.5.1
+[1m[92m   Compiling[0m stable_deref_trait v1.2.1
+[1m[92m   Compiling[0m percent-encoding v2.3.2
+[1m[92m   Compiling[0m generic-array v0.14.7
+[1m[92m   Compiling[0m writeable v0.6.3
+[1m[92m   Compiling[0m pkg-config v0.3.33
+[1m[92m   Compiling[0m litemap v0.8.2
+[1m[92m   Compiling[0m subtle v2.6.1
+[1m[92m   Compiling[0m icu_normalizer_data v2.2.0
+[1m[92m   Compiling[0m utf8_iter v1.0.4
+[1m[92m   Compiling[0m icu_properties_data v2.2.0
+[1m[92m   Compiling[0m libm v0.2.16
+[1m[92m   Compiling[0m num-traits v0.2.19
+[1m[92m   Compiling[0m const-oid v0.9.6
+[1m[92m   Compiling[0m base64 v0.22.1
+[1m[92m   Compiling[0m crossbeam-utils v0.8.21
+[1m[92m   Compiling[0m parking_lot_core v0.9.12
+[1m[92m   Compiling[0m dunce v1.0.5
+[1m[92m   Compiling[0m fs_extra v1.3.0
+[1m[92m   Compiling[0m scopeguard v1.2.0
+[1m[92m   Compiling[0m lock_api v0.4.14
+[1m[92m   Compiling[0m form_urlencoded v1.2.2
+[1m[92m   Compiling[0m parking v2.2.1
+[1m[92m   Compiling[0m tinyvec_macros v0.1.1
+[1m[92m   Compiling[0m tinyvec v1.11.0
+[1m[92m   Compiling[0m bitflags v2.13.0
+[1m[92m   Compiling[0m untrusted v0.9.0
+[1m[92m   Compiling[0m semver v1.0.28
+[1m[92m   Compiling[0m rustversion v1.0.22
+[1m[92m   Compiling[0m fnv v1.0.7
+[1m[92m   Compiling[0m zerocopy v0.8.52
+[1m[92m   Compiling[0m hybrid-array v0.4.12
+[1m[92m   Compiling[0m unicode-normalization v0.1.25
+[1m[92m   Compiling[0m syn v2.0.119
+[1m[92m   Compiling[0m syn v3.0.5
+[1m[92m   Compiling[0m allocator-api2 v0.2.21
+[1m[92m   Compiling[0m cmov v0.5.4
+[1m[92m   Compiling[0m ctutils v0.4.2
+[1m[92m   Compiling[0m block-buffer v0.12.1
+[1m[92m   Compiling[0m crypto-common v0.2.2
+[1m[92m   Compiling[0m rustc_version v0.4.1
+[1m[92m   Compiling[0m core-foundation-sys v0.8.7
+[1m[92m   Compiling[0m jobserver v0.1.35
+[1m[92m   Compiling[0m getrandom v0.2.17
+[1m[92m   Compiling[0m uuid v1.26.1
+[1m[92m   Compiling[0m deranged v0.5.8
+[1m[92m   Compiling[0m once_cell v1.21.4
+[1m[92m   Compiling[0m cc v1.2.63
+[1m[92m   Compiling[0m rand_core v0.6.4
+[1m[92m   Compiling[0m socket2 v0.6.4
+[1m[92m   Compiling[0m mio v1.2.1
+[1m[92m   Compiling[0m tracing-core v0.1.36
+[1m[92m   Compiling[0m errno v0.3.14
+[1m[92m   Compiling[0m cpufeatures v0.2.17
+[1m[92m   Compiling[0m signal-hook-registry v1.4.8
+[1m[92m   Compiling[0m aws-lc-rs v1.18.1
+[1m[92m   Compiling[0m cmake v0.1.58
+[1m[92m   Compiling[0m time v0.3.55
+[1m[92m   Compiling[0m zeroize v1.9.0
+[1m[92m   Compiling[0m http v1.5.0
+[1m[92m   Compiling[0m chacha20 v0.10.2
+[1m[92m   Compiling[0m unicode-bidi v0.3.18
+[1m[92m   Compiling[0m unicode-properties v0.1.4
+[1m[92m   Compiling[0m crc-catalog v2.5.0
+[1m[92m   Compiling[0m crc v3.4.0
+[1m[92m   Compiling[0m rustls-pki-types v1.14.1
+[1m[92m   Compiling[0m rustls v0.23.45
+[1m[92m   Compiling[0m stringprep v0.1.5
+[1m[92m   Compiling[0m aws-lc-sys v0.45.0
+[1m[92m   Compiling[0m hex v0.4.3
+[1m[92m   Compiling[0m synstructure v0.13.2
+[1m[92m   Compiling[0m iana-time-zone v0.1.65
+[1m[92m   Compiling[0m byteorder v1.5.0
+[1m[92m   Compiling[0m serde_derive v1.0.229
+[1m[92m   Compiling[0m thiserror-impl v2.0.20
+[1m[92m   Compiling[0m futures-macro v0.3.34
+[1m[92m   Compiling[0m webpki-roots v1.0.9
+[1m[92m   Compiling[0m tokio v1.53.1
+[1m[92m   Compiling[0m concurrent-queue v2.5.0
+[1m[92m   Compiling[0m cpufeatures v0.3.0
+[1m[92m   Compiling[0m aho-corasick v1.1.4
+[1m[92m   Compiling[0m event-listener v5.4.1
+[1m[92m   Compiling[0m tower-service v0.3.3
+[1m[92m   Compiling[0m futures-util v0.3.34
+[1m[92m   Compiling[0m const-oid v0.10.2
+[1m[92m   Compiling[0m getrandom v0.3.4
+[1m[92m   Compiling[0m regex-syntax v0.8.11
+[1m[92m   Compiling[0m siphasher v1.0.3
+[1m[92m   Compiling[0m digest v0.11.3
+[1m[92m   Compiling[0m crypto-common v0.1.7
+[1m[92m   Compiling[0m zeroize_derive v1.5.0
+[1m[92m   Compiling[0m tracing-attributes v0.1.31
+[1m[92m   Compiling[0m zerofrom-derive v0.1.7
+[1m[92m   Compiling[0m displaydoc v0.2.6
+[1m[92m   Compiling[0m yoke-derive v0.8.2
+[1m[92m   Compiling[0m zerovec-derive v0.11.3
+[1m[92m   Compiling[0m tokio-macros v2.7.0
+[1m[92m   Compiling[0m block-buffer v0.10.4
+[1m[92m   Compiling[0m digest v0.10.7
+[1m[92m   Compiling[0m zerofrom v0.1.8
+[1m[92m   Compiling[0m tracing v0.1.44
+[1m[92m   Compiling[0m zerocopy-derive v0.8.52
+[1m[92m   Compiling[0m sha2 v0.10.9
+[1m[92m   Compiling[0m crossbeam-queue v0.3.12
+[1m[92m   Compiling[0m rand v0.10.1
+[1m[92m   Compiling[0m foldhash v0.2.0
+[1m[92m   Compiling[0m dotenvy v0.15.7
+[1m[92m   Compiling[0m tokio-stream v0.1.18
+[1m[92m   Compiling[0m hashbrown v0.16.1
+[1m[92m   Compiling[0m tower-layer v0.3.3
+[1m[92m   Compiling[0m heck v0.5.0
+[1m[92m   Compiling[0m rand_core v0.9.5
+[1m[92m   Compiling[0m atoi v2.0.0
+[1m[92m   Compiling[0m base64ct v1.8.3
+[1m[92m   Compiling[0m der_derive v0.7.3
+[1m[92m   Compiling[0m hmac v0.13.0
+[1m[92m   Compiling[0m flagset v0.4.7
+[1m[92m   Compiling[0m httparse v1.10.1
+[1m[92m   Compiling[0m pem-rfc7468 v0.7.0
+[1m[92m   Compiling[0m hashlink v0.11.1
+[1m[92m   Compiling[0m sha2 v0.11.0
+[1m[92m   Compiling[0m http-body v1.0.1
+[1m[92m   Compiling[0m md-5 v0.11.0
+[1m[92m   Compiling[0m objc2-core-foundation v0.3.2
+[1m[92m   Compiling[0m unicode-xid v0.2.6
+[1m[92m   Compiling[0m ident_case v1.0.1
+[1m[92m   Compiling[0m httpdate v1.0.3
+[1m[92m   Compiling[0m strsim v0.11.1
+[1m[92m   Compiling[0m yoke v0.8.3
+[1m[92m   Compiling[0m der v0.7.10
+[1m[92m   Compiling[0m spin v0.9.9
+[1m[92m   Compiling[0m objc2-system-configuration v0.3.2
+[1m[92m   Compiling[0m sync_wrapper v1.0.2
+[1m[92m   Compiling[0m thiserror v1.0.69
+[1m[92m   Compiling[0m whoami v2.1.2
+[1m[92m   Compiling[0m hkdf v0.13.0
+[1m[92m   Compiling[0m thiserror-impl v1.0.69
+[1m[92m   Compiling[0m data-encoding v2.11.0
+[1m[92m   Compiling[0m try-lock v0.2.5
+[1m[92m   Compiling[0m hmac v0.12.1
+[1m[92m   Compiling[0m atomic-waker v1.1.2
+[1m[92m   Compiling[0m want v0.3.1
+[1m[92m   Compiling[0m phf_shared v0.11.3
+[1m[92m   Compiling[0m num-integer v0.1.46
+[1m[92m   Compiling[0m openssl-src v300.6.1+3.6.3
+[1m[92m   Compiling[0m minimal-lexical v0.2.1
+[1m[92m   Compiling[0m same-file v1.0.6
+[1m[92m   Compiling[0m vcpkg v0.2.15
+[1m[92m   Compiling[0m walkdir v2.5.0
+[1m[92m   Compiling[0m hkdf v0.12.4
+[1m[92m   Compiling[0m nom v7.1.3
+[1m[92m   Compiling[0m console-kernel-core v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/kernel/core)
+[1m[92m   Compiling[0m smallvec v1.15.2
+[1m[92m   Compiling[0m either v1.16.0
+[1m[92m   Compiling[0m ipnet v2.12.2
+[1m[92m   Compiling[0m chrono v0.4.45
+[1m[92m   Compiling[0m itertools v0.14.0
+[1m[92m   Compiling[0m lazy_static v1.5.0
+[1m[92m   Compiling[0m regex-automata v0.4.18
+[1m[92m   Compiling[0m parking_lot v0.12.5
+[1m[92m   Compiling[0m openssl-sys v0.9.117
+[1m[92m   Compiling[0m futures-intrusive v0.5.0
+[1m[92m   Compiling[0m http-body-util v0.1.3
+[1m[92m   Compiling[0m ryu v1.0.23
+[1m[92m   Compiling[0m object v0.37.3
+[1m[92m   Compiling[0m zerovec v0.11.6
+[1m[92m   Compiling[0m zerotrie v0.2.4
+[1m[92m   Compiling[0m num-bigint v0.4.8
+[1m[92m   Compiling[0m signature v2.2.0
+[1m[92m   Compiling[0m ff v0.13.1
+[1m[92m   Compiling[0m base16ct v0.2.0
+[1m[92m   Compiling[0m group v0.13.0
+[1m[92m   Compiling[0m rusticata-macros v4.1.0
+[1m[92m   Compiling[0m crypto-bigint v0.5.5
+[1m[92m   Compiling[0m darling_core v0.23.0
+[1m[92m   Compiling[0m asn1-rs-impl v0.2.0
+[1m[92m   Compiling[0m asn1-rs-derive v0.5.1
+[1m[92m   Compiling[0m keccak v0.1.6
+[1m[92m   Compiling[0m fixedbitset v0.5.7
+[1m[92m   Compiling[0m term v1.2.1
+[1m[92m   Compiling[0m bit-vec v0.8.0
+[1m[92m   Compiling[0m new_debug_unreachable v1.0.6
+[1m[92m   Compiling[0m precomputed-hash v0.1.1
+[1m[92m   Compiling[0m bit-set v0.8.0
+[1m[92m   Compiling[0m spki v0.7.3
+[1m[92m   Compiling[0m string_cache v0.8.9
+[1m[92m   Compiling[0m ascii-canvas v4.0.0
+[1m[92m   Compiling[0m pkcs8 v0.10.2
+[1m[92m   Compiling[0m petgraph v0.7.1
+[1m[92m   Compiling[0m sha3 v0.10.9
+[1m[92m   Compiling[0m sec1 v0.7.3
+[1m[92m   Compiling[0m ena v0.14.4
+[1m[92m   Compiling[0m encoding_rs v0.8.35
+[1m[92m   Compiling[0m foreign-types-shared v0.1.1
+[1m[92m   Compiling[0m elliptic-curve v0.13.8
+[1m[92m   Compiling[0m pastey v0.1.1
+[1m[92m   Compiling[0m console-platform-db v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/db)
+[1m[92m   Compiling[0m base64 v0.21.7
+[1m[92m   Compiling[0m oid-registry v0.7.1
+[1m[92m   Compiling[0m pico-args v0.5.0
+[1m[92m   Compiling[0m openssl v0.10.81
+[1m[92m   Compiling[0m foreign-types v0.3.2
+[1m[92m   Compiling[0m serde_urlencoded v0.7.1
+[1m[92m   Compiling[0m regex v1.12.4
+[1m[92m   Compiling[0m lalrpop-util v0.22.2
+[1m[92m   Compiling[0m base64urlsafedata v0.5.5
+[1m[92m   Compiling[0m rfc6979 v0.4.0
+[1m[92m   Compiling[0m tinystr v0.8.3
+[1m[92m   Compiling[0m potential_utf v0.1.5
+[1m[92m   Compiling[0m openssl-macros v0.1.1
+[1m[92m   Compiling[0m icu_collections v2.2.0
+[1m[92m   Compiling[0m icu_locale_core v2.2.0
+[1m[92m   Compiling[0m tokio-util v0.7.18
+[1m[92m   Compiling[0m ppv-lite86 v0.2.21
+[1m[92m   Compiling[0m asn1-rs v0.6.2
+[1m[92m   Compiling[0m lalrpop v0.22.2
+[1m[92m   Compiling[0m enum-ordinalize-derive v4.4.1
+[1m[92m   Compiling[0m rand_chacha v0.9.0
+[1m[92m   Compiling[0m rand v0.9.4
+[1m[92m   Compiling[0m rand_chacha v0.3.1
+[1m[92m   Compiling[0m tower v0.5.3
+[1m[92m   Compiling[0m h2 v0.4.16
+[1m[92m   Compiling[0m rand v0.8.6
+[1m[92m   Compiling[0m darling_macro v0.23.0
+[1m[92m   Compiling[0m icu_provider v2.2.0
+[1m[92m   Compiling[0m stacker v0.1.24
+[1m[92m   Compiling[0m curve25519-dalek v4.1.3
+[1m[92m   Compiling[0m ref-cast v1.0.25
+[1m[92m   Compiling[0m darling v0.23.0
+[1m[92m   Compiling[0m num-bigint-dig v0.8.6
+[1m[92m   Compiling[0m icu_properties v2.2.0
+[1m[92m   Compiling[0m icu_normalizer v2.2.0
+[1m[92m   Compiling[0m mime v0.3.17
+[1m[92m   Compiling[0m webauthn-attestation-ca v0.5.5
+[1m[92m   Compiling[0m enum-ordinalize v4.4.1
+[1m[92m   Compiling[0m half v2.7.1
+[1m[92m   Compiling[0m ecdsa v0.16.9
+[1m[92m   Compiling[0m logos-codegen v0.16.1
+[1m[92m   Compiling[0m primeorder v0.13.6
+[1m[92m   Compiling[0m serde_with_macros v3.21.0
+[1m[92m   Compiling[0m linked-hash-map v0.5.6
+[1m[92m   Compiling[0m num-iter v0.1.45
+[1m[92m   Compiling[0m ref-cast-impl v1.0.25
+[1m[92m   Compiling[0m miette-derive v7.6.0
+[1m[92m   Compiling[0m unicode-script v0.5.8
+[1m[92m   Compiling[0m idna_adapter v1.2.2
+[1m[92m   Compiling[0m idna v1.1.0
+[1m[92m   Compiling[0m webauthn-rs-core v0.5.5
+[1m[92m   Compiling[0m unicode-width v0.1.14
+[1m[92m   Compiling[0m unicode-security v0.1.2
+[1m[92m   Compiling[0m url v2.5.8
+[1m[92m   Compiling[0m ar_archive_writer v0.5.2
+[1m[92m   Compiling[0m serde_with v3.21.0
+[1m[92m   Compiling[0m linked_hash_set v0.1.6
+[1m[92m   Compiling[0m serde_cbor_2 v0.13.0
+[1m[92m   Compiling[0m miette v7.6.0
+[1m[92m   Compiling[0m webauthn-rs-proto v0.5.5
+[1m[92m   Compiling[0m logos-derive v0.16.1
+[1m[92m   Compiling[0m pkcs1 v0.7.5
+[1m[92m   Compiling[0m psm v0.1.31
+[1m[92m   Compiling[0m ed25519 v2.2.3
+[1m[92m   Compiling[0m itertools v0.15.0
+[1m[92m   Compiling[0m nonempty v0.12.0
+[1m[92m   Compiling[0m smol_str v0.3.6
+[1m[92m   Compiling[0m typed-arena v2.0.2
+[1m[92m   Compiling[0m arrayvec v0.5.2
+[1m[92m   Compiling[0m unicode-width v0.2.2
+[1m[92m   Compiling[0m rustc-literal-escaper v0.0.8
+[1m[92m   Compiling[0m educe v0.7.6
+[1m[92m   Compiling[0m rsa v0.9.10
+[1m[92m   Compiling[0m ed25519-dalek v2.2.0
+[1m[92m   Compiling[0m logos v0.16.1
+[1m[92m   Compiling[0m p384 v0.13.1
+[1m[92m   Compiling[0m pretty v0.12.5
+[1m[92m   Compiling[0m p256 v0.13.2
+[1m[92m   Compiling[0m hyper v1.10.1
+[1m[92m   Compiling[0m der-parser v9.0.0
+[1m[92m   Compiling[0m simple_asn1 v0.6.4
+[1m[92m   Compiling[0m sha1 v0.10.6
+[1m[92m   Compiling[0m pem v3.0.6
+[1m[92m   Compiling[0m multer v3.1.0
+[1m[92m   Compiling[0m cedar-policy v4.12.0
+[1m[92m   Compiling[0m tungstenite v0.29.0
+[1m[92m   Compiling[0m console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+[1m[92m   Compiling[0m x509-parser v0.16.0
+[1m[92m   Compiling[0m jsonwebtoken v11.0.0
+[1m[92m   Compiling[0m axum-core v0.5.6
+[1m[92m   Compiling[0m tokio-tungstenite v0.29.0
+[1m[92m   Compiling[0m hyper-util v0.1.20
+[1m[92m   Compiling[0m serde_path_to_error v0.1.20
+[1m[92m   Compiling[0m matchit v0.8.4
+[1m[92m   Compiling[0m console-contracts v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/contracts)
+[1m[92m   Compiling[0m bumpalo v3.20.3
+[1m[92m   Compiling[0m futures-executor v0.3.34
+[1m[92m   Compiling[0m base64 v0.23.1
+[1m[92m   Compiling[0m pin-project-internal v1.1.13
+[1m[92m   Compiling[0m async-trait v0.1.89
+[1m[92m   Compiling[0m wasm-bindgen-shared v0.2.123
+[1m[92m   Compiling[0m futures v0.3.34
+[1m[92m   Compiling[0m wasm-bindgen v0.2.123
+[1m[92m   Compiling[0m console-workorder-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/domain)
+[1m[92m   Compiling[0m unicode-segmentation v1.13.3
+[1m[92m   Compiling[0m tower-http v0.6.11
+[1m[92m   Compiling[0m proc-macro-error-attr2 v2.0.0
+[1m[92m   Compiling[0m paste v1.0.15
+[1m[92m   Compiling[0m axum v0.8.9
+[1m[92m   Compiling[0m foldhash v0.1.5
+[1m[92m   Compiling[0m anyhow v1.0.103
+[1m[92m   Compiling[0m proc-macro-error2 v2.0.1
+[1m[92m   Compiling[0m reqwest v0.13.5
+[1m[92m   Compiling[0m hashbrown v0.15.5
+[1m[92m   Compiling[0m convert_case v0.11.0
+[1m[92m   Compiling[0m pin-project v1.1.13
+[1m[92m   Compiling[0m block-padding v0.3.3
+[1m[92m   Compiling[0m event-listener-strategy v0.5.4
+[1m[92m   Compiling[0m crc32fast v1.5.0
+[1m[92m   Compiling[0m or_poisoned v0.1.0
+[1m[92m   Compiling[0m inout v0.1.4
+[1m[92m   Compiling[0m md-5 v0.10.6
+[1m[92m   Compiling[0m console-notifications-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notifications/domain)
+[1m[92m   Compiling[0m wasm-bindgen-macro-support v0.2.123
+[1m[92m   Compiling[0m cipher v0.4.4
+[1m[92m   Compiling[0m hashlink v0.10.0
+[1m[92m   Compiling[0m webpki-roots v0.26.11
+[1m[92m   Compiling[0m proc-macro2-diagnostics v0.10.1
+[1m[92m   Compiling[0m whoami v1.6.1
+[1m[92m   Compiling[0m zlib-rs v0.6.3
+[1m[92m   Compiling[0m simd-adler32 v0.3.9
+[1m[92m   Compiling[0m home v0.5.12
+[1m[92m   Compiling[0m console-notifications-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notifications/application)
+[1m[92m   Compiling[0m proc-macro-utils v0.10.0
+[1m[92m   Compiling[0m slotmap v1.1.1
+[1m[92m   Compiling[0m throw_error v0.4.0-beta
+[1m[92m   Compiling[0m typed-path v0.12.3
+[1m[92m   Compiling[0m futures-timer v3.0.4
+[1m[92m   Compiling[0m konst_macro_rules v0.2.19
+[1m[92m   Compiling[0m yansi v1.0.1
+[1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+[1m[92m   Compiling[0m ucd-trie v0.1.7
+[1m[92m   Compiling[0m apalis-core v1.0.0-rc.9
+[1m[92m   Compiling[0m pest v2.8.6
+[1m[92m   Compiling[0m konst v0.2.20
+[1m[92m   Compiling[0m cedar-policy-core v4.12.0
+[1m[92m   Compiling[0m console-governance-domain v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/governance/domain)
+[1m[92m   Compiling[0m zopfli v0.8.3
+[1m[92m   Compiling[0m const_format_proc_macros v0.2.34
+[1m[92m   Compiling[0m derive-where v1.6.1
+[1m[92m   Compiling[0m server_fn_macro v0.9.0-beta
+[1m[92m   Compiling[0m reactive_graph v0.3.0-beta2
+[1m[92m   Compiling[0m send_wrapper v0.6.0
+[1m[92m   Compiling[0m web-time v1.1.0
+[1m[92m   Compiling[0m cfb v0.14.0
+[1m[92m   Compiling[0m pest_meta v2.8.6
+[1m[92m   Compiling[0m syn_derive v0.2.0
+[1m[92m   Compiling[0m async-lock v3.4.2
+[1m[92m   Compiling[0m const_format v0.2.36
+[1m[92m   Compiling[0m console-workorder-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/application)
+[1m[92m   Compiling[0m quick-xml v0.41.0 (/private/tmp/console-client-release-20260919/third-party/rust/vendor/quick-xml-0.41.0-compat)
+[1m[92m   Compiling[0m console-comms-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/domain)
+[1m[92m   Compiling[0m wasm-bindgen-macro v0.2.123
+[1m[92m   Compiling[0m secrecy v0.10.3
+[1m[92m   Compiling[0m doc-comment v0.3.4
+[1m[92m   Compiling[0m system-configuration-sys v0.6.0
+[1m[92m   Compiling[0m camino v1.2.5
+[1m[92m   Compiling[0m guardian v1.3.0
+[1m[92m   Compiling[0m rustc-hash v2.1.3
+[1m[92m   Compiling[0m xxhash-rust v0.8.18
+[1m[92m   Compiling[0m console-comms-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/application)
+[1m[92m   Compiling[0m pest_generator v2.8.6
+[1m[92m   Compiling[0m flate2 v1.1.9
+[1m[92m   Compiling[0m phf_generator v0.11.3
+[1m[92m   Compiling[0m infer v0.22.0
+[1m[92m   Compiling[0m prost-derive v0.14.4
+[1m[92m   Compiling[0m reactive_stores_macro v0.5.0-beta
+[1m[92m   Compiling[0m manyhow-macros v0.11.4
+[1m[92m   Compiling[0m quote-use-macros v0.8.4
+[1m[92m   Compiling[0m console-inbox-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inbox/domain)
+[1m[92m   Compiling[0m console-ontology-canonical-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/canonical-domain)
+[1m[92m   Compiling[0m prefix-trie v0.8.4
+[1m[92m   Compiling[0m darling_core v0.20.11
+[1m[92m   Compiling[0m rapidhash v4.4.1
+[1m[92m   Compiling[0m typed-builder-macro v0.23.2
+[1m[92m   Compiling[0m tachys v0.3.0-beta2
+[1m[92m   Compiling[0m html-escape v0.2.15
+[1m[92m   Compiling[0m apalis-postgres v1.0.0-rc.8
+[1m[92m   Compiling[0m winnow v1.0.4
+[1m[92m   Compiling[0m prettyplease v0.2.37
+[1m[92m   Compiling[0m hickory-proto v0.26.3
+[1m[92m   Compiling[0m metrics v0.24.6
+[1m[92m   Compiling[0m prost v0.14.4
+[1m[92m   Compiling[0m quote-use v0.8.4
+[1m[92m   Compiling[0m manyhow v0.11.4
+[1m[92m   Compiling[0m toml_parser v1.1.3+spec-1.1.0
+[1m[92m   Compiling[0m console-inbox-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inbox/application)
+[1m[92m   Compiling[0m typed-builder v0.23.2
+[1m[92m   Compiling[0m pest_derive v2.8.6
+[1m[92m   Compiling[0m phf_macros v0.11.3
+[1m[92m   Compiling[0m apalis-sql v1.0.0-rc.9
+[1m[92m   Compiling[0m js-sys v0.3.100
+[1m[92m   Compiling[0m apalis-codec v0.1.0-rc.9
+[1m[92m   Compiling[0m either_of v0.1.9
+[1m[92m   Compiling[0m hyper-timeout v0.5.2
+[1m[92m   Compiling[0m ulid v1.2.1
+[1m[92m   Compiling[0m console-workflow-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workflow/domain)
+[1m[92m   Compiling[0m oco_ref v0.2.1
+[1m[92m   Compiling[0m opentelemetry v0.32.0
+[1m[92m   Compiling[0m darling_macro v0.20.11
+[1m[92m   Compiling[0m crossbeam-channel v0.5.15
+[1m[92m   Compiling[0m toml_datetime v1.1.1+spec-1.1.0
+[1m[92m   Compiling[0m serde_spanned v1.1.1
+[1m[92m   Compiling[0m core-foundation v0.9.4
+[1m[92m   Compiling[0m server_fn v0.9.0-beta
+[1m[92m   Compiling[0m email-encoding v0.4.1
+[1m[92m   Compiling[0m nom v8.0.0
+[1m[92m   Compiling[0m drain_filter_polyfill v0.1.3
+[1m[92m   Compiling[0m bytemuck v1.25.0
+[1m[92m   Compiling[0m interpolator v0.5.0
+[1m[92m   Compiling[0m email_address v0.2.9
+[1m[92m   Compiling[0m collection_literals v1.0.3
+[1m[92m   Compiling[0m const_str_slice_concat v0.1.0
+[1m[92m   Compiling[0m erased v0.1.2
+[1m[92m   Compiling[0m next_tuple v0.1.0
+[1m[92m   Compiling[0m quoted_printable v0.5.2
+[1m[92m   Compiling[0m tagptr v0.2.0
+[1m[92m   Compiling[0m fastrand v2.4.1
+[1m[92m   Compiling[0m event-listener v2.5.3
+[1m[92m   Compiling[0m rgb v0.8.53
+[1m[92m   Compiling[0m moka v0.12.15
+[1m[92m   Compiling[0m system-configuration v0.7.0
+[1m[92m   Compiling[0m async-channel v1.9.0
+[1m[92m   Compiling[0m toml v1.1.4+spec-1.1.0
+[1m[92m   Compiling[0m darling v0.20.11
+[1m[92m   Compiling[0m phf v0.11.3
+[1m[92m   Compiling[0m hickory-net v0.26.3
+[1m[92m   Compiling[0m tonic v0.14.6
+[1m[92m   Compiling[0m rstml v0.12.1
+[1m[92m   Compiling[0m html_parser v0.7.0
+[1m[92m   Compiling[0m server_fn_macro_default v0.9.0-beta
+[1m[92m   Compiling[0m attribute-derive-macro v0.10.5
+[1m[92m   Compiling[0m fancy-regex v0.14.0
+[1m[92m   Compiling[0m zip v8.6.0
+[1m[92m   Compiling[0m apalis v1.0.0-rc.9
+[1m[92m   Compiling[0m console-governance-application v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/governance/application)
+[1m[92m   Compiling[0m cbc v0.1.2
+[1m[92m   Compiling[0m aes v0.8.4
+[1m[92m   Compiling[0m convert_case v0.6.0
+[1m[92m   Compiling[0m serde_qs v1.1.3
+[1m[92m   Compiling[0m console-messenger-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/domain)
+[1m[92m   Compiling[0m console-dispatch-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/domain)
+[1m[92m   Compiling[0m universal-hash v0.5.1
+[1m[92m   Compiling[0m cfb v0.10.0
+[1m[92m   Compiling[0m leptos_macro v0.9.0-beta
+[1m[92m   Compiling[0m opaque-debug v0.3.1
+[1m[92m   Compiling[0m thousands v0.2.0
+[1m[92m   Compiling[0m resolv-conf v0.7.6
+[1m[92m   Compiling[0m jiff v0.2.28
+[1m[92m   Compiling[0m const-str v1.1.0
+[1m[92m   Compiling[0m pathdiff v0.2.3
+[1m[92m   Compiling[0m inventory v0.3.24
+[1m[92m   Compiling[0m base16 v0.2.1
+[1m[92m   Compiling[0m debug_unsafe v0.1.4
+[1m[92m   Compiling[0m fallible-iterator v0.2.0
+[1m[92m   Compiling[0m console-platform-provisioning v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/provisioning)
+[1m[92m   Compiling[0m imagesize v0.14.0
+[1m[92m   Compiling[0m wasm_split_macros v0.2.2
+[1m[92m   Compiling[0m atoi_simd v0.17.0
+[1m[92m   Compiling[0m config v0.15.25
+[1m[92m   Compiling[0m postgres-protocol v0.6.12
+[1m[92m   Compiling[0m derive_builder_core v0.20.2
+[1m[92m   Compiling[0m console-dispatch-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/application)
+[1m[92m   Compiling[0m poly1305 v0.8.0
+[1m[92m   Compiling[0m console-messenger-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/application)
+[1m[92m   Compiling[0m wasm-bindgen-futures v0.4.73
+[1m[92m   Compiling[0m web-sys v0.3.100
+[1m[92m   Compiling[0m any_spawner v0.3.0
+[1m[92m   Compiling[0m hydration_context v0.4.0-beta
+[1m[92m   Compiling[0m attribute-derive v0.10.5
+[1m[92m   Compiling[0m stop-token v0.7.0
+[1m[92m   Compiling[0m hickory-resolver v0.26.3
+[1m[92m   Compiling[0m zip v7.2.0
+[1m[92m   Compiling[0m console-platform-push v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/push)
+[1m[92m   Compiling[0m chacha20 v0.9.1
+[1m[92m   Compiling[0m async-channel v2.5.0
+[1m[92m   Compiling[0m convert_case_extras v0.2.0
+[1m[92m   Compiling[0m codepage v0.1.2
+[1m[92m   Compiling[0m imap-proto v0.16.7
+[1m[92m   Compiling[0m umya-spreadsheet v3.0.0 (/private/tmp/console-client-release-20260919/third-party/rust/vendor/umya-spreadsheet-3.0.0-quickxml41)
+[1m[92m   Compiling[0m console-leave-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/leave/domain)
+[1m[92m   Compiling[0m console-support-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/support/domain)
+[1m[92m   Compiling[0m console-compliance-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/domain)
+[1m[92m   Compiling[0m console-todos-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/todos/domain)
+[1m[92m   Compiling[0m leptos_hot_reload v0.9.0-beta
+[1m[92m   Compiling[0m console-inventory-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inventory/domain)
+[1m[92m   Compiling[0m console-finance-gl-domain v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/finance-gl/domain)
+[1m[92m   Compiling[0m console-identity-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/identity/domain)
+[1m[92m   Compiling[0m console-notices-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notices/domain)
+[1m[92m   Compiling[0m console-recruiting-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/recruiting/domain)
+[1m[92m   Compiling[0m reactive_stores v0.5.0-beta
+[1m[92m   Compiling[0m console-benefit-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/benefit/domain)
+[1m[92m   Compiling[0m console-financial-domain v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/domain)
+[1m[92m   Compiling[0m console-inspection-domain v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/inspection/domain)
+[1m[92m   Compiling[0m console-reporting-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/domain)
+[1m[92m   Compiling[0m console-docs-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/domain)
+[1m[92m   Compiling[0m console-evaluation-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/evaluation/domain)
+[1m[92m   Compiling[0m console-sales-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/domain)
+[1m[92m   Compiling[0m console-ontology-domain v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/domain)
+[1m[92m   Compiling[0m console-registry-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/registry/domain)
+[1m[92m   Compiling[0m console-attendance-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/attendance/domain)
+[1m[92m   Compiling[0m codee v0.3.5
+[1m[92m   Compiling[0m aead v0.5.2
+[1m[92m   Compiling[0m hashify v0.2.9
+[1m[92m   Compiling[0m phf_shared v0.13.1
+[1m[92m   Compiling[0m leptos v0.9.0-beta
+[1m[92m   Compiling[0m self_cell v1.2.2
+[1m[92m   Compiling[0m pin-utils v0.1.0
+[1m[92m   Compiling[0m fast-float2 v0.2.3
+[1m[92m   Compiling[0m console-platform-authz-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz-rest)
+[1m[92m   Compiling[0m async-once-cell v0.5.4
+[1m[92m   Compiling[0m async-imap v0.11.3
+[1m[92m   Compiling[0m console-attendance-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/attendance/application)
+[1m[92m   Compiling[0m console-registry-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/registry/application)
+[1m[92m   Compiling[0m phf v0.13.1
+[1m[92m   Compiling[0m calamine v0.35.0 (/private/tmp/console-client-release-20260919/third-party/rust/vendor/calamine-0.35.0-quickxml41)
+[1m[92m   Compiling[0m wasm_split_helpers v0.2.3
+[1m[92m   Compiling[0m chacha20poly1305 v0.10.1
+[1m[92m   Compiling[0m console-docs-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/application)
+[1m[92m   Compiling[0m console-compliance-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/application)
+[1m[92m   Compiling[0m console-sales-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/application)
+[1m[92m   Compiling[0m console-evaluation-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/evaluation/application)
+[1m[92m   Compiling[0m console-reporting-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/application)
+[1m[92m   Compiling[0m mail-parser v0.11.9
+[1m[92m   Compiling[0m console-financial-application v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/application)
+[1m[92m   Compiling[0m console-benefit-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/benefit/application)
+[1m[92m   Compiling[0m console-inspection-application v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/inspection/application)
+[1m[92m   Compiling[0m console-recruiting-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/recruiting/application)
+[1m[92m   Compiling[0m console-notices-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notices/application)
+[1m[92m   Compiling[0m console-inventory-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inventory/application)
+[1m[92m   Compiling[0m console-finance-gl-application v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/finance-gl/application)
+[1m[92m   Compiling[0m console-identity-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/identity/application)
+[1m[92m   Compiling[0m console-todos-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/todos/application)
+[1m[92m   Compiling[0m console-leave-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/leave/application)
+[1m[92m   Compiling[0m console-support-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/support/application)
+[1m[92m   Compiling[0m tonic-prost v0.14.6
+[1m[92m   Compiling[0m derive_builder_macro v0.20.2
+[1m[92m   Compiling[0m leptos_config v0.9.0-beta
+[1m[92m   Compiling[0m postgres-types v0.2.14
+[1m[92m   Compiling[0m prost-types v0.14.4
+[1m[92m   Compiling[0m opentelemetry_sdk v0.32.1
+[1m[92m   Compiling[0m matchers v0.2.0
+[1m[92m   Compiling[0m console-logistics-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/logistics/domain)
+[1m[92m   Compiling[0m console-payroll-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/domain)
+[1m[92m   Compiling[0m console-equipment-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/equipment/domain)
+[1m[92m   Compiling[0m console-equipment-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/equipment/application)
+[1m[92m   Compiling[0m console-orgchange-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/orgchange/domain)
+[1m[92m   Compiling[0m sharded-slab v0.1.7
+[1m[92m   Compiling[0m tracing-serde v0.2.0
+[1m[92m   Compiling[0m strum_macros v0.27.2
+[1m[92m   Compiling[0m rand_xoshiro v0.7.0
+[1m[92m   Compiling[0m phf_shared v0.12.1
+[1m[92m   Compiling[0m left-right v0.11.7
+[1m[92m   Compiling[0m quanta v0.12.6
+[1m[92m   Compiling[0m tracing-log v0.2.0
+[1m[92m   Compiling[0m thread_local v1.1.9
+[1m[92m   Compiling[0m console-platform-auth-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth-rest)
+[1m[92m   Compiling[0m console-platform-realtime v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/realtime)
+[1m[92m   Compiling[0m console-comms-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/rest)
+[1m[92m   Compiling[0m chrono-tz v0.10.4
+[1m[92m   Compiling[0m console-platform-audit-chain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/audit-chain)
+[1m[92m   Compiling[0m console-docs-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/rest)
+[1m[92m   Compiling[0m console-support-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/support/rest)
+[1m[92m   Compiling[0m sketches-ddsketch v0.3.1
+[1m[92m   Compiling[0m nu-ansi-term v0.50.3
+[1m[92m   Compiling[0m rustix v1.1.4
+[1m[92m   Compiling[0m metrics-exporter-prometheus v0.18.3
+[1m[92m   Compiling[0m hashbag v0.1.13
+[1m[92m   Compiling[0m metrics-util v0.20.4
+[1m[92m   Compiling[0m evmap v11.0.0
+[1m[92m   Compiling[0m tracing-subscriber v0.3.23
+[1m[92m   Compiling[0m tonic-types v0.14.6
+[1m[92m   Compiling[0m phf v0.12.1
+[1m[92m   Compiling[0m tokio-postgres v0.7.18
+[1m[92m   Compiling[0m derive_builder v0.20.2
+[1m[92m   Compiling[0m console-comms-credential-cipher v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/credential-cipher)
+[1m[92m   Compiling[0m console-ontology-application v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/application)
+[1m[92m   Compiling[0m strum v0.27.2
+[1m[92m   Compiling[0m opentelemetry-http v0.32.0
+[1m[92m   Compiling[0m console-comms-adapter-mox v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-mox)
+[1m[92m   Compiling[0m opentelemetry-proto v0.32.0
+[1m[92m   Compiling[0m x509-cert v0.2.5
+[1m[92m   Compiling[0m console-analytics-quant-service v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/analytics-quant/service)
+[1m[92m   Compiling[0m console-payroll-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/application)
+[1m[92m   Compiling[0m tracing-opentelemetry v0.33.0
+[1m[92m   Compiling[0m tower-http v0.7.1
+[1m[92m   Compiling[0m console-action-inbox-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/action-inbox/application)
+[1m[92m   Compiling[0m opentelemetry-otlp v0.32.0
+[1m[92m   Compiling[0m console-erp-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/erp/domain)
+[1m[92m   Compiling[0m console-platform-excel v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/excel)
+[1m[92m   Compiling[0m async-stream-impl v0.3.6
+[1m[92m   Compiling[0m console-platform-test-support v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/test-support)
+[1m[92m   Compiling[0m webauthn-authenticator-rs v0.5.5
+[1m[92m   Compiling[0m num-derive v0.4.2
+[1m[92m   Compiling[0m async-stream v0.3.6
+[1m[92m   Compiling[0m serde_bytes v0.11.19
+[1m[92m   Compiling[0m bitflags v1.3.2
+[1m[92m   Compiling[0m croner v4.0.0
+[1m[92m   Compiling[0m gloo-utils v0.3.0
+[1m[92m   Compiling[0m gloo-net v0.7.0
+[1m[92m   Compiling[0m wasm-streams v0.5.0
+[1m[92m   Compiling[0m cedar-policy-formatter v4.12.0
+[1m[92m   Compiling[0m rustls-webpki v0.103.15
+[1m[92m   Compiling[0m leptos_server v0.9.0-beta2
+[1m[92m   Compiling[0m leptos_dom v0.9.0-beta
+[1m[92m   Compiling[0m console-payroll-ui v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/ui)
+[1m[92m   Compiling[0m sqlx-core v0.9.0
+[1m[92m   Compiling[0m sqlx-core v0.8.6
+[1m[92m   Compiling[0m tokio-rustls v0.26.5
+[1m[92m   Compiling[0m lettre v0.11.23
+[1m[92m   Compiling[0m console-comms-adapter-imap v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-imap)
+[1m[92m   Compiling[0m tokio-postgres-rustls v0.14.0
+[1m[92m   Compiling[0m console-platform-email v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/email)
+[1m[92m   Compiling[0m console-comms-adapter-smtp v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-smtp)
+[1m[92m   Compiling[0m sqlx-postgres v0.8.6
+[1m[92m   Compiling[0m sqlx-postgres v0.9.0
+[1m[92m   Compiling[0m sqlx-macros-core v0.8.6
+[1m[92m   Compiling[0m sqlx-macros-core v0.9.0
+[1m[92m   Compiling[0m sqlx-macros v0.8.6
+[1m[92m   Compiling[0m sqlx-macros v0.9.0
+[1m[92m   Compiling[0m sqlx v0.8.6
+[1m[92m   Compiling[0m sqlx v0.9.0
+[1m[92m   Compiling[0m console-platform-jobs v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/jobs)
+[1m[92m   Compiling[0m console-platform-group v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/group)
+[1m[92m   Compiling[0m console-attendance-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/attendance/adapter-postgres)
+[1m[92m   Compiling[0m console-workflow-runtime-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workflow/adapter-postgres)
+[1m[92m   Compiling[0m console-workflow-runtime v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workflow/runtime)
+[1m[92m   Compiling[0m webauthn-rs v0.5.5
+[1m[92m   Compiling[0m console-platform-auth v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/auth)
+[1m[92m   Compiling[0m console-platform-request-context v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/request-context)
+[1m[92m   Compiling[0m console-platform-storage v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/storage)
+[1m[92m   Compiling[0m console-governance-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/governance/adapter-postgres)
+[1m[92m   Compiling[0m console-inbox-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inbox/adapter-postgres)
+[1m[92m   Compiling[0m console-dispatch-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/adapter-postgres)
+[1m[92m   Compiling[0m console-compliance-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/adapter-postgres)
+[1m[92m   Compiling[0m console-financial-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/adapter-postgres)
+[1m[92m   Compiling[0m console-sales-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/adapter-postgres)
+[1m[92m   Compiling[0m console-logistics-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/logistics/adapter-postgres)
+[1m[92m   Compiling[0m console-ontology-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/adapter-postgres)
+[1m[92m   Compiling[0m console-identity-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/identity/adapter-postgres)
+[1m[92m   Compiling[0m console-payroll-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/adapter-postgres)
+[1m[92m   Compiling[0m console-benefit-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/benefit/adapter-postgres)
+[1m[92m   Compiling[0m console-messenger-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/adapter-postgres)
+[1m[92m   Compiling[0m console-docs-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/adapter-postgres)
+[1m[92m   Compiling[0m console-workorder-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/adapter-postgres)
+[1m[92m   Compiling[0m console-finance-gl-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/finance-gl/adapter-postgres)
+[1m[92m   Compiling[0m console-support-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/support/adapter-postgres)
+[1m[92m   Compiling[0m console-registry-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/registry/adapter-postgres)
+[1m[92m   Compiling[0m console-recruiting-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/recruiting/adapter-postgres)
+[1m[92m   Compiling[0m console-equipment-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/equipment/adapter-postgres)
+[1m[92m   Compiling[0m console-notices-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notices/adapter-postgres)
+[1m[92m   Compiling[0m console-notifications-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notifications/adapter-postgres)
+[1m[92m   Compiling[0m console-inspection-adapter-postgres v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/inspection/adapter-postgres)
+[1m[92m   Compiling[0m console-comms-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/adapter-postgres)
+[1m[92m   Compiling[0m console-orgchange-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/orgchange/adapter-postgres)
+[1m[92m   Compiling[0m console-todos-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/todos/adapter-postgres)
+[1m[92m   Compiling[0m console-inventory-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inventory/adapter-postgres)
+[1m[92m   Compiling[0m console-reporting-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/adapter-postgres)
+[1m[92m   Compiling[0m console-leave-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/leave/adapter-postgres)
+[1m[92m   Compiling[0m console-evaluation-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/evaluation/adapter-postgres)
+[1m[92m   Compiling[0m console-equipment-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/equipment/rest)
+[1m[92m   Compiling[0m console-recruiting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/recruiting/rest)
+[1m[92m   Compiling[0m console-payroll-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/rest)
+[1m[92m   Compiling[0m console-workorder-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/rest)
+[1m[92m   Compiling[0m console-todos-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/todos/rest)
+[1m[92m   Compiling[0m console-notifications-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notifications/rest)
+[1m[92m   Compiling[0m console-compliance-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/rest)
+[1m[92m   Compiling[0m console-registry-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/registry/rest)
+[1m[92m   Compiling[0m console-orgchange-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/orgchange/rest)
+[1m[92m   Compiling[0m console-reporting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/rest)
+[1m[92m   Compiling[0m console-inventory-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inventory/rest)
+[1m[92m   Compiling[0m console-leave-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/leave/rest)
+[1m[92m   Compiling[0m console-evaluation-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/evaluation/rest)
+[1m[92m   Compiling[0m console-inspection-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/inspection/rest)
+[1m[92m   Compiling[0m console-sales-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/rest)
+[1m[92m   Compiling[0m console-ontology-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/rest)
+[1m[92m   Compiling[0m console-financial-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/rest)
+[1m[92m   Compiling[0m console-identity-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/identity/rest)
+[1m[92m   Compiling[0m console-messenger-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/rest)
+[1m[92m   Compiling[0m console-notices-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/notices/rest)
+[1m[92m   Compiling[0m console-dispatch-worker v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/worker)
+[1m[92m   Compiling[0m console-dispatch-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/rest)
+[1m[92m   Compiling[0m console-benefit-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/benefit/rest)
+[1m[92m   Compiling[0m console-finance-gl-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/finance-gl/rest)
+[1m[92m   Compiling[0m console-logistics-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/logistics/rest)
+[1m[92m   Compiling[0m console-governance-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/governance/rest)
+[1m[92m   Compiling[0m console-platform-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/platform-rest)
+[1m[92m   Compiling[0m console-inbox-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/inbox/rest)
+[1m[92m   Compiling[0m console-production-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/production/rest)
+[1m[92m   Compiling[0m console-facilities-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/facilities/rest)
+[1m[92m   Compiling[0m console-consulting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/consulting/rest)
+[1m[92m   Compiling[0m console-analytics-quant-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/analytics-quant/rest)
+[1m[92m   Compiling[0m console-ontology-canonical-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/canonical-adapter-postgres)
+[1m[92m   Compiling[0m console-integrity v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/compliance/integrity)
+[1m[92m   Compiling[0m console-attendance-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/attendance/rest)
+[1m[92m   Compiling[0m console-app v0.1.0 (/private/tmp/console-client-release-20260919/backend/app)
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (test "intelligence_bind") generated 1 warning
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "platform_onboarding_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "dispatch_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "mobile_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "purchase_request_collection_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "logistics_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_ontology_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "field_visit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "search_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_people_create_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "facilities_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workorder_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "persona_ess_http") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "health_readiness") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "attendance_persona_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "finance_gl_voucher_sod") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "recruiting_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_kill_switch") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "maintenance_chain_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "submittable_definitions_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_run_read_surface") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notif_routing_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_graph_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_links_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "org_change_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "well_known") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_kind_dynamics") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "router_layers") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "audit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "consulting_engagement_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_manager_scope") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_instance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "benefit_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "board_ack_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_finalize_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_four_eyes_publish") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_self_read") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "evaluation_cycle_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "realtime_ws") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_ingest_checklist_gate") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "action_inbox_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workbench_native_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_route_telemetry") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "tenant_context_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_resolve_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_context_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notifications_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "registry_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "equipment_3r_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 2m 02s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_app-ed7da7255fd2532f)
+[1m[92m  Executable[0m unittests src/main.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_app-9aed4d0a061db0fd)
+[1m[92m  Executable[0m unittests src/bin/console_cedar_parity_report.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_cedar_parity_report-b7fe5119055c921b)
+[1m[92m  Executable[0m unittests src/bin/console_deployment_operator.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_deployment_operator-23c6e900d8bf44ba)
+[1m[92m  Executable[0m tests/account_migration.rs (/private/tmp/console-rust1981-owner-target/debug/deps/account_migration-030109e9f4f2d388)
+[1m[92m  Executable[0m tests/action_inbox_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/action_inbox_api-0961595bbca2211b)
+[1m[92m  Executable[0m tests/attendance_persona_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/attendance_persona_api-946d9ae3346ae9a3)
+[1m[92m  Executable[0m tests/audit_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/audit_api-900ad9e97d131da4)
+[1m[92m  Executable[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-c9fa847480459fe5)
+[1m[92m  Executable[0m tests/benefit_catalog_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/benefit_catalog_api-5b556ca6884d9003)
+[1m[92m  Executable[0m tests/board_ack_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/board_ack_api-25b5a407f168e5f0)
+[1m[92m  Executable[0m tests/cedar_freshness_mint.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_freshness_mint-1b0243db462f2bb4)
+[1m[92m  Executable[0m tests/cedar_parity_shadow.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_parity_shadow-43246064d33be69f)
+[1m[92m  Executable[0m tests/cedar_shadow_role_manage.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_shadow_role_manage-ab5528f3f768c751)
+[1m[92m  Executable[0m tests/compliance_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/compliance_api-1449ddc2b7bffbba)
+[1m[92m  Executable[0m tests/compliance_catalog_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/compliance_catalog_api-9dcbab8a85e95cb5)
+[1m[92m  Executable[0m tests/config.rs (/private/tmp/console-rust1981-owner-target/debug/deps/config-76a0773894f8323d)
+[1m[92m  Executable[0m tests/console_kill_switch.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_kill_switch-7cd3661575143b34)
+[1m[92m  Executable[0m tests/console_route_telemetry.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_route_telemetry-727067afb8ec60a6)
+[1m[92m  Executable[0m tests/consulting_engagement_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/consulting_engagement_api-987945ab070269a8)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_auth_persona_guard-84c1ead4fc7d7550)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard_feature.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_auth_persona_guard_feature-7131b75c1d65378f)
+[1m[92m  Executable[0m tests/dev_seed_notification_links.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_seed_notification_links-5f8c659466f0b30f)
+[1m[92m  Executable[0m tests/dispatch_pipeline_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dispatch_pipeline_api-5fcd976c4aac545d)
+[1m[92m  Executable[0m tests/equipment_3r_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/equipment_3r_api-16150e591b364c9d)
+[1m[92m  Executable[0m tests/evaluation_cycle_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/evaluation_cycle_api-410be6e3441b7be0)
+[1m[92m  Executable[0m tests/facilities_pilot_story.rs (/private/tmp/console-rust1981-owner-target/debug/deps/facilities_pilot_story-0c30dca83d0917f4)
+[1m[92m  Executable[0m tests/field_visit_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/field_visit_api-11257aa87d554aac)
+[1m[92m  Executable[0m tests/finance_gl_voucher_sod.rs (/private/tmp/console-rust1981-owner-target/debug/deps/finance_gl_voucher_sod-81871ab5eb7a9090)
+[1m[92m  Executable[0m tests/health_readiness.rs (/private/tmp/console-rust1981-owner-target/debug/deps/health_readiness-caf7069a8d531044)
+[1m[92m  Executable[0m tests/hr_attendance_manager_scope.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_attendance_manager_scope-77515de03d93b79d)
+[1m[92m  Executable[0m tests/hr_attendance_self_read.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_attendance_self_read-bf1c70e2a5ca350e)
+[1m[92m  Executable[0m tests/hr_ingest_checklist_gate.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_ingest_checklist_gate-d0edf3135e74b026)
+[1m[92m  Executable[0m tests/hr_people_create_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_people_create_api-9ae3ef1bc320ec9a)
+[1m[92m  Executable[0m tests/intelligence_bind.rs (/private/tmp/console-rust1981-owner-target/debug/deps/intelligence_bind-8834503426b90a1b)
+[1m[92m  Executable[0m tests/logistics_pilot_story.rs (/private/tmp/console-rust1981-owner-target/debug/deps/logistics_pilot_story-d5886836e1c3d8e6)
+[1m[92m  Executable[0m tests/m2_real_engine_drive.rs (/private/tmp/console-rust1981-owner-target/debug/deps/m2_real_engine_drive-a98787745c54dc5f)
+[1m[92m  Executable[0m tests/maintenance_chain_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/maintenance_chain_api-1308f6b85fd3e796)
+[1m[92m  Executable[0m tests/mobile_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/mobile_api-bb025407e37fa6cc)
+[1m[92m  Executable[0m tests/notif_routing_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/notif_routing_api-77fd429ac8b6b7b0)
+[1m[92m  Executable[0m tests/notifications_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/notifications_api-cef8b95011f51349)
+[1m[92m  Executable[0m tests/object_graph_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_graph_api-8cc12f8dc62842cf)
+[1m[92m  Executable[0m tests/object_links_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_links_api-a5ce2ab1fc810da5)
+[1m[92m  Executable[0m tests/object_ontology_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_ontology_api-947831859739b788)
+[1m[92m  Executable[0m tests/object_resolve_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_resolve_api-0cad4e5d3abbbea0)
+[1m[92m  Executable[0m tests/office_versions.rs (/private/tmp/console-rust1981-owner-target/debug/deps/office_versions-c2496b287bb9a7b2)
+[1m[92m  Executable[0m tests/openapi_drift.rs (/private/tmp/console-rust1981-owner-target/debug/deps/openapi_drift-b0fd69a00dc94609)
+[1m[92m  Executable[0m tests/openslo_files.rs (/private/tmp/console-rust1981-owner-target/debug/deps/openslo_files-f780f370490c6353)
+[1m[92m  Executable[0m tests/org_change_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/org_change_api-b3425f09521d3fe4)
+[1m[92m  Executable[0m tests/persona_ess_http.rs (/private/tmp/console-rust1981-owner-target/debug/deps/persona_ess_http-73533a3d5f7f2aef)
+[1m[92m  Executable[0m tests/platform_onboarding_e2e.rs (/private/tmp/console-rust1981-owner-target/debug/deps/platform_onboarding_e2e-fc966703256e2c25)
+[1m[92m  Executable[0m tests/purchase_request_collection_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/purchase_request_collection_api-521e216e88af3c95)
+[1m[92m  Executable[0m tests/realtime_ws.rs (/private/tmp/console-rust1981-owner-target/debug/deps/realtime_ws-6176054665e089c0)
+[1m[92m  Executable[0m tests/recruiting_pipeline_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/recruiting_pipeline_api-bc065db30279d9a7)
+[1m[92m  Executable[0m tests/registry_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/registry_api-cfe072892552e44f)
+[1m[92m  Executable[0m tests/router_layers.rs (/private/tmp/console-rust1981-owner-target/debug/deps/router_layers-7f40e0ca9252dbe8)
+[1m[92m  Executable[0m tests/search_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/search_api-3357319b59211077)
+[1m[92m  Executable[0m tests/submittable_definitions_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/submittable_definitions_api-5f8f757a7c321e20)
+[1m[92m  Executable[0m tests/tenant_context_e2e.rs (/private/tmp/console-rust1981-owner-target/debug/deps/tenant_context_e2e-15a5fd3160e1e616)
+[1m[92m  Executable[0m tests/well_known.rs (/private/tmp/console-rust1981-owner-target/debug/deps/well_known-b6d416aeaea8a57c)
+[1m[92m  Executable[0m tests/workbench_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workbench_api-cf137faf516c14e5)
+[1m[92m  Executable[0m tests/workbench_native_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workbench_native_api-4fc085d9bdf8e186)
+[1m[92m  Executable[0m tests/workflow_automation_triggers.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_automation_triggers-1e05610a6cf56db4)
+[1m[92m  Executable[0m tests/workflow_dynamics_branch.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_dynamics_branch-9a46b76232d40d16)
+[1m[92m  Executable[0m tests/workflow_four_eyes_publish.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_four_eyes_publish-f9996604bcccdfdf)
+[1m[92m  Executable[0m tests/workflow_object_context_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_object_context_api-e195102aafce324f)
+[1m[92m  Executable[0m tests/workflow_object_kind_dynamics.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_object_kind_dynamics-da2ae4a84f38cda6)
+[1m[92m  Executable[0m tests/workflow_run_read_surface.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_run_read_surface-2220494ab425b65f)
+[1m[92m  Executable[0m tests/workflow_runtime_finalize_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_runtime_finalize_api-b7d8e7ebb4bac255)
+[1m[92m  Executable[0m tests/workflow_runtime_instance_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_runtime_instance_api-9a49233db0781504)
+[1m[92m  Executable[0m tests/workorder_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workorder_api-51b7647501516cec)
+cargo-postgres: === app-auth-rest-pg ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects -- --test-threads=1 --exact
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.67s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-c9fa847480459fe5)
+
+running 1 test
+test account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 352 filtered out; finished in 5.02s
+
+cargo-postgres-timing: {"name": "app-auth-rest-pg", "package": "console-app", "seconds": 8.355, "shard": "", "status": "pass"}
+
+cargo-postgres: summary
+  PASS  app-auth-rest-pg
+cargo-postgres: 1 passed, 0 failed
+cargo-postgres: all 1 invocations passed

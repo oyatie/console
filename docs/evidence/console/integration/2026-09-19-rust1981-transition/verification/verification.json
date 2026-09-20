@@ -1,0 +1,40 @@
+{
+  "test_base_sha": "15f35209bfbfa9f5ef72a4f472917ec31223d52d",
+  "source_hashes": {
+    "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
+    "toolchains/rust/lock.bzl": "ec7f7c7b1a0ea4e3bd67cec7eb9fa70820e7b13eb41af75c605a006451b629d9"
+  },
+  "checks": {
+    "configuration_probe": "pass",
+    "real_manifest_lock_check": "pass",
+    "pin_gate": "pass",
+    "toolchain_tests": {
+      "executed": 39,
+      "passed": 39,
+      "skipped": 0
+    },
+    "default_app_all_targets_check": {
+      "exit_code": 0,
+      "seconds": 1.06,
+      "runtime_tests": 0
+    },
+    "default_wasm_release_build": {
+      "exit_code": 0,
+      "seconds": 0.24,
+      "runtime_tests": 0
+    },
+    "default_account_owner": {
+      "passed": 1,
+      "failed": 0,
+      "filtered": 352,
+      "seconds": 4.49
+    }
+  },
+  "remaining_holds": [
+    "Dockerfile stale root pin path and builder provenance",
+    "Linux deployment and full workspace qualification",
+    "Committed browser bundle interoperability",
+    "macOS nextest inherited pipe leak",
+    "Complete release unaccepted"
+  ]
+}

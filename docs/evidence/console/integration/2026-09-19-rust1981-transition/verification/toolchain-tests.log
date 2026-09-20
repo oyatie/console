@@ -1,0 +1,98 @@
+▶ setup-rust reads the whole pin
+  ✔ extracts channel, components and targets from the repository's own pin (21.760667ms)
+  ✔ hands every declared component and target to the installer (0.113ms)
+  ✔ re-proves on the runner that nothing is left to download (0.056083ms)
+  ✔ takes no inputs, so no job can declare a second toolchain (0.038ms)
+  ✔ refuses a pin it cannot read, rather than guessing (25.042458ms)
+  ✔ accepts a pin with no components or targets (19.690917ms)
+✔ setup-rust reads the whole pin (67.493667ms)
+▶ the pin gate cannot be walked past
+  ✔ rejects a toolchain: input (26.995792ms)
+  ✔ rejects a trailing comment invoking the reindeer carve-out (26.032083ms)
+  ✔ rejects a version reaching rustup through a shell variable (26.050417ms)
+  ✔ rejects rustup install (26.752666ms)
+  ✔ rejects rustup-init --default-toolchain (26.834583ms)
+  ✔ rejects a third-party action pinned to a version (28.418083ms)
+  ✔ rejects RUSTUP_TOOLCHAIN as a literal (26.374333ms)
+  ✔ rejects rustup component add --toolchain (27.473417ms)
+  ✔ rejects a rust: container image (26.861292ms)
+  ✔ allows reindeer's bootstrap, which names no version (25.543125ms)
+  ✔ allows an action pinned to a floating ref (26.335041ms)
+  ✔ allows a container image that is not rust (26.201916ms)
+✔ the pin gate cannot be walked past (320.285333ms)
+▶ the lock cannot drift from the pin
+  ✖ rejects urls pointing at another month (27.593209ms)
+  ✔ rejects a strip_prefix that does not match the archive layout (27.163583ms)
+  ✔ rejects a required artifact removed (27.121ms)
+  ✔ rejects an artifact the pin does not call for (26.820083ms)
+  ✔ rejects a channel the pin does not declare (26.59425ms)
+  ✔ rejects field indentation, with urls pointing at another month (28.177208ms)
+  ✔ accepts the committed lock unmodified (29.682541ms)
+  ✖ accepts a stable lock that names the stable pin (26.845083ms)
+  ✔ rejects a stable lock whose urls name a different patch (26.035708ms)
+✖ the lock cannot drift from the pin (246.309959ms)
+▶ lock-rust-toolchain
+  ✔ requires native compiler artifacts for the ARM Linux CI runner (0.514709ms)
+  ✔ routes a dated nightly to its dated manifest and a stable to its own (0.126375ms)
+  ✔ refuses a floating channel instead of locking a hash that will stop matching (0.176417ms)
+  ✔ derives strip_prefix from the URL rather than rebuilding it from the channel (0.264291ms)
+  ✔ names the inner directory per package: only rust-std carries the triple (0.101917ms)
+  ✔ prefers the xz artifact, because CI pays for every byte (0.079ms)
+  ✔ treats `available = false` as absent (0.261083ms)
+  ✔ requires rustc, std and every declared component per host, plus std per target (0.110167ms)
+  ✔ fails closed when the channel does not publish something the pin declares (0.093708ms)
+  ✔ renders Starlark that carries a hash for every url (0.233334ms)
+  ✔ the committed lock matches the committed pin (0.133042ms)
+✔ lock-rust-toolchain (2.736416ms)
+ℹ tests 38
+ℹ suites 4
+ℹ pass 36
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 676.140625
+
+✖ failing tests:
+
+test at scripts/check-toolchain-pin.test.mjs:216:5
+✖ rejects urls pointing at another month (27.593209ms)
+  AssertionError [ERR_ASSERTION]: urls pointing at another month passed the gate
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/check-toolchain-pin.test.mjs:219:16)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at node:internal/test_runner/test:1887:71
+      at node:internal/per_context/primordials:504:82
+      at new Promise (<anonymous>)
+      at new SafePromise (node:internal/per_context/primordials:478:3)
+      at node:internal/per_context/primordials:504:9
+      at Array.map (<anonymous>) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 0,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/check-toolchain-pin.test.mjs:249:3
+✖ accepts a stable lock that names the stable pin (26.845083ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///private/tmp/console-client-release-20260919/scripts/check-toolchain-pin.test.mjs:252:14)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Suite.processPendingSubtests (node:internal/test_runner/test:969:18)
+      at Test.postRun (node:internal/test_runner/test:1537:19)
+      at Test.run (node:internal/test_runner/test:1462:12)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:969:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
