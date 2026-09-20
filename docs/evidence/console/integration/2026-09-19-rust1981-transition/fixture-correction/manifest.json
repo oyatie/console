@@ -1,0 +1,9 @@
+{
+  "base_sha": "db6c45d13d0241b5281014725cb17f2c313cd13e",
+  "original_sha256": "d3351df41760cbf16129c8f8113d09c3df99b6d120c59b3eeb4ebbb13ce09868",
+  "files": {
+    "candidate.patch": "ab6b70ae677d2fa8367d5215ad8d4bdc3716b9eb0318baf658140f3a0b8bbf9d",
+    "DESIGN.md": "cd261e2b0400627039c3e0f156fbd1eb5ab3dd9961a03028c49216bcb7b8a1cf",
+    "check-toolchain-pin.test.mjs": "72792dd9ed107c10e7dd3062a8257c046720c9f9636140f8024334ae427ed1e9"
+  }
+}

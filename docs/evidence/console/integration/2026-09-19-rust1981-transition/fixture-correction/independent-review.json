@@ -1,0 +1,65 @@
+{
+  "kind": "independent-rust-pin-fixture-semantic-review",
+  "reviewer": "/root/integration_security",
+  "at_utc": "2026-09-20T03:00:52.719291+00:00",
+  "decision": "APPROVE_EXACT_TEST_FIXTURE_CORRECTION",
+  "manifest_sha256": "4c7ba2f4f1eef720a40752f4aa192bba233d2c7504277b226d84a8d88abcff5e",
+  "candidate_sha256": "72792dd9ed107c10e7dd3062a8257c046720c9f9636140f8024334ae427ed1e9",
+  "base_sha": "db6c45d13d0241b5281014725cb17f2c313cd13e",
+  "original_sha256": "d3351df41760cbf16129c8f8113d09c3df99b6d120c59b3eeb4ebbb13ce09868",
+  "gate_sha256": "eefd13d947bc2f4d43e329160ffa4a216ef922a15b4a1542f4bafe8933172ec5",
+  "results": [
+    {
+      "variant": "nightly",
+      "control": "positive",
+      "exit": 0,
+      "log": "/private/tmp/console-rust-pin-fixture-independent/nightly-positive.log",
+      "sha256": "e2ce1853c64f9ff724ba38f9db17735e05f930485588f9b9215b731bfccb0f8e"
+    },
+    {
+      "variant": "nightly",
+      "control": "nightly-url-bypass",
+      "exit": 1,
+      "log": "/private/tmp/console-rust-pin-fixture-independent/nightly-nightly-url-bypass.log",
+      "sha256": "95c7127ccc5e68b5c3f5d1ac56a63b91b8ca40cab7cd7f2ca0f194dcff42269d"
+    },
+    {
+      "variant": "nightly",
+      "control": "stable-url-bypass",
+      "exit": 1,
+      "log": "/private/tmp/console-rust-pin-fixture-independent/nightly-stable-url-bypass.log",
+      "sha256": "9f954854f30ca6cf4fd2d87e6c092ce7ad5a18b55fce91d3228792ec52a610c1"
+    },
+    {
+      "variant": "stable",
+      "control": "positive",
+      "exit": 0,
+      "log": "/private/tmp/console-rust-pin-fixture-independent/stable-positive.log",
+      "sha256": "29b587bb00edce5f60a28ff32260b06b7f3ec63f57d4acd714b1756b8214f4a8"
+    },
+    {
+      "variant": "stable",
+      "control": "nightly-url-bypass",
+      "exit": 1,
+      "log": "/private/tmp/console-rust-pin-fixture-independent/stable-nightly-url-bypass.log",
+      "sha256": "47555e78eb2e1cf393ca52e3ac7818a28208361ecbbf94378912f1b0a03b57b8"
+    },
+    {
+      "variant": "stable",
+      "control": "stable-url-bypass",
+      "exit": 1,
+      "log": "/private/tmp/console-rust-pin-fixture-independent/stable-stable-url-bypass.log",
+      "sha256": "92a9a25712c9fda8c37c0376d6816ea8686f272aa51ecc6ca3a9deeba262e157"
+    }
+  ],
+  "checks": [
+    "All prior tests and assertions retained; explicit nightly positive added.",
+    "Stable normalizer covers nightly and x.y.z URL/strip-prefix archive names.",
+    "Current real-lock positive unchanged. Both nightly/stable fixture suites39/39; independent gate URL-check bypasses cause corresponding original tests to fail.",
+    "Only temporary copies mutated; no repository edits or runtime gate changes."
+  ],
+  "limits": [
+    "Synthetic lock transformations verify naming/shape only, not downloaded artifact hash authenticity.",
+    "Source pin/lock transition and actual owner execution require separate final review."
+  ]
+}
