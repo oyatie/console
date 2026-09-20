@@ -79,7 +79,7 @@ async fn fixture(pool: &PgPool) -> Fixture {
     .await;
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential = enroll_passkey(&router, &mut authenticator, &redeemed.access_token).await;
-    let login = usernameless_login(&router, &mut authenticator, &credential).await;
+    let mut login = usernameless_login(&router, &mut authenticator, &credential).await;
     let verifier = JwtVerifier::from_es256_public_pem(
         JwtSettings {
             issuer: TEST_ISSUER.into(),
@@ -89,6 +89,13 @@ async fn fixture(pool: &PgPool) -> Fixture {
         public.as_bytes(),
     )
     .unwrap();
+    // Historical-shape successor: preserve all verified claims and original
+    // expiry; only remove the newly produced additive binding in test memory.
+    login.access_token = crate::legacy_platform_binding_producer::historical_access(
+        &key,
+        &verifier,
+        &login.access_token,
+    );
     let verified = verifier.verify_access_token(&login.access_token).unwrap();
     assert!(
         verified.sub == actor.to_string()

@@ -430,7 +430,7 @@ async fn inactive_or_fenced_current_self_refuses_with_unchanged_credentials(pool
 }
 
 #[sqlx::test(migrations = false)]
-async fn historical_platform_self_stays_compatible_but_new_bound_platform_refuses(pool: PgPool) {
+async fn historical_and_bound_platform_self_preserve_current_family_checks(pool: PgPool) {
     let f = fixture(&pool).await;
     let subject = UserId::new();
     sqlx::query("INSERT INTO public.users(id,display_name,roles,org_id) VALUES($1,'Platform self reader',ARRAY['SUPER_ADMIN'],$2)")
@@ -487,13 +487,40 @@ async fn historical_platform_self_stays_compatible_but_new_bound_platform_refuse
     assert!(verifier(&f).verify_access_token(&bound).is_ok());
     let before = all_rows(&pool).await;
     accepted(&f, &f.legacy.router, &unbound, &json!([])).await;
-    refused(&f, &f.legacy.router, &bound).await;
+    accepted(&f, &f.legacy.router, &bound, &json!([])).await;
     let mut unmarked = claims(&f, &unbound);
     unmarked["platform"] = json!(false);
     unmarked["org"] = json!(OrgId::knl().to_string());
     refused(&f, &f.legacy.router, &sign(&f, &unmarked)).await;
     accepted(&f, &f.legacy.router, &f.access_b, &f.expected).await;
     assert!(before == all_rows(&pool).await);
+    // Independently reviewed successor: valid Direct platform self-list now
+    // uses the same exact-family checks. Original unbound/malformed/tenant
+    // assertions and their unchanged snapshot above remain intact.
+    let logout = post_raw(
+        f.legacy.router.clone(),
+        "/api/v1/auth/logout",
+        None,
+        json!({"refresh_token": issued.token.as_str()}),
+    )
+    .await;
+    assert!(logout.status() == StatusCode::OK);
+    let revoked: bool = sqlx::query_scalar(
+        "SELECT revoked_at IS NOT NULL FROM public.auth_refresh_token_families WHERE id=$1",
+    )
+    .bind(issued.family_id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(
+        revoked,
+        "real family owner must revoke before denial evidence"
+    );
+    let after_revoke = all_rows(&pool).await;
+    refused(&f, &f.legacy.router, &bound).await;
+    accepted(&f, &f.legacy.router, &unbound, &json!([])).await;
+    accepted(&f, &f.legacy.router, &f.access_b, &f.expected).await;
+    assert!(after_revoke == all_rows(&pool).await);
     f.auth.close().await;
 }
 

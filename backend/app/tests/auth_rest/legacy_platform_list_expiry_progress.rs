@@ -135,7 +135,14 @@ pub(in super::super::super) async fn other_operator(
     .await;
     let mut authenticator = WebauthnAuthenticator::new(SoftPasskey::new(true));
     let credential = enroll_passkey(&f.router, &mut authenticator, &redeemed.access_token).await;
-    let login = usernameless_login(&f.router, &mut authenticator, &credential).await;
+    let mut login = usernameless_login(&f.router, &mut authenticator, &credential).await;
+    // Historical-shape successor: preserve all verified claims and original
+    // expiry; only remove the newly produced additive binding in test memory.
+    login.access_token = crate::legacy_platform_binding_producer::historical_access(
+        &f.key,
+        &f.verifier,
+        &login.access_token,
+    );
     let verified = f.verifier.verify_access_token(&login.access_token).unwrap();
     assert!(
         verified.sub == actor.to_string()

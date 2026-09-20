@@ -7,6 +7,10 @@ use uuid::Uuid;
 
 use crate::AuthError;
 
+#[cfg(test)]
+#[path = "jwt_platform_binding_producer_tests.rs"]
+mod platform_binding_producer_tests;
+
 mod account;
 pub use account::{
     AccountAccessClaims, AccountAccessTokenInput, AccountAccessVerification, AccountAssurance,

@@ -54,6 +54,9 @@ mod account_storage;
 mod auth_target_parser;
 #[path = "auth_rest/historical227.rs"]
 mod historical227;
+#[path = "auth_rest/legacy_platform_binding_producer.rs"]
+mod legacy_platform_binding_producer;
+
 #[path = "auth_rest/legacy_bound_passkey_reads.rs"]
 mod legacy_bound_passkey_reads;
 #[path = "auth_rest/legacy_platform_list_reads.rs"]
