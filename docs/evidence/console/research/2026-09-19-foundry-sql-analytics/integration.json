@@ -1,0 +1,42 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "8b1ae6c59db4e0052444537976a01002eb57a61d",
+  "before_registry_sha256": "6634a93279b822f05e720e992dd193b766ab6d59bbb177a61a6d53ac365ef7af",
+  "after_registry_sha256": "8d5ed3ce6e2fd9fa735893af7f57c31aa7bffb8b25d59d1b8bd1d08d6cf6b5e4",
+  "leaves_before": 366,
+  "leaves_after": 386,
+  "new_sources": 37,
+  "new_leaves": 20,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "Bounded13SQL-warehousing and24analytics-connectivity pages. Public snapshot includes mutable documentation and legacy transitions; no exhaustive Foundry equivalence, Console implementation, external-client acceptance or performance claim.",
+    "Ontology SQL overview says interfaces can be queried while its supported-feature table marks Interfaces unsupported. Overview says branch/scenario queries unavailable; SQL-function documentation says branches/scenarios supported. Keep these mismatches unresolved per entry point rather than select a convenient statement.",
+    "Generic SQL permission table describes unlimited external result rows; Ontology SQL explicitly truncates at10,000 and restricts OFFSET+LIMIT. UI preview defaults1,000/up to10,000; Download column says up to1,000 despite configurable preview. Client,engine,preview,export and scale are distinct limits requiring verified support.",
+    "Legacy analytics drivers/architecture describe read-only Spark/DirectRead while Furnace supports dataset/table writes and Spark/Trino. No silent universal read/write compatibility claim across all protocols; public direct-read eligibility and newer engine behavior must be tested separately.",
+    "Furnace INSERT/UPDATE/DELETE/ALTER metadata is documented for Iceberg, default CREATE uses Iceberg with Parquet/Avro alternatives. This is reference coverage, not authority to select a Console storage format before bounded comparison. PostgreSQL remains initial business authority; dataset writes invoke its canonical owner and cannot mutate payroll/auth tables.",
+    "BEGIN/COMMIT is described as one atomic job, nonnested with at least one write. This is not proof of distributed atomicity under Console failure, cancellation or unknown outcomes; require durable receipts and multi-output failure histories.",
+    "Active SQL definitions affect future scheduled rebuilds; ad-hoc writes preserve active selection; CREATE OR REPLACE discards vendor prior definitions. Console retains historical command/version evidence and append-only restoration rather than rewriting or deleting approved history. Lineage can include inactive definitions and must disclose execution-specific versus retained dependency edges.",
+    "Ontology SQL is read-only and does not mix objects with datasets; source-derived Group restrictions and exact per-field/current policy apply regardless of SQL role names. Schema autocomplete/catalog metadata/results/downloads must use authorized projections. No raw user SQL gains trusted business database credentials.",
+    "Literal function parameters cannot contain SQL fragments; ObjectSet parameters are FROM-only; list-of-struct versus one-column-list return shape is versioned. Function publication requires project worksheet; worksheet restore and unsaved persistence need reviewed conflict/recovery histories, scratchpad overwrite is not durable-draft proof.",
+    "ArrowFlightSQL JDBC19.0.0 has documented nonUTC timestamp display errors up to twice offset. Legacy ODBC local-zone default and JDBCUTC differ, and publication DSN settings may change. Exact instants, Korean dates, decimals, nulls, arrays/maps/struct serialization and client numeric loss require independent oracles.",
+    "Java11+ download summary omits default15ceiling and required16+module opens in driver guide. ODBC supports Windows64only. Excel page suggests32or64matching Excel, conflicting with driver download32unsupported. Preserve narrower actual vendor constraints until compatibility evidence; no weakening Console TLS or broad runtime flags without isolated analysis.",
+    "PowerBI Desktop supports token/OAuth and Import/DirectQuery; gateway refresh uses configured data-source identity, not report-viewer credentials; exact token/client-credential support conflicts between pages. REST fallback is Import-only/smaller and recommends unverified extensions, which is reference evidence not permission to disable Console supply-chain checks. XMLA ingestion is a separate connector direction.",
+    "Tableau Live can prompt each viewer OAuth; extracts and embedded service credentials have different disclosure authority. Connector1.x token-only/no search,2.6.0 adds client credentials; TableauOnlineBridge unsupported in this source. Vendor no-expiration credentials do not waive scoped service identity, rotation/revocation, secure secret handling or accountable ownership.",
+    "External reports and cached extracts disclose data beyond Console subscriptions. Revoking future fetches cannot retract an already disclosed local copy; require explicit authorized release/copy handling and honest retention/revocation outcomes without claiming automatic downstream policy inheritance.",
+    "Qlik shared DSN tokens may broaden access and even leak into connection names; password-length workaround is not authorization to log or expose secrets. Client/server settings, debug logs and exported reports require secret scrubbing and current policy.",
+    "MicroStrategy token-only fixedSPARK dialect/versioned installation differs from general JDBC OAuth support. ReportBuilderDesktop support is explicitly token and2020September+; do not infer all generic driver modes work in every application.",
+    "SQL compute attribution differs by engine/query kind: read inputs, write outputs or saved application. Vendor compute accounting and20second/6second envelopes are not Console measured workload, fairness or hot-object/cell qualification.",
+    "AI-assisted SQL generation/explanation/debugging remains excluded to Intelligence. Generic SQL/MCP transport or classical typed query execution is not excluded solely because an application also advertises an AIP panel.",
+    "Console equivalents use native Leptos SSR and current owner/use-case/adapter boundaries. This packet does not authorize calling Palantir APIs, importing vendor formats/drivers, real external report publication, or production exposure.",
+    "PowerBI source mismatch: FAQs say Gateway connector supports token authentication only and no ServiceOAuth; GettingStarted explicitly recommends Foundry Client Credentials for Service administrators. These pages do not resolve exact product/connector/version applicability. Preserve both statements and qualify the actual client version/auth mode rather than declaring universal token-only or OAuth availability. Service-user identity remains distinct from report-viewer authority in either case."
+  ],
+  "validation": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "c693eb09a21d49eb330086ad8f3f44f827060c0c387497c82ee25617cc38e197"
+  }
+}
