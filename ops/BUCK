@@ -34,3 +34,8 @@ export_file(
     name = "postgres-company-enrollment-intake.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "postgres-company-enrollment-guards.sql",
+    visibility = ["PUBLIC"],
+)
