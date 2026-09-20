@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_ADDITIVE_REFERENCE_ONLY",
+  "proposal_sha256": "e76ec5170926b61c61435a02dacd7e9fa85ee7a2bba73fe4948e51e3b3450e6d",
+  "patch_sha256": "0c486896ab84fae92b2ea6e7e78a0839012410cf5ea9f65044d025046e59cc46",
+  "manifest_sha256": "63a6991ff13872022df6d3d522019f205aa049e73afb52e87157d0214726e533",
+  "reviewed_registry_sha256": "5c37d69ee3b9252ff1ea05698ad5e79273f68849d5d9a40d08ba0fd0cb74bc41",
+  "source_packet_historical_registry_sha256": "f1e3f59e19fd0f824ba27a226f33130be017492507800464500049ba8a56a316",
+  "manifest_files_verified": 97,
+  "sources_verified": 44,
+  "raw_compressed_size_checks": 132,
+  "body_quote_checks_including_catalog_bindings": 661,
+  "catalog_rows_all_columns_verified_whitespace_ignored": 257,
+  "support_runtime_rows": 10,
+  "existing_leaves_unchanged": 299,
+  "planned_leaves_added": 31,
+  "combined_dag_nodes": 330,
+  "findings": [],
+  "limitations": [
+    "Historical proposal bound to earlier registry; additive patch independently rebased onto exact299-leaf registry without replacements, preserving every existing dict value/list prefix.",
+    "Reference collection is not exhaustive; captured mutablepublicdocuments do not authenticate historical vendorstate. ActualUTCtimestamps retained; target interpreted as2026-09-19America/New_York.",
+    "No executable acceptance, Console implementation, productionqualification, releasedstate or legalclaim is established.",
+    "Vendor weaker semantics remain explicit: nonpropagating logs/rowfilters;24hself-executionexception;best-effort telemetry;auditgaps/duplicates;selfapprovedingress;warn-onlycodechecks;nonenforcingvulnerabilitydefaults;objectstorefilesexcludedfrommetadataDR;upstreambackupdependency. Console requirements are not weakened by these references.",
+    "Seven-day overview versus30-day detailedexecutionhistory remains unresolved; datedApril2024cloudquota is notverifiedcurrentquota. AIPspecificcapabilities remain separateIntelligence scope."
+  ]
+}

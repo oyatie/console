@@ -1,0 +1,24 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "2de8ec2d9744b21482f93e1072639422a77d3deb",
+  "before_registry_sha256": "5c37d69ee3b9252ff1ea05698ad5e79273f68849d5d9a40d08ba0fd0cb74bc41",
+  "after_registry_sha256": "0f60916e10845b462f0cb0fcba8d79c50faf28f6683d93f52cc676a86d2f869c",
+  "leaves_before": 299,
+  "leaves_after": 330,
+  "new_sources": 43,
+  "new_leaves": 31,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "Bounded administration/federation/observability reference addition; exhaustive freeze and release acceptance remain incomplete.",
+    "Vendor log, audit, checkpoint, policy, data protection and disaster-recovery limits do not weaken Console acceptance."
+  ],
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "a9a3bd957af41210fb703b2151f707525c70ffff2cb1d35cbac1034c81654aca"
+  }
+}
