@@ -1,0 +1,32 @@
+{
+  "owner": "/root",
+  "base": "945dd53477c77a2e87c8513a9a1552e861e146c3",
+  "immutable_target": "Lock two newly executed JWT unit tests into the positive source-count ratchet",
+  "probe": "node scripts/check-executed-tests.mjs",
+  "allow": [
+    "docs/program/executed-tests-baseline.json"
+  ],
+  "mechanical_guide": "Use canonical --update; only platform/auth lib static count11\u219213; no dark set or test changes",
+  "pre_mortem": [
+    "baseline silently widens coverage exception"
+  ],
+  "blast_radius": "one static source count",
+  "detection": [
+    "exact one-value diff",
+    "existing independent native13unit record",
+    "same named checker and baseline regressions"
+  ],
+  "rollback": "revert one baseline value without deleting tests",
+  "stop_conditions": [
+    "any unrelated baseline or dark-set change"
+  ],
+  "reviewers": [
+    "/root/integration_security"
+  ],
+  "candidate_sha256": "d0cb909c05447f95081215d1847f33e1558a05663ba631ffabeeff53883daae3",
+  "remaining_holds": [
+    "MVP and Company incomplete",
+    "No native release qualification"
+  ],
+  "red_log": "/private/tmp/console-producer-count-ratchet-admit-20260920.log"
+}

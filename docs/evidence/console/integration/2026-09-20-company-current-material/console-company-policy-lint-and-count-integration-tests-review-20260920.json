@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_EXACT_LINT_AND_POSITIVE_STATIC_COUNT_SUCCESSORS_PENDING_TARGETED_REPEAT",
+  "base": "8cb1e65ee3a65bbddc48a5b8c9d1ad8b14848c3d",
+  "lint_successor": {
+    "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+    "before": "bb1921a7f4b58ff79978095e260941ddb49fbcea6b90f59171d2a4d94f8f93b3",
+    "after": "9de9329a4f89d31c8c9d50458313b9c1fe9cad1d3f984a523ec695c2800d0027",
+    "change": "Equivalent boolean interval expression only; no lint suppression or assertion deletion."
+  },
+  "lint_successor_now_applied_by_root": true,
+  "baseline_successor": {
+    "path": "docs/program/executed-tests-baseline.json",
+    "before_sha256": "d0cb909c05447f95081215d1847f33e1558a05663ba631ffabeeff53883daae3",
+    "after_sha256": "ba992c71f9d30104dc184e7b3fe6863ad35a5d5a59d17d9a63b338798f74dfac",
+    "only_delta": "platform/authz/src/lib.rs117to121"
+  },
+  "evidence_hashes": {
+    "/private/tmp/console-company-policy-lint-successor-20260920/record.json": "0b6e8996d8492b2ae1a2cc92ed766e7d0bf9212d26637448a21e9ce99c8cd403",
+    "/private/tmp/console-company-policy-native-unit-round2-20260920.json": "1babecee626892f1254a92161ed43dbb8767593886cfb7ae1d9e893356f3b353",
+    "/private/tmp/console-company-policy-native-unit-round2-20260920.log": "d4e8dc1784fd669a7adf39fecfb5c590a878564a6881c68e2e235501395f59f1",
+    "/private/tmp/console-company-policy-clippy-20260920.log": "db0622b0d415d009020e844d7fb7144fdba42e553624b25adebca26e8837293c",
+    "/private/tmp/console-company-policy-generator-20260920.log": "ce272e37cbf1330533a2f7226b6191cc314e5a9fed99ca437c08e8351a6e3e9a",
+    "/private/tmp/console-producer-count-ratchet-verification-20260920.json": "117aad476a1c6947eaf0ce4519ff8d989c29d12dcb599850deb30011097036ae"
+  },
+  "findings": [],
+  "checks": [
+    "Gitbase/current/private hashes verified. Exact one-expression replacement index<2||index>4 to !(2..=4).contains(&index) is equivalent for usize. No assertion, fixture, name or lint suppression changes.",
+    "Original Clippy log has one manual_range_contains diagnostic at this helper. No post-correction Clippy success claimed in this review.",
+    "Native receipt log hash/exit0 verified: Domain7,Application10,Authz121cases; no failures/ignored/filtered. All4new Company pure leaves and7retained strict Cedar prerequisite leaves individually GREEN.",
+    "Baseline exact byte delta is only Authz117to121. Four new leaves now have actual native execution evidence. Deferred dark sets and all other bytes/counts unchanged.",
+    "Generator68executed67passed1failed preserved. Source of failing test calls generator then git diff --quiet against index; intended unstaged BUCK outputs cause this comparison to fail. This does not prove final generated outputs correct; root repeats on staged reviewed candidate.",
+    "Parent correction preserved:8cb1e65dormant-source ratchet receipt explicitly records40regressionsGREEN but namedchecker exit1for added4staticattrs. Earlier producer11to13count approval and73stage reuse apply only to bounded predecessor and do not label8cbcheckerGREEN."
+  ],
+  "required_followup": [
+    "Rerun strict Clippy and affected native target after exact reviewed lint change; record final source candidate/results.",
+    "Stage independently reviewed generated BUCK diff before repeat of generation-clean suite; preserve67/1history.",
+    "Record canonical count update/checker exact command/exit after real4leaf execution.",
+    "Actual material/Cedar implementation source review and retained SQL/Auth/HTTP/enclosingCompanyGREEN remain required."
+  ],
+  "limits": [
+    "Approval covers two narrow equivalent/static-positive successors and observed bounded pure verification, not full implementation, Company workflow, browser or release acceptance.",
+    "Reviewer ran no product build/test/SQL/browser/generator and made no repository mutation; read-only checks/private receipt only."
+  ]
+}

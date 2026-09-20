@@ -1,0 +1,6 @@
+{
+  "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+  "before": "bb1921a7f4b58ff79978095e260941ddb49fbcea6b90f59171d2a4d94f8f93b3",
+  "after": "9de9329a4f89d31c8c9d50458313b9c1fe9cad1d3f984a523ec695c2800d0027",
+  "change": "Equivalent boolean interval expression only; no lint suppression or assertion deletion."
+}

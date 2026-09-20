@@ -1,0 +1,391 @@
+{
+  "status": "CURRENT_MATERIAL_AND_CEDAR_COMPONENT_VERIFIED_COMPANY_LANE_OPEN",
+  "head": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "members": [
+    {
+      "path": "console-company-policy-clippy-20260920.log.gz",
+      "sha256": "8a53f714888d379bf204415410ab4858be7a3da1496755769314e1f8b1b0d702",
+      "original_path": "/private/tmp/console-company-policy-clippy-20260920.log",
+      "original_sha256": "db0622b0d415d009020e844d7fb7144fdba42e553624b25adebca26e8837293c",
+      "original_bytes": 3927
+    },
+    {
+      "path": "console-company-policy-console-identity-application-unit-discovery-20260920.log.gz",
+      "sha256": "26b379d2505ba4b315475f0bdc0055483c7c16baf1ca4bc3e061851b569dca5c",
+      "original_path": "/private/tmp/console-company-policy-console-identity-application-unit-discovery-20260920.log",
+      "original_sha256": "3e0ba49cec2bdf94326c4454c2fbc26b96d66cb31af8933f72fadff2695f68c9",
+      "original_bytes": 789
+    },
+    {
+      "path": "console-company-policy-console-identity-domain-unit-discovery-20260920.log.gz",
+      "sha256": "ec309f85b054f9e70bacab1b5097efed23e62fdf73f4fd6041c44c130d3d4669",
+      "original_path": "/private/tmp/console-company-policy-console-identity-domain-unit-discovery-20260920.log",
+      "original_sha256": "ec94e944e10251dbcb50151e0a7e655fafd3e9cb8003ef96659a67d2c9486b55",
+      "original_bytes": 363
+    },
+    {
+      "path": "console-company-policy-console-platform-authz-unit-discovery-20260920.log.gz",
+      "sha256": "2e2c49c28acfac9e3bb886c83c5a723dce917f2e0e6c700139f4990d6d4274e7",
+      "original_path": "/private/tmp/console-company-policy-console-platform-authz-unit-discovery-20260920.log",
+      "original_sha256": "e033661be70e9b319fef048ee13a1da170372c1f893f265093268e78e1f490e6",
+      "original_bytes": 10109
+    },
+    {
+      "path": "console-company-policy-final-0-20260920.log.gz",
+      "sha256": "30fcd694eef2f0ff113af7e8e2dabee5ab583e0ded090c9f4ca945007c63af97",
+      "original_path": "/private/tmp/console-company-policy-final-0-20260920.log",
+      "original_sha256": "f21a1283f9b807b9739aabe3ea54e9a4085549d7019899c6d54e4254c610d666",
+      "original_bytes": 192
+    },
+    {
+      "path": "console-company-policy-final-1-20260920.log.gz",
+      "sha256": "8e08f94094e942a7a67774365c5c33b5376fcd22c03be048e62de9e064b9a848",
+      "original_path": "/private/tmp/console-company-policy-final-1-20260920.log",
+      "original_sha256": "c9579e8c4e2c9cb81df70c7599fa10e61c045028d6ef95656b8d2de35bef508f",
+      "original_bytes": 19332
+    },
+    {
+      "path": "console-company-policy-final-2-20260920.log.gz",
+      "sha256": "45efb9a51ec6fc70ac676fe77101fd27a94d1e87ca67bae723153d53d1e475e9",
+      "original_path": "/private/tmp/console-company-policy-final-2-20260920.log",
+      "original_sha256": "0b3638877ffb66d9602f2c813714db32b87fe6be19535dee9a86a2500d006bc6",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-company-policy-final-verification-20260920.json",
+      "sha256": "f626802c85747a105c84dcaf42a246c0916e335dd51b84d10db848e6b00386a4",
+      "original_path": "/private/tmp/console-company-policy-final-verification-20260920.json",
+      "original_sha256": "f626802c85747a105c84dcaf42a246c0916e335dd51b84d10db848e6b00386a4",
+      "original_bytes": 1480
+    },
+    {
+      "path": "console-company-policy-format-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-policy-format-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-policy-generator-20260920.log.gz",
+      "sha256": "85585465192c7b4da56c1c8ff255c417c1f3fd05978d09605c15322e29f801d3",
+      "original_path": "/private/tmp/console-company-policy-generator-20260920.log",
+      "original_sha256": "ce272e37cbf1330533a2f7226b6191cc314e5a9fed99ca437c08e8351a6e3e9a",
+      "original_bytes": 901
+    },
+    {
+      "path": "console-company-policy-generator-round2-20260920.log.gz",
+      "sha256": "92d6ee7eb0fec8a50b68ff5c9946d4b8ef105408892316cdea57a38d6f7de666",
+      "original_path": "/private/tmp/console-company-policy-generator-round2-20260920.log",
+      "original_sha256": "6d67a052a68e24ec9fd1ac976c0bad540979fb6be4834ccc182702024a5b7116",
+      "original_bytes": 167
+    },
+    {
+      "path": "console-company-policy-lint-and-count-integration-tests-review-20260920.json",
+      "sha256": "cbe3573ca6c46fd69869a9f9634868434804fdb0f861c4412ed5ccc227f70ace",
+      "original_path": "/private/tmp/console-company-policy-lint-and-count-integration-tests-review-20260920.json",
+      "original_sha256": "cbe3573ca6c46fd69869a9f9634868434804fdb0f861c4412ed5ccc227f70ace",
+      "original_bytes": 3969
+    },
+    {
+      "path": "console-company-policy-lint-successor-20260920/native_company_policy_unit_tests.rs.log.gz",
+      "sha256": "f9214427f08ef1707a552e6e13829b8c8c77038c06a93ebd03afc53b6f790ce3",
+      "original_path": "/private/tmp/console-company-policy-lint-successor-20260920/native_company_policy_unit_tests.rs",
+      "original_sha256": "9de9329a4f89d31c8c9d50458313b9c1fe9cad1d3f984a523ec695c2800d0027",
+      "original_bytes": 15132
+    },
+    {
+      "path": "console-company-policy-lint-successor-20260920/record.json",
+      "sha256": "0b6e8996d8492b2ae1a2cc92ed766e7d0bf9212d26637448a21e9ce99c8cd403",
+      "original_path": "/private/tmp/console-company-policy-lint-successor-20260920/record.json",
+      "original_sha256": "0b6e8996d8492b2ae1a2cc92ed766e7d0bf9212d26637448a21e9ce99c8cd403",
+      "original_bytes": 348
+    },
+    {
+      "path": "console-company-policy-material-final-implementation-20260920.json",
+      "sha256": "e6b22de70dd14b9131cb34bcf095ee9b2b852b4426408ce7cd92bb0e4064cd62",
+      "original_path": "/private/tmp/console-company-policy-material-final-implementation-20260920.json",
+      "original_sha256": "e6b22de70dd14b9131cb34bcf095ee9b2b852b4426408ce7cd92bb0e4064cd62",
+      "original_bytes": 2475
+    },
+    {
+      "path": "console-company-policy-material-final-integration-tests-review-20260920.json",
+      "sha256": "812ac9b78d66206903ca6fbb5f707e59138a7ef8a44f48411c0f34b4d9d62e59",
+      "original_path": "/private/tmp/console-company-policy-material-final-integration-tests-review-20260920.json",
+      "original_sha256": "812ac9b78d66206903ca6fbb5f707e59138a7ef8a44f48411c0f34b4d9d62e59",
+      "original_bytes": 7893
+    },
+    {
+      "path": "console-company-policy-material-implementation-20260920.json",
+      "sha256": "9d72b91b0b2ea8212aba55e91e6ea1a3e7852264167538c38ac98a82616fd76a",
+      "original_path": "/private/tmp/console-company-policy-material-implementation-20260920.json",
+      "original_sha256": "9d72b91b0b2ea8212aba55e91e6ea1a3e7852264167538c38ac98a82616fd76a",
+      "original_bytes": 2191
+    },
+    {
+      "path": "console-company-policy-material-implementation-security-review-20260920.json",
+      "sha256": "120ee3928bb068b4f6767ebbcba692aca1f2d1e183fe443b38040507d39eb57c",
+      "original_path": "/private/tmp/console-company-policy-material-implementation-security-review-20260920.json",
+      "original_sha256": "120ee3928bb068b4f6767ebbcba692aca1f2d1e183fe443b38040507d39eb57c",
+      "original_bytes": 5084
+    },
+    {
+      "path": "console-company-policy-native-artifacts-20260920.json",
+      "sha256": "a5533175c124b86c13ab218b48957425a3ec758f7d8aa3fcaa00acb70dbe180a",
+      "original_path": "/private/tmp/console-company-policy-native-artifacts-20260920.json",
+      "original_sha256": "a5533175c124b86c13ab218b48957425a3ec758f7d8aa3fcaa00acb70dbe180a",
+      "original_bytes": 1590
+    },
+    {
+      "path": "console-company-policy-native-unit-20260920.json",
+      "sha256": "266fee21e39083bf7235efeb353129a8e2fddce4214977f60d43c59cfbcdda9d",
+      "original_path": "/private/tmp/console-company-policy-native-unit-20260920.json",
+      "original_sha256": "266fee21e39083bf7235efeb353129a8e2fddce4214977f60d43c59cfbcdda9d",
+      "original_bytes": 512
+    },
+    {
+      "path": "console-company-policy-native-unit-20260920.log.gz",
+      "sha256": "4068216dad05cf7f71f4086b8b058eecaceedf656d6b7fed34dee8091f78727b",
+      "original_path": "/private/tmp/console-company-policy-native-unit-20260920.log",
+      "original_sha256": "668112cf5d872f6a1b75932e6830fdbaca80aba70debe057d63e05c59e6ae46b",
+      "original_bytes": 13137
+    },
+    {
+      "path": "console-company-policy-native-unit-round2-20260920.json",
+      "sha256": "1babecee626892f1254a92161ed43dbb8767593886cfb7ae1d9e893356f3b353",
+      "original_path": "/private/tmp/console-company-policy-native-unit-round2-20260920.json",
+      "original_sha256": "1babecee626892f1254a92161ed43dbb8767593886cfb7ae1d9e893356f3b353",
+      "original_bytes": 519
+    },
+    {
+      "path": "console-company-policy-native-unit-round2-20260920.log.gz",
+      "sha256": "eababb3f5dbe8fb940409d0f37b081c8a4dd8ab2792768fef14dc1187bb45a69",
+      "original_path": "/private/tmp/console-company-policy-native-unit-round2-20260920.log",
+      "original_sha256": "d4e8dc1784fd669a7adf39fecfb5c590a878564a6881c68e2e235501395f59f1",
+      "original_bytes": 19171
+    },
+    {
+      "path": "console-company-policy-preflight-20260920.json",
+      "sha256": "aa5b8b6a6339a4cd70138b207365f1b8207acc174ba9645dc86bb9fe39bdccea",
+      "original_path": "/private/tmp/console-company-policy-preflight-20260920.json",
+      "original_sha256": "aa5b8b6a6339a4cd70138b207365f1b8207acc174ba9645dc86bb9fe39bdccea",
+      "original_bytes": 303
+    },
+    {
+      "path": "console-company-policy-preflight-20260920.log.gz",
+      "sha256": "fe183b693236c12eaec5f8f7610c40f38eeddc3a0f8b1e5861889c1104d9ad6a",
+      "original_path": "/private/tmp/console-company-policy-preflight-20260920.log",
+      "original_sha256": "f48b43d35abf36305f45d599f7b6ae92d1628c18b4428fb22180d66b5f8e548e",
+      "original_bytes": 627
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/DEPENDENCIES.md.log.gz",
+      "sha256": "77180aa543540061492cecd706a67e8198fc7beff6565426b569283b6a2e3a0b",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/DEPENDENCIES.md",
+      "original_sha256": "116905cdb38063961bc753593683ebf0e64824fc06a79fb417526c863c292035",
+      "original_bytes": 4272
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/INTERFACES.md.log.gz",
+      "sha256": "c1a6c88b65c4e4f4d6486524726ae088b9f1deee747b8cb299954acf04b326a7",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/INTERFACES.md",
+      "original_sha256": "2a1361bfd7790d75228f8759007f2ec57452d191ab38dae227a92409f9122449",
+      "original_bytes": 1942
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/adoption-only.patch.log.gz",
+      "sha256": "7837ee0ecc84babd6d9a01bc35a5e5716b258afb4b9cab4dde7b8942721ff148",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/adoption-only.patch",
+      "original_sha256": "71400dba67bc0b0d2629316a4e0191d4d6c211cf91e35ba59c44bc2c32851152",
+      "original_bytes": 553
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/backend/crates/platform/authz/src/native_company_policy_unit_tests.rs.log.gz",
+      "sha256": "ed44561508c8c257e11f7b75247071e80e16267340acd25962e79ff3d437ea47",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "original_sha256": "049c190a95794710dbb630de9ff5936f552bac39d50080e29f40d84a50a6e51e",
+      "original_bytes": 7761
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/future-company-policy-module.rs.fragment.log.gz",
+      "sha256": "841891fdb99ce59ef03f26aeaeba728214cf27296de3d91533bc96b42a264987",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/future-company-policy-module.rs.fragment",
+      "original_sha256": "1739cb7e13990c6f5a9d17b7e81978aba2b2ca325f65e3b6c65a044640c640c8",
+      "original_bytes": 72
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/manifest.json",
+      "sha256": "b4e1ca5eeebf7a1309589becae70ca0bb179c0f89dae6e18548fb3576d7e58eb",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/manifest.json",
+      "original_sha256": "b4e1ca5eeebf7a1309589becae70ca0bb179c0f89dae6e18548fb3576d7e58eb",
+      "original_bytes": 1280
+    },
+    {
+      "path": "console-company-policy-pure-adoption-20260920-round1/source-locks.json",
+      "sha256": "1ba54da96c32b7ad39057a756b91448dfdefd7b87dd88c67c84dcc6b2b852941",
+      "original_path": "/private/tmp/console-company-policy-pure-adoption-20260920-round1/source-locks.json",
+      "original_sha256": "1ba54da96c32b7ad39057a756b91448dfdefd7b87dd88c67c84dcc6b2b852941",
+      "original_bytes": 3919
+    },
+    {
+      "path": "console-company-policy-pure-tests-adoption-security-review-20260920.json",
+      "sha256": "032ad1e6c2f9544c2afbea430e82a2133d373c8d26879cadc64145fec9e17208",
+      "original_path": "/private/tmp/console-company-policy-pure-tests-adoption-security-review-20260920.json",
+      "original_sha256": "032ad1e6c2f9544c2afbea430e82a2133d373c8d26879cadc64145fec9e17208",
+      "original_bytes": 3431
+    },
+    {
+      "path": "console-company-policy-ratchet-update-20260920.log.gz",
+      "sha256": "88c9a8e5085497aafb5e367087e200a53c3671a7d0de834860bc5d22be4833d5",
+      "original_path": "/private/tmp/console-company-policy-ratchet-update-20260920.log",
+      "original_sha256": "aa094cac57fc394f65a0474b99d1e6bdb020440d45fe358fef44ec26b292b97e",
+      "original_bytes": 525
+    },
+    {
+      "path": "console-company-policy-strict-parser-successor-20260920-round1/REVIEW.md.log.gz",
+      "sha256": "f643588f02b65161ae76e7123b3adc3759b2be1e37e364ad0c098283f3d28054",
+      "original_path": "/private/tmp/console-company-policy-strict-parser-successor-20260920-round1/REVIEW.md",
+      "original_sha256": "6f5d1ec2c4afd22685dd2caa2659fcf3fb9160cb7ec5dc6263e16f5b587adc8b",
+      "original_bytes": 2632
+    },
+    {
+      "path": "console-company-policy-strict-parser-successor-20260920-round1/backend/crates/platform/authz/src/native_company_policy_unit_tests.rs.log.gz",
+      "sha256": "42074fecbdde52cdbe79fd42b71b061f020a4223f6fc1d4f0f65ebbeebb1aa0a",
+      "original_path": "/private/tmp/console-company-policy-strict-parser-successor-20260920-round1/backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "original_sha256": "9ad846c50c504d4fcfba883b4558ea80b5debc25177f6b4cdb624bd8af33da4d",
+      "original_bytes": 12455
+    },
+    {
+      "path": "console-company-policy-strict-parser-successor-20260920-round1/manifest.json",
+      "sha256": "335bbde3351558b73dac107ae44f3e3e51d024cee2c733e2d0fcc3e10b19b731",
+      "original_path": "/private/tmp/console-company-policy-strict-parser-successor-20260920-round1/manifest.json",
+      "original_sha256": "335bbde3351558b73dac107ae44f3e3e51d024cee2c733e2d0fcc3e10b19b731",
+      "original_bytes": 913
+    },
+    {
+      "path": "console-company-policy-strict-parser-successor-20260920-round1/strict-parser-successor.patch.log.gz",
+      "sha256": "883bda3d84a23a3c44443cff796773f0586a1be603a8e5b7cc8b646045bfdd5b",
+      "original_path": "/private/tmp/console-company-policy-strict-parser-successor-20260920-round1/strict-parser-successor.patch",
+      "original_sha256": "95eeafa9e988b34c7eb8625b26435e7b76b38a74f838d3358254967b4c6d8113",
+      "original_bytes": 5146
+    },
+    {
+      "path": "console-mvp-focus-fast-verify-945dd534-20260920.json",
+      "sha256": "bc2b3046bb3d5879029c0eff27a5868a965548441edfff767dc568d661fd5803",
+      "original_path": "/private/tmp/console-mvp-focus-fast-verify-945dd534-20260920.json",
+      "original_sha256": "bc2b3046bb3d5879029c0eff27a5868a965548441edfff767dc568d661fd5803",
+      "original_bytes": 307
+    },
+    {
+      "path": "console-mvp-focus-fast-verify-945dd534-20260920.log.gz",
+      "sha256": "0b3c6b284783fe1f733f4ba8bdc720e45206d3f89698064e3f9bbdd504c1aae2",
+      "original_path": "/private/tmp/console-mvp-focus-fast-verify-945dd534-20260920.log",
+      "original_sha256": "963cff831055ee8653b5e7b620e1cc9bc88124a9e3ff1c3612be5c7696f7809f",
+      "original_bytes": 696912
+    },
+    {
+      "path": "console-mvp-focus-fast-verify-945dd534-integration-tests-review-20260920.json",
+      "sha256": "09f20f924b3594c451fa35d954b35ac844f9ccbed79ce0a993356b568a74d3dd",
+      "original_path": "/private/tmp/console-mvp-focus-fast-verify-945dd534-integration-tests-review-20260920.json",
+      "original_sha256": "09f20f924b3594c451fa35d954b35ac844f9ccbed79ce0a993356b568a74d3dd",
+      "original_bytes": 4278
+    },
+    {
+      "path": "console-native-company-enclosing-admit-20260920.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "original_path": "/private/tmp/console-native-company-enclosing-admit-20260920.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48
+    },
+    {
+      "path": "console-native-company-enclosing-current-red-20260920.log.gz",
+      "sha256": "d1d4917ee28ecc75f38395a09d7e1128a9cd722a52489fb10205cfcb27019054",
+      "original_path": "/private/tmp/console-native-company-enclosing-current-red-20260920.log",
+      "original_sha256": "70e44576113988e6105f31709a0342a577c27ea3e663bef615752c7b2c23a09f",
+      "original_bytes": 7554
+    },
+    {
+      "path": "console-native-company-enclosing-lane-20260920.json",
+      "sha256": "aed885bb614d9107a1a324d2b355caf6ebe6d70ab61773a8668d3e3e02b3a339",
+      "original_path": "/private/tmp/console-native-company-enclosing-lane-20260920.json",
+      "original_sha256": "aed885bb614d9107a1a324d2b355caf6ebe6d70ab61773a8668d3e3e02b3a339",
+      "original_bytes": 11561
+    },
+    {
+      "path": "console-producer-count-ratchet-admit-20260920.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "original_path": "/private/tmp/console-producer-count-ratchet-admit-20260920.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48
+    },
+    {
+      "path": "console-producer-count-ratchet-final-0-20260920.log.gz",
+      "sha256": "bb3f25e8016ddd2cd317c5657b245be3302a846ed7d0ff246994abd2f64132f1",
+      "original_path": "/private/tmp/console-producer-count-ratchet-final-0-20260920.log",
+      "original_sha256": "0cea221e2b3671cd36bb9ff83447737e5cbd2b6391fbe6771fa0784b8f7c9371",
+      "original_bytes": 4021
+    },
+    {
+      "path": "console-producer-count-ratchet-final-1-20260920.log.gz",
+      "sha256": "c6c63b6a92c2f6a9c17cf21d5106315b9f73c59871df833031706250cd6b0299",
+      "original_path": "/private/tmp/console-producer-count-ratchet-final-1-20260920.log",
+      "original_sha256": "26f385e7a8bf0cc91ea58133ac75c53d9b3c3a7ac52e7ad63086e876d093476f",
+      "original_bytes": 441
+    },
+    {
+      "path": "console-producer-count-ratchet-green-20260920.log.gz",
+      "sha256": "b760ea6d1b990de42a08beda00bcca9071e76f0400114c8c644a59b9ee90d345",
+      "original_path": "/private/tmp/console-producer-count-ratchet-green-20260920.log",
+      "original_sha256": "e69a6cfb62374cb9a6a02136841bc884b990866b498f32349c960b543177ec91",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-producer-count-ratchet-integration-tests-review-20260920.json",
+      "sha256": "a7da81d3359c574130f84d627d7759b5d9e747797e71fca6c4c434753a4626dd",
+      "original_path": "/private/tmp/console-producer-count-ratchet-integration-tests-review-20260920.json",
+      "original_sha256": "a7da81d3359c574130f84d627d7759b5d9e747797e71fca6c4c434753a4626dd",
+      "original_bytes": 3025
+    },
+    {
+      "path": "console-producer-count-ratchet-record-20260920.json",
+      "sha256": "5efbb3d8bf995f23887a635b0e77156ad7578c1c245270d381dc63ccbd2828e0",
+      "original_path": "/private/tmp/console-producer-count-ratchet-record-20260920.json",
+      "original_sha256": "5efbb3d8bf995f23887a635b0e77156ad7578c1c245270d381dc63ccbd2828e0",
+      "original_bytes": 1154
+    },
+    {
+      "path": "console-producer-count-ratchet-security-review-20260920.json",
+      "sha256": "18d625eebd334f45fc0a0001b9373d7e016ff3c4d1698d28fe7215baaf34c8b1",
+      "original_path": "/private/tmp/console-producer-count-ratchet-security-review-20260920.json",
+      "original_sha256": "18d625eebd334f45fc0a0001b9373d7e016ff3c4d1698d28fe7215baaf34c8b1",
+      "original_bytes": 1619
+    },
+    {
+      "path": "console-producer-count-ratchet-tests-20260920.log.gz",
+      "sha256": "4c5af59043b6d679d341423c661f392847d10d281d3977432a6fb7df8f4c9782",
+      "original_path": "/private/tmp/console-producer-count-ratchet-tests-20260920.log",
+      "original_sha256": "094e386f347269aa8f0a18a380b7158686d7bccfc573d430b15e683731e9ecf1",
+      "original_bytes": 4016
+    },
+    {
+      "path": "console-producer-count-ratchet-update-20260920.log.gz",
+      "sha256": "4c349106e6cd5cd4cb155c421618347b609afc5fa1317d71cdc8f5e1c4085b30",
+      "original_path": "/private/tmp/console-producer-count-ratchet-update-20260920.log",
+      "original_sha256": "bfbd3383e976679f0eae0dff84f81171c2bc6844b7cb54b17bc7c1f08a851c3e",
+      "original_bytes": 525
+    },
+    {
+      "path": "console-producer-count-ratchet-verification-20260920.json",
+      "sha256": "117aad476a1c6947eaf0ce4519ff8d989c29d12dcb599850deb30011097036ae",
+      "original_path": "/private/tmp/console-producer-count-ratchet-verification-20260920.json",
+      "original_sha256": "117aad476a1c6947eaf0ce4519ff8d989c29d12dcb599850deb30011097036ae",
+      "original_bytes": 821
+    }
+  ],
+  "verification": "Native unit suites7+10+121passed; generator68passed; strict Clippy, format, coverage ratchet and16preflight gates passed. Preceding fullfast remains exit1 with reviewed bounded count correction and73unaffectedstage reuse.",
+  "holds": [
+    "FullCompanyauthenticatedenrollment remains404versus201",
+    "No currentSQL/store/HTTP/workspace integration accepted",
+    "AllfiveMVPworkflows remain required",
+    "No complete release/nativequalification/exposure/payment authority"
+  ]
+}

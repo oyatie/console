@@ -1,0 +1,26 @@
+{
+  "head": "8cb1e65ee3a65bbddc48a5b8c9d1ad8b14848c3d",
+  "commands": [
+    {
+      "command": [
+        "node",
+        "--test",
+        "scripts/lib/executed-tests-baseline.test.mjs",
+        "scripts/check-executed-tests.test.mjs"
+      ],
+      "exit": 0,
+      "log": "/private/tmp/console-producer-count-ratchet-final-0-20260920.log",
+      "sha256": "0cea221e2b3671cd36bb9ff83447737e5cbd2b6391fbe6771fa0784b8f7c9371"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/check-executed-tests.mjs"
+      ],
+      "exit": 1,
+      "log": "/private/tmp/console-producer-count-ratchet-final-1-20260920.log",
+      "sha256": "26f385e7a8bf0cc91ea58133ac75c53d9b3c3a7ac52e7ad63086e876d093476f"
+    }
+  ],
+  "limits": "Dormant Company policy test source is not registered; no claimed4test runtime coverage."
+}
