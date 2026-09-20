@@ -983,6 +983,7 @@ dependencies = [
  "console-governance-domain",
  "console-governance-rest",
  "console-identity-adapter-postgres",
+ "console-identity-application",
  "console-identity-rest",
  "console-inbox-adapter-postgres",
  "console-inbox-rest",

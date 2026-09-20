@@ -191,6 +191,7 @@ url = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
+console-identity-application = { workspace = true }
 # Browser history oracle compares lossless PostgreSQL-rendered row JSON.
 serde_json = { workspace = true, features = ["raw_value"] }
 console-platform-test-support = { workspace = true }

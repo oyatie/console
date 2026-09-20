@@ -324,7 +324,234 @@ $account_custody$;
             'ops/postgres-verify-account-native.sql': native_postcondition_sql(),
             'ops/postgres-company-enrollment-input.sql': company_enrollment_input_sql(),
             'ops/postgres-company-enrollment-schema.sql': company_enrollment_schema_sql(),
+            'ops/postgres-company-enrollment-intake.sql': company_enrollment_intake_sql(),
             **credential_generated_files()}
+
+
+def company_enrollment_intake_sql():
+    # These four entrypoints share generated recovery text, not an extra SQL API.
+    material = r"""CREATE FUNCTION public.company_enrollment_session_material_v1(
+    p_account uuid,p_family uuid,p_command uuid,p_input bytea)
+RETURNS TABLE(security_state text,security_generation bigint,revision bigint,
+    context_generation bigint,user_id uuid,protocol text,account_security_generation bigint,
+    auth_time timestamptz,assurance text,created_at timestamptz,revoked_at timestamptz,
+    org_id uuid,planned_recipient uuid,planned_input_digest bytea)
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on SET lock_timeout='1s'
+AS $body$
+DECLARE
+    candidate record;
+    original public.company_enrollment_requests%ROWTYPE;
+    control record;
+    family record;
+    recipient uuid;
+    guarded_recipient uuid;
+    guard_id uuid;
+BEGIN
+    IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN
+        RAISE EXCEPTION 'account.authority_unavailable';
+    END IF;
+    IF p_account IS NULL OR p_family IS NULL OR p_command IS NULL
+        OR p_account='00000000-0000-0000-0000-000000000000'::uuid
+        OR p_family='00000000-0000-0000-0000-000000000000'::uuid
+        OR p_command='00000000-0000-0000-0000-000000000000'::uuid THEN
+        RAISE EXCEPTION 'account.authentication_invalid';
+    END IF;
+    IF p_input IS NOT NULL THEN
+        SELECT * INTO STRICT candidate FROM public.company_enrollment_decode_input_v1(p_input);
+        IF candidate.account_id IS DISTINCT FROM p_account OR candidate.command_id IS DISTINCT FROM p_command THEN
+            RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='company_enrollment.invalid_input';
+        END IF;
+    END IF;
+    SELECT r.* INTO original FROM public.company_enrollment_requests r
+        WHERE r.account_id=p_account AND r.command_id=p_command;
+    IF p_input IS NOT NULL THEN
+        IF NOT FOUND THEN
+            recipient := candidate.administrative_account_id;
+        ELSIF original.input_bytes IS NOT NULL THEN
+            SELECT d.administrative_account_id INTO recipient
+                FROM public.company_enrollment_decode_input_v1(original.input_bytes) d;
+        END IF;
+    END IF;
+    guarded_recipient := recipient;
+    -- UUID ordering is the same byte ordering used by all enrollment participants.
+    FOR guard_id IN SELECT DISTINCT id FROM unnest(ARRAY[p_account,recipient]) id
+        WHERE id IS NOT NULL ORDER BY id
+    LOOP
+        PERFORM 1 FROM public.account_security_lock_exclusive_v1(guard_id);
+    END LOOP;
+    SELECT * INTO STRICT control FROM public.account_security_lock_exclusive_v1(p_account);
+    SELECT * INTO STRICT family FROM public.auth_account_session_shared_material_v1(p_account,p_family);
+    IF control.security_state IS DISTINCT FROM 'ACTIVE'
+        OR family.user_id IS DISTINCT FROM p_account OR family.protocol IS DISTINCT FROM 'ACCOUNT_V1'
+        OR family.account_security_generation IS DISTINCT FROM control.security_generation
+        OR family.org_id IS NOT NULL OR family.revoked_at IS NOT NULL
+        OR family.assurance IS DISTINCT FROM 'PASSKEY_PRIMARY' OR family.auth_time IS NULL
+        OR NOT isfinite(family.auth_time) OR NOT isfinite(family.created_at)
+        OR family.auth_time>family.created_at OR family.created_at>clock_timestamp() THEN
+        RAISE EXCEPTION 'account.authentication_invalid';
+    END IF;
+    IF control.security_generation IS NULL OR control.security_generation<1
+        OR control.revision IS NULL OR control.revision<1
+        OR control.context_generation IS NULL OR control.context_generation<1 THEN
+        RAISE EXCEPTION 'account.authority_unavailable';
+    END IF;
+    -- Fresh SPI snapshot after every wait; never add an earlier-class lock late.
+    SELECT r.* INTO original FROM public.company_enrollment_requests r
+        WHERE r.account_id=p_account AND r.command_id=p_command;
+    recipient := NULL;
+    IF p_input IS NOT NULL THEN
+        IF NOT FOUND THEN
+            recipient := candidate.administrative_account_id;
+        ELSIF original.input_bytes IS NOT NULL THEN
+            SELECT d.administrative_account_id INTO recipient
+                FROM public.company_enrollment_decode_input_v1(original.input_bytes) d;
+        END IF;
+    END IF;
+    IF recipient IS DISTINCT FROM guarded_recipient THEN
+        RAISE EXCEPTION USING ERRCODE='40001',MESSAGE='company_enrollment.lock_plan_changed';
+    END IF;
+    RETURN QUERY SELECT control.security_state,control.security_generation,control.revision,
+        control.context_generation,family.user_id,family.protocol,family.account_security_generation,
+        family.auth_time,family.assurance,family.created_at,family.revoked_at,family.org_id,
+        recipient,original.input_digest;
+END
+$body$;
+"""
+    fence = r"""    PERFORM pg_advisory_xact_lock(hashtextextended(
+        'console.company.enrollment.command/1:'||p_account::text||':'||p_command::text,0));
+    SELECT r.* INTO request FROM public.company_enrollment_requests r
+        WHERE r.account_id=p_account AND r.command_id=p_command;
+"""
+    expiry = r"""    observed_at := clock_timestamp();
+    IF request.state='PENDING' AND observed_at>=request.expires_at THEN
+        UPDATE public.company_enrollment_requests r SET state='EXPIRED',input_bytes=NULL,terminal_at=observed_at
+            WHERE r.account_id=p_account AND r.command_id=p_command;
+        INSERT INTO public.company_enrollment_request_events
+            (account_id,command_id,event_revision,from_state,to_state,occurred_at,actor_account_id,session_id,reason_code)
+            VALUES(p_account,p_command,2,'PENDING','EXPIRED',observed_at,NULL,NULL,'EXPIRED');
+        request.state := 'EXPIRED';
+        request.input_bytes := NULL;
+        request.terminal_at := observed_at;
+    END IF;
+    -- Complete effect/receipt reconciliation is deliberately not installed yet.
+    IF request.state='COMMITTED' THEN RAISE EXCEPTION 'account.authority_unavailable'; END IF;
+"""
+    prepare = r"""CREATE FUNCTION public.company_enrollment_prepare_v1(
+    p_account uuid,p_family uuid,p_command uuid,p_input bytea)
+RETURNS TABLE(state text,receipt_id uuid)
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on SET lock_timeout='1s'
+AS $body$
+DECLARE
+    candidate record;
+    material record;
+    recipient_control record;
+    request public.company_enrollment_requests%ROWTYPE;
+    origin uuid;
+    observed_at timestamptz;
+BEGIN
+    SELECT * INTO STRICT candidate FROM public.company_enrollment_decode_input_v1(p_input);
+    SELECT * INTO STRICT material FROM public.company_enrollment_session_material_v1(p_account,p_family,p_command,p_input);
+    IF material.planned_input_digest IS NULL THEN
+        IF candidate.group_id IS NOT NULL THEN RAISE EXCEPTION 'company_enrollment.group_unavailable'; END IF;
+        IF NOT public.account_company_setup_eligibility_v1(p_account) THEN
+            RAISE EXCEPTION 'company_enrollment.forbidden';
+        END IF;
+        -- The Account guards are already held, before the designation head guard.
+        SELECT s.* INTO STRICT recipient_control FROM public.account_security s
+            WHERE s.account_id=candidate.administrative_account_id;
+        IF recipient_control.security_state IS DISTINCT FROM 'ACTIVE' THEN
+            RAISE EXCEPTION 'company_enrollment.forbidden';
+        END IF;
+        PERFORM 1 FROM public.account_login_consent_v1(p_account);
+        PERFORM 1 FROM public.account_login_consent_v1(candidate.administrative_account_id);
+        SELECT h.receipt_id INTO STRICT origin FROM public.deployment_operator_head h
+            WHERE h.singleton=1 AND h.account_id=p_account;
+        -- ponytail: serializes new deployment intake only; replace after measured admission contention.
+        PERFORM pg_advisory_xact_lock(1128615506,1);
+    END IF;
+""" + fence + r"""    IF request.account_id IS NOT NULL THEN
+        IF request.input_digest IS DISTINCT FROM candidate.input_digest THEN
+            RAISE EXCEPTION 'company_enrollment.conflict';
+        END IF;
+""" + expiry + r"""        RETURN QUERY SELECT request.state,NULL::uuid;
+        RETURN;
+    END IF;
+    IF material.planned_input_digest IS NOT NULL OR origin IS NULL THEN
+        RAISE EXCEPTION USING ERRCODE='40001',MESSAGE='company_enrollment.lock_plan_changed';
+    END IF;
+    IF (SELECT count(*) FROM public.company_enrollment_requests r WHERE r.account_id=p_account AND r.state='PENDING')>=16
+        OR (SELECT count(*) FROM public.company_enrollment_requests r WHERE r.state='PENDING')>=256 THEN
+        RAISE EXCEPTION 'company_enrollment.capacity';
+    END IF;
+    observed_at := clock_timestamp();
+    INSERT INTO public.company_enrollment_requests
+        (account_id,command_id,codec_version,input_bytes,input_digest,designation_receipt_id,created_at,expires_at,state)
+        VALUES(p_account,p_command,1,p_input,candidate.input_digest,origin,observed_at,observed_at+interval '168 hours','PENDING');
+    INSERT INTO public.company_enrollment_request_events
+        (account_id,command_id,event_revision,from_state,to_state,occurred_at,actor_account_id,session_id,reason_code)
+        VALUES(p_account,p_command,1,NULL,'PENDING',observed_at,p_account,p_family,'PREPARED');
+    RETURN QUERY SELECT 'PENDING'::text,NULL::uuid;
+END
+$body$;
+"""
+    recovery = []
+    for name in ('status', 'cancel'):
+        result = 'state text,' + ('codec_version smallint,input_bytes bytea,' if name == 'status' else '')
+        result += 'receipt_id uuid,org_id uuid,group_id uuid,administrative_account_id uuid'
+        body = f"""CREATE FUNCTION public.company_enrollment_{name}_v1(p_account uuid,p_family uuid,p_command uuid)
+RETURNS TABLE({result})
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on SET lock_timeout='1s'
+AS $body$
+DECLARE
+    request public.company_enrollment_requests%ROWTYPE;
+    observed_at timestamptz;
+BEGIN
+    PERFORM 1 FROM public.company_enrollment_session_material_v1(p_account,p_family,p_command,NULL);
+""" + fence + "    IF NOT FOUND THEN RETURN; END IF;\n" + expiry
+        if name == 'cancel':
+            body += r"""    IF request.state='PENDING' THEN
+        UPDATE public.company_enrollment_requests r SET state='CANCELLED',terminal_at=observed_at
+            WHERE r.account_id=p_account AND r.command_id=p_command;
+        INSERT INTO public.company_enrollment_request_events
+            (account_id,command_id,event_revision,from_state,to_state,occurred_at,actor_account_id,session_id,reason_code)
+            VALUES(p_account,p_command,2,'PENDING','CANCELLED',observed_at,p_account,p_family,'CANCELLED');
+        request.state := 'CANCELLED';
+    END IF;
+"""
+        body += '    RETURN QUERY SELECT request.state,'
+        if name == 'status':
+            body += "request.codec_version,CASE WHEN request.state='PENDING' THEN request.input_bytes ELSE NULL::bytea END,"
+        body += 'NULL::uuid,NULL::uuid,NULL::uuid,NULL::uuid;\nEND\n$body$;\n'
+        recovery.append(body)
+    sql = '-- Generated by ops/generate-account-custody.py. UNINSTALLED candidate.\n'
+    sql += '-- Private pending owner only; serving activation and signed credential validation remain separate.\n'
+    sql += material + prepare + ''.join(recovery)
+    for name, args in [('session_material', 'uuid,uuid,uuid,bytea'), ('prepare', 'uuid,uuid,uuid,bytea'),
+                       ('status', 'uuid,uuid,uuid'), ('cancel', 'uuid,uuid,uuid')]:
+        signature = f'public.company_enrollment_{name}_v1({args})'
+        sql += f'''ALTER FUNCTION {signature} OWNER TO console_account_owner;
+REVOKE ALL ON FUNCTION {signature} FROM PUBLIC,console_app,console_rt,console_auth_rt,
+    console_auth_startup,console_account_owner,console_terms_owner,console_credential_owner,
+    console_leave_cmd,console_ontology_cmd,console_platform_force_cmd;
+DO $intake_acl$
+DECLARE grantee_name text;
+BEGIN
+    FOR grantee_name IN
+        SELECT DISTINCT role.rolname FROM pg_catalog.pg_proc routine
+        CROSS JOIN LATERAL pg_catalog.aclexplode(routine.proacl) acl
+        JOIN pg_catalog.pg_roles role ON role.oid=acl.grantee
+        WHERE routine.oid='{signature}'::regprocedure
+    LOOP
+        EXECUTE pg_catalog.format('REVOKE ALL ON FUNCTION {signature} FROM %I',grantee_name);
+    END LOOP;
+END
+$intake_acl$;
+GRANT EXECUTE ON FUNCTION {signature} TO console_account_owner,console_rt;
+'''
+    return sql
 
 
 def company_enrollment_schema_sql():
