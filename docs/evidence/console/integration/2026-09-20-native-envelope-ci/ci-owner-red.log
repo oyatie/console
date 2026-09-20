@@ -1,0 +1,11 @@
+test binaries defined         : 386
+reachable from a CI step      : 385
+declared test attrs in reachable sources: 3060  (static; cfg/ignore-unaware)
+executed nowhere              : 2
+reachable only through buck2  : 17  (--gap to list; the Buck2 exit has to wire these)
+  dark  backend/crates/platform/request-context/tests/native_error_envelope.rs
+  dark  backend/crates/platform/storage/tests/seaweedfs_worm.rs
+
+1 test binary(ies) execute nowhere and are not named in docs/program/executed-tests-baseline.json:
+  backend/crates/platform/request-context/tests/native_error_envelope.rs
+Wire each into a workflow step, or the repository has 1 more test(s) that cannot fail.

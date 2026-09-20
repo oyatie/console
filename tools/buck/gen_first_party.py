@@ -970,6 +970,9 @@ TEST_RESOURCE_REQUIREMENTS = {
     },
     'console-platform-request-context': {
         'unit': 'none',
+        'integration': {
+            'tests/native_error_envelope.rs': 'none',
+        },
     },
     'console-platform-storage': {
         'unit': 'postgres',

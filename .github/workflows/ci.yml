@@ -441,6 +441,9 @@ jobs:
             -p console-platform-authz --test cedar_sdk_identity
           check_status "cedar_sdk_identity"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
+            -p console-platform-request-context --test native_error_envelope
+          check_status "native_error_envelope"
+          SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
             -p console-platform-audit-chain --test ed25519_compatibility
           check_status "ed25519_compatibility"
           SQLX_OFFLINE=true cargo test --locked --manifest-path backend/Cargo.toml \
