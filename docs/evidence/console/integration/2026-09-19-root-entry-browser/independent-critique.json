@@ -1,0 +1,39 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT bounded public-entry visual/browser evidence; ADAPT registration recovery",
+  "packet": "/private/tmp/console-root-entry-browser-smoke-20260919-final",
+  "manifest_sha256": "3d3510800dbe333216185409dbffc6d8f969b73ab053609505c3023a882b96f6",
+  "source_head": "17443500fb44a4026208cbe5c685dbfd2f55b348",
+  "binary_sha256": "7ab368b41b3f5340f211ce2bde52db8541dcb3abbf846991646fbf7d0652cbe6",
+  "raw_report_sha256": "fe875d16afc60d2c59356c2db6e07c00591e62c71ea08bd3eae60439ff7e260f",
+  "findings": [
+    {
+      "severity": "required recovery follow-up",
+      "source": "backend/crates/payroll/ui/src/native_account.rs:153",
+      "fact": "Page::Unavailable always emits Retry href=/account, including /account/register failure.",
+      "consequence": "Registration intent is lost when following retry after availability returns.",
+      "decision": "ADAPT: preserve requested safe owner route in unavailable response, with owner/browser proof; retry recovery was not exercised by this smoke."
+    }
+  ],
+  "adopt": [
+    "Clear Korean heading and two differentiated account-entry actions provide direct discoverability; no business data shown.",
+    "Visible keyboard focus ring and measured skip link/focus target support initial keyboard navigation.",
+    "320px screenshot preserves title, both actions and explanation without clipping; measured document width320 confirms no horizontal overflow.",
+    "Unavailable documents state inability to load account/terms and offer an explicit next action; no success implied."
+  ],
+  "reject_claims": [
+    "720x500CSSviewport with deviceScaleFactor2 is not actual browser200%zoom.",
+    "NoDB503 destinations are failure presentation evidence, not Account workflow completion.",
+    "Screenshot/DOM inspection does not establish screen-reader, contrast-standard, KoreanIME or representative-user acceptance."
+  ],
+  "evidence": [
+    "Independently viewed five distinct screenshots; Account and Registration images share exact SHA and same unavailable rendering.",
+    "All successor hashes checked, raw report/script/screenshots unchanged from executed round4; actual clean17443500 starting head, same head/source/binary bytes at end. Final git_status was not recorded separately.",
+    "Report36/36checks and24GETs reviewed; no external/API/island/mutation requests, no JS exceptions/root console errors. Two expected503resource console errors disclosed.",
+    "Owner root source hashes equal independently reviewed source; Account/browser restrictions and genuine authorization remain separate owner tests."
+  ],
+  "limits": [
+    "Reviewer did not rerun browser; reviewed recorded real browser evidence and source independently.",
+    "No full Account/workspace, accessibility, workload, deployment or release acceptance."
+  ]
+}

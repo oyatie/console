@@ -1,0 +1,27 @@
+{
+  "scope": "Public entry browser smoke only",
+  "passed_checks": 36,
+  "browser": "Chromium153.0.8010.12 headless via Playwright1.63.0",
+  "candidate": "17443500fb44a4026208cbe5c685dbfd2f55b348",
+  "source_or_product_changes": 0,
+  "adopt": [
+    "Discoverable login and registration actions",
+    "Keyboard skip/focus behavior",
+    "Observed320px reflow",
+    "Explicit unavailable state"
+  ],
+  "required_adapt": [
+    {
+      "source": "backend/crates/payroll/ui/src/native_account.rs:153",
+      "defect": "Unavailable Retry always /account loses registration destination",
+      "verification": "Source/visual finding; recovery action notyet exercised"
+    }
+  ],
+  "not_qualified": [
+    "Real200percentbrowserzoom",
+    "Screenreader andKoreanIME",
+    "Representativeuserstudy",
+    "Authenticatedworkflowandrecovery",
+    "Fullrelease"
+  ]
+}

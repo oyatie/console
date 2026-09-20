@@ -1,0 +1,34 @@
+{
+  "original_installation": "/private/tmp/console-preparation-browser/node_modules/playwright",
+  "original_defect": "Missing package.json and entrypoints; MODULE_NOT_FOUND before server startup.",
+  "offline_attempt": {
+    "command": "npm install --offline --prefix <round2>/runtime --ignore-scripts --no-audit --no-fund --save-exact playwright@1.63.0",
+    "result": "ENOTCACHED; dangling/incomplete cache did not provide metadata."
+  },
+  "repair": {
+    "authorization": "parent explicitly authorized temporary exact package repair and network escalation",
+    "package": "playwright@1.63.0",
+    "core": "playwright-core@1.63.0",
+    "install_scope": "/private/tmp/console-root-entry-browser-smoke-20260919-round2/runtime",
+    "repository_changes": false,
+    "lifecycle_scripts": "disabled by --ignore-scripts",
+    "integrity": "exact npm lockfile retained"
+  },
+  "prior_attempts": [
+    {
+      "path": "/private/tmp/console-root-entry-browser-smoke-20260919-round2/report.json",
+      "result": "sandbox EPERM at loopback port selection; no server started"
+    },
+    {
+      "path": "/private/tmp/console-root-entry-browser-smoke-20260919-round3/report.json",
+      "result": "server ready; browser launched; harness attempted missing full-Chrome identity path; own server stopped; no page checks"
+    }
+  ],
+  "successful_correction": "Explicit existing headless-shell executable revision1243, matching packaged browsers.json; no browser installation.",
+  "node": {
+    "version": "v26.7.0",
+    "path": "/Users/jasonlee/.local/share/fnm/node-versions/v26.7.0/installation/bin/node",
+    "sha256": "a9bd0630891c2dcdee70de88270fee2cc0c4a9e76495039dd3b4f91c5e6b71df"
+  },
+  "owned_server_stopped": true
+}

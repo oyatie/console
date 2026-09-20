@@ -1,0 +1,82 @@
+{
+  "kind": "source-independent-public-entry-visual-task-critique",
+  "reviewer": "/root/reference_inventory",
+  "independence": "Reviewer authored smoke/test evidence but did not author product source; this is expert formative critique, not representative-user testing.",
+  "candidate_head": "17443500fb44a4026208cbe5c685dbfd2f55b348",
+  "binary_sha256": "7ab368b41b3f5340f211ce2bde52db8541dcb3abbf846991646fbf7d0652cbe6",
+  "raw_report_sha256": "fe875d16afc60d2c59356c2db6e07c00591e62c71ea08bd3eae60439ff7e260f",
+  "screenshots_inspected": [
+    "desktop-root.png",
+    "desktop-keyboard-focus.png",
+    "account-unavailable.png",
+    "register-unavailable.png",
+    "mobile-320.png",
+    "desktop-200pct-approximation.png"
+  ],
+  "decisions": [
+    {
+      "decision": "adopt",
+      "task_outcome": "Discover login and create an Account",
+      "evidence": [
+        "desktop-root.png",
+        "mobile-320.png",
+        "report.json links and actual navigation responses"
+      ],
+      "finding": "Two explicit Korean actions are visible together; filled login and outlined create-account separate primary/secondary tasks without hiding registration. Landing copy explains that no Company association is required to create an Account. No payroll/business identifiers or false available workspace actions appear.",
+      "limit": "Both destination pages intentionally return503 in this no-database smoke; successful Account completion is not proven."
+    },
+    {
+      "decision": "adopt",
+      "task_outcome": "Reach entry actions by keyboard",
+      "evidence": [
+        "desktop-keyboard-focus.png",
+        "report.json keyboard sequence"
+      ],
+      "finding": "Initial Tab reveals a visible skip link; Enter focuses main. Fresh Tab order is skip link, Console home, login, create-account. Captured registration focus has a clear separated blue outline; it is not clipped or dependent only on button fill.",
+      "limit": "This checks one desktop keyboard path, not screen-reader interpretation, all platforms, or formal contrast conformance."
+    },
+    {
+      "decision": "adopt",
+      "task_outcome": "Read and choose actions in narrow/enlarged layout",
+      "evidence": [
+        "mobile-320.png",
+        "desktop-200pct-approximation.png",
+        "report.json layout rectangles/scroll widths"
+      ],
+      "finding": "At320CSSpx Korean title/body reflow without overlapping actions or horizontal clipping; both action targets are117x46.39CSSpx with a gap. Desktop approximation keeps both actions within the effective720x500CSSviewport; further content may scroll vertically.",
+      "limit": "720x500CSSpx at deviceScaleFactor2 approximates1440x1000desktop200percent but is not actual browser/OS zoom. Large text, IME and further permutations remain untested."
+    },
+    {
+      "decision": "adopt",
+      "task_outcome": "Understand that Account entry is temporarily unavailable",
+      "evidence": [
+        "account-unavailable.png",
+        "register-unavailable.png",
+        "report.json actual503responses"
+      ],
+      "finding": "Unavailable pages plainly say the Account cannot currently be checked and offer Retry plus Start screen. They show neither success nor active Account data and keep the same visual language.",
+      "limit": "Only failed entry is exercised; no dependency restoration or real recovery completion is established."
+    },
+    {
+      "decision": "adapt",
+      "task_outcome": "Preserve registration intent during recovery",
+      "evidence": [
+        "register-unavailable.png",
+        "backend/crates/payroll/ui/src/native_account.rs Page::Unavailable in recorded source"
+      ],
+      "finding": "The reused unavailable document always links Retry to /account, including after /account/register fails. Registration intent should remain the recovery destination, or the label should explicitly describe a different destination, before the complete registration journey is accepted.",
+      "severity": "workflow-recovery gap; does not invalidate the bounded public landing smoke",
+      "observation_kind": "Source-bound link target plus observed unavailable screen; Retry was not followed in this smoke.",
+      "required_followup": "Owner-scoped recovery destination contract and actual fail/restore/retry browser evidence; no change made in verification-only task."
+    },
+    {
+      "decision": "reject",
+      "task_outcome": "Claim complete release/workflow/accessibility acceptance from this smoke",
+      "evidence": [
+        "report.json limitations"
+      ],
+      "finding": "No database, native Account authority, completed enrollment, true browserzoom, screen reader, or representative user is present.36passing smoke checks cannot establish full Account, workspace or release acceptance."
+    }
+  ],
+  "overall": "Adopt existing Public landing for the bounded root repair. Preserve the registration-recovery finding for its owning workflow acceptance; no new polish or product edits are authorized by this review."
+}

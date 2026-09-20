@@ -1,0 +1,73 @@
+{
+  "kind": "immutable-public-entry-browser-smoke-final",
+  "files": {
+    "account-unavailable.png": {
+      "sha256": "323cd2df03efbd2351ccd9ddc3d47513922c25b99196768eae3938d4efd83fd0",
+      "bytes": 35455
+    },
+    "desktop-200pct-approximation.png": {
+      "sha256": "5f006c3346efd17014bd5a160094aa9b2eb94a7abe6805187d8c45ef8a4ef034",
+      "bytes": 76024
+    },
+    "desktop-keyboard-focus.png": {
+      "sha256": "9c1975f3c52c69b7a56ed5b530183bd853930d9e313bf6ee074c4294c69dec9f",
+      "bytes": 43669
+    },
+    "desktop-root.html": {
+      "sha256": "ec43eac0368ce2c5718347fdc00b394a5acfa1b411f855be07890437cb17b89b",
+      "bytes": 1172
+    },
+    "desktop-root.png": {
+      "sha256": "a8c78805332b571800ecabc0dd4a6626f33287b906884e2c0ceb09220d00ea0d",
+      "bytes": 42554
+    },
+    "mobile-320.png": {
+      "sha256": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+      "bytes": 32341
+    },
+    "playwright-browsers.json": {
+      "sha256": "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946",
+      "bytes": 1137
+    },
+    "playwright-package-lock.json": {
+      "sha256": "a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044",
+      "bytes": 1065
+    },
+    "playwright-package.json": {
+      "sha256": "8d57d95d41a1c2833b846f382610db55b8d193c20e3b2473c1e59f43e798a9b9",
+      "bytes": 55
+    },
+    "prerequisite-custody.json": {
+      "sha256": "626b53bebe8b4cfdffdab41bdab23808abbe4c153c01f0eff64c9bdf4d5b4756",
+      "bytes": 1718
+    },
+    "register-unavailable.png": {
+      "sha256": "323cd2df03efbd2351ccd9ddc3d47513922c25b99196768eae3938d4efd83fd0",
+      "bytes": 35455
+    },
+    "report.json": {
+      "sha256": "fe875d16afc60d2c59356c2db6e07c00591e62c71ea08bd3eae60439ff7e260f",
+      "bytes": 38539
+    },
+    "server.log": {
+      "sha256": "a6b5cd84f5632528957822c55d94b9078502e684ee5e0979b4560ae7f2449d06",
+      "bytes": 644
+    },
+    "smoke.cjs": {
+      "sha256": "1441209ba03939124e4dbfece840924f96f83dc0fb91b240a5dc0804cce56e40",
+      "bytes": 15270
+    },
+    "successor.json": {
+      "sha256": "cbee876dc46f1245e24a2e0f433d2241a9ad510110a550734c7824ffcc5606a2",
+      "bytes": 756
+    },
+    "summary.md": {
+      "sha256": "8dfa55c9b654d03740710ebd28f4eec9342f924429b1552b54b0c68a976a7e8d",
+      "bytes": 3420
+    },
+    "visual-critique.json": {
+      "sha256": "960a777bdb0640f2a919dcc5de8fa7ad797f7540d2d98d7d7a536ab196ee10ff",
+      "bytes": 5006
+    }
+  }
+}

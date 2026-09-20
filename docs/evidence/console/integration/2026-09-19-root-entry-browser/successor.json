@@ -1,0 +1,23 @@
+{
+  "kind": "metadata-only-successor",
+  "predecessor_manifest_sha256": "2ad31c6fea76b31725fc3c1f221bcd8d3c8c56e613734435578f603f1d5e6b4d",
+  "correction": "Round4summary had stale dirty-worktree narrative; actual report says clean17443500 before and after.",
+  "raw_report_unchanged": true,
+  "raw_artifacts_unchanged": [
+    "prerequisite-custody.json",
+    "desktop-root.html",
+    "report.json",
+    "smoke.cjs",
+    "mobile-320.png",
+    "desktop-root.png",
+    "desktop-200pct-approximation.png",
+    "register-unavailable.png",
+    "desktop-keyboard-focus.png",
+    "account-unavailable.png",
+    "playwright-package.json",
+    "playwright-browsers.json",
+    "server.log",
+    "playwright-package-lock.json"
+  ],
+  "new_browser_execution": false
+}

@@ -1,0 +1,3 @@
+{"timestamp":"2026-09-20T03:46:45.792781Z","level":"WARN","fields":{"message":"CONSOLE_EMAIL_* unset and CONSOLE_EMAIL_STUB_MODE disabled: outbound OTP email fails closed without logging OTPs"},"target":"console_app"}
+{"timestamp":"2026-09-20T03:46:47.974098Z","level":"ERROR","fields":{"message":"response failed","classification":"Status code: 503 Service Unavailable","latency":"0 ms"},"target":"tower_http::trace::on_failure"}
+{"timestamp":"2026-09-20T03:46:49.063223Z","level":"ERROR","fields":{"message":"response failed","classification":"Status code: 503 Service Unavailable","latency":"0 ms"},"target":"tower_http::trace::on_failure"}
