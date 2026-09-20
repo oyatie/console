@@ -1,0 +1,22 @@
+{
+  "base_sha": "ace3e5368d9c009cc3b8770d5cb1a6cdf3f24c9c",
+  "owner": "root sole writer",
+  "reviewer": "integration_tests",
+  "leaves_before": 173,
+  "leaves_after": 187,
+  "source_snapshots_after": 74,
+  "preservation": "All preexisting parsed registry values and non-release history unchanged; reviewed91add operations applied.",
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 101,
+    "passed": 101,
+    "failed": 0,
+    "seconds": 7.555806
+  },
+  "limitations": [
+    "Bounded partial reference addition, not exhaustive freeze.",
+    "All additions planned and acceptance not_bound.",
+    "No implementation, integration acceptance, production qualification or release.",
+    "True capture timestamps preserved with targetAmerica/New_York."
+  ]
+}
