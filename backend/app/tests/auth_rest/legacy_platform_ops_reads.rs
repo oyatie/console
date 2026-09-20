@@ -708,3 +708,9 @@ fn ops_audit_allstate_oracle_rejects_omission_corruption_and_rewritten_history()
         );
     }
 }
+
+#[path = "legacy_platform_ops_projection_waits.rs"]
+mod legacy_platform_ops_projection_waits;
+
+#[path = "legacy_platform_ops_credentials.rs"]
+mod legacy_platform_ops_credentials;

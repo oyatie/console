@@ -5,7 +5,7 @@ use console_platform_auth::{RefreshTokenIssue, RefreshTokenStore};
 use console_platform_authz::platform_policy::PlatformPolicy;
 use console_platform_provisioning::{OrganizationSummary, PlatformProvisioner, ProvisioningError};
 
-fn signed(f: &Fixture, claims: &Value) -> String {
+pub(super) fn signed(f: &Fixture, claims: &Value) -> String {
     jsonwebtoken::encode(
         &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::ES256),
         claims,
@@ -16,7 +16,7 @@ fn signed(f: &Fixture, claims: &Value) -> String {
     )
     .unwrap()
 }
-fn original_claims(f: &Fixture) -> Value {
+pub(super) fn original_claims(f: &Fixture) -> Value {
     serde_json::to_value(f.verifier.verify_access_token(&f.access).unwrap()).unwrap()
 }
 fn metadata(rows: &[OrganizationSummary]) -> Value {
@@ -174,7 +174,7 @@ async fn direct_list_owner_reverifies_original_credential_and_current_roles(pool
     close(f).await;
 }
 
-async fn issue_bound(
+pub(super) async fn issue_bound(
     pool: &PgPool,
     f: &Fixture,
     auth: &PgPool,
@@ -374,7 +374,7 @@ async fn direct_bound_list_lifetime_and_present_binding_faults_never_fall_back(p
     close(f).await;
 }
 
-fn no_raw_input_echo(headers: &HeaderMap, body: &[u8], inputs: &[Vec<u8>]) -> bool {
+pub(super) fn no_raw_input_echo(headers: &HeaderMap, body: &[u8], inputs: &[Vec<u8>]) -> bool {
     inputs.iter().all(|input| {
         !input.is_empty()
             && !body
@@ -581,3 +581,11 @@ async fn list_transport_selection_preserves_sibling_routes_and_methods() {
 
 #[path = "legacy_platform_list_locks.rs"]
 mod legacy_platform_list_locks;
+
+pub(super) use legacy_platform_list_locks::{root_catalog, rows, same_except};
+
+pub(super) use legacy_platform_list_locks::{elapsed, revocation_delta, role_wait};
+
+pub(super) use legacy_platform_list_locks::{configured_family_state, other_operator};
+
+pub(super) use legacy_platform_list_locks::{WireEvidence, evidence, proven_ack_loss, relay};

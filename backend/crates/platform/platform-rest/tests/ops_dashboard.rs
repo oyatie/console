@@ -11,6 +11,7 @@ use axum::Router;
 use axum::body::{Body, to_bytes};
 use console_kernel_core::{OrgId, UserId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings, JwtVerifier};
+use console_platform_authz::platform_policy::PlatformPolicy;
 use console_platform_provisioning::PlatformProvisioner;
 use console_platform_rest::{PLATFORM_OPS_PATH, PlatformRestState, router};
 use http::{Request, StatusCode, header};
@@ -19,6 +20,7 @@ use p256::elliptic_curve::rand_core::OsRng;
 use p256::pkcs8::{EncodePrivateKey, EncodePublicKey, LineEnding};
 use serde_json::Value;
 use sqlx::PgPool;
+use std::sync::Arc;
 use time::{Duration, OffsetDateTime};
 use tower::ServiceExt;
 use uuid::Uuid;
@@ -51,6 +53,11 @@ impl Harness {
     }
 
     async fn service(&self) -> Router {
+        let business_database = console_platform_test_support::login_test_pool(
+            &self.pool,
+            console_platform_test_support::TestDatabaseLogin::Business,
+        )
+        .await;
         let auth_database = console_platform_test_support::login_test_pool(
             &self.pool,
             console_platform_test_support::TestDatabaseLogin::Auth,
@@ -65,14 +72,20 @@ impl Harness {
             self.public_pem.as_bytes(),
         )
         .unwrap();
-        router(PlatformRestState::new(
-            self.pool.clone(),
-            Some(console_platform_auth::SessionVerification::new(
-                verifier,
-                auth_database.clone(),
-            )),
-            PlatformProvisioner::new(Duration::minutes(15)),
-        ))
+        router(
+            PlatformRestState::new(
+                business_database,
+                Some(console_platform_auth::SessionVerification::new(
+                    verifier,
+                    auth_database.clone(),
+                )),
+                PlatformProvisioner::new(Duration::minutes(15)),
+            )
+            .with_platform_list_authority(
+                Duration::days(30),
+                Arc::new(PlatformPolicy::compile_current().unwrap()),
+            ),
+        )
     }
 
     fn token(&self, user_id: UserId, org_id: OrgId, platform: bool) -> String {
@@ -147,6 +160,16 @@ async fn seed_platform_admin(pool: &PgPool) -> UserId {
         .execute(pool)
         .await
         .unwrap();
+    let root_present: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM public.accounts WHERE id=$1)")
+            .bind(id.as_uuid())
+            .fetch_one(pool)
+            .await
+            .unwrap();
+    assert!(
+        root_present,
+        "finalized automatic Account root prerequisite"
+    );
     id
 }
 

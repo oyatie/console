@@ -3,7 +3,12 @@ use super::*;
 use console_platform_auth::RefreshTokenUseError;
 use futures::FutureExt;
 
-async fn role_wait(pool: &PgPool, blocker: i32, role: &str, fragment: &str) -> Option<i32> {
+pub(in super::super) async fn role_wait(
+    pool: &PgPool,
+    blocker: i32,
+    role: &str,
+    fragment: &str,
+) -> Option<i32> {
     let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(4);
     loop {
         let pid:Option<i32>=sqlx::query_scalar("SELECT pid FROM pg_catalog.pg_stat_activity WHERE datname=current_database() AND usename=$3 AND wait_event_type='Lock' AND $1=ANY(pg_catalog.pg_blocking_pids(pid)) AND strpos(query,$2)>0 ORDER BY pid LIMIT 1")
@@ -14,7 +19,7 @@ async fn role_wait(pool: &PgPool, blocker: i32, role: &str, fragment: &str) -> O
         tokio::time::sleep(std::time::Duration::from_millis(15)).await;
     }
 }
-async fn elapsed(pool: &PgPool, deadline: OffsetDateTime) -> bool {
+pub(in super::super) async fn elapsed(pool: &PgPool, deadline: OffsetDateTime) -> bool {
     tokio::time::timeout(std::time::Duration::from_secs(10), async {
         loop {
             if db_now(pool).await >= deadline {
@@ -26,10 +31,10 @@ async fn elapsed(pool: &PgPool, deadline: OffsetDateTime) -> bool {
     .await
     .is_ok()
 }
-fn rows(snapshot: &Rows, table: &str) -> Vec<Value> {
+pub(in super::super) fn rows(snapshot: &Rows, table: &str) -> Vec<Value> {
     serde_json::from_str(&snapshot[table]).unwrap()
 }
-fn same_except(before: &Rows, after: &Rows, allowed: &[&str]) -> bool {
+pub(in super::super) fn same_except(before: &Rows, after: &Rows, allowed: &[&str]) -> bool {
     before.keys().eq(after.keys())
         && before.iter().all(|(table, bytes)| {
             allowed.contains(&table.as_str()) || after.get(table) == Some(bytes)
@@ -45,7 +50,7 @@ fn at(value: &Value, expected: OffsetDateTime) -> bool {
     clippy::too_many_arguments,
     reason = "Keep independent source, family, event and read evidence explicit in this test oracle"
 )]
-fn revocation_delta(
+pub(in super::super) fn revocation_delta(
     before: &Rows,
     after: &Rows,
     actor: UserId,
@@ -542,7 +547,7 @@ async fn direct_list_current_inactive_and_account_fence_refuse_with_exact_recove
     close(f).await;
 }
 
-async fn root_catalog(pool: &PgPool) -> Value {
+pub(in super::super) async fn root_catalog(pool: &PgPool) -> Value {
     sqlx::query_scalar("SELECT jsonb_build_object('table',(SELECT to_jsonb(c) FROM pg_catalog.pg_class c WHERE oid='public.accounts'::regclass),'triggers',(SELECT jsonb_agg(to_jsonb(t) ORDER BY oid) FROM pg_catalog.pg_trigger t WHERE tgrelid='public.accounts'::regclass),'constraints',(SELECT jsonb_agg(to_jsonb(c) ORDER BY oid) FROM pg_catalog.pg_constraint c WHERE conrelid='public.accounts'::regclass OR confrelid='public.accounts'::regclass))")
         .fetch_one(pool).await.unwrap()
 }
@@ -740,3 +745,11 @@ mod legacy_platform_list_commit_loss;
 
 #[path = "legacy_platform_list_expiry_progress.rs"]
 mod legacy_platform_list_expiry_progress;
+
+pub(in super::super) use legacy_platform_list_expiry_progress::{
+    configured_family_state, other_operator,
+};
+
+pub(in super::super) use legacy_platform_list_commit_loss::{
+    WireEvidence, evidence, proven_ack_loss, relay,
+};

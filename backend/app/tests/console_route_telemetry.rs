@@ -1,10 +1,11 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use axum::body::{Body, to_bytes};
-use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router};
+use console_app::{AppConfig, AppRole, AppState, DatabaseDependency, build_router, run_migrations};
 use console_kernel_core::{BranchId, OrgId, UserId};
 use console_platform_auth::{AccessTokenInput, JwtIssuer, JwtSettings};
 use console_platform_db::{DbError, with_org_conn};
+use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
 use http::{Request, StatusCode, header};
 use p256::ecdsa::SigningKey;
 use p256::elliptic_curve::rand_core::OsRng;
@@ -17,8 +18,18 @@ use tower::ServiceExt;
 const TEST_ISSUER: &str = "console-platform-auth";
 const TEST_AUDIENCE: &str = "console-api";
 
-#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+#[sqlx::test(migrations = false)]
 async fn route_telemetry_records_tenant_events_and_surfaces_adoption_by_org(pool: PgPool) {
+    let migration_config = AppConfig::from_pairs([
+        ("CONSOLE_APP_ROLE", AppRole::Migrate.to_string()),
+        (
+            "DATABASE_URL",
+            console_platform_test_support::prepare_test_migration_owner_url(&pool).await,
+        ),
+    ])
+    .unwrap();
+    run_migrations(&migration_config).await.unwrap();
+    console_platform_test_support::finalize_serving_account_custody(&pool).await;
     let signing_key = SigningKey::random(&mut OsRng);
     let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
     let public_key_pem = signing_key
@@ -53,7 +64,10 @@ async fn route_telemetry_records_tenant_events_and_surfaces_adoption_by_org(pool
         true,
     )
     .unwrap();
-    let service = build_router(app_state(pool.clone(), public_key_pem).unwrap());
+    let state = app_state(&pool, private_pem.to_string(), public_key_pem)
+        .await
+        .unwrap();
+    let service = build_router(state.clone());
 
     post_json(
         service.clone(),
@@ -167,6 +181,7 @@ async fn route_telemetry_records_tenant_events_and_surfaces_adoption_by_org(pool
         .expect("zero-legacy release cycle should be aggregated");
     assert_eq!(zero_legacy_cycle["legacy_route_events"], 0);
     assert_eq!(zero_legacy_cycle["console_route_events"], 1);
+    state.shutdown_realtime().await;
 }
 
 async fn get_json(service: axum::Router, uri: &str, token: &str, expected: StatusCode) -> Value {
@@ -252,16 +267,44 @@ fn issue_token(
     })?)
 }
 
-fn app_state(pool: PgPool, public_key_pem: String) -> Result<AppState, console_app::AppError> {
+async fn app_state(
+    pool: &PgPool,
+    private_key_pem: String,
+    public_key_pem: String,
+) -> Result<AppState, console_app::AppError> {
     let config = AppConfig::from_pairs([
+        (
+            "CONSOLE_DATABASE_DURABILITY",
+            r#"{"mode":"local_development"}"#.to_owned(),
+        ),
         ("CONSOLE_APP_ROLE", AppRole::Api.to_string()),
         ("CONSOLE_HTTP_ADDR", "127.0.0.1:0".to_owned()),
         ("CONSOLE_JWT_ISSUER", TEST_ISSUER.to_owned()),
         ("CONSOLE_JWT_AUDIENCE", TEST_AUDIENCE.to_owned()),
+        ("CONSOLE_JWT_PRIVATE_KEY_PEM", private_key_pem),
         ("CONSOLE_JWT_PUBLIC_KEY_PEM", public_key_pem),
+        ("CONSOLE_WEBAUTHN_RP_ID", "example.com".to_owned()),
+        (
+            "CONSOLE_WEBAUTHN_RP_ORIGIN",
+            "https://example.com".to_owned(),
+        ),
+        ("CONSOLE_WEBAUTHN_RP_NAME", "Console".to_owned()),
+        (
+            "CONSOLE_REFRESH_FAMILY_ABSOLUTE_TTL_SECS",
+            "2592000".to_owned(),
+        ),
     ])?;
-
-    AppState::new(config, DatabaseDependency::Postgres(pool))
+    assert_eq!(
+        config
+            .auth_rest
+            .as_ref()
+            .unwrap()
+            .refresh_family_absolute_ttl,
+        Duration::days(30)
+    );
+    let business = login_test_pool(pool, TestDatabaseLogin::Business).await;
+    let auth = login_test_pool(pool, TestDatabaseLogin::Auth).await;
+    Ok(AppState::new(config, DatabaseDependency::Postgres(business))?.with_auth_database(auth))
 }
 
 async fn seed_branch(pool: &PgPool) -> Result<BranchId, sqlx::Error> {
@@ -300,6 +343,12 @@ async fn seed_user_with_branch(
         .bind(*OrgId::knl().as_uuid())
         .execute(pool)
         .await?;
+    let root_present: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM public.accounts WHERE id=$1)")
+            .bind(user_id.as_uuid())
+            .fetch_one(pool)
+            .await?;
+    assert!(root_present, "finalized tenant Account root prerequisite");
     Ok(())
 }
 
@@ -318,5 +367,11 @@ async fn seed_platform_admin(pool: &PgPool) -> Result<UserId, sqlx::Error> {
         .bind(*OrgId::platform().as_uuid())
         .execute(pool)
         .await?;
+    let root_present: bool =
+        sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM public.accounts WHERE id=$1)")
+            .bind(id.as_uuid())
+            .fetch_one(pool)
+            .await?;
+    assert!(root_present, "finalized platform Account root prerequisite");
     Ok(id)
 }
