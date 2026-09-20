@@ -23,6 +23,14 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_health_readiness_maps_its_existing_source_tripwire_inputs(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/health_readiness.rs")
+        self.assertIn("src/lib.rs", config["srcs"])
+        for package in ("auth-rest", "request-context"):
+            directory = "backend/crates/platform/" + package
+            self.assertEqual(directory + "/src", config["external"].get("//" + directory + ":crate-source-tree"))
+            self.assertTrue((Path(GENERATOR.REPO) / directory / "src/lib.rs").is_file())
+
     def test_private_company_parser_auth_rest_resources_are_complete(self) -> None:
         config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
         self.assertEqual(
