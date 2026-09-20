@@ -1,0 +1,43 @@
+{
+  "kind": "independent-conditional-finalizer-semantic-test-review",
+  "reviewer": "/root/integration_security",
+  "observed_head": "ace3e5368d9c009cc3b8770d5cb1a6cdf3f24c9c",
+  "verdict": "APPROVE_EXACT_TEST_CANDIDATE_FOR_APPLICATION_AND_OWNER_BOUNDARY_RED",
+  "candidate_path": "/private/tmp/console-finalizer-savepoint-tests/account_custody_lifecycle.rs",
+  "candidate_sha256": "8b9e5414c6ab046a5f5b673a9bfe715d0753e4974f8c48b35594fb2097919f26",
+  "base_test_sha256": "1cf40b10f3d0679f940ebeec792ae9dd395683a27b77340597dac4c04e6d70e0",
+  "design_sha256": "5880a91c4ad3481af2986277a08badbabbbe7817704c70681bebf4f5fa355135",
+  "test_revisions_sha256": "a7984d65c1fad7742b067ce67c7ff04fcede182ff7f3b9c91f647a6f13d4b810",
+  "blocking_findings": [],
+  "verified": [
+    "Complete diff inspected; every byte preceding the explicitly revised failure/retry case is preserved, including both prior cross-database histories and older lifecycle tests.",
+    "No SQLx test declaration removed; three additions yield six helper cases by source census, not compiler discovery.",
+    "Revised failure/retry distinguishes committed role absence/presence before helper start and independently probes retained/released shared anchor. Exact 55P03, rollback flush, snapshots, classifiers, retry and final profile remain.",
+    "Warm histories run actual helper futures in distinct databases. Each acquires the historical organizations AccessExclusiveLock and is observed blocked by its own accounts holder; independent NOWAIT anchor acquisition proves neither pins the shared anchor during database-local work.",
+    "Historical root SQL was read: organizations and users locks precede accounts lock, validating the stable database-qualified progress observer.",
+    "Post-wait history starts the actual waiter only after the actual creator is observed in local SQL; cold path observes the waiter behind creator before publication, then requires released anchor while waiter is independently observed blocked in its own local SQL after creator commit.",
+    "Inherited repeatable-read fixture and unchanged DDL event trigger retain explicit READ COMMITTED coverage. Complete historical classifier and owner checks remain in successful outcomes.",
+    "Tasks are retained for panic cleanup, aborted/joined when needed, actual PostgreSQL backend absence checked, actor pools closed, and secondary database forcibly dropped after outcome capture."
+  ],
+  "reviewed_test_adaptations": [
+    "Warm progress uses the primary database as the real serving warmer and then exercises its idempotent root/serving reapplication beside a freshly staged peer, rather than three databases. Accepted for coordination coverage: both still invoke unchanged complete historical SQL; existing cross-database cases retain two freshly staged full-finalization histories.",
+    "Warm progress deliberately holds both accounts relations and observes the earlier organizations lock, rather than racing to observe full B completion while A remains blocked. This is a stable proof of concurrent entry into database-local historical work; both full finalizers/classifiers must still complete after blockers release. It makes no claim B completed while A remained blocked."
+  ],
+  "required_runtime_evidence": [
+    "Actual named warm-probe RED on unchanged unconditional-lock implementation after functioning database prerequisites; no fixture or schema error qualifies.",
+    "All six helper cases passing under unchanged five-second lock and sixty-second statement deadlines.",
+    "Fresh isolated exact post-wait invocation passes with HELPER_POST_WAIT_FIRST_CREATION=true, HELPER_POST_WAIT_COLD_BARRIER_OBSERVED=true and HELPER_POST_WAIT_ANCHOR_RELEASED=true together.",
+    "Fresh serving/serving first-creation invocation and separately fresh failure/retry invocation with actual cold retained-anchor markers.",
+    "Unchanged real ordinary nextest fifteen-case workload passes both cold and warm at original concurrency, no omissions or skipped tests, with observed preconditions and durations.",
+    "Executed corruption controls for retained warm lock, skipped anchor, authoritative pre-wait role cache, forced role-present path and omitted READ COMMITTED.",
+    "Retained lifecycle/custody/operator and historical corruption gates; separate raw-SQL concurrency failure remains unresolved by this test proposal."
+  ],
+  "execution": {
+    "source_hash_and_diff_review": true,
+    "compiler": 0,
+    "sqlx": 0,
+    "browser": 0,
+    "repository_edits": 0
+  },
+  "limits": "Test-source approval only. No runtime, workload, production, or release acceptance."
+}

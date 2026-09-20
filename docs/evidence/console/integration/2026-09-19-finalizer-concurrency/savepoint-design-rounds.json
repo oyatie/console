@@ -1,0 +1,44 @@
+{
+  "kind": "conditional-finalizer-design-rounds",
+  "design_sha256": "5880a91c4ad3481af2986277a08badbabbbe7817704c70681bebf4f5fa355135",
+  "provenance": "Prior independent rounds retained in session handoff; round3 individually persisted; not a fresh runtime claim.",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "audit_review",
+      "verdict": "approved protocol with mandatory independently reviewed executable test refinements"
+    },
+    {
+      "round": 2,
+      "reviewer": "integration_security",
+      "verdict": "approved protocol with mandatory independently reviewed executable test refinements"
+    },
+    {
+      "round": 3,
+      "reviewer": "reference_inventory",
+      "verdict": "approved protocol with mandatory independently reviewed executable test refinements"
+    },
+    {
+      "round": 4,
+      "reviewer": "audit_review",
+      "verdict": "approved protocol with mandatory independently reviewed executable test refinements"
+    }
+  ],
+  "owner": "root sole repository writer",
+  "base_sha": "ace3e5368d9c009cc3b8770d5cb1a6cdf3f24c9c",
+  "allowed_paths": [
+    "backend/crates/platform/test-support/src/lib.rs",
+    "backend/app/tests/auth_rest/account_custody_lifecycle.rs",
+    "docs/evidence/console/integration/2026-09-19-finalizer-concurrency/"
+  ],
+  "forbidden": "historical SQL, migrations, fingerprints, credentials, lock/statement deadlines, test concurrency",
+  "mechanical_guide": "Conditional savepoint design; exact reviewed test candidate first, clean actual RED admission, same GREEN, cold/warm ordinary workload and corruption controls.",
+  "pre_mortem": "Warm lock remains held or post-wait snapshot is stale.",
+  "detection": "Actual helper lock observers, full classifiers and unchanged ordinary workload.",
+  "rollback": "Revert bounded helper/test candidate; retain prior failed evidence.",
+  "stop": "Any unreviewed semantic change, prerequisite failure, omitted test, privilege widening, SQL byte drift or timeout.",
+  "remaining_holds": [
+    "No production or release acceptance.",
+    "Raw-SQL fixture repair separate."
+  ]
+}
