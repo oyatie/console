@@ -1,0 +1,56 @@
+{
+  "kind": "independent-F08-reference-review-round2",
+  "reviewer": "integration_tests",
+  "verdict": "APPROVED_BOUNDED_REFERENCE_ADDITION_AND_EXACT_COMPOSED_REBASE",
+  "reviewed_utc": "2026-09-20T02:00:51.444197+00:00",
+  "proposal_sha256": "b205746d1400a1bd9a663826545c7ec97bf4b09bacd5fb13893ab6e405776d59",
+  "patch_sha256": "7d5d894293c231e0505681b85645bd0529ca818a95567912ed9601544ab0be45",
+  "manifest_sha256": "f6c1331c988899393af321b514684259082a0d66124b1be7871e77104a19d9fd",
+  "proposal_base_registry_sha256": "c56885b6a3dc4fc83fcc2515de0c2b1b01dba8b21580d3d1a40df2039198424b",
+  "reviewed_transform_patch_sha256": "d56612a08de2b327291ce7e7c85ec581bd17b78dc41e241c2415b0640b464a4e",
+  "current245leaf_registry_sha256": "f1e3f59e19fd0f824ba27a226f33130be017492507800464500049ba8a56a316",
+  "checks": {
+    "errors": [],
+    "manifest_files_verified": 78,
+    "sources_verified": 37,
+    "quote_occurrences_checked": 202,
+    "card_entries_verified": 60,
+    "card_entries_exact": true,
+    "new_leaves": 28,
+    "base_leaves": 211,
+    "current_leaves": 245,
+    "after_transforms_leaves": 245,
+    "rebased_leaves": 273,
+    "current_registry_sha256": "f1e3f59e19fd0f824ba27a226f33130be017492507800464500049ba8a56a316",
+    "patch_operations": 155,
+    "no_prior_value_changed": true
+  },
+  "resolved_finding": {
+    "id": "F08-ALIAS-1",
+    "prior_review": "/private/tmp/console-foundry-analysis-review-v1.json",
+    "prior_review_sha256": "b1e8fbd12fe0cc50ae3f6661d59417812ebbf3208af997257271b6c48fd1801f",
+    "resolution": "All60 exact ordered index label/path tuples retained. Shared scatter-plot-regression target recorded as source ambiguity without semantic alias inference. Other28leaves and35new/2reused source captures unchanged."
+  },
+  "findings": [],
+  "method": [
+    "Verified78 manifest members and37 raw/compressed source hashes/lengths, including2exact reused source records/artifacts already in inventory. New capture timestamps retain actual UTC date and target NewYork date; reused captures preserve mtime-only custody caveat.",
+    "Independently parsed article bodies and202quote occurrences including repeated catalog bindings; independently extracted and matched all60 ordered card label/href tuples from two index pages.",
+    "Applied approved transform patch to pinned211-leaf base; its result exactly equals current245-leaf registry. Applied analysis patch to current result, preserving every existing value/list prefix with no map-key replacement or source/path/leaf collisions. Result273unique leaves; full graph resolves and is acyclic.",
+    "All28added leaves planned only, no bound executable acceptance, reference freeze partial_snapshot.",
+    "Read45qualifications and14limitations. Read-time restrictions are not claimed to propagate to vendor exports/materializations; Console current authorization and derived-source restrictions remain mandatory. Dataset latest-input publication differs from historical analysis; conversion does not promise type/timezone/math equivalence.",
+    "Retained forecast/interpolation ambiguity, numeric nondeterminism, SQL sample/freshness/materialization limits, map tile filtering/styling restrictions, and Code Workbook legacy/successor constraints. No native collaboration, mathematical equivalence, AIP or runtime acceptance inferred."
+  ],
+  "limits": [
+    "Bounded reference addition only, not exhaustive Foundry/F08 inventory or Console implementation/workflow/production/release acceptance.",
+    "Exact rebase binds current245leaf registry hash; root owns serialized integration and must repeat collision/preservation checks if bytes change.",
+    "No generated capability acceptance, no runtime product tests, and no repository edits in this review."
+  ],
+  "reproduction": {
+    "script": "/private/tmp/review-analysis-round2-independent.py",
+    "script_sha256": "421e631111e77a7d4fe77da5afa22d85eb45a7607e1b155face711daf9ad36dd",
+    "results": "/private/tmp/console-analysis-round2-independent-checks.json",
+    "results_sha256": "93052371edf47f8c6d2df458b6d12e7a51d960557177ef21040a64cb891c8098"
+  },
+  "runtime_tests_executed": 0,
+  "repository_edits": false
+}

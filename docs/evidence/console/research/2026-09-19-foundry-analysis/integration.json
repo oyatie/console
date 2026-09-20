@@ -1,0 +1,25 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "16ed08ef3bbedd6d018f66226c599f126aedf860",
+  "before_registry_sha256": "f1e3f59e19fd0f824ba27a226f33130be017492507800464500049ba8a56a316",
+  "after_registry_sha256": "7a67302dc2e9183844899d5caf616e877c94534fc13ceb1c7ada7026c6c84b98",
+  "leaves_before": 245,
+  "leaves_after": 273,
+  "new_sources": 35,
+  "new_leaves": 28,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "Partial reference snapshot; no exhaustive freeze, executable acceptance or release claimed.",
+    "Exact card aliases preserved without inferring semantic equivalence."
+  ],
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "duration_ms": 10379.200667,
+    "log_sha256": "0baca2948460af1147ebcfcc8cc0ced96cd3f9765fb6b073b5ad360560dda523"
+  }
+}
