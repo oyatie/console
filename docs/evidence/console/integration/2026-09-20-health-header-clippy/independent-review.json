@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_tests",
+  "decision": "APPROVE exact two assertion lint repair with equivalent acceptance",
+  "source_path": "/private/tmp/console-client-release-20260919/backend/app/tests/health_readiness.rs",
+  "source_sha256": "a46f27e6f31411877066f83f6474d83b141fa63c2acbe2d8dca858033ebeb757",
+  "changes": [
+    {
+      "old": "assert_eq!(response.headers().get(\"cache-control\").unwrap(), \"no-store\");",
+      "replacement": "assert_eq!(response.headers().get(\"cache-control\").and_then(|value| value.to_str().ok()), Some(\"no-store\"));"
+    },
+    {
+      "old": "assert_eq!(response.headers().get(\"pragma\").unwrap(), \"no-cache\");",
+      "replacement": "assert_eq!(response.headers().get(\"pragma\").and_then(|value| value.to_str().ok()), Some(\"no-cache\"));"
+    }
+  ],
+  "evidence": [
+    "Read exact current statements in ui_shell_serves_empty_ssr_html.",
+    "Both old and proposed assertions accept only a present header with exact ASCII bytes no-store/no-cache; missing, invalid encoding or any other value fail.",
+    "Only failure presentation differs: removed Option unwrap panic becomes assertion failure. No test disabled, branch omitted, expected value relaxed or affected iteration changed."
+  ],
+  "limits": [
+    "Root owns exact formatting, clippy RED admission, source integration and same-gate verification.",
+    "Reviewer ran zero Cargo/DB/browser tests."
+  ]
+}

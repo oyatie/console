@@ -1,0 +1,40 @@
+    Checking console-workorder-domain v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/domain)
+    Checking console-ontology-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/ontology/rest)
+    Checking console-payroll-ui v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/payroll/ui)
+    Checking console-workorder-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/application)
+    Checking console-platform-storage v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/storage)
+    Checking console-dispatch-application v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/application)
+    Checking console-reporting-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/adapter-postgres)
+    Checking console-dispatch-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/adapter-postgres)
+    Checking console-messenger-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/adapter-postgres)
+    Checking console-workorder-adapter-postgres v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/adapter-postgres)
+    Checking console-messenger-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/messenger/rest)
+    Checking console-dispatch-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/rest)
+    Checking console-dispatch-worker v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/dispatch/worker)
+    Checking console-docs-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/docs/rest)
+    Checking console-financial-rest v0.0.0 (/private/tmp/console-client-release-20260919/backend/crates/financial/rest)
+    Checking console-sales-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/sales/rest)
+    Checking console-comms-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/comms/rest)
+    Checking console-workorder-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/workorder/rest)
+    Checking console-reporting-rest v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/reporting/rest)
+    Checking console-app v0.1.0 (/private/tmp/console-client-release-20260919/backend/app)
+error: used `unwrap()` on an `Option` value
+   --> app/tests/health_readiness.rs:123:24
+    |
+123 |             assert_eq!(response.headers().get("cache-control").unwrap(), "no-store");
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if this value is `None`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unwrap_used
+    = note: requested on the command line with `-D clippy::unwrap-used`
+
+error: used `unwrap()` on an `Option` value
+   --> app/tests/health_readiness.rs:124:24
+    |
+124 |             assert_eq!(response.headers().get("pragma").unwrap(), "no-cache");
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: if this value is `None`, it will panic
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unwrap_used
+
+error: could not compile `console-app` (test "health_readiness") due to 2 previous errors

@@ -120,8 +120,20 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
             }
             let response = app.clone().oneshot(request.body(Body::empty())?).await?;
             assert_eq!(response.status(), StatusCode::OK);
-            assert_eq!(response.headers().get("cache-control").unwrap(), "no-store");
-            assert_eq!(response.headers().get("pragma").unwrap(), "no-cache");
+            assert_eq!(
+                response
+                    .headers()
+                    .get("cache-control")
+                    .and_then(|v| v.to_str().ok()),
+                Some("no-store")
+            );
+            assert_eq!(
+                response
+                    .headers()
+                    .get("pragma")
+                    .and_then(|v| v.to_str().ok()),
+                Some("no-cache")
+            );
             assert!(!response.headers().contains_key("set-cookie"));
             let body = axum::body::to_bytes(response.into_body(), usize::MAX).await?;
             if method == "HEAD" {

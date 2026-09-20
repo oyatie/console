@@ -1,0 +1,23 @@
+{
+  "owner": "/root",
+  "base_sha": "d7b4338e126b8a36b04e6de8b265e53122c6036a",
+  "immutable_target": "Preserve exact twoheader assertions while removing forbiddenOptionunwrap",
+  "allowed_paths": [
+    "backend/app/tests/health_readiness.rs"
+  ],
+  "probe": "SQLX_OFFLINE=true cargo clippy --manifest-path backend/Cargo.toml -p console-app --test health_readiness -- -D warnings",
+  "mechanical_guide": "Independentlyapproved comparetoSome of UTF8header;missing/invalid/wrongallstillfail",
+  "pre_mortem": "Lintfixweakens missingheaderassertion",
+  "blast_radius": "Twohealthtestassertionsonly",
+  "detection": "Exactclippy RED/GREEN and healthowner1test",
+  "rollback": "Restoretwoassertions;no producteffect",
+  "stop_conditions": [
+    "Anychangedtestmeaning",
+    "Unexpectednewlint",
+    "Unrelatedsourcechange"
+  ],
+  "review": "/private/tmp/console-health-header-clippy-independent-review.json",
+  "remaining_holds": [
+    "Fullrelease and Companyimplementation incomplete"
+  ]
+}
