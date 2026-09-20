@@ -1,0 +1,23 @@
+# First concrete reference support-matrix gap
+
+The existing Snowflake connector entry lacks its documented external-IdP OAuth2 client-credentials authentication mode. No additional release leaf is needed for this finding: preserve the existing401 leaves and add a bounded authentication reference to the current connector matrix entry if root approves serialized integration.
+
+Observed inventory: `docs/program/console-capability-registry.json` → `/release_inventory/support_matrices/connectors/entries/180`, reference path `/docs/foundry/available-connectors/snowflake/`. It currently contains only the discovered-link status, unestablished Console acceptance and null command. The full inventory has245 connector entries and401 leaves. Its only other Snowflake reference describes external Pipeline Builder engines; that does not establish connector authentication. A recursive exact-text census found no external-IdP or OAuth2 client-credentials support record.
+
+The missing behavior is supported by already captured public source bytes, not navigation labels. In `docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz`, the embedded record at `/props/pageProps/releases/60/releaseNotes/4` has title **Snowflake connector now supports external IdP OAuth authentication**, date **June10,2026**, product **Foundry**, category **Data connectivity & integration**, and release label `@foundry/foundry-frontend@6.514.0`.
+
+Exact description:
+
+> Data Connection now supports authenticating Snowflake connections using an external identity provider (such as Entra ID, Okta, or PingFederate) via the OAuth2 client credentials flow. Users can configure a token endpoint, client ID, client secret, OAuth scopes, and user claim to establish the connection. This authentication method provides an alternative for organizations that manage identity through external providers rather than direct Snowflake credentials.
+
+Raw source SHA256: `5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f`. Compressed SHA256: `c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c`. Both match the existing retrieval metadata and registered source identity. The exact source record, JSON pointer and custody are saved in this packet.
+
+`proposal.json` contains the bounded matrix addition: OAuth2 client-credentials flow, the three named provider examples, and five named configuration fields. It deliberately infers no GA/beta status, comprehensive IdP support, connector data mode, Snowflake/server/driver version or security semantics beyond the quote. The frontend release label is not a connector/driver compatibility version. Console implementation/acceptance remain unestablished and executable command null. F01 source-connection work plus existing scoped source credentials/egress and policy requirements already own the relevant journey; this is support-matrix decomposition, not a new roadmap or lane.
+
+The exact historical freeze remains unqualified. Actual retrieval was `2026-09-20T04:02:15.175438+00:00`, or `2026-09-20T00:02:15.175438-04:00` in NewYork—2minutes15seconds after the target date ended. The vendor's dated June10 announcement is concrete evidence of a dated vendor support assertion; it is not independently retained September19 page bytes. The existing Last-Modified header does not close that distinction.
+
+**Exact missing input for cutoff qualification:** an independently retained vendor source or dated compatibility statement binding Snowflake external-IdP client-credentials authentication and its provider/mode/version limits to September19,2026 America/New_York or earlier. The relevant detailed source is `https://www.palantir.com/docs/foundry/available-connectors/snowflake/#authentication`. No fresh network capture was made, since another mutable post-cutoff capture would not itself close the dated-source gap.
+
+Review scope: bounded first actionable connector-authentication gap, using captured sources first. This is not an exhaustive audit of401 leaves or245 connectors. README and all three current authorities were reread; their incomplete-freeze and separately evidenced states remain unchanged. No repository edits, builds, database/browser execution, implementation admission or production claims.
+
+Verification performed: private `audit.py` read-only source audit verified the401/245 census, exact Snowflake row, full-inventory absence terms, source raw/compressed hashes/length, registered source identity, embedded JSON pointer/id/date/title, and timezone conversion. `verification.txt` records its exact command and result. This is source custody verification, not product test evidence.

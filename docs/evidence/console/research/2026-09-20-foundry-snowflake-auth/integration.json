@@ -1,0 +1,25 @@
+{
+  "base_sha": "896fd25969f98d4af944a165bbf9d11ecb38209e",
+  "reviewer": "/root",
+  "before_registry_sha256": "3afca46440aa9c9a5ee4315651f477d71c333fb304b946565ff79404b61a8f43",
+  "after_registry_sha256": "568e4701f7306a2af006887758103d6f408778cb12f8e66ccd49439b5b575431",
+  "change": "Only Snowflake reference_capabilities appended; every original value preserved.",
+  "leaves_before": 401,
+  "leaves_after": 401,
+  "connector_entries_before": 245,
+  "connector_entries_after": 245,
+  "raw_source_hash_and_exact_dated_record_verified": true,
+  "historical_cutoff_qualified": false,
+  "console_acceptance": "not established",
+  "command": null,
+  "runtime_claim": false,
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "discovered": 104,
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "0f4293ba32e584fe9fd894924b0db249914a9a30b50bb510ea75f5735bedaca5"
+  }
+}

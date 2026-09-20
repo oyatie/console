@@ -1,0 +1,12 @@
+{
+  "packet": "console-foundry-snowflake-auth-matrix-audit-20260920-round1",
+  "files": {
+    "AUDIT.md": "09e4a0ffd0e8ea7500d7f703de25f7bf02c71427da650276827fa8d92b9b1e5b",
+    "audit.py": "370ad99c63f23432a0b564b838c1cd8dafed79e22a57c13dfa6df5f0f1ac926e",
+    "custody.json": "9b8d2200c35dc516060262b5e61e59dba22186f8a0687a609960ce85335a28a8",
+    "dated-source-record.json": "09e6008801f0e6c7b191b63c821302f0622be24eeb93938f4815f007e0bf333a",
+    "inventory-gap.json": "d38b5efe976732a8a3e18138f937a2a08fb9740586a4dda9c4e403caf51a854b",
+    "proposal.json": "1f0b6b546246323247de741ea820b99d40656adc4ada66019e980a75f7d9dd51",
+    "verification.txt": "fa779a0e38c296d7879ab0a4a3b1809044029405a56f0938e0ab9fa26d086972"
+  }
+}

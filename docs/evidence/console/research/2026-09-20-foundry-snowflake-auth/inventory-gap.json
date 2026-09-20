@@ -1,0 +1,26 @@
+{
+  "registry_path": "docs/program/console-capability-registry.json",
+  "registry_sha256": "3afca46440aa9c9a5ee4315651f477d71c333fb304b946565ff79404b61a8f43",
+  "leaf_count": 401,
+  "connector_entry_count": 245,
+  "target_json_path": "/release_inventory/support_matrices/connectors/entries/180",
+  "current_entry": {
+    "reference_path": "/docs/foundry/available-connectors/snowflake/",
+    "status": "discovered documentation link; support/modes/lifecycle not verified",
+    "console_acceptance": "not established",
+    "command": null
+  },
+  "exact_term_census": {
+    "external IdP": [],
+    "OAuth2 client credentials": [],
+    "programmatic access token": []
+  },
+  "gap": "Snowflake external-IdP OAuth2 client-credentials authentication dimension is absent; current entry is only a discovered documentation link.",
+  "not_a_new_leaf": "Existing401 leaves remain unchanged; general source/authentication owners already require this support-matrix decomposition.",
+  "excluded_inferences": [
+    "Connector name alone proves no support",
+    "Snowflake mention as external Pipeline Builder engine does not establish connector authentication",
+    "Not every IdP that implements OAuth2 is shown compatible",
+    "Announcement does not establish data modes/server versions/driver versions or lifecycle phase"
+  ]
+}

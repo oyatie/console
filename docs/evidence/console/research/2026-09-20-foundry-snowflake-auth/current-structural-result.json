@@ -1,0 +1,5 @@
+{
+  "result": "STRUCTURALLY_VALID_HOLD_PRESERVED",
+  "log_sha256": "f298985e1e386083a0c143d56c3a33e394cb00f5db1313e5b52559fdccc15a29",
+  "limitation": "Default resolvers exercise current-file structural consistency only; signed C/T/M train CLI gate requires protected integration train and is not claimed."
+}

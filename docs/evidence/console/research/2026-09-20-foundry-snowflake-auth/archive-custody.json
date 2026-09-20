@@ -1,0 +1,8 @@
+{
+  "original_manifest_sha256": "b8d089534c9378fbe975a81b18174a2927b3905de8b57b987ec5a68a467a96a4",
+  "retained_filename_mapping": {
+    "AUDIT.md": "audit.txt"
+  },
+  "all_other_filenames_identical": true,
+  "all_packet_hashes_verified": true
+}

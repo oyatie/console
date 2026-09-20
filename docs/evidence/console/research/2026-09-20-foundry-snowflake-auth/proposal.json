@@ -1,0 +1,67 @@
+{
+  "kind": "bounded-source-backed-missing-support-matrix-proposal",
+  "authority": "HOLD pending root serialized inventory decision and independent review; no lane or implementation authorization",
+  "reference_date": "2026-09-19",
+  "reference_timezone": "America/New_York",
+  "exhaustive": false,
+  "leaves_to_append": [],
+  "existing_leaf_count_unchanged": 401,
+  "target_reference_path": "/docs/foundry/available-connectors/snowflake/",
+  "proposed_reference_capability": {
+    "reference_status": "vendor-dated June10,2026 authentication support assertion; exact cutoff qualification pending",
+    "source": "announcements-release-notes",
+    "authentication": {
+      "flow": "OAuth2 client credentials through external identity provider",
+      "provider_examples": [
+        "Entra ID",
+        "Okta",
+        "PingFederate"
+      ],
+      "documented_configuration_fields": [
+        "token endpoint",
+        "client ID",
+        "client secret",
+        "OAuth scopes",
+        "user claim"
+      ],
+      "vendor_release_version_label": "@foundry/foundry-frontend@6.514.0",
+      "lifecycle_phase": "announcement says supports; GA/beta phase not specified",
+      "per_mode_version_matrix": "not specified by announcement; no batch/CDC/stream/federation compatibility inferred"
+    },
+    "source_bindings": [
+      {
+        "source_id": "announcements-release-notes",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-vulcan/announcements-release-notes.html.gz",
+        "sha256": "5acb8fcc854092214d08c1eeb3eaab2583d0682e3b2d3656fdd522837f4d1a8f",
+        "compressed_sha256": "c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c",
+        "json_path": "/props/pageProps/releases/60/releaseNotes/4",
+        "record_id": "4f3c1dfa766233ff6d3a89cb838c44ce4ccf52cbbce64eb64f950b6f51232b38",
+        "vendor_asserted_date": "June 10, 2026",
+        "quote": "Data Connection now supports authenticating Snowflake connections using an external identity provider (such as Entra ID, Okta, or PingFederate) via the OAuth2 client credentials flow. Users can configure a token endpoint, client ID, client secret, OAuth scopes, and user claim to establish the connection. This authentication method provides an alternative for organizations that manage identity through external providers rather than direct Snowflake credentials.",
+        "matching": "exact JSON description string inside captured __NEXT_DATA__",
+        "reference_temporal_status": "post-cutoff capture of vendor-dated June10 assertion; exact September19 support unqualified",
+        "scope": "Connector authentication reference only; no mode/version compatibility or Console implementation/acceptance established."
+      }
+    ],
+    "console_acceptance": "not established",
+    "command": null
+  },
+  "link_to_existing_work": "Authentication dimension of existing F01 source-connection work; scoped source credentials/egress/current policy obligations already exist in F11.workspace-external-sources and F16.policy. No new capability leaf or completed stage is proposed.",
+  "historical_missing_input": {
+    "exact_needed": "An independently retained vendor source or dated compatibility statement binding this authentication behavior and its provider/mode/version limits to 2026-09-19 America/New_York or earlier.",
+    "relevant_vendor_page": "https://www.palantir.com/docs/foundry/available-connectors/snowflake/#authentication",
+    "cutoff_utc": "2026-09-20T04:00:00+00:00",
+    "existing_capture_utc": "2026-09-20T04:02:15.175438+00:00",
+    "existing_capture_new_york": "2026-09-20T00:02:15.175438-04:00",
+    "why_not_satisfied": "Captured vendor announcement asserts June10 support but was retrieved2minutes15seconds after cutoff; Last-Modified and dated prose do not establish immutable cutoff page bytes or detailed compatibility."
+  },
+  "remaining_unqualified": [
+    "source scopes and per-mode support",
+    "Snowflake and driver versions",
+    "token endpoint TLS/egress and issuer/audience claim constraints",
+    "supported scope/user-claim mappings and provider-specific requirements",
+    "secret/token rotation and revocation",
+    "retry/cancellation/unknown-outcome behavior",
+    "Console owning paths, reviewed fixtures and executable acceptance"
+  ]
+}
