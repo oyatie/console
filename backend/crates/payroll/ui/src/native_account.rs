@@ -228,23 +228,9 @@ pub fn render(page: Page) -> String {
 
 #[cfg(feature = "ssr")]
 pub fn document(page: Page, status: axum::http::StatusCode) -> axum::response::Response {
-    use axum::http::{HeaderValue, header};
-    use axum::response::{Html, IntoResponse};
-    let mut response = (status, Html(render(page))).into_response();
-    for (name, value) in [
-        (header::CACHE_CONTROL, "no-store"),
-        (header::PRAGMA, "no-cache"),
-        (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
-        (header::VARY, "Cookie, Origin"),
-        (header::REFERRER_POLICY, "no-referrer"),
-        (
-            header::CONTENT_SECURITY_POLICY,
-            "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
-        ),
-    ] {
-        response
-            .headers_mut()
-            .insert(name, HeaderValue::from_static(value));
-    }
-    response
+    super::ssr::private_document(
+        render(page),
+        status,
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+    )
 }

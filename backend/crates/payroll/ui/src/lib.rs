@@ -719,20 +719,43 @@ mod ssr {
         RunSummary, ShippingScreens, UiScreen, render_screens, render_shell, render_shell_with,
     };
     use axum::Router;
-    use axum::http::header;
-    use axum::response::{Html, IntoResponse};
+    use axum::http::{HeaderValue, StatusCode, header};
+    use axum::response::{Html, IntoResponse, Response};
     use axum::routing::get;
 
-    pub fn html_shell() -> Html<String> {
-        Html(render_shell())
+    const SHELL_CSP: &str = "object-src 'none'; base-uri 'none'; frame-ancestors 'none'";
+
+    pub(super) fn private_document(
+        html: String,
+        status: StatusCode,
+        csp: &'static str,
+    ) -> Response {
+        let mut response = (status, Html(html)).into_response();
+        for (name, value) in [
+            (header::CACHE_CONTROL, "no-store"),
+            (header::PRAGMA, "no-cache"),
+            (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            (header::VARY, "Authorization, Cookie, Origin"),
+            (header::REFERRER_POLICY, "no-referrer"),
+            (header::CONTENT_SECURITY_POLICY, csp),
+        ] {
+            response
+                .headers_mut()
+                .insert(name, HeaderValue::from_static(value));
+        }
+        response
     }
 
-    pub fn html_shell_with(runs: &[RunSummary]) -> Html<String> {
-        Html(render_shell_with(runs))
+    pub fn html_shell() -> Response {
+        private_document(render_shell(), StatusCode::OK, SHELL_CSP)
     }
 
-    pub fn html_shell_with_screens(screens: &ShippingScreens, focus: UiScreen) -> Html<String> {
-        Html(render_screens(screens, focus))
+    pub fn html_shell_with(runs: &[RunSummary]) -> Response {
+        private_document(render_shell_with(runs), StatusCode::OK, SHELL_CSP)
+    }
+
+    pub fn html_shell_with_screens(screens: &ShippingScreens, focus: UiScreen) -> Response {
+        private_document(render_screens(screens, focus), StatusCode::OK, SHELL_CSP)
     }
 
     pub fn payroll_ui_js() -> &'static [u8] {

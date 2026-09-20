@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_SSR_PRIVACY_SOURCE_AND_OWNER_GREEN_PENDING_BUNDLE_BROWSER",
+  "base_sha": "bf6af0149b30eea0a4ebad065801320bb52316e1",
+  "source_sha256": {
+    "backend/crates/payroll/ui/src/lib.rs": {
+      "before": "eba0a412fe93440f26543c746544286fd917f9de04e94ccf643aafeb154a4c06",
+      "after": "38a57c2f6b7200b453ba8f3bcc65519e2d6e56660028692b8000fc19778365e8"
+    },
+    "backend/crates/payroll/ui/src/native_account.rs": {
+      "before": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e",
+      "after": "2bf15ae2e0813583ee5636721305bacf3b33469c7b747162fdc78f6dec766ab1"
+    }
+  },
+  "checks": [
+    "Tracked diff currently contains exactly2UI source files plus concurrently rebuilt bundle.lock.json; no App/auth/persistence changes. Generated evidence reviewed separately.",
+    "All retained lib.rs tests and independently approved additive privacy tests byte-identical to admitted base; native render/page definitions byte-identical.",
+    "One SSR-only private helper builds same status+Html body and inserts fixed no-store/no-cache/nosniff/no-referrer/Vary Authorization,Cookie,Origin/CSP. No incoming request data affects header values and no cookies added.",
+    "All3legacy public constructors invoke helper preserving existing rendering functions/200status; native document passes original render/status and byte-exact restrictive CSP.",
+    "Legacy CSP adds only object/base/framing denial, leaving inline stylesheet/module bootstrap executable without introducing unsafe-inline/eval. No comprehensive legacy script restriction claim.",
+    "Actual ownerRED5executed:4fail at intended missingcachecontrol/missingVaryAuthorization and1oraclecontrol pass. Same ownerGREEN5/5,0failed,0ignored,8filtered.",
+    "Native request parsing, current authorization and durable business effects remain outside this response-only change."
+  ],
+  "evidence": {
+    "red_log_sha256": "b982feb9c90884f702c58eb6b010436d446b2ccd773a7743464b20d9d2b2837b",
+    "green_log_sha256": "93a9ab9a646af92385f46064cebabfe6fd7e4c00893d9be3dfcb3088ec4d8a36",
+    "admission_log_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  },
+  "remaining": [
+    "Retained UI/native HTTP regressions, rebuilt exactWASM drift and actual browser hydration/effects required before bounded runtime acceptance.",
+    "HTML413 outer mapper separately tracked; shared envelope does not fix it.",
+    "No release or comprehensive CSP qualification."
+  ]
+}

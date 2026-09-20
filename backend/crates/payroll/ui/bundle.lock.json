@@ -6,10 +6,10 @@
   "inputs": {
     "backend/crates/payroll/ui/Cargo.toml": "1d70d2049d05b82bd5bdbc2b17dd0a99c2990ca5339379d916ea1d6ad1e3dbee",
     "backend/crates/payroll/ui/src/island_script.js": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d",
-    "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+    "backend/crates/payroll/ui/src/lib.rs": "38a57c2f6b7200b453ba8f3bcc65519e2d6e56660028692b8000fc19778365e8",
     "backend/crates/payroll/ui/src/native_account.css": "b3b54ef6ea8c90d521707636218ea5d55b23a1a155c0f75cfb81bd4163621984",
     "backend/crates/payroll/ui/src/native_account.js": "40eb2dfa38d8753333ea34316d1d0585d71e94b772ee5c6cb9be23705c402c91",
-    "backend/crates/payroll/ui/src/native_account.rs": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e",
+    "backend/crates/payroll/ui/src/native_account.rs": "2bf15ae2e0813583ee5636721305bacf3b33469c7b747162fdc78f6dec766ab1",
     "tools/ui/build-payroll-wasm.sh": "49e3e496c0433705b38b7a2e12cd0c5a32a9806b3a170832a22a044f168bd9ad"
   },
   "outputs": {
