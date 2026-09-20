@@ -1,0 +1,40 @@
+   Compiling console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.04s
+     Running tests/cedar_diagnostic_fail_closed.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_diagnostic_fail_closed-a4d9465ba94a751e)
+
+running 5 tests
+test clean_compiled_permit_with_nonoverflowing_forbid_allows ... ok
+test field_visibility_fails_closed_when_allow_has_diagnostics ... ok
+test valid_field_policy_controls_show_clean_allow_and_matching_forbid ... ok
+test compiled_allow_with_runtime_overflow_diagnostic_fails_closed ... ok
+test row_visibility_fails_closed_when_allow_has_diagnostics ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/cedar_pbac_legacy_only_observe_and_record.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_pbac_legacy_only_observe_and_record-6c52042e8e2f4fbb)
+
+running 5 tests
+test legacy_only_boundary_is_byte_identical_to_legacy_for_a_would_be_allow ... ok
+test legacy_only_boundary_is_byte_identical_to_legacy_for_a_would_be_deny ... ok
+test shadow_allow_on_a_denied_request_is_recorded_but_cannot_grant ... ok
+test shadow_deny_is_recorded_but_carries_zero_enforcement_weight ... ok
+test observation_yields_exactly_one_audit_event_per_guarded_decision ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cedar_pbac_readiness_cases.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_pbac_readiness_cases-f15c7f7529390a0e)
+
+running 2 tests
+test ceo_covert_audit_stream_cedar_allows_only_with_clearance ... ok
+test every_readiness_case_binds_to_a_fail_closed_boundary_decision ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/cedar_sdk_identity.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_sdk_identity-8aafb91acc6fb01c)
+
+running 2 tests
+test current_sdk_evaluation_rejects_historical_key_without_relabeling_it ... ok
+test compiled_bundle_keys_name_the_actual_linked_cedar_sdk ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
