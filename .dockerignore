@@ -7,6 +7,7 @@
 # Strategy: ignore everything, then re-include only the build inputs.
 *
 
+!rust-toolchain.toml
 !backend
 !docs
 !third-party

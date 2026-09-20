@@ -1,0 +1,27 @@
+{
+  "kind": "independent-exact-container-source-review-before-build-completion",
+  "reviewer": "/root/integration_tests",
+  "base_sha": "e228d96d6d586e1da7d0db1ffaec0f6a90ee26af",
+  "status": "APPROVE_EXACT_SOURCE_BUILD_VALIDATION_PENDING",
+  "files": {
+    "backend/Dockerfile": "17d9100b79f29aa725c754e8ef836f9183bc0e62fb9d69cc3aebab63d446783a",
+    ".dockerignore": "39432cda3acdb68894c365e062f7e5b7ede889aa3765d148ce23fa2ecacf87f1"
+  },
+  "source_matches_previously_reviewed_proposal": true,
+  "prior_design_review_sha256": "0ad9c16354ccda88197697f2aa21cd28544533647b2b250aecc67789bea344aa",
+  "working_tree_changed_paths": [
+    ".dockerignore",
+    "backend/Dockerfile"
+  ],
+  "diff_check_exit": 0,
+  "scope": "Only root pin COPY/comment, exact allowlist path and rustc provenance prefix; pinned images/lock/runtime unchanged",
+  "build_log": "/private/tmp/console-container-root-pin-repair-20260919/builder-green.log",
+  "build_observation": "Actual builder passed prior missing-COPY boundary and is compiling dependencies; no final build exit/image digest yet observed",
+  "root_may": "Commit exact source candidate with validation explicitly pending to preserve immutable source while other independently admitted work proceeds",
+  "not_claimed": [
+    "builder green",
+    "final image artifact",
+    "business verification",
+    "release qualification"
+  ]
+}

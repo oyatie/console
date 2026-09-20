@@ -1,0 +1,13 @@
+{
+  "base_sha": "aeaf870cd856bdd30526e28fd9f1495b2bb0309d",
+  "source_preimages": {
+    "backend/Dockerfile": "33eeb927933d3b2a831dfb9990e582bc3a9257ccabfc0b050dd615a898f4ad3b",
+    ".dockerignore": "6bacbf7ec39a1b23ff929b48a3f204b67d0aaf914ce49375f4ace322990a6195",
+    "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28"
+  },
+  "proposal_files": {
+    "Dockerfile": "17d9100b79f29aa725c754e8ef836f9183bc0e62fb9d69cc3aebab63d446783a",
+    ".dockerignore": "39432cda3acdb68894c365e062f7e5b7ede889aa3765d148ce23fa2ecacf87f1",
+    "DESIGN.md": "c7c0d4bef6253309024eee51e26e06e523a683ed8830a7b842dbdcb3639b3ad5"
+  }
+}

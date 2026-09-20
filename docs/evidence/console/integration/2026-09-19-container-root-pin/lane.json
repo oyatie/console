@@ -1,0 +1,26 @@
+{
+  "owner": "/root",
+  "base_sha": "e228d96d6d586e1da7d0db1ffaec0f6a90ee26af",
+  "design_manifest_sha256": "3daf07fa0a639e968508eccdf4c0b8625e3da88b50930e1c9261059d50a1105c",
+  "target": "Actual Linux app builder resolves canonical root Rust1.98.1 and completes existing locked release build",
+  "allowed_paths": [
+    "backend/Dockerfile",
+    ".dockerignore"
+  ],
+  "probe": "DOCKER_CONTEXT=colima-console-release-20260919 /private/tmp/console-release-buildx-prerequisite/docker-buildx build --progress=plain --target builder -f backend/Dockerfile .",
+  "mechanical_guide": "Copy exact two reviewed proposed files; preserve all image digests and other context filters; actual rustc provenance must match root pin",
+  "pre_mortem": "See exact reviewed DESIGN.md",
+  "reviewer": "/root/integration_tests",
+  "review_sha256": "0ad9c16354ccda88197697f2aa21cd28544533647b2b250aecc67789bea344aa",
+  "stop_conditions": [
+    "Unexpected generated or dependency change",
+    "Wrong compiler",
+    "Missing infrastructure instead of actualCOPYfailure",
+    "Any need to weaken context isolation"
+  ],
+  "remaining_holds": [
+    "Linux runtime workflow qualification",
+    "Browser committed artifact qualification",
+    "Assembled release incomplete"
+  ]
+}
