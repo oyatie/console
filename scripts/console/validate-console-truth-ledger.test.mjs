@@ -965,3 +965,251 @@ test('signed Git source reader fails closed above the sixteen MiB bound', () => 
     assert.throws(() => resolver.readText('candidate-source.txt'), /candidate source is missing: candidate-source\.txt/);
   });
 });
+
+// Frozen reference catalogue only; these tests do not qualify a formula runtime.
+import { gunzipSync } from 'node:zlib';
+import { isValidatedConsoleTruthLedger } from './validate-console-truth-ledger.mjs';
+
+const FUSION_RUNTIME = 'Fusion formula functions';
+const FUSION_CATALOGUE_SHA256 = '520cb709cd701a074912c8d7a2040300090dd88023d4273ae0b052189b0b98ee';
+const fusionRows = (value) => value.release_inventory.support_matrices.runtimes.entries;
+const fusionRuntime = (value) => fusionRows(value).find((row) => row.runtime === FUSION_RUNTIME);
+const fusionFunction = (value) => fusionRuntime(value).function_catalog[0];
+const fusionHash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+// Match the owner's existing canonical JSON without exporting a new production API.
+function fusionCanonical(value) {
+  const stable = (item) => Array.isArray(item) ? item.map(stable) : item && typeof item === 'object'
+    ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b, 'en')).map(([key, child]) => [key, stable(child)])) : item;
+  return JSON.stringify(stable(value));
+}
+
+function frozenFusionRow() {
+  const directory = path.join(repoRoot, 'docs/evidence/console/research/2026-09-19-foundry-sheets-documents');
+  const proposalBytes = readFileSync(path.join(directory, 'proposal.json'));
+  assert.equal(fusionHash(proposalBytes), '3c9c66bcb2026a5ef94a32d4a0a7672bf9bc9f794316be36ac5eb3461910029e', 'Fusion prerequisite: reviewed proposal custody');
+  const compressed = readFileSync(path.join(directory, 'fusion-function-library.html.gz'));
+  assert.equal(compressed.length, 100939, 'Fusion prerequisite: complete compressed source bytes');
+  assert.equal(fusionHash(compressed), '15c7e57dd486404d045b835d8fc1fc628ee8ce8b3243f93f6c9487d27815f830', 'Fusion prerequisite: compressed source custody');
+  const raw = gunzipSync(compressed);
+  assert.equal(raw.length, 857670, 'Fusion prerequisite: complete raw source bytes');
+  assert.equal(fusionHash(raw), '3dbab921a175d569ebbb25eb44dca91aee1cf56544baf604bb2190a58e70c926', 'Fusion prerequisite: raw source custody');
+  const reviewBytes = readFileSync(path.join(directory, 'independent-review.json'));
+  assert.equal(fusionHash(reviewBytes), '0c3c45ae0dbb1758c805ac412f7616bd0515e2f3fed883b802731d0e24f79689', 'Fusion prerequisite: retained independent heading review');
+  const review = JSON.parse(reviewBytes);
+  assert.equal(review.checks.exact_function_headings_verified, 202);
+  assert.equal(review.checks.ordered_headings_equal, true);
+  const function_catalog = JSON.parse(proposalBytes).function_catalog;
+  assert.equal(function_catalog.length, 202);
+  assert.equal(fusionHash(fusionCanonical(function_catalog)), FUSION_CATALOGUE_SHA256, 'Fusion prerequisite: ordered literal catalogue');
+  const count = (field) => function_catalog.reduce((counts, row) => { counts[row[field]] = (counts[row[field]] ?? 0) + 1; return counts; }, {});
+  assert.deepEqual(count('section'), { 'Core functions': 158, 'Action functions': 17, 'Validation functions': 6, 'Chart functions': 4, 'Time series functions': 17 });
+  assert.deepEqual(count('reference_lifecycle'), { 'documented without experimental/deprecated marker': 184, experimental: 15, deprecated: 3 });
+  assert.equal(new Set(function_catalog.map((row) => row.signature)).size, 202);
+  const source = releaseFreeze(registry).sources.find((row) => row.id === 'fusion-function-library');
+  assert.ok(source, 'Fusion prerequisite: retained source identity');
+  assert.equal(source.path, 'docs/evidence/console/research/2026-09-19-foundry-sheets-documents/fusion-function-library.html.gz');
+  assert.equal(source.bytes, raw.length);
+  assert.equal(source.sha256, fusionHash(raw));
+  assert.equal(source.compressed_sha256, fusionHash(compressed));
+  const leaves = new Set(registry.release_inventory.leaves.map((leaf) => leaf.id));
+  for (const row of function_catalog) {
+    assert.ok(leaves.has(row.required_leaf), `Fusion prerequisite: existing leaf ${row.required_leaf}`);
+    assert.ok(releaseFreeze(registry).source_bindings[row.required_leaf]?.some((binding) => fusionCanonical(binding) === fusionCanonical(row.source_binding)), `Fusion prerequisite: exact shared binding ${row.signature}`);
+  }
+  assert.deepEqual([...new Set(function_catalog.map((row) => row.required_leaf))].sort(), ['F09.formula-action-library', 'F09.formula-chart-library', 'F09.formula-core-library', 'F09.formula-timeseries-library', 'F09.formula-validation-library']);
+  return {
+    runtime: FUSION_RUNTIME,
+    reference_status: 'Frozen 202-entry reference catalogue; lifecycle labels preserved; Console execution unverified',
+    source: 'fusion-function-library',
+    console_acceptance: 'not established',
+    command: null,
+    function_catalog,
+    semantics_status: 'not_bound',
+    unqualified_semantics: {
+      runtime_and_library_versions: null, type_and_coercion: null, null_and_error: null,
+      optional_and_variadic_arguments: null, locale_timezone_precision: null, dependency_recalculation: null,
+      effects_authority_and_recovery: null, concurrency_reconnect: null, lifecycle_successor_equivalence: null,
+    },
+  };
+}
+
+function fusionFixture() {
+  const expected = frozenFusionRow();
+  const value = structuredClone(registry);
+  const existing = fusionRows(value).filter((row) => row.runtime === FUSION_RUNTIME);
+  if (existing.length === 0) fusionRows(value).push(expected);
+  else {
+    assert.equal(existing.length, 1, 'Fusion prerequisite: one integrated row');
+    assert.deepEqual(existing[0], expected, 'Fusion prerequisite: integrated row must equal reviewed data');
+  }
+  return value;
+}
+
+function assertFusionRejection(mutate, { label, invisible = false, diagnostic = /release inventory.*Fusion/i } = {}) {
+  const value = fusionFixture(), sameObject = value, before = structuredClone(value);
+  const acceptedBytes = fusionCanonical(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before, `${label}: positive validation is read-only`);
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: positive prerequisite`);
+  // Invisible mutations return the target object; inspect it before serialization can hide its key.
+  const injectedTarget = mutate(value);
+  if (invisible) {
+    assert.equal(Object.hasOwn(injectedTarget, 'extraFusionProperty'), true, `${label}: own injected key persists`);
+    assert.ok(Object.keys(injectedTarget).includes('extraFusionProperty'), `${label}: injected key is enumerable`);
+    assert.equal(fusionCanonical(value), acceptedBytes, `${label}: unchanged digest input`);
+    // The existing digest-only API may still attest here; exact-key validation revokes it below.
+  } else {
+    assert.notEqual(fusionCanonical(value), acceptedBytes, `${label}: mutation changes digest input`);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: changed content invalidates binding`);
+  }
+  assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), diagnostic, `${label}: actual owning validator rejects`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: failed revalidation revokes attestation`);
+  // Restore content, never replace or revalidate the outer object or touch private attestation state.
+  for (const key of Object.keys(value)) delete value[key];
+  Object.assign(value, structuredClone(before));
+  assert.strictEqual(value, sameObject);
+  assert.deepEqual(value, before, `${label}: exact restored shape including enumerable own keys`);
+  assert.equal(fusionCanonical(value), acceptedBytes, `${label}: original accepted bytes restored`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: restored bytes cannot resurrect revoked attestation`);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: only fresh validation restores attestation`);
+}
+
+test('Fusion catalogue frozen proposal and captured source retain reviewed custody', () => {
+  assert.equal(frozenFusionRow().function_catalog.length, 202);
+});
+
+test('Fusion catalogue exact reference row validates without mutation or promotion', () => {
+  const value = fusionFixture(), before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.states.planned && ['implemented', 'integration_accepted', 'production_qualified', 'released'].every((stage) => leaf.states[stage] === false)));
+  assert.equal(fusionRuntime(value).semantics_status, 'not_bound');
+  assert.ok(Object.values(fusionRuntime(value).unqualified_semantics).every((cell) => cell === null));
+});
+
+test('Fusion catalogue fixture preserves every unrelated registry value', () => {
+  const value = fusionFixture(), existing = fusionRows(registry).some((row) => row.runtime === FUSION_RUNTIME);
+  if (!existing) fusionRows(value).splice(fusionRows(value).findIndex((row) => row.runtime === FUSION_RUNTIME), 1);
+  assert.deepEqual(value, registry);
+  // Root separately compares the integrated registry to its exact preimage after removing the new row.
+});
+
+const fusionChangedSignature = (value) => { fusionFunction(value).signature = 'abs(value: number): incorrect'; };
+test('Fusion catalogue failed revalidation revokes attestation after same-object restoration', () => {
+  assertFusionRejection(fusionChangedSignature, { label: 'named signature restoration history' });
+});
+
+// Each group is one discoverable test; every variant establishes its own positive fixture/history.
+const fusionMalformed = [
+  ['N01', 'missing runtime row', [
+    (v) => { fusionRows(v).splice(fusionRows(v).findIndex((row) => row.runtime === FUSION_RUNTIME), 1); },
+  ]],
+  ['N02', 'duplicate runtime row', [
+    (v) => { fusionRows(v).push(structuredClone(fusionRuntime(v))); },
+  ]],
+  ['N03', 'renamed runtime identity', [
+    (v) => { fusionRuntime(v).runtime = 'Renamed Fusion formula functions'; },
+  ]],
+  ['N04', 'changed valid source', [
+    (v) => { fusionRuntime(v).source = releaseFreeze(v).sources.find((source) => source.id !== 'fusion-function-library').id; },
+  ]],
+  ['N05', 'nonconservative reference status', [
+    (v) => { fusionRuntime(v).reference_status = 'All formula semantics qualified'; },
+  ]],
+  ['N06', 'invented Console support or command', [
+    (v) => { fusionRuntime(v).console_acceptance = 'supported'; },
+    (v) => { fusionRuntime(v).command = 'true'; },
+  ], /release inventory: support cell claims unverified Console acceptance/],
+  ['N07', 'extra runtime state or receipt', [
+    (v) => { fusionRuntime(v).state = 'released'; },
+    (v) => { fusionRuntime(v).receipt = { verdict: 'approved' }; },
+  ]],
+  ['N08', 'missing or changed semantics status', [
+    (v) => { delete fusionRuntime(v).semantics_status; },
+    (v) => { fusionRuntime(v).semantics_status = 'qualified'; },
+  ]],
+  ['N09', 'removed extra or nonnull semantic dimension', [
+    (v) => { delete fusionRuntime(v).unqualified_semantics.type_and_coercion; },
+    (v) => { fusionRuntime(v).unqualified_semantics.extra = null; },
+    (v) => { fusionRuntime(v).unqualified_semantics.type_and_coercion = 'verified'; },
+  ]],
+  ['N10', 'empty or nonarray catalogue', [
+    (v) => { fusionRuntime(v).function_catalog = []; },
+    (v) => { fusionRuntime(v).function_catalog = {}; },
+  ]],
+  ['N11', 'omitted first middle or last catalogue entry', [
+    ...[0, 101, 201].map((index) => (v) => { fusionRuntime(v).function_catalog.splice(index, 1); }),
+  ]],
+  ['N12', 'added duplicate catalogue entry', [
+    (v) => { fusionRuntime(v).function_catalog.push(structuredClone(fusionFunction(v))); },
+  ]],
+  ['N13', 'same length duplicate replacement', [
+    (v) => { fusionRuntime(v).function_catalog[101] = structuredClone(fusionFunction(v)); },
+  ]],
+  ['N14', 'reordered catalogue', [
+    (v) => { fusionRuntime(v).function_catalog.reverse(); },
+  ]],
+  ['N15', 'changed signature', [
+    fusionChangedSignature,
+    (v) => { fusionFunction(v).signature = 42; },
+    (v) => { fusionFunction(v).signature += ' '; },
+  ]],
+  ['N16', 'removed experimental marker or classification', [
+    (v) => { const row = fusionRuntime(v).function_catalog.find((item) => item.reference_lifecycle === 'experimental'); row.signature = row.signature.replace(/\s*\[Experimental\]/i, ''); },
+    (v) => { fusionRuntime(v).function_catalog.find((row) => row.reference_lifecycle === 'experimental').reference_lifecycle = 'documented without experimental/deprecated marker'; },
+  ]],
+  ['N17', 'deprecated function relabelled', [
+    (v) => { fusionRuntime(v).function_catalog.find((row) => row.reference_lifecycle === 'deprecated').reference_lifecycle = 'documented without experimental/deprecated marker'; },
+  ]],
+  ['N18', 'changed section or existing required leaf', [
+    (v) => { fusionFunction(v).section = 'Action functions'; },
+    (v) => { fusionFunction(v).required_leaf = 'F09.formula-action-library'; },
+  ]],
+  ['N19', 'per function acceptance claim', [
+    (v) => { fusionFunction(v).console_acceptance = 'supported'; },
+  ]],
+  ['N20', 'extra or missing catalogue row key', [
+    (v) => { fusionFunction(v).extraFusionProperty = 'unreviewed'; },
+    (v) => { delete fusionFunction(v).section; },
+  ]],
+  ['N21', 'changed catalogue binding fields', [
+    (v) => { fusionFunction(v).source_binding.quote += ' altered'; },
+    (v) => { fusionFunction(v).source_binding.source_id = releaseFreeze(v).sources.find((source) => source.id !== 'fusion-function-library').id; },
+    (v) => { fusionFunction(v).source_binding.artifact_path = 'README.md'; },
+    (v) => { fusionFunction(v).source_binding.sha256 = '0'.repeat(64); },
+    (v) => { fusionFunction(v).source_binding.matching = 'unreviewed matching'; },
+    (v) => { fusionFunction(v).source_binding.scope = 'unrestricted claim'; },
+  ]],
+  ['N22', 'contradictory extra binding digest', [
+    (v) => { fusionFunction(v).source_binding.artifact_uncompressed_sha256 = '0'.repeat(64); },
+  ]],
+  ['N23', 'removed exact shared binding', [
+    (v) => { const row = fusionFunction(v), bindings = releaseFreeze(v).source_bindings[row.required_leaf]; const index = bindings.findIndex((binding) => fusionCanonical(binding) === fusionCanonical(row.source_binding)); assert.ok(index >= 0); bindings.splice(index, 1); },
+  ]],
+  ['N24', 'mutated shared quote', [
+    (v) => { const row = fusionFunction(v); releaseFreeze(v).source_bindings[row.required_leaf].find((binding) => fusionCanonical(binding) === fusionCanonical(row.source_binding)).quote += ' changed'; },
+  ]],
+  ['N25', 'caller supplied expected catalogue digest', [
+    (v) => { fusionChangedSignature(v); fusionRuntime(v).expected_catalogue_sha256 = fusionHash(fusionCanonical(fusionRuntime(v).function_catalog)); },
+  ]],
+  ['N26', 'extra binding own key', [
+    (v) => { fusionFunction(v).source_binding.extraFusionProperty = 'unreviewed'; },
+  ]],
+];
+for (const [id, name, mutations, diagnostic] of fusionMalformed) {
+  test(`Fusion catalogue rejects ${name}`, () => {
+    for (const [index, mutate] of mutations.entries()) assertFusionRejection(mutate, { label: `${id} variant ${index + 1}`, diagnostic });
+    if (id === 'N20' || id === 'N26') {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertFusionRejection((value) => {
+          const target = id === 'N20' ? fusionFunction(value) : fusionFunction(value).source_binding;
+          target.extraFusionProperty = extra;
+          return target;
+        }, { label: `${id} ${typeof extra} own key`, invisible: true });
+      }
+    }
+  });
+}
