@@ -1,0 +1,39 @@
+{
+  "kind": "release-inventory-validator-design-test-review",
+  "owner": "root sole repository writer",
+  "design_sha256": "595549da1e21b2985b87d8fcfca71236c972b932e608c0c0822036e84456285a",
+  "design_author": "integration_security",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "reference_inventory",
+      "verdict": "correction required: invalidate stale attestation before failed revalidation"
+    },
+    {
+      "round": 2,
+      "reviewer": "reference_inventory",
+      "verdict": "approved explicit pre-validation revocation"
+    },
+    {
+      "round": 3,
+      "reviewer": "audit_review",
+      "verdict": "approved; move options destructuring after revocation and test null options"
+    },
+    {
+      "round": 4,
+      "reviewer": "reference_inventory",
+      "verdict": "approved exact final design"
+    }
+  ],
+  "test_review": {
+    "reviewer": "integration_security",
+    "addition_sha256": "f8fbffcde954b1ec63be12a8211c13e7360f7b0ca01e54c2e4673d03fba91fb1",
+    "verdict": "approved unchanged append after correcting actual source .path and signed fixture authority prerequisites",
+    "full_file_sha256": "8a26523c6fb96dda0b20b4ecbd3593d5467b1178b2b10aa7397269eabb24bbb4",
+    "preserved_original_prefix_sha256": "2f7ffa0fe04109027403372bab8a9d49d6e14c5f6c6952cc75d7d8a2e833f725"
+  },
+  "remaining": [
+    "No implementation admission until intended actual exported-boundary RED on clean committed candidate.",
+    "Structural validation does not establish source byte custody, exhaustive coverage, accepted implementation or release qualification."
+  ]
+}

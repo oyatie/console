@@ -688,3 +688,163 @@ test('Korea jurisdiction rows require exactly one canonical JUR-KR-001 row', () 
   const duplicate = structuredClone(jurisdiction); duplicate.jurisdictions.push(structuredClone(duplicate.jurisdictions[0]));
   assert.throws(() => validateConsoleTruthLedger(registry, duplicate, { expectedCandidateSha: CANDIDATE_SHA }), /jurisdiction target/);
 });
+
+// Release structure is checked at the same exported boundary used by CLI/planner.
+const releaseLeaf = (value) => value.release_inventory.leaves[0];
+const releaseFreeze = (value) => value.release_inventory.reference_freeze;
+assert.ok(typeof registry.release_inventory.reference_freeze.sources[0].path === 'string');
+const releaseBinding = (value) => Object.values(releaseFreeze(value).source_bindings)[0][0];
+const releaseMalformed = [
+  ['missing section', (v) => { delete v.release_inventory; }],
+  ['empty section', (v) => { v.release_inventory = {}; }],
+  ['wrong version', (v) => { v.release_inventory.version = 2; }],
+  ['wrong authority', (v) => { v.release_inventory.authority[0] = 'README.md'; }],
+  ['wrong population', (v) => { v.release_inventory.population.companies = 7; }],
+  ['missing families', (v) => { v.release_inventory.families = []; }],
+  ['family exclusion overlap', (v) => { v.release_inventory.exclusions[0].id = v.release_inventory.families[0].id; }],
+  ['empty leaves', (v) => { v.release_inventory.leaves = []; }],
+  ['duplicate leaf', (v) => { v.release_inventory.leaves.push(structuredClone(releaseLeaf(v))); }],
+  ['unknown leaf family', (v) => { releaseLeaf(v).id = 'F99.unknown'; }],
+  ['optional required leaf', (v) => { releaseLeaf(v).required = false; }],
+  ['invalid milestone', (v) => { releaseLeaf(v).milestone = 11; }],
+  ['empty owner', (v) => { releaseLeaf(v).owner = ''; }],
+  ['empty journey', (v) => { releaseLeaf(v).journey = ''; }],
+  ['dangling dependency', (v) => { releaseLeaf(v).dependencies.push('F99.missing'); }],
+  ['self dependency', (v) => { releaseLeaf(v).dependencies.push(releaseLeaf(v).id); }],
+  ['dependency cycle', (v) => { const [a,b] = v.release_inventory.leaves; a.dependencies = [b.id]; b.dependencies = [a.id]; }],
+  ['duplicate dependency', (v) => { releaseLeaf(v).dependencies.push(releaseLeaf(v).dependencies[0]); }],
+  ['invented acceptance', (v) => { releaseLeaf(v).acceptance.status = 'accepted'; }],
+  ['unbound executable', (v) => { releaseLeaf(v).acceptance.command = 'true'; }],
+  ['missing blockers', (v) => { releaseLeaf(v).blockers = []; }],
+  ['missing state', (v) => { delete releaseLeaf(v).states.implemented; }],
+  ['string state', (v) => { releaseLeaf(v).states.implemented = 'false'; }],
+  ['extra state', (v) => { releaseLeaf(v).states.approved = true; }],
+  ['unplanned leaf', (v) => { releaseLeaf(v).states.planned = false; }],
+  ['missing evidence object', (v) => { releaseLeaf(v).evidence = null; }],
+  ['missing source bindings', (v) => { delete releaseFreeze(v).source_bindings; }],
+  ['duplicate source', (v) => { releaseFreeze(v).sources.push(structuredClone(releaseFreeze(v).sources[0])); }],
+  ['source path escape', (v) => { releaseFreeze(v).sources[0].path = '../outside.gz'; }],
+  ['source digest', (v) => { releaseFreeze(v).sources[0].sha256 = 'not-a-digest'; }],
+  ['source empty size', (v) => { releaseFreeze(v).sources[0].bytes = 0; }],
+  ['source retrieval date', (v) => { releaseFreeze(v).sources[0].retrieved_file_mtime_utc = 'not-a-date'; }],
+  ['unknown binding source', (v) => { releaseBinding(v).source_id = 'missing'; }],
+  ['unknown binding leaf', (v) => { releaseFreeze(v).source_bindings['F99.missing'] = [releaseBinding(v)]; }],
+  ['binding path mismatch', (v) => { releaseBinding(v).artifact_path = 'README.md'; }],
+  ['binding digest mismatch', (v) => { releaseBinding(v).artifact_uncompressed_sha256 = '0'.repeat(64); }],
+  ['binding contradictory digest', (v) => { releaseBinding(v).sha256 = '0'.repeat(64); }],
+  ['binding empty quotation', (v) => { releaseBinding(v).quote = ''; }],
+  ['missing support family', (v) => { delete v.release_inventory.support_matrices.connectors; }],
+  ['duplicate connector', (v) => { const m=v.release_inventory.support_matrices.connectors; m.entries.push(structuredClone(m.entries[0])); }],
+  ['unknown connector source', (v) => { v.release_inventory.support_matrices.connectors.catalog_source = 'missing'; }],
+  ['duplicate runtime', (v) => { const m=v.release_inventory.support_matrices.runtimes; m.entries.push(structuredClone(m.entries[0])); }],
+  ['duplicate SDK', (v) => { const m=v.release_inventory.support_matrices.sdks; m.entries.push(structuredClone(m.entries[0])); }],
+  ['unsupported Console support claim', (v) => { v.release_inventory.support_matrices.sdks.entries[0].console_acceptance = 'supported'; }],
+  ['model matrix binding mismatch', (v) => { v.release_inventory.support_matrices.models_administration[0].source_binding.sha256 = '0'.repeat(64); }],
+  ['qualification binding mismatch', (v) => { releaseFreeze(v).runtime_qualifications[0].artifact_path = 'README.md'; }],
+  ['complete freeze', (v) => { releaseFreeze(v).status = 'complete'; }],
+  ['wrong freeze date', (v) => { releaseFreeze(v).target_date = '2026-09-20'; }],
+];
+for (const stage of ['implemented', 'integration_accepted', 'production_qualified', 'released']) {
+  for (const decorated of [false,true]) {
+    releaseMalformed.push([`${stage} with ${decorated ? 'decorated' : 'empty'} evidence`, (v) => {
+      for (const key of Object.keys(releaseLeaf(v).states)) {
+        releaseLeaf(v).states[key] = true;
+        if (key === stage) break;
+      }
+      if (decorated) releaseLeaf(v).evidence[stage] = {
+        candidate_sha: CANDIDATE_SHA, verdict: 'approved', receipt_sha256: 'a'.repeat(64),
+        command: 'true', passed: 1, reviewer: 'independent',
+      };
+    }]);
+  }
+}
+for (const [name, mutate] of releaseMalformed) {
+  test(`release inventory refuses ${name}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value = structuredClone(registry);
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true);
+    mutate(value);
+    assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), /release inventory/i);
+    assert.equal(isValidatedConsoleTruthLedger(value), false);
+  });
+}
+
+test('release inventory preserves partial reference facts and unbound planned requirements', async () => {
+  const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+  const value = structuredClone(registry);
+  const before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.some((leaf) => !releaseFreeze(value).source_bindings[leaf.id]));
+  assert.ok(value.release_inventory.support_matrices.runtimes.entries.some((row) => row.reference_status === 'unsupported'));
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.acceptance.command === null && leaf.states.planned && !leaf.states.implemented));
+});
+
+for (const [name, options, diagnostic] of [
+  ['invalid candidate', { expectedCandidateSha: 'bad' }, /SHA/],
+  ['null options', null, /./],
+  ['stricter source resolver', { expectedCandidateSha: CANDIDATE_SHA, resolveSource: (p) => p !== registry.release_inventory.reference_freeze.sources[0].path }, /release inventory/i],
+]) {
+  test(`release inventory revokes prior validation after ${name}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value = structuredClone(registry);
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true);
+    assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, options), diagnostic);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, 'failed revalidation cannot preserve an older acceptance');
+    validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+    assert.equal(isValidatedConsoleTruthLedger(value), true);
+  });
+}
+
+for (const mode of ['regular', 'missing', 'symlink']) {
+  test(`release inventory authenticates ${mode} candidate source paths`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const root = mkdtempSync(path.join(tmpdir(), 'console-release-source-'));
+    const run = (args) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore','pipe','pipe'] }).trim();
+    try {
+      run(['init']); run(['config','user.name','Jason Lee']); run(['config','user.email','jason19931225@gmail.com']);
+      const signingKey = path.join(root, 'key');
+      execFileSync('ssh-keygen', ['-q','-t','ed25519','-N','','-f',signingKey]);
+      run(['config','gpg.format','ssh']); run(['config','user.signingkey',signingKey]);
+      const publicKey = readFileSync(`${signingKey}.pub`, 'utf8').trim().split(/\s+/).slice(0,2).join(' ');
+      const fingerprint = execFileSync('ssh-keygen',['-lf',`${signingKey}.pub`,'-E','sha256'],{encoding:'utf8'}).trim().split(/\s+/)[1];
+      const candidateSigningAuthority = { format:'ssh', principal:'jason19931225@gmail.com', fingerprint };
+      const write = (relative, body) => { const file=path.join(root,relative); mkdirSync(path.dirname(file),{recursive:true}); writeFileSync(file,body); };
+      write('.github/trust/console.allowed_signers', `jason19931225@gmail.com ${publicKey}\n`);
+      write('docs/program/console-program-ledger.md', 'candidate\n');
+      write('docs/program/console-capability-registry.json', JSON.stringify(registry)+'\n');
+      write('docs/program/console-jurisdiction-register.json', JSON.stringify(jurisdiction)+'\n');
+      const sourcePaths = new Set([
+        ...registry.capabilities.flatMap((cap) => cap.benchmark.comparator_sources.map((source) => source.source)),
+        ...registry.release_inventory.reference_freeze.sources.map((source) => source.path),
+      ]);
+      const selected = registry.release_inventory.reference_freeze.sources[0].path;
+      assert.ok(sourcePaths.has(selected));
+      for (const relative of sourcePaths) {
+        if (relative === selected && mode === 'missing') continue;
+        write(relative, 'fixture blob: tests tracked regular identity only, not snapshot byte custody\n');
+      }
+      if (mode === 'symlink') {
+        rmSync(path.join(root, selected));
+        symlinkSync(path.relative(path.dirname(path.join(root,selected)),path.join(root,'docs/program/console-program-ledger.md')),path.join(root,selected));
+      }
+      run(['add','.']); run(['commit','-S','-m','candidate source fixture']);
+      const candidateSha = run(['rev-parse','HEAD']);
+      write('docs/program/console-program-ledger.md', 'authority\n');
+      run(['add','docs/program/console-program-ledger.md']); run(['commit','-S','-m','authority fixture']);
+      const resolver = createConsoleCandidateSourceResolver(root,candidateSha,run(['rev-parse','HEAD']),{candidateSigningAuthority});
+      for (const source of registry.capabilities.flatMap((cap) => cap.benchmark.comparator_sources)) {
+        assert.equal(resolver.resolveSource(source.source)?.tracked_regular,true,'historical source prerequisite');
+      }
+      assert.equal(Boolean(resolver.resolveSource(selected)),mode === 'regular');
+      const value = structuredClone(registry);
+      const validate = () => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:candidateSha,resolveSource:resolver.resolveSource});
+      if (mode === 'regular') { assert.doesNotThrow(validate); assert.equal(isValidatedConsoleTruthLedger(value),true); }
+      else { assert.throws(validate,/release inventory/i); assert.equal(isValidatedConsoleTruthLedger(value),false); }
+    } finally { rmSync(root,{recursive:true,force:true}); }
+  });
+}
