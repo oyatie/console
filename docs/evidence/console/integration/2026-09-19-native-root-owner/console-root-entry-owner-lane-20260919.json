@@ -1,0 +1,31 @@
+{
+  "owner": "/root",
+  "base_sha": "a0d3556fecc5d67cb1fe06ef6ac62fbe45bd43c5",
+  "immutable_target": "Native root Public/Account document using sole existing cookie grammar with strict owner refusals and legacy compatibility",
+  "allowed_paths": [
+    "backend/app/src/lib.rs",
+    "backend/crates/platform/auth-rest/src/account_browser.rs",
+    "backend/crates/platform/auth-rest/src/account_entry.rs",
+    "backend/crates/platform/auth-rest/src/lib.rs"
+  ],
+  "forbidden": "Tests, schemas, migrations, generated contracts, lockfiles, authority records, other UI routes",
+  "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-public-root-map.json --only app-auth-rest-pg --runner cargo",
+  "mechanical_guide": "Exact approved round2 design with round3 error-precedence/HEAD corrections; extract cookie-only grammar unchanged; safe bool projection; enum presentation; preserve /work and owner checks",
+  "reviewers": [
+    "/root/integration_security",
+    "/root/reference_inventory"
+  ],
+  "pre_mortem": "Native parse failure could become anonymous or legacy fallback; parser precedence or shipping CSP could change",
+  "blast_radius": "Root route and shared-parser extraction; no persistent transitions",
+  "detection": "Original actual root RED plus seven new owner tests and six retained regression cases; independent source comparison",
+  "rollback": "Revert bounded four-file implementation; no data changes",
+  "stop_conditions": [
+    "Unexecutable or green baseline",
+    "Parser grammar drift",
+    "Original-header or owner precedence mismatch"
+  ],
+  "remaining_holds": [
+    "Browser and full release qualification incomplete",
+    "Existing HTML413 envelope defect separate"
+  ]
+}

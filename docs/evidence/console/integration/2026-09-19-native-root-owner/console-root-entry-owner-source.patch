@@ -1,0 +1,152 @@
+diff --git a/backend/app/src/lib.rs b/backend/app/src/lib.rs
+index 2f0a0b4db..9d76704e4 100644
+--- a/backend/app/src/lib.rs
++++ b/backend/app/src/lib.rs
+@@ -3815,7 +3815,7 @@ pub fn build_router(state: AppState) -> Router {
+     // `/hr`, `/payroll`, or `/pkg`.
+     let router = router.merge(
+         Router::new()
+-            .route("/", get(ui_shell))
++            .route("/", get(ui_root))
+             .route("/work", get(ui_shell))
+             .route("/account", get(native_account_document))
+             .route(
+@@ -3862,7 +3862,7 @@ async fn native_account_document(
+     headers: HeaderMap,
+     method: axum::http::Method,
+ ) -> axum::response::Response {
+-    native_account_page(&state, &headers, method, false).await
++    native_account_page(&state, &headers, method, NativeAccountPage::Account).await
+ }
+ 
+ async fn native_account_registration_document(
+@@ -3870,14 +3870,20 @@ async fn native_account_registration_document(
+     headers: HeaderMap,
+     method: axum::http::Method,
+ ) -> axum::response::Response {
+-    native_account_page(&state, &headers, method, true).await
++    native_account_page(&state, &headers, method, NativeAccountPage::Registration).await
++}
++
++enum NativeAccountPage {
++    PublicRoot,
++    Account,
++    Registration,
+ }
+ 
+ async fn native_account_page(
+     state: &AppState,
+     headers: &HeaderMap,
+     method: axum::http::Method,
+-    registration: bool,
++    page: NativeAccountPage,
+ ) -> axum::response::Response {
+     use console_payroll_ui::native_account::{ContextState, Page, TermsItem, document};
+     use console_platform_auth_rest::{NativeAccountContext, NativeAccountEntry, NativeEntryError};
+@@ -3887,8 +3893,16 @@ async fn native_account_page(
+     let Some(auth) = &state.auth_rest else {
+         return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE);
+     };
++    let registration = matches!(page, NativeAccountPage::Registration);
+     match console_platform_auth_rest::native_account_entry(auth, headers, registration).await {
+-        Ok(NativeAccountEntry::SignIn) => document(Page::SignIn, StatusCode::OK),
++        Ok(NativeAccountEntry::SignIn) => document(
++            if matches!(page, NativeAccountPage::PublicRoot) {
++                Page::Public
++            } else {
++                Page::SignIn
++            },
++            StatusCode::OK,
++        ),
+         Ok(NativeAccountEntry::Registration(terms)) => document(
+             Page::Register {
+                 version: terms.version,
+@@ -3934,6 +3948,25 @@ async fn native_account_page(
+     }
+ }
+ 
++async fn ui_root(
++    State(state): State<AppState>,
++    headers: HeaderMap,
++    method: axum::http::Method,
++) -> axum::response::Response {
++    use console_payroll_ui::native_account::{Page, document};
++    match console_platform_auth_rest::native_account_credentials_present(&headers) {
++        Ok(false) if headers.contains_key(axum::http::header::AUTHORIZATION) => {
++            ui_shell(State(state), headers).await.into_response()
++        }
++        Ok(false) => document(Page::Public, StatusCode::OK),
++        // Delegate errors with original headers to preserve the owner's method,
++        // configuration, document metadata and credential rejection precedence.
++        Ok(true) | Err(_) => {
++            native_account_page(&state, &headers, method, NativeAccountPage::PublicRoot).await
++        }
++    }
++}
++
+ async fn ui_shell(State(state): State<AppState>, headers: HeaderMap) -> impl IntoResponse {
+     ui_screens(state, headers, console_payroll_ui::UiScreen::Home).await
+ }
+diff --git a/backend/crates/platform/auth-rest/src/account_browser.rs b/backend/crates/platform/auth-rest/src/account_browser.rs
+index a8e68ec7a..b093a416f 100644
+--- a/backend/crates/platform/auth-rest/src/account_browser.rs
++++ b/backend/crates/platform/auth-rest/src/account_browser.rs
+@@ -7,7 +7,7 @@
+ mod entry;
+ pub use entry::{
+     NativeAccountContext, NativeAccountEntry, NativeEntryError, NativeTerms, NativeTermsItem,
+-    native_account_entry,
++    native_account_credentials_present, native_account_entry,
+ };
+ 
+ use std::collections::BTreeSet;
+@@ -395,6 +395,10 @@ fn parse_cookies(headers: &HeaderMap) -> Result<BrowserCookies<'_>, BrowserError
+     if headers.contains_key(header::AUTHORIZATION) {
+         return Err(BrowserError::AmbiguousCredentials);
+     }
++    parse_cookie_fields(headers)
++}
++
++fn parse_cookie_fields(headers: &HeaderMap) -> Result<BrowserCookies<'_>, BrowserError> {
+     let mut total = 0usize;
+     for value in headers.get_all(header::COOKIE) {
+         // Include the separator needed to combine multiple Cookie field lines.
+diff --git a/backend/crates/platform/auth-rest/src/account_entry.rs b/backend/crates/platform/auth-rest/src/account_entry.rs
+index c9d1476d4..0a570c0de 100644
+--- a/backend/crates/platform/auth-rest/src/account_entry.rs
++++ b/backend/crates/platform/auth-rest/src/account_entry.rs
+@@ -61,6 +61,20 @@ impl From<BrowserError> for NativeEntryError {
+     }
+ }
+ 
++/// Routing hint only; never establishes authentication or exposes credentials.
++/// Malformed native values remain present and parser errors must reach the owner.
++pub fn native_account_credentials_present(headers: &HeaderMap) -> Result<bool, NativeEntryError> {
++    let cookies = parse_cookie_fields(headers)?;
++    Ok([
++        cookies.session,
++        cookies.refresh,
++        cookies.enrollment,
++        cookies.login,
++    ]
++    .into_iter()
++    .any(|cookie| !matches!(cookie, CookieValue::Absent)))
++}
++
+ // Only a mounted GET document handler calls this. Never strip headers or invoke
+ // the stricter API owner with a fabricated same-origin request.
+ fn admit_document<'a>(
+diff --git a/backend/crates/platform/auth-rest/src/lib.rs b/backend/crates/platform/auth-rest/src/lib.rs
+index b4515b70f..621136b6f 100644
+--- a/backend/crates/platform/auth-rest/src/lib.rs
++++ b/backend/crates/platform/auth-rest/src/lib.rs
+@@ -47,7 +47,8 @@ use uuid::Uuid;
+ 
+ mod account_browser;
+ pub use account_browser::{
+-    NativeAccountContext, NativeAccountEntry, NativeEntryError, native_account_entry,
++    NativeAccountContext, NativeAccountEntry, NativeEntryError, native_account_credentials_present,
++    native_account_entry,
+ };
+ mod terms;
+ 

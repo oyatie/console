@@ -61,6 +61,20 @@ impl From<BrowserError> for NativeEntryError {
     }
 }
 
+/// Routing hint only; never establishes authentication or exposes credentials.
+/// Malformed native values remain present and parser errors must reach the owner.
+pub fn native_account_credentials_present(headers: &HeaderMap) -> Result<bool, NativeEntryError> {
+    let cookies = parse_cookie_fields(headers)?;
+    Ok([
+        cookies.session,
+        cookies.refresh,
+        cookies.enrollment,
+        cookies.login,
+    ]
+    .into_iter()
+    .any(|cookie| !matches!(cookie, CookieValue::Absent)))
+}
+
 // Only a mounted GET document handler calls this. Never strip headers or invoke
 // the stricter API owner with a fabricated same-origin request.
 fn admit_document<'a>(

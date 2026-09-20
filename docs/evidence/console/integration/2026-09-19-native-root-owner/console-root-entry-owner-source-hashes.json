@@ -1,0 +1,6 @@
+{
+  "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+  "backend/crates/platform/auth-rest/src/account_browser.rs": "8064cddbe1ac460eafee62622d1dced93ca37d3b34b86cf8e1d52d8e30f8dea5",
+  "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+  "backend/crates/platform/auth-rest/src/lib.rs": "19dfec1914ec4f6977d403fa0316130522613f98fda6f19645175fac0130be14"
+}

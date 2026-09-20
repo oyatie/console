@@ -47,7 +47,8 @@ use uuid::Uuid;
 
 mod account_browser;
 pub use account_browser::{
-    NativeAccountContext, NativeAccountEntry, NativeEntryError, native_account_entry,
+    NativeAccountContext, NativeAccountEntry, NativeEntryError, native_account_credentials_present,
+    native_account_entry,
 };
 mod terms;
 

@@ -1,0 +1,44 @@
+{
+  "approved_test_base": "a0d3556fecc5d67cb1fe06ef6ac62fbe45bd43c5",
+  "source_base": "7034303a1a3f86db002643a4567a912bbae7892d",
+  "source_files": {
+    "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "8064cddbe1ac460eafee62622d1dced93ca37d3b34b86cf8e1d52d8e30f8dea5",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+    "backend/crates/platform/auth-rest/src/lib.rs": "19dfec1914ec4f6977d403fa0316130522613f98fda6f19645175fac0130be14"
+  },
+  "owner_red": {
+    "passed": 0,
+    "failed": 1,
+    "filtered": 365,
+    "seconds": 4.38
+  },
+  "same_probe_green": {
+    "passed": 1,
+    "failed": 0,
+    "filtered": 365,
+    "seconds": 4.65
+  },
+  "native_regressions": {
+    "passed": 55,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 311,
+    "seconds": 272.74,
+    "includes": "7new root tests; original root test; retained native entry/document/session/clock/refresh cases"
+  },
+  "health_after_separate_durability_fixture_repair": {
+    "passed": 8,
+    "failed": 6,
+    "ignored_preexisting": 1,
+    "seconds": 6.78,
+    "cause": "jwt_app_state supplies public JWT only, but current session_verification requires configured auth_rest and distinct auth_database; pending independently reviewed fixture repair"
+  },
+  "remaining_holds": [
+    "LegacySSR health suite notaccepted",
+    "Actual browser verification pending",
+    "Existing nativeHTML413 envelope defect",
+    "FullAccount/Company/fullreleasequalification incomplete"
+  ],
+  "status": "Bounded source independently reviewed and native owner GREEN; integration acceptance pending full affected regressions/browser"
+}

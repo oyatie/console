@@ -7,7 +7,7 @@
 mod entry;
 pub use entry::{
     NativeAccountContext, NativeAccountEntry, NativeEntryError, NativeTerms, NativeTermsItem,
-    native_account_entry,
+    native_account_credentials_present, native_account_entry,
 };
 
 use std::collections::BTreeSet;
@@ -395,6 +395,10 @@ fn parse_cookies(headers: &HeaderMap) -> Result<BrowserCookies<'_>, BrowserError
     if headers.contains_key(header::AUTHORIZATION) {
         return Err(BrowserError::AmbiguousCredentials);
     }
+    parse_cookie_fields(headers)
+}
+
+fn parse_cookie_fields(headers: &HeaderMap) -> Result<BrowserCookies<'_>, BrowserError> {
     let mut total = 0usize;
     for value in headers.get_all(header::COOKIE) {
         // Include the separator needed to combine multiple Cookie field lines.

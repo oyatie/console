@@ -3815,7 +3815,7 @@ pub fn build_router(state: AppState) -> Router {
     // `/hr`, `/payroll`, or `/pkg`.
     let router = router.merge(
         Router::new()
-            .route("/", get(ui_shell))
+            .route("/", get(ui_root))
             .route("/work", get(ui_shell))
             .route("/account", get(native_account_document))
             .route(
@@ -3862,7 +3862,7 @@ async fn native_account_document(
     headers: HeaderMap,
     method: axum::http::Method,
 ) -> axum::response::Response {
-    native_account_page(&state, &headers, method, false).await
+    native_account_page(&state, &headers, method, NativeAccountPage::Account).await
 }
 
 async fn native_account_registration_document(
@@ -3870,14 +3870,20 @@ async fn native_account_registration_document(
     headers: HeaderMap,
     method: axum::http::Method,
 ) -> axum::response::Response {
-    native_account_page(&state, &headers, method, true).await
+    native_account_page(&state, &headers, method, NativeAccountPage::Registration).await
+}
+
+enum NativeAccountPage {
+    PublicRoot,
+    Account,
+    Registration,
 }
 
 async fn native_account_page(
     state: &AppState,
     headers: &HeaderMap,
     method: axum::http::Method,
-    registration: bool,
+    page: NativeAccountPage,
 ) -> axum::response::Response {
     use console_payroll_ui::native_account::{ContextState, Page, TermsItem, document};
     use console_platform_auth_rest::{NativeAccountContext, NativeAccountEntry, NativeEntryError};
@@ -3887,8 +3893,16 @@ async fn native_account_page(
     let Some(auth) = &state.auth_rest else {
         return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE);
     };
+    let registration = matches!(page, NativeAccountPage::Registration);
     match console_platform_auth_rest::native_account_entry(auth, headers, registration).await {
-        Ok(NativeAccountEntry::SignIn) => document(Page::SignIn, StatusCode::OK),
+        Ok(NativeAccountEntry::SignIn) => document(
+            if matches!(page, NativeAccountPage::PublicRoot) {
+                Page::Public
+            } else {
+                Page::SignIn
+            },
+            StatusCode::OK,
+        ),
         Ok(NativeAccountEntry::Registration(terms)) => document(
             Page::Register {
                 version: terms.version,
@@ -3931,6 +3945,25 @@ async fn native_account_page(
             },
             error.status(),
         ),
+    }
+}
+
+async fn ui_root(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    match console_platform_auth_rest::native_account_credentials_present(&headers) {
+        Ok(false) if headers.contains_key(axum::http::header::AUTHORIZATION) => {
+            ui_shell(State(state), headers).await.into_response()
+        }
+        Ok(false) => document(Page::Public, StatusCode::OK),
+        // Delegate errors with original headers to preserve the owner's method,
+        // configuration, document metadata and credential rejection precedence.
+        Ok(true) | Err(_) => {
+            native_account_page(&state, &headers, method, NativeAccountPage::PublicRoot).await
+        }
     }
 }
 
