@@ -14,6 +14,8 @@ import {
   unitTestedCrateSrcRoots,
 } from "./check-executed-tests-cfg.mjs";
 import { cargoTestKind } from "./lib/cargo-test-kind.mjs";
+import { directExecutable, executableWorkflowCommands } from "./lib/ci-workflow-executables.mjs";
+import { countDeclaredTestAttributes } from "./lib/executed-tests-baseline.mjs";
 
 const gateSource = readFileSync(
   fileURLToPath(new URL("./check-executed-tests.mjs", import.meta.url)),
@@ -143,5 +145,61 @@ describe("gate wiring", () => {
       codeLines.some((line) => line.includes('includes("#[cfg(test)]")')),
       false,
     );
+  });
+});
+
+// Executable workflow reachability is distinct from a Buck target declaration.
+const SDK_CI_SOURCE = "backend/crates/platform/authz/tests/cedar_sdk_identity.rs";
+const SDK_CI_ARGV = ["cargo", "test", "--locked", "--manifest-path", "backend/Cargo.toml", "-p", "console-platform-authz", "--test", "cedar_sdk_identity"];
+function sdkIdentityWorkflowInvocations(workflow) {
+  const commands = executableWorkflowCommands(workflow);
+  return commands.filter((command, index) => {
+    if (command.job !== "domain-unit" || command.malformed || command.controlFlow) return false;
+    const direct = directExecutable(command.tokens);
+    const next = commands[index + 1];
+    return !direct.malformed
+      && JSON.stringify(direct.tokens) === JSON.stringify(SDK_CI_ARGV)
+      && next?.job === command.job && next.step === command.step
+      && !next.malformed && !next.controlFlow
+      && JSON.stringify(next.tokens) === JSON.stringify(["check_status", "cedar_sdk_identity"]);
+  });
+}
+
+describe("Cedar SDK identity workflow reachability", () => {
+  it("domain-unit invokes the complete SDK identity binary and retains the existing Cedar invocations", () => {
+    const workflow = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
+    assert.equal(sdkIdentityWorkflowInvocations(workflow).length, 1,
+      "domain-unit must execute cedar_sdk_identity once with the failure-collecting check_status");
+    const cedar = executableWorkflowCommands(workflow)
+      .filter((command) => command.job === "domain-unit" && !command.malformed && !command.controlFlow)
+      .map((command) => directExecutable(command.tokens).tokens)
+      .filter((tokens) => tokens[0] === "cargo" && tokens[1] === "test" && tokens.includes("console-platform-authz"));
+    for (const target of ["cedar_pbac_readiness_cases", "cedar_pbac_legacy_only_observe_and_record", "cedar_diagnostic_fail_closed"]) {
+      assert.equal(cedar.filter((tokens) => tokens.some((token, index) => token === "--test" && tokens[index + 1] === target)).length, 1,
+        `retained Cedar target ${target} must still execute once`);
+    }
+  });
+
+  it("the static attribute baseline records the two existing SDK identity tests", () => {
+    const baseline = JSON.parse(readFileSync(new URL("../docs/program/executed-tests-baseline.json", import.meta.url), "utf8"));
+    const source = readFileSync(new URL(`../${SDK_CI_SOURCE}`, import.meta.url), "utf8");
+    assert.equal(countDeclaredTestAttributes(source), 2, "source still declares exactly the two reviewed SDK identity tests");
+    assert.equal(baseline.test_attribute_baseline[SDK_CI_SOURCE], 2,
+      "reachable-source baseline must include both SDK identity tests; this is not runtime evidence");
+  });
+
+  it("rejects nonexecuting and partial workflow claims", () => {
+    const workflow = (body, fields = "", job = "domain-unit") => `jobs:\n  ${job}:\n    steps:\n      - name: SDK identity\n${fields}        run: |\n${body.split("\n").map((line) => `          ${line}`).join("\n")}\n`;
+    const cargo = `SQLX_OFFLINE=true ${SDK_CI_ARGV.join(" ")}`;
+    const body = `${cargo}\ncheck_status "cedar_sdk_identity"`;
+    assert.equal(sdkIdentityWorkflowInvocations(workflow(body)).length, 1);
+    for (const invalid of [
+      workflow(`echo ${body}`), workflow(`# ${body}`),
+      workflow(body, "        if: false\n"), workflow(body, "        continue-on-error: true\n"),
+      workflow(body, "", "other-job"), workflow(`exit 0\n${body}`),
+      workflow(`${cargo} -- --list\ncheck_status "cedar_sdk_identity"`),
+      workflow(`${cargo} compiled_bundle_keys\ncheck_status "cedar_sdk_identity"`),
+      workflow(`${cargo}\ncheck_status "another_binary"`), workflow(cargo),
+    ]) assert.equal(sdkIdentityWorkflowInvocations(invalid).length, 0);
   });
 });

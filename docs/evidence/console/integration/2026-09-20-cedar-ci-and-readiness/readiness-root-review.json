@@ -1,0 +1,8 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_EXACT_SEMANTIC_TEST_CORRECTION",
+  "manifest_sha256": "12a14275b024866797dcc89b5c836569222b55234a70f31a1d6ab21e5b95d26a",
+  "candidate_sha256": "d8efe0e951ab4aa3f0a3265bb8a7c525104b64ba022852959f9b6c5485fea2b6",
+  "reason": "Both assertions inspect freshly compiled keys and must report the actual linked SDK. Every historical explicit key/fixture remains unchanged. Two replacements retain all nine scenarios and audit expectations.",
+  "runtime": "Whole exact1085613a run executed2 readiness leaves:1pass1fail at first stale current-version oracle; second stale oracle proven by source. No other failure removed."
+}

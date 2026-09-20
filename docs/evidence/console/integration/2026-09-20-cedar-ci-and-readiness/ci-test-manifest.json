@@ -1,0 +1,26 @@
+{
+  "base_sha": "1085613a03bcb24511885066040f3fefd219a302",
+  "kind": "immutable-cedar-sdk-ci-wiring-test-design",
+  "files_sha256": {
+    "README.md": "0d70001127a5177094fbaa763406ccb6095be210b29bfc4866f5f20a03c42df3",
+    "additive-tests.mjs": "e7acf062399b008030bfddf6bdf2bde48a2aee643579e50e6324946097b8758c",
+    "candidate/scripts/check-executed-tests.test.mjs": "d25c1663221595fe894bd4662b0d62468509138e555aecfddd9af7739c116484",
+    "harness/.github/workflows/ci.yml": "30311ab6531cfa56ef6a8bfd5e4c5c03a164679a2e7bdee95da619fde95e3b3d",
+    "harness/backend/crates/platform/authz/tests/cedar_sdk_identity.rs": "60f4a3d7ef8d56367e3fd6c1296440053ddcfe00aaa96dda3a8f855a1cb5c2d5",
+    "harness/docs/evidence/console/integration/2026-09-20-cedar-sdk-owner/owner-green.log": "0c358ba2a0ca613e64d10baf0f69c1c2de48473ac926213efd2f0aefbb0dbf77",
+    "harness/docs/evidence/console/integration/2026-09-20-cedar-sdk-owner/runtime-review.json": "fd4a28f36910cb231a2044a7f826b59ff7ea107661ee93cc4f04640449327361",
+    "harness/docs/program/executed-tests-baseline.json": "74675f6fd05a8345980ff1fd6fcff7535d5bc9794df61ece701ff95016653e04",
+    "harness/package.json": "86f60cf9c4e1954c4fdfab25ef270d8592d8dc7d8ec535f625002f5a5bd3f391",
+    "harness/scripts/check-executed-tests-cfg.mjs": "1d1a5678d862b4607b5f53daa0cda59369b9601ab04579afa8b39cf98e27d0c0",
+    "harness/scripts/check-executed-tests.mjs": "1774ef327c6cb7272df1eb575b4c2beaae81c26abb771c6680ce9741821d325e",
+    "harness/scripts/check-executed-tests.test.mjs": "d25c1663221595fe894bd4662b0d62468509138e555aecfddd9af7739c116484",
+    "harness/scripts/lib/cargo-test-kind.mjs": "47aef8e8c8e177c7fdf2f0f7cf128cd4b86348c6091f64214578c4afaa4fcd0c",
+    "harness/scripts/lib/ci-workflow-executables.mjs": "6b012fe0cafcbbc0f0dd06a2fc6674acd4a52d14f4fa0a5c138c1ed256d5bc74",
+    "harness/scripts/lib/executed-tests-baseline.mjs": "dfa073b942e9850773434944670cb07069048494b1c6d95a10654c4f4b71642b",
+    "private-full-test.log": "3350fedbe490ea91d578c6729f99712557e45f92d3089fef96fdfd678cd43044",
+    "private-owner-red.log": "f03577a53b3503ddefec3dcd7f0c308e2bd98b255a820e83c3ebc462529e35ba",
+    "source-custody.json": "5ee428ddc110a683797594b64b5ca990c6cbd76992efa4add8b42e2b67f163d2",
+    "tests.patch": "d7e937b336990c81fd03c0705e1f3f2847e3bef7a65760e559bf1caa39a4d41f",
+    "verification.json": "1f557da319ca78fd59e40de90a42bd1271645635a7394f0f43e240e4d82f5055"
+  }
+}
