@@ -1,0 +1,25 @@
+{
+  "kind": "passive-local-nextest-pipe-inheritance-diagnosis",
+  "product_source_changed": false,
+  "original_detector_changed": false,
+  "local_nextest_version": "0.9.138",
+  "observed_affected_tests": [
+    "evaluation_routes_are_mounted_by_the_authenticated_app_router",
+    "audit_log_uses_current_branches_after_token_issuance",
+    "super_admin_audit_read_arms_org_and_isolates_cross_org_as_runtime_role"
+  ],
+  "finding": "A sibling test process retains another test stdout pipe at a nonstandard descriptor after that test exits, spanning its LEAK annotation.",
+  "exact_independently_reviewed_history": "v7/run-f0l8vor8/warm-processes.jsonl.gz",
+  "test_pid": 94689,
+  "retaining_sibling_pid": 94688,
+  "sibling_fd": 65,
+  "leak_monotonic": 726484.750494458,
+  "operational_acceptance": false,
+  "limitations": [
+    "Source/OS-level exact syscall mechanism remains unproven; pipe inheritance is directly observed.",
+    "Clean reruns do not erase intermittent findings.",
+    "Local macOS runner evidence is not deployment-equivalent Linux concurrency qualification.",
+    "Rebuilt same nextest withRust1.98.1 remains separately diagnostic, not a successful repair.",
+    "Output-parser v5+ rejects LEAK counts while preserving passing functional counts."
+  ]
+}

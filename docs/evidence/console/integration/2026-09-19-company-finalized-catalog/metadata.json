@@ -1,0 +1,502 @@
+{
+  "owners": [
+    {
+      "name": "console_auth_rt",
+      "login": true,
+      "inherit": false,
+      "bypassrls": false,
+      "superuser": false
+    },
+    {
+      "name": "console_auth_startup",
+      "login": true,
+      "inherit": false,
+      "bypassrls": false,
+      "superuser": false
+    },
+    {
+      "name": "console_app",
+      "login": true,
+      "inherit": true,
+      "bypassrls": true,
+      "superuser": false
+    },
+    {
+      "name": "console_rt",
+      "login": true,
+      "inherit": false,
+      "bypassrls": false,
+      "superuser": false
+    }
+  ],
+  "tables": [
+    {
+      "acl": "{console_app=arwdDxtm/console_app}",
+      "rls": false,
+      "name": "group_memberships",
+      "owner": "console_app",
+      "force_rls": false
+    },
+    {
+      "acl": "{console_app=arwdDxtm/console_app}",
+      "rls": false,
+      "name": "group_role_grants",
+      "owner": "console_app",
+      "force_rls": false
+    },
+    {
+      "acl": "{console_app=arwdDxtm/console_app}",
+      "rls": false,
+      "name": "groups",
+      "owner": "console_app",
+      "force_rls": false
+    },
+    {
+      "acl": "{console_app=arwdDxtm/console_app,console_rt=r/console_app,console_leave_definer=r/console_app}",
+      "rls": true,
+      "name": "organizations",
+      "owner": "console_app",
+      "force_rls": true
+    },
+    {
+      "acl": "{console_app=arwdDxtm/console_app,console_rt=arwd/console_app,console_leave_definer=r/console_app}",
+      "rls": true,
+      "name": "policy_roles",
+      "owner": "console_app",
+      "force_rls": true
+    },
+    {
+      "acl": "{console_app=arwdDxtm/console_app,console_rt=arwd/console_app,console_leave_definer=r/console_app}",
+      "rls": true,
+      "name": "user_role_assignments",
+      "owner": "console_app",
+      "force_rls": true
+    }
+  ],
+  "database": "_sqlx_test__8KMrb6fblcQIWUS08oybEUc_otgQbmCmwxu3pq6Kx1vLMHmdQ5y",
+  "routines": [
+    {
+      "acl": null,
+      "name": "platform_append_only_immutable",
+      "owner": "console_app",
+      "config": null,
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_append_only_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\nBEGIN\n    RAISE EXCEPTION 'append-only table % forbids %', TG_TABLE_NAME, TG_OP\n        USING ERRCODE = '25006';\nEND;\n$function$\n",
+      "auth_execute": true,
+      "runtime_execute": true,
+      "startup_execute": true,
+      "security_definer": false,
+      "identity_arguments": "",
+      "definition_sha256": "01fed9deb7113d910bf89e5aa23caef5cd31b5ea6663ea578f0bdef4bd4f07c4"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_assign_org_to_group",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_assign_org_to_group(p_group_id uuid, p_org_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_group_status TEXT;\n    v_org_id UUID;\nBEGIN\n    SET LOCAL row_security = off;\n\n    SELECT status INTO v_group_status\n    FROM groups\n    WHERE id = p_group_id;\n    IF v_group_status IS NULL THEN\n        SET LOCAL row_security = on;\n        RETURN NULL;\n    END IF;\n    IF v_group_status <> 'ACTIVE' THEN\n        RAISE EXCEPTION 'group % is not active', p_group_id\n            USING ERRCODE = '23514';\n    END IF;\n\n    SELECT id INTO v_org_id\n    FROM organizations\n    WHERE id = p_org_id\n      AND id <> '00000000-0000-0000-0000-00000000face'::uuid;\n    IF v_org_id IS NULL THEN\n        SET LOCAL row_security = on;\n        RETURN NULL;\n    END IF;\n\n    INSERT INTO group_memberships (group_id, org_id)\n    VALUES (p_group_id, p_org_id)\n    ON CONFLICT (org_id) DO UPDATE\n        SET group_id = EXCLUDED.group_id,\n            created_at = now();\n\n    UPDATE organizations\n    SET group_id = p_group_id,\n        updated_at = now()\n    WHERE id = p_org_id;\n\n    SET LOCAL row_security = on;\n    RETURN p_org_id;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_group_id uuid, p_org_id uuid",
+      "definition_sha256": "d3d98010d33516594782aeda1883a0d8bef5abd671fd8bd088aba9166b4faf84"
+    },
+    {
+      "acl": "{console_app=X/console_app}",
+      "name": "platform_attach_group_of_one",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_attach_group_of_one(p_org_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_row_security TEXT := current_setting('row_security');\n    v_org organizations%ROWTYPE;\n    v_group_id UUID;\nBEGIN\n    SET LOCAL row_security = off;\n\n    SELECT * INTO v_org FROM organizations WHERE id = p_org_id;\n    IF v_org.id IS NULL THEN\n        PERFORM set_config('row_security', v_row_security, true);\n        RAISE EXCEPTION 'organization % not found', p_org_id USING ERRCODE = '23503';\n    END IF;\n\n    v_group_id := platform_mint_group_row(p_org_id, v_org.name, v_org.status);\n\n    UPDATE organizations\n       SET group_id = v_group_id, updated_at = now()\n     WHERE id = p_org_id;\n\n    PERFORM platform_attach_membership(v_group_id, p_org_id);\n\n    PERFORM set_config('row_security', v_row_security, true);\n    RETURN v_group_id;\nEXCEPTION WHEN OTHERS THEN\n    PERFORM set_config('row_security', v_row_security, true);\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_org_id uuid",
+      "definition_sha256": "68316ff4374cee94a06d6de59f71c62d43a78d6706261813b4140d82228e86b3"
+    },
+    {
+      "acl": "{console_app=X/console_app}",
+      "name": "platform_attach_membership",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_attach_membership(p_group_id uuid, p_org_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_row_security TEXT := current_setting('row_security');\nBEGIN\n    SET LOCAL row_security = off;\n    INSERT INTO group_memberships (group_id, org_id)\n    VALUES (p_group_id, p_org_id)\n    ON CONFLICT (org_id) DO UPDATE\n        SET group_id = EXCLUDED.group_id,\n            created_at = CASE\n                WHEN group_memberships.group_id = EXCLUDED.group_id\n                THEN group_memberships.created_at\n                ELSE now()\n            END;\n    PERFORM set_config('row_security', v_row_security, true);\nEXCEPTION WHEN OTHERS THEN\n    PERFORM set_config('row_security', v_row_security, true);\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_group_id uuid, p_org_id uuid",
+      "definition_sha256": "8346784690612ee8d557c893dedfe56ca32f180619a41762ca8acf326c1336c7"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_console_route_adoption",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_console_route_adoption()\n RETURNS TABLE(org_id uuid, release_cycle text, console_route_events bigint, legacy_route_events bigint, rum_error_events bigint, rum_perf_p95_ms bigint, last_event_at timestamp with time zone)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            t.org_id,\n            t.release_cycle,\n            COUNT(*) FILTER (\n                WHERE t.event_kind = 'route_selection' AND t.route_surface = 'console'\n            )::BIGINT AS console_route_events,\n            COUNT(*) FILTER (\n                WHERE t.event_kind = 'route_selection' AND t.route_surface = 'legacy'\n            )::BIGINT AS legacy_route_events,\n            COUNT(*) FILTER (WHERE t.event_kind = 'rum_error')::BIGINT AS rum_error_events,\n            (percentile_disc(0.95) WITHIN GROUP (ORDER BY t.duration_ms) FILTER (\n                WHERE t.duration_ms IS NOT NULL\n                  AND t.event_kind IN ('route_selection', 'rum_perf')\n            ))::BIGINT AS rum_perf_p95_ms,\n            MAX(t.occurred_at) AS last_event_at\n        FROM console_route_telemetry t\n        GROUP BY t.org_id, t.release_cycle\n        ORDER BY MAX(t.occurred_at) DESC, t.release_cycle DESC;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "",
+      "definition_sha256": "ae32576842551a81e7c7cdc5d361e5bbc7dc7be837c80731bce62c79909a961d"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_create_group",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_create_group(p_slug text, p_name text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_id UUID;\nBEGIN\n    SET LOCAL row_security = off;\n\n    INSERT INTO groups (slug, name)\n    VALUES (btrim(p_slug), btrim(p_name))\n    RETURNING id INTO v_id;\n\n    SET LOCAL row_security = on;\n    RETURN v_id;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_slug text, p_name text",
+      "definition_sha256": "a6e1bba9b738bd7dbe17d801bf9de9187e8a85341749a155ed9d83df274d1a8d"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_create_group_account",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_create_group_account(p_group_id uuid, p_org_id uuid, p_display_name text, p_phone text DEFAULT NULL::text, p_tenant_roles text[] DEFAULT ARRAY['MEMBER'::text], p_group_role text DEFAULT 'GROUP_ADMIN'::text, p_granted_by uuid DEFAULT NULL::uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_group_status TEXT;\n    v_org_id UUID;\n    v_user_id UUID;\n    v_roles TEXT[] := COALESCE(p_tenant_roles, ARRAY['MEMBER']::TEXT[]);\nBEGIN\n    SET LOCAL row_security = off;\n\n    SELECT status INTO v_group_status\n    FROM groups\n    WHERE id = p_group_id;\n    IF v_group_status IS NULL THEN\n        SET LOCAL row_security = on;\n        RETURN NULL;\n    END IF;\n    IF v_group_status <> 'ACTIVE' THEN\n        RAISE EXCEPTION 'group % is not active', p_group_id\n            USING ERRCODE = '23514';\n    END IF;\n\n    SELECT o.id INTO v_org_id\n    FROM organizations o\n    JOIN group_memberships gm\n      ON gm.org_id = o.id\n     AND gm.group_id = p_group_id\n    WHERE o.id = p_org_id\n      AND o.status = 'ACTIVE'\n      AND o.id <> '00000000-0000-0000-0000-00000000face'::uuid;\n    IF v_org_id IS NULL THEN\n        SET LOCAL row_security = on;\n        RETURN NULL;\n    END IF;\n\n    IF NULLIF(btrim(p_display_name), '') IS NULL THEN\n        RAISE EXCEPTION 'display_name is required'\n            USING ERRCODE = '23514';\n    END IF;\n    IF cardinality(v_roles) = 0 THEN\n        RAISE EXCEPTION 'tenant role is required'\n            USING ERRCODE = '23514';\n    END IF;\n\n    PERFORM set_config('app.current_org', p_org_id::text, true);\n\n    INSERT INTO users (display_name, phone, roles, is_active, org_id)\n    VALUES (\n        btrim(p_display_name),\n        NULLIF(btrim(p_phone), ''),\n        v_roles,\n        true,\n        p_org_id\n    )\n    RETURNING id INTO v_user_id;\n\n    INSERT INTO group_role_grants (group_id, user_id, group_role, granted_by)\n    VALUES (p_group_id, v_user_id, p_group_role, p_granted_by);\n\n    SET LOCAL row_security = on;\n    RETURN v_user_id;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_group_id uuid, p_org_id uuid, p_display_name text, p_phone text, p_tenant_roles text[], p_group_role text, p_granted_by uuid",
+      "definition_sha256": "5c88c85e08058062d4e5e1c3b9bb8290d5122a6d0d16c6c67124eb713eb01b3d"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_create_organization",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_create_organization(p_slug text, p_name text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    new_id UUID := gen_random_uuid();\nBEGIN\n    -- Arm the tenant GUC to the new id, transaction-locally, so the FORCE-RLS\n    -- WITH CHECK on `organizations` accepts this exact row (and only it).\n    PERFORM set_config('app.current_org', new_id::text, true);\n    INSERT INTO organizations (id, slug, name)\n    VALUES (new_id, p_slug, p_name);\n    RETURN new_id;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_slug text, p_name text",
+      "definition_sha256": "0c1e6570f8b3e95e7fc267d77719d89200e1c4a4999f15d6f8fc223fa37c0abd"
+    },
+    {
+      "acl": "{console_app=X/console_app}",
+      "name": "platform_force_remove_direct_org_children",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_force_remove_direct_org_children(p_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    target RECORD;\nBEGIN\n    PERFORM public.auth_legacy_purge_company_v1(p_id);\n    -- The maintenance-history subtree goes FIRST, before the catalog sweep below can reach any\n    -- of the tables it points at.\n    --\n    -- These three are structurally invisible to that sweep: `equipment_maintenance_history` is\n    -- `org_id ... ON DELETE CASCADE` (0193:19) and the sweep admits only 'a' and 'r', while\n    -- `_costs` and `_evidence` reach their parents through COMPOSITE foreign keys and the sweep\n    -- requires `cardinality(fk.conkey) = 1`. So the sweep deletes `work_orders`,\n    -- `registry_equipment`, `evidence_media` and `equipment_cost_ledger` while rows in this\n    -- subtree still reference them, and every one of those raises 23001 in turn.\n    --\n    -- Deleting the subtree here, child-first, removes the whole class in one place. 0196's\n    -- hand-ordered block still deletes these three later; by then they are already empty, which\n    -- is why this is additive rather than a reordering of that block.\n    DELETE FROM equipment_maintenance_history_costs    WHERE org_id = p_id;\n    DELETE FROM equipment_maintenance_history_evidence WHERE org_id = p_id;\n    DELETE FROM equipment_maintenance_history          WHERE org_id = p_id;\n\n    FOR target IN\n        SELECT child_ns.nspname AS schema_name, child.relname AS relation_name\n        FROM pg_catalog.pg_constraint AS fk\n        JOIN pg_catalog.pg_class AS child ON child.oid = fk.conrelid\n        JOIN pg_catalog.pg_namespace AS child_ns ON child_ns.oid = child.relnamespace\n        JOIN pg_catalog.pg_class AS parent ON parent.oid = fk.confrelid\n        JOIN pg_catalog.pg_namespace AS parent_ns ON parent_ns.oid = parent.relnamespace\n        JOIN pg_catalog.pg_attribute AS child_attr\n          ON child_attr.attrelid = child.oid\n         AND child_attr.attnum = fk.conkey[1]\n         AND NOT child_attr.attisdropped\n        WHERE fk.contype = 'f'\n          AND fk.confdeltype IN ('a', 'r')\n          AND parent_ns.nspname = 'public'\n          AND parent.relname = 'organizations'\n          AND child_ns.nspname = 'public'\n          AND child.relkind IN ('r', 'p')\n          -- These roots have specialized ordering: the audit ledger must be\n          -- re-homed, and employee/user/branch/region references are released\n          -- only after their direct children have been closed by this pass.\n          --\n          -- equipment_cost_ledger joins them for the same reason and was missing:\n          -- its children reach it by COMPOSITE FK and are therefore invisible to\n          -- this catalog sweep, so deleting it here raises 23001 before the\n          -- hand-ordered child-first block below can run.\n          -- These roots have specialized ordering: the audit ledger must be\n          -- re-homed, and employee/user/branch/region references are released\n          -- only after their direct children have been closed by this pass.\n          AND child.relname NOT IN (\n              'audit_events', 'employees', 'users', 'branches', 'regions',\n              'auth_bootstrap_credentials', 'auth_device_login_handoffs', 'auth_refresh_token_families', 'auth_refresh_tokens', 'auth_webauthn_ceremonies', 'auth_webauthn_ceremony_bindings', 'auth_webauthn_credentials'\n          )\n          AND cardinality(fk.conkey) = 1\n          AND child_attr.attname = 'org_id'\n        -- New tenant-facing tables normally reference older roots.  Descending\n        -- OID gives those children priority before their direct parents.\n        ORDER BY child.oid DESC\n    LOOP\n        EXECUTE format('DELETE FROM %I.%I WHERE org_id = $1',\n                       target.schema_name, target.relation_name)\n            USING p_id;\n    END LOOP;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid",
+      "definition_sha256": "be7a45c5dbd5d97f606908c60211c3b343f3d4503a8b829a4f10d3e3a329266b"
+    },
+    {
+      "acl": "{console_app=X/console_app}",
+      "name": "platform_force_remove_organization",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_force_remove_organization(p_id uuid)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    sentinel_org CONSTANT UUID := '00000000-0000-0000-0000-00000000face'::uuid;\n    org_status   TEXT;\nBEGIN\n    IF p_id = sentinel_org THEN\n        RETURN 'not_found';\n    END IF;\n\n    SET LOCAL row_security = off;\n    PERFORM set_config('app.maintenance_force_remove', 'on', true);\n\n    SELECT status INTO org_status FROM organizations WHERE id = p_id;\n    IF NOT FOUND THEN\n        SET LOCAL row_security = on;\n        RETURN 'not_found';\n    END IF;\n\n    IF org_status <> 'ARCHIVED' THEN\n        SET LOCAL row_security = on;\n        RETURN 'blocked_active';\n    END IF;\n\n    PERFORM set_config('app.platform_force_remove_org', 'on', true);\n    -- Close direct restrictive tenant edges before deleting employee/user roots.\n    -- The catalog query excludes only the explicitly ordered roots below.\n    PERFORM platform_force_remove_direct_org_children(p_id);\n    PERFORM public.auth_legacy_purge_company_v1(p_id);\n    DELETE FROM attendance_direct_import_events  WHERE org_id = p_id;\n    DELETE FROM data_import_rows                 WHERE org_id = p_id;\n    DELETE FROM data_import_runs                 WHERE org_id = p_id;\n    DELETE FROM payroll_draft_lines             WHERE org_id = p_id;\n    DELETE FROM annual_leave_obligations        WHERE org_id = p_id;\n    DELETE FROM payroll_draft_runs              WHERE org_id = p_id;\n    DELETE FROM employee_lifecycle_events       WHERE org_id = p_id;\n    UPDATE users SET employee_id = NULL         WHERE org_id = p_id;\n    DELETE FROM employees                       WHERE org_id = p_id;\n    PERFORM set_config('app.platform_force_remove_org', 'off', true);\n\n\n    DELETE FROM comms_send_rate                 WHERE org_id = p_id;\n\n    DELETE FROM customer_inquiries              WHERE org_id = p_id;\n    DELETE FROM daily_work_plan_items           WHERE org_id = p_id;\n    DELETE FROM daily_work_plans                WHERE org_id = p_id;\n\n    DELETE FROM email_attachments               WHERE org_id = p_id;\n    DELETE FROM email_messages                  WHERE org_id = p_id;\n    DELETE FROM email_threads                   WHERE org_id = p_id;\n    DELETE FROM email_folders                   WHERE org_id = p_id;\n    DELETE FROM email_accounts                  WHERE org_id = p_id;\n    DELETE FROM mailbox_deliveries             WHERE org_id = p_id;\n    DELETE FROM mailbox_messages               WHERE org_id = p_id;\n    DELETE FROM mailbox_aliases                WHERE org_id = p_id;\n    DELETE FROM mailboxes                      WHERE org_id = p_id;\n    DELETE FROM mailbox_domains                WHERE org_id = p_id;\n\n    DELETE FROM equipment_maintenance_history_costs WHERE org_id = p_id;\n    DELETE FROM equipment_maintenance_history_evidence WHERE org_id = p_id;\n    DELETE FROM equipment_maintenance_history WHERE org_id = p_id;\n    DELETE FROM equipment_cost_ledger           WHERE org_id = p_id;\n    DELETE FROM equipment_substitutions         WHERE org_id = p_id;\n    DELETE FROM excel_export_logs               WHERE org_id = p_id;\n\n    DELETE FROM user_feature_preferences        WHERE org_id = p_id;\n\n    DELETE FROM financial_regular_purchase_prices WHERE org_id = p_id;\n    DELETE FROM financial_expense_ledger          WHERE org_id = p_id;\n    DELETE FROM financial_purchase_attachments    WHERE org_id = p_id;\n    DELETE FROM financial_purchase_request_lines  WHERE org_id = p_id;\n\n    DELETE FROM financial_purchase_history      WHERE org_id = p_id;\n    DELETE FROM financial_purchase_requests     WHERE org_id = p_id;\n    DELETE FROM financial_rental_quote_lines    WHERE org_id = p_id;\n    DELETE FROM financial_rental_quotes         WHERE org_id = p_id;\n\n    DELETE FROM governance_findings             WHERE org_id = p_id;\n\n    PERFORM set_config('app.audit_rehome', 'on', true);\n    UPDATE audit_events\n    SET org_id    = sentinel_org,\n        actor     = NULL,\n        branch_id = NULL\n    WHERE org_id = p_id;\n    PERFORM set_config('app.audit_rehome', 'off', true);\n\n    DELETE FROM inspection_rounds               WHERE org_id = p_id;\n    DELETE FROM kpi_exclusions                  WHERE org_id = p_id;\n\n    DELETE FROM location_collection_logs        WHERE org_id = p_id;\n    DELETE FROM location_consent_ledger         WHERE org_id = p_id;\n    DELETE FROM location_consents               WHERE org_id = p_id;\n    DELETE FROM location_pings                  WHERE org_id = p_id;\n\n    DELETE FROM messenger_message_attachments   WHERE org_id = p_id;\n    DELETE FROM messenger_read_receipts         WHERE org_id = p_id;\n    DELETE FROM messenger_messages              WHERE org_id = p_id;\n    DELETE FROM messenger_thread_members        WHERE org_id = p_id;\n    DELETE FROM messenger_threads               WHERE org_id = p_id;\n\n    DELETE FROM evidence_media                  WHERE org_id = p_id;\n\n    DELETE FROM offline_sync_requests           WHERE org_id = p_id;\n\n    DELETE FROM outsource_works                 WHERE org_id = p_id;\n    DELETE FROM outsource_vendors               WHERE org_id = p_id;\n\n    DELETE FROM p1_dispatch_alerts              WHERE org_id = p_id;\n    DELETE FROM p1_dispatch_responses           WHERE org_id = p_id;\n    DELETE FROM p1_dispatch_targets             WHERE org_id = p_id;\n    DELETE FROM p1_dispatches                   WHERE org_id = p_id;\n\n    DELETE FROM registered_devices              WHERE org_id = p_id;\n\n    DELETE FROM regular_inspection_schedules    WHERE org_id = p_id;\n\n    DELETE FROM sales_listing_media             WHERE org_id = p_id;\n    DELETE FROM sales_listings                  WHERE org_id = p_id;\n\n    DELETE FROM site_attendance_events          WHERE org_id = p_id;\n    DELETE FROM site_geofence_presence          WHERE org_id = p_id;\n\n    DELETE FROM support_ticket_comments         WHERE org_id = p_id;\n    DELETE FROM support_tickets                 WHERE org_id = p_id;\n\n    DELETE FROM target_change_requests          WHERE org_id = p_id;\n\n    DELETE FROM user_branches                   WHERE org_id = p_id;\n\n    DELETE FROM work_diary_drafts               WHERE org_id = p_id;\n    DELETE FROM work_order_approval_steps       WHERE org_id = p_id;\n    DELETE FROM work_order_assignments          WHERE org_id = p_id;\n    DELETE FROM work_order_request_counters     WHERE org_id = p_id;\n    DELETE FROM work_order_status_history       WHERE org_id = p_id;\n    DELETE FROM work_orders                     WHERE org_id = p_id;\n\n    DELETE FROM registry_equipment              WHERE org_id = p_id;\n    DELETE FROM registry_sites                  WHERE org_id = p_id;\n    DELETE FROM registry_customers              WHERE org_id = p_id;\n\n    DELETE FROM users    WHERE org_id = p_id;\n    DELETE FROM branches WHERE org_id = p_id;\n    DELETE FROM regions  WHERE org_id = p_id;\n\n    DELETE FROM organizations WHERE id = p_id;\n\n    SET LOCAL row_security = on;\n    RETURN 'removed';\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid",
+      "definition_sha256": "d7967a4f123f24139a3f8bc645cd709323875f07659e0da2b45b33767d5beb3e"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_platform_force_cmd=X/console_app}",
+      "name": "platform_force_remove_organization_command",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_force_remove_organization_command(p_id uuid, p_actor uuid, p_trace_id character, p_span_id character, p_occurred_at timestamp with time zone)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_slug TEXT;\n    v_name TEXT;\n    v_outcome TEXT;\n    v_wiped JSONB;\nBEGIN\n    SET LOCAL row_security = off;\n    SELECT slug, name INTO v_slug, v_name FROM organizations WHERE id = p_id;\n    SELECT jsonb_build_object(\n        'users', (SELECT count(*) FROM users WHERE org_id = p_id),\n        'registry_customers', (SELECT count(*) FROM registry_customers WHERE org_id = p_id),\n        'registry_sites', (SELECT count(*) FROM registry_sites WHERE org_id = p_id),\n        'registry_equipment', (SELECT count(*) FROM registry_equipment WHERE org_id = p_id),\n        'work_orders', (SELECT count(*) FROM work_orders WHERE org_id = p_id),\n        'financial_rental_quotes', (SELECT count(*) FROM financial_rental_quotes WHERE org_id = p_id),\n        'financial_purchase_requests', (SELECT count(*) FROM financial_purchase_requests WHERE org_id = p_id),\n        'messenger_threads', (SELECT count(*) FROM messenger_threads WHERE org_id = p_id),\n        'evidence_media', (SELECT count(*) FROM evidence_media WHERE org_id = p_id),\n        'audit_events', (SELECT count(*) FROM audit_events WHERE org_id = p_id)\n    ) INTO v_wiped;\n    v_outcome := platform_force_remove_organization(p_id);\n    IF v_outcome <> 'removed' THEN\n        RETURN v_outcome;\n    END IF;\n    INSERT INTO audit_events (\n        org_id, actor, action, target_type, target_id, branch_id,\n        before_snap, after_snap, trace_id, span_id, occurred_at\n    ) VALUES (\n        NULL, p_actor, 'platform.tenant.force_remove', 'organizations', p_id::text, NULL,\n        jsonb_build_object('org_id', p_id, 'slug', v_slug, 'name', v_name, 'wiped', v_wiped), NULL,\n        p_trace_id, p_span_id, p_occurred_at\n    );\n    RETURN 'removed';\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid, p_actor uuid, p_trace_id character, p_span_id character, p_occurred_at timestamp with time zone",
+      "definition_sha256": "d7bea1214359403ff3436788e3c29a648bbeee1dacc412916838b08053ecdd65"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_get_group",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_get_group(p_id uuid)\n RETURNS TABLE(id uuid, slug text, name text, status text, created_at timestamp with time zone, updated_at timestamp with time zone, member_count bigint, members jsonb)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            g.id,\n            g.slug,\n            g.name,\n            g.status,\n            g.created_at,\n            g.updated_at,\n            COUNT(o.id)::BIGINT AS member_count,\n            COALESCE(\n                jsonb_agg(\n                    jsonb_build_object(\n                        'id', o.id,\n                        'slug', o.slug,\n                        'name', o.name,\n                        'status', o.status\n                    )\n                    ORDER BY o.created_at ASC, o.id ASC\n                ) FILTER (WHERE o.id IS NOT NULL),\n                '[]'::jsonb\n            ) AS members\n        FROM groups g\n        LEFT JOIN organizations o\n            ON o.group_id = g.id\n           AND o.id <> '00000000-0000-0000-0000-00000000face'::uuid\n        WHERE g.id = p_id\n        GROUP BY g.id;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid",
+      "definition_sha256": "ca3b5ac14f321f8801f912f7bb712163cf104ef308883eadee69df0d753c385b"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_get_organization",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_get_organization(p_id uuid)\n RETURNS TABLE(id uuid, slug text, name text, status text, created_at timestamp with time zone, updated_at timestamp with time zone, group_id uuid, group_slug text, group_name text)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            o.id,\n            o.slug,\n            o.name,\n            o.status,\n            o.created_at,\n            o.updated_at,\n            g.id AS group_id,\n            g.slug AS group_slug,\n            g.name AS group_name\n        FROM organizations o\n        LEFT JOIN groups g ON g.id = o.group_id\n        WHERE o.id = p_id\n          AND o.id <> '00000000-0000-0000-0000-00000000face'::uuid;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid",
+      "definition_sha256": "2be179f70668d5fab1f1784e3a3a9567289dfe3300ec7e7da23f964de49dbfc2"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_list_group_accounts",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_list_group_accounts(p_group_id uuid)\n RETURNS TABLE(user_id uuid, display_name text, phone text, tenant_roles text[], is_active boolean, has_passkey boolean, account_status text, org_id uuid, org_slug text, org_name text, group_roles text[], created_at timestamp with time zone)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            u.id AS user_id,\n            u.display_name,\n            u.phone,\n            u.roles AS tenant_roles,\n            u.is_active,\n            public.auth_legacy_group_passkey_flag_v1(u.id) AS has_passkey,\n            CASE\n                WHEN NOT u.is_active THEN 'DEACTIVATED'\n                WHEN public.auth_legacy_group_passkey_flag_v1(u.id) THEN 'ACTIVE'\n                ELSE 'PENDING_SETUP'\n            END AS account_status,\n            o.id AS org_id,\n            o.slug AS org_slug,\n            o.name AS org_name,\n            array_agg(gr.group_role ORDER BY gr.group_role) AS group_roles,\n            u.created_at\n        FROM group_role_grants gr\n        JOIN group_memberships gm\n          ON gm.group_id = gr.group_id\n        JOIN users u\n          ON u.id = gr.user_id\n         AND u.org_id = gm.org_id\n        JOIN organizations o\n          ON o.id = u.org_id\n         AND o.id <> '00000000-0000-0000-0000-00000000face'::uuid\n        WHERE gr.group_id = p_group_id\n        GROUP BY\n            u.id,\n            u.display_name,\n            u.phone,\n            u.roles,\n            u.is_active,\n            o.id,\n            o.slug,\n            o.name,\n            u.created_at\n        ORDER BY o.name ASC, u.display_name ASC, u.id ASC;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_group_id uuid",
+      "definition_sha256": "a6fbd445cc2902fbd7bcb4f17dd5baf3f306190c077b9fdf3133d9031dfc2e67"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_list_groups",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_list_groups()\n RETURNS TABLE(id uuid, slug text, name text, status text, created_at timestamp with time zone, updated_at timestamp with time zone, member_count bigint, members jsonb)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            g.id,\n            g.slug,\n            g.name,\n            g.status,\n            g.created_at,\n            g.updated_at,\n            COUNT(o.id)::BIGINT AS member_count,\n            COALESCE(\n                jsonb_agg(\n                    jsonb_build_object(\n                        'id', o.id,\n                        'slug', o.slug,\n                        'name', o.name,\n                        'status', o.status\n                    )\n                    ORDER BY o.created_at ASC, o.id ASC\n                ) FILTER (WHERE o.id IS NOT NULL),\n                '[]'::jsonb\n            ) AS members\n        FROM groups g\n        LEFT JOIN organizations o\n            ON o.group_id = g.id\n           AND o.id <> '00000000-0000-0000-0000-00000000face'::uuid\n        WHERE g.id IS DISTINCT FROM (\n            SELECT o2.group_id\n            FROM organizations o2\n            WHERE o2.id = '00000000-0000-0000-0000-00000000face'::uuid\n        )\n        GROUP BY g.id\n        ORDER BY g.created_at ASC, g.id ASC;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "",
+      "definition_sha256": "e66da02fab28cc5fa82f1a72de7b9dd3e93e8ea92bb39827c53889d45b3cdc07"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_list_organizations",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_list_organizations()\n RETURNS TABLE(id uuid, slug text, name text, status text, created_at timestamp with time zone, updated_at timestamp with time zone, group_id uuid, group_slug text, group_name text)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            o.id,\n            o.slug,\n            o.name,\n            o.status,\n            o.created_at,\n            o.updated_at,\n            g.id AS group_id,\n            g.slug AS group_slug,\n            g.name AS group_name\n        FROM organizations o\n        LEFT JOIN groups g ON g.id = o.group_id\n        -- The platform sentinel is not a tenant; never list it.\n        WHERE o.id <> '00000000-0000-0000-0000-00000000face'::uuid\n        ORDER BY o.created_at ASC, o.id ASC;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "",
+      "definition_sha256": "f876ab3bc15a677289e3f57bd4804e3e68953c174b78906f7a2b1ba9b499b502"
+    },
+    {
+      "acl": "{console_app=X/console_app}",
+      "name": "platform_mint_group_row",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_mint_group_row(p_org_id uuid, p_name text, p_status text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_row_security TEXT := current_setting('row_security');\n    v_hex TEXT := replace(p_org_id::text, '-', '');\n    v_slug TEXT;\n    v_group_id UUID;\n    v_status TEXT;\n    v_i INT;\n    v_sentinel UUID := '00000000-0000-0000-0000-00000000face';\nBEGIN\n    SET LOCAL row_security = off;\n\n    v_status := CASE\n        WHEN p_org_id = v_sentinel THEN 'ARCHIVED'\n        ELSE CASE\n            WHEN COALESCE(p_status, '') IN ('ACTIVE', 'SUSPENDED', 'ARCHIVED')\n            THEN p_status\n            ELSE 'ACTIVE'\n        END\n    END;\n\n    -- i=1 \u2192 go-{32hex}; i=2..9 \u2192 g{i}-{32hex}. All 35 chars, CHECK-valid.\n    FOR v_i IN 1..9 LOOP\n        IF v_i = 1 THEN\n            v_slug := 'go-' || v_hex;\n        ELSE\n            v_slug := 'g' || v_i::text || '-' || v_hex;\n        END IF;\n\n        SELECT g.id INTO v_group_id\n        FROM groups g\n        WHERE g.slug = v_slug\n          AND NOT EXISTS (\n              SELECT 1 FROM group_memberships m\n              WHERE m.group_id = g.id AND m.org_id <> p_org_id\n          );\n        IF v_group_id IS NOT NULL THEN\n            PERFORM set_config('row_security', v_row_security, true);\n            RETURN v_group_id;\n        END IF;\n\n        INSERT INTO groups (slug, name, status)\n        VALUES (v_slug, p_name, v_status)\n        ON CONFLICT (slug) DO NOTHING\n        RETURNING id INTO v_group_id;\n        IF v_group_id IS NOT NULL THEN\n            PERFORM set_config('row_security', v_row_security, true);\n            RETURN v_group_id;\n        END IF;\n\n        -- Lost the INSERT (concurrent winner or foreign occupant).\n        -- Reuse if the occupant is empty/self; else next suffix.\n        SELECT g.id INTO v_group_id\n        FROM groups g\n        WHERE g.slug = v_slug\n          AND NOT EXISTS (\n              SELECT 1 FROM group_memberships m\n              WHERE m.group_id = g.id AND m.org_id <> p_org_id\n          );\n        IF v_group_id IS NOT NULL THEN\n            PERFORM set_config('row_security', v_row_security, true);\n            RETURN v_group_id;\n        END IF;\n    END LOOP;\n\n    PERFORM set_config('row_security', v_row_security, true);\n    RAISE EXCEPTION 'unable to mint group-of-one slug for org %', p_org_id\n        USING ERRCODE = '23505';\nEXCEPTION WHEN OTHERS THEN\n    PERFORM set_config('row_security', v_row_security, true);\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_org_id uuid, p_name text, p_status text",
+      "definition_sha256": "25334c82782b25c041eb902555c172c9c766acae1053758da94292fa9c02488a"
+    },
+    {
+      "acl": "{console_app=X/console_app}",
+      "name": "platform_mint_missing_group_of_one",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_mint_missing_group_of_one(p_org_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_row_security TEXT := current_setting('row_security');\n    v_group_id UUID;\nBEGIN\n    SET LOCAL row_security = off;\n    SELECT group_id INTO v_group_id FROM organizations WHERE id = p_org_id;\n    IF v_group_id IS NOT NULL THEN\n        PERFORM set_config('row_security', v_row_security, true);\n        RETURN v_group_id;\n    END IF;\n    v_group_id := platform_attach_group_of_one(p_org_id);\n    PERFORM set_config('row_security', v_row_security, true);\n    RETURN v_group_id;\nEXCEPTION WHEN OTHERS THEN\n    PERFORM set_config('row_security', v_row_security, true);\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": false,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_org_id uuid",
+      "definition_sha256": "3a96e440b9533098b0f98aef634126bccda8c16cdbbdc2157347a3585da9e77e"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_org_health",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_org_health()\n RETURNS TABLE(id uuid, slug text, name text, status text, group_id uuid, group_slug text, group_name text, user_count bigint, active_user_count bigint, active_work_orders bigint, open_work_orders bigint, last_activity_at timestamp with time zone)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nBEGIN\n    SET LOCAL row_security = off;\n\n    RETURN QUERY\n        SELECT\n            o.id,\n            o.slug,\n            o.name,\n            o.status,\n            g.id AS group_id,\n            g.slug AS group_slug,\n            g.name AS group_name,\n            COALESCE(u.total, 0)        AS user_count,\n            COALESCE(u.active, 0)       AS active_user_count,\n            COALESCE(w.active, 0)       AS active_work_orders,\n            COALESCE(w.open_total, 0)   AS open_work_orders,\n            GREATEST(u.last_user_at, w.last_wo_at, a.last_audit_at) AS last_activity_at\n        FROM organizations o\n        LEFT JOIN groups g ON g.id = o.group_id\n        LEFT JOIN (\n            SELECT\n                users.org_id                             AS org_id,\n                COUNT(*)                                 AS total,\n                COUNT(*) FILTER (WHERE users.is_active)  AS active,\n                MAX(users.created_at)                    AS last_user_at\n            FROM users\n            GROUP BY users.org_id\n        ) u ON u.org_id = o.id\n        LEFT JOIN (\n            SELECT\n                work_orders.org_id AS org_id,\n                COUNT(*) FILTER (\n                    WHERE work_orders.status IN (\n                        'IN_PROGRESS', 'REPORT_SUBMITTED', 'ADMIN_REVIEW', 'ASSIGNED'\n                    )\n                ) AS active,\n                COUNT(*) FILTER (\n                    WHERE work_orders.status NOT IN (\n                        'FINAL_COMPLETED', 'REJECTED', 'ARCHIVED', 'CANCELLED'\n                    )\n                ) AS open_total,\n                MAX(work_orders.updated_at) AS last_wo_at\n            FROM work_orders\n            GROUP BY work_orders.org_id\n        ) w ON w.org_id = o.id\n        LEFT JOIN (\n            SELECT\n                audit_events.org_id AS org_id,\n                MAX(audit_events.occurred_at) AS last_audit_at\n            FROM audit_events\n            WHERE audit_events.org_id IS NOT NULL\n            GROUP BY audit_events.org_id\n        ) a ON a.org_id = o.id\n        -- The platform sentinel is not a tenant; never report on it.\n        WHERE o.id <> '00000000-0000-0000-0000-00000000face'::uuid\n        ORDER BY o.created_at ASC, o.id ASC;\n\n    SET LOCAL row_security = on;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "",
+      "definition_sha256": "7889eff1955265dfc59eedab5a3267b280251bc959c027d4936794465c6d5f8b"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_remove_org_from_group",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_remove_org_from_group(p_group_id uuid, p_org_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_org_id UUID;\n    v_deleted INT;\nBEGIN\n    SET LOCAL row_security = off;\n\n    SELECT id INTO v_org_id\n    FROM organizations\n    WHERE id = p_org_id\n      AND id <> '00000000-0000-0000-0000-00000000face'::uuid;\n    IF v_org_id IS NULL THEN\n        SET LOCAL row_security = on;\n        RETURN NULL;\n    END IF;\n\n    DELETE FROM group_memberships\n    WHERE group_id = p_group_id\n      AND org_id = p_org_id;\n    GET DIAGNOSTICS v_deleted = ROW_COUNT;\n\n    IF v_deleted = 0 THEN\n        SET LOCAL row_security = on;\n        RETURN p_org_id;\n    END IF;\n\n    PERFORM platform_attach_group_of_one(p_org_id);\n\n    SET LOCAL row_security = on;\n    RETURN p_org_id;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_group_id uuid, p_org_id uuid",
+      "definition_sha256": "189228c51b4edebcca745ae249af49a7546137f6f21d8cebf43ff53e74ed0d7b"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_remove_organization",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_remove_organization(p_id uuid)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    sentinel_org CONSTANT UUID := '00000000-0000-0000-0000-00000000face'::uuid;\n    org_exists   BOOLEAN;\n    has_data     BOOLEAN;\nBEGIN\n    IF p_id = sentinel_org THEN\n        RETURN 'not_found';\n    END IF;\n\n    SET LOCAL row_security = off;\n\n    SELECT EXISTS (SELECT 1 FROM organizations WHERE id = p_id) INTO org_exists;\n    IF NOT org_exists THEN\n        SET LOCAL row_security = on;\n        RETURN 'not_found';\n    END IF;\n\n    SELECT\n        EXISTS (SELECT 1 FROM registry_equipment           WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM work_orders                   WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM registry_sites               WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM registry_customers           WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM inspection_rounds            WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM regular_inspection_schedules WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM sales_listings               WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM customer_inquiries           WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM financial_rental_quotes      WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM financial_purchase_requests  WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM financial_purchase_attachments WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM financial_regular_purchase_prices WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM financial_expense_ledger      WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM equipment_cost_ledger        WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM messenger_threads            WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM location_consents            WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM site_attendance_events       WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM governance_findings          WHERE org_id = p_id)\n     OR EXISTS (SELECT 1 FROM registered_devices rd\n                JOIN users u ON u.id = rd.user_id WHERE u.org_id = p_id)\n    INTO has_data;\n\n    IF has_data THEN\n        SET LOCAL row_security = on;\n        RETURN 'blocked_has_data';\n    END IF;\n\n    PERFORM public.auth_legacy_purge_company_v1(p_id);\n\n    DELETE FROM user_branches WHERE org_id = p_id;\n\n    PERFORM set_config('app.audit_rehome', 'on', true);\n    UPDATE audit_events\n    SET org_id    = sentinel_org,\n        actor     = NULL,\n        branch_id = NULL\n    WHERE org_id = p_id;\n    PERFORM set_config('app.audit_rehome', 'off', true);\n\n    DELETE FROM users    WHERE org_id = p_id;\n    DELETE FROM branches WHERE org_id = p_id;\n    DELETE FROM regions  WHERE org_id = p_id;\n\n    DELETE FROM organizations WHERE id = p_id;\n\n    SET LOCAL row_security = on;\n    RETURN 'removed';\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid",
+      "definition_sha256": "1f0fdd65fbaffd74a3f5f1b154d8a1f0c901cb6ab0e596dc33cbe8850d5ee4fb"
+    },
+    {
+      "acl": "{console_auth_rt=X/console_credential_owner,console_credential_owner=X/console_credential_owner,console_rt=X/console_credential_owner}",
+      "name": "platform_resolve_bootstrap_org",
+      "owner": "console_credential_owner",
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_resolve_bootstrap_org(p_token_hash bytea)\n RETURNS uuid\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\n SET row_security TO 'on'\nAS $function$BEGIN\n    RETURN (SELECT x.org_id FROM public.auth_bootstrap_credentials x WHERE x.token_hash=p_token_hash LIMIT 1);\nEND;$function$\n",
+      "auth_execute": true,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_token_hash bytea",
+      "definition_sha256": "8eb3a185fc3fb2e110785744db63dc8dc330642869e6d662b1fa9d01b647e89d"
+    },
+    {
+      "acl": "{console_auth_rt=X/console_credential_owner,console_credential_owner=X/console_credential_owner,console_rt=X/console_credential_owner}",
+      "name": "platform_resolve_credential_org",
+      "owner": "console_credential_owner",
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_resolve_credential_org(p_credential_id text)\n RETURNS uuid\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\n SET row_security TO 'on'\nAS $function$BEGIN\n    RETURN (SELECT x.org_id FROM public.auth_webauthn_credentials x WHERE x.credential_id=p_credential_id LIMIT 1);\nEND;$function$\n",
+      "auth_execute": true,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_credential_id text",
+      "definition_sha256": "30fe8b553515892908d3a6b4aa8b039419323447052c4d8ca1dc97c5f260f9b9"
+    },
+    {
+      "acl": "{console_auth_rt=X/console_credential_owner,console_credential_owner=X/console_credential_owner,console_rt=X/console_credential_owner}",
+      "name": "platform_resolve_token_org",
+      "owner": "console_credential_owner",
+      "config": [
+        "search_path=pg_catalog, pg_temp",
+        "row_security=on"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_resolve_token_org(p_token_hash bytea)\n RETURNS uuid\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'pg_catalog', 'pg_temp'\n SET row_security TO 'on'\nAS $function$BEGIN\n    RETURN (SELECT x.org_id FROM public.auth_refresh_tokens x WHERE x.token_hash=p_token_hash LIMIT 1);\nEND;$function$\n",
+      "auth_execute": true,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_token_hash bytea",
+      "definition_sha256": "ea1309933b6f4da3ff73756dd3ddfacc6bb9a67a335564f3a78815582c777254"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_revoke_group_role",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_revoke_group_role(p_group_id uuid, p_user_id uuid, p_group_role text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_user_org UUID;\n    v_deleted UUID;\nBEGIN\n    SET LOCAL row_security = off;\n\n    SELECT u.org_id INTO v_user_org\n    FROM users u\n    JOIN group_memberships gm\n      ON gm.org_id = u.org_id\n     AND gm.group_id = p_group_id\n    WHERE u.id = p_user_id;\n    IF v_user_org IS NULL THEN\n        SET LOCAL row_security = on;\n        RETURN NULL;\n    END IF;\n\n    DELETE FROM group_role_grants\n    WHERE group_id = p_group_id\n      AND user_id = p_user_id\n      AND group_role = p_group_role\n    RETURNING user_id INTO v_deleted;\n\n    SET LOCAL row_security = on;\n    RETURN v_deleted;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_group_id uuid, p_user_id uuid, p_group_role text",
+      "definition_sha256": "7c2a7f744ca80dde9f5ebb81a786b475ed664fe805ef968c3cc3188967e1356d"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_set_organization_status",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_set_organization_status(p_id uuid, p_status text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    updated_id UUID;\nBEGIN\n    IF p_status NOT IN ('ACTIVE', 'SUSPENDED', 'ARCHIVED') THEN\n        RAISE EXCEPTION 'invalid tenant status %', p_status;\n    END IF;\n    SET LOCAL row_security = off;\n    UPDATE organizations\n    SET status = p_status, updated_at = now()\n    WHERE id = p_id\n    RETURNING id INTO updated_id;\n    SET LOCAL row_security = on;\n    RETURN updated_id;  -- NULL when no such org\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid, p_status text",
+      "definition_sha256": "d8b3fd2a9925bf637dc7884e65fcad810ae1d16a1f20756d2c3d91434e9b9af9"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_update_group",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_update_group(p_id uuid, p_name text DEFAULT NULL::text, p_status text DEFAULT NULL::text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_id UUID;\nBEGIN\n    SET LOCAL row_security = off;\n\n    UPDATE groups\n    SET\n        name = COALESCE(NULLIF(btrim(p_name), ''), name),\n        status = COALESCE(p_status, status),\n        updated_at = now()\n    WHERE id = p_id\n    RETURNING id INTO v_id;\n\n    SET LOCAL row_security = on;\n    RETURN v_id;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid, p_name text, p_status text",
+      "definition_sha256": "5f86b4f351eeee353d30c13267afdbf7c4831651a26169a18e501aac06f3bac5"
+    },
+    {
+      "acl": "{console_app=X/console_app,console_rt=X/console_app}",
+      "name": "platform_update_group",
+      "owner": "console_app",
+      "config": [
+        "search_path=public, pg_temp"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.platform_update_group(p_id uuid, p_slug text DEFAULT NULL::text, p_name text DEFAULT NULL::text, p_status text DEFAULT NULL::text)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public', 'pg_temp'\nAS $function$\nDECLARE\n    v_id UUID;\nBEGIN\n    SET LOCAL row_security = off;\n\n    UPDATE groups\n    SET\n        slug = COALESCE(NULLIF(btrim(p_slug), ''), slug),\n        name = COALESCE(NULLIF(btrim(p_name), ''), name),\n        status = COALESCE(p_status, status),\n        updated_at = now()\n    WHERE id = p_id\n    RETURNING id INTO v_id;\n\n    SET LOCAL row_security = on;\n    RETURN v_id;\nEXCEPTION WHEN OTHERS THEN\n    SET LOCAL row_security = on;\n    RAISE;\nEND;\n$function$\n",
+      "auth_execute": false,
+      "runtime_execute": true,
+      "startup_execute": false,
+      "security_definer": true,
+      "identity_arguments": "p_id uuid, p_slug text, p_name text, p_status text",
+      "definition_sha256": "510e7597837b053672bc16208475bce49fd71859dced965203862f1a4178ae8a"
+    }
+  ],
+  "marked_admin": true,
+  "server_version_num": "180004"
+}

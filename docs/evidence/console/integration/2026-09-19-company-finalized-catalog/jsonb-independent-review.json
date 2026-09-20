@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "scope": "independent read-only inspection of parent-executed PostgreSQL serialization oracle; no additional database execution",
+  "decision": "ACCEPT_SERIALIZATION_EVIDENCE_ONLY",
+  "files": {
+    "/private/tmp/console-company-jsonb-oracle-20260919/oracle.sql": "2acf5235b4c9ae73a22df51ae3cab1391a05e3062d0d6a89e6c89a49c9e0301a",
+    "/private/tmp/console-company-jsonb-oracle-20260919/oracle.stdout": "f0a93eaaac16ae16cb7b8f87890f318ccc526e2cca6af3452bc152c62ad38f32",
+    "/private/tmp/console-company-jsonb-oracle-20260919/receipt.json": "e3d55cb395ec77789c2dacdb6286f556e3e1cc174bd91247d98c473267159312",
+    "/private/tmp/console-native-company-consolidated-contract-20260919-v2/native-company-catalog-v1.json": "edaf6dd5473957b00082396327491a4286b81bae1fb4ad3c30454dcea239066e",
+    "/private/tmp/console-native-company-consolidated-contract-20260919-v2/proposed-jsonb-manifest-bytes.txt": "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935"
+  },
+  "findings": [],
+  "observations": {
+    "server_version_num_output": "180004",
+    "embedded_manifest_exact": true,
+    "jsonb_utf8_bytes": 11358,
+    "sha256": "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935",
+    "database_digest_output_matches": true,
+    "proposed_bytes_exact": true,
+    "manifest_semantics_equal": true
+  },
+  "limits": [
+    "Source serialization only; native installation, mapping identities, audit binding and Company transaction closure remain unaccepted.",
+    "This inspection does not independently re-execute PostgreSQL or attest container identity beyond retained parent receipt."
+  ]
+}

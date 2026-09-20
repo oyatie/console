@@ -1,0 +1,14 @@
+{
+  "kind": "real-postgresql-jsonb-manifest-oracle",
+  "source_sha256": "edaf6dd5473957b00082396327491a4286b81bae1fb4ad3c30454dcea239066e",
+  "server_version_num": "180004",
+  "postgres_image": "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56",
+  "manifest_jsonb_sha256": "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935",
+  "proposed_fixture_sha256": "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935",
+  "proposed_exact_matches_postgres": true,
+  "proposed_trimmed_newline_matches_postgres": true,
+  "database_bytes_length": 11358,
+  "limits": [
+    "Read-only serialization oracle on no-network disposable PostgreSQL; no native catalog installation or Company implementation acceptance."
+  ]
+}

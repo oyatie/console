@@ -1,0 +1,117 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_BOUNDED_ACTUAL_TOPOLOGY_METADATA_ORACLE",
+  "capture_files": {
+    "cargo": "02adb6d2fb99bcb9ff25778d181c0b553167184aa6eee63d8e1616820c8b251b",
+    "metadata.sql": "04b32a871f43e0b55d51a03bf24e659538f175d3e6baf5bd6a1be21aef5796c5",
+    "metadata.json": "12cadfaffcac8eb2feda5e8d100d82ba5c20ca3ebc6dbed52f49ae4f1fda7efd",
+    "probe.log": "4e087124e78ab304a3b51c4cfaa13085b2a57107efb6758eca1fb3dfbe311fe9"
+  },
+  "source_census_sha256": "0e618da22132f8cc7d75cc6c7e00d4330c1d55f184a05f06d786bcaeae5e9086",
+  "source_hashes_verified": 14,
+  "exact_script_query_match": true,
+  "server_version_num": "180004",
+  "marked_admin": true,
+  "database": "_sqlx_test__8KMrb6fblcQIWUS08oybEUc_otgQbmCmwxu3pq6Kx1vLMHmdQ5y",
+  "routine_definitions_hash_verified": 28,
+  "table_metadata_rows": 6,
+  "role_metadata_rows": 4,
+  "actual_body_matches_source": [
+    {
+      "name": "platform_assign_org_to_group",
+      "identity_arguments": "p_group_id uuid, p_org_id uuid",
+      "source": "backend/crates/platform/db/migrations/0062_platform_group_management.sql",
+      "body_sha256": "c55c03cc7d8dcd010d563aa8ad1b247766b005b5ea9e54c4d57ddde0d4c6f1c4",
+      "definition_sha256": "d3d98010d33516594782aeda1883a0d8bef5abd671fd8bd088aba9166b4faf84"
+    },
+    {
+      "name": "platform_create_group",
+      "identity_arguments": "p_slug text, p_name text",
+      "source": "backend/crates/platform/db/migrations/0062_platform_group_management.sql",
+      "body_sha256": "c97fb252992b2270943d2f0a099de4a9e40301fb24123019e01f24ee758df050",
+      "definition_sha256": "a6e1bba9b738bd7dbe17d801bf9de9187e8a85341749a155ed9d83df274d1a8d"
+    },
+    {
+      "name": "platform_create_group_account",
+      "identity_arguments": "p_group_id uuid, p_org_id uuid, p_display_name text, p_phone text, p_tenant_roles text[], p_group_role text, p_granted_by uuid",
+      "source": "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql",
+      "body_sha256": "e4e32b8d194c689ed8d28ca4589e0adcafe30fbe1822e79f2c2e470854a9ccb0",
+      "definition_sha256": "5c88c85e08058062d4e5e1c3b9bb8290d5122a6d0d16c6c67124eb713eb01b3d"
+    },
+    {
+      "name": "platform_create_organization",
+      "identity_arguments": "p_slug text, p_name text",
+      "source": "backend/crates/platform/db/migrations/0036_platform_onboarding.sql",
+      "body_sha256": "876f58867d87b539f860b6b7a706f5c3205b992e63c610ccb5bcf8fb0402c703",
+      "definition_sha256": "0c1e6570f8b3e95e7fc267d77719d89200e1c4a4999f15d6f8fc223fa37c0abd"
+    },
+    {
+      "name": "platform_remove_org_from_group",
+      "identity_arguments": "p_group_id uuid, p_org_id uuid",
+      "source": "backend/crates/platform/db/migrations/0225_mandatory_group_of_one.sql",
+      "body_sha256": "2a51a6777e14df60e1a3be9382525d2c7f35763ec29cd1cea57550a4d48a4bf9",
+      "definition_sha256": "189228c51b4edebcca745ae249af49a7546137f6f21d8cebf43ff53e74ed0d7b"
+    },
+    {
+      "name": "platform_remove_organization",
+      "identity_arguments": "p_id uuid",
+      "source": "ops/postgres-finalize-account-credentials.sql",
+      "body_sha256": "57c4a8b2ad1fe05a9a620d0d45dfaeaaaac24f006c9f6a97937ead5fb48db21a",
+      "definition_sha256": "1f0fdd65fbaffd74a3f5f1b154d8a1f0c901cb6ab0e596dc33cbe8850d5ee4fb"
+    },
+    {
+      "name": "platform_revoke_group_role",
+      "identity_arguments": "p_group_id uuid, p_user_id uuid, p_group_role text",
+      "source": "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql",
+      "body_sha256": "7cd922a281fde76298edd5cb9822b7454647c51196d69bd7a83361d5056a31d9",
+      "definition_sha256": "7c2a7f744ca80dde9f5ebb81a786b475ed664fe805ef968c3cc3188967e1356d"
+    },
+    {
+      "name": "platform_set_organization_status",
+      "identity_arguments": "p_id uuid, p_status text",
+      "source": "backend/crates/platform/db/migrations/0036_platform_onboarding.sql",
+      "body_sha256": "d478e0bd8b1fe337d19afdcb5f56b335c55116f1046a4811a073f15c38cad7aa",
+      "definition_sha256": "d8b3fd2a9925bf637dc7884e65fcad810ae1d16a1f20756d2c3d91434e9b9af9"
+    },
+    {
+      "name": "platform_update_group",
+      "identity_arguments": "p_id uuid, p_name text, p_status text",
+      "source": "backend/crates/platform/db/migrations/0062_platform_group_management.sql",
+      "body_sha256": "63a229ec27c763d9131de18ec418b4618f8652e674a87d242666612c8983a3c9",
+      "definition_sha256": "5f86b4f351eeee353d30c13267afdbf7c4831651a26169a18e501aac06f3bac5"
+    },
+    {
+      "name": "platform_update_group",
+      "identity_arguments": "p_id uuid, p_slug text, p_name text, p_status text",
+      "source": "backend/crates/platform/db/migrations/0064_platform_group_accounts.sql",
+      "body_sha256": "474cbd5bc4e5c304a4903687a1174a32f896e4b15cc2e2d0f1cf4cd9e9e853ef",
+      "definition_sha256": "510e7597837b053672bc16208475bce49fd71859dced965203862f1a4178ae8a"
+    }
+  ],
+  "observed_owner": "console_app LOGIN BYPASSRLS INHERIT NOSUPERUSER for all10topologymutationfunctions andall6selectedtables",
+  "access_observation": "All10current rawtopologymutators includingboth group_updateoverloads are SECURITYDEFINER and effectivelyEXECUTABLEby console_rt, deniedtoAuth/startup; nativefencingnotyetimplemented.",
+  "probe": {
+    "name": "account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity",
+    "passed": 0,
+    "failed": 1,
+    "ignored": 0,
+    "filtered": 352,
+    "elapsed_seconds": 4.91,
+    "failure": "NATIVE_COMPANY_ENTRY: current designated Account cannot discover actual setup",
+    "downstream_harness_status": "fail retainedaftermetadata capture"
+  },
+  "script_review": [
+    "Realcargoargv forwardedunchanged; build/unrelatedinvocations exec actualcargo. Observer runs metadata after actualselectedprobe, doesnotalterteststdio orSQL.",
+    "PrivateDATABASE_URL parsedintoPGenv withoutshellinterpolation; inheritedPGvariablesremoved; exactloopbackadmin/markerquerychecked; single_sqlx_test_database selected.",
+    "SQL statements readpgcatalog/definitions/privileges only; do not invoke mutatingplatformfunctions orreadbusinessrows/passwordhashes.",
+    "Successfulcapture returnsoriginalcargoresult.returncode; retainedlogshowsfailedtest remainsfailed atouterharness.",
+    "Filesmetadata.sql/json are private inobservedfilesystem; noURI/password emittedbyobserver."
+  ],
+  "limitations": [
+    "Parentproducedruntime capture; reviewer independentlyinspectedartifact/script/source, didnot rerundatabase. No observer fault-injectioncontrolsuite supplied.",
+    "Observer bindsloopbackadminmarker andsingleSQLxdbname, but doesnotcapture Dockerimage/container/systemidentifier orbuiltbinaryhash; runtimeSQL reports180004. These externalbindings rely onparentharness custody, notnewindependentattestation.",
+    "EffectiveEXECUTE capturedforBusiness/Auth/startuponly; remainingcommandroles, membershipgraph, tableeffectiveDML/columnACLs and nonplatformtrigger/participantfunctions requireexpanded source/testcandidateoracle.",
+    "A metadataoracleandactualentryRED do notaccept native enrollment/policy/migrations orallCompanycontracts.",
+    "Historicalsourcecensus matches14unchangedfiles; literal-callcensus doesnotprove dynamicSQLorallHTTProutecoverage."
+  ]
+}
