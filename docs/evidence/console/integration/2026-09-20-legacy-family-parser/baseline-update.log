@@ -1,0 +1,8 @@
+test binaries defined         : 386
+reachable from a CI step      : 386
+declared test attrs in reachable sources: 3070  (static; cfg/ignore-unaware)
+executed nowhere              : 1
+reachable only through buck2  : 17  (--gap to list; the Buck2 exit has to wire these)
+  dark  backend/crates/platform/storage/tests/seaweedfs_worm.rs
+
+test_attribute_baseline rewritten: 384 reachable sources, 3070 declared test attributes. This static metric does not evaluate cfg or ignore. Commit it with the change that moved the numbers.

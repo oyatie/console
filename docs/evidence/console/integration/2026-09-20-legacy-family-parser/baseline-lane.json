@@ -1,0 +1,25 @@
+[
+  {
+    "lane": "legacy-family-test-baseline",
+    "owner": "/root",
+    "base_sha": "430257b67b6e246a81e5dce29ca2d54400d3c6d4",
+    "immutable_target": "Record seven added existing-CI JWT verifier tests without any count loss",
+    "allowed_paths": [
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "probe": "node scripts/check-executed-tests.mjs",
+    "mechanical_guide": "Existing --update owner; require only jwt_verifier7 to14 exactly matches independently approved patch",
+    "reviewer": "/root/integration_tests",
+    "pre_mortem": "Broad reset hides missing tests",
+    "blast_radius": "One declared count in existing baseline",
+    "detection": "Exact single delta and existing reachability owner",
+    "rollback": "Revert this count only; preserve tests",
+    "stop_conditions": [
+      "Other gains or losses",
+      "Reachability failure"
+    ],
+    "remaining_holds": [
+      "Hosted CI and release qualification"
+    ]
+  }
+]
