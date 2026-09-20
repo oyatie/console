@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVED_ADDITIVE_REFERENCE_ONLY",
+  "artifact_sha256": {
+    "proposal.json": "e25e1a9a6671d6e91b86820614c495cf7d739e882751a03dc7e6545c3ef3d4f8",
+    "candidate-patch.json": "8783af698d14bffbaa2cecdbf45df3f43e26eb5dfe9ef7ecb59053e11d4c4290",
+    "manifest.json": "d4b89f95561bb63832ee07a530ae069a4c042b87d8612bcc3df5a4a19fcaf640"
+  },
+  "registry_sha256": "02e57a510cac8e40e52ff396423134ac60ed03dbbfe4f87c7c8ad453eba2fa2c",
+  "manifest_files_checked": 20,
+  "source_integrity_checks": 18,
+  "sources": 6,
+  "body_quote_checks": 28,
+  "source_binding_keys": 8,
+  "runtime_rows": 3,
+  "security_qualifications": 14,
+  "existing_leaves_unchanged": 360,
+  "new_planned_leaves": 6,
+  "dag_nodes": 366,
+  "all_existing_object_values_and_list_prefixes_preserved": true,
+  "reused_overview_original_capture_path_and_bytes_preserved": true,
+  "findings": [],
+  "limitations": [
+    "Referenceonly; noimplementation, executableacceptance, exhaustiveFoundryfreeze orreleasequalification.",
+    "Vendorunrestrictedapprequirement versusresourceaccessrestrictioninstructions remainsunresolved; Consolescopedcurrentauthority isnotweakened.",
+    "Responsecustomizationdocumented butcompletegrammar/status/error/OpenAPIsemanticsnotestablished.",
+    "GETmethodremappingdoesnotauthorizeunsafemutations,CSRF/idempotencyweakening,alternatewriters ortrustedprocessusercode.",
+    "Executionmustretainresolvedimmutableendpoint/backingversionsandcanonicalreceipts; vendorlatestdefault/deletableversionsdonotpermit historicalrewriting/deletion.",
+    "CapturesretainactualUTCtimestamps onNewYorktargetdate; immutablehistoricalvendorstate notauthenticated.",
+    "Publication/domainapproval/deploymentdistinct; noDNS/TLS/exposure/paymentauthorization follows."
+  ]
+}
