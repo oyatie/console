@@ -23,6 +23,20 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_private_company_schema_auth_rest_resources_are_complete(self) -> None:
+        config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
+        self.assertEqual(
+            config["external"].get("//ops:postgres-company-enrollment-schema.sql"),
+            "ops/postgres-company-enrollment-schema.sql",
+        )
+        for path in [
+            "tests/auth_rest/fixtures/company-enrollment-schema-acl.sql",
+            "tests/auth_rest/fixtures/company-enrollment-schema-references.sql",
+        ]:
+            self.assertIn(path, config["srcs"])
+            self.assertTrue((Path(GENERATOR.REPO) / "backend/app" / path).is_file())
+        self.assertTrue((Path(GENERATOR.REPO) / "backend/app/tests/auth_rest/native_company_intake_schema.rs").is_file())
+
     def test_health_readiness_maps_its_existing_source_tripwire_inputs(self) -> None:
         config = GENERATOR.integration_resource_config("console-app", "tests/health_readiness.rs")
         self.assertIn("src/lib.rs", config["srcs"])

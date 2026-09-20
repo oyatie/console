@@ -1726,6 +1726,7 @@ pub(crate) mod company_setup {
     }
 
     include!("native_company_input_parser.rs");
+    include!("native_company_intake_schema.rs");
 
     #[cfg(feature = "test-browser")]
     include!("native_company_browser.rs");
