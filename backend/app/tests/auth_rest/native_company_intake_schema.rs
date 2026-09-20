@@ -55,7 +55,11 @@ mod intake_schema {
         }
     }
 
-    async fn corrupt_acl(connection: &mut sqlx::PgConnection, mutation: &str, expected: &str) {
+    async fn corrupt_acl(
+        connection: &mut sqlx::PgConnection,
+        mutation: &'static str,
+        expected: &str,
+    ) {
         sqlx::raw_sql("BEGIN; SET LOCAL statement_timeout='10s'; SET LOCAL lock_timeout='1s'")
             .execute(&mut *connection)
             .await
