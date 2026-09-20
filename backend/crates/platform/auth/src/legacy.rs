@@ -131,7 +131,7 @@ pub async fn read_legacy_self_passkeys(
         return Err(Unauthorized);
     }
     if let Some(binding) = &claims.legacy_session {
-        if binding.kind != LegacySessionKind::Direct || claims.platform {
+        if binding.kind != LegacySessionKind::Direct {
             return Err(Unauthorized);
         }
         if absolute_family_ttl <= Duration::ZERO {

@@ -5,7 +5,7 @@ use std::str::FromStr;
 use time::Duration;
 use uuid::Uuid;
 
-use crate::AuthError;
+use crate::{AuthError, RefreshTokenIssue};
 
 #[cfg(test)]
 #[path = "jwt_platform_binding_producer_tests.rs"]
@@ -409,6 +409,44 @@ impl JwtIssuer {
         self.issue_access_token_with_ttl(input, self.settings.access_token_ttl)
     }
 
+    /// Bind direct platform access to the family returned by the Auth owner.
+    /// Consumers must still verify the current family and disclosure authority.
+    pub fn issue_platform_access_token_for_family(
+        &self,
+        input: AccessTokenInput,
+        group_roles: Vec<String>,
+        family: &RefreshTokenIssue,
+    ) -> Result<String, AuthError> {
+        if family.family_id.is_nil()
+            || family.user_id != *input.subject.as_uuid()
+            || family.org_id != input.org_id
+            || input.org_id != OrgId::platform()
+            || !input.platform
+            || input.view_as
+            || input.read_only
+            || family.expires_at <= input.issued_at
+        {
+            return Err(AuthError::InvalidStoredData(
+                "invalid platform session family".to_owned(),
+            ));
+        }
+        self.issue_access_token_inner(
+            input,
+            self.settings.access_token_ttl,
+            None,
+            group_roles,
+            None,
+            None,
+            None,
+            Some(LegacySessionBinding {
+                version: 1,
+                family_id: family.family_id,
+                home_org: *family.org_id.as_uuid(),
+                kind: LegacySessionKind::Direct,
+            }),
+        )
+    }
+
     /// Mint a normal access token that also carries group-role claims.
     ///
     /// The token remains tenant-scoped by its `org` claim; group authority is
@@ -428,6 +466,7 @@ impl JwtIssuer {
             None,
             None,
             None,
+            None,
         )
     }
 
@@ -442,6 +481,7 @@ impl JwtIssuer {
             self.settings.access_token_ttl,
             Some(access_scope),
             group_roles,
+            None,
             None,
             None,
             None,
@@ -467,6 +507,7 @@ impl JwtIssuer {
             Some(TenantAccessContext::GroupAdmin),
             Some(group_id.to_string()),
             Some(actor_home_org.to_string()),
+            None,
         )
     }
 
@@ -483,7 +524,7 @@ impl JwtIssuer {
         input: AccessTokenInput,
         ttl: Duration,
     ) -> Result<String, AuthError> {
-        self.issue_access_token_inner(input, ttl, None, Vec::new(), None, None, None)
+        self.issue_access_token_inner(input, ttl, None, Vec::new(), None, None, None, None)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -496,6 +537,7 @@ impl JwtIssuer {
         tenant_context: Option<TenantAccessContext>,
         group_context_id: Option<String>,
         actor_home_org: Option<String>,
+        legacy_session: Option<LegacySessionBinding>,
     ) -> Result<String, AuthError> {
         if input.view_as && !group_roles.is_empty() {
             return Err(AuthError::InvalidStoredData(
@@ -552,9 +594,10 @@ impl JwtIssuer {
             authz_subject_version: input.authz_subject_version,
             authz_policy_version: input.authz_policy_version,
             session_generation: input.session_generation,
-            legacy_session: None,
+            legacy_session,
             alg: "ES256".to_owned(),
         };
+        claims.validate_legacy_session()?;
 
         Ok(encode(
             &Header::new(Algorithm::ES256),

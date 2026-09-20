@@ -2144,7 +2144,7 @@ async fn refresh_token(
     let requires_passkey_setup = has_no_passkeys && !is_synthetic_dev_auth_persona(&user);
     #[cfg(not(feature = "dev-auth"))]
     let requires_passkey_setup = has_no_passkeys;
-    let access_token = issue_access_token(services, &user)?;
+    let access_token = issue_access_token(services, &user, &issue)?;
     tx.commit()
         .await
         .map_err(|_| RestError::from_refresh(RefreshTokenUseError::Storage))?;
@@ -2685,7 +2685,6 @@ async fn issue_token_pair_in_tx(
     services: &AuthServices,
     user: &UserAuthContext,
 ) -> Result<IssuedTokenPair, RestError> {
-    let access_token = issue_access_token(services, user)?;
     let refresh = services
         .refresh_tokens
         .issue_family_in_tx(
@@ -2697,6 +2696,7 @@ async fn issue_token_pair_in_tx(
         )
         .await
         .map_err(auth_operation_error)?;
+    let access_token = issue_access_token(services, user, &refresh)?;
     Ok(IssuedTokenPair {
         access_token,
         refresh_token: refresh.token.as_str().to_owned(),
@@ -2710,6 +2710,7 @@ async fn issue_token_pair_in_tx(
 fn issue_access_token(
     services: &AuthServices,
     user: &UserAuthContext,
+    family: &console_platform_auth::RefreshTokenIssue,
 ) -> Result<String, RestError> {
     let input = AccessTokenInput {
         subject: user.user_id,
@@ -2735,7 +2736,13 @@ fn issue_access_token(
         session_generation: user.session_generation,
         issued_at: OffsetDateTime::now_utc(),
     };
-    if user.group_roles.is_empty() {
+    if user.org_id == OrgId::platform() {
+        services.jwt_issuer.issue_platform_access_token_for_family(
+            input,
+            user.group_roles.clone(),
+            family,
+        )
+    } else if user.group_roles.is_empty() {
         services.jwt_issuer.issue_access_token(input)
     } else {
         services
