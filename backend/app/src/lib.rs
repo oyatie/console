@@ -22,7 +22,7 @@ use axum::http::{HeaderMap, Request, Response, StatusCode, header};
 use axum::middleware::Next;
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{Json, Router};
+use axum::{Extension, Json, Router};
 use base64::Engine as _;
 use console_analytics_quant_rest::AnalyticsQuantState;
 use console_attendance_adapter_postgres::PgAttendanceStore;
@@ -94,14 +94,13 @@ use console_payroll_adapter_postgres::pay_run::PgPayRunPort;
 use console_payroll_rest::PayrollRestState;
 use console_platform_audit_chain::{ChainReport, SealConfig, SealSigner, verify_org_chain};
 use console_platform_auth::{
-    AccessClaims, AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings,
-    JwtVerifier, PasskeyService, SessionVerification, WELL_KNOWN_AASA_PATH,
-    WELL_KNOWN_ASSETLINKS_PATH, WebauthnSettings, android_assetlinks_json,
-    apple_app_site_association_json,
+    AndroidAssetLinksConfig, AppleAppSiteAssociationConfig, JwtIssuer, JwtSettings, JwtVerifier,
+    PasskeyService, SessionVerification, WELL_KNOWN_AASA_PATH, WELL_KNOWN_ASSETLINKS_PATH,
+    WebauthnSettings, android_assetlinks_json, apple_app_site_association_json,
 };
 use console_platform_auth_rest::{AuthRestConfig, AuthRestState};
 use console_platform_authz::{
-    Action, Feature, Principal, Role, authorize_capability, authorize_org_wide,
+    Action, Feature, Principal, authorize_capability, authorize_org_wide,
 };
 use console_platform_authz_rest::{CedarPolicyRestState, PgCedarPolicyStore};
 use console_platform_db::{DbError, with_audit};
@@ -4343,7 +4342,7 @@ fn well_known_json_response(
 
 async fn audit_log(
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Extension(principal): Extension<Principal>,
     Query(query): Query<AuditQuery>,
 ) -> Result<Json<AuditPage>, ApiError> {
     let pool = match &state.database {
@@ -4354,14 +4353,6 @@ async fn audit_log(
             ));
         }
     };
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
-        ApiError::service_unavailable("JWT verification is not configured for audit access")
-    })?;
-    let token = bearer_token(&headers)?;
-    let claims = verifier
-        .verify_access_token(token)
-        .map_err(|_| ApiError::unauthorized("invalid bearer token"))?;
-    let principal = principal_from_claims(claims)?;
     authorize_audit_read(&principal)?;
     let query = normalize_audit_query(query)?;
     let audit_event = audit_read_event(&principal)?;
@@ -4391,21 +4382,20 @@ async fn audit_log(
 /// charter §5.3) and returns the verdict — never mutates. Unlike `/api/audit`,
 /// which can safely branch-filter rows for a branch-scoped ADMIN, this endpoint
 /// verifies the whole tenant chain. Require org-wide `AuditLogRead` so the
-/// attestation surface cannot widen branch-scoped audit visibility. For
-/// `AuditLogRead` today, built-in org-wide authority is SUPER_ADMIN; a
-/// branch-scoped or branch-omitted ADMIN token must not pass this gate.
+/// attestation surface cannot widen branch-scoped audit visibility. Current
+/// built-in SUPER_ADMIN authority or an effective org-wide grant can authorize
+/// the request; branch-scoped authority cannot.
 ///
 /// Cost note: `verify_org_chain` re-derives every seal's batch from its full
 /// `audit_events` range — a FULL-CHAIN re-verify, not an incremental one, so
-/// wall time scales with the org's total sealed audit history. Bounded today
-/// by (a) org-wide built-in callers (SUPER_ADMIN for `AuditLogRead`), so
-/// callers are trusted and infrequent, (b) the app-wide request timeout, and
-/// (c) console_rt's 30s `statement_timeout` (migration 0112) capping any single DB
-/// pass. A head-N-seals or cached-verdict endpoint variant for orgs with a long
+/// wall time scales with the org's total sealed audit history. Access requires
+/// org-wide authority. The app-wide request timeout and console_rt's 30s
+/// `statement_timeout` (migration 0112) bound execution for built-in and granted
+/// callers alike. A head-N-seals or cached-verdict endpoint variant for orgs with a long
 /// history is a PR-3 item (charter F1 anchor), not built here.
 async fn audit_attestation(
     State(state): State<AppState>,
-    headers: HeaderMap,
+    Extension(principal): Extension<Principal>,
 ) -> Result<Json<ChainReport>, ApiError> {
     let pool = match &state.database {
         DatabaseDependency::Postgres(pool) => pool,
@@ -4415,14 +4405,6 @@ async fn audit_attestation(
             ));
         }
     };
-    let verifier = state.jwt_verifier.as_ref().ok_or_else(|| {
-        ApiError::service_unavailable("JWT verification is not configured for audit access")
-    })?;
-    let token = bearer_token(&headers)?;
-    let claims = verifier
-        .verify_access_token(token)
-        .map_err(|_| ApiError::unauthorized("invalid bearer token"))?;
-    let principal = principal_from_claims(claims)?;
     authorize_audit_attestation(&principal)?;
 
     // Shared throwaway signer is correct here: `verify` reconstructs the
@@ -4448,55 +4430,6 @@ async fn audit_attestation(
     Ok(Json(report))
 }
 
-fn bearer_token(headers: &HeaderMap) -> Result<&str, ApiError> {
-    let header_value = headers
-        .get(header::AUTHORIZATION)
-        .ok_or_else(|| ApiError::unauthorized("missing bearer token"))?
-        .to_str()
-        .map_err(|_| ApiError::unauthorized("invalid authorization header"))?;
-    header_value
-        .strip_prefix("Bearer ")
-        .filter(|token| !token.trim().is_empty())
-        .ok_or_else(|| ApiError::unauthorized("authorization header must use Bearer scheme"))
-}
-
-fn principal_from_claims(claims: AccessClaims) -> Result<Principal, ApiError> {
-    let user_id = UserId::from_str(&claims.sub)
-        .map_err(|_| ApiError::unauthorized("token subject is not a valid user id"))?;
-    let roles_vec: Vec<Role> = claims
-        .roles
-        .iter()
-        .map(|role| {
-            Role::from_str(role)
-                .map_err(|_| ApiError::unauthorized("token contains an unknown role"))
-        })
-        .collect::<Result<_, _>>()?;
-    let roles = roles_vec.iter().copied().collect::<BTreeSet<_>>();
-    let branch_scope = if roles_vec
-        .iter()
-        .any(|role| matches!(role, Role::SuperAdmin | Role::Executive))
-    {
-        BranchScope::All
-    } else {
-        let branches = claims
-            .branches
-            .iter()
-            .map(|branch| {
-                BranchId::from_str(branch)
-                    .map_err(|_| ApiError::unauthorized("token contains an invalid branch id"))
-            })
-            .collect::<Result<BTreeSet<_>, _>>()?;
-        BranchScope::Branches(branches)
-    };
-
-    let org_id = OrgId::from_str(&claims.org)
-        .map_err(|_| ApiError::unauthorized("token contains an invalid org id"))?;
-    let access_scope = claims
-        .access_scope()
-        .map_err(|_| ApiError::unauthorized("token contains an invalid access scope"))?;
-    Ok(Principal::new(user_id, org_id, roles, branch_scope).with_access_scope(access_scope))
-}
-
 /// `GET /api/audit` is a QUERY over the caller's whole branch scope, not a read of
 /// one branch's row — `fetch_audit_records` is already handed `branch_scope` and
 /// confines the rows. There is no single resource branch to authorize against, so
@@ -4511,10 +4444,8 @@ fn authorize_audit_attestation(principal: &Principal) -> Result<(), ApiError> {
     // Whole-tenant attestation is intentionally stricter than branch-filtered
     // `/api/audit`: built-in ADMIN is operational/branch authority, not an
     // org-wide evidentiary attestation authority. `authorize_org_wide` first
-    // requires all-branch scope, then applies the feature matrix; for
-    // `AuditLogRead` that means built-in SUPER_ADMIN today, while still
-    // preserving the custom-grant path for future policy-managed org-wide
-    // AuditLogRead.
+    // requires all-branch scope, then checks built-in authority or an effective
+    // custom grant covering that whole scope.
     authorize_org_wide(principal, Action::new(Feature::AuditLogRead)).map_err(ApiError::from_kernel)
 }
 
@@ -4697,10 +4628,6 @@ impl ApiError {
             code,
             message: message.into(),
         }
-    }
-
-    fn unauthorized(message: impl Into<String>) -> Self {
-        Self::new(StatusCode::UNAUTHORIZED, "unauthorized", message)
     }
 
     fn forbidden(message: impl Into<String>) -> Self {

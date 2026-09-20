@@ -1,0 +1,78 @@
+{
+  "kind": "audit-current-authority-implementation-verification",
+  "base_sha": "e03b0c060ea953c680907d7e7a9221896de5fd80",
+  "owner": "root sole repository writer",
+  "implementation_sha256": "607cddd0d44681a2439b5ce6d5ee6a68f92ec3c7cca827355e7824c9662e4613",
+  "test_sha256": "b326dbf726bde3d1c40952614573bbfee35b97f15f0f5c69c81488d7818f10df",
+  "reviewer": "audit_review",
+  "verdict": "approved exact source; full retained suite still running",
+  "probe": "tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-audit-current-map.json --only app-audit-api-pg --runner cargo > /private/tmp/console-audit-current-probe.log 2>&1",
+  "red": {
+    "executed": 5,
+    "passed": 0,
+    "failed": 5,
+    "filtered": 5,
+    "seconds": 206.58
+  },
+  "green": {
+    "executed": 5,
+    "passed": 5,
+    "failed": 0,
+    "filtered": 5,
+    "seconds": 179.95
+  },
+  "mutation_controls": [
+    {
+      "mutation": "log-role",
+      "test": "audit_log_uses_current_role_after_token_issuance",
+      "exit_code": 1,
+      "detected": true,
+      "log_sha256": "378afd30db5f0bda8ca09a494bba19968145c903f22b41966b855dbdcafd7020"
+    },
+    {
+      "mutation": "attestation-role",
+      "test": "audit_attestation_uses_current_role_after_token_issuance",
+      "exit_code": 1,
+      "detected": true,
+      "log_sha256": "6303be99cb970bdb0398f419a2c113685151bcd459fb311b354c832f34f79d35"
+    },
+    {
+      "mutation": "log-branches",
+      "test": "audit_log_uses_current_branches_after_token_issuance",
+      "exit_code": 1,
+      "detected": true,
+      "log_sha256": "c6cedb99b790f4e6721308ffae00bceea680a4038d48c6446cb0a1b1f26504a1"
+    },
+    {
+      "mutation": "log-grants",
+      "test": "audit_log_preserves_current_grants_after_token_issuance",
+      "exit_code": 1,
+      "detected": true,
+      "log_sha256": "9c324e2778c4400271eb56d5cbf5439c89fba5bf6688e0f4efa701cdbc70143d"
+    },
+    {
+      "mutation": "attestation-grants",
+      "test": "audit_attestation_preserves_current_grants_after_token_issuance",
+      "exit_code": 1,
+      "detected": true,
+      "log_sha256": "c08b0286a596ce4f7da468dc59d0b557ae10e4faa4251afa2ddac61b5c2a2867"
+    }
+  ],
+  "logs": {
+    "red": "e4efbb75bff9c89016ec92f350d1bd13eb74cc690788edd1e94d22c232a05f62",
+    "green": "1b76a481433ee451eea1bf9b839aca9c9490a3104ceefbd5662bbfce51282d03",
+    "admission": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "map": "226e4002c207ef2de2069e0b88c24853e69a335ed811e2d17d3b107d04546093",
+    "mutation-driver": "e85fa9a35a65dfda28f61759242b091885d0f18a7057e62be7c8513052dbe01b",
+    "compile-prerequisite": "a44599b3299c23efc511f736c8cebf8b0128fcd35d23d9a49182b3f5eafa1115",
+    "mutation-log-role": "378afd30db5f0bda8ca09a494bba19968145c903f22b41966b855dbdcafd7020",
+    "mutation-attestation-role": "6303be99cb970bdb0398f419a2c113685151bcd459fb311b354c832f34f79d35",
+    "mutation-log-branches": "c6cedb99b790f4e6721308ffae00bceea680a4038d48c6446cb0a1b1f26504a1",
+    "mutation-log-grants": "9c324e2778c4400271eb56d5cbf5439c89fba5bf6688e0f4efa701cdbc70143d",
+    "mutation-attestation-grants": "c08b0286a596ce4f7da468dc59d0b557ae10e4faa4251afa2ddac61b5c2a2867"
+  },
+  "remaining": [
+    "Full ten-test retained audit suite running.",
+    "No native browser, subscription or release qualification implied."
+  ]
+}
