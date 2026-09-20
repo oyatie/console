@@ -1,0 +1,77 @@
+{
+  "status": "UNRESOLVED_INTERMITTENT_METADATA_EQUALITY",
+  "full52": {
+    "passed": 49,
+    "failed": 3,
+    "ignored": 0,
+    "filtered": 391,
+    "seconds": 678.68
+  },
+  "focused_runs": [
+    {
+      "fresh_passed": 2,
+      "populated_passed": 2,
+      "seconds": [
+        35.87,
+        40.5
+      ]
+    },
+    {
+      "fresh_passed": 2,
+      "populated_passed": 2,
+      "seconds": [
+        34.05,
+        40.55
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/console-platform-source-full-retained-run2-20260920.log",
+      "original": "/private/tmp/console-platform-source-full-retained-run2-20260920.log",
+      "sha256": "99312ca16399aa7ad52b3a202d89d5e4f4e694dfc4c81375c850265519ab3075"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/console-platform-source-upgrade-diagnostics-run1-20260920.log",
+      "original": "/private/tmp/console-platform-source-upgrade-diagnostics-run1-20260920.log",
+      "sha256": "8aaa35ab4b2cae4eea919d75117807900ac8ec0646be46c264310115123c133d"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/console-platform-source-upgrade-diagnostics-run2-20260920.log",
+      "original": "/private/tmp/console-platform-source-upgrade-diagnostics-run2-20260920.log",
+      "sha256": "37ebf6e8edd47298383b6e97bec60af4de4240c706ef0d77fa809dce59add1e1"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/manifest.json",
+      "original": "/private/tmp/console-platform-source-upgrade-diagnostics-20260920-round1/manifest.json",
+      "sha256": "37d7fb5dd60e3790e1bb63b06b10511e0538b252bdd1bc0d412cf452c2cdb192"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/console-platform-source-upgrade-diagnostics-round1-root-review-20260920.json",
+      "original": "/private/tmp/console-platform-source-upgrade-diagnostics-round1-root-review-20260920.json",
+      "sha256": "5a9f1877567a3ebbc08c5a223007331e4e530f5da227e52e5d6c8ac2a65fa617"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/console-platform-source-upgrade-diagnostics-round1-security-review-20260920.json",
+      "original": "/private/tmp/console-platform-source-upgrade-diagnostics-round1-security-review-20260920.json",
+      "sha256": "864f6da544d07b8d334b4db46c670e95a88197e11835f2f6692a5235be75fa6e"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-diagnostics-round1/console-platform-list-5ce1fa20-runtime-security-review-20260920.json",
+      "original": "/private/tmp/console-platform-list-5ce1fa20-runtime-security-review-20260920.json",
+      "sha256": "22532f51d203c308f9406fde1216ea16f27d85ba4261dcaeba59adba223fc92c"
+    }
+  ],
+  "facts": [
+    "four exact equality checks now print only differing structural paths when failed",
+    "no failure reproduced in focused diagnostics; no cause inferred from successful reruns",
+    "full52diagnosticrun3active to reproduce original execution context",
+    "diagnostic source rustfmt check reports3line-wrap changes pending later mechanical formatting; no semantic change applied during active runtimes"
+  ],
+  "claims_excluded": [
+    "lane acceptance",
+    "actual metadata mutation attribution",
+    "physical statistics normalization",
+    "production/release qualification"
+  ]
+}

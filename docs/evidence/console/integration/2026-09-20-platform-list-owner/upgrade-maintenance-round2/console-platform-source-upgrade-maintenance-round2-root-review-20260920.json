@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVED_SOURCE_PENDING_INDEPENDENT_RECEIPT",
+  "manifest_sha256": "8afc567be61749af6e231855774af63b33fe1a69adf4111cb79794cc62086122",
+  "checks": [
+    "actual paths onlytwoindex statistics fields, no securitymetadata change shown",
+    "one dedicated disconnectedadmin maintenance phase before baseline, verified60s/5s bounds",
+    "complete exact public relation and capturedindexparent coverage, nativeVACUUMANALYZE",
+    "all original snapshots,pins,equalities and oldtests preserved",
+    "samephase SHARElocks protect only owntransaction, no crosscommit mutualexclusion claim",
+    "no settings leak to existingpool/server, no production change"
+  ],
+  "runtime": 0,
+  "remaining": "independent approval and focused4/full52runtime required; earlier failures preserved"
+}

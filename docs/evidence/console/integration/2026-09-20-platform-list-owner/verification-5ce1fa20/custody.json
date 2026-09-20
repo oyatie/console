@@ -1,0 +1,57 @@
+{
+  "candidate": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "status": "LIST_RUNTIME_PASS_TRANSITION_ACCEPTANCE_OPEN",
+  "results": [
+    {
+      "name": "original_named_owner_probe",
+      "discovered": 1,
+      "executed": 1,
+      "passed": 1,
+      "filtered": 443,
+      "seconds": 10.04
+    },
+    {
+      "name": "full_list_suite",
+      "discovered": 30,
+      "executed": 30,
+      "passed": 30,
+      "filtered": 414,
+      "seconds": 273.92
+    },
+    {
+      "name": "mounted503",
+      "discovered": 1,
+      "executed": 1,
+      "passed": 1,
+      "filtered": 443,
+      "seconds": 13.86
+    },
+    {
+      "name": "clippy_auth_rest",
+      "exit_code": 0
+    }
+  ],
+  "files": [
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/verification-5ce1fa20/console-platform-list-final30-5ce1fa20-run1-20260920.log",
+      "sha256": "2e4193442319504a76d72891413137b7cd49c2c0d42fe6f1165013aa69213eb9",
+      "original": "/private/tmp/console-platform-list-final30-5ce1fa20-run1-20260920.log"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/verification-5ce1fa20/console-platform-list-5ce1fa20-clippy-20260920.log",
+      "sha256": "a43bdb72e393b437daaf8d6caed0be54f4d4914050a4aef05ba41ce714710347",
+      "original": "/private/tmp/console-platform-list-5ce1fa20-clippy-20260920.log"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/verification-5ce1fa20/console-platform-list-5ce1fa20-source-security-review-20260920.json",
+      "sha256": "eab13933ec67b57cb788334ace3beeafa1cb2d0dfda98043ae2573b6cbc42088",
+      "original": "/private/tmp/console-platform-list-5ce1fa20-source-security-review-20260920.json"
+    }
+  ],
+  "limits": [
+    "full52run2 still active with3upgrade metadata failures; no lane completion",
+    "503focused ran afterfull30 because runner preserves map order, duplicate leaf explicitly recorded",
+    "isolated correctness tests, no durability/performance/productionqualification claim",
+    "other Platform owners/rawgrant/release scopes remain open"
+  ]
+}

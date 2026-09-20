@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/integration_security",
+  "candidate_sha": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "decision": "approved-committed-source-composition-runtime-acceptance-HOLD",
+  "findings": [],
+  "checks": [
+    "Clean exact committed tree verified.",
+    "All14 candidate custody source hashes verified against committed files; SQL transition/stability, predecessor projection, JIT setup and mounted503 round2 exact approved private bytes.",
+    "Core production source and generator remain unchanged from independently reviewed c3implementation.",
+    "BUCK string-set comparison removes0 entries and adds only4new test sources; fixture resource discovery uses retained generator.",
+    "Original mounted owner test body and strict audit assertions unchanged since26d ownerRED; additive child module only.",
+    "Implementation36 + transition23 + acceptance12 =71 original artifacts independently regular-file/hash/byte matched; two additive mounted503review receipts hash-matched.",
+    "Ops design archive 16 original artifacts independently regular-file/hash/byte matched; design authoring approval only, no ops source tests integrated."
+  ],
+  "runtime_facts": [
+    "Original exact mounted probe executed1passed at5ce,10.04s,443filtered.",
+    "Full30 still active; no final full-suite result claimed.",
+    "Full52run2 binary compiled before additive unselected mounted503 leaf; transition production/test source hashes match5ce, but it is not represented as an exact5ce artifact run.",
+    "Full52run2 fresh plain/observer cases have actual replay metadata failures at line374. Cause unknown; reviewed exact-equality structural diagnostics successor required."
+  ],
+  "remaining_holds": [
+    "Diagnose/fix actual replay metadata failures through independently reviewed test or owner change, retaining failed evidence and all exact comparisons.",
+    "Complete full52 and full30 plus mounted503 runtime evidence; pending source diagnostic successor means final acceptance candidate may differ.",
+    "Bind final accepted test artifact/source/evidence and independent merge verdict to final immutable candidate.",
+    "Existing pool/clock/decode runtime coverage limits, rawSQL/otherPlatform and complete release qualification remain as prior pending audit."
+  ],
+  "review_runtime_executed": 0
+}

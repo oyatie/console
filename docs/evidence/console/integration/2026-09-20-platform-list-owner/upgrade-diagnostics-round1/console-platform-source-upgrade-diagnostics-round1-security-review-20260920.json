@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-value-free-diagnostic-source-only",
+  "manifest_sha256": "37d7fb5dd60e3790e1bb63b06b10511e0538b252bdd1bc0d412cf452c2cdb192",
+  "candidate_sha256": "ed9707e35b506da18cdd4620036d5ed58f6ed7560c322709fa28709c0b3d0f6d",
+  "findings": [],
+  "checks": [
+    "Exact5ce current preimage/candidate/manifest hashes independently verified.",
+    "Exactly four upgrade-case equality comparisons use previously reviewed same_metadata, which returns exact before==after.",
+    "No locks, normalization, tolerance, snapshot fields, finalizer SQL or row assertions changed.",
+    "Existing helper emits at most32 structural paths without values."
+  ],
+  "runtime_executed": 0,
+  "observed_failures": [
+    "Full52run2 fresh plain and observer cases failed replay metadata equality at line374 before outer commit/rollback."
+  ],
+  "remaining_holds": [
+    "Run exact diagnostic successor to determine actual differing paths; no cause inferred from prior maintenance failures.",
+    "Current full30 completes against unchanged5ce before source integration; preserve both histories.",
+    "No candidate/lane/release acceptance."
+  ]
+}

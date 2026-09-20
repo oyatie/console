@@ -1,0 +1,1078 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_31805" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_31805, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+cargo-postgres: running 1 cargo test invocations (threads=1)
+cargo-postgres: building packages...
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "object_resolve_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "submittable_definitions_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "org_change_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "facilities_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_ontology_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "board_ack_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "realtime_ws") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "search_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_links_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "registry_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_instance_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_run_read_surface") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "dispatch_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "persona_ess_http") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_manager_scope") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_four_eyes_publish") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_route_telemetry") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_runtime_finalize_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "object_graph_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "attendance_persona_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "action_inbox_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "field_visit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "purchase_request_collection_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "recruiting_pipeline_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "platform_onboarding_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workbench_native_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "tenant_context_e2e") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "router_layers") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "intelligence_bind") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_kind_dynamics") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_ingest_checklist_gate") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notifications_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "audit_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workorder_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_attendance_self_read") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "logistics_pilot_story") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "notif_routing_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "hr_people_create_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "equipment_3r_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "console_kill_switch") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "well_known") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "mobile_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "benefit_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "maintenance_chain_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "evaluation_cycle_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "health_readiness") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "workflow_object_context_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "compliance_catalog_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "consulting_engagement_api") generated 1 warning (1 duplicate)
+[1m[33mwarning[0m: `console-app` (test "finance_gl_voucher_sod") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.40s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m  Executable[0m unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_app-cd8cc61804be2ef1)
+[1m[92m  Executable[0m unittests src/main.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_app-9e9036dbe46fdf31)
+[1m[92m  Executable[0m unittests src/bin/console_cedar_parity_report.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_cedar_parity_report-145ad9c7074ce61c)
+[1m[92m  Executable[0m unittests src/bin/console_deployment_operator.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_deployment_operator-07b966d6e24143cc)
+[1m[92m  Executable[0m tests/account_migration.rs (/private/tmp/console-rust1981-owner-target/debug/deps/account_migration-6b544f3e38f60815)
+[1m[92m  Executable[0m tests/action_inbox_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/action_inbox_api-22a6e187ae950456)
+[1m[92m  Executable[0m tests/attendance_persona_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/attendance_persona_api-4bb2ae3b6e21c51f)
+[1m[92m  Executable[0m tests/audit_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/audit_api-294ad3d144758f0e)
+[1m[92m  Executable[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-a7c214d310a8f5c1)
+[1m[92m  Executable[0m tests/benefit_catalog_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/benefit_catalog_api-2dadab0a41b41505)
+[1m[92m  Executable[0m tests/board_ack_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/board_ack_api-deb138e74a54d677)
+[1m[92m  Executable[0m tests/cedar_freshness_mint.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_freshness_mint-b1923790de0169d4)
+[1m[92m  Executable[0m tests/cedar_parity_shadow.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_parity_shadow-112ff9fd7965d259)
+[1m[92m  Executable[0m tests/cedar_shadow_role_manage.rs (/private/tmp/console-rust1981-owner-target/debug/deps/cedar_shadow_role_manage-1e653653bda0fec3)
+[1m[92m  Executable[0m tests/compliance_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/compliance_api-33e4ea22a281c952)
+[1m[92m  Executable[0m tests/compliance_catalog_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/compliance_catalog_api-5e9e255bd33b8cae)
+[1m[92m  Executable[0m tests/config.rs (/private/tmp/console-rust1981-owner-target/debug/deps/config-0d3e3370e6a7e32e)
+[1m[92m  Executable[0m tests/console_kill_switch.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_kill_switch-5c1f73f31dfe9b61)
+[1m[92m  Executable[0m tests/console_route_telemetry.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_route_telemetry-8e91530058af3c21)
+[1m[92m  Executable[0m tests/consulting_engagement_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/consulting_engagement_api-27e39653727a245c)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_auth_persona_guard-5cd6db207bb656ef)
+[1m[92m  Executable[0m tests/dev_auth_persona_guard_feature.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_auth_persona_guard_feature-d061a92246c375d1)
+[1m[92m  Executable[0m tests/dev_seed_notification_links.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dev_seed_notification_links-850c947c98bb73f8)
+[1m[92m  Executable[0m tests/dispatch_pipeline_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/dispatch_pipeline_api-20b865a995871fe5)
+[1m[92m  Executable[0m tests/equipment_3r_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/equipment_3r_api-dff75550656bca12)
+[1m[92m  Executable[0m tests/evaluation_cycle_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/evaluation_cycle_api-588e3254b547c2db)
+[1m[92m  Executable[0m tests/facilities_pilot_story.rs (/private/tmp/console-rust1981-owner-target/debug/deps/facilities_pilot_story-4be6f246d9b8f5e3)
+[1m[92m  Executable[0m tests/field_visit_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/field_visit_api-ad20c983228fe94a)
+[1m[92m  Executable[0m tests/finance_gl_voucher_sod.rs (/private/tmp/console-rust1981-owner-target/debug/deps/finance_gl_voucher_sod-880bd67e9866c348)
+[1m[92m  Executable[0m tests/health_readiness.rs (/private/tmp/console-rust1981-owner-target/debug/deps/health_readiness-9026b9f9e48b94af)
+[1m[92m  Executable[0m tests/hr_attendance_manager_scope.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_attendance_manager_scope-3ccfbfd8ee5e64c7)
+[1m[92m  Executable[0m tests/hr_attendance_self_read.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_attendance_self_read-6937e0cb7a346711)
+[1m[92m  Executable[0m tests/hr_ingest_checklist_gate.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_ingest_checklist_gate-cefbf8ea88e0ea12)
+[1m[92m  Executable[0m tests/hr_people_create_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/hr_people_create_api-d357752e5859ef1c)
+[1m[92m  Executable[0m tests/intelligence_bind.rs (/private/tmp/console-rust1981-owner-target/debug/deps/intelligence_bind-2848960282575bac)
+[1m[92m  Executable[0m tests/logistics_pilot_story.rs (/private/tmp/console-rust1981-owner-target/debug/deps/logistics_pilot_story-ead2d95d026a98af)
+[1m[92m  Executable[0m tests/m2_real_engine_drive.rs (/private/tmp/console-rust1981-owner-target/debug/deps/m2_real_engine_drive-1a32813d0615eda4)
+[1m[92m  Executable[0m tests/maintenance_chain_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/maintenance_chain_api-862334737244b194)
+[1m[92m  Executable[0m tests/mobile_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/mobile_api-58702c9736fb28c6)
+[1m[92m  Executable[0m tests/notif_routing_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/notif_routing_api-57981d51aefe17eb)
+[1m[92m  Executable[0m tests/notifications_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/notifications_api-a27ebb480841ec3b)
+[1m[92m  Executable[0m tests/object_graph_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_graph_api-4c4b455963c5944e)
+[1m[92m  Executable[0m tests/object_links_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_links_api-a9379d888569c76a)
+[1m[92m  Executable[0m tests/object_ontology_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_ontology_api-fb81d164d41b1df2)
+[1m[92m  Executable[0m tests/object_resolve_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/object_resolve_api-888ea274f640b674)
+[1m[92m  Executable[0m tests/office_versions.rs (/private/tmp/console-rust1981-owner-target/debug/deps/office_versions-b011e2aa247c456e)
+[1m[92m  Executable[0m tests/openapi_drift.rs (/private/tmp/console-rust1981-owner-target/debug/deps/openapi_drift-c8ecc2860532140f)
+[1m[92m  Executable[0m tests/openslo_files.rs (/private/tmp/console-rust1981-owner-target/debug/deps/openslo_files-ff7d6ea4dec22906)
+[1m[92m  Executable[0m tests/org_change_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/org_change_api-6af95266d097afc2)
+[1m[92m  Executable[0m tests/persona_ess_http.rs (/private/tmp/console-rust1981-owner-target/debug/deps/persona_ess_http-0bf8c946128901b4)
+[1m[92m  Executable[0m tests/platform_onboarding_e2e.rs (/private/tmp/console-rust1981-owner-target/debug/deps/platform_onboarding_e2e-50b9478beb20261f)
+[1m[92m  Executable[0m tests/purchase_request_collection_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/purchase_request_collection_api-3eb342fc8bae9d4c)
+[1m[92m  Executable[0m tests/realtime_ws.rs (/private/tmp/console-rust1981-owner-target/debug/deps/realtime_ws-ed15b968de5b5e61)
+[1m[92m  Executable[0m tests/recruiting_pipeline_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/recruiting_pipeline_api-7b38f14e7257fc4f)
+[1m[92m  Executable[0m tests/registry_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/registry_api-afda823af80a380a)
+[1m[92m  Executable[0m tests/router_layers.rs (/private/tmp/console-rust1981-owner-target/debug/deps/router_layers-0439a59d491585b2)
+[1m[92m  Executable[0m tests/search_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/search_api-a13691ba61111e62)
+[1m[92m  Executable[0m tests/submittable_definitions_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/submittable_definitions_api-52c33e6752df767f)
+[1m[92m  Executable[0m tests/tenant_context_e2e.rs (/private/tmp/console-rust1981-owner-target/debug/deps/tenant_context_e2e-2ebc346f909877d4)
+[1m[92m  Executable[0m tests/well_known.rs (/private/tmp/console-rust1981-owner-target/debug/deps/well_known-19a7018a29223f49)
+[1m[92m  Executable[0m tests/workbench_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workbench_api-fa2ab240af85d516)
+[1m[92m  Executable[0m tests/workbench_native_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workbench_native_api-d0c1ffecd2ce75da)
+[1m[92m  Executable[0m tests/workflow_automation_triggers.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_automation_triggers-32a72de9de0af284)
+[1m[92m  Executable[0m tests/workflow_dynamics_branch.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_dynamics_branch-e085ca0c94ed7928)
+[1m[92m  Executable[0m tests/workflow_four_eyes_publish.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_four_eyes_publish-6d5b12afda023830)
+[1m[92m  Executable[0m tests/workflow_object_context_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_object_context_api-469a4a5d6debae4b)
+[1m[92m  Executable[0m tests/workflow_object_kind_dynamics.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_object_kind_dynamics-0cb21ab337adc64e)
+[1m[92m  Executable[0m tests/workflow_run_read_surface.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_run_read_surface-ce558810566e2ce7)
+[1m[92m  Executable[0m tests/workflow_runtime_finalize_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_runtime_finalize_api-0940b5d4432b0b61)
+[1m[92m  Executable[0m tests/workflow_runtime_instance_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workflow_runtime_instance_api-8998936626b8a34b)
+[1m[92m  Executable[0m tests/workorder_api.rs (/private/tmp/console-rust1981-owner-target/debug/deps/workorder_api-815ea44dc1c14ecd)
+cargo-postgres: === platform-source-full-retained-transitions ===
+cargo-postgres: cargo test --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest account_browser::audit_account_transition:: -- --nocapture --test-threads=1
+[1m[33mwarning[0m[1m: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected[0m
+  [1m[94m|[0m
+  [1m[94m= [0m[1mnote[0m: `#[warn(linker_messages)]` on by default
+
+[1m[33mwarning[0m: `console-app` (bin "console-app") generated 1 warning
+[1m[33mwarning[0m: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+[1m[92m    Finished[0m ]8;;https://doc.rust-lang.org/cargo/reference/profiles.html#default-profiles\`test` profile [unoptimized + debuginfo]]8;;\ target(s) in 0.29s
+[1m[33mwarning[0m: the following packages contain code that will be rejected by a future version of Rust: proc-macro-error2 v2.0.1
+[1m[92mnote[0m: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+[1m[92m     Running[0m tests/auth_rest.rs (/private/tmp/console-rust1981-owner-target/debug/deps/auth_rest-a7c214d310a8f5c1)
+
+running 52 tests
+test account_browser::audit_account_transition::adversarial::audit_only_relation_lock_causes_nowait_refusal_and_clean_retry ... ok
+test account_browser::audit_account_transition::adversarial::cascade_actor_fk_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::composite_legacy_actor_fk_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::deferred_actor_fk_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::deleting_legacy_user_preserves_account_root_and_exact_audit_attribution ... ok
+test account_browser::audit_account_transition::adversarial::disabled_audit_rls_refuses ... ok
+test account_browser::audit_account_transition::adversarial::disabled_internal_ri_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::failure_after_actual_actor_alter_restores_exact_predecessor ... ok
+test account_browser::audit_account_transition::adversarial::immutable_body_replacement_refuses ... ok
+test account_browser::audit_account_transition::adversarial::immutable_delete_trigger_removed_refuses ... ok
+test account_browser::audit_account_transition::adversarial::immutable_update_trigger_removed_refuses ... ok
+test account_browser::audit_account_transition::adversarial::legacy_actor_writer_has_observed_blocker_and_bounded_lock_timeout ... ok
+test account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it ... 
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:270:26:
+canonical trigger constraint OID
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:122:9:
+incomplete metadata observation; payloads omitted
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:263:18:
+positive actor constraint identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:278:34:
+positive actor trigger identity
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:283:13:
+exact actor RI census
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:253:13:
+exact old/new actor parent
+
+thread 'account_browser::audit_account_transition::adversarial::metadata_oracle_requires_complete_select_roster_even_when_both_sides_omit_it' (68085305) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:292:9:
+metadata changed outside exact actor edge; payloads omitted
+ok
+test account_browser::audit_account_transition::adversarial::missing_actor_fk_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::null_actor_writer_has_observed_users_blocker_and_bounded_lock_timeout ... ok
+test account_browser::audit_account_transition::adversarial::preservation_oracle_rejects_missing_duplicated_and_changed_evidence ... ok
+test account_browser::audit_account_transition::adversarial::set_null_actor_fk_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::sole_actor_edge_changes_and_adjacent_metadata_is_identical ... ok
+test account_browser::audit_account_transition::adversarial::unvalidated_actor_fk_refuses_without_repair ... ok
+test account_browser::audit_account_transition::adversarial::widened_audit_column_acl_refuses ... ok
+test account_browser::audit_account_transition::adversarial::widened_audit_table_acl_refuses ... ok
+test account_browser::audit_account_transition::adversarial::wrong_parent_refuses_without_repair ... ok
+test account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions ... 
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:151:9:
+pre-existing function changed or disappeared
+
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:127:13:
+exact distinct new function identities
+
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:135:13:
+predecessor contained a new helper identity
+
+thread 'account_browser::audit_account_transition::business_session_transition::addition_oracle_rejects_extra_missing_mutated_and_omitted_prior_functions' (68100513) panicked at app/tests/auth_rest/audit_business_session_transition.rs:141:13:
+new helper row omitted, altered or duplicated
+ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::corrupt_designation_target_or_missing_receipt_is_unavailable_not_ineligible ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence ... 
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:181:13:
+assertion `left == right` failed
+  left: 1
+ right: 2
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:181:13:
+assertion `left == right` failed
+  left: 3
+ right: 2
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:185:13:
+assertion failed: strip_checked_one(left, right, allowed) == *left
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:181:13:
+assertion `left == right` failed
+  left: 1
+ right: 2
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:181:13:
+assertion `left == right` failed
+  left: 3
+ right: 2
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:118:9:
+assertion `left == right` failed: missing/altered/duplicate vetted addition
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:112:9:
+predecessor already had helper identity
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:111:9:
+assertion failed: numeric > 0 && numeric.to_string() == id && addition["proname"] == NAME
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::eligibility_addition_oracle_rejects_missing_extra_modified_and_stale_evidence' (68100935) panicked at app/tests/auth_rest/audit_company_eligibility_transition.rs:185:13:
+assertion failed: strip_checked_one(left, right, allowed) == *left
+ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::finalized_eligibility_body_acl_and_overload_drift_are_never_resealed ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::initialized_observer_business_session_eligibility_upgrade_preserves_history ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::malformed_eligibility_helpers_refuse_without_repair_and_actual_install_is_atomic ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_actual_login_acl_has_no_wider_read_or_write_capability ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history ... 
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:17:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:17:5:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:24:5:
+assertion `left == right` failed: observed bridge must equal the independently checked live pg_proc row
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:24:5:
+assertion `left == right` failed: observed bridge must equal the independently checked live pg_proc row
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:10:5:
+assertion failed: numeric > 0 && numeric.to_string() == id && addition["proname"] == BRIDGE
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:12:5:
+assertion failed: !prior.iter().any(|row|
+            row["oid"] == addition["oid"] || row["proname"] == BRIDGE)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:12:5:
+assertion failed: !prior.iter().any(|row|
+            row["oid"] == addition["oid"] || row["proname"] == BRIDGE)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app"), String("PUBLIC=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X*/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_credential_owner")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_credential_owner=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:180:9:
+original one-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:176:9:
+assertion `left == right` failed
+  left: 2
+ right: 3
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:176:9:
+assertion `left == right` failed
+  left: 4
+ right: 3
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:180:9:
+original one-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:180:9:
+original one-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:180:9:
+original one-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:180:9:
+original one-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:51:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("PUBLIC=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:37:5:
+assertion `left == right` failed
+  left: (1, 0)
+ right: (1, 1)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:17:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:17:5:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:24:5:
+assertion `left == right` failed: observed bridge must equal the independently checked live pg_proc row
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:24:5:
+assertion `left == right` failed: observed bridge must equal the independently checked live pg_proc row
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:10:5:
+assertion failed: numeric > 0 && numeric.to_string() == id && addition["proname"] == BRIDGE
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:12:5:
+assertion failed: !prior.iter().any(|row|
+            row["oid"] == addition["oid"] || row["proname"] == BRIDGE)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:12:5:
+assertion failed: !prior.iter().any(|row|
+            row["oid"] == addition["oid"] || row["proname"] == BRIDGE)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app"), String("PUBLIC=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X*/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_credential_owner")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_credential_owner=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_business_session_transition.rs:151:9:
+pre-existing function changed or disappeared
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:188:13:
+original two-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:188:13:
+original two-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:188:13:
+original two-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:188:13:
+original two-helper exact metadata oracle
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:51:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("PUBLIC=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:37:5:
+assertion `left == right` failed
+  left: (1, 0)
+ right: (1, 1)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:17:5:
+assertion `left == right` failed
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:17:5:
+assertion `left == right` failed
+  left: 2
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:24:5:
+assertion `left == right` failed: observed bridge must equal the independently checked live pg_proc row
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:24:5:
+assertion `left == right` failed: observed bridge must equal the independently checked live pg_proc row
+  left: 0
+ right: 1
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:10:5:
+assertion failed: numeric > 0 && numeric.to_string() == id && addition["proname"] == BRIDGE
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:12:5:
+assertion failed: !prior.iter().any(|row|
+            row["oid"] == addition["oid"] || row["proname"] == BRIDGE)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:12:5:
+assertion failed: !prior.iter().any(|row|
+            row["oid"] == addition["oid"] || row["proname"] == BRIDGE)
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app"), String("PUBLIC=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X*/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_credential_owner")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:55:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_credential_owner=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("console_credential_owner=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:65:5:
+Platform extension changed the old context definition
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_business_session_transition.rs:151:9:
+pre-existing function changed or disappeared
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_business_session_transition.rs:117:9:
+exact two-function addition required
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:292:9:
+metadata changed outside exact actor edge; payloads omitted
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:292:9:
+metadata changed outside exact actor edge; payloads omitted
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:292:9:
+metadata changed outside exact actor edge; payloads omitted
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_account_transition_adversarial.rs:292:9:
+metadata changed outside exact actor edge; payloads omitted
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:51:5:
+assertion `left == right` failed
+  left: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app"), String("PUBLIC=X/console_app")]
+ right: Array [String("console_app=X/console_app"), String("console_auth_rt=X/console_app")]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_rejects_stale_bridge_acl_and_unrelated_history' (68102484) panicked at app/tests/auth_rest/audit_platform_source_predecessor.rs:37:5:
+assertion `left == right` failed
+  left: (1, 0)
+ right: (1, 1)
+ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_composition_retains_one_two_and_full_historical_oracles ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_accepts_exact_pair_without_mutating_evidence ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption ... 
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:169:9:
+assertion `left == right` failed
+  left: 2
+ right: 3
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:169:9:
+assertion `left == right` failed
+  left: 4
+ right: 3
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:177:9:
+assertion `left == right` failed
+  left: String("BEGIN RETURN; END")
+ right: "\nDECLARE\n    home constant uuid := '00000000-0000-0000-0000-00000000face';\n    current_roles text[];\n    guarded boolean;\nBEGIN\n    IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN\n        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy.unsupported_isolation';\n    END IF;\n    IF home IS DISTINCT FROM NULLIF(current_setting('app.current_org',true),'')::uuid THEN\n        RAISE EXCEPTION USING ERRCODE='42501',MESSAGE='auth_legacy.company_context_mismatch';\n    END IF;\n    IF p_subject IS NULL OR p_subject='00000000-0000-0000-0000-000000000000'::uuid\n        OR p_family='00000000-0000-0000-0000-000000000000'::uuid THEN\n        RAISE EXCEPTION USING ERRCODE='22023',MESSAGE='auth_legacy_platform.invalid_identity';\n    END IF;\n    PERFORM public.auth_legacy_company_lock_v1(home);\n    SELECT public.account_company_deactivation_guard_v1(home,p_subject) INTO guarded;\n    IF guarded IS NULL THEN\n        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_platform.invalid_guard';\n    END IF;\n    IF NOT guarded THEN\n        RAISE EXCEPTION USING ERRCODE='28000',MESSAGE='auth_legacy_platform.source_fenced';\n    END IF;\n    SELECT public.auth_legacy_user_active_v1(home,p_subject) INTO guarded;\n    IF guarded IS NULL THEN\n        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_platform.invalid_guard';\n    END IF;\n    IF NOT guarded THEN\n        RAISE EXCEPTION USING ERRCODE='28000',MESSAGE='auth_legacy_platform.source_inactive';\n    END IF;\n    SELECT c.roles INTO STRICT current_roles FROM public.auth_legacy_session_context_v1(home,p_subject) c;\n    IF current_roles IS NULL THEN\n        RAISE EXCEPTION USING ERRCODE='P0001',MESSAGE='auth_legacy_platform.invalid_roles';\n    END IF;\n    IF cardinality(current_roles)=0 THEN\n        RAISE EXCEPTION USING ERRCODE='28000',MESSAGE='auth_legacy.subject_has_no_roles';\n    END IF;\n    IF p_family IS NULL THEN\n        RETURN QUERY SELECT current_roles,NULL::uuid,NULL::uuid,NULL::uuid,NULL::text,\n            NULL::timestamptz,NULL::timestamptz,NULL::bigint,NULL::timestamptz,NULL::text;\n    ELSE\n        RETURN QUERY SELECT current_roles,f.id,f.user_id,f.org_id,f.protocol,f.created_at,\n            f.revoked_at,f.account_security_generation,f.auth_time,f.assurance\n            FROM public.auth_refresh_token_families f WHERE f.id=p_family FOR SHARE OF f;\n        IF NOT FOUND THEN\n            RAISE EXCEPTION USING ERRCODE='P0002',MESSAGE='auth_legacy_platform.family_not_found';\n        END IF;\n    END IF;\nEND\n"
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:191:9:
+old context definition changed
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:191:9:
+old context definition changed
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:191:9:
+old context definition changed
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:192:9:
+assertion failed: old_context["proacl"] != new_context["proacl"]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:216:9:
+context ACL must add exactly one non-grantable owner grant
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:216:9:
+context ACL must add exactly one non-grantable owner grant
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:216:9:
+context ACL must add exactly one non-grantable owner grant
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:216:9:
+context ACL must add exactly one non-grantable owner grant
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:220:9:
+assertion failed: canonical(&after["function_acls"][added_key]) ==
+    canonical(&json!([["console_credential_owner", "console_credential_owner",
+                "EXECUTE", false],
+                ["console_credential_owner", "console_rt", "EXECUTE",
+                false]]))
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:220:9:
+assertion failed: canonical(&after["function_acls"][added_key]) ==
+    canonical(&json!([["console_credential_owner", "console_credential_owner",
+                "EXECUTE", false],
+                ["console_credential_owner", "console_rt", "EXECUTE",
+                false]]))
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption' (68102489) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:249:9:
+metadata changed beyond exact source bridge and exact context ACL
+ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_fresh_observer_upgrade_and_rollback ... PLATFORM_SOURCE_METADATA_DIFFERENCE_PATHS: ["metadata.public_other_relations[0].relpages", "metadata.public_other_relations[0].reltuples", "metadata.public_other_relations[271].relpages", "metadata.public_other_relations[271].reltuples"]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_fresh_observer_upgrade_and_rollback' (68102492) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:386:13:
+assertion failed: same_metadata(&original_meta, &complete_metadata(&mut restored).await)
+FAILED
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_fresh_plain_upgrade_and_replay ... PLATFORM_SOURCE_METADATA_DIFFERENCE_PATHS: ["metadata.public_other_relations[0].relpages", "metadata.public_other_relations[0].reltuples", "metadata.public_other_relations[271].relpages", "metadata.public_other_relations[271].reltuples"]
+
+thread 'account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_fresh_plain_upgrade_and_replay' (68103061) panicked at app/tests/auth_rest/audit_platform_source_transition.rs:393:13:
+assertion failed: same_metadata(&after, &complete_metadata(&mut reopened).await)
+FAILED
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_frozen_fixture_and_historical_migration_identity ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_observer_corrupt_profiles_refuse_without_reseal ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_observer_partial_helpers_and_interrupted_finalizer_rollback ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_plain_corrupt_profiles_refuse_without_reseal ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_plain_partial_helpers_and_interrupted_finalizer_rollback ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_populated_observer_upgrade_preserves_history ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_populated_plain_upgrade_reopens_original_session ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_sql_exact_current_roles_and_requested_family_projection ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_sql_nil_scope_isolation_missing_and_fenced_refusals ... ok
+test account_browser::audit_account_transition::business_session_transition::eligibility_transition::populated_business_session_eligibility_upgrade_preserves_history_and_replays ... ok
+test account_browser::audit_account_transition::business_session_transition::initialized_observer_audit228_session_upgrade_preserves_receipts_and_replays ... ok
+test account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back ... ok
+test account_browser::audit_account_transition::business_session_transition::populated_audit228_session_upgrade_preserves_history_and_replays ... ok
+test account_browser::audit_account_transition::fresh_chain_backfills_exact_roots_and_retains_legacy_null_audit_writers ... ok
+test account_browser::audit_account_transition::operator_jit_is_disabled_locally_with_original_timeouts ... ok
+test account_browser::audit_account_transition::populated_prior228_observer_upgrade_preserves_rows_and_replays ... ok
+test account_browser::audit_account_transition::populated_prior228_upgrade_preserves_native_legacy_designation_and_replay ... ok
+
+failures:
+
+failures:
+    account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_fresh_observer_upgrade_and_rollback
+    account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition::platform_source_fresh_plain_upgrade_and_replay
+
+test result: FAILED. 50 passed; 2 failed; 0 ignored; 0 measured; 392 filtered out; finished in 671.78s
+
+[1m[91merror[0m: test failed, to rerun pass `-p console-app --test auth_rest`
+cargo-postgres-timing: {"name": "platform-source-full-retained-transitions", "package": "console-app", "seconds": 672.136, "shard": "", "status": "fail"}
+
+cargo-postgres: summary
+  FAIL  platform-source-full-retained-transitions
+cargo-postgres: 0 passed, 1 failed
+cargo-postgres: one or more invocations failed

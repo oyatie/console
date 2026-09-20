@@ -1,0 +1,8 @@
+{
+  "status": "INTEGRATED_APPROVED_SOURCE_RUNTIME_PENDING",
+  "manifest_sha256": "8afc567be61749af6e231855774af63b33fe1a69adf4111cb79794cc62086122",
+  "security_sha256": "ef96d7acd7e0db641563c995bf09733065b33fb4df1672d22e3af4317bb744f9",
+  "root_receipt": "/private/tmp/console-platform-source-upgrade-maintenance-round2-root-review-20260920.json",
+  "after_sha256": "da47a22d48b670545104b4148d3804d837868cabe795516ddeac3a260d03aba3",
+  "remaining": "focused4 and full52required"
+}

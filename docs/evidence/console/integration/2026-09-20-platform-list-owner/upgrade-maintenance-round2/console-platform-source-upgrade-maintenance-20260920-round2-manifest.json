@@ -1,0 +1,16 @@
+{
+  "base": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "path": "backend/app/tests/auth_rest/audit_platform_source_transition.rs",
+  "before_sha256": "ed9707e35b506da18cdd4620036d5ed58f6ed7560c322709fa28709c0b3d0f6d",
+  "after_sha256": "da47a22d48b670545104b4148d3804d837868cabe795516ddeac3a260d03aba3",
+  "observed": "full52diagnosticrun3 freshobserver and freshplain only changed public_other_relations[0/271].relpages/reltuples; value-free actual paths retained",
+  "change": "Before upgrade baseline snapshots explicitly complete VACUUM ANALYZE for every public r/p/m relation outside transaction, assert exact relation coverage and every captured index parent, then hold existing SHARE phase locks; all snapshot fields/oracles/pins unchanged. Also mechanical rustfmt of3diagnostic wraps.",
+  "limits": [
+    "maintenance stabilization hypothesis requires runtime",
+    "SHARE locks protect same transaction only, no claimed crosscommit exclusion",
+    "no production settings/schema/serializer/history modifications"
+  ],
+  "runtime": 0,
+  "prior_manifest_sha256": "b541846304604db20acaaff45009d6da15910e86a6a12ee6019a9da7a4a4c270",
+  "successor_reason": "Root caught missing explicit maintenance wait bounds before any runtime; dedicated disposable Admin connection with verified60s statement/5s lock timeout, explicit close/drop, no pool/session settings leaked."
+}

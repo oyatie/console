@@ -1,0 +1,12 @@
+{
+  "source_sha256": "da47a22d48b670545104b4148d3804d837868cabe795516ddeac3a260d03aba3",
+  "clippy": {
+    "command": "CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target cargo clippy --locked --manifest-path backend/Cargo.toml -p console-app --test auth_rest -- -D warnings",
+    "exit_code": 0,
+    "log": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-maintenance-clippy-20260920.log",
+    "sha256": "849c3afe4a429d152c7683b237c07722568916dba921de4a516e8d5b7acdd498"
+  },
+  "rustfmt_check": 0,
+  "git_diff_check": 0,
+  "lane_scope12_sha256": "d262c3f3caafa37e3960ebb79e49a32edfd09704d37599dac730434cd77d27f2"
+}

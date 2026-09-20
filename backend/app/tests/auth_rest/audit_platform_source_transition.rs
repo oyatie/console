@@ -2,7 +2,7 @@
 mod platform_source_transition {
     use super::*;
     use console_platform_auth::RefreshTokenStore;
-    use sqlx::Acquire;
+    use sqlx::{Acquire, Connection};
 
     const BRIDGE: &str = "auth_legacy_platform_source_material_v1";
     const CONTEXT: &str = "auth_legacy_session_context_v1";
@@ -340,6 +340,48 @@ mod platform_source_transition {
         sqlx::raw_sql(source).execute(connection).await.unwrap();
     }
 
+    // Finish fixture maintenance before freezing exact catalog bytes. This is
+    // disposable-test preparation, not a change to production custody profiles.
+    async fn finish_fixture_maintenance(pool: &PgPool) {
+        let mut connection = PgConnection::connect_with(&pool.connect_options())
+            .await
+            .unwrap();
+        sqlx::raw_sql("SET statement_timeout='60s'; SET lock_timeout='5s'")
+            .execute(&mut connection)
+            .await
+            .unwrap();
+        let bounded: bool = sqlx::query_scalar(
+            "SELECT current_setting('statement_timeout')::interval=interval '60 seconds' AND current_setting('lock_timeout')::interval=interval '5 seconds' AND session_user='console_buck_admin' AND current_user='console_buck_admin'"
+        ).fetch_one(&mut connection).await.unwrap();
+        assert!(
+            bounded,
+            "dedicated fixture-maintenance login and bounded waits"
+        );
+        let relations: Vec<(i64, String)> = sqlx::query_as(
+            "SELECT c.oid::bigint,format('VACUUM (ANALYZE) %I.%I',n.nspname,c.relname) FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p','m') ORDER BY c.oid"
+        ).fetch_all(&mut connection).await.unwrap();
+        assert!(!relations.is_empty());
+        for (_, sql) in &relations {
+            sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
+                .execute(&mut connection)
+                .await
+                .unwrap();
+        }
+        let expected: Vec<i64> = relations.iter().map(|(id, _)| *id).collect();
+        let actual: Vec<i64> = sqlx::query_scalar(
+            "SELECT oid::bigint FROM pg_catalog.pg_class WHERE relnamespace='public'::regnamespace AND relkind IN ('r','p','m') ORDER BY oid"
+        ).fetch_all(&mut connection).await.unwrap();
+        assert_eq!(
+            actual, expected,
+            "exact fixture maintenance relation coverage"
+        );
+        let uncovered: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM pg_catalog.pg_index i JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid WHERE c.relnamespace='public'::regnamespace AND NOT(i.indrelid::bigint=ANY($1))"
+        ).bind(&expected).fetch_one(&mut connection).await.unwrap();
+        assert_eq!(uncovered, 0, "all captured public index parents maintained");
+        connection.close().await.unwrap();
+    }
+
     async fn upgrade_case(pool: &PgPool, populated: bool, observer: bool) {
         let existing = company_predecessor(pool, populated).await;
         if let Some((_, config, _, _, _)) = &existing {
@@ -351,8 +393,10 @@ mod platform_source_transition {
                 matches!(result, Err(console_app::AppError::Config(ref code)) if code=="account_custody.native_upgrade_required")
             );
         }
+        finish_fixture_maintenance(pool).await;
         let mut tx = pool.begin().await.unwrap();
         operator(&mut tx).await;
+        lock_metadata_relations(&mut tx).await;
         let original_meta = complete_metadata(&mut tx).await;
         let original_rows = all_business_state(&mut tx).await;
         if observer {
@@ -372,7 +416,7 @@ mod platform_source_transition {
         compose(&mut tx).await.unwrap();
         final_profile(&mut tx, observer).await;
         assert!(
-            after == complete_metadata(&mut tx).await,
+            same_metadata(&after, &complete_metadata(&mut tx).await),
             "replay wrote metadata"
         );
         assert!(
@@ -383,17 +427,26 @@ mod platform_source_transition {
             tx.rollback().await.unwrap();
             let mut restored = pool.begin().await.unwrap();
             prior(&mut restored, false).await;
-            assert!(original_meta == complete_metadata(&mut restored).await);
+            assert!(same_metadata(
+                &original_meta,
+                &complete_metadata(&mut restored).await
+            ));
             assert!(original_rows == all_business_state(&mut restored).await);
             restored.rollback().await.unwrap();
         } else {
             tx.commit().await.unwrap();
             let mut reopened = pool.begin().await.unwrap();
             final_profile(&mut reopened, false).await;
-            assert!(after == complete_metadata(&mut reopened).await);
+            assert!(same_metadata(
+                &after,
+                &complete_metadata(&mut reopened).await
+            ));
             assert!(before_rows == all_business_state(&mut reopened).await);
             compose(&mut reopened).await.unwrap();
-            assert!(after == complete_metadata(&mut reopened).await);
+            assert!(same_metadata(
+                &after,
+                &complete_metadata(&mut reopened).await
+            ));
             assert!(before_rows == all_business_state(&mut reopened).await);
             reopened.commit().await.unwrap();
             if let Some((_, config, _, account, cookies)) = &existing {

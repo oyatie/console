@@ -1,0 +1,81 @@
+{
+  "status": "FOCUSED4_PASS_FULL52_PENDING",
+  "base": "5ce1fa20be7f8457d982c9073eb664cc1c331820",
+  "source": "backend/app/tests/auth_rest/audit_platform_source_transition.rs",
+  "source_sha256": "da47a22d48b670545104b4148d3804d837868cabe795516ddeac3a260d03aba3",
+  "observed_diagnostic_run3": {
+    "passed": 50,
+    "failed": 2,
+    "filtered": 392,
+    "seconds": 671.78,
+    "paths": [
+      "metadata.public_other_relations[0].relpages",
+      "metadata.public_other_relations[0].reltuples",
+      "metadata.public_other_relations[271].relpages",
+      "metadata.public_other_relations[271].reltuples"
+    ]
+  },
+  "focused_maintenance": {
+    "fresh": {
+      "passed": 2,
+      "failed": 0,
+      "filtered": 442,
+      "seconds": 34.19
+    },
+    "populated": {
+      "passed": 2,
+      "failed": 0,
+      "filtered": 442,
+      "seconds": 40.63
+    }
+  },
+  "source_change": "Complete native fixture VACUUM ANALYZE before all upgrade snapshots; bounded dedicated Admin session; preserve exact catalog fields, row/history equality, pins and migration bytes; use existing SHARE protection inside phase",
+  "limits": [
+    "focusedpass cannot establish fullsuite reliability",
+    "no crosscommit lock exclusion claimed",
+    "no production schema/config/serializer changes",
+    "no release acceptance or qualification"
+  ],
+  "files": [
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-full-retained-diagnostics-run3-20260920.log",
+      "original": "/private/tmp/console-platform-source-full-retained-diagnostics-run3-20260920.log",
+      "sha256": "e9992e3a610250b27ac948dace5e6e73e66fb8d43eaceb0415a8d3d638615940"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-maintenance-focused-run1-20260920.log",
+      "original": "/private/tmp/console-platform-source-maintenance-focused-run1-20260920.log",
+      "sha256": "e75f7c160ef43b83c37a1f965f7ed12677a676859692eb068379bc76507c98fc"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-upgrade-maintenance-20260920-round1-manifest.json",
+      "original": "/private/tmp/console-platform-source-upgrade-maintenance-20260920-round1/manifest.json",
+      "sha256": "b541846304604db20acaaff45009d6da15910e86a6a12ee6019a9da7a4a4c270"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-upgrade-maintenance-20260920-round2-manifest.json",
+      "original": "/private/tmp/console-platform-source-upgrade-maintenance-20260920-round2/manifest.json",
+      "sha256": "8afc567be61749af6e231855774af63b33fe1a69adf4111cb79794cc62086122"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-upgrade-maintenance-round2-root-review-20260920.json",
+      "original": "/private/tmp/console-platform-source-upgrade-maintenance-round2-root-review-20260920.json",
+      "sha256": "f3f64d4b9a03891988e0917c8a2f9d1d125d533fe27442b0e5b23568f8085718"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-upgrade-maintenance-round2-security-review-20260920.json",
+      "original": "/private/tmp/console-platform-source-upgrade-maintenance-round2-security-review-20260920.json",
+      "sha256": "ef96d7acd7e0db641563c995bf09733065b33fb4df1672d22e3af4317bb744f9"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-upgrade-maintenance-round2-integration-20260920.json",
+      "original": "/private/tmp/console-platform-source-upgrade-maintenance-round2-integration-20260920.json",
+      "sha256": "b44ebf03269a62da798b958450a735e684c40c27be228127ba1f960c1cb70faf"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/upgrade-maintenance-round2/console-platform-source-maintenance-final-map-20260920.json",
+      "original": "/private/tmp/console-platform-source-maintenance-final-map-20260920.json",
+      "sha256": "b37f8eefbf167f53fec49827fe25a83c059542111d6aab0b6a040d3aee9aad6b"
+    }
+  ]
+}
