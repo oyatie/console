@@ -1,0 +1,12 @@
+{
+  "kind": "diagnostics-only",
+  "preimage_sha256": "cccc81874e54abcc0eb0d11a558e8566dbfdd8d77990c7586728faecd4131595",
+  "candidate_sha256": "bb6ca1a47b8a9a1466db210941b8115feaedbef297e27200212d44847a28b095",
+  "exact_original_restoration": true,
+  "tests_added": 0,
+  "assertions_changed": 0,
+  "runtime_executed_by_author": 0,
+  "repository_writes": 0,
+  "private_rustfmt_exit": 0,
+  "source_head": "3439f7996669a75eb9a19f60b0e7847e1ce4fb6c"
+}

@@ -158,6 +158,86 @@ fn exact_read_delta(
     })
 }
 
+// Diagnostics only: fixed field names, booleans, row counts and relative times.
+// Never serialize a row, actor, token, trace, absolute timestamp or SQL error.
+fn list_read_diagnostic(
+    before: &Rows,
+    after: &Rows,
+    actor: UserId,
+    count: usize,
+    start: OffsetDateTime,
+    end: OffsetDateTime,
+) -> Value {
+    let count_rows = |raw: Option<&String>| {
+        raw.and_then(|raw| serde_json::from_str::<Vec<&RawValue>>(raw).ok())
+            .map(|rows| rows.len())
+    };
+    let tables: BTreeSet<_> = before.keys().chain(after.keys()).collect();
+    let changed: Vec<_> = tables
+        .into_iter()
+        .filter(|table| before.get(*table) != after.get(*table))
+        .map(|table| {
+            json!({"table":table,"before_count":count_rows(before.get(table)),
+            "after_count":count_rows(after.get(table))})
+        })
+        .collect();
+    let old = before
+        .get("audit_events")
+        .and_then(|raw| serde_json::from_str::<Vec<&RawValue>>(raw).ok());
+    let new = after
+        .get("audit_events")
+        .and_then(|raw| serde_json::from_str::<Vec<&RawValue>>(raw).ok());
+    let audit = match (old, new) {
+        (Some(old), Some(new)) => {
+            let old_bytes: BTreeSet<_> = old.iter().map(|r| r.get()).collect();
+            let new_bytes: BTreeSet<_> = new.iter().map(|r| r.get()).collect();
+            let added: Vec<_> = new_bytes.difference(&old_bytes).collect();
+            let fields:Vec<_> = added.iter().take(4).map(|raw| {
+                let Ok(row) = serde_json::from_str::<Value>(raw) else {
+                    return json!({"parse_ok":false});
+                };
+                let expected_keys:BTreeSet<_> = AUDIT_KEYS.iter().copied().collect();
+                let actual_keys:BTreeSet<_> = row.as_object().map(|r|r.keys().map(String::as_str).collect()).unwrap_or_default();
+                let mut field_checks=serde_json::Map::new();
+                for key in AUDIT_KEYS {
+                    let matches = match *key {
+                        "id" => row[*key].as_str().is_some_and(|v|Uuid::parse_str(v).is_ok_and(|id|!id.is_nil())),
+                        "actor" => row[*key] == json!(actor),
+                        "action" => row[*key] == "platform.tenant.list",
+                        "target_type" => row[*key] == "organizations",
+                        "target_id" => row[*key] == "list",
+                        "after_snap" => row[*key] == json!({"count":count}),
+                        "trace_id" => lower_hex(&row[*key],32),
+                        "span_id" => lower_hex(&row[*key],16),
+                        "occurred_at" | "created_at" => time_in_window(&row[*key],start,end),
+                        _ => row[*key].is_null(),
+                    };
+                    field_checks.insert((*key).to_owned(),json!({"present":actual_keys.contains(key),"matches":matches}));
+                }
+                let times:serde_json::Map<String,Value> = ["occurred_at","created_at"].into_iter().map(|key| {
+                    let parsed = row[key].as_str().and_then(|v|OffsetDateTime::parse(v,&time::format_description::well_known::Rfc3339).ok());
+                    (key.to_owned(),match parsed {
+                        Some(at) => json!({"parse_ok":true,"from_start_us":(at-start).whole_microseconds(),"to_end_us":(end-at).whole_microseconds()}),
+                        None => json!({"parse_ok":false}),
+                    })
+                }).collect();
+                let fresh_identity = old.iter().all(|prior|serde_json::from_str::<Value>(prior.get()).is_ok_and(|p|p["id"]!=row["id"] && p["trace_id"]!=row["trace_id"]));
+                json!({"parse_ok":true,"keys_match":actual_keys==expected_keys,
+                    "unexpected_key_count":actual_keys.difference(&expected_keys).count(),
+                    "fields":field_checks,"time_deltas":times,"fresh_id_and_trace":fresh_identity,
+                    "audit_oracle":audit_matches(&row,actor,count,start,end)})
+            }).collect();
+            json!({"parse_ok":true,"before_count":old.len(),"after_count":new.len(),
+                "before_unique":old_bytes.len()==old.len(),"after_unique":new_bytes.len()==new.len(),
+                "prior_rows_preserved":old_bytes.is_subset(&new_bytes),"added_count":added.len(),
+                "added_diagnostics_first_four":fields})
+        }
+        _ => json!({"parse_ok":false}),
+    };
+    json!({"table_keys_match":before.keys().eq(after.keys()),"changed_tables":changed,
+        "window_us":(end-start).whole_microseconds(),"audit":audit})
+}
+
 async fn db_now(pool: &PgPool) -> OffsetDateTime {
     sqlx::query_scalar("SELECT pg_catalog.clock_timestamp()")
         .fetch_one(pool)
@@ -382,6 +462,12 @@ async fn mounted_platform_list_same_bearer_current_member_denies_and_restores(po
         positive_status == StatusCode::OK && metadata_matches(&positive, &expected),
         "actual owner positive prerequisite"
     );
+    if !exact_read_delta(&before, &after, actor, count, start, end) {
+        eprintln!(
+            "PLATFORM_LIST_PREREQUISITE_DIAGNOSTIC {}",
+            list_read_diagnostic(&before, &after, actor, count, start, end)
+        );
+    }
     assert!(
         exact_read_delta(&before, &after, actor, count, start, end),
         "exact positive list audit and no other effects prerequisite"
