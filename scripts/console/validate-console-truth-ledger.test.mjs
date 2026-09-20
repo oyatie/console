@@ -848,3 +848,29 @@ for (const mode of ['regular', 'missing', 'symlink']) {
     } finally { rmSync(root,{recursive:true,force:true}); }
   });
 }
+
+const namedConnector = (v) => v.release_inventory.support_matrices.connectors.entries.find((row) => row.status.startsWith('Overview explicitly names '));
+const connectorName = (v) => namedConnector(v).status.match(/^Overview explicitly names (.+) under /)[1];
+const anyRuntimeBinding = (v) => Object.entries(releaseFreeze(v).source_bindings).find(([key]) => key.startsWith('runtime:'))[1];
+const supportMalformed = [
+  ['unknown connector binding', (v) => { releaseFreeze(v).source_bindings['connector:Missing'] = releaseFreeze(v).source_bindings[`connector:${connectorName(v)}`]; }],
+  ['unknown runtime binding', (v) => { releaseFreeze(v).source_bindings['runtime:Missing'] = anyRuntimeBinding(v); }],
+  ['unknown support namespace', (v) => { releaseFreeze(v).source_bindings['extension:Missing'] = anyRuntimeBinding(v); }],
+  ['missing named connector binding', (v) => { delete releaseFreeze(v).source_bindings[`connector:${connectorName(v)}`]; }],
+  ['duplicate named connector with different path', (v) => { const row=structuredClone(namedConnector(v)); row.reference_path='/docs/foundry/available-connectors/other/'; v.release_inventory.support_matrices.connectors.entries.push(row); }],
+  ['empty overview connector name', (v) => { namedConnector(v).status='Overview explicitly names  under Databases; individual support/modes/lifecycle not verified'; }],
+  ['empty overview connector category', (v) => { namedConnector(v).status=`Overview explicitly names ${connectorName(v)} under ; individual support/modes/lifecycle not verified`; }],
+  ['wrong overview qualifier', (v) => { namedConnector(v).status=`Overview explicitly names ${connectorName(v)} under Databases; verified`; }],
+  ['arbitrary connector status', (v) => { v.release_inventory.support_matrices.connectors.entries[0].status='supported'; }],
+];
+for (const [name, mutate] of supportMalformed) {
+  test(`release inventory refuses ${name}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value=structuredClone(registry);
+    validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA});
+    assert.equal(isValidatedConsoleTruthLedger(value),true);
+    mutate(value);
+    assert.throws(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}),/release inventory/i);
+    assert.equal(isValidatedConsoleTruthLedger(value),false);
+  });
+}

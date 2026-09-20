@@ -1,0 +1,32 @@
+{
+  "design_sha256": "082c354a2ff44074cc4ba8fa9e3c9229d707e51ae619992a53ebc4ffd2206c25",
+  "rounds": [
+    {
+      "round": 1,
+      "reviewer": "integration_security",
+      "verdict": "approved retained support representation correction; extra negative tests required"
+    },
+    {
+      "round": 2,
+      "reviewer": "audit_review",
+      "verdict": "approved retained support representation correction; extra negative tests required"
+    },
+    {
+      "round": 3,
+      "reviewer": "reference_inventory",
+      "verdict": "approved retained support representation correction; extra negative tests required"
+    },
+    {
+      "round": 4,
+      "reviewer": "audit_review",
+      "verdict": "approved retained support representation correction; extra negative tests required"
+    }
+  ],
+  "test_addition_sha256": "f65c6451088a758224279e96edcd2ccad3ae5ccffd4e44cd08275066ab0178b0",
+  "test_reviewer": "integration_security",
+  "test_verdict": "approved exact9additions, preserve all63previous cases",
+  "remaining": [
+    "Actual clean-tree72case RED admission required.",
+    "No source custody, exhaustive inventory or accepted promotion claim."
+  ]
+}

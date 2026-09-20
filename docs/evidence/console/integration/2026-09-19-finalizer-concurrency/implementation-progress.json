@@ -4,7 +4,7 @@
   "owner": "root sole repository writer",
   "implementation_sha256": "a2e4aa012fd877137df3ec1d5635d7ae08321797f510e2797453aac31445cfb5",
   "reviewer": "audit_review",
-  "verdict": "exact implementation approved;3case probe green; further qualification running",
+  "verdict": "UNCONDITIONAL SERIALIZATION REJECTED: pair passes but ordinary concurrent workload exceeds unchanged lock deadline",
   "probe": "tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-finalizer-probe-map.json --only app-auth-rest-pg --runner cargo > /private/tmp/console-finalizer-probe.log 2>&1",
   "red": {
     "executed": 3,
@@ -58,10 +58,40 @@
     ]
   },
   "remaining": [
-    "Fresh serving/serving first-create proof running.",
-    "Full retained lifecycle suite running.",
-    "Real ordinary nextest audit/evaluation consumers running.",
-    "Missing-anchor scenario unexecuted; shared anchor never removed.",
-    "No production or release qualification."
-  ]
+    "Reopen synchronization design; unconditional global finalizer serialization fails actual ordinary cohort.",
+    "Missing-anchor runtime scenario unexecuted.",
+    "No production or release qualification.",
+    "Separate retained raw-SQL fixture execution-mode diagnosis and approved repair required."
+  ],
+  "first_creation": {
+    "executed": 1,
+    "passed": 1,
+    "failed": 0,
+    "filtered": 328,
+    "seconds": 12.56,
+    "first_credential_role_creation": true,
+    "observation_ms": 61
+  },
+  "ordinary_nextest": {
+    "command": "tools/ci/cargo_needs_postgres.sh --only app-audit-api-pg,app-evaluation-cycle-api-pg --runner nextest",
+    "executed": 15,
+    "passed": 3,
+    "failed": 12,
+    "skipped": 0,
+    "seconds": 18.626,
+    "cause": "12shared-anchor55P03timeouts; no timeout widening or test cap permitted"
+  },
+  "logs": {
+    "first-create": "06ca3f2d888f827b1396711c0eb5b1cc033e47ace3213a597026430099853f1d",
+    "ordinary-nextest": "7c24fcfd040a1103da1395f45952ffdfabc319f3e56826817e3a1a0ac1d11eee",
+    "lifecycle": "886f8c56ed706d55c86648f0c9f4427ecb5ae7487a9ec52293a6999a95b127c4"
+  },
+  "lifecycle_suite": {
+    "executed": 25,
+    "passed": 24,
+    "failed": 1,
+    "filtered": 304,
+    "seconds": 152.13,
+    "failure": "Existing raw-SQL concurrent_finalizers_have_complete_request_outcomes_and_one_final_state second55P03 on public.organizations; its direct actors still use inherited JIT setting."
+  }
 }
