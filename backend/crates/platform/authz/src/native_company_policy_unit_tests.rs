@@ -399,3 +399,5 @@ fn checked_initial_projection_requires_closed_maps_canonical_scalars_and_bounded
         CurrentCompanyAuthority::from_initial_projection(account, company, observed, row).is_ok()
     );
 }
+#[path = "company_policy/read_usecases_tests.rs"]
+mod read_usecases;

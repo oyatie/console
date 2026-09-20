@@ -123,7 +123,7 @@ impl CompanyPolicy {
         let requested_type = request.object_type_id().to_string();
         let resource = format!(
             "{requested_company}/{requested_type}/{}",
-            request.resource_object_id()
+            request.object_id()
         );
         let principal_uid = EntityUid::from_str(&format!("Account::{}", quote(&account)?))
             .map_err(|_| EvaluatorUnavailable)?;

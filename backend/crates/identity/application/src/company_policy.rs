@@ -8,6 +8,13 @@ use uuid::Uuid;
 
 const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935";
 
+mod reads;
+pub use reads::{
+    CompanyContextCandidates, CompanyContextView, CompanyIdentityView, CompanyInitialCeilingView,
+    CompanyPolicyScope, CompanyPolicyStore, CompanyPolicyView, discover_company_context,
+    discover_company_contexts, read_company_identity, read_company_policy,
+};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CompanyPolicyError {
     AuthenticationInvalid,
@@ -168,7 +175,7 @@ impl CompanyPolicyRequest {
     pub const fn object_type_id(&self) -> Uuid {
         self.object_type_id
     }
-    pub const fn resource_object_id(&self) -> Uuid {
+    pub const fn object_id(&self) -> Uuid {
         self.resource_object_id
     }
     pub fn action(&self) -> &ActionRef {

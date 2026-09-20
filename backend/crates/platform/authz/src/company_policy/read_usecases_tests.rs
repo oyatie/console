@@ -322,7 +322,7 @@ fn workspace_and_policy_reads_use_exact_fields_and_complete_retained_scope() {
         }
         let view = ready(read_company_identity(
             &store,
-            &policy,
+            &policy as &dyn CompanyPolicyDecisionPort,
             &Credentials,
             company(1),
         ))
@@ -647,4 +647,36 @@ fn wrong_company_material_never_reaches_policy_and_absence_requires_fresh_finish
         ]
     );
     store.drained();
+}
+
+#[test]
+fn company_context_candidates_validate_bounds_without_inventing_generation_provenance() {
+    use CompanyPolicyError::MaterialUnavailable;
+    let full: Vec<_> = (1..=256).map(company).collect();
+    // The constructor checks representation only. Either generation boundary
+    // accepts either collection boundary; only the Account owner proves origin.
+    for generation in [1, 257] {
+        for companies in [Vec::new(), full.clone()] {
+            let candidates = CompanyContextCandidates::new(generation, companies.clone()).unwrap();
+            assert_eq!(candidates.generation(), generation);
+            assert_eq!(candidates.companies(), companies.as_slice());
+        }
+    }
+    for (name, generation, companies) in [
+        ("zero generation", 0, vec![]),
+        ("overflow generation", 258, vec![]),
+        ("nil Company", 1, vec![OrgId::from_uuid(Uuid::nil())]),
+        ("platform sentinel", 1, vec![OrgId::platform()]),
+        ("duplicate Company", 3, vec![company(1), company(1)]),
+        ("unsorted Company", 3, vec![company(2), company(1)]),
+        ("257 Companies", 257, (1..=257).map(company).collect()),
+    ] {
+        assert!(
+            matches!(
+                CompanyContextCandidates::new(generation, companies),
+                Err(MaterialUnavailable)
+            ),
+            "accepted {name}"
+        );
+    }
 }
