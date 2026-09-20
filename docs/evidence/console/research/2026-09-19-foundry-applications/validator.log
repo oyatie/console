@@ -1,0 +1,177 @@
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+Switched to a new branch 'marker-<<<'
+Switched to a new branch 'marker-|||'
+Switched to a new branch 'marker->>>'
+Switched to a new branch 'setext-authority'
+Note: switching to '6b83ab431237dd7f077d5e90476b9b4836249f29'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by switching back to a branch.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -c with the switch command. Example:
+
+  git switch -c <new-branch-name>
+
+Or undo this operation with:
+
+  git switch -
+
+Turn off this advice by setting config variable advice.detachedHead to false
+
+HEAD is now at 6b83ab4 authority control
+Switched to a new branch 'renamed-authority'
+Switched to a new branch 'symlink-authority'
+Switched to a new branch 'product-drift'
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+Switched to a new branch 'indirect'
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+✔ current candidate truth ledger is structurally complete but remains candidate-bound HOLD where evidence is absent (41.135084ms)
+✔ an unavailable governing lifecycle cannot become an absolute workstation dependency (0.439541ms)
+✔ pre-wipe paths, branches, lanes, and progress labels cannot become current continuation authority (17.416042ms)
+✔ provenance is reproducible from advertised tags in a candidate-only clone (306.993166ms)
+✔ validator fails closed for duplicate IDs, missing evidence, missing module benchmark, and unsafe exposure (11.967125ms)
+✔ validator rejects generic outcomes, duplicate controls, legal promotion, and control evidence that is absent (4.839125ms)
+✔ raw ledger JSON rejects duplicate keys before JSON.parse can hide them (0.379958ms)
+✔ source route facts reject a ledger claim that disagrees with mounted/exposed source (16.782875ms)
+✔ an absent route source refutes every positive route claim instead of iterating zero keys (20.083125ms)
+✔ forged comparator source/date and attacker review cannot pass (14.037125ms)
+✔ required Buck target fails closed when resolver rejects it (2.3145ms)
+✔ Buck target existence is read from the candidate BUCK blob, never evaluated by Buck2 (0.306125ms)
+✔ the real registry resolves against the real tree, and a nonexistent Buck target goes RED (14.661917ms)
+✔ delivery-unit Buck authority cannot diverge from declared verification targets (2.624542ms)
+✔ attestation rejects TOCTOU mutation after candidate-bound validation (22.88125ms)
+✔ moving candidate branch names are irrelevant and jurisdiction target bypasses reject (11.32975ms)
+✔ non-HOLD promotion requires canonical trusted immutable receipt fields (21.226167ms)
+✔ a passing verdict cannot be self-asserted by declaring no independent review (13.412875ms)
+✔ Korea trace bijection rejects missing trace (2.974708ms)
+✔ Korea exactness rejects duplicate bindings and duplicate targets (2.749417ms)
+✔ a real SSH-signed canonical Git receipt is the only non-HOLD admission path (1373.378458ms)
+✔ candidate resolver requires the signed authority tip to be the direct three-document child of C (453.721709ms)
+✔ the candidate SHA comes only from the caller, and a re-added stored copy buys nothing (34.341208ms)
+✔ the authority-only diff accepts one document and added ledger entries, and refuses added files elsewhere (2331.393292ms)
+✔ Korea jurisdiction rows require exactly one canonical JUR-KR-001 row (3.070958ms)
+✔ release inventory refuses missing section (21.248208ms)
+✔ release inventory refuses empty section (21.543542ms)
+✔ release inventory refuses wrong version (25.677875ms)
+✔ release inventory refuses wrong authority (24.720542ms)
+✔ release inventory refuses wrong population (24.351667ms)
+✔ release inventory refuses missing families (24.17275ms)
+✔ release inventory refuses family exclusion overlap (28.2075ms)
+✔ release inventory refuses empty leaves (23.523ms)
+✔ release inventory refuses duplicate leaf (24.824ms)
+✔ release inventory refuses unknown leaf family (22.751ms)
+✔ release inventory refuses optional required leaf (23.342209ms)
+✔ release inventory refuses invalid milestone (22.829042ms)
+✔ release inventory refuses empty owner (23.052167ms)
+✔ release inventory refuses empty journey (26.603125ms)
+✔ release inventory refuses dangling dependency (22.902167ms)
+✔ release inventory refuses self dependency (25.151834ms)
+✔ release inventory refuses dependency cycle (23.327833ms)
+✔ release inventory refuses duplicate dependency (24.5585ms)
+✔ release inventory refuses invented acceptance (22.92175ms)
+✔ release inventory refuses unbound executable (22.850291ms)
+✔ release inventory refuses missing blockers (23.214ms)
+✔ release inventory refuses missing state (23.819583ms)
+✔ release inventory refuses string state (23.347875ms)
+✔ release inventory refuses extra state (23.150166ms)
+✔ release inventory refuses unplanned leaf (24.622708ms)
+✔ release inventory refuses missing evidence object (23.20775ms)
+✔ release inventory refuses missing source bindings (24.123958ms)
+✔ release inventory refuses duplicate source (24.582625ms)
+✔ release inventory refuses source path escape (23.402ms)
+✔ release inventory refuses source digest (25.008083ms)
+✔ release inventory refuses source empty size (23.2395ms)
+✔ release inventory refuses source retrieval date (23.088708ms)
+✔ release inventory refuses unknown binding source (23.479667ms)
+✔ release inventory refuses unknown binding leaf (25.245917ms)
+✔ release inventory refuses binding path mismatch (23.924167ms)
+✔ release inventory refuses binding digest mismatch (23.837916ms)
+✔ release inventory refuses binding contradictory digest (24.971083ms)
+✔ release inventory refuses binding empty quotation (24.959792ms)
+✔ release inventory refuses missing support family (22.636209ms)
+✔ release inventory refuses duplicate connector (25.342125ms)
+✔ release inventory refuses unknown connector source (24.924125ms)
+✔ release inventory refuses duplicate runtime (24.619834ms)
+✔ release inventory refuses duplicate SDK (24.540333ms)
+✔ release inventory refuses unsupported Console support claim (23.610417ms)
+✔ release inventory refuses model matrix binding mismatch (32.361166ms)
+✔ release inventory refuses qualification binding mismatch (26.065958ms)
+✔ release inventory refuses complete freeze (27.286208ms)
+✔ release inventory refuses wrong freeze date (26.160334ms)
+✔ release inventory refuses implemented with empty evidence (23.809375ms)
+✔ release inventory refuses implemented with decorated evidence (25.620417ms)
+✔ release inventory refuses integration_accepted with empty evidence (22.988708ms)
+✔ release inventory refuses integration_accepted with decorated evidence (25.199167ms)
+✔ release inventory refuses production_qualified with empty evidence (22.873833ms)
+✔ release inventory refuses production_qualified with decorated evidence (24.102041ms)
+✔ release inventory refuses released with empty evidence (22.532125ms)
+✔ release inventory refuses released with decorated evidence (25.995833ms)
+✔ release inventory preserves partial reference facts and unbound planned requirements (19.894292ms)
+✔ release inventory revokes prior validation after invalid candidate (34.557416ms)
+✔ release inventory revokes prior validation after null options (39.66425ms)
+✔ release inventory revokes prior validation after stricter source resolver (34.551542ms)
+✔ release inventory authenticates regular candidate source paths (1611.416958ms)
+✔ release inventory authenticates missing candidate source paths (598.732416ms)
+✔ release inventory authenticates symlink candidate source paths (598.20075ms)
+✔ release inventory refuses unknown connector binding (22.477334ms)
+✔ release inventory refuses unknown runtime binding (24.314ms)
+✔ release inventory refuses unknown support namespace (23.297416ms)
+✔ release inventory refuses missing named connector binding (23.525833ms)
+✔ release inventory refuses duplicate named connector with different path (22.789083ms)
+✔ release inventory refuses empty overview connector name (23.082ms)
+✔ release inventory refuses empty overview connector category (23.325959ms)
+✔ release inventory refuses wrong overview qualifier (23.225416ms)
+✔ release inventory refuses arbitrary connector status (24.215458ms)
+✔ release inventory refuses impossible retrieval date 2026-02-30T12:00:00Z (9.010083ms)
+✔ release inventory refuses impossible retrieval date 2026-02-29T12:00:00+09:00 (8.931708ms)
+✔ release inventory refuses impossible retrieval date 2026-04-31T12:00:00.123456-04:00 (8.422208ms)
+✔ release inventory preserves valid leap date offset and fractional retrieval timestamp (9.575709ms)
+✔ signed Git source reader preserves complete bytes beyond the former one MiB buffer (260.457584ms)
+✔ signed Git authority reader rejects a merge marker beyond one MiB (216.218917ms)
+✔ signed Git source reader fails closed above the sixteen MiB bound (338.297833ms)
+ℹ tests 104
+ℹ suites 0
+ℹ pass 104
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10147.158458
