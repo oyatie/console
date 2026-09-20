@@ -6,8 +6,9 @@
 #[path = "account_entry.rs"]
 mod entry;
 pub use entry::{
-    NativeAccountContext, NativeAccountEntry, NativeEntryError, NativeTerms, NativeTermsItem,
-    native_account_credentials_present, native_account_entry,
+    NativeAccountContext, NativeAccountEntry, NativeCompanySetupEligibility, NativeEntryError,
+    NativeTerms, NativeTermsItem, native_account_credentials_present, native_account_entry,
+    native_company_setup_entry,
 };
 
 use std::collections::BTreeSet;

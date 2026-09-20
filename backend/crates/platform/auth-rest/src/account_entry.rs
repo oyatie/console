@@ -1,5 +1,6 @@
 //! Read-only native Account document composition. API admission remains separate.
 use super::*;
+use console_platform_auth::account::account_company_setup_eligible_in_tx;
 use sqlx::Acquire;
 
 pub struct NativeTermsItem {
@@ -19,18 +20,27 @@ pub enum NativeAccountContext {
     Unavailable,
 }
 
+pub enum NativeCompanySetupEligibility {
+    Eligible,
+    Ineligible,
+    Unavailable,
+}
+
 pub enum NativeAccountEntry {
     SignIn,
     Registration(NativeTerms),
     Active {
         context: NativeAccountContext,
         can_logout: bool,
+        company_setup: NativeCompanySetupEligibility,
     },
+    CompanySetup(NativeCompanySetupEligibility),
 }
 
 #[derive(Clone, Copy)]
 pub enum NativeEntryError {
     InvalidRequest,
+    Unauthorized,
     Forbidden,
     Unavailable,
     TooLarge,
@@ -40,6 +50,7 @@ impl NativeEntryError {
     pub const fn status(self) -> StatusCode {
         match self {
             Self::InvalidRequest => StatusCode::BAD_REQUEST,
+            Self::Unauthorized => StatusCode::UNAUTHORIZED,
             Self::Forbidden => StatusCode::FORBIDDEN,
             Self::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
             Self::TooLarge => StatusCode::PAYLOAD_TOO_LARGE,
@@ -161,6 +172,37 @@ pub async fn native_account_entry(
     headers: &HeaderMap,
     registration: bool,
 ) -> Result<NativeAccountEntry, NativeEntryError> {
+    native_entry(
+        state,
+        headers,
+        if registration {
+            Destination::Registration
+        } else {
+            Destination::Account
+        },
+    )
+    .await
+}
+
+pub async fn native_company_setup_entry(
+    state: &AuthRestState,
+    headers: &HeaderMap,
+) -> Result<NativeAccountEntry, NativeEntryError> {
+    native_entry(state, headers, Destination::CompanySetup).await
+}
+
+#[derive(Clone, Copy)]
+enum Destination {
+    Account,
+    Registration,
+    CompanySetup,
+}
+
+async fn native_entry(
+    state: &AuthRestState,
+    headers: &HeaderMap,
+    destination: Destination,
+) -> Result<NativeAccountEntry, NativeEntryError> {
     let services = configured(state)?;
     let cookies = admit_document(headers, &services.rp_origin)?;
     let access = supplied(&cookies.session, BrowserError::AuthenticationInvalid)?;
@@ -201,9 +243,44 @@ pub async fn native_account_entry(
             }
             Err(error) => return Err(error.into()),
         };
+        // Keep this optional proof independent from context discovery. A SQL
+        // outage rolls back only the savepoint, never the live parent identity.
+        let mut eligibility_tx = tx
+            .begin()
+            .await
+            .map_err(|_| BrowserError::AuthorityUnavailable)?;
+        let company_setup =
+            match account_company_setup_eligible_in_tx(&mut eligibility_tx, &session).await {
+                Ok(eligible) => {
+                    // Release into the parent, retaining the successful head lock.
+                    eligibility_tx
+                        .commit()
+                        .await
+                        .map_err(|_| BrowserError::AuthorityUnavailable)?;
+                    if eligible {
+                        NativeCompanySetupEligibility::Eligible
+                    } else {
+                        NativeCompanySetupEligibility::Ineligible
+                    }
+                }
+                Err(AccountOperationError::AuthorityUnavailable) => {
+                    eligibility_tx
+                        .rollback()
+                        .await
+                        .map_err(|_| BrowserError::AuthorityUnavailable)?;
+                    NativeCompanySetupEligibility::Unavailable
+                }
+                // In particular, elapsed authentication must never become an
+                // active Account with a temporarily unavailable optional read.
+                Err(error) => return Err(error.into()),
+            };
         ensure_account_session_fresh_in_tx(&mut tx, &session).await?;
+        if matches!(destination, Destination::CompanySetup) {
+            return Ok(Some(NativeAccountEntry::CompanySetup(company_setup)));
+        }
         Ok(Some(NativeAccountEntry::Active {
             context,
+            company_setup,
             can_logout: projection.permitted_self_actions.iter().any(|action| {
                 action.action_key == "account.session.logout" && action.registration_revision == "1"
             }),
@@ -223,7 +300,11 @@ pub async fn native_account_entry(
                 .map_err(|_| NativeEntryError::Unavailable)?;
             // Expired/revoked access reveals no identity and never consumes refresh.
             if matches!(error, BrowserError::AuthenticationInvalid) {
-                return Ok(NativeAccountEntry::SignIn);
+                return if matches!(destination, Destination::CompanySetup) {
+                    Err(NativeEntryError::Unauthorized)
+                } else {
+                    Ok(NativeAccountEntry::SignIn)
+                };
             }
             return Err(error.into());
         }
@@ -231,7 +312,12 @@ pub async fn native_account_entry(
     if let Some(active) = active {
         return Ok(active);
     }
-    if !registration || matches!(cookies.refresh, CookieValue::Supplied(_)) {
+    if matches!(destination, Destination::CompanySetup) {
+        return Err(NativeEntryError::Unauthorized);
+    }
+    if !matches!(destination, Destination::Registration)
+        || matches!(cookies.refresh, CookieValue::Supplied(_))
+    {
         return Ok(NativeAccountEntry::SignIn);
     }
     terms::entry_terms(state)

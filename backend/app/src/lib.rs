@@ -3822,6 +3822,7 @@ pub fn build_router(state: AppState) -> Router {
                 "/account/register",
                 get(native_account_registration_document),
             )
+            .route("/account/companies/new", get(native_company_setup_document))
             .route("/organization", get(ui_organization))
             .route("/hr", get(ui_hr))
             .route("/people", get(ui_hr))
@@ -3873,10 +3874,19 @@ async fn native_account_registration_document(
     native_account_page(&state, &headers, method, NativeAccountPage::Registration).await
 }
 
+async fn native_company_setup_document(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    native_account_page(&state, &headers, method, NativeAccountPage::CompanySetup).await
+}
+
 enum NativeAccountPage {
     PublicRoot,
     Account,
     Registration,
+    CompanySetup,
 }
 
 async fn native_account_page(
@@ -3885,16 +3895,29 @@ async fn native_account_page(
     method: axum::http::Method,
     page: NativeAccountPage,
 ) -> axum::response::Response {
-    use console_payroll_ui::native_account::{ContextState, Page, TermsItem, document};
-    use console_platform_auth_rest::{NativeAccountContext, NativeAccountEntry, NativeEntryError};
+    use console_payroll_ui::native_account::{
+        CompanySetupEligibility, ContextState, Page, TermsItem, document,
+    };
+    use console_platform_auth_rest::{
+        NativeAccountContext, NativeAccountEntry, NativeCompanySetupEligibility, NativeEntryError,
+    };
     if method != axum::http::Method::GET {
         return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
     }
     let Some(auth) = &state.auth_rest else {
         return document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE);
     };
-    let registration = matches!(page, NativeAccountPage::Registration);
-    match console_platform_auth_rest::native_account_entry(auth, headers, registration).await {
+    let entry = if matches!(page, NativeAccountPage::CompanySetup) {
+        console_platform_auth_rest::native_company_setup_entry(auth, headers).await
+    } else {
+        console_platform_auth_rest::native_account_entry(
+            auth,
+            headers,
+            matches!(page, NativeAccountPage::Registration),
+        )
+        .await
+    };
+    match entry {
         Ok(NativeAccountEntry::SignIn) => document(
             if matches!(page, NativeAccountPage::PublicRoot) {
                 Page::Public
@@ -3919,20 +3942,39 @@ async fn native_account_page(
             },
             StatusCode::OK,
         ),
+        Ok(NativeAccountEntry::CompanySetup(eligibility)) => match eligibility {
+            NativeCompanySetupEligibility::Eligible => document(Page::CompanySetup, StatusCode::OK),
+            NativeCompanySetupEligibility::Ineligible => {
+                document(Page::Refused, StatusCode::NOT_FOUND)
+            }
+            NativeCompanySetupEligibility::Unavailable => {
+                document(Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE)
+            }
+        },
         Ok(NativeAccountEntry::Active {
             context,
             can_logout,
+            company_setup,
         }) => {
-            let (context, status) = match context {
+            let (context, mut status) = match context {
                 NativeAccountContext::Empty => (ContextState::Empty, StatusCode::OK),
                 NativeAccountContext::Unavailable => {
                     (ContextState::Unavailable, StatusCode::SERVICE_UNAVAILABLE)
+                }
+            };
+            let company_setup = match company_setup {
+                NativeCompanySetupEligibility::Eligible => CompanySetupEligibility::Eligible,
+                NativeCompanySetupEligibility::Ineligible => CompanySetupEligibility::Ineligible,
+                NativeCompanySetupEligibility::Unavailable => {
+                    status = StatusCode::SERVICE_UNAVAILABLE;
+                    CompanySetupEligibility::Unavailable
                 }
             };
             document(
                 Page::Account {
                     context,
                     can_logout,
+                    company_setup,
                 },
                 status,
             )

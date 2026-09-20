@@ -362,6 +362,31 @@ pub async fn activate_account_registration_in_tx(
     Ok(())
 }
 
+/// Current-session read projection only; this boolean is never command authority.
+/// The caller retains the admitted transaction and its Account/family/head guards.
+pub async fn account_company_setup_eligible_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    session: &AccountLiveSession,
+) -> Result<bool, AccountOperationError> {
+    let eligible: bool =
+        sqlx::query_scalar("SELECT public.account_company_setup_eligibility_v1($1)")
+            .bind(session.account_id)
+            .fetch_one(tx.as_mut())
+            .await
+            .map_err(|error| match error.as_database_error() {
+                Some(db)
+                    if db.code().as_deref() == Some("P0001")
+                        && db.message() == "account.authentication_invalid" =>
+                {
+                    AccountOperationError::AuthenticationInvalid
+                }
+                _ => AccountOperationError::AuthorityUnavailable,
+            })?;
+    // Even an ineligible result may have waited for a designation-head lock.
+    ensure_account_session_fresh_in_tx(tx, session).await?;
+    Ok(eligible)
+}
+
 pub async fn account_contexts_empty_in_tx(
     tx: &mut Transaction<'_, Postgres>,
     session: &AccountLiveSession,

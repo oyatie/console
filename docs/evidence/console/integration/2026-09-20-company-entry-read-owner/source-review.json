@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_BOUNDED_SOURCE_PENDING_COMPILATION_OWNER_AND_BROWSER_RESULTS",
+  "manifest_sha256": "14898f4911a287d5858cd89fdf24a3c542072315afb7678c2c8ff1796f91fa40",
+  "patch_sha256": "6cda55fb2c2c5cb5d6404cf3d68e82380357e3474d177a71869cba7cc2e43180",
+  "base_sha": "d06ae6379f2bb096b653a641041aa089b58c61c0",
+  "current_source_preimages_verified": {
+    "backend/crates/platform/auth/src/account.rs": "38ac7b0da955fd258da12f71d8c914437b676f3098acede3ffadce44c8d7253e",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "9fbafb1451e6adcfa143f1497438c5881d77691726444f8d971cbf60e5ff01e3",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "8064cddbe1ac460eafee62622d1dced93ca37d3b34b86cf8e1d52d8e30f8dea5",
+    "backend/crates/platform/auth-rest/src/lib.rs": "19dfec1914ec4f6977d403fa0316130522613f98fda6f19645175fac0130be14",
+    "backend/app/src/lib.rs": "32adc97a657e9f8056b5527eeb8060bae886eb861cffc20e573e211e127a515a",
+    "backend/crates/payroll/ui/src/native_account.rs": "307f3c613ca79c9613f5fd8f5f092e39b0fb24d04a05268576e57c67a9d4184c"
+  },
+  "candidate_sources": {
+    "backend/crates/platform/auth/src/account.rs": "046cd1289f2df69fadcd23807f1e07a8a0e81f697a229e2eeccf36d5856e1bad",
+    "backend/crates/platform/auth-rest/src/account_entry.rs": "a89b7ae66af5f25cd73e9a30bb99d9b8718fb9e9ed2f207e9c04fd440fecdcc2",
+    "backend/crates/platform/auth-rest/src/account_browser.rs": "84e1a639c7ef72c8b5a62d9c44c1ed6d514efec8e0ddd67022f41577cbcde114",
+    "backend/crates/platform/auth-rest/src/lib.rs": "520ac39667c736cfdecc5881d777e7936c04e26569850766cba8f5434981d0f2",
+    "backend/app/src/lib.rs": "b5a5a79f7c90b33f3ab19d68c5caed673ad56c21589af6f73a71aeee8f3dcf72",
+    "backend/crates/payroll/ui/src/native_account.rs": "4cbdc025204acda1f5658baed9097e2b2788639a368492632797917b2e282f7e"
+  },
+  "checks": [
+    "All packet hashes and6current source preimages independently verified; patch applicability check0; pinnedrustfmt all6check0.",
+    "Account source only adds typed helper; binds server-resolved live session Account, strictbool decode maps NULL/error to sanitized unavailable, authentication-invalid retained.",
+    "Original document admission/cookieparser/errorconversion and live-session/context-savepoint bytes independently exact.",
+    "Eligibility childsavepoint isolates real SQLpermission failure; successfulsavepoint preserves headlock in parent until commit; AuthenticationInvalid escalates fullrollback; finalparentclock after both optionalreads.",
+    "No client-provided principal/role/CompanyID accepted; setup discovery projection never command authority.",
+    "App only routes/maps safe projection; SQL/business mutation remain in owning boundary. Sixthaccount_browser change limited authorized safe reexports.",
+    "Setup valideligible200,ineligible404,missing/expired401,unavailable503; method405 and existingmetadata/parser400/403/413 remain.",
+    "Historical invalid registrationSignIn retained; separately reviewed expiry test correction required.",
+    "Account/root/register unavailableeligibility retains live identity/context/logout with503; contextunavailable can still independently display eligibleCTA.",
+    "Native Leptos preview has labels/fieldset but noform,submit,mutationhook or island; static companyinputs cannot defaultGET-submit onEnter."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "holds": [
+    "Root must amend lane sixthfile, integrate exact source, compile, run originalRED/GREENs and reviewedexpiry correction.",
+    "Actualbrowser with currentowner, screenshots/independent visual review and regressions remain required.",
+    "No Company command/draft/replay/reopen/revoke workflow acceptance; preview cannot qualify enrollment or release exposure.",
+    "HTML413 envelope defect remains separate; no historical SQL/serializer/fingerprint modified.",
+    "Shared Account reads gain one helpercall/savepoint; performancequalification and finalsourcebuiltartifact custody remain required."
+  ]
+}

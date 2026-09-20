@@ -13,6 +13,12 @@ pub enum ContextState {
     Unavailable,
 }
 
+pub enum CompanySetupEligibility {
+    Eligible,
+    Ineligible,
+    Unavailable,
+}
+
 pub enum Page {
     Public,
     SignIn,
@@ -23,7 +29,9 @@ pub enum Page {
     Account {
         context: ContextState,
         can_logout: bool,
+        company_setup: CompanySetupEligibility,
     },
+    CompanySetup,
     Refused,
     Unavailable,
 }
@@ -106,7 +114,20 @@ fn body(page: Page) -> AnyView {
                 </section>
             }.into_any()
         },
-        Page::Account { context, can_logout } => {
+        Page::Account { context, can_logout, company_setup } => {
+            let setup = match company_setup {
+                CompanySetupEligibility::Eligible => view! {
+                    <a class="button primary" href="/account/companies/new">"회사 업무 공간 만들기"</a>
+                }.into_any(),
+                CompanySetupEligibility::Ineligible => ().into_any(),
+                CompanySetupEligibility::Unavailable => view! {
+                    <section class="workspace-state" role="alert">
+                        <h2>"업무 공간 등록을 확인할 수 없습니다"</h2>
+                        <p>"잠시 후 다시 확인해 주세요."</p>
+                        <a href="">"다시 확인"</a>
+                    </section>
+                }.into_any(),
+            };
             let workspace = match context {
                 ContextState::Empty => view! {
                     <section class="workspace-state" data-context-state="empty">
@@ -130,6 +151,7 @@ fn body(page: Page) -> AnyView {
                     <p class="eyebrow">"내 CONSOLE"</p>
                     <h1>"계정에 로그인했습니다"</h1>
                     {workspace}
+                    {setup}
                     {can_logout.then(|| view! {
                         <form data-native-action="logout" class="logout-form">
                             <button class="button secondary" type="button" data-native-submit disabled>"로그아웃"</button>
@@ -139,6 +161,22 @@ fn body(page: Page) -> AnyView {
                 </section>
             }.into_any()
         },
+        Page::CompanySetup => view! {
+            <section class="entry-card" data-company-setup="" aria-labelledby="company-setup-title">
+                <p class="eyebrow">"내 CONSOLE"</p>
+                <h1 id="company-setup-title">"회사 업무 공간 만들기"</h1>
+                <p class="lead">"기존 회사가 사용할 콘솔 업무 공간을 등록합니다."</p>
+                <fieldset>
+                    <legend>"회사 업무 공간 정보"</legend>
+                    <label for="company-name">"회사 이름"</label>
+                    <input id="company-name" name="name" type="text" autocomplete="organization"/>
+                    <label for="company-slug">"업무 공간 식별자"</label>
+                    <input id="company-slug" name="slug" type="text" autocomplete="off"/>
+                </fieldset>
+                <p class="supporting">"관리할 계정: 내 계정"</p>
+                <a href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
         Page::Refused => view! {
             <section class="entry-card">
                 <p class="eyebrow">"요청 확인"</p><h1>"이 요청을 열 수 없습니다"</h1>
@@ -163,6 +201,7 @@ pub fn render(page: Page) -> String {
         Page::SignIn => "로그인 · Console",
         Page::Register { .. } => "계정 만들기 · Console",
         Page::Account { .. } => "내 계정 · Console",
+        Page::CompanySetup => "회사 업무 공간 만들기 · Console",
         Page::Refused => "요청 확인 · Console",
         Page::Unavailable => "다시 시도 · Console",
     };
