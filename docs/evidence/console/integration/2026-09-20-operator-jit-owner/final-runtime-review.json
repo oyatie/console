@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_OPERATOR_JIT_CHANGE_WITH_RETAINED_TRANSITIONS",
+  "observed_head": "34bbb9aa4c0d4d337fb5a803d3e713f6af720476",
+  "source_review_sha256": "ddfb3320edcc7325df4f73cf2875e5b5d2b320821999a6732019c21215d10da4",
+  "source_custody": "Both source files independently rehashed and match the exact approved after hashes; no new source authorization.",
+  "evidence": {
+    "path": "/private/tmp/console-operator-jit-retained-ten-20260920.log",
+    "sha256": "acab6c3ab95b011f750fa44fd8610c09c2f8abf63bc297924d9bd4105afcd9a5",
+    "discovered": 10,
+    "executed": 10,
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 363,
+    "test_seconds": 119.48,
+    "runner_seconds": 119.826
+  },
+  "checks": [
+    "All four retained business-session predecessor transitions and all six eligibility transitions passed, including the malformed helper atomicity test that previously exceeded its unchanged timeout.",
+    "Actual retained tests exercise initialized and populated upgrades, replay/history preservation, malformed/refusal atomicity, finalized body/ACL/overload drift, corrupt designation refusal and addition-oracle corruption controls.",
+    "Prior exact SQLx setting/scope GREEN 1/1 and actual TLS psql wrapper default/observer GREEN 2/2 remain part of this bounded acceptance.",
+    "No historical SQL, migration, serializer, command bytes or timeout relaxation was approved."
+  ],
+  "remaining_holds": [
+    "Full installed production wrapper compatibility on PostgreSQL 18.6 is not established by the 18.4 configuration probe.",
+    "This is not workload performance, assembled release, production or milestone acceptance."
+  ]
+}

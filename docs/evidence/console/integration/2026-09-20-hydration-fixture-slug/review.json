@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root",
+  "author": "/root/integration_tests",
+  "status": "APPROVE_EXACT_FIXTURE_PREFIX_CORRECTION",
+  "manifest_sha256": "9f5d6a64eeda405069873531b8e5bbe0fbeabf526d1e363ee9cff3761730387e",
+  "checks": [
+    "One literalprefix differs; fullUUID unchanged",
+    "Existing schema caps slug40; reviewed fixture formerly42",
+    "No assertion/driver/protocol/source behavior changed"
+  ],
+  "runtime_executed": 0,
+  "holds": [
+    "Actual browser boundary not yet exercised; prior fixture23514 preserved"
+  ]
+}

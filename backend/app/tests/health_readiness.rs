@@ -1379,7 +1379,7 @@ mod authorized {
             "INSERT INTO organizations (id,slug,name) VALUES ($1,$2,'Hydration empty Company')",
         )
         .bind(*foreign_org.as_uuid())
-        .bind(format!("hydration-{}", foreign_org.as_uuid().simple()))
+        .bind(format!("hydrate-{}", foreign_org.as_uuid().simple()))
         .execute(&pool)
         .await
         .unwrap();
