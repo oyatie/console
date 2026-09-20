@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "legacy-self-passkey-private-test-baseline",
+    "owner": "/root",
+    "base_sha": "808595cc0f6422631adcd48740fdb2db87173abf",
+    "immutable_target": "Lock eight independently reviewed private Auth regression tests",
+    "probe": "node scripts/check-executed-tests.mjs",
+    "allowed_paths": [
+      "docs/program/executed-tests-baseline.json"
+    ],
+    "mechanical_guide": "Canonical --update; inspect exact sole change Auth lib declared attrs3to11, preserve every other baseline entry.",
+    "reviewers": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "pre_mortem": "Broad baseline update conceals omissions",
+    "blast_radius": "One declared count in existing baseline",
+    "detection": "Exact delta, same gate green, retained test source bytes",
+    "rollback": "Revert this count; do not remove tests",
+    "stop_conditions": [
+      "Unexpected baseline changes",
+      "Missing test discovery or execution"
+    ],
+    "remaining_holds": [
+      "Supplementary HTTP/history/retained owner acceptance",
+      "Full release"
+    ]
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "candidate": "808595cc0f6422631adcd48740fdb2db87173abf",
+  "retained_readers": {
+    "command": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-legacy-passkey-retained-map-20260920.json --only legacy-passkey-retained-readers",
+    "discovered": 7,
+    "executed": 7,
+    "passed": 7,
+    "ignored": 0,
+    "seconds": 41.66
+  },
+  "baseline_reviewer": "/root",
+  "independent_test_author": "/root/reference_inventory",
+  "baseline_delta": [
+    [
+      "/test_attribute_baseline/backend/crates/platform/auth/src/lib.rs",
+      3,
+      11
+    ]
+  ],
+  "remaining": "Extended HTTP and lock histories, broader current authority integration and assembled release; raw ADR evidence classification pending user approval."
+}
