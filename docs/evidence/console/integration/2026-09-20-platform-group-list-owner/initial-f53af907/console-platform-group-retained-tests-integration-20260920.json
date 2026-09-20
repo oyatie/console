@@ -1,0 +1,18 @@
+{
+  "owner": "/root",
+  "candidate": "99db6770b4f57d243851b5b7bf538f9413e350ab53fe47220798df26b0293b5b",
+  "independent_semantic_review_sha256": "2f879e4c6b1e6ec6e801cd841a83294dc6bcba52e0a6b57412236baad7a5a357",
+  "paths": [
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+    "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs",
+    "backend/crates/platform/platform-rest/tests/platform_groups.rs"
+  ],
+  "exact_preimages_verified": true,
+  "decision": "integrate independently approved3file retained fixture/transport successor",
+  "runtime_executed": 0,
+  "limits": [
+    "No sharedprivacyhelper weakening",
+    "All priorCRUD/Company/opsassertions preserved",
+    "BroadGroupacceptance stillrequired"
+  ]
+}

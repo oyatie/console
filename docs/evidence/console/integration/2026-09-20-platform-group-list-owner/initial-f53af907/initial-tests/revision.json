@@ -1,0 +1,7 @@
+{
+  "supersedes_manifest_sha256": "3c867691fafb93849f88e9b9ef8074aff2d3cab577f69c8e1bffc6ff3f4278a7",
+  "finding": "author source review caught parenthesized primitive cast",
+  "change": "remove erroneous () following u64 cast type",
+  "semantic_test_change": false,
+  "runtime_executed": 0
+}

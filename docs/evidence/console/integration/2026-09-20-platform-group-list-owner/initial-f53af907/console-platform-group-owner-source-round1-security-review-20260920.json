@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE bounded Group owner source candidate; runtime acceptance pending",
+  "base_sha": "194d68dcfca48027381ccbb33deb75b9b274724a",
+  "source_sha256": {
+    "backend/crates/platform/provisioning/src/lib.rs": "20219ba87a2adf267f4687f6a2baa6c7040adc839aa5214b7efdf06cf6fb1386",
+    "backend/crates/platform/platform-rest/src/lib.rs": "220a45f967a881dc481e33385344ed259be97ff0b0a6a752cc83c783c4fcf099",
+    "backend/crates/platform/auth-rest/src/lib.rs": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85"
+  },
+  "lane_scope_sha256": "66032ffff102aed2fc3d90b96b3ea5c5e1df8fb16600aad4706904d147e323a3",
+  "checks": [
+    "Exactly three admitted production files differ; no SQL migration, source bridge, policy/schema, codec, fingerprint or generated change.",
+    "Sole mounted Group caller passes exact original bearer and server verifier/TTL/current policy. Public detached actor/time signature replaced, with no alternate unguarded helper.",
+    "One explicit READ COMMITTED Business transaction retains existing source guards through Group SQL, mapping, audit and COMMIT. Four fresh DB time/policy checks occur before SQL, after SQL before mapping, before audit, and after audit.",
+    "Existing Group SQL literal and group_from_row mapper bytes identical; 8 Group/4 member shape and wire conversion retained. Actual member JSON decode errors are collapsed to finite GroupListUnavailable.",
+    "Private closed GroupTopology tuple is Direct/GroupManage/Groups/ReadProjection/DirectPlatformOwner. Existing Companies/Operations tuple and owner code untouched.",
+    "Acquisition/isolation/source infra/query/decode/audit/commit errors finite503; current auth401 and policy403 remain separate. Audit actor derives from retained source and audit time from fresh DB clock. Lost acknowledgement returns no rows and never retries.",
+    "Exact GET/HEAD Group path including querystrings joins existing final privacy selector. Descendants, trailing slash, write methods remain outside selector; App composition unchanged.",
+    "Legacy auth-rest exhaustive match adds only three new variants to existing static unavailable arm. No generic authority framework or production fault seam."
+  ],
+  "findings": [],
+  "runtime_tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Same mounted probe GREEN and full approved Group supplemental acceptance, including actual decoder503, expiry/retained locks/family races/unknown commit and recovery, remain required.",
+    "Two retained sibling semantic changes and standalone genuine-login fixture repair require independent source review; full affected Company/ops and retained Group regressions required.",
+    "Generated source composition, all-target lint and final immutable coverage/security/16-lens/runtime audit remain required.",
+    "Raw SQL EXECUTE, other Group/Company/context owners, source-snapshot intermittency and full release remain HOLD."
+  ]
+}

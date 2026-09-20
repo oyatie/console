@@ -1,0 +1,63 @@
+{
+  "kind": "independent-bounded-generated-BUCK-source-review",
+  "reviewer": "/root/reference_inventory",
+  "independent_of_group_authorship": true,
+  "decision": "APPROVE exact additive generated-source inclusion only",
+  "base_sha": "99203cf2ea01404a48a97173c3bbd3f49551771c",
+  "reviewed_file": "backend/app/BUCK",
+  "before_sha256": "fc91447444ffe533cbccb19f31e1142c72cd5f6b7947a4f4dc6076cdf80fe07b",
+  "after_sha256": "d50a779099941dde89b3bfbb460844e1a1e4655b3bbe0100052cd813d300c902",
+  "root_preservation_receipt": {
+    "path": "/private/tmp/console-platform-group-buck-preservation-20260920.json",
+    "sha256": "9e63507df71b463deac1da73a30d7876a4e1efdf81623d1e03e930e871222923"
+  },
+  "checks": {
+    "exact_prior_git_blob_matches_declared_hash": true,
+    "current_generated_file_matches_declared_hash": true,
+    "added_source_literals": {
+      "tests/auth_rest/legacy_platform_group_credentials.rs": 67,
+      "tests/auth_rest/legacy_platform_group_reads.rs": 67
+    },
+    "removing_only_two_added_literals_restores_exact_prior_bytes": true,
+    "changed_lines": 67,
+    "every_changed_line_is_existing_mapped_srcs_with_both_helpers": true,
+    "integration_root_count_independently_classified": 67,
+    "new_helpers_are_nested_sources_not_test_roots": true,
+    "helper_files_already_committed_and_unchanged": {
+      "tests/auth_rest/legacy_platform_group_credentials.rs": "bd6fb05733e852012029e266ea624632fe0443107bec2d85a8754b0c51eb8615",
+      "tests/auth_rest/legacy_platform_group_reads.rs": "aa0934c70b5e881fc826c72251872279576301005b210fe2d334e184fbed0ec5"
+    },
+    "generator_unchanged_from_exact_base": true,
+    "generator_sha256": "77c82c1283ea90bf4e9eace3efa66cd86feea72a1dc1ca618666496c638f192e",
+    "dirty_paths_exactly_expected": [
+      "backend/app/BUCK",
+      "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs",
+      "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs",
+      "backend/crates/platform/platform-rest/tests/platform_groups.rs"
+    ]
+  },
+  "generator_source_reasoning": "integration_test_sources lines1268-1314 returns all nested .rs files as helpers; existing per-root loop lines2049-2068 unions all helpers into each mapped_srcs. Therefore each of the two new nested helper paths occurs once in each of67existing integration roots, with no new target/dependency/resource-policy changes. Existing module links are legacy_platform_list_histories.rs:692 and legacy_platform_group_reads.rs:619.",
+  "invocations": [
+    "git rev-parse 99203cf2",
+    "git status --short",
+    "git diff --stat -- backend/app/BUCK tools/buck/gen_first_party.py",
+    "git ls-tree 99203cf2 -- generator,BUCK,and two helper paths",
+    "git show 99203cf2:<reviewed paths> plus independent Python byte/hash/token restoration and source-root classification",
+    "read existing generator discovery/emission source"
+  ],
+  "generator_executed_by_reviewer": false,
+  "tests_discovered": 0,
+  "tests_executed": 0,
+  "builds_executed": 0,
+  "repo_edits": 0,
+  "findings": [],
+  "limits": [
+    "This approves generated source mapping only, not Group authorization correctness or retained-test semantic edits.",
+    "Root reported generator execution; this reviewer independently verified exact resulting bytes and unchanged algorithm without rerunning it.",
+    "Existing runtime/admission/independent business-test requirements remain in force."
+  ],
+  "lenses": [
+    "Chesterton's Fence",
+    "Essentialism / YAGNI"
+  ]
+}

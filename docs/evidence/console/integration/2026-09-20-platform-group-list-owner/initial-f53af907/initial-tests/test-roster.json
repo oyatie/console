@@ -1,0 +1,26 @@
+{
+  "base_sha": "95e48111ad23abc1ebec7f1a0bd396b2deca4871",
+  "new_module": "legacy_platform_list_reads::histories::legacy_platform_group_reads",
+  "leaves": [
+    {
+      "kind": "sqlx",
+      "name": "mounted_group_list_current_member_denies_and_recovers",
+      "admission_probe": true
+    },
+    {
+      "kind": "plain",
+      "name": "group_audit_allstate_oracle_rejects_omission_corruption_and_rewritten_history",
+      "admission_probe": false
+    },
+    {
+      "kind": "plain",
+      "name": "group_projection_oracle_rejects_every_field_topology_and_order_corruption",
+      "admission_probe": false
+    }
+  ],
+  "runtime_executed": 0,
+  "compiled_or_discovered": 0,
+  "future_owner_api_references": 0,
+  "existing_parent_bytes_preserved": true,
+  "pinned_rustfmt": "1.98.1 edition2024 passed"
+}

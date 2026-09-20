@@ -1,0 +1,22 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "HOLD round1 integration for deterministic new-test oracle defect; narrow design changes otherwise acceptable",
+  "manifest_sha256": "123860d04687a10fc05e0bf511024560b2b1891117a9e540a0e2aba7369878b1",
+  "findings": [
+    {
+      "id": "GROUP-TRANSPORT-EMPTY-PRIVACY-INPUT",
+      "path": "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs",
+      "candidate_line": 263,
+      "problem": "All four new no-header cases pass empty secrets to private_response, whose unchanged definition requires !secrets.is_empty(); correct responses necessarily fail this assertion.",
+      "fix": "Preserve the strict shared helper. Use a documented nonempty fixture sentinel for privacy structure in these credential-free requests, explicitly without claiming current-input secrecy coverage, or equivalent narrowly reviewed fixture-only correction."
+    }
+  ],
+  "checks": [
+    "All seven packet hashes and all three exact base preimages verified.",
+    "Entire retained CRUD SQLx leaf bytes identical; only genuine Business login and existing current policy/TTL composition replace deficient setup.",
+    "Two old exact Group GET sibling examples become a real-shaped Group accounts descendant as explicitly approved by four-round design; old assertions and Company/ops cases preserved.",
+    "Four affirmative Group GET/HEAD/query selections and five new trailing-slash/method exclusions supplement the existing transport grammar; no production or policy changes."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "required_next": "Immutable corrected packet and independent successor review before integration; preserve round1 as failed source evidence."
+}
