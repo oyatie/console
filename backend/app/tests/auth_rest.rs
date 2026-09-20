@@ -3898,6 +3898,8 @@ mod account_browser {
     //! nonresident registration and allow-list/userHandle accommodations below are
     //! synthetic crypto fixtures, NOT browser presence, residency or discovery proof.
 
+    include!("auth_rest/native_family_fixture.inc.rs");
+
     use super::*;
     use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
     use sha2::{Digest, Sha256};

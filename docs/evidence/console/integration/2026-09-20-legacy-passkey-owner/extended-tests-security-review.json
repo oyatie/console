@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXTENDED_HTTP_TEST_SOURCE_FOR_ROOT_INTEGRATION_AND_EXECUTION",
+  "manifest_sha256": "473be83abb05ccd7ef443e65ccf95c7d80086c661c196dc97668759e87a7df88",
+  "files_sha256": {
+    "CONTRACT.md": "6f69656aee6e8cc2b2875863f1938bcc9c6ec4f2c2e788241fb58d675d195471",
+    "legacy_bound_passkey_extended.rs": "1711dc00594d5b4cb512f4b9fbf022a8dd809a134d0bc9e6b4e5730ef1631217",
+    "native_family_fixture.inc.rs": "ade4d1b98ef023a6bc556e5a9ac98135fd78191ddb03ae3081289dcc0314e725"
+  },
+  "reviewed": [
+    "Ten real mounted HTTP leaves reuse genuine issue/enrollment/refresh owners and current verifier. Child module and one visibility change preserve retained helper bodies.",
+    "Rotation keeps exact family identity; committed old-token reuse checks terminal rows, precise timestamp, unrelated rosters, one full audit metadata record after independently checking normalized event-specific fields, then A denial with B/control success.",
+    "Native enrollment helper matches existing fixture APIs and committed Account assertions. Native HTTP denial is not isolated protocol proof; approved pure protocol control supplies that distinction.",
+    "Current roles and suspension are disposable state injections and purpose compatibility assertions, not policy administration writer evidence. Inactive/fenced state denies and control subject remains available.",
+    "Historical platform self and explicit derived dispatch match approved compatibility design. Random nonexistent home tests an actual guard refusal; private tuple tests separately isolate home correlation.",
+    "Signed time, historical expiry, configured family TTL, actual missing-helper 503 and exact catalog restoration are paired with full public-row equality and recovery positives.",
+    "Missing projection test restores real helper on assertion panic without replacement SQL or broadened privileges."
+  ],
+  "prospective_sqlx_leaves": 10,
+  "executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Compile and execute integrated exact test candidate; prerequisite failures are not security refusal proof.",
+    "Separate observed lock, after-wait/final expiry, and independent Company progress histories.",
+    "Retained reader and refresh regression evidence; complete owner and release qualification."
+  ],
+  "review_method": "Read-only source review against actual fixture, guard, reader, refresh and browser APIs. Manifest entries verified; no build or DB execution."
+}

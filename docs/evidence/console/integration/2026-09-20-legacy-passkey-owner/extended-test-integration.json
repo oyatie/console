@@ -1,0 +1,24 @@
+{
+  "backend/app/tests/auth_rest.rs": {
+    "before": "fb3100ce50bf40ef64b156a4fe22a996bee3bbb7390204c41b08cb744e22f7ce",
+    "after": "b860feb1a78f3f53b7e44d2254e6c79043266d04d4227cc38678071f0cb47a40",
+    "replacement": [
+      "After existing account_browser module inner doc comments",
+      "Add include!(\"auth_rest/native_family_fixture.inc.rs\"); before imports"
+    ]
+  },
+  "backend/app/tests/auth_rest/account_fence_transport.rs": {
+    "before": "ea6fcc28984c4b0367c48df484634c42d838dae75e128e39b42b356782d4fd2f",
+    "after": "ac169a5c1dc30f35f8e6615c0df8f40889baa098a560c82d4b67164169339d19",
+    "replacement": [
+      "fn assert_exact_refresh_delta(",
+      "pub(super) fn assert_exact_refresh_delta("
+    ]
+  },
+  "backend/app/tests/auth_rest/legacy_bound_passkey_reads.rs": {
+    "before": "248c5f57df8651b8189e49bb1916dd303ca27c32cc86a5ade7dbe084fc915a50",
+    "after": "8e0aa6ab499b1b74e68af4d86f85b47985a802242b2322d44a102047acb249ea",
+    "change": "Append reviewed child module"
+  },
+  "integration_correction": "Move newly added include after pre-existing inner doc comments; retain every historical comment/assertion byte. Initial hook rejected invalid placement; no test ran under that placement."
+}

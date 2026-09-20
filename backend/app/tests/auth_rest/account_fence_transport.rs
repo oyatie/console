@@ -517,7 +517,7 @@ pub(super) async fn refresh_complete_snapshot(pool: &PgPool) -> Value {
     .expect("complete refresh and audit readback must succeed")
 }
 
-fn assert_exact_refresh_delta(
+pub(super) fn assert_exact_refresh_delta(
     before: &Value,
     after: &Value,
     subject: UserId,
