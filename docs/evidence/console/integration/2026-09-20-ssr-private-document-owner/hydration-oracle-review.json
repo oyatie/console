@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_EVIDENCE_BASED_SEMANTIC_ORACLE_CORRECTION",
+  "manifest_sha256": "535ec9285ff8b01f99ee2acd2a2008e3dfc08454ff876845918a1431f66af315",
+  "driver_sha256": "8db9adaeaf8ad49f2a6291d69730018560920eb18e9e922933b0e2f40847e7b6",
+  "reproduction_manifest_sha256": "72dde649ba38aca3059f1b6d19c3ae4f9f7929e7c2b90ad7400ff4da3248330f",
+  "evidence_review": [
+    "All10successor and5reproduction artifacts independently rehashed. Read actual six-context result and complete reproduction/verification source.",
+    "Credential-free plain server sends no CSP header; JS-disabled modulepreload fails with exact csp script event during navigation both with and without CDP. ThreeJS-on contexts execute delivered module; JS-off withoutpreload has nofailedrequest. All6 contexts close with no pendingrequests and server/browser cleanupconfirmed.",
+    "Independently reran reproduction result verifier, not browser:6case facts and9serverrequests/3scriptdeliveries pass. This supports correcting the deliberate JS-off oracle, not changing productpolicy."
+  ],
+  "successor_checks": [
+    "Actual driver main/actions/waits/rawfailurecounter byte-identical to diagnostic predecessor. All36prior corruption controls byte-identical.",
+    "Acceptance now requires exactly1rawfailure plus exactly1diagnostic failure in exact authorized-js-off case/path/pkg/console_payroll_ui.js/GET/script/csp/navigation-start/navigation-failure;0failures in everyothercase and emptybefore/aftercloseinflight arrays acrossall5cases.",
+    "Missing/extra/wrong-phase/wrong-resource/wrong-case errors remain failures. Raw events are retained, not subtracted or filtered. Unknownbrowsererrors still redacted; only literal csp added tosafeclassifier.",
+    "Other5case/3filter/originalnode/privacy/assets/origin/redirect/disclosure/cleanup/DBowner requirements unchanged."
+  ],
+  "independent_controls": {
+    "node_syntax_exit": 0,
+    "acceptance_positive": 2,
+    "corruptions": 64,
+    "retained_corruptions": 36,
+    "new_corruptions": 28,
+    "sanitizer_positive": 3,
+    "sanitizer_corruptions": 15
+  },
+  "limits": [
+    "Reviewer executed no new browser/DB/Cargo run; actual root successor run and final ownercheckpoint required.",
+    "This intentionally revises one semantic test expectation with reviewed evidence; prior failures remain failures under their historical oracle.",
+    "Anyotheractual network/CSPfailure or missing expectedcontrol mustfail. No broad failure exemption or productionacceptance."
+  ]
+}

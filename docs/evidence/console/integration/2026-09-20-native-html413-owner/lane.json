@@ -1,0 +1,33 @@
+[
+  {
+    "lane": "native-html413-owner",
+    "owner": "/root",
+    "base_sha": "8a4b15965372773ddf77e5b7ba3d2082df0148da",
+    "immutable_target": "Preserve server-rendered native HTML413 without broadening generic API envelope behavior",
+    "allowed_paths": [
+      "backend/crates/platform/request-context/src/lib.rs",
+      "backend/app/src/lib.rs"
+    ],
+    "probe": "DOCKER_CONTEXT=colima-console-release-20260919 CARGO_TARGET_DIR=/private/tmp/console-rust1981-owner-target bash tools/ci/cargo_needs_postgres.sh --map /private/tmp/console-native-html413-owner-map-20260920.json --only native-html413-owner",
+    "mechanical_guide": "Private typedresponse marker with public trustedcomposition helper; only marked413 with exactlyone validHTMLcontenttype bypasses existing mapper. App marks NativeEntryError::TooLarge only; all existing JSON/408/429 logic unchanged.",
+    "reviewers": [
+      "/root/integration_tests",
+      "/root/integration_security"
+    ],
+    "pre_mortem": "Client header forges exception or API error semantics change",
+    "blast_radius": "Two HTTP composition files; no parser,auth,DB,policy changes",
+    "detection": "Actual mounted2tests plus marker/untrusted/API controls,retainedheaders/privacy and browserCookie recovery",
+    "rollback": "Revert bounded helper/App composition together, retain historical logs",
+    "stop_conditions": [
+      "NonownerRED",
+      "Changed API precedence",
+      "Broadenedstatus or marker use",
+      "Unreviewedtestchanges"
+    ],
+    "remaining_holds": [
+      "Assembledrelease",
+      "Generated/CI wiring new integrationtarget",
+      "Browseracceptance"
+    ]
+  }
+]

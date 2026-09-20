@@ -1,0 +1,65 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "ACCEPT_BOUNDED_SHARED_SSR_PRIVACY_AND_REAL_AUTHORIZED_HYDRATION",
+  "observed_head": "8a4b15965372773ddf77e5b7ba3d2082df0148da",
+  "source_review_sha256": "72d29be7a11b2ec82fabcd16540e3516df620bada3acbe9a82f0abeeb6efea32",
+  "bundle_review_sha256": "fa6570c994d232dc9743cee2dbf964e4ca09b06d18189c847815431883657f0a",
+  "semantic_oracle_review_sha256": "64c4ed536e90d61e65b31baf379a49c06442dbd8176a90f68b57957a5ee5b87d",
+  "current_reviewed_source_hashes_reverified": true,
+  "results": {
+    "private_owner_passed": 5,
+    "all_ui_passed": 13,
+    "wasm_drift_passed": 18,
+    "retained_native_http_passed": 7,
+    "actual_browser": {
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "seconds": 9.05,
+      "version": "153.0.8010.12",
+      "cases": 5,
+      "filters": 3,
+      "exact_authorized_read_audits": 3,
+      "exact_durable_effects_accepted": true,
+      "cleanup_confirmed": true
+    }
+  },
+  "checks": [
+    "All5anonymous/member/foreignempty/authorizedJSoff/authorizedJSon documents passed exact route/status/privacy/authorizedrow/omission/credential checks.",
+    "Actual JS/WASM200responses and MIME/hashes match current embedded artifacts. Three actual filters preserve originalDOMElementHandles, change only visibility, and cause no requests. JS-disabled control stays unfiltered.",
+    "Observed exactly1rawfailure and1diagnostic csp block for JS-disabled modulepreload at exactGET/script/path/navigation; everyothercase0failed and allbefore/aftercloseinflight arrays empty. This matches reviewed independently reproduced browser behavior; no raw event suppressed.",
+    "Actual redirectcontrol source sees1expectedAuthorization request, owned foreignsink sees0requests/0Authorization after prior credential-freepositive reset. Browser/server/sink exit confirmed.",
+    "Unchanged Rustowner accepts complete publicrow history with exactly3authorizedread audits; no omitted tables or broadened effects.",
+    "Reviewedsource and bundle lineage preserved; sharedresponse CSP does not break existing island."
+  ],
+  "visual_review": {
+    "viewed": [
+      "authorized-before.png",
+      "authorized-filter-1.png",
+      "authorized-filter-2.png",
+      "authorized-filter-3.png"
+    ],
+    "adopt": "Clear labeled status selector, visible truthful row filtering and restored complete row set with coherent spacing.",
+    "adapt": "Replace raw lifecycle codes and workflow_runtime identifiers with task-readable Korean labels and business context during governed payroll UI work.",
+    "reject": "These presentation fixtures do not establish usable governed payroll, Company/owner context, approvals or complete release UX."
+  },
+  "preserved_failures": [
+    "Initial fixture/schema preparation failures remain prerequisites, not ownerRED.",
+    "Actual PRIVATE_ENVELOPE failure led to admitted sharedSSR ownerrepair.",
+    "Prior aggregate requestfailure/browserdiagnostic runs remain historical failures.",
+    "Evidence-based semantic successor requires exact JS-disabled block after independent6context reproduction; oldzero-failure predicate was not silently bypassed."
+  ],
+  "evidence_sha256": {
+    "/private/tmp/console-hydration-browser-run-20260920-round5/result.json": "3bc5e6e9123d30e9b57202ee71d41df9781deb128d7257e6a04db74b5245973f",
+    "/private/tmp/console-hydration-browser-run-20260920-round5/owner-receipt.json": "2fe42b18dc8e06f426d6675609a38df6da3d12f3097867f89b4b7d22693cf205",
+    "/private/tmp/console-hydration-browser-run-20260920-round5.log": "aaafd2c6143d991c2a244275e287f8d425a437115442714ec10d52b716a1adb9",
+    "/private/tmp/console-hydration-browser-run-20260920-round5/authorized-before.png": "725ad38648ef7e1da02adfadd93b7cf5478acc42222f7db72a9c4c70904f391a",
+    "/private/tmp/console-hydration-browser-run-20260920-round5/authorized-filter-1.png": "b8c5ad9292c8266f35ca51c428b49ea33c369145e7ed7cf0b572ed89b6b20e38",
+    "/private/tmp/console-hydration-browser-run-20260920-round5/authorized-filter-2.png": "4ea076d9fa858cdd1c41b5ea2b2e94b73db6833d162f14adda72a7bba04f9e6c",
+    "/private/tmp/console-hydration-browser-run-20260920-round5/authorized-filter-3.png": "ebe193faae8037e82e27b644dbd986987d434315399a92e82c425bf7c6900951"
+  },
+  "limits": [
+    "Fixture Bearer navigation and TEST_ONLY secondstatus only; not nativeAccount-to-payroll or wage lifecycle proof.",
+    "No current-session effectguard, productionTLS/HA, screenreader/IME/200percentzoom/userstudy, completeCSP or assembledrelease acceptance."
+  ]
+}

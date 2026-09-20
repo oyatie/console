@@ -735,6 +735,32 @@ fn error_response_for(err: &RequestContextError) -> Response {
     error_response(status, code, message)
 }
 
+#[derive(Clone)]
+struct NativeHtmlError;
+
+/// Mark an already-rendered, server-owned native error document for preservation.
+/// This response-only marker carries no identity or authorization and cannot be
+/// constructed from request headers, paths, or Accept preferences.
+pub fn preserve_native_html_error(mut response: Response) -> Response {
+    response.extensions_mut().insert(NativeHtmlError);
+    response
+}
+
+fn content_type_is_single_html(response: &Response) -> bool {
+    let mut values = response.headers().get_all(header::CONTENT_TYPE).iter();
+    match (values.next(), values.next()) {
+        (Some(value), None) => value.to_str().is_ok_and(|value| {
+            value
+                .split(';')
+                .next()
+                .unwrap_or(value)
+                .trim()
+                .eq_ignore_ascii_case("text/html")
+        }),
+        _ => false,
+    }
+}
+
 fn content_type_is_json(response: &Response) -> bool {
     response
         .headers()
@@ -768,6 +794,12 @@ async fn http_error_envelope(request: Request, next: Next) -> Response {
             "request_timeout",
             "request timed out",
         ),
+        StatusCode::PAYLOAD_TOO_LARGE
+            if response.extensions().get::<NativeHtmlError>().is_some()
+                && content_type_is_single_html(&response) =>
+        {
+            response
+        }
         StatusCode::PAYLOAD_TOO_LARGE if !content_type_is_json(&response) => error_response(
             StatusCode::PAYLOAD_TOO_LARGE,
             "payload_too_large",

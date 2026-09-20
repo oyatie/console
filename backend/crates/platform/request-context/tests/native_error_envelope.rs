@@ -142,13 +142,14 @@ async fn existing_json_413_preserves_bytes_and_headers_with_native_looking_metad
 
 #[tokio::test]
 async fn actual_body_limit_keeps_json_413_despite_html_request_hints() {
+    async fn oversized_body_must_not_reach_handler(_: Bytes) -> StatusCode {
+        panic!("oversized body reached handler");
+    }
     let app = with_http_error_envelope(
         axum::Router::new()
             .route(
                 "/api/body-limit-control",
-                post(|_: Bytes| async {
-                    panic!("oversized body reached handler");
-                }),
+                post(oversized_body_must_not_reach_handler),
             )
             .layer(DefaultBodyLimit::max(64)),
     );

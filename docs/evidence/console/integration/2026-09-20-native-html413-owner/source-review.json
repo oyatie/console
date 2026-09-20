@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_HTML413_SOURCE_PENDING_RUNTIME",
+  "base_sha": "8a4b15965372773ddf77e5b7ba3d2082df0148da",
+  "source_sha256": {
+    "backend/crates/platform/request-context/src/lib.rs": {
+      "before": "4720be274f0f5bef3780ce130d207d09c7367a7c421b56257fc2beea88ffdd81",
+      "after": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6"
+    },
+    "backend/app/src/lib.rs": {
+      "before": "b5a5a79f7c90b33f3ab19d68c5caed673ad56c21589af6f73a71aeee8f3dcf72",
+      "after": "8eb0bdc5e895fb76f0d0dbe3ecc7987019cd3648da371128639a5588dcd04db1"
+    }
+  },
+  "checks": [
+    "Entire tracked diff exactly2approved source files; all request-context cfg(test) bytes unchanged, external/app test files untouched.",
+    "NativeHtmlError type private; public marker helper affects server response extensions only, not request identity or authority. Only production caller is App native_account_page after actual NativeEntryError::TooLarge document rendering.",
+    "Bypass requires exact413status, actualtypedextension and exactly1Content-Type whose media type is case-insensitive text/html. Missing/duplicate/plain/comma media values do not qualify; client headers/Accept/path/lookalike extension cannot forge type identity.",
+    "Preserved response returned intact including allprivacyheaders/body/status/unrelatedextensions. Native other error variants remain existingdocuments; noauthparser/precedence changes.",
+    "Old JSON classifier unchanged including firstJSON/multipleContentType behavior; unmarked413 and408/429/retryafter branches unchanged.",
+    "MountedRED2executed:1headeroraclePASS,1nativeownerFAIL at lostprivacy after realfixture;0ignored,373filtered,6.13stest. Admission log confirms namedprobeRED."
+  ],
+  "evidence_sha256": {
+    "owner_red": "910e715f4745802148aa75fac83f9f750b16082fead4f907a863a06c0f88b964",
+    "admission": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861"
+  },
+  "remaining": [
+    "Mapperunit/integrationGREEN, actualmountedDBGREEN and retainednativeoracles, exactbrowserCookie/413/recovery/fullownercheckpoint required before boundedacceptance.",
+    "No Companycommand/workflow or assembledrelease acceptance."
+  ]
+}

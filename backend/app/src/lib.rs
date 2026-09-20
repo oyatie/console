@@ -3979,14 +3979,21 @@ async fn native_account_page(
                 status,
             )
         }
-        Err(error) => document(
-            if matches!(error, NativeEntryError::Unavailable) {
-                Page::Unavailable
+        Err(error) => {
+            let response = document(
+                if matches!(error, NativeEntryError::Unavailable) {
+                    Page::Unavailable
+                } else {
+                    Page::Refused
+                },
+                error.status(),
+            );
+            if matches!(error, NativeEntryError::TooLarge) {
+                console_platform_request_context::preserve_native_html_error(response)
             } else {
-                Page::Refused
-            },
-            error.status(),
-        ),
+                response
+            }
+        }
     }
 }
 
