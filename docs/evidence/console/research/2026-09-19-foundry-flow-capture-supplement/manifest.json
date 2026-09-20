@@ -1,0 +1,10 @@
+{
+  "announcements-release-notes.html.gz": "c916ae378b2e353410629198795a943c179956861710e92028fbcb36aa72890c",
+  "candidate-patch.json": "79519c104231bb2148e369ee4c5cf501e6fca9425c4c6d4dd0c384fb63a8f925",
+  "dated-announcements.json": "1669cd786991fce560b9ad570ac21fe9ad49d98dbe03f8af6a5efbc1fe6b7a3d",
+  "proposal.json": "9cc08136d852fc5680b563c1dbc97b9d19a9217ae5aa7d5c660efc8595851e14",
+  "propose.py": "bbfdedf11d97af2937f5dda4f12ecd2fe73fa383864386d087a481ce863732b9",
+  "reused-source.json": "e7cdf2a75ae50620293747eeb3539c0b4b825fdc42b780400fcee317f34f87ad",
+  "validate.mjs": "e28c2bb24100d36c185afe16d97638f085d8378b8600f2586c90fb0f174890b3",
+  "verification.json": "a9e7a7657391942a757bdfb9d771ec7208c6543c042b6bb995a00b6e31c89411"
+}

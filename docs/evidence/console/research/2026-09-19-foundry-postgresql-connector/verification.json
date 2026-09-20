@@ -1,0 +1,17 @@
+{
+  "source_count": 1,
+  "new_leaf_count": 0,
+  "existing_leaf_count": 400,
+  "binding_keys": 5,
+  "qualification_count": 20,
+  "connector_rows_enriched": 1,
+  "capability_mode_rows": 7,
+  "runtime_rows_added": 1,
+  "quote_membership_checks": 45,
+  "size_and_hash_checks": 3,
+  "patch_operations": 44,
+  "connector_index": 135,
+  "all_leaf_references_resolve": true,
+  "runtime_tests_executed": 0,
+  "implementation_accepted": false
+}

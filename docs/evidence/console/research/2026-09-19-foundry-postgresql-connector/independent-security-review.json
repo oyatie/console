@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_BOUNDED_PLANNED_REFERENCE_SUPPLEMENT_ONLY",
+  "manifest_sha256": "cb893614feb500bca89f13b42328c51768aee2ac411423afb357cb4556bff554",
+  "proposal_sha256": "46d99a89e140f5b2b89ac1a9f4213810ae4e1f83dfde0dfe7941430f9ab73b8c",
+  "sources": 1,
+  "new_leaves": 0,
+  "mode_rows": 7,
+  "all_nested_quote_checks": 52,
+  "distinct_quotes": 28,
+  "checks": [
+    "All packet hashes and captured uncompressed source size/hash verified.",
+    "All52nested normalized article quote bindings match captured HTML and retain post-cutoff status; author45 count covers narrower selection.",
+    "No Console acceptance/executable claims; connector mode statuses describe vendor lifecycle only.",
+    "Generic JDBC42/PostgreSQL8.2 assertion does not establish logicalCDC floor or per-mode compatibility.",
+    "Source credentials/isolation/currentpolicy, remote unknowncommit/idempotency and source restrictions remain unqualified.",
+    "verify-full UI default distinguished from sample psycopg2 code; legacyRDS2019CA is historical reference only.",
+    "Slot/WAL retention, checkpoint, failover, schema drift, deletion/truncate and resource envelopes remain explicit qualification requirements."
+  ],
+  "integration_conditions": [
+    "Merge additively; observed400leaf base is stale after other approved supplements.",
+    "Locate connector by exact reference_path before applying entry_index135; reject stale/wrong target.",
+    "No inventory freeze/exhaustiveness, implementation, production qualification or release acceptance.",
+    "Post-cutoff historical-equivalence HOLD persists."
+  ]
+}

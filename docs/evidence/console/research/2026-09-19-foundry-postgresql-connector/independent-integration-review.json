@@ -1,0 +1,44 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_ADDITIVE_REFERENCE_INVENTORY_ONLY",
+  "manifest_sha256": "cb893614feb500bca89f13b42328c51768aee2ac411423afb357cb4556bff554",
+  "proposal_sha256": "46d99a89e140f5b2b89ac1a9f4213810ae4e1f83dfde0dfe7941430f9ab73b8c",
+  "patch_sha256": "8e01b507b999ae9a1d9acfc69a3fa91f53debe3206d3bafe55dfc96b45001f80",
+  "base_sha": "f62617f14d3e139430cccd36a273c718db29a9c7",
+  "registry_preimage_sha256": "02af8a84b1c39760104dc030196829538716bca9fe5164a84992340035a51ee3",
+  "checks": {
+    "manifest_files": 8,
+    "raw_sources": 1,
+    "quote_bindings": 52,
+    "patch_operations": 44,
+    "prior_leaves": 400,
+    "candidate_leaves": 400,
+    "new_leaves": 0,
+    "runtime_rows": 1,
+    "strict_additive_preservation": true,
+    "dependencies_resolve_and_acyclic": true,
+    "all_new_capabilities_planned_and_unbound": true,
+    "connector_mode_rows": 7,
+    "connector_entry_index": 135
+  },
+  "findings": [],
+  "reasoning_lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "conclusions": [
+    "Single post-cutoff captured PostgreSQL connector source independently hash/size checked and52quote bindings matched normalized article. Exact historical validity remains HOLD.",
+    "Existing connector135 path guarded and augmented additively; all400existing leaves and states preserved; seven vendor mode rows remain unqualified.",
+    "Generic JDBC42/PostgreSQL8.2plus vendor claim explicitly does not imply CDC or other mode compatibility.",
+    "TLS verify-full UI default and incomplete external Python TLS example separated; deprecated RDS CA reference not adopted; isolated credentials, strict identifiers, durable remote-effect reconciliation and bounded CDC recovery remain requirements."
+  ],
+  "limits": [
+    "No product implementation, lane admission, browser/runtime support or exhaustive Foundry coverage approved.",
+    "Exact owner bindings, executable criteria and qualified browser/security/recovery evidence remain release blockers.",
+    "No DB, Cargo, browser or repository-writing commands executed by reviewer."
+  ],
+  "runtime_tests_executed": 0
+}

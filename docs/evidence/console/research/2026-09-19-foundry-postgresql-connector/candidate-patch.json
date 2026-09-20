@@ -1,0 +1,864 @@
+[
+  {
+    "op": "test",
+    "path": "/release_inventory/version",
+    "value": 1
+  },
+  {
+    "op": "test",
+    "path": "/release_inventory/support_matrices/connectors/entries/135/reference_path",
+    "value": "/docs/foundry/available-connectors/postgresql/"
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/sources/-",
+    "value": {
+      "requested_url": "https://www.palantir.com/docs/foundry/available-connectors/postgresql/",
+      "effective_url": "https://www.palantir.com/docs/foundry/available-connectors/postgresql",
+      "retrieved_utc": "2026-09-20T04:17:05.168915+00:00",
+      "status": 200,
+      "headers": {
+        "Connection": "close",
+        "Content-Length": "781891",
+        "Last-Modified": "Thu, 17 Sep 2026 16:05:17 GMT",
+        "ETag": "\"861b4fa67c60d3ee6f67991473b4e0fd\"",
+        "Content-Type": "text/html",
+        "Server": "AmazonS3",
+        "Cache-Control": "max-age=3600",
+        "Accept-Ranges": "bytes",
+        "Age": "0",
+        "Date": "Sun, 20 Sep 2026 04:17:05 GMT",
+        "Via": "1.1 varnish",
+        "X-Served-By": "cache-lga-kjfk8660052-LGA",
+        "X-Cache": "MISS",
+        "X-Cache-Hits": "0",
+        "X-Timer": "S1789877825.949101,VS0,VE185",
+        "Vary": "Accept-Encoding",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-XSS-Protection": "1; mode=block",
+        "Permissions-Policy": "geolocation=(), microphone=(), camera=(), fullscreen=*, payment=*",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Content-Security-Policy": "default-src 'self' images.ctfassets.net http://images.ctfassets.net http://videos.ctfassets.net;base-uri 'self';connect-src 'self' geolocation.onetrust.com 120-gkj-051.mktoutil.com 120-gkj-051.mktoresp.com www.google.com googleads.g.doubleclick.net stats.g.doubleclick.net www.google-analytics.com secure.adnxs.com cdn.cookielaw.org api.lever.co vimeo.com https://pagead2.googlesyndication.com googlesyndication.com https://investors.palantir.com https://palantir.com https://px.ads.linkedin.com;font-src 'self' fonts.gstatic.com;frame-src 'self' 120-gkj-051.mktoweb.com https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ bid.g.doubleclick.net cdn.cookielaw.org player.vimeo.com www.youtube.com www.youtube-nocookie.com palantir.tfaforms.net www.google.com https://td.doubleclick.net https://10848750.fls.doubleclick.net;img-src 'self' cdn.cookielaw.org www.linkedin.com/px/ heapanalytics.com www.google.com googleads.g.doubleclick.net p.adsymptotic.com secure.adnxs.com px.ads.linkedin.com www.googletagmanager.com www.google-analytics.com https://ade.googlesyndication.com data: i.ytimg.com https://ad.doubleclick.net www.palantir.io palantir.com https://www.palantir.com images.ctfassets.net http://images.ctfassets.net assets.ctfassets.net https://assets.ctfassets.net videos.ctfassets.net downloads.ctfassets.net;script-src 'self' 120-gkj-051.mktoweb.com https://*.google-analytics.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/ snap.licdn.com munchkin.marketo.net palantir.tfaforms.net player.vimeo.com cdn.cookielaw.org https://*.googletagmanager.com googleads.g.doubleclick.net doubleclick.net palantir.com 'wasm-unsafe-eval' 'sha256-3/mNUpqF9X/gMYE+bOG6g8d6I32wdYdWwWuAk90mPCM=' 'sha256-3fLttXmGXkZ5WQ3hX1PQz0O6/EPnGdGD6f73C+bHQGo=' 'sha256-PxAm6FXbbh5OkHYK9e9yK7ru41bHsXZrC7/jasSL3Ng=' 'sha256-a/7pNTd3a9x1ULIoxUTDXYWJrMtBopUlnWUwJylJTOI=' 'sha256-5VrVgGfPbUH5IoPb+tGodpswZad/XDHQfqHeVD0LMG4=' 'sha256-rl/vw6OO2nB811eUCK2TsRM+NJABb36KT2a7JHY/RV0=' 'sha256-OQzKDlDGCiO+PI2duQLxTbbZjko95b1fj34uCRWUja0=' 'sha256-YGLqxGCCQ5OYcADqsPTGeQEBKKvTHKKV9vXQxOS6g/s=' 'sha256-+obxZHq74iTlXamY+oEi2oinLv5DJBBlYZcbEulR+BU=' 'sha256-DrU88AevkT4jpUCCNzlTAahgv2PuaeUvxUJfnaqWAjc=' https://ad.doubleclick.net/ https://td.doubleclick.net https://10848750.fls.doubleclick.net;style-src 'self' 'unsafe-inline' 120-gkj-051.mktoweb.com www.googletagmanager.com hello.myfonts.net fonts.googleapis.com palantir.tfaforms.net www.palantir.io palantir.com https://www.palantir.com;object-src 'none';frame-ancestors 'self' https://resources.palantir.com;",
+        "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+      },
+      "path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "bytes": 781891,
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "compressed_sha256": "1d27b10a62c6a08317288ef6293687d7a3d61788abe932f990a5d54d0072d089",
+      "limitations": "Mutable public documentation captured at retrieval; not evidence of Console implementation or exhaustive vendor support. Target2026-09-19 America/New_York; actual post-cutoff retrieval preserved. Last-Modified alone does not establish historical equivalence.",
+      "id": "available-connectors-postgresql",
+      "capture_path_at_retrieval": "/private/tmp/console-foundry-postgresql-connector-20260919/available-connectors-postgresql.html.gz",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/support_matrices/connectors/entries/135/reference_capabilities",
+    "value": [
+      {
+        "reference_status": "bounded documented support; post-cutoff exact historical qualification pending",
+        "source": "available-connectors-postgresql",
+        "source_bindings": [
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "This connector uses the official PostgreSQL driver ↗ on major version 42, which is compatible with all versions of PostgreSQL 8.2 and above.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          },
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "The Foundry PostgreSQL connector requires the use of a username and password for authentication.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          },
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "We recommend the use of service credentials rather than individual user credentials.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          },
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "Username and password authentication may be used in conjunction with client and/or server certificates and SSL modes requiring verification of these certificates.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          },
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "PostgreSQL connections will normally use a hostname or IP to connect on port 5432.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          },
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "If you are running the connection to PostgreSQL in Foundry, the appropriate egress policies must be added when setting up the source in the Data Connection application.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          },
+          {
+            "source_id": "available-connectors-postgresql",
+            "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+            "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+            "quote": "Defaults to verify-full.",
+            "matching": "HTML article whitespace normalized",
+            "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+            "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+          }
+        ],
+        "required_leaves": [
+          "F01.batch",
+          "F01.cdc",
+          "F01.outbound",
+          "F11.workspace-external-sources",
+          "F16.policy"
+        ],
+        "console_acceptance": "not established",
+        "command": null,
+        "source_product": "PostgreSQL; includes managed Amazon RDS example",
+        "vendor_driver": "official PostgreSQL JDBC driver major42; exact patch not specified",
+        "vendor_database_compatibility": "generic PostgreSQL8.2and above assertion; NOT a per-capability compatibility matrix",
+        "capability_modes": [
+          {
+            "capability": "Exploration",
+            "vendor_lifecycle": "🟢 Generally available",
+            "required_leaf": "F01.batch",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Exploration | 🟢 Generally available",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "capability": "Batch syncs",
+            "vendor_lifecycle": "🟢 Generally available",
+            "required_leaf": "F01.batch",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Batch syncs | 🟢 Generally available",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "capability": "Incremental",
+            "vendor_lifecycle": "🟢 Generally available",
+            "required_leaf": "F01.cdc",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Incremental | 🟢 Generally available",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "capability": "Iceberg syncs",
+            "vendor_lifecycle": "🟢 Generally available",
+            "required_leaf": "F01.batch",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Iceberg syncs | 🟢 Generally available",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "capability": "Change data capture syncs",
+            "vendor_lifecycle": "🟡 Beta",
+            "required_leaf": "F01.cdc",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Change data capture syncs | 🟡 Beta",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "capability": "Streaming exports",
+            "vendor_lifecycle": "🟡 Beta",
+            "required_leaf": "F01.outbound",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Streaming exports | 🟡 Beta",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          },
+          {
+            "capability": "Table Exports",
+            "vendor_lifecycle": "🟢 Generally available",
+            "required_leaf": "F01.outbound",
+            "source_bindings": [
+              {
+                "source_id": "available-connectors-postgresql",
+                "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+                "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+                "quote": "Table Exports | 🟢 Generally available",
+                "matching": "HTML article whitespace normalized",
+                "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+                "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+              }
+            ],
+            "console_acceptance": "not established",
+            "command": null
+          }
+        ],
+        "authentication": {
+          "documented": "username/password; service credentials recommended; may combine client/server certificates",
+          "unqualified": [
+            "password mechanism details",
+            "IAM/OAuth/GSSAPI support",
+            "secret rotation/failure behavior"
+          ]
+        },
+        "tls": {
+          "documented_default": "verify-full",
+          "client_server_certificates": "supported with appropriate SSL mode",
+          "qualification": "current trust roots hostname validation certificate expiry/rotation downgrade rejection and configured external-code TLS remain independently required"
+        },
+        "network": {
+          "host_inputs": [
+            "hostname",
+            "IPv4",
+            "IPv6"
+          ],
+          "default_port": 5432,
+          "egress": "source-scoped policies plus destination inbound allowlisting; hostname recommended for hosted instances",
+          "source_bindings": [
+            {
+              "source_id": "available-connectors-postgresql",
+              "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+              "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+              "quote": "Option 3: IPv6 Provide an IPv6 address. Use this option if you normally connect using an IPv6 address.",
+              "matching": "HTML article whitespace normalized",
+              "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+              "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+            }
+          ]
+        },
+        "cdc": {
+          "mechanism": "logical replication",
+          "slot_publication": "one pair per source; use existing or create",
+          "tables": "multiple tables per source",
+          "multiple_pairs": "separate data connections",
+          "create_publication_privileges": [
+            "CREATE and REPLICATION on database",
+            "SELECT on selected tables"
+          ],
+          "prerequisites": [
+            "working source connection",
+            "working exploration runtime"
+          ],
+          "unqualified": [
+            "per-server-version support and logical replication plugin/protocol",
+            "initial snapshot/WAL handoff consistency",
+            "replication identity and update/delete/truncate semantics",
+            "durable checkpoints and retention/backpressure",
+            "slot lifecycle cleanup and failover",
+            "DDL schema drift and type conversion",
+            "duplicate/lost/unknown delivery recovery"
+          ]
+        },
+        "external_code": {
+          "examples": "psycopg2 read query and dataset-row writes/create-if-absent with column-name mapping",
+          "isolation": "scoped separate source credentials and egress, never Console auth/payroll DB credentials",
+          "unqualified": [
+            "pinned Python psycopg2 pandas versions",
+            "TLS configuration in shown code",
+            "write idempotency and commit-unknown reconciliation",
+            "transaction relationship between remote effects and output dataset receipt"
+          ]
+        },
+        "schema_drift": "not specified; independent contract/oracles required",
+        "quotas": "not specified; slots tables connections WAL memory query time and rate envelopes unqualified",
+        "federated_pushdown": "not asserted by supported-capability table; do not infer from SQL read example",
+        "hosting_lifecycle": "exact versions hosted/agent modes and per-mode license/enrollment gates beyond CDC beta not established",
+        "owner": "canonical external-source connection and ingestion/export application owners; exact paths not bound"
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F01.batch",
+    "value": [
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Exploration | 🟢 Generally available",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Batch syncs | 🟢 Generally available",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Iceberg syncs | 🟢 Generally available",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F01.cdc",
+    "value": [
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Incremental | 🟢 Generally available",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Change data capture syncs | 🟡 Beta",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Change data capture syncs for PostgreSQL are in the beta phase of development and may not be available on your enrollment. Functionality may change during active development.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Foundry change data capture syncs from PostgreSQL function by using an existing replication slot or creating a new replication slot and publication on the target database.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "Only one replication slot and publication may be configured per data connection source, however any number of tables may be streamed to Foundry over a single connection.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "If you wish to use multiple replication slots or publications, you can create multiple data connection sources that connect to your database.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "If enabled, the publication will be created automatically for all selected tables. This requires the user to have the following permissions: CREATE and REPLICATION on the database, and SELECT on the tables.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      },
+      {
+        "source_id": "available-connectors-postgresql",
+        "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+        "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+        "quote": "The exploration runtime must be working to create a change data capture sync.",
+        "matching": "HTML article whitespace normalized",
+        "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+        "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+      }
+    ]
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F01.outbound/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Streaming exports | 🟡 Beta",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F01.outbound/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Table Exports | 🟢 Generally available",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F11.workspace-external-sources/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "This example uses the psycopg2 ↗ package to query the Postgres source.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F11.workspace-external-sources/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "This example writes rows from an input dataset to a PostgreSQL table using psycopg2 ↗. It creates the target table if it does not already exist. A column mapping dictionary handles differences between Foundry column names and PostgreSQL column names.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/source_bindings/F16.policy/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "You must ensure that the provided user has the necessary privileges on the target database, as well as permission to read from or write to the target table(s).",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "This connector uses the official PostgreSQL driver ↗ on major version 42, which is compatible with all versions of PostgreSQL 8.2 and above.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "The Foundry PostgreSQL connector requires the use of a username and password for authentication.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "We recommend the use of service credentials rather than individual user credentials.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Username and password authentication may be used in conjunction with client and/or server certificates and SSL modes requiring verification of these certificates.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "You must ensure that the provided user has the necessary privileges on the target database, as well as permission to read from or write to the target table(s).",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "For change data capture, the user may also require CREATE and REPLICATION permissions on the target database.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "PostgreSQL connections will normally use a hostname or IP to connect on port 5432.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "If you are running the connection to PostgreSQL in Foundry, the appropriate egress policies must be added when setting up the source in the Data Connection application.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "You will need to ensure that you have allowed inbound traffic from Foundry to your PostgreSQL instance.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "If you are connecting to a managed instance of PostgreSQL hosted in Amazon RDS, you can use a direct connection with the necessary egress policies.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Defaults to verify-full.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Change data capture syncs for PostgreSQL are in the beta phase of development and may not be available on your enrollment. Functionality may change during active development.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Foundry change data capture syncs from PostgreSQL function by using an existing replication slot or creating a new replication slot and publication on the target database.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Only one replication slot and publication may be configured per data connection source, however any number of tables may be streamed to Foundry over a single connection.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "If you wish to use multiple replication slots or publications, you can create multiple data connection sources that connect to your database.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "If enabled, the publication will be created automatically for all selected tables. This requires the user to have the following permissions: CREATE and REPLICATION on the database, and SELECT on the tables.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "The exploration runtime must be working to create a change data capture sync.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "This example uses the psycopg2 ↗ package to query the Postgres source.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "This example writes rows from an input dataset to a PostgreSQL table using psycopg2 ↗. It creates the target table if it does not already exist. A column mapping dictionary handles differences between Foundry column names and PostgreSQL column names.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/runtime_qualifications/-",
+    "value": {
+      "source_id": "available-connectors-postgresql",
+      "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+      "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+      "quote": "Download the rds-ca-2019-root.pem from the Amazon S3 site ↗, then copy the certificate details into Foundry to trust connections to Amazon RDS.",
+      "matching": "HTML article whitespace normalized",
+      "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+      "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/support_matrices/runtimes/entries/-",
+    "value": {
+      "runtime": "PostgreSQL connector vendor JDBC major42 compatibility",
+      "reference_status": "Post-cutoff vendor compatibility assertion only; mode-specific compatibility unqualified",
+      "source": "available-connectors-postgresql",
+      "source_bindings": [
+        {
+          "source_id": "available-connectors-postgresql",
+          "artifact_path": "docs/evidence/console/research/2026-09-19-foundry-postgresql-connector/available-connectors-postgresql.html.gz",
+          "sha256": "c07a73570284a3edd21cdecb041a53244fbee1bdf9dddb72683652b72e7854dd",
+          "quote": "This connector uses the official PostgreSQL driver ↗ on major version 42, which is compatible with all versions of PostgreSQL 8.2 and above.",
+          "matching": "HTML article whitespace normalized",
+          "reference_temporal_status": "post-cutoff capture; exact historical support unqualified",
+          "scope": "Public reference only; Console implementation/acceptance and exact historical support not established."
+        }
+      ],
+      "required_leaf": "F01.batch",
+      "console_acceptance": "not established",
+      "command": null,
+      "vendor_driver_major": 42,
+      "vendor_generic_server_floor": "8.2",
+      "mode_version_matrix": "not specified; CDC floor and Iceberg/export combinations not inferred",
+      "console_implementation_choice": "reference compatibility requirement does not mandate embedding a Java driver in the trusted Rust process"
+    }
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "This one-page PostgreSQL connector support supplement enriches one of245discovered connector rows, using existing capabilities and canonical owners. It does not close the connector catalog, add Console implementation, or qualify any runtime."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "The page was captured September20 America/New_York after the targetSeptember19 freeze; exact timestamp and bytes are retained. Last-Modified does not prove historical equivalence. Existing earlier catalog discovery establishes the named connector, not these exact support modes. Historical-validity HOLD remains."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Vendor general JDBC42/PostgreSQL8.2+ compatibility is not a version-by-capability matrix. Do not project8.2support onto logical CDC Iceberg streaming/table exports or every authentication mode; exact driver/server versions and runtime combinations require independent compatibility evidence."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "GA/beta labels describe vendor lifecycle only. Required capabilities remain release requirements independent of those labels; Console acceptance stays unestablished with null executable bindings. A documented mode is not an implementation or valid connector fixture."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "CDC table identifiers replication identities initial snapshot/WAL ordering updates deletes truncates checkpoints retention schema changes slot/publication cleanup failover duplicate delivery and backpressure are not specified by this page and remain required source-specific contracts and failure oracles."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "One slot/publication per source and multiple tables are logical configuration claims, not unlimited safe capacity. Bound slots tables connections retained WAL memory throughput and cancellation, including destination failure and resource starvation."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Credential scopes and external effects require isolated canonical connection/export ownership, current resource/source disclosure and least privilege. External code must never receive Console auth/payroll database credentials; a code example is not permission to mutate business truth or execute payments."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "External psycopg2 write example is not an idempotency unknown-commit or exactly-once contract. Query parameters and identifier mappings need strict validation, remote transactions require durable delivery receipts, and output publication must not imply a remote effect is reconciled."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "The connector UI verify-full default is separate from the sample external Python connection, which does not show sslmode or trust configuration. Require explicit tested TLS/hostname/CA/expiry/rotation/downgrade behavior for every execution path; do not infer secure defaults from sample omission."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Vendor RDS guidance names rds-ca-2019-root.pem. Preserve this historical reference but do not install or treat it as the current valid trust anchor; active region/instance CA and certificate validity must be independently checked and rotation tested."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "Iceberg sync inclusion does not settle the Console dataset-format decision. Retain PostgreSQL as authoritative business substrate and complete the planned bounded correctness/workload comparison before introducing a dataset format."
+  },
+  {
+    "op": "add",
+    "path": "/release_inventory/reference_freeze/completion_limitations/-",
+    "value": "No federation pushdown license agent-hosting server extensions authentication plugins schema drift type mapping connection quotas or exact retry semantics are established unless explicitly recorded. Missing dimensions stay visible and cannot inherit support from another connector."
+  }
+]

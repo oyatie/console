@@ -1,0 +1,10 @@
+{
+  "available-connectors-postgresql.html.gz": "1d27b10a62c6a08317288ef6293687d7a3d61788abe932f990a5d54d0072d089",
+  "available-connectors-postgresql.json": "2f2c5627331708249527ded566095923e461be146621593224d1e8c16dccea95",
+  "candidate-patch.json": "8e01b507b999ae9a1d9acfc69a3fa91f53debe3206d3bafe55dfc96b45001f80",
+  "fetch.py": "9b64f868e6879d7cbb0728844df0e725e46ae4c8f825d3ac76d1742c458e46d5",
+  "proposal.json": "46d99a89e140f5b2b89ac1a9f4213810ae4e1f83dfde0dfe7941430f9ab73b8c",
+  "propose.py": "e0c8aef719877e2adf9dca14b556b8f17871d1a244918416e959b154a3f6ecac",
+  "read.py": "5d1ea4bf94bae39a0e550d860988e6bf3ec613fa5a0e02709f98a3ec95dd0f3c",
+  "verification.json": "171ff7d57275677d01f0ed20798915fbc15020d259e936122275181967bdee55"
+}
