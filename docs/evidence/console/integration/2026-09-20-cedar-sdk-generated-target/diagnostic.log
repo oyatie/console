@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py", line 2114, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py", line 1780, in main
+    validate_resource_metadata(discovered)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/private/tmp/console-client-release-20260919/tools/buck/gen_first_party.py", line 1350, in validate_resource_metadata
+    raise ValueError("test resource metadata must match generated targets: " + "; ".join(parts))
+ValueError: test resource metadata must match generated targets: missing [('console-platform-authz', 'test.integration', 'tests/cedar_sdk_identity.rs')]
