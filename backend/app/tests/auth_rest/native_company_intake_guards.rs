@@ -37,8 +37,10 @@ mod integrity_guards {
         tx
     }
 
+    type CatalogTriggerRow = (String, String, i16, String, bool, bool, String, bool);
+
     async fn catalog(pool: &PgPool) -> bool {
-        let triggers:Vec<(String,String,i16,String,bool,bool,String,bool)>=sqlx::query_as("SELECT c.relname::text,t.tgname::text,t.tgtype::smallint,t.tgenabled::text,t.tgdeferrable,t.tginitdeferred,p.proname::text,(p.pronamespace='public'::regnamespace AND t.tgqual IS NULL AND t.tgnargs=0 AND t.tgattr::text='' AND t.tgoldtable IS NULL AND t.tgnewtable IS NULL AND t.tgparentid=0) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_proc p ON p.oid=t.tgfoid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('company_enrollment_requests','company_enrollment_request_events','company_enrollment_receipts') AND NOT t.tgisinternal ORDER BY t.tgname")
+        let triggers:Vec<CatalogTriggerRow>=sqlx::query_as("SELECT c.relname::text,t.tgname::text,t.tgtype::smallint,t.tgenabled::text,t.tgdeferrable,t.tginitdeferred,p.proname::text,(p.pronamespace='public'::regnamespace AND t.tgqual IS NULL AND t.tgnargs=0 AND t.tgattr::text='' AND t.tgoldtable IS NULL AND t.tgnewtable IS NULL AND t.tgparentid=0) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_proc p ON p.oid=t.tgfoid WHERE c.relnamespace='public'::regnamespace AND c.relname IN ('company_enrollment_requests','company_enrollment_request_events','company_enrollment_receipts') AND NOT t.tgisinternal ORDER BY t.tgname")
             .fetch_all(pool).await.unwrap();
         let mut expected = vec![
             (
@@ -198,8 +200,7 @@ mod integrity_guards {
             command,
             &input,
             designation.command,
-            lower,
-            upper,
+            (lower, upper),
         )
         .await;
         let prepared = all_rows(&pool).await;
@@ -572,8 +573,7 @@ mod integrity_guards {
             command,
             &input,
             designation.command,
-            lower,
-            upper,
+            (lower, upper),
         )
         .await;
         let after = all_rows(&pool).await;

@@ -141,8 +141,7 @@ mod signed_credentials {
             command,
             &input,
             f.designation,
-            lower,
-            upper,
+            (lower, upper),
         )
         .await;
         let prepared = all_rows(&pool).await;

@@ -470,8 +470,7 @@ mod intake_owner {
         command: Uuid,
         input: &[u8],
         designation_command: Uuid,
-        lower: time::OffsetDateTime,
-        upper: time::OffsetDateTime,
+        (lower, upper): (time::OffsetDateTime, time::OffsetDateTime),
     ) {
         let row = sqlx::query("SELECT r.*, (SELECT count(*) FROM public.company_enrollment_request_events e WHERE (e.account_id,e.command_id)=(r.account_id,r.command_id)) AS events, EXISTS(SELECT 1 FROM public.company_enrollment_request_events e WHERE (e.account_id,e.command_id)=(r.account_id,r.command_id) AND e.event_revision=1 AND e.from_state IS NULL AND e.to_state='PENDING' AND e.reason_code='PREPARED' AND e.occurred_at=r.created_at AND e.actor_account_id=r.account_id AND e.session_id=$3) AS exact_event, EXISTS(SELECT 1 FROM public.deployment_operator_receipts d WHERE d.receipt_id=r.designation_receipt_id AND d.account_id=r.account_id AND d.command_id=$4 AND d.kind='DESIGNATE') AS exact_origin FROM public.company_enrollment_requests r WHERE account_id=$1 AND command_id=$2")
             .bind(account).bind(command).bind(session).bind(designation_command).fetch_one(pool).await.unwrap();
@@ -539,8 +538,7 @@ mod intake_owner {
             command,
             &input,
             designation.command,
-            lower,
-            upper,
+            (lower, upper),
         )
         .await;
         let digest = Sha256::digest(&input).to_vec();
@@ -781,8 +779,7 @@ mod intake_owner {
                 *command,
                 &bytes(account.account, *command, account.account),
                 designation.command,
-                lower,
-                upper,
+                (lower, upper),
             )
             .await;
         }
@@ -853,8 +850,7 @@ mod intake_owner {
             loser,
             &replacement,
             designation.command,
-            replacement_lower,
-            replacement_upper,
+            (replacement_lower, replacement_upper),
         )
         .await;
         let replaced = all_rows(&pool).await;
@@ -885,8 +881,7 @@ mod intake_owner {
                 *command,
                 &bytes(account.account, *command, account.account),
                 designation.command,
-                lower,
-                upper,
+                (lower, upper),
             )
             .await;
         }
@@ -966,8 +961,7 @@ mod intake_owner {
             command,
             &input,
             designation.command,
-            lower,
-            upper,
+            (lower, upper),
         )
         .await;
         let after = all_rows(&pool).await;
@@ -1229,8 +1223,7 @@ SELECT (SELECT count(*) FROM routines)=4
             command,
             &input,
             designation.command,
-            lower,
-            now(&pool).await,
+            (lower, now(&pool).await),
         )
         .await;
         let before = all_rows(&pool).await;
@@ -1390,8 +1383,7 @@ SELECT (SELECT count(*) FROM routines)=4
             command,
             &input,
             designation.command,
-            lower,
-            now(&pool).await,
+            (lower, now(&pool).await),
         )
         .await;
         let before = all_rows(&pool).await;
