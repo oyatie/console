@@ -1848,3 +1848,19 @@ sh_test(
     deps = ["//backend/crates/platform/auth:console-platform-auth-itest-auth7_legacy_projection"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+sh_test(
+    name = "app-auth-rest-browser-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-auth_rest-browser)"],
+    deps = ["//backend/app:console-app-itest-auth_rest-browser"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "app-health-readiness-browser-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/app:console-app-itest-health_readiness-browser)"],
+    deps = ["//backend/app:console-app-itest-health_readiness-browser"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)

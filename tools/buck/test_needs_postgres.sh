@@ -180,6 +180,23 @@ for arg in "$@"; do
     //*|root//*) build_targets+=("${arg}") ;;
   esac
 done
+# Browser configuration is public runtime data, never a credential-file key or
+# compiler input. Forward only these fixed names for the two browser wrappers.
+for target in "${build_targets[@]}"; do
+  case "${target}" in
+    //tools/buck:app-auth-rest-browser-pg|root//tools/buck:app-auth-rest-browser-pg|//tools/buck:app-health-readiness-browser-pg|root//tools/buck:app-health-readiness-browser-pg)
+      for prefix in CONSOLE_BROWSER_JOURNEY CONSOLE_COMPANY_BROWSER CONSOLE_COMPANY_PREVIEW_BROWSER CONSOLE_HYDRATION_BROWSER; do
+        for suffix in DRIVER SHA256 OUTPUT; do
+          key="${prefix}_${suffix}"
+          if [[ -n "${!key:-}" ]]; then
+            test_executor_args+=(--env "${key}=${!key}")
+          fi
+        done
+      done
+      break
+      ;;
+  esac
+done
 # The complete Account suite includes hundreds of serial populated-custody
 # histories (one seven-relation ACL case alone takes 150s locally). Keep SQL
 # deadlines and serial execution; give only this full binary a six-hour budget.

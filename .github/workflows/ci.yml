@@ -1473,6 +1473,120 @@ jobs:
             //tools/buck:app-inline-postgres \
             //tools/buck:app-dev-auth-persona-guard-postgres
 
+      - name: Install pinned native browser prerequisites
+        id: "browser-prerequisites"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: "tools/browser/prepare_native_browser.sh"
+
+      - name: Native Account browser
+        id: "account-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          for leaf in \
+            account_browser::browser_business_oracle_requires_complete_lossless_unchanged_rows \
+            account_browser::browser_login_history_oracle_requires_exact_key_and_retained_effects \
+            account_browser::browser_global_oracle_requires_complete_owned_effects_and_immutable_tables; do
+            expected="${leaf}: test"$'\n\n1 test, 0 benchmarks'
+            if ! listing="$(tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --list --exact "${leaf}" 2>/dev/null)" || [[ "${listing}" != "${expected}" ]]; then
+              echo "native browser: exact oracle discovery failed" >&2
+              exit 1
+            fi
+            tools/buck2 run //backend/app:console-app-itest-auth_rest-browser -- --exact "${leaf}"
+          done
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-sign-in.png 05-account-returned.png; do
+            evidence_path="${CONSOLE_BROWSER_JOURNEY_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native Company creation browser
+        id: "company-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_create_reopen_and_workspace tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-created.png 05-company-workspace.png; do
+            evidence_path="${CONSOLE_COMPANY_BROWSER_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native Company preview browser
+        id: "company-preview-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json 01-public.png 02-terms.png 03-account-enrolled.png 04-company-preview-input-preserved.png; do
+            evidence_path="${CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Native payroll hydration browser
+        id: "hydration-browser"
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        working-directory: "."
+        run: |
+          CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::authorized_payroll_served_wasm_filters_only_current_rows_in_real_browser tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg
+          # Require the retained evidence from a successful browser leaf.
+          for evidence_file in result.json owner-receipt.json authorized-before.png authorized-filter-1.png authorized-filter-2.png authorized-filter-3.png; do
+            evidence_path="${CONSOLE_HYDRATION_BROWSER_OUTPUT:?}/${evidence_file}"
+            if [[ ! -f "${evidence_path}" || ! -s "${evidence_path}" || -L "${evidence_path}" ]]; then
+              echo "native browser: required retained evidence missing or invalid" >&2
+              exit 1
+            fi
+          done
+
+      - name: Retain sanitized native browser evidence
+        id: native-browser-evidence
+        if: "${{ !cancelled() && matrix.leg == 'buck-app' && steps.topology.outcome == 'success' && steps.browser-prerequisites.outcome == 'success' && needs.preflight.outputs.run_heavy == 'true' }}"
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-browser-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.leg }}
+          path: |
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/result.json
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/01-public.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/02-terms.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/03-account-enrolled.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/04-sign-in.png
+            ${{ env.CONSOLE_BROWSER_JOURNEY_OUTPUT }}/05-account-returned.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/result.json
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/01-public.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/02-terms.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/03-account-enrolled.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/04-company-created.png
+            ${{ env.CONSOLE_COMPANY_BROWSER_OUTPUT }}/05-company-workspace.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/result.json
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/01-public.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/02-terms.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/03-account-enrolled.png
+            ${{ env.CONSOLE_COMPANY_PREVIEW_BROWSER_OUTPUT }}/04-company-preview-input-preserved.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/result.json
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/owner-receipt.json
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-before.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-1.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-2.png
+            ${{ env.CONSOLE_HYDRATION_BROWSER_OUTPUT }}/authorized-filter-3.png
+          if-no-files-found: error
+          retention-days: 7
+          include-hidden-files: false
+
       - name: Collect failures
         if: ${{ !cancelled() }}
         env:

@@ -156,6 +156,13 @@ RESOURCE_CONFIG = {
                 "srcs": ["src/**/*.rs", "Cargo.toml"],
                 "external": OPENAPI_DRIFT_EXTERNAL,
             },
+            "tests/health_readiness.rs": {
+                "srcs": ["src/lib.rs"],
+                "external": {
+                    "//backend/crates/platform/auth-rest:crate-source-tree": "backend/crates/platform/auth-rest/src",
+                    "//backend/crates/platform/request-context:crate-source-tree": "backend/crates/platform/request-context/src",
+                },
+            },
             "tests/workbench_api.rs": {
                 "srcs": ["src/workbench.rs"],
             },
@@ -2099,6 +2106,17 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
                           sorted(set(featured_test_deps + [test_lib_target])), test_named, itest_env,
                           package=package, crate_root=package + "/" + tf,
                           external=external, labels=labels, features=features)
+            if name == "console-app" and stem in ("auth_rest", "health_readiness"):
+                if manifest.get("features", {}).get("test-browser") != []:
+                    raise ValueError("console-app requires an explicit inert test-browser feature")
+                # Browser tests use the ordinary application library and resources.
+                # Only their test crate enables the browser driver protocol.
+                out.append("")
+                out += _block("rust_test", "{}-itest-{}-browser".format(name, stem),
+                              srcs_expr, stem,
+                              sorted(set(featured_test_deps + [test_lib_target])), test_named, itest_env,
+                              package=package, crate_root=package + "/" + tf,
+                              external=external, labels=labels, features=["test-browser"])
 
     rendered = "\n".join(out) + "\n"
     target_names = set()

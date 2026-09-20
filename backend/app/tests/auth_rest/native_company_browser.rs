@@ -134,7 +134,13 @@ async fn native_company_real_browser_create_reopen_and_workspace(pool: PgPool) {
         );
         assert_eq!(
             owned["executable_sha256"],
-            "7687bff7cb2db075f250e6d5848bbc8838cac3802ac3952a899c574f8eccab45"
+            match (std::env::consts::OS, std::env::consts::ARCH) {
+                ("macos", "aarch64") =>
+                    "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282",
+                ("linux", "x86_64") =>
+                    "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+                _ => panic!("unsupported reviewed browser platform"),
+            }
         );
 
         let pid = u32::try_from(owned["pid"].as_u64().unwrap()).unwrap();
@@ -461,7 +467,13 @@ async fn native_company_real_browser_preview_preserves_enter_without_commands(po
         );
         assert_eq!(
             owned["executable_sha256"],
-            "7687bff7cb2db075f250e6d5848bbc8838cac3802ac3952a899c574f8eccab45"
+            match (std::env::consts::OS, std::env::consts::ARCH) {
+                ("macos", "aarch64") =>
+                    "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282",
+                ("linux", "x86_64") =>
+                    "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+                _ => panic!("unsupported reviewed browser platform"),
+            }
         );
 
         let pid = u32::try_from(owned["pid"].as_u64().unwrap()).unwrap();

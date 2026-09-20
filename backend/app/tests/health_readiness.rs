@@ -1490,7 +1490,11 @@ mod authorized {
             assert!(
                 owned["kind"] == "BROWSER_OWNED"
                     && owned["executable_sha256"]
-                        == "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+                        == match (std::env::consts::OS, std::env::consts::ARCH) {
+                ("macos", "aarch64") => "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282",
+                ("linux", "x86_64") => "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+                _ => panic!("unsupported reviewed browser platform"),
+            }
             );
             let pid = u32::try_from(owned["pid"].as_u64().unwrap()).unwrap();
             assert!(alive(pid));
