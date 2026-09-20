@@ -1,0 +1,18 @@
+{
+  "reviewer": "root",
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "manifest_sha256": "f4271546d600093737faa2216f02f9ddc8ddcf047b0ca836e9519bbe00951666",
+  "integrated_parent_sha256": "3e9d69ba292bdb45fcee441c212cf4c1a9c61bf4f8698c12e9d9e2c67b5f439c",
+  "conclusions": [
+    "Original locks bytes plus reviewed style-only lint change and exact child declaration.",
+    "Real wire COMMIT then exact completion and idle before disconnect; independent database observer determines durable effect.",
+    "Bounded frame buffers, finite transcript, isolated loopback plaintext pool and owned cleanup.",
+    "No production TLS, owner code, dependencies or historical evidence modified."
+  ],
+  "executed": 0,
+  "remaining": [
+    "Runtime COMMIT-loss evidence",
+    "TLS production qualification separate",
+    "Full release qualification"
+  ]
+}

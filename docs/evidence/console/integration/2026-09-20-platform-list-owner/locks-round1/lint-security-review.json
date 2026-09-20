@@ -1,0 +1,14 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Exact three-file mechanical test lint changes including prior passkey fixture scope addition",
+  "reviewer": "integration_security",
+  "manifest_sha256": "15f003ea5cd5d8ab4867009b4d63cd63083e99c4f8a64700c75506451f2b86aa",
+  "changes": [
+    "Two passkey and one credential nested if become evaluation-order-equivalent let chains; collected secret values unchanged",
+    "One scoped expected too_many_arguments lint on independent revocation oracle; all11arguments and every assertion preserved"
+  ],
+  "test_execution": 0,
+  "no_behavioral_test_weakening": true,
+  "candidate_head": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "remaining": "Root integrates exact sources and reruns affected lint/test acceptance"
+}

@@ -1,0 +1,37 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Round3 capture machinery prerequisite correction; captured profiles still require independent review",
+  "reviewer": "integration_security",
+  "manifest_sha256": "5ddacd584438203dbfd17ce601d4f8fe9ad30aca0f5034f6d239d8d179e1322e",
+  "predecessor": "Round2 partition failure preserved; no original binary or captures ran",
+  "review_conclusions": [
+    "Exact original full owner map copied and source hashed",
+    "Fixed only_csv selects exact one original probe through unchanged partition validation",
+    "All six SQL inputs and capture delta oracle unchanged; no gate bypass",
+    "Noargs/count1/group1 and baseline artifact guards retained"
+  ],
+  "checks": [
+    {
+      "command": "python3 /private/tmp/console-platform-source-capture-driver-20260920-round3/test_capture_oracle.py -v",
+      "discovered": 3,
+      "executed": 3,
+      "passed": 3,
+      "failed": 0,
+      "positive_controls": 2,
+      "individual_corruptions": 27
+    },
+    {
+      "command": "python3 /private/tmp/console-platform-source-capture-driver-20260920-round3/capture.py --verify-sources-only",
+      "exit": 0
+    },
+    {
+      "command": "node tools/ci/postgres-partition.mjs --emit-shard= --only=platform-list-owner /private/tmp/console-platform-source-capture-driver-20260920-round3/capture-map.json",
+      "exit": 0,
+      "selected": 1,
+      "exact_expected_probe": true
+    }
+  ],
+  "database_executions": 0,
+  "application_executions": 0,
+  "repository_writes": 0
+}

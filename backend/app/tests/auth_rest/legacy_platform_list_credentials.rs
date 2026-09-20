@@ -463,10 +463,10 @@ async fn mounted_list_get_head_reject_ambiguous_headers_before_effects_and_accep
                 raw_inputs.push(cookie.as_bytes().to_vec());
             }
             for value in values {
-                if let Ok(value) = std::str::from_utf8(&value) {
-                    if !value.is_empty() {
-                        secrets.push(value.to_owned());
-                    }
+                if let Ok(value) = std::str::from_utf8(&value)
+                    && !value.is_empty()
+                {
+                    secrets.push(value.to_owned());
                 }
                 request.headers_mut().append(
                     header::AUTHORIZATION,
@@ -578,3 +578,6 @@ async fn list_transport_selection_preserves_sibling_routes_and_methods() {
         );
     }
 }
+
+#[path = "legacy_platform_list_locks.rs"]
+mod legacy_platform_list_locks;

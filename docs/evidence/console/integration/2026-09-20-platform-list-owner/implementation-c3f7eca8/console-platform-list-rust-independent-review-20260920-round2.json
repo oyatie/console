@@ -1,0 +1,20 @@
+{
+  "reviewer": "integration_tests",
+  "prior_receipt_sha256": "deb2d1620a02d62212b8ed8bcbd58062356693089819989f0c37c16fdce2ac9b",
+  "outcome": "approved_source_only_for_bounded_Rust_owner",
+  "changed_sources": [
+    {
+      "path": "backend/crates/platform/authz/src/platform_policy.rs",
+      "before": "4599dc295a4f75b0ccab94ef07f17b2556059feaa246d0efad4de3453595aa38",
+      "after": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06"
+    }
+  ],
+  "finding_closure": "Reviewed full operation_valid match. All approved direct and derived action/target/use combinations are enumerated before SDK; derived signed-target equality remains separately required. No role predicate duplicated; Cedar remains permission owner. Prior medium finding resolved.",
+  "runtime_tests_executed": 0,
+  "limits": [
+    "SQL helper, ACL, generator and custody review delegated separately to integration_security; not approved by this receipt.",
+    "Runtime green, timeout/source-wait histories and broader direct/bound credential coverage remain required.",
+    "Raw full metadata SQL grant, machine enumeration, view-as and other platform consumers remain release HOLDs.",
+    "Working tree may change; this receipt binds only captured bytes."
+  ]
+}

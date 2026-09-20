@@ -1,0 +1,15 @@
+{
+  "verdict": "APPROVED",
+  "scope": "Supplemental test source only; no runtime or release acceptance",
+  "reviewer": "integration_security",
+  "manifest_sha256": "38b42bdfc53cba55d83bfbd507b0606049659bd63708da971da7579a281f18f4",
+  "details": {
+    "authored": {
+      "rust": 14,
+      "executed": 0
+    },
+    "resolved": "Six mechanical clippy edits preserve semantics. Additive operation table matches round5 DESIGN closed20 tuples; exhaustive864 combinations require824InvalidMaterial beforeSDK,29Allow/11Upgrade with exact original mode. Prior13leaf assertions and frozen Cedar/schema/oracle preserved."
+  },
+  "repository_writes": 0,
+  "database_executions": 0
+}

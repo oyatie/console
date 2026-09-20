@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_PROSPECTIVE_PLATFORM_SOURCE_SQL_AND_SERIALIZER_FOR_REVIEWED_PRIVATE_CAPTURES",
+  "base_sha": "26d786487c294dd88ada16f5372b03fb5787f00f",
+  "snippet_sha256": "6c8efb6b777e9d87c298e3203964ea5203918a3facb0f9de4d5cd1bd87f77f7f",
+  "generator_sha256": "09bcf176ba04fc18b82c4e893744c702b83b759bcc9be7c8f0da6909d5e33a43",
+  "install_sql_sha256": "6965be5e8d2b873bcbb4f49d72399850ef3c58dfaabd3c4dfdb56877b178eb2a",
+  "predecessor_snippet_sha256": "54efd8681e11f947a79ddf77dc6d3dba8401ede0d55ee241c6c73e89bd25cf4a",
+  "independent_preservation": "Current generator includes exact successor snippet. Every historical top-level function/class/assignment/expression source segment matches HEAD byte-for-byte after excluding only the new install constant and outer serializer function; historical serializer/pin definitions untouched.",
+  "accepted": [
+    "Fixed sentinel/GUC and READ COMMITTED validation precede existing Company KEY SHARE, User/Account UPDATE, activity and separate fresh current-role projection, then exact selected family FOR SHARE. No family-first/latest-family lookup.",
+    "Historical absence returns exactly current roles plus nine typed NULLs. Missing selected family raises exact P0002; nil/NULLsubject and nilpresentfamily cannot form valid input. Stored tuple is returned as facts for independent Auth validation, not as SQL authorization.",
+    "Explicit NULL guard and NULLroles produce unlisted P0001 unavailable; known false fence/activity and empty roles preserve exact known refusal mapping. STRICT role projection detects missing/multiple rows. No catch-all rewrites source errors.",
+    "Ten-column projection includes only declared current-role/family fields. No token hashes/secrets/extra business fields; schema-qualified public objects and safe search_path, row_security on, VOLATILE separate SPI statements.",
+    "Exact two-object security delta: new credential-owned bridge serving EXECUTE only Business; existing context helper gains credentialowner EXECUTE only. Existing owner SELECT/UPDATE plus FORCE-RLS custody policy permits family SHARE; helper dependencies already have necessary owner privileges. No table/membership/default grants or historical body changes.",
+    "Outer serializer derives unchanged Company-eligibility query, adds new name even under owner drift, mandatory new signature and count60\u219261, asserting each replacement anchor occurs exactly once. Existing whole-profile machinery captures body/result/config/ACL and effective rights; current context ACL delta remains visible."
+  ],
+  "closed_finding": "Initial IF NOT helper(NULL) could fall through. Round2 explicit NULL checks close unknown-guard/material fail-open behavior without changing historical helpers.",
+  "scope_limits": [
+    "Approval is prospective source/serializer only, before actual SQL installation/capture. No fingerprints, classifier/finalizer wiring, migration/runtime compatibility or whole-owner acceptance yet.",
+    "Root captures exact plain/observer prior/final profiles in disposable DBs; independent semantic delta and corruption/ACL/rollback evidence required before pin acceptance.",
+    "Runtime Auth must retain transaction and independently validate signed credential/exact tuple/current policy; SQL UUID arguments alone never prove bearer authority."
+  ],
+  "reviewer_actions": "Read-only SQL/dependency/serializer inspection and Python source-segment/hash checks; no repository writes or SQL/build/runtime execution."
+}

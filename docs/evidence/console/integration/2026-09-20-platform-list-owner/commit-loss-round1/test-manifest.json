@@ -1,0 +1,11 @@
+{
+  "kind": "actual-platform-list-commit-ack-loss-test-proposal",
+  "files_sha256": {
+    "README.md": "d1220acacdc9e552a7665c69f1c21dbf2c45e8dc7176a2674c6ce0c6e03978d2",
+    "legacy_platform_list_commit_loss.rs": "f1e57e98abb246eb78666f2c2e89088b4ef4ac64473a86d920b97c0b2698dfcc",
+    "legacy_platform_list_locks.rs": "fa262341a3139103b894a3f75fa43e4091132866532617840ad67487e166318e",
+    "legacy_platform_list_locks.rs.preimage": "6682ab208234bd706f01ad101a5481b8b7c419de2c979040105a19713cba83d2",
+    "tests.patch": "4c2050fcc2321916f1a9c03d892113894981578c3736075d73f2a458c9483e80",
+    "verification.json": "a32482143aee5670a09a9313884b6ccf07034f72fb5167ad0174666c27fce15b"
+  }
+}

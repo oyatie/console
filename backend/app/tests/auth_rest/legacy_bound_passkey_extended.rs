@@ -40,10 +40,10 @@ fn sign(f: &Fixture, claims: &Value) -> String {
 async fn accepted(f: &Fixture, router: &axum::Router, token: &str, expected: &Value) {
     let mut secrets = f.secrets();
     secrets.push(token.to_owned());
-    if let Ok(verified) = verifier(f).verify_access_token(token) {
-        if let Some(binding) = verified.legacy_session {
-            secrets.push(binding.family_id.to_string());
-        }
+    if let Ok(verified) = verifier(f).verify_access_token(token)
+        && let Some(binding) = verified.legacy_session
+    {
+        secrets.push(binding.family_id.to_string());
     }
     let body = response_json(
         get_legacy_raw(router, PATH, token).await,
@@ -57,10 +57,10 @@ async fn accepted(f: &Fixture, router: &axum::Router, token: &str, expected: &Va
 async fn refused(f: &Fixture, router: &axum::Router, token: &str) {
     let mut secrets = f.secrets();
     secrets.push(token.to_owned());
-    if let Ok(verified) = verifier(f).verify_access_token(token) {
-        if let Some(binding) = verified.legacy_session {
-            secrets.push(binding.family_id.to_string());
-        }
+    if let Ok(verified) = verifier(f).verify_access_token(token)
+        && let Some(binding) = verified.legacy_session
+    {
+        secrets.push(binding.family_id.to_string());
     }
     let body = response_json(
         get_legacy_raw(router, PATH, token).await,

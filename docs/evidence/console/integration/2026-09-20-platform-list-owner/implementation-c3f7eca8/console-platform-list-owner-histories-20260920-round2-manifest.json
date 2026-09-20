@@ -1,0 +1,13 @@
+{
+  "kind": "platform-list-owner-histories-cancellation-proof-successor",
+  "predecessor_manifest_sha256": "7119d8ca6ef44d14a3a4cc62ba873996c0bc0e6b31c47183040da7636f93fee1",
+  "files_sha256": {
+    "README.md": "741794ebead22d3569ade878e30ec82c84844143e9ef2d7d95cc616d583c0ab6",
+    "legacy_platform_list_histories.rs": "8ac610f763bdf121643452b8ab06f8e2ed7a5fe957b28d2e30675d72955c6a95",
+    "legacy_platform_list_reads.rs": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145",
+    "legacy_platform_list_reads.rs.preimage": "bae1032f1aaf0bb3159af2358d6405a0457a4af5b8bc6efe2d7608b03cb9cfde",
+    "source-custody.json": "b6bb2cc48e982b811f160d846149a9d2c39eb70841d79b88765f34769f844ec6",
+    "tests.patch": "7c886cd70ec5cc62300f3b11f4f410cb847b0c659dcbc5ed548c69e3506e7c9a",
+    "verification.json": "da1a05285c20fd5ecfbca59410bbafeca96a6d106a25367f39733374186ab299"
+  }
+}

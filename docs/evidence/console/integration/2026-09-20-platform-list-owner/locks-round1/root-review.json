@@ -1,0 +1,13 @@
+{
+  "verdict": "APPROVED",
+  "reviewer": "root",
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "manifest_sha256": "280e8b08c6d8cf3b9d754d7c124106a5d1b308a35c5db83be3342f86d31df488",
+  "scope": "additive 7SQLx+1pure lock/failure tests; runtime pending",
+  "conclusions": [
+    "Canonical revocation owner and actual blocker PIDs establish ordering.",
+    "Audit expiry uses actual insert and real database clock; postfailure state and recovery checked.",
+    "Privileged data-only corruption restores catalog and all rows; original tests unchanged.",
+    "Combined audit/state oracle rejects missing and altered history."
+  ]
+}

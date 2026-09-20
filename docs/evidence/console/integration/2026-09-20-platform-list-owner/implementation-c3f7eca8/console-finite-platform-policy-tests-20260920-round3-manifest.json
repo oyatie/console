@@ -1,0 +1,15 @@
+{
+  "kind": "finite-platform-policy-supplementary-tests-round3",
+  "status": "AUTHORED_NOT_EXECUTED_PENDING_REVIEW",
+  "predecessor_manifest_sha256": "8c296cfafb86f7dd560b622ee954fce280f7f214fba25f6c99a0240171701b36",
+  "files_sha256": {
+    "INTEGRATION.md": "40367ad75c69d9ff062dda1a573ebce0ebde538c081cc85fb82389f8fb5fa5b7",
+    "coverage.json": "7f152587fabb75e47c4105f94f1e75009cb592af1e1bd513b8a0eef75a727566",
+    "legacy-platform-v1.cedar": "80838954a2ccf18008632a7f9a082a60a7429e2519636c75d5caad9c48068136",
+    "legacy-platform-v1.cedarschema": "c7a83bf86301f3bfd27444c6e43ff70dfbabfa997e4749c383c07cba0097bff2",
+    "source-custody.json": "0db7c8e579025a545ab375264fc247e2e8f3ddf9a33bafad6f2364f0a816214a",
+    "tests.rs": "0913713a7b636f27602bf39fd6fa7cafc81bc00bd55ba8af1c34aa07adfae32d",
+    "truth-table.json": "366da33371b94527d7c3a20688c89425e1ca8da5961d1d06c0961822464f873c",
+    "verification.json": "99df53457bec2e26b74b3f704b3a0ffa46aa5b0014028484f6f97b425333ef23"
+  }
+}

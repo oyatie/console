@@ -1,0 +1,20 @@
+{
+  "kind": "mechanical-test-lint-successor",
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "files": {
+    "legacy_bound_passkey_extended.rs": {
+      "preimage_sha256": "bca3546369d2e20acce21546a7584d64f0ff21ee7c18d893fd90e075f39adb9a",
+      "sha256": "5e7b95ae648b143c64e70bcaa70261cee03f489eb0fd1a7bfd6ed373d40f92f5"
+    },
+    "legacy_platform_list_credentials.rs": {
+      "preimage_sha256": "8b473446149f7fa0ad7f39723111ef12642a09227d573bc403089b4a146d4a8b",
+      "sha256": "bdc7a7234e454684c5a0246ccef3771ba073f822b083365a7c70e7c5bd107b27"
+    },
+    "legacy_platform_list_locks.rs": {
+      "preimage_sha256": "6682ab208234bd706f01ad101a5481b8b7c419de2c979040105a19713cba83d2",
+      "sha256": "df63e848336bd21bcb30d7d4d34cfe6dfcb386f73bc0504c94a6df1fdbfc4dcb"
+    }
+  },
+  "semantic_changes": false,
+  "executed": 0
+}

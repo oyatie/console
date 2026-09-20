@@ -1,0 +1,28 @@
+{
+  "verdict": "APPROVED_SOURCE_ONLY",
+  "scope": "Actual direct Platform owner COMMIT acknowledgement-loss fixture and supplementary controls; no runtime acceptance",
+  "reviewer": "integration_security",
+  "manifest_sha256": "f4271546d600093737faa2216f02f9ddc8ddcf047b0ca836e9519bbe00951666",
+  "counts": {
+    "sqlx": 1,
+    "pure": 1,
+    "tokio": 2,
+    "executed": 0
+  },
+  "review_conclusions": [
+    "Real restricted Business login and unarmed actual owner positive precede loss",
+    "Only exact client Q COMMIT forwarded and backend C COMMIT plus Z idle consumed allow successful-loss evidence; counts forbid extra commits/connections and error/wrong-tag paths",
+    "Returned owner Unavailable/no rows combines with independent exact one durable audit and all-state/history preservation",
+    "Explicit caller recovery uses normal Business pool; no hidden retry accepted",
+    "Bounded frame buffers, finite nonsecret transcript, owned persistent directional futures and explicit stop/cleanup",
+    "PgSslMode Disable scoped only to isolated loopback fixture; production TLS unchanged",
+    "Decoder and actual download-state controls plus16evidence corruptions enforce known rollback/omitted completion rejection"
+  ],
+  "integration_note": "Root may compose only exact child declaration with separately approved lint-only parent successor; verify final parent preserves both deltas and no original assertions change.",
+  "remaining_holds": [
+    "Actual SQLx/tokio/pure execution",
+    "Final candidate runtime and full release acceptance"
+  ],
+  "repository_writes": 0,
+  "database_executions": 0
+}

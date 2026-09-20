@@ -1,0 +1,4 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running `/private/tmp/console-rust1981-owner-target/debug/console-gate-layer-boundary`
+console-gate-layer-boundary: checking workspace at /private/tmp/console-client-release-20260919/backend
+console-gate-layer-boundary: PASSED — 176 workspace crates checked, 0 violations

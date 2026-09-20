@@ -1,0 +1,51 @@
+{
+  "reviewer": "integration_tests",
+  "kind": "independent working-source Rust review; no runtime approval",
+  "head": "26d786487c294dd88ada16f5372b03fb5787f00f",
+  "source_sha256": {
+    "backend/crates/platform/auth/src/legacy.rs": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+    "backend/crates/platform/auth/src/lib.rs": "6f3be04109c955dd1e9ca040449cc5202d066bf78b1a65f9dd15daaea957f305",
+    "backend/crates/platform/authz/src/platform_policy.rs": "4599dc295a4f75b0ccab94ef07f17b2556059feaa246d0efad4de3453595aa38",
+    "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedar": "80838954a2ccf18008632a7f9a082a60a7429e2519636c75d5caad9c48068136",
+    "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedarschema": "c7a83bf86301f3bfd27444c6e43ff70dfbabfa997e4749c383c07cba0097bff2",
+    "backend/crates/platform/authz/src/cedar_pbac/engine.rs": "720f11e0f224988fbedbfc47dda531a12d66ece989ec58a55b6bc5a86225d1f3",
+    "backend/crates/platform/authz/src/lib.rs": "6d94a12dcaa1d5df4731577360665c2aa3765fe4ce8b5f2cf6a5745a3fb6d119",
+    "backend/crates/platform/authz/Cargo.toml": "3518d695805bea4a6414f6c3885615d101a3cad80362eb1545ac23a68f8dc6b6",
+    "backend/crates/platform/provisioning/src/lib.rs": "c0839851bb8a11964cabe4636833625722b0500fc4324e8a8b087f67cf61d7e7",
+    "backend/crates/platform/provisioning/Cargo.toml": "92444c4305719ec0966bd4cfe48bb8a0b58b3f363525b8ec752a5e012b46c641",
+    "backend/crates/platform/platform-rest/src/lib.rs": "d01ba273366bda19a4a60f98cffb160aa8daaa4982a43050f257e7a0efc68ce2",
+    "backend/app/src/lib.rs": "4954d9f706efd2b7bfc1cf926f62c3bb881a66707e0ae67e2f483d4304df638d",
+    "backend/crates/platform/auth-rest/src/lib.rs": "f0ddf179161083fc6b6da06efe4223043a7569021094f4fd8e0dffab9a47b8f4",
+    "backend/Cargo.lock": "e04c426b7ca3261937d9fefe7b091909599f86d31ba5a55cc8f126b0e8da5b16"
+  },
+  "design_manifest": "3f3b77eb13e194a11b451635226988912062c38b235341ca745d560b5ac877a7",
+  "outcome": "changes_required_for_finite_material_admission; bounded owner otherwise source-conformant",
+  "findings": [
+    {
+      "severity": "medium",
+      "path": "backend/crates/platform/authz/src/platform_policy.rs",
+      "symbol": "valid_material",
+      "problem": "Source/callsite and feature/target checks admit unsupported source/action/use combinations to Cedar. A matching-target ViewAs Effect or ContextMint is rejected as PolicyDenied after SDK rather than InvalidMaterial before SDK. Cedar currently denies; no authorization escalation observed.",
+      "remedy": "Validate full approved source/action/target/use tuples before SDK; retain role decisions in Cedar. Root proposed tuple table concurred."
+    }
+  ],
+  "auth_rest_scope_concurrence": {
+    "approved": true,
+    "rationale": "Three new ProvisioningError variants require exhaustive matching. Fixed non-sensitive unavailable503 is fail-closed; legacy auth transport has no list_tenants caller. No authority expansion."
+  },
+  "observations": [
+    "Original raw JWT is reverified in Auth; private retained facts expose no constructor/serialization or token Debug.",
+    "Provisioning begins one READ COMMITTED Business transaction; source acquisition, policy, metadata, audit, final DB-time check and commit share it. No automatic ambiguous-commit retry.",
+    "Exact direct TenantList/Companies/ReadProjection/DirectPlatformOwner tuple comes from owner, not transport input.",
+    "Single-Bearer GET/HEAD exact-route admission, final no-store/private/Vary and HEAD empty body wrap actual App envelope.",
+    "App composes immutable compiled policy and actual configured family TTL; no business SQL moved into App.",
+    "Authz engine changes only crate-private schema/policies visibility; dependencies add owning edges without version updates."
+  ],
+  "executed_tests": 0,
+  "limitations": [
+    "SQL helper, ACL, generator and custody review delegated separately to integration_security; not approved by this receipt.",
+    "Runtime green, timeout/source-wait histories and broader direct/bound credential coverage remain required.",
+    "Raw full metadata SQL grant, machine enumeration, view-as and other platform consumers remain release HOLDs.",
+    "Working tree may change; this receipt binds only captured bytes."
+  ]
+}

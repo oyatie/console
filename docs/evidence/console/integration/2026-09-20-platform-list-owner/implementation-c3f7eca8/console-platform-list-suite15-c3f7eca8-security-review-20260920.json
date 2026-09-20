@@ -1,0 +1,43 @@
+{
+  "verdict": "VERIFIED_BOUNDED_EVIDENCE",
+  "scope": "15 exact Platform list supplemental/current-role tests; not full owner integration acceptance",
+  "reviewer": "integration_security",
+  "candidate_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "log": "/private/tmp/console-platform-list-suite-c3f7eca8-20260920.log",
+  "log_sha256": "d7449d7442686b8d505c237f7cc0fdb7bd5a146e492ad55a06d81768687ac10a",
+  "tests_sha256": {
+    "backend/app/tests/auth_rest/legacy_platform_list_reads.rs": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "1fb70485b4cc8e4478d7d4b309e2f3c292205dd023218a0682f330df540bcca3",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "fc2a83d5091cd53e5827e1e67f19a9707bcb54defab0de3c87da2674b5baffbb"
+  },
+  "discovered": 15,
+  "executed": 15,
+  "passed": 15,
+  "failed": 0,
+  "ignored": 0,
+  "filtered": 398,
+  "seconds": 119.79,
+  "test_leaves": [
+    "legacy_platform_list_reads::histories::direct_source_rejects_borrowed_repeatable_read_without_downgrade",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::bound_list_keeps_live_family_on_rotation_and_refuses_exact_revoked_sibling",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::direct_bound_list_lifetime_and_present_binding_faults_never_fall_back",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::direct_list_owner_reverifies_original_credential_and_current_roles",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::list_transport_selection_preserves_sibling_routes_and_methods",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::mounted_list_get_head_reject_ambiguous_headers_before_effects_and_accept_exact_bearer",
+    "legacy_platform_list_reads::histories::legacy_platform_list_credentials::raw_authorization_privacy_oracle_detects_non_utf8_echo",
+    "legacy_platform_list_reads::histories::mounted_list_get_outer_timeout_is_private_and_recovers",
+    "legacy_platform_list_reads::histories::mounted_list_head_outer_timeout_is_private_empty_and_recovers",
+    "legacy_platform_list_reads::histories::mounted_list_waits_for_source_then_denies_committed_demotion",
+    "legacy_platform_list_reads::histories::private_response_oracle_rejects_header_and_current_input_corruption",
+    "legacy_platform_list_reads::histories::wait_and_role_delta_oracles_reject_omissions_and_extra_effects",
+    "legacy_platform_list_reads::list_audit_full_state_oracle_rejects_missing_effects_and_history_corruption",
+    "legacy_platform_list_reads::list_metadata_oracle_rejects_missing_extra_reordered_and_private_fields",
+    "legacy_platform_list_reads::mounted_platform_list_same_bearer_current_member_denies_and_restores"
+  ],
+  "remaining_holds": [
+    "Added reader/revoker/audit-expiry histories not run in this suite",
+    "Finalizer and SQL profile/ACL histories",
+    "Unknown commit acknowledgement history",
+    "Full owner integration and release acceptance"
+  ]
+}

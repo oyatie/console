@@ -1,0 +1,22 @@
+   Compiling console-platform-authz v0.1.0 (/private/tmp/console-client-release-20260919/backend/crates/platform/authz)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.20s
+     Running unittests src/lib.rs (/private/tmp/console-rust1981-owner-target/debug/deps/console_platform_authz-062333874a1287c1)
+
+running 14 tests
+test platform_policy::tests::finite_platform_oracle_rosters_and_every_role_subset_are_complete ... ok
+test platform_policy::tests::finite_platform_linked_sdk_exact_sources_and_compiled_identity ... ok
+test platform_policy::tests::finite_platform_raw_schema_and_closed_source_controls ... ok
+test platform_policy::tests::finite_platform_bound_precision_and_historical_signed_time_compatibility ... ok
+test platform_policy::tests::finite_platform_same_strict_compiler_rejects_errors_and_warning_only_policy ... ok
+test platform_policy::tests::finite_platform_private_eligibility_is_distinct_from_public_upgrade ... ok
+test platform_policy::tests::finite_platform_invalid_historical_material_never_upgrades ... ok
+test platform_policy::tests::finite_platform_additional_family_binding_lifetime_and_source_faults ... ok
+test platform_policy::tests::finite_platform_corrupted_compiled_identity_refuses_before_sdk_for_every_action ... ok
+test platform_policy::tests::finite_platform_frozen_representable_material_faults_fail_before_sdk ... ok
+test platform_policy::tests::finite_platform_real_sdk_faults_and_panic_never_allow_or_upgrade ... ok
+test platform_policy::tests::finite_platform_all_typed_session_callsite_rows_repeat_eight_role_controls ... ok
+test platform_policy::tests::finite_platform_operation_shapes_refuse_before_sdk_and_preserve_valid_contexts ... ok
+test platform_policy::tests::finite_platform_all_1024_frozen_role_feature_session_cells ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 96 filtered out; finished in 2.66s
+
