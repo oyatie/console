@@ -1,3 +1,7 @@
+mod company_enrollment;
+
+pub use company_enrollment::{AccountEnrollmentCredentials, LockedAccountEnrollment};
+
 use std::fmt;
 
 use sqlx::PgPool;
