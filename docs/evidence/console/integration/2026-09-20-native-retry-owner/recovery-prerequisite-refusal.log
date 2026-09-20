@@ -1,0 +1,18 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+NOTICE:  database "canonical_probe_87169" does not exist, skipping
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+psql:/canonical-migrations/0023_coldstart_revoke_fixed_seed.sql:29: NOTICE:  extension "pgcrypto" already exists, skipping
+psql:/canonical-migrations/0118_search_trgm_indexes.sql:7: NOTICE:  extension "pg_trgm" already exists, skipping
+psql:/canonical-migrations/0193_maintenance_gaps.sql:136: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0193_maintenance_gaps.sql:167: NOTICE:  identifier "equipment_maintenance_history_evidence_require_verified_snapshot" will be truncated to "equipment_maintenance_history_evidence_require_verified_snapsho"
+psql:/canonical-migrations/0207_create_erasure_ledger.sql:131: NOTICE:  extension "pgcrypto" already exists, skipping
+NOTICE:  topology.canonical_enforcement: examined 20 canonical tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+topology: seven application roles reconciled and verified
+canonical-enforce: enforced on canonical_probe_87169, examined 20 tables [company_revisions,employee_person_bindings,employees,employment_heads,employment_revisions,employment_source_bindings,job_position_revisions,job_positions,org_unit_revisions,org_unit_source_bindings,org_units,organizations,payroll_disbursements,payroll_draft_lines,payroll_draft_runs,payroll_line_calculations,payroll_payslip_deliveries,payroll_run_exceptions,person_revisions,persons]
+shard 1 is empty; it would pay full fixed cost for no tests
+shard 2 is empty; it would pay full fixed cost for no tests
+shard 3 is empty; it would pay full fixed cost for no tests
+shard 4 is empty; it would pay full fixed cost for no tests
+cargo-postgres: shard partition failed; refusing to run a partial set
