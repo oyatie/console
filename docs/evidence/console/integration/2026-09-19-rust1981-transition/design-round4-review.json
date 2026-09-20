@@ -1,0 +1,14 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 4,
+  "decision": "APPROVED_DESIGN",
+  "design_sha256": "44f4508d196d520b6d31c1afb6cca925d95e4d042c711ed2c1e5cdab4ff1d3ba",
+  "manifest_sha256": "8ed3cfd58b9473a774f3a6f0f63bafad7a322563dc0027bd23b4be892ea66c2e",
+  "focus": "Adversarial probe and acceptance limits",
+  "conclusion": "Exactprobebehaviorcheckedintemporaryfixtures:1positive+4intentionalnegativecontrolsmatched. Existingunchangedpin/generatoradversarialsuites andgate remainrequired. ActualrootRED/GREEN, defaultnooverridecompilerselection, appbuildandrealownerexecution stillneeded afteredit. DockerCOPY/builderdrift,Linuxqualification,artifactbrowserinterop andmacnextestLEAK remainexplicitseparatework.",
+  "findings": [],
+  "independence": "Independentreviewer, separatefromrootauthor/sourcewriter. Fourfocusedroundsbyone reviewer, notfourdistinctreviewers.",
+  "limits": [
+    "Designapproval only; no sourcelane admission, completecompatibilityorproductionqualification."
+  ]
+}
