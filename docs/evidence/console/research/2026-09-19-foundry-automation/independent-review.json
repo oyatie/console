@@ -1,0 +1,66 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "APPROVE_BOUNDED_REFERENCE_ADDITION",
+  "scope": "F07 classical function/rule/automation public reference inventory addition only",
+  "proposal_sha256": "40343899575a606f45f936246dbdec0be7b9f9bb4e575438535ff2d5651c7bbb",
+  "patch_sha256": "7255489afe3602cafa4f5d3eacfa780ee51fa866b0ab7a652ec530a8c4b46c83",
+  "manifest_sha256": "4773567acb316e59ce91ff2b801be4d28a1609b6d7ec8d8c97a4c6db55ac08ce",
+  "target_registry_sha256": "0f60916e10845b462f0cb0fcba8d79c50faf28f6683d93f52cc676a86d2f869c",
+  "checks": {
+    "catalog_checks": {
+      "functions-types-reference": {
+        "captured_rows": 36,
+        "catalog_rows": 35,
+        "offset": 1
+      },
+      "automate-evaluation-frequency": {
+        "captured_rows": 8,
+        "catalog_rows": 7,
+        "offset": 1
+      },
+      "automate-limits": {
+        "captured_rows": 10,
+        "catalog_rows": 10,
+        "offset": 0
+      },
+      "automate-history": {
+        "captured_rows": 11,
+        "catalog_rows": 10,
+        "offset": 1
+      }
+    },
+    "errors": [],
+    "manifest_files_verified": 96,
+    "sources_verified": 45,
+    "quote_occurrences_checked": 370,
+    "new_leaves": 30,
+    "base_leaves": 330,
+    "current_leaves": 330,
+    "rebased_leaves": 360,
+    "current_registry_sha256": "0f60916e10845b462f0cb0fcba8d79c50faf28f6683d93f52cc676a86d2f869c",
+    "patch_operations": 217,
+    "no_prior_value_changed": true
+  },
+  "resolved_findings": [
+    "F11.api binding now appends2 to prior1 without replacement.",
+    "F14.history binding now appends1 to prior1 without replacement."
+  ],
+  "semantic_checks": [
+    "43 new capture bytes unchanged from prior packet and2 reused exact registry source records; UTC timestamps retain NewYork target-day interpretation and mtime-only reused custody qualification.",
+    "Exact62 ordered catalog rows verified directly from captured HTML tables after removing headers only;35 function types map exactly across3 languages (105cells).",
+    "Prior runtime/SDK/source values all recursively preserved;217operations produce330\u2192360 unique leaves with resolvable acyclic dependencies.",
+    "All30 new leaves planned, not_bound and no acceptance command; incomplete reference freeze remains partial_snapshot.",
+    "At-least-once effects, nondeterministic ordering, non-atomic sequential outcomes, interruption, retry identity/version changes and omitted-history gaps retained.",
+    "Function-effect retry strategy vs overview per-effect retry list conflict retained explicitly; no silent resolution.",
+    "Manual trigger bypass is not authorization; service-user authority and derived output restrictions remain explicit; restricted-view alternate backing cannot bypass row policy.",
+    "Generic function interface/signature/streaming mechanics do not admit AIP Logic, ChatCompletion or model inference; vendor generative examples remain excluded to Intelligence.",
+    "Language signature vs OSDK type matrices remain distinct; documented Decimal/Long types do not claim exact payroll or time correctness."
+  ],
+  "remaining_limits": [
+    "No exhaustive runtime/API/library inventory or full Foundry freeze accepted.",
+    "No Console implementation, owning command, database/browser/workload/security or production qualification evidence is established by these vendor documents.",
+    "No runtime tests executed; structural and independent source checks only."
+  ],
+  "runtime_tests_executed": 0,
+  "repository_edits": 0
+}

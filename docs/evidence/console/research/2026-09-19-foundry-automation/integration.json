@@ -1,0 +1,24 @@
+{
+  "kind": "serialized-additive-reference-integration",
+  "base_sha": "f275e8afd061bdc0725c8183fe725d97fb8fec9f",
+  "before_registry_sha256": "0f60916e10845b462f0cb0fcba8d79c50faf28f6683d93f52cc676a86d2f869c",
+  "after_registry_sha256": "02e57a510cac8e40e52ff396423134ac60ed03dbbfe4f87c7c8ad453eba2fa2c",
+  "leaves_before": 330,
+  "leaves_after": 360,
+  "new_sources": 43,
+  "new_leaves": 30,
+  "prior_values_preserved": true,
+  "state": "planned_only",
+  "limits": [
+    "Bounded functions/rules/automation addition; exhaustive reference and executable acceptance incomplete.",
+    "At-least-once effects, current ownership, retry configuration drift and classical-only scope preserved."
+  ],
+  "verification": {
+    "command": "node --test scripts/console/validate-console-truth-ledger.test.mjs",
+    "executed": 104,
+    "passed": 104,
+    "failed": 0,
+    "skipped": 0,
+    "log_sha256": "dcb8914c9276806749ba4548bb474206bb96dc545dc735b0cf54e75385f0ec57"
+  }
+}
