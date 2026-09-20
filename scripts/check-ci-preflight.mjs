@@ -1067,7 +1067,7 @@ const requiredJobRunContracts = Object.freeze({
   ],
   "domain-unit": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
-    proofDigest("Domain crate unit tests", "29894eedd1232da8ba65da33448275d4be9f084c4f8fed4909ebfdb9d9d44936", { if: runHeavyCondition }),
+    proofDigest("Domain crate unit tests", "05c010b1d9222223cc355f245e3e52f0653c1c1343ecaef37be9727845d20a91", { if: runHeavyCondition }),
   ],
   "backend": [
     proofDigest("Path-class skip proof", "1fdf99dda32af815824808d703216d2c0cf04a0adc146dd29f24746e549c44e0", { if: skipProofCondition, shell: "bash" }),
