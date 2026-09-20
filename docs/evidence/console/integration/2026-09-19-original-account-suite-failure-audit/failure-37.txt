@@ -1,0 +1,4 @@
+thread 'account_fence_transport::session_reader_contract::missing_projection_refuses_all_reader_boundaries_and_recovers' (64628037) panicked at backend/app/backend/app/tests/auth_rest/account_fence_transport.rs:2180:17:
+assertion `left == right` failed
+  left: String("service_unavailable")
+ right: "unavailable"

@@ -1,0 +1,392 @@
+[
+  {
+    "test": "account_browser::audit_account_transition::adversarial::audit_only_relation_lock_causes_nowait_refusal_and_clean_retry",
+    "category": "bounded_clean_retry_elapsed",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition_adversarial.rs:956:14",
+    "human_log_line": 1925,
+    "full_block_file": "failure-01.txt",
+    "full_block_sha256": "2a598376b2be377976bceb3b5d049fbac27e6f5fbea702f14fc313829c27383a",
+    "logged_cause_excerpt": "bounded clean retry after audit-only lock release: Elapsed(())",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::adversarial::audit_only_relation_lock_causes_nowait_refusal_and_clean_retry tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::audit_account_transition::adversarial::null_actor_writer_has_observed_users_blocker_and_bounded_lock_timeout",
+    "category": "bounded_clean_retry_elapsed",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition_adversarial.rs:906:14",
+    "human_log_line": 1931,
+    "full_block_file": "failure-02.txt",
+    "full_block_sha256": "80eb61d1bf279c4251a0f2ad7aa9c5a1cb2288182ba824dad8000d4b9fe6a02b",
+    "logged_cause_excerpt": "bounded clean retry after NULL writer rollback: Elapsed(())",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::adversarial::null_actor_writer_has_observed_users_blocker_and_bounded_lock_timeout tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::audit_account_transition::business_session_transition::initialized_observer_audit228_session_upgrade_preserves_receipts_and_replays",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14",
+    "human_log_line": 1936,
+    "full_block_file": "failure-03.txt",
+    "full_block_sha256": "807d54e279a4ce7b870318163fc51e66e8eff6d7e1e1e71fa2caea0cbd954197",
+    "logged_cause_excerpt": "PREREQUISITE: actual distinct startup LOGIN: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::business_session_transition::initialized_observer_audit228_session_upgrade_preserves_receipts_and_replays tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14",
+    "human_log_line": 1941,
+    "full_block_file": "failure-04.txt",
+    "full_block_sha256": "eb8be459ab70dd390405dcbd1345208ef0b6a316fa32885f9edf6afa143b9e8d",
+    "logged_cause_excerpt": "PREREQUISITE: actual distinct startup LOGIN: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::business_session_transition::malformed_session_helpers_refuse_without_repair_and_partial_install_rolls_back tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::audit_account_transition::business_session_transition::populated_audit228_session_upgrade_preserves_history_and_replays",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14",
+    "human_log_line": 1946,
+    "full_block_file": "failure-05.txt",
+    "full_block_sha256": "54a0d4180db13cdb71427c71174daee0da37b89c3277ed351eacf583b4ba9151",
+    "logged_cause_excerpt": "PREREQUISITE: actual distinct startup LOGIN: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::business_session_transition::populated_audit228_session_upgrade_preserves_history_and_replays tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::audit_account_transition::populated_prior228_observer_upgrade_preserves_rows_and_replays",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14",
+    "human_log_line": 1951,
+    "full_block_file": "failure-06.txt",
+    "full_block_sha256": "14fb7e7e44d4d37e080f374497af018ec486dfe0b0be0c97449e0be1beffa1aa",
+    "logged_cause_excerpt": "PREREQUISITE: actual distinct startup LOGIN: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::populated_prior228_observer_upgrade_preserves_rows_and_replays tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::audit_account_transition::populated_prior228_upgrade_preserves_native_legacy_designation_and_replay",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14",
+    "human_log_line": 1956,
+    "full_block_file": "failure-07.txt",
+    "full_block_sha256": "7c502f89faf6594b811911333d0c64428c7a2c3e4fc7d984b95989156d56cb11",
+    "logged_cause_excerpt": "PREREQUISITE: actual distinct startup LOGIN: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::audit_account_transition::populated_prior228_upgrade_preserves_native_legacy_designation_and_replay tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1961,
+    "full_block_file": "failure-08.txt",
+    "full_block_sha256": "29df98b357f0057da6e56feeac627f8a1df085753d967d98b136821f9d21b2f4",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::active_account_designation_replays_without_identity_or_company_effects tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::distinct_accounts_contend_at_one_actual_designation_slot",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1966,
+    "full_block_file": "failure-09.txt",
+    "full_block_sha256": "ee65c5034817b64b35dca8d637750e11e4986ca79cd67cb70a66241773eb838c",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::distinct_accounts_contend_at_one_actual_designation_slot tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::mandatory_receipt_failure_rolls_back_then_same_command_retries",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1971,
+    "full_block_file": "failure-10.txt",
+    "full_block_sha256": "04628e9a749bdad8e543fca032ee694fe6c5d31bf956eea7993f5025bb8d37ad",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::mandatory_receipt_failure_rolls_back_then_same_command_retries tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::null_malformed_inputs_and_revocation_bounds_have_no_partial_effect",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1976,
+    "full_block_file": "failure-11.txt",
+    "full_block_sha256": "a5ab99bd64c6032ce4511c69e598e927d50c28c52c84dcad1194198181dc1ad7",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::null_malformed_inputs_and_revocation_bounds_have_no_partial_effect tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::ordinary_login_roles_cannot_designate_revoke_or_read_authority",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1981,
+    "full_block_file": "failure-12.txt",
+    "full_block_sha256": "2404144dff51bb750ebea23e3f35f1d25ceed9809048263a5d0ad2909496671b",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::ordinary_login_roles_cannot_designate_revoke_or_read_authority tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::receipt_checks_refuse_malformed_copies_without_creating_authority",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1986,
+    "full_block_file": "failure-13.txt",
+    "full_block_sha256": "4514cafd5ec878d7c2e620ccc55bde1d3646d2efa36669812341115f191dece2",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::receipt_checks_refuse_malformed_copies_without_creating_authority tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::receipt_history_and_original_head_binding_are_immutable",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1991,
+    "full_block_file": "failure-14.txt",
+    "full_block_sha256": "95f6c3fb99544b8384a7243b20b57057a41f6d631d0b877828a32660f79b693d",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::receipt_history_and_original_head_binding_are_immutable tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::revocation_tombstone_survives_old_replay_and_cas_conflicts",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 1996,
+    "full_block_file": "failure-15.txt",
+    "full_block_sha256": "8fe39300e58f0f2d461fcb0cfdaf5851b29756fe6ef85c9e52092839db559555",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::revocation_tombstone_survives_old_replay_and_cas_conflicts tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::same_command_wait_timeout_then_exact_retry_preserves_one_receipt",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 2001,
+    "full_block_file": "failure-16.txt",
+    "full_block_sha256": "bf610eaa045a1b220076a71f57afe3e229f28c8c93df51dfa41cec5a2c946a56",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::same_command_wait_timeout_then_exact_retry_preserves_one_receipt tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::security_invalidation_serializes_and_historical_replay_does_not_reactivate",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 2006,
+    "full_block_file": "failure-17.txt",
+    "full_block_sha256": "ae4a07609b8ffcb2a477395de2a755c12e007963573bacb0e6f156f20a6ab1ca",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::security_invalidation_serializes_and_historical_replay_does_not_reactivate tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::startup_effective_privileges::effective_oracles_detect_public_inheritance_without_direct_startup_grants",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 2011,
+    "full_block_file": "failure-18.txt",
+    "full_block_sha256": "d43488783dbaf19a221f3c909bb517080fb3e90bde74618ed7ffa871d18e6f44",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::startup_effective_privileges::effective_oracles_detect_public_inheritance_without_direct_startup_grants tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_executes_only_exact_designation_owners_in_protected_routines",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 2016,
+    "full_block_file": "failure-19.txt",
+    "full_block_sha256": "7b2c38c5007628b4acb9875b1f05eeef0ff6fad439c096da5b74c4daa6c19ab3",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_executes_only_exact_designation_owners_in_protected_routines tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_has_no_effective_protected_table_or_column_privileges",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 2021,
+    "full_block_file": "failure-20.txt",
+    "full_block_sha256": "cc0f3f9ecd8dbf7ba3b981b8e54a8f3018c1412fbdbe61e364e4ec459454678c",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_has_no_effective_protected_table_or_column_privileges tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::deployment_operator_designation::unknown_pending_stale_target_and_wrong_deployment_refuse_without_effect",
+    "category": "missing_startup_login_environment",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70",
+    "human_log_line": 2026,
+    "full_block_file": "failure-21.txt",
+    "full_block_sha256": "2a7e51fe21b8e820d7c3ab5c654ae16bd91669bf11dee54a641a7ceba595a1a2",
+    "logged_cause_excerpt": "PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::unknown_pending_stale_target_and_wrong_deployment_refuse_without_effect tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::logout_transition_audit_permission_failure_rolls_back_revocation",
+    "category": "sql_finalizer_statement_timeout",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:427:10",
+    "human_log_line": 2031,
+    "full_block_file": "failure-22.txt",
+    "full_block_sha256": "dcff9af12848288cced6ae7b4abb0fea09a1682d923137d0471a7678e0aa2bad",
+    "logged_cause_excerpt": "actual production Account credential custody finalizer: Database(PgDatabaseError { severity: Error, code: \"57014\", message: \"canceling statement due to statement timeout\", detail: None, hint: None, position: None, where: Some(\"PL/pgSQL expression \\\"NOT COALESCE((SELECT snapshot_sha256 IN ('c4582399f122012f1bf7e0edc0fe7639c6403d30d4ce6d78bd6864c50ad3a531','7429d460a604d3dfe5bf9472fefcb8505371f6060efbf07aa5bdc477e66dcf31')\\n        AND snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb\\n        FROM (\\n-- READ-ONLY disposable capture. Freeze only after independent declared-source comparison.\\nWITH wanted(name) AS (VALUES\\n ('accounts'),\\n ('account_security'),",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::logout_transition_audit_permission_failure_rolls_back_revocation tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::native_entry_public_root_exposes_discoverable_routes",
+    "category": "native_public_root_response",
+    "panic_source": "backend/app/backend/app/tests/auth_rest.rs:4136:22",
+    "human_log_line": 2036,
+    "full_block_file": "failure-23.txt",
+    "full_block_sha256": "b91310c8fa3a91a5662fd1dc2101ba7ba8070844889ecaf0d0049acc40532f61",
+    "logged_cause_excerpt": "called `Option::unwrap()` on a `None` value",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_public_root_exposes_discoverable_routes tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_browser::native_login_historical_consent_requires_exact_kind_and_content_set",
+    "category": "sql_finalizer_statement_timeout",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:423:10",
+    "human_log_line": 2041,
+    "full_block_file": "failure-24.txt",
+    "full_block_sha256": "97c93a028eb53b73dd6baa2f08c3b8a47680a65e7d66c3c08ae4ebb7f4cfbdc6",
+    "logged_cause_excerpt": "actual production Account custody finalizer: Database(PgDatabaseError { severity: Error, code: \"57014\", message: \"canceling statement due to statement timeout\", detail: None, hint: None, position: None, where: Some(\"PL/pgSQL assignment \\\"state := (\\nWITH native AS (WITH current_profile AS (\\n-- READ-ONLY disposable capture. Freeze only after independent declared-source comparison.\\nWITH wanted(name) AS (VALUES\\n ('accounts'),\\n ('account_security'),\\n ('account_security_events'),\\n ('account_terms_acceptances'),\\n ('account_terms_head'),\\n ('account_terms_release_receipts'),\\n ('auth_bootstrap_credentials'),\\n ('auth_device_login_handoffs'),\\n ('auth_refresh_token_families'),\\n ('auth_refres",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_login_historical_consent_requires_exact_kind_and_content_set tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state",
+    "category": "sql_finalizer_lock_timeout",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/account_custody_lifecycle.rs:553:5",
+    "human_log_line": 2046,
+    "full_block_file": "failure-25.txt",
+    "full_block_sha256": "a8c73d48a1e919c4c167738cae7809c9efce32bf90b03099a9eafe62d166c987",
+    "logged_cause_excerpt": "finalizer request accounting failed: second=Err(Database(PgDatabaseError { severity: Error, code: \"55P03\", message: \"canceling statement due to lock timeout\", detail: None, hint: None, position: None, where: Some(\"SQL statement \\\"LOCK TABLE ONLY public.organizations IN ACCESS EXCLUSIVE MODE\\\"\\nPL/pgSQL function inline_code_block line 91 at SQL statement\"), schema: None, table: None, column: None, data_type: None, constraint: None, file: Some(\"postgres.c\"), line: Some(3437), routine: Some(\"ProcessInterrupts\") }))",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_custody_lifecycle::concurrent_finalizers_have_complete_request_outcomes_and_one_final_state tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_custody_startup::custody_worker_readyz_detects_column_grant_drift",
+    "category": "sql_finalizer_statement_timeout",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:427:10",
+    "human_log_line": 2051,
+    "full_block_file": "failure-26.txt",
+    "full_block_sha256": "f226c0864e47da9702cf99f26c7469e194868cea2ca1ce960538a3253c565589",
+    "logged_cause_excerpt": "actual production Account credential custody finalizer: Database(PgDatabaseError { severity: Error, code: \"57014\", message: \"canceling statement due to statement timeout\", detail: None, hint: None, position: None, where: Some(\"PL/pgSQL expression \\\"NOT COALESCE((SELECT snapshot_sha256 IN ('4833199d04f5dbed4f6af3f7d01e1f9adc3bdbe9ed487eb21f651ffbfa9b4565','8983667107231012c3e79a98656a9330e36c3437072bfc4b47739472d61f8def')\\n        AND snapshot->'deployment_operator_boundary'->'startup_final_rights_valid'='true'::jsonb\\n        FROM (\\n-- READ-ONLY disposable capture. Freeze only after independent declared-source comparison.\\nWITH wanted(name) AS (VALUES\\n ('accounts'),\\n ('account_security'),",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_custody_startup::custody_worker_readyz_detects_column_grant_drift tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_custody_startup::custody_worker_readyz_detects_owner_drift",
+    "category": "sql_finalizer_statement_timeout",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:427:10",
+    "human_log_line": 2056,
+    "full_block_file": "failure-27.txt",
+    "full_block_sha256": "0f4d8237a9dc090f30c2ab55425ac5c032ae7bfd8e9627493b6d463a2a5bd453",
+    "logged_cause_excerpt": "actual production Account credential custody finalizer: Database(PgDatabaseError { severity: Error, code: \"57014\", message: \"canceling statement due to statement timeout\", detail: None, hint: None, position: None, where: Some(\"PL/pgSQL assignment \\\"native_state := (\\nWITH current_profile AS (\\n-- READ-ONLY disposable capture. Freeze only after independent declared-source comparison.\\nWITH wanted(name) AS (VALUES\\n ('accounts'),\\n ('account_security'),\\n ('account_security_events'),\\n ('account_terms_acceptances'),\\n ('account_terms_head'),\\n ('account_terms_release_receipts'),\\n ('auth_bootstrap_credentials'),\\n ('auth_device_login_handoffs'),\\n ('auth_refresh_token_families'),\\n ('auth_refr",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_custody_startup::custody_worker_readyz_detects_owner_drift tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_custody_temporary::temporary_create_is_session_local_but_persistent_grants_still_close_readiness",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/account_custody_temporary.rs:36:6",
+    "human_log_line": 2061,
+    "full_block_file": "failure-28.txt",
+    "full_block_sha256": "78edbcf9e5d3f9176167ccccc5b13ac7b1d20f2bf8a4e037c3e3a63ae0036d9d",
+    "logged_cause_excerpt": "called `Result::unwrap()` on an `Err` value: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_custody_temporary::temporary_create_is_session_local_but_persistent_grants_still_close_readiness tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_active_rejects_legacy_sessions",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:423:10",
+    "human_log_line": 2066,
+    "full_block_file": "failure-29.txt",
+    "full_block_sha256": "561b45e3aae6767083db819d19a8801fbcab14cdc0ee30306158ec87184d0ada",
+    "logged_cause_excerpt": "actual production Account custody finalizer: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_active_rejects_legacy_sessions tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_outstanding_employer_otp_cannot_create_a_session",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:423:10",
+    "human_log_line": 2071,
+    "full_block_file": "failure-30.txt",
+    "full_block_sha256": "fbc82aac84acc4fa8e89e6135808566bbeba0ffb5d69cc85933d8585b0575f51",
+    "logged_cause_excerpt": "actual production Account custody finalizer: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_outstanding_employer_otp_cannot_create_a_session tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_pending_enrollment_rejects_legacy_sessions",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:423:10",
+    "human_log_line": 2076,
+    "full_block_file": "failure-31.txt",
+    "full_block_sha256": "07f0cd0631ed520d8674a51f54506e5ac148793d42245172fb652e647c325b7a",
+    "logged_cause_excerpt": "actual production Account custody finalizer: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_pending_enrollment_rejects_legacy_sessions tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_projection::account_fence_projection_missing_auth_grantee_refuses_wrong_execute_acl",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:384:10",
+    "human_log_line": 2081,
+    "full_block_file": "failure-32.txt",
+    "full_block_sha256": "d98a18cbcf23287c21281b61a2a2ca948c68e093a662942062203c6cf8e0f2e7",
+    "logged_cause_excerpt": "actual production Account custody finalizer: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_projection::account_fence_projection_missing_auth_grantee_refuses_wrong_execute_acl tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false",
+    "category": "postgres_ssl_protocol_cause_unknown",
+    "panic_source": "third-party/rust/sqlx-core-0.9.0.crate/src/testing/mod.rs:227:14",
+    "human_log_line": 2086,
+    "full_block_file": "failure-33.txt",
+    "full_block_sha256": "1c95d81bef6de0ab4fd0e2c4d7e3f84088e7c440b724350460ec9fda648078a4",
+    "logged_cause_excerpt": "failed to connect to setup test database: Protocol(\"unexpected response from SSLRequest: 0x00 (sqlx_postgres::connection::tls:95)\")",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_projection::account_fence_projection_null_and_database_failure_never_return_false tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "backend/crates/platform/test-support/backend/crates/platform/test-support/src/lib.rs:384:10",
+    "human_log_line": 2091,
+    "full_block_file": "failure-34.txt",
+    "full_block_sha256": "7b0d24ff5cd15e1f877a02ed1c0a70e59dfa24c5c40233da01c91b8654f6ed77",
+    "logged_cause_excerpt": "actual production Account custody finalizer: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_projection::account_fence_projection_operator_refuses_serving_and_migration_logins tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change",
+    "category": "postgres_transport_eof_cause_unknown",
+    "panic_source": "third-party/rust/sqlx-core-0.9.0.crate/src/testing/mod.rs:227:14",
+    "human_log_line": 2096,
+    "full_block_file": "failure-35.txt",
+    "full_block_sha256": "0324c5ad5ba102baa44616cb4563167b7f1b0b51b935f61acf02d06d82baf199",
+    "logged_cause_excerpt": "failed to connect to setup test database: Io(Custom { kind: UnexpectedEof, error: \"expected to read 5 bytes, got 0 bytes at EOF\" })",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_projection::account_fence_projection_postinstall_dormant_drift_rolls_back_every_custody_change tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_transport::session_reader_contract::auth_only_outage_preserves_pure_rejections_and_refuses_readers",
+    "category": "session_reader_error_contract_mismatch",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/account_fence_transport.rs:2180:17",
+    "human_log_line": 2101,
+    "full_block_file": "failure-36.txt",
+    "full_block_sha256": "eac6e261862d43ba710a3f8ab181188f77824ba8fee411d523b4499ad1b5efe3",
+    "logged_cause_excerpt": "assertion `left == right` failed",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_transport::session_reader_contract::auth_only_outage_preserves_pure_rejections_and_refuses_readers tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_transport::session_reader_contract::missing_projection_refuses_all_reader_boundaries_and_recovers",
+    "category": "session_reader_error_contract_mismatch",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/account_fence_transport.rs:2180:17",
+    "human_log_line": 2108,
+    "full_block_file": "failure-37.txt",
+    "full_block_sha256": "b9b6e97e80365b516cf4fcf9442b2a01999df5c9c74671ea01c75e12a7e765cd",
+    "logged_cause_excerpt": "assertion `left == right` failed",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_transport::session_reader_contract::missing_projection_refuses_all_reader_boundaries_and_recovers tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_fence_transport::session_reader_contract::null_projection_refuses_all_reader_boundaries_and_recovers",
+    "category": "session_reader_error_contract_mismatch",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/account_fence_transport.rs:2180:17",
+    "human_log_line": 2115,
+    "full_block_file": "failure-38.txt",
+    "full_block_sha256": "7e9a0c6bfe38e873560f1f5abf81ddbf82df5c95f8bebb77f394b784ecf7448a",
+    "logged_cause_excerpt": "assertion `left == right` failed",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_fence_transport::session_reader_contract::null_projection_refuses_all_reader_boundaries_and_recovers tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  },
+  {
+    "test": "account_storage::all_46_enrolled_actor_references_use_exact_account_or_company_actor_keys",
+    "category": "actor_foreign_key_catalog_mismatch",
+    "panic_source": "backend/app/backend/app/tests/auth_rest/account_storage.rs:149:5",
+    "human_log_line": 2122,
+    "full_block_file": "failure-39.txt",
+    "full_block_sha256": "a0c87c8c81a35b1b3238708055dbcce67b0f999c7d3535c3514b3b1cced4e938",
+    "logged_cause_excerpt": "ACTOR_CATALOG_MISMATCH:",
+    "next_exact_probe": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_storage::all_46_enrolled_actor_references_use_exact_account_or_company_actor_keys tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-pg"
+  }
+]

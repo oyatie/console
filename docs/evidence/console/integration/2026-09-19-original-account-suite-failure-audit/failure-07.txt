@@ -1,0 +1,2 @@
+thread 'account_browser::audit_account_transition::populated_prior228_upgrade_preserves_native_legacy_designation_and_replay' (62787818) panicked at backend/app/backend/app/tests/auth_rest/audit_account_transition.rs:368:14:
+PREREQUISITE: actual distinct startup LOGIN: NotPresent

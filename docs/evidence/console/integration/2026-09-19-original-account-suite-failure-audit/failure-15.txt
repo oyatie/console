@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::revocation_tombstone_survives_old_replay_and_cas_conflicts' (62974910) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent

@@ -1,0 +1,18 @@
+{
+  "trace_head": "15f35209bfbfa9f5ef72a4f472917ec31223d52d",
+  "files": {
+    "backend/app/src/lib.rs": "607cddd0d44681a2439b5ce6d5ee6a68f92ec3c7cca827355e7824c9662e4613",
+    "backend/crates/payroll/ui/src/lib.rs": "eb30aa3165ff020696bcf3f629df3470a13783a8469e719bbefccd123abb6bdd",
+    "backend/crates/payroll/ui/src/native_account.rs": "9053ab74d38ecdc0b522ea4721684003f6fa66d3c8bfbb39340e99f0ccde0028",
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": "eaf8af31061736a71bc249b95d3e8bd962303541ca4ec7581d1a904dcff598ed",
+    "backend/app/tests/auth_rest/account_fence_transport.rs": "28b4439e6fc13574e989c39c8e5d701fac4a757bd289eeb9b487e3ecd09c7d63",
+    "backend/app/tests/auth_rest/account_storage.rs": "5aaad30f462ee34f0c1cefdec7ccb9a467cce036c3890b83aed353b912629add",
+    "backend/crates/platform/request-context/src/lib.rs": "30d42d13d406367b1915a5ef4b376a2eb33ca0c36ab57392db7ca6e0f057415d",
+    "backend/crates/platform/auth-rest/src/lib.rs": "a78efc30ecebafd61c9b3fb78617e0370b80fdae4ef4226e67d02730d2d96910",
+    "backend/crates/platform/realtime/src/lib.rs": "1dc53f638b34051cde03293bda1103b7664758cbe5828120c84c4322f3e1f734",
+    "docs/current/PRODUCT.md": "eb053b216c2a07a4b2a009617ef1586680c23f2733b89d175d463a257110fe4a",
+    "docs/evidence/console/integration/2026-09-19-startup-credential-transport/verification.json": "7a4fc4675ba2552a266d283b92bf1eed5acff3c9d84243c56aad071d15b5ef1d",
+    "docs/evidence/console/integration/2026-09-19-finalizer-concurrency/savepoint-implementation-progress.json": "e885f8ff4f954c54182b4ae0033ffaecd65f43a72df780e24b1566bde8d38519",
+    "docs/evidence/console/integration/2026-09-19-finalizer-concurrency/cohort-v4-16g/qualification.json": "feabbbebc8e5c163b64e730196180928e96e8033a8a96b22ede0f6c7e947ac6c"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "audit_kind": "read-only diagnosis; no reruns or source/test changes",
+  "original_log": {
+    "path": "/private/tmp/console-account-auth-full-v2.log",
+    "sha256": "c6c170af6c5579a0336f0a08a01b2c7e316305a3933c5991604bc849b433cee0",
+    "bytes": 789254
+  },
+  "event_log": {
+    "path": "/private/tmp/console-client-release-20260919/buck-out/v2/log/20260919-233458_test_73046cd6-08ba-46d4-835f-c3f9d8bce692_events.pb.zst",
+    "sha256": "ac15db733a170ee121ab38c86d705c0a0e4e229bda023cfc3fc9460a1720a98e"
+  },
+  "counts": {
+    "discovered": 325,
+    "executed": 325,
+    "passed": 286,
+    "failed": 39,
+    "ignored": 0,
+    "filtered": 0
+  },
+  "libtest_seconds": 11120.98,
+  "failures_by_category": {
+    "bounded_clean_retry_elapsed": 2,
+    "missing_startup_login_environment": 19,
+    "sql_finalizer_statement_timeout": 4,
+    "native_public_root_response": 1,
+    "sql_finalizer_lock_timeout": 1,
+    "postgres_transport_eof_cause_unknown": 7,
+    "postgres_ssl_protocol_cause_unknown": 1,
+    "session_reader_error_contract_mismatch": 3,
+    "actor_foreign_key_catalog_mismatch": 1
+  },
+  "source_custody": {
+    "git_base": "01e069883b998d9c430500c85a6d464c263d4ae3",
+    "has_local_changes": true,
+    "full_dirty_tree_identity": "not established",
+    "current_source_trace_head": "db6c45d13d0241b5281014725cb17f2c313cd13e"
+  },
+  "environment": {
+    "rust_test_threads": 1,
+    "test_timeout_seconds": 21600,
+    "declared_postgres_image": "postgres:18.4@sha256:65f70a152846cf504dff86e807007e9aeac98c3aeb7b62541b2c55ab9d264e56",
+    "runtime_database_version": "not captured by original evidence",
+    "runtime_vm_memory": "not captured by original evidence",
+    "server_logs_for_eof_ssl": "not captured by original evidence",
+    "secret_file_read": false
+  },
+  "important_limits": [
+    "The Buck action digest is not the binary SHA256.",
+    "Buck zero infrastructure failures does not make SQLx setup failures product assertions.",
+    "A later independent 8 GiB cohort OOM does not establish the original EOF cause.",
+    "Current or later green targeted probes cannot relabel this historical full run green."
+  ]
+}

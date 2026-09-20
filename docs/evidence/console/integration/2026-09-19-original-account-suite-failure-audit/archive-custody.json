@@ -1,0 +1,16 @@
+{
+  "scope": "Historical RED diagnosis only; no acceptance state advanced",
+  "archived": "All original audit files except119MB decoded Buck event stream; original compressed human log, full teststdout, extracted custody and all39failure blocks preserved",
+  "external_large_artifact": {
+    "path": "/private/tmp/console-account-full-failure-audit-20260919/buck-events.jsonl",
+    "bytes": 119134479,
+    "sha256": "b4aee3475fbe7222e6d67be76ef8d01c08fdd025ec203c92608def82b6f97218"
+  },
+  "historical_test_base": "01e069883b998d9c430500c85a6d464c263d4ae3 with local changes; complete dirty tree identity not established",
+  "original_result": {
+    "executed": 325,
+    "passed": 286,
+    "failed": 39
+  },
+  "subsequent_targeted_repairs": "Root and session-reader fixes do not relabel this full run green"
+}

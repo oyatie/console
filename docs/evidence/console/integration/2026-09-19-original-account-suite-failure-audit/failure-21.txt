@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::unknown_pending_stale_target_and_wrong_deployment_refuse_without_effect' (63048799) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent

@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::startup_effective_privileges::startup_login_executes_only_exact_designation_owners_in_protected_routines' (63028426) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent

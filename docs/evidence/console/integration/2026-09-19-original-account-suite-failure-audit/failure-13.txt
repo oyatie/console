@@ -1,0 +1,2 @@
+thread 'account_browser::deployment_operator_designation::receipt_checks_refuse_malformed_copies_without_creating_authority' (62944105) panicked at backend/app/backend/app/tests/auth_rest/deployment_operator_designation.rs:66:70:
+PREREQUISITE: externally provisioned startup LOGIN; never fixture GRANT/SET ROLE: NotPresent
