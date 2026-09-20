@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "review_round": 4,
+  "decision": "approved-exact-design-for-reviewed-test-authoring-only",
+  "manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "design_sha256": "89674b71f2f62d8de43d8ca55c55d1ef598060a87d1b631445a40bd582b6a08f",
+  "prior_receipt_sha256": "337d386e9a80b25e71baacc06489bf88ce969f3df95b6cc3dc268d6cd1239f4f",
+  "findings": [],
+  "independent_challenges": {
+    "two_query_expiry": "One retained transaction; fresh DB/policy checks before health, between health/adoption, after adoption, before audit and after audit. Expiry during either query prevents publication; failure between queries must suppress adoption execution. Test each blocking boundary independently.",
+    "current_source": "Original signed credential through Auth owner; Company/User/Account/exact-family lock order retained; finite source object never used across transaction. Current roles govern Cedar, invalid present binding never falls back to unbound or sibling family.",
+    "finite_facts": "Closed private Tenants/OperationsHealth discriminator with exactly two feature/target mappings; no client target/policy knobs. Source Unauthorized/Unavailable distinct from Cedar forbidden and infrastructure503; operation SQL never uses bridge mapper.",
+    "precedence": "Direct owner/handler and upstream middleware refusal boundaries explicitly distinct. Exact original Bearer extraction before injected dependencies in handler; TTL nonpositive request-time503 follows existing signed-source checks, not invented startup validation.",
+    "commit_and_retries": "Both query results withheld until acknowledged COMMIT. Unknown COMMIT unavailable with no automatic retry; real acknowledgement-loss evidence must show one durable audit and explicit recovery. Cancellation/timeout rollback and recovery remain required.",
+    "immutability": "No migrations, historical source/serializer/fingerprint changes, global binding issuance or raw SQL grant cutover. Existing list wire/API/tuple behavior and all tests retained.",
+    "scope": "AuthREST exhaustive new variants mechanically map static unavailable; App only existing composition. Raw health/adoption SQL capabilities remain HOLD even after application-owner acceptance."
+  },
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "remaining_holds": [
+    "Independently reviewed test design/source, positive and injected corruption controls, functioning prerequisites, actual clean-tree PLATFORM_OPS_CURRENT_ROLE_REQUIRED RED and repository lane admission before implementation.",
+    "List migration/finalizer and retained runtime regressions remain open prerequisite; unchanged design approval does not close any milestone or release leaf."
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "purpose": "Reviewed bounded next-dependency design and caller evidence; governed by currentPRODUCT/ROADMAP/DELIVERY; not an additional roadmap or implementation admission",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "accepted_design_manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "independent_design_review_rounds": 4,
+  "state": "Approved for reviewed test authoring only",
+  "remaining": [
+    "Listowner final acceptance",
+    "Exact test/source approvals and realcleanownerRED",
+    "Lane admission and implementation",
+    "All release qualification"
+  ],
+  "artifacts": [
+    {
+      "original": "/private/tmp/console-platform-ops-design-20260920-round1/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/round1/design.txt",
+      "sha256": "80fa1cd56ce8879325a00dc8964a63065176a9b9b17003e6683d5462fd9a2c01"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/round1/manifest.json",
+      "sha256": "bac43725e0c37cef907e3634f54b92fbaf3a40dfa239be675f8ccaa1e9695e28"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-20260920-round2/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/round2/design.txt",
+      "sha256": "8aa7db37a305d6e53da22e83b5444de32ddafe100a0bd0e37cf9b8ab7ea72abe"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-20260920-round2/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/round2/manifest.json",
+      "sha256": "31f428486d2725b04f9b36e2c0cdf1351b9fc3073b7d4f27207b826679e4fecf"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-20260920-round3/DESIGN.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/round3/design.txt",
+      "sha256": "89674b71f2f62d8de43d8ca55c55d1ef598060a87d1b631445a40bd582b6a08f"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-20260920-round3/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/round3/manifest.json",
+      "sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-fourth-final-integration-tests-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-fourth-final-integration-tests-review-20260920.json",
+      "sha256": "46de22353d6bfe83c47510b4bcdfc8bb13e3ba426fc328600c024a458401018b"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-round1-integration-tests-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-round1-integration-tests-review-20260920.json",
+      "sha256": "95ac209b582dc59567f1fd1e57e7a6ebbedf11ca04aa4e85b248ea5d34147811"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-round2-integration-tests-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-round2-integration-tests-review-20260920.json",
+      "sha256": "d6bd33bd544dfa5a1fc941e8164c6597a6392f84eaa107bb0a9165a25a60351a"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-round2-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-round2-security-review-20260920.json",
+      "sha256": "11f6979ff132c2c532c892a53c17650bfd5dcf891a469a6d1344304f2992935d"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-round3-integration-tests-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-round3-integration-tests-review-20260920.json",
+      "sha256": "3a5f9095a6025fa730f33b1d0bce559f9669711ad7e10af3e9d781c931d61712"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-round3-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-round3-security-review-20260920.json",
+      "sha256": "337d386e9a80b25e71baacc06489bf88ce969f3df95b6cc3dc268d6cd1239f4f"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-round4-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/console-platform-ops-design-round4-security-review-20260920.json",
+      "sha256": "823352f252e545547d880d15a5e199a89a1fbfc5ba3b1b8b0a6ec76565b695a2"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-design-consensus-root-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/design-consensus-root.json",
+      "sha256": "9995e9828867c002345f82ebf5456a34026a85bdfecf76d75c547ce2556756de"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-dependency-audit-20260920/AUDIT.md",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/dependency-audit.txt",
+      "sha256": "c9097aa914719e1bc136c31523cb4e271b36d175aed974aca2e783d77b603104"
+    },
+    {
+      "original": "/private/tmp/console-platform-ops-dependency-audit-20260920/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-ops-owner/dependency-audit-manifest.json",
+      "sha256": "be616950ab1c72276c8ede30c6e453d25bd6d82b76af001a963db8d79f270f78"
+    }
+  ]
+}

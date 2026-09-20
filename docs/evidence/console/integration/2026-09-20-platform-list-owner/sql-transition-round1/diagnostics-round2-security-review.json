@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-diagnostic-source-only",
+  "manifest_sha256": "e9b048d70408c1b41cb41c1b20a66745c889c29f7e0c4308e4d320ae2ce5d447",
+  "candidate_sha256": "bfcdae24886325305af8934f54cbd04f7aad9a8c2e27b788d2596be766bcb0b8",
+  "findings": [],
+  "checks": [
+    "Exact preimage/candidate hashes independently verified.",
+    "Five metadata equality sites call helper returning exact before == after. No normalization, tolerance, removed assertion or changed classifier.",
+    "Structural paths only, maximum32 output paths with cap checks in both loops. No metadata values emitted.",
+    "Additional read-only mutation boolean precedes unchanged corruption classifier assertion."
+  ],
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Actual diagnostic rerun; finalizer and retained semantic successor acceptance remain separate."
+  ]
+}

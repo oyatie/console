@@ -1,0 +1,8 @@
+{
+  "decision": "APPROVED_SOURCE_ONLY",
+  "reviewer": "/root",
+  "manifest_sha256": "7278b03eed0a145bf9088e2183d7ace7633a938a39166578ced70c19eee06e9c",
+  "security_sha256": "4eeed12f24abc72f1cd56dbb25f3a1b5fba7ffde18ed20bebc1203d354b83612",
+  "change": "Exact recovery equality retained, no credential-bearing debug state on failure; root-found oversight in prior source-only packet",
+  "runtime_tests": 0
+}

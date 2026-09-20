@@ -1,0 +1,35 @@
+{
+  "kind": "independent-platform-ops-design-round1-review",
+  "reviewer": "integration_tests",
+  "manifest_sha256": "bac43725e0c37cef907e3634f54b92fbaf3a40dfa239be675f8ccaa1e9695e28",
+  "design_sha256": "80fa1cd56ce8879325a00dc8964a63065176a9b9b17003e6683d5462fd9a2c01",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "source_hashes_verified": {
+    "backend/crates/platform/provisioning/src/lib.rs": true,
+    "backend/crates/platform/platform-rest/src/lib.rs": true,
+    "backend/crates/platform/auth-rest/src/lib.rs": true,
+    "backend/crates/platform/authz/src/platform_policy.rs": true,
+    "backend/app/src/lib.rs": true
+  },
+  "outcome": "APPROVED_FOR_NEXT_DESIGN_AND_TEST_SPECIFICATION_ROUND",
+  "material_findings": [],
+  "conclusions": [
+    "Sole health API caller and both SQL-projection caller census agree with independent audit. Scope closes application owner only; raw serving EXECUTE remains explicit HOLD.",
+    "Exact Direct/TenantHealthRead/Operations/ReadProjection/DirectPlatformOwner tuple reuses accepted current-role/family policy without duplicating privileged role decisions.",
+    "One READ COMMITTED transaction retains existing source locks through both projections, audit, final DB-time/policy check and commit; original raw credential replaces actor/time-only API.",
+    "Private closed two-read mapping is justified demonstrated reuse, not public dynamic feature/target authority. Existing list errors/audit/wire behavior remain fixed.",
+    "Dedicated health finite error variants and mechanical exhaustive auth-rest handling keep the list contract unchanged; no new Auth/SQL/migration/mint capability is needed.",
+    "GET/HEAD exact ops transport extension at both existing wrapper locations preserves final privacy and HEAD after timeout/envelope.",
+    "Genuine mounted role-transition RED and direct-owner acceptance use serving Business/Auth roles; fixture aggregates and full-state/audit corruption controls are independently specified. Host-clock admission hazard is handled by reviewed assertion ordering, not tolerance.",
+    "Current lane remains open; no implementation/admission or production qualification follows from this receipt."
+  ],
+  "next_round_freezes": [
+    "Name exact helper/API signatures, private failure mapping and fixed health401/403/503 bytes before executable test review.",
+    "Carry accepted list design sequence explicitly into health implementation: policy/current-time check before data, after relevant projection waits/before audit, and immediately after audit wait before commit.",
+    "Freeze both projection wait fixtures, independent14/6-field arithmetic/order/null oracles and actual App timeout/HEAD behavior in exact test packet.",
+    "Retain two existing ops tests and one telemetry test; independently repair any obsolete owner-pool/startup assumptions before claiming runtime acceptance."
+  ],
+  "implementation_admitted": false,
+  "tests_executed": 0,
+  "repository_writes": false
+}

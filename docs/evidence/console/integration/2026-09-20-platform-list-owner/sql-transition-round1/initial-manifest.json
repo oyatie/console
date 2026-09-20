@@ -1,0 +1,26 @@
+{
+  "kind": "private-additive-platform-source-transition-tests",
+  "round": 1,
+  "base_sha": "c3f7eca815a1daa352307bf03d77aaf86f00945c",
+  "files": {
+    "README.md": "2a4be47bc0a2ae00fd55145fc8149aa5c437ba5462a92f51bf7a2d3bd59d70a6",
+    "audit_platform_source_transition.rs": "3136975710d53eebda6d72a6dc790f086b67c234518645d7f6c4719f6d693d50",
+    "eligibility.candidate.rs": "8c913260d7dc5819d0d61c4e715b3a35183db46f0d8aac1e0eea43881762e98d",
+    "eligibility.preimage.rs": "cb4f9de86d0004c2b85b3f790cc28a1a938c6540504150d3bcd605693a417263",
+    "fixture-hashes.json": "b676a1a1aaccaa9f39b0746a3d6e612a06154c94104b2fe263ae2e605b1eb891",
+    "fixtures/account-company-eligibility-26d78648-credential-state.sql": "b00737128fe9edd77406fbb68f53a9eb768c16485d22c77efae620f4dab8965d",
+    "fixtures/account-company-eligibility-26d78648-credentials.sql": "f1925281a6e175214c5ff647419a3428fca9faae79f461a161a5938bf6b02253",
+    "fixtures/account-company-eligibility-26d78648-root-state.sql": "89261eaa382aea8e61284878ef4318b556396b0462ea6466fefb858a8910905f",
+    "fixtures/account-company-eligibility-26d78648-root.sql": "ce195636a182721c027c689a6a021de03eafa17ff30e59607257c963903afb9e",
+    "fixtures/account-company-eligibility-26d78648-verify.sql": "a498b59d41bc9c64b82a61a3deeb1f4652bf4441b81e17f538ccca6a04025151",
+    "fixtures/platform-source-checked.sql": "d217984b3a0c6a94dc3552ef5c124f54b8d62ac3b4c004a6e664aa3c993488a2",
+    "fixtures/platform-source-historical.sql": "74c8e2a912e75b3b4e2dc85ca6c1acb4893fd513483ee1d83ede14ba88ff2f46",
+    "fixtures/platform-source-install.sql": "6965be5e8d2b873bcbb4f49d72399850ef3c58dfaabd3c4dfdb56877b178eb2a",
+    "fixtures/platform-source-metadata.sql": "8752adaad8ccae80c6e4e88624c61b826610d1f6fa4522fc277b9e8225aa65c8",
+    "fixtures/platform-source-prospective.sql": "5ae32e8583ed7a8072f33a1fc82c4ad7c9f89725d67137c60919b7d210e827ac",
+    "integration.patch": "a4143526b1f35c61fcc697d9a13513ff6325802b9892deb51c272696d06eb001",
+    "source-custody.json": "67b9992272f3f4cfdb5ed78d48e09e0c9a841aa101e232c950616032ab83991a",
+    "test-roster.json": "f602c4e7d54db089b3363ef164aeb040736b1abdc0b4f7c3e22e0fc171fd42de",
+    "verification.json": "18789021b3acb53efa40f52129280789235f61758b2ea2a2fbd0e4a136383aee"
+  }
+}

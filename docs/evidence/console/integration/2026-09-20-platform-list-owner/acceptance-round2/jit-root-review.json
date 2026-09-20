@@ -1,0 +1,8 @@
+{
+  "status": "APPROVED_SOURCE_ONLY",
+  "reviewer": "/root",
+  "manifest_sha256": "d8cf55c20c64085091f215ea0b09db82abcd175236a7680d2f69e73a235dd28d",
+  "security_receipt_sha256": "f8b9f73503245c9f30cb699c4c930a350553be924779b9f03613f4a7826f57c5",
+  "change": "One observer transaction LOCAL jit=off; no query, oracle, timeout, production or explicit JIT control changes",
+  "runtime": "prior full52 interrupted after >=7m48s with first pass and second active; all52 rerun required"
+}

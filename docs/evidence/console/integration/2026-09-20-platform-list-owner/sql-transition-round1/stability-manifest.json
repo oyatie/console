@@ -1,0 +1,23 @@
+{
+  "kind": "diagnosed-test-fixture-stability-and-real-default-acl-fault",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "preimage_sha256": "519f52211606d70cf04a79a1a17d0977278f6531bf494127ee36fad67af09e88",
+  "candidate_sha256": "742f461d3acc08a6ed93633e4b23675af07495c3cd0912b46629c72d16059b45",
+  "observed_log": "/private/tmp/console-platform-source-diagnostics-and-retained-run1-20260920.log",
+  "facts": [
+    "Fault10 changedfalse: implicit PUBLIC EXECUTE default was already granted.",
+    "Only differing metadata paths observed were public_other_relations index relpages/reltuples."
+  ],
+  "change": [
+    "Use real extra Auth defaultEXECUTE grant and assert actual metadata mutation before classification.",
+    "Retain verified SHARE locks on all public r/p/m relations in corruption/interruption outer transactions before first baseline snapshot, outside fault savepoints.",
+    "Prove exact perrelation identities/mode/backend and all captured index parents covered.",
+    "Keep complete frozen snapshot and exact equality/original refusal/pin/row assertions unchanged."
+  ],
+  "limits": [
+    "Stabilizes diagnosed same-transaction metadata phases only.",
+    "Does not claim excluded drift in separate COMMIT/ROLLBACK snapshot gaps.",
+    "No production config, locks, metadata serializer, fingerprints or custody SQL changes."
+  ],
+  "runtime_executed": 0
+}

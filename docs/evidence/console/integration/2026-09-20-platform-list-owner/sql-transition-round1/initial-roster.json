@@ -1,0 +1,22 @@
+{
+  "module": "account_browser::audit_account_transition::business_session_transition::eligibility_transition::platform_source_transition",
+  "authored": 14,
+  "sqlx": 11,
+  "pure": 3,
+  "tests": [
+    "platform_source_fresh_plain_upgrade_and_replay",
+    "platform_source_fresh_observer_upgrade_and_rollback",
+    "platform_source_populated_plain_upgrade_reopens_original_session",
+    "platform_source_populated_observer_upgrade_preserves_history",
+    "platform_source_plain_corrupt_profiles_refuse_without_reseal",
+    "platform_source_observer_corrupt_profiles_refuse_without_reseal",
+    "platform_source_plain_partial_helpers_and_interrupted_finalizer_rollback",
+    "platform_source_observer_partial_helpers_and_interrupted_finalizer_rollback",
+    "platform_source_actual_login_acl_has_no_wider_read_or_write_capability",
+    "platform_source_sql_exact_current_roles_and_requested_family_projection",
+    "platform_source_sql_nil_scope_isolation_missing_and_fenced_refusals",
+    "platform_source_delta_oracle_accepts_exact_pair_without_mutating_evidence",
+    "platform_source_delta_oracle_rejects_omissions_and_unrelated_corruption",
+    "platform_source_frozen_fixture_and_historical_migration_identity"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "path": "backend/app/tests/auth_rest/audit_account_transition_adversarial.rs",
+  "before_sha256": "52bfc5253714293211cd083559997234e3433be5d37f0c442f143e27cf89ac18",
+  "after_sha256": "f5e6e227e1fa3470868a080e515d954dba582eda76997f483e4c6c80d2f845a5",
+  "purpose": "Disable optional JIT only in drift test observer transaction; preserve classifiers, oracles, fault phases, timeouts and explicit JIT behavior test. Long unblocked snapshot observed; JIT cost hypothesis pending measured run.",
+  "runtime": 0
+}

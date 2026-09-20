@@ -1,0 +1,87 @@
+{
+  "kind": "read-only-next-dependency-platform-ops-owner-audit",
+  "base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "auditor": "integration_tests",
+  "runtime_tests_executed": 0,
+  "sources": {
+    "backend/crates/platform/provisioning/src/lib.rs": {
+      "base_sha256": "c0839851bb8a11964cabe4636833625722b0500fc4324e8a8b087f67cf61d7e7",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/platform-rest/src/lib.rs": {
+      "base_sha256": "d01ba273366bda19a4a60f98cffb160aa8daaa4982a43050f257e7a0efc68ce2",
+      "working_equals_base": true
+    },
+    "backend/app/src/lib.rs": {
+      "base_sha256": "4954d9f706efd2b7bfc1cf926f62c3bb881a66707e0ae67e2f483d4304df638d",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/auth/src/legacy.rs": {
+      "base_sha256": "ba378477d9c62e8b550ad0243bfdfb4b9c130771d16373c706144df48179af7b",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/request-context/src/lib.rs": {
+      "base_sha256": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/authz/src/lib.rs": {
+      "base_sha256": "6d94a12dcaa1d5df4731577360665c2aa3765fe4ce8b5f2cf6a5745a3fb6d119",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/authz/src/platform_policy.rs": {
+      "base_sha256": "e742e98ea52d6354ebacc55a0da142745d156a3a27fc8bc6a940b169b8ceed06",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/authz/src/platform_policy/legacy-platform-v1.cedar": {
+      "base_sha256": "80838954a2ccf18008632a7f9a082a60a7429e2519636c75d5caad9c48068136",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/authz/src/platform_policy/truth-table.json": {
+      "base_sha256": "366da33371b94527d7c3a20688c89425e1ca8da5961d1d06c0961822464f873c",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/authz/src/platform_policy/tests.rs": {
+      "base_sha256": "0913713a7b636f27602bf39fd6fa7cafc81bc00bd55ba8af1c34aa07adfae32d",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/db/migrations/0037_platform_org_health.sql": {
+      "base_sha256": "b7c208c6a47613d3df798ef16439a8af5b3901cbc7be0156c1b90f6fd4d80f14",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/db/migrations/0061_platform_group_scope_identity.sql": {
+      "base_sha256": "64c88d4901d34e304cf9387fda8137891a47917c6ff275683d16dd70bbd669c3",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/db/migrations/0145_console_route_telemetry.sql": {
+      "base_sha256": "dbf68ee8974b2d41f2dec57e46d09a061a25cb45734f6f978a4a8480f2b3bd03",
+      "working_equals_base": true
+    },
+    "backend/crates/platform/platform-rest/tests/ops_dashboard.rs": {
+      "base_sha256": "d374d53f18776378fc51103f9612112fd4222fe6e7fb8ac9679313fee812c3b6",
+      "working_equals_base": true
+    },
+    "backend/app/tests/console_route_telemetry.rs": {
+      "base_sha256": "0c3a016b48bd71b43ad08ab777aab0d87d50b69c2df079ab40e173cec22e48f6",
+      "working_equals_base": true
+    },
+    "backend/crates/identity/rest/openapi/paths/api__platform__ops.get.yaml": {
+      "base_sha256": "8863a8c0f25025668118220b7b5a42839fbae2a2523c8b1f22f97d7360d7d6e8",
+      "working_equals_base": true
+    }
+  },
+  "artifacts": {
+    "AUDIT.md": "c9097aa914719e1bc136c31523cb4e271b36d175aed974aca2e783d77b603104"
+  },
+  "runtime_callers": {
+    "list_tenant_health": [
+      "platform-rest::ops_dashboard"
+    ],
+    "platform_org_health": [
+      "PlatformProvisioner::list_tenant_health"
+    ],
+    "platform_console_route_adoption": [
+      "PlatformProvisioner::list_tenant_health"
+    ]
+  },
+  "live_privilege_checks_executed": false
+}

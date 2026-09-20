@@ -1,0 +1,134 @@
+{
+  "purpose": "Preserved source, reviews, discovered failures and reviewed corrections; not final acceptance",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "observations": [
+    "Auth7 9/9 and retained passkey23/23passed.",
+    "Old eligibility6 executed3passed3failed at onehelper count before reviewed exact bridge/ACL composition.",
+    "Initial SQLtransition14executed11passed3failed; expiry/progress2/2passed.",
+    "Diagnostics confirmed fault10 no-op and index relpages/reltuples maintenance drift; no schema/ACL normalization admitted.",
+    "Reviewed correction restored3previouslyfailed eligibility leaves;2newpure historicalchain controls passed.",
+    "Stability correction uses exact granted SHARE relation identities during same-transaction phases; crosscommit gap unqualified."
+  ],
+  "remaining": [
+    "Focused2corruption rerun and full52retained transition suite currently running",
+    "Final committed candidate review and relevant owner suite",
+    "Ops and all other release dependencies"
+  ],
+  "artifacts": [
+    {
+      "original": "/private/tmp/console-platform-source-transition-tests-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-manifest.json",
+      "sha256": "cb1c0d473532da713b89299add8d6a05cf53f0d28761d44b7756afe0d2868dc9"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-tests-20260920-round1/audit_platform_source_transition.rs",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-source.rs",
+      "sha256": "3136975710d53eebda6d72a6dc790f086b67c234518645d7f6c4719f6d693d50"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-tests-20260920-round1/source-custody.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-source-custody.json",
+      "sha256": "67b9992272f3f4cfdb5ed78d48e09e0c9a841aa101e232c950616032ab83991a"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-tests-20260920-round1/test-roster.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-roster.json",
+      "sha256": "f602c4e7d54db089b3363ef164aeb040736b1abdc0b4f7c3e22e0fc171fd42de"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-tests-round1-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-root-review.json",
+      "sha256": "c97368a23cf0f59254f65703c35137c0a3b7de703df6d51802b4f2a16d0f3cb4"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-tests-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-security-review.json",
+      "sha256": "dbc717525de660cce09487dba2d0f8d15d1fad1fed810dcf7879caf626da6fb0"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-and-expiry-run1-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/initial-runtime.log",
+      "sha256": "fa29774a88635d72ad444f12d41f8b9749b803f6eacec6a01dec376e45f1a1e6"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-retained-regressions-run1-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/retained-prior-runtime.log",
+      "sha256": "3ea8a6c7185050ca6a418c631293c7e53832c2dd09527d7aad3fe03dbf252d33"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-retained-transition-successor-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/retained-successor-manifest.json",
+      "sha256": "3b1bdca5d459e2e6ee6840b75b3094fc9551fa6c9cae48e1051bd840c2160ad5"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-retained-transition-successor-round1-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/retained-successor-root-review.json",
+      "sha256": "910f17036e78ae437f344cb159983d3df966ab8c1fa3a01d87b619d4f0513d55"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-retained-transition-successor-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/retained-successor-security-review.json",
+      "sha256": "5b144189ba2aa064afff9a5b1a403c8c4f2691931a4841adf7025c26704d6b3b"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-diagnostics-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/diagnostics-round1-manifest.json",
+      "sha256": "116ee61c4319e9a9bbc3bb27764d90c31d343bb5e59256ca7a730613bc7557c8"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-diagnostics-20260920-round2/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/diagnostics-round2-manifest.json",
+      "sha256": "e9b048d70408c1b41cb41c1b20a66745c889c29f7e0c4308e4d320ae2ce5d447"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-transition-diagnostics-round2-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/diagnostics-round2-security-review.json",
+      "sha256": "47db689dc9f4e2c17bb85b2184d77b1700106f87667175bc8867e5a7bc5e1407"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-diagnostics-and-retained-run1-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/diagnostics-runtime.log",
+      "sha256": "4521fd97aacc63763a4b11415d1f55c170c9551017c33fd76ca7e463eda8edf3"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-metadata-stability-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/stability-manifest.json",
+      "sha256": "7626e709c015401bb19084c5301afcddfddb677534da22c4baabd2b172392837"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-metadata-stability-round1-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/stability-root-review.json",
+      "sha256": "2c7d24b3445e4f17551de0b1066d4f5a0351f5d0e394e7d51cb433af74815dab"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-metadata-stability-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/stability-security-review.json",
+      "sha256": "291acd243d5ce1bea141780e5687836fbf01b75d746c6127620857ca695037ca"
+    },
+    {
+      "original": "/private/tmp/console-platform-source-stability-clippy-20260920.log",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/stability-clippy.log",
+      "sha256": "c52a3fed2cc658b90531abaf9a95926522f1408a565d2e5808d5416d0486e4f5"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-expiry-progress-tests-20260920-round1/manifest.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/expiry-progress-manifest.json",
+      "sha256": "7a558d228f23925cbdb6a4476d244e06add8e5967904fbf7f2cc1da1292deaeb"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-expiry-progress-tests-round1-root-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/expiry-progress-root-review.json",
+      "sha256": "7da293f167400d247db6a79fe4b681b6fba79f420b3c73fa6c9ac29a3d8113c8"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-expiry-progress-tests-round1-security-review-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/expiry-progress-security-review.json",
+      "sha256": "a99ff0140ad8c8db184d05d94d652a94001a5a4b3012f7675f2a3ed81aa59c17"
+    },
+    {
+      "original": "/private/tmp/console-platform-list-owner-lane-scope10-20260920.json",
+      "retained": "docs/evidence/console/integration/2026-09-20-platform-list-owner/sql-transition-round1/lane-scope.json",
+      "sha256": "88f2eca5af9002b28a56d1cc8bea60eaf11bcf39a694016ecbad9398f025d905"
+    }
+  ]
+}

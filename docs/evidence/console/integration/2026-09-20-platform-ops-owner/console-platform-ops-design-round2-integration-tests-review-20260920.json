@@ -1,0 +1,39 @@
+{
+  "reviewer": "integration_tests",
+  "kind": "independent-platform-ops-design-round2-review",
+  "manifest_sha256": "31f428486d2725b04f9b36e2c0cdf1351b9fc3073b7d4f27207b826679e4fecf",
+  "design_sha256": "8aa7db37a305d6e53da22e83b5444de32ddafe100a0bd0e37cf9b8ab7ea72abe",
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "source_hashes_verified": {
+    "backend/crates/platform/provisioning/src/lib.rs": true,
+    "backend/crates/platform/platform-rest/src/lib.rs": true,
+    "backend/crates/platform/auth-rest/src/lib.rs": true,
+    "backend/crates/platform/authz/src/platform_policy.rs": true,
+    "backend/app/src/lib.rs": true
+  },
+  "outcome": "REVISION_REQUIRED_FOR_ONE_BASELINE_ASSUMPTION",
+  "material_findings": [
+    {
+      "id": "OPS-DESIGN-TTL-STARTUP",
+      "severity": "medium",
+      "location": "DESIGN.md round2 exact boundary freeze, final precedence paragraph",
+      "problem": "Startup rejects invalid configured TTL is unsupported and false for zero/negative TTL at the pinned source. parse_time_duration_secs parses i64 and directly creates Duration; AuthRestState::new stores the resulting refresh_family_absolute_ttl without positivity checking. Current accepted Auth source rejects nonpositive TTL at request time with finite Unavailable after credential/shape validation.",
+      "evidence": [
+        "backend/app/src/lib.rs:1480\u20131493 parse_time_duration_secs",
+        "backend/crates/platform/auth-rest/src/lib.rs:261\u2013303 AuthRestState::new",
+        "backend/crates/platform/auth/src/legacy.rs live_legacy_platform_source_in_tx nonpositive TTL check"
+      ],
+      "impact": "Exact proposed tests/admission could rely on nonexistent startup prerequisites, or broaden shared configuration behavior without explicit scope. This is design/baseline fidelity, not an observed authorization allow.",
+      "remedy": "Remove startup-rejection assertion and preserve accepted per-owner finite503 behavior, documenting configuration validation as separate work; alternatively explicitly admit a narrow startup validation change and independent tests without changing unrelated duration parsing."
+    }
+  ],
+  "otherwise_approved": [
+    "Exact health method raw-credential/trusted-dependency signature preserves list signature.",
+    "Five fresh DB-time/policy checks cover first projection, adoption projection, mapping and audit wait.",
+    "Finite Auth/Cedar/SQL mapping preserves accepted list semantics and distinct health variants.",
+    "Exact401/403/503 envelope bytes and missing-dependency handler precedence are coherent with upstream middleware retention."
+  ],
+  "runtime_executed": 0,
+  "implementation_admitted": false,
+  "repository_writes": false
+}

@@ -128,14 +128,22 @@ mod eligibility_transition {
         stripped
     }
 
-    // Compose with the parent's unchanged two-helper preservation oracle. This
-    // strips only the actual independently vetted one-helper row, no old row.
+    // First invert only the independently vetted Platform bridge/context ACL.
+    // The original one-helper oracle then composes with the unchanged parent
+    // two-helper preservation oracle; every other metadata fact stays visible.
     pub(super) async fn without_checked_addition(
         connection: &mut PgConnection,
         before: &Value,
         after: &Value,
     ) -> Value {
-        strip_checked_one(before, after, &checked_addition(connection).await)
+        let after =
+            platform_source_transition::without_checked_platform_source(connection, before, after)
+                .await;
+        strip_checked_one(before, &after, &checked_addition(connection).await)
+    }
+
+    pub(super) async fn rollback_platform_source(connection: &mut PgConnection, original: &Value) {
+        platform_source_transition::rollback_checked_platform_source(connection, original).await;
     }
 
     async fn predecessor_equivalent(
@@ -143,7 +151,11 @@ mod eligibility_transition {
         before: &Value,
         after: &Value,
     ) -> Value {
-        let stripped = without_checked_addition(connection, before, after).await;
+        let after =
+            platform_source_transition::without_checked_platform_source(connection, before, after)
+                .await;
+        let after = &after;
+        let stripped = strip_checked_one(before, after, &checked_addition(connection).await);
         assert_eq!(
             after["functions"].as_array().unwrap().len(),
             before["functions"].as_array().unwrap().len() + 1
@@ -371,6 +383,7 @@ mod eligibility_transition {
                 entire_before == all_business_state(&mut rollback).await,
                 "complete public business state changed"
             );
+            rollback_platform_source(&mut rollback, &before).await;
             sqlx::raw_sql(
                 "DROP FUNCTION public.account_company_setup_eligibility_v1(uuid) RESTRICT;",
             )
@@ -756,4 +769,6 @@ mod eligibility_transition {
         tx.rollback().await.unwrap();
         drop(app);
     }
+
+    include!("audit_platform_source_transition.rs");
 }

@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-design-round3-only",
+  "manifest_sha256": "acbb7e969f556346f27ca31b2a6bf34c90b27e616fdf5550b8e70ced032ca457",
+  "prior_receipt_sha256": "11f6979ff132c2c532c892a53c17650bfd5dcf891a469a6d1344304f2992935d",
+  "findings": [],
+  "correction": {
+    "finding": "OPS-DESIGN-TTL-STARTUP",
+    "discovered_by": "/root/integration_tests",
+    "verified": "App parse_time_duration_secs parses signed i64 and returns Duration::seconds without positivity validation; AuthRestState stores configured TTL unchanged. Auth live_legacy_platform_source_in_tx validates signature/source claim shape before nonpositive TTL returns Unavailable.",
+    "prior_review_limit": "Round2 approval did not establish startup positivity rejection; that prose claim was false and is expressly superseded.",
+    "scope": "Correct factual design only. Existing finite request-time503 retained; no global configuration implementation admitted."
+  },
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Final design round, reviewed executable tests and actual owner-bound clean-tree RED before implementation admission.",
+    "Current list/transition runtime evidence and all broader qualification remain unaccepted."
+  ]
+}

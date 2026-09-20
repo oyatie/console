@@ -682,3 +682,6 @@ fn wait_and_role_delta_oracles_reject_omissions_and_extra_effects() {
 
 #[path = "legacy_platform_list_credentials.rs"]
 mod legacy_platform_list_credentials;
+
+#[path = "legacy_platform_list_unavailable.rs"]
+mod legacy_platform_list_unavailable;

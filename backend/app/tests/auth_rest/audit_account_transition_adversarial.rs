@@ -549,7 +549,7 @@ mod adversarial {
                 finalized(pool).await;
             }
             let mut tx = pool.begin().await.unwrap();
-            sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp")
+            sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL jit=off")
                 .execute(&mut *tx)
                 .await
                 .unwrap();

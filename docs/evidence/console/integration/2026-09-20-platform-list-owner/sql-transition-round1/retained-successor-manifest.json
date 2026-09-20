@@ -1,0 +1,19 @@
+{
+  "kind": "review-required-retained-semantic-test-successor",
+  "round": 1,
+  "base_sha": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "dependency_manifest_sha256": "cb1c0d473532da713b89299add8d6a05cf53f0d28761d44b7756afe0d2868dc9",
+  "files": {
+    "README.md": "26685d7b0546f53843fa18d2564e39d5489c2014f31460f9e0c3203d2fa7905b",
+    "audit_platform_source_predecessor.rs": "4ae629d2de48d130581e9014a040d81e6f5c0de509731cc1b09daf50e21e3b2f",
+    "candidates/audit_business_session_transition.rs": "2109d0e8b7402a4ec28f1a01a0e1134b633945288678b33348d9ef9e71924aea",
+    "candidates/audit_company_eligibility_transition.rs": "ec8abb134f9af7d4c324f94afcc26f9ed67373652d30473b98e0753b00130931",
+    "candidates/audit_platform_source_transition.rs": "bb48571c579bd506465be974fdb976db3883eaffeac576270ef8ecae00a5429c",
+    "integration.patch": "ff3d8eb252f0011e98dbd7d1a1ebc276049f4f2d42bf55a2a5fd5b2dc173a796",
+    "preimages/audit_business_session_transition.rs": "db3d148190f9f29ae2be0157f372ae24a0e2578aa66271f88fa4fc04cf0e34e1",
+    "preimages/audit_company_eligibility_transition.rs": "8c913260d7dc5819d0d61c4e715b3a35183db46f0d8aac1e0eea43881762e98d",
+    "preimages/audit_platform_source_transition.rs": "3136975710d53eebda6d72a6dc790f086b67c234518645d7f6c4719f6d693d50",
+    "source-custody.json": "6a88137d392721aed2ee122718d0a1a3bb47d9d62116f21620a89c0aff4886cf",
+    "verification.json": "a07bde3893db138b2665a345ee9c5f9126ba07e90643037368ea6deec4337f7a"
+  }
+}

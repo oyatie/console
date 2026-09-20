@@ -737,3 +737,6 @@ fn combined_revocation_and_read_oracle_detects_missing_effects_and_corruption() 
 
 #[path = "legacy_platform_list_commit_loss.rs"]
 mod legacy_platform_list_commit_loss;
+
+#[path = "legacy_platform_list_expiry_progress.rs"]
+mod legacy_platform_list_expiry_progress;

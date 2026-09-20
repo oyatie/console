@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "approved-test-semantic-successor-source-only",
+  "manifest_sha256": "7626e709c015401bb19084c5301afcddfddb677534da22c4baabd2b172392837",
+  "candidate_sha256": "742f461d3acc08a6ed93633e4b23675af07495c3cd0912b46629c72d16059b45",
+  "findings": [],
+  "observed_evidence": "/private/tmp/console-platform-source-diagnostics-and-retained-run1-20260920.log",
+  "checks": [
+    "Independently observed fault10false and only index relpages/reltuples diagnostic difference paths; previous failures retained.",
+    "All packet hashes and exact current repository preimage independently verified.",
+    "Deterministic OID-ordered server-quoted public r/p/m ONLY SHARE locks precede first complete baseline in corruption/interruption outer transactions and remain outside nested fault savepoints.",
+    "Exact same-backend granted ShareLock identities equal captured relation set; current relation set equality and all public index parent coverage asserted.",
+    "SHARE conflicts maintenance SHARE UPDATE EXCLUSIVE; no frozen snapshot fields or equality/pins normalized.",
+    "No-op PUBLIC default EXECUTE changed to real extra Auth grant; actual full metadata mutation required before unchanged mismatch classifier and unchanged finalizer refusal assertion.",
+    "All remaining business row, rollback, exact metadata and final profile assertions retained.",
+    "No cross-transaction gap claim; upgrade commit/rollback comparisons and all production code/config/SQL/fingerprints unchanged."
+  ],
+  "runtime_executed": 0,
+  "remaining_holds": [
+    "Actual bounded successor runtime, including all four corruption/interruption leaves and complete additive/retained regression suites.",
+    "Cross-transaction metadata stability remains unproven if a later failure demonstrates it; this source approval does not suppress such failure.",
+    "No milestone/lane/release acceptance."
+  ]
+}

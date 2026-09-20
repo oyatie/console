@@ -392,6 +392,7 @@ mod business_session_transition {
             eligibility_transition::checked_addition(&mut rollback).await;
             assert!(after == metadata(&mut rollback).await);
             assert_preserved(&before_rows, &rows(&mut rollback).await);
+            eligibility_transition::rollback_platform_source(&mut rollback, &before).await;
             sqlx::raw_sql("DROP FUNCTION public.account_company_setup_eligibility_v1(uuid) RESTRICT; DROP FUNCTION public.account_session_shared_material_v1(uuid,uuid) RESTRICT; DROP FUNCTION public.auth_account_session_shared_material_v1(uuid,uuid) RESTRICT;")
                 .execute(&mut *rollback).await.unwrap();
             audited_state(&mut rollback).await;

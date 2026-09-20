@@ -1,0 +1,36 @@
+{
+  "status": "SOURCE_CANDIDATE_RUNTIME_PENDING",
+  "base": "6abc90bf7b50d60c950bfc9d5b8b024b75df4f8b",
+  "additive_receipts": [
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/console-platform-list-unavailable-tests-round2-root-review-20260920.json",
+      "sha256": "4f71ef8a3c7481c1378e17ae4dd6750dcbc6fc4cb9ed857b0a13d74dfa61b9dc"
+    },
+    {
+      "path": "docs/evidence/console/integration/2026-09-20-platform-list-owner/acceptance-round2/console-platform-list-unavailable-tests-round2-security-review-20260920.json",
+      "sha256": "4eeed12f24abc72f1cd56dbb25f3a1b5fba7ffde18ed20bebc1203d354b83612"
+    }
+  ],
+  "source_sha256": {
+    "backend/app/tests/auth_rest/legacy_platform_list_unavailable.rs": "b1195b7fea5b8738cfc8159f6c4c1e77d8b74da6d36f448c489e676514b06d8d",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "bdc7a7234e454684c5a0246ccef3771ba073f822b083365a7c70e7c5bd107b27",
+    "backend/app/tests/auth_rest/legacy_platform_list_reads.rs": "3650de7c4bf762cf21bc7c1159b9b56b879ac6e47a2c61e56aa66d4e198b0145",
+    "backend/app/tests/auth_rest/legacy_platform_list_histories.rs": "2e6af32687931744fc234b070f88b7a77f7af9f37f5bbce4fe0209d112495e2d",
+    "backend/app/tests/auth_rest/legacy_platform_list_commit_loss.rs": "f1e57e98abb246eb78666f2c2e89088b4ef4ac64473a86d920b97c0b2698dfcc",
+    "backend/app/tests/auth_rest/legacy_platform_list_expiry_progress.rs": "85b201eaed524e830b52d428f79d1caaf2aa601b1c1ec5df0b446b4ebaeb6578",
+    "backend/app/tests/auth_rest/legacy_platform_list_locks.rs": "e40d55dfe2c273dad509cf21e6b1fcefcc1736331030678ab483042199a707f7",
+    "backend/app/tests/auth_rest/audit_account_transition_adversarial.rs": "f5e6e227e1fa3470868a080e515d954dba582eda76997f483e4c6c80d2f845a5",
+    "backend/app/tests/auth_rest/audit_account_transition.rs": "34e80b006c22ce00eb2c2d50f6365fa48384afadd3213416c5d271fbc3274c2e",
+    "backend/app/tests/auth_rest/audit_company_eligibility_transition.rs": "ec8abb134f9af7d4c324f94afcc26f9ed67373652d30473b98e0753b00130931",
+    "backend/app/tests/auth_rest/audit_business_session_transition.rs": "2109d0e8b7402a4ec28f1a01a0e1134b633945288678b33348d9ef9e71924aea",
+    "backend/app/tests/auth_rest/audit_platform_source_transition.rs": "742f461d3acc08a6ed93633e4b23675af07495c3cd0912b46629c72d16059b45",
+    "backend/app/tests/auth_rest/audit_platform_source_predecessor.rs": "4ae629d2de48d130581e9014a040d81e6f5c0de509731cc1b09daf50e21e3b2f",
+    "backend/app/BUCK": "3d34350289dd8b7b724164983ee64aa8bda7638d5b1b8589cbd9cd3348b32933"
+  },
+  "verification": "full52 run2 active on unchanged transition source; compiled before additive mounted503 test; final30 and original owner probe required on committed candidate",
+  "limits": [
+    "source candidate commit is not workflow acceptance",
+    "current503source is approved round2",
+    "other Platform owners/raw grants and full release remain open"
+  ]
+}
