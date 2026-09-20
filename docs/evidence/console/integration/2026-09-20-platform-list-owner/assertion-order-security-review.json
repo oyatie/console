@@ -1,0 +1,17 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_ASSERTION_ORDER_SUCCESSOR_WITH_ALL_PREDICATES_RETAINED",
+  "manifest_sha256": "471cc731881d3ffc6b88605e5e3cf7cfcd5cdfda798f04646c5609fd45d3d6f4",
+  "candidate_sha256": "bae1032f1aaf0bb3159af2358d6405a0457a4af5b8bc6efe2d7608b03cb9cfde",
+  "preimage_sha256": "bb6ca1a47b8a9a1466db210941b8115feaedbef297e27200212d44847a28b095",
+  "independent_mechanical_proof": "Reconstructed candidate from preimage by moving only existing exact positive-audit and403 blocks plus one new200/metadata recovery assertion; reconstructed bytes exactly equal candidate. All original assertions, pure oracles, fixtures, snapshots, requests and diagnostics remain byte-identical.",
+  "diagnostic_basis": {
+    "log_sha256": "976d9a5ee99eee1246ad39dc6538c01e6279ead8bbe9ff6630669638138158fa",
+    "observed": "Only occurred_at fails DB bracket at -7723 microseconds; created_at +5014 within9730, other19fields,20keys,oneaudit and all historical/table effects pass.",
+    "source": "Current list_orgs passes host now; approved owner design already requires DB now. No tolerance widening."
+  },
+  "admission_interpretation": "This explicitly revises initial prerequisite assertion order around a demonstrated owner audit-clock defect. Genuine authentication, nonempty exact positive200 and restored200 metadata remain prerequisites before intended403 role RED. Stored audit predicates remain required for GREEN, so authorization fix alone is insufficient.",
+  "required_next": "Root execute same exact owner command and obtain intended authorization behavior failure. Prior prerequisite-only failure still does not admit source implementation.",
+  "reviewer_runtime_executed": 0,
+  "repository_writes": 0
+}

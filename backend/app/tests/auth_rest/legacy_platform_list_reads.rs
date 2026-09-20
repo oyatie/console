@@ -468,10 +468,6 @@ async fn mounted_platform_list_same_bearer_current_member_denies_and_restores(po
             list_read_diagnostic(&before, &after, actor, count, start, end)
         );
     }
-    assert!(
-        exact_read_delta(&before, &after, actor, count, start, end),
-        "exact positive list audit and no other effects prerequisite"
-    );
 
     set_role(&pool, actor, "MEMBER").await;
     let denied_before = all_rows(&pool).await;
@@ -488,6 +484,18 @@ async fn mounted_platform_list_same_bearer_current_member_denies_and_restores(po
     business.close().await;
     auth.close().await;
     assert!(
+        recovery_status == StatusCode::OK && metadata_matches(&recovery, &expected),
+        "same bearer restored source metadata prerequisite"
+    );
+    assert!(
+        denied_status == StatusCode::FORBIDDEN,
+        "PLATFORM_LIST_CURRENT_ROLE_REQUIRED: mounted owner disclosed metadata after committed MEMBER demotion"
+    );
+    assert!(
+        exact_read_delta(&before, &after, actor, count, start, end),
+        "exact positive list audit and no other effects prerequisite"
+    );
+    assert!(
         recovery_status == StatusCode::OK
             && metadata_matches(&recovery, &expected)
             && exact_read_delta(
@@ -499,10 +507,6 @@ async fn mounted_platform_list_same_bearer_current_member_denies_and_restores(po
                 recovery_end
             ),
         "same bearer restored source must recover through exact owner"
-    );
-    assert!(
-        denied_status == StatusCode::FORBIDDEN,
-        "PLATFORM_LIST_CURRENT_ROLE_REQUIRED: mounted owner disclosed metadata after committed MEMBER demotion"
     );
     assert!(
         denied_body

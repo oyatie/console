@@ -1,0 +1,10 @@
+{
+  "kind": "platform-list-owner-assertion-order-proposal",
+  "files_sha256": {
+    "README.md": "fc8684e75afd12375d40eb957e11898f0951038564c2fa5ac05575a35cd1f3b1",
+    "assertion-order.patch": "dcf8a98e5ebbb73c6be28ed7de10b1365d3f150b3e1ffcd72998f64f813a3e5a",
+    "candidate.rs": "bae1032f1aaf0bb3159af2358d6405a0457a4af5b8bc6efe2d7608b03cb9cfde",
+    "preimage.rs": "bb6ca1a47b8a9a1466db210941b8115feaedbef297e27200212d44847a28b095",
+    "verification.json": "30ae5180055fecb37221e48757cc29275a3196e2bbaf4c5552b589a63e4d7432"
+  }
+}

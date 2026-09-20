@@ -1,0 +1,11 @@
+{
+  "reviewer": "/root",
+  "status": "APPROVE_ASSERTION_ORDER_CORRECTION_ALL_CHECKS_RETAINED",
+  "manifest_sha256": "471cc731881d3ffc6b88605e5e3cf7cfcd5cdfda798f04646c5609fd45d3d6f4",
+  "basis": [
+    "Diagnostic showed only old host-clock occurred_at outside strict DB window; fresh DB audit time is already required by approved owner design.",
+    "Exact positive/recovery audit predicates move after intended403assertion; real authentication/nonempty metadata and restored metadata remain prerequisites.",
+    "No assertion removed, tolerance added, timestamp or state oracle weakened; finalGREEN still requires exactDBtime/audit/full-state checks."
+  ],
+  "implementation_admitted": false
+}
