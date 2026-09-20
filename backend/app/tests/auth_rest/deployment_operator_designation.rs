@@ -1419,4 +1419,5 @@ mod deployment_operator_designation {
     include!("startup_effective_privileges.rs");
     #[cfg(feature = "test-operator-transport")]
     include!("deployment_operator_transport.rs");
+    include!("native_company_setup.rs");
 }

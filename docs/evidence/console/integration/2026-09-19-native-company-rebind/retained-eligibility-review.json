@@ -1,0 +1,47 @@
+{
+  "kind": "independent-native-company-eligibility-corrected-test-review",
+  "reviewer": "/root/operator_review",
+  "at_utc": "2026-09-18T03:18:42.440131+00:00",
+  "candidate": "/private/tmp/console-native-company-eligibility-proposal-retained-v3/manifest.json",
+  "candidate_sha256": "9a5dbc5119f599185b4a0a589dc05649ba1a5745c46cf947c1114af419740bb8",
+  "base_sha": "01e73daed4385643ac14cf15ec829fdfd7681573",
+  "status": "APPROVE_EXACT_ADDITIVE_TEST_PREPARATION_AND_BOUNDED_READ_CONTRACT",
+  "prior_review": "/private/tmp/console-native-company-eligibility-review-operator-v1/review.json",
+  "prior_review_sha256": "e137fb9b79826b85e92a22d053069c40030bd528895a2625ea4ae1ce8008fd9f",
+  "remaining_test_blockers": [],
+  "resolved_findings": {
+    "CE1": "New independent Account-only FOR UPDATE observer targets only the exact Account security row. Actual pg_blocking_pids witness while read transaction remains open cannot be supplied by head lock; after commit the same observer completes and exact no-write snapshot remains. Original real revoke and separate head observer retained.",
+    "CE2": "Complete all_rows census moved before database clock capture and six-second token issuance. Original short-token positive, exact pre-expiry holder witness, unchanged six-second expiry, final unauthorized/no-form/no-effect and valid-original-token recovery remain.",
+    "CE3": "Existing invalid account test now injects RECOVERY_REQUIRED on genuinely enrolled ACTIVE Account, requires authentication_invalid, and compares full snapshot after refusal. No recovery product workflow claimed."
+  },
+  "checks": {
+    "candidate_files_sha256_verified": 6,
+    "narrow_review_patch_reproduces_exact_v3_from_v2": true,
+    "registration_and_existing_target_successor_bytes_unchanged": true,
+    "source_expected_sqlx": 11,
+    "source_expected_owner_sqlx": 9,
+    "source_expected_mounted_http_sqlx": 2,
+    "source_leaf_names_match_manifest": true,
+    "rustfmt_command": "rustup run 1.98.1 rustfmt --check --edition 2024 --config skip_children=true /private/tmp/console-native-company-eligibility-proposal-retained-v3/native_company_eligibility.rs",
+    "rustfmt_exit": 0,
+    "cargo_compiled": 0,
+    "compiler_discovery": 0,
+    "sqlx_executed": 0,
+    "browser_executed": 0,
+    "shared_edits": 0
+  },
+  "approved_next_action": "Root may apply only exact one-include registration patch and new eligibility test file against verified01e73dae preimage, compile/discover, and obtain meaningful owner-boundary RED. This approval does not implement or activate the helper.",
+  "sequencing": "Read helper remains an internal boundary of completed Company workflow. Batch concrete compatible enrollment/actor/context/policy participants into one exact independently reviewed custody transition; no placeholder grants, one-boolean rollout or entry-only release.",
+  "unimplemented_holds": [
+    "No helper body or consolidated successor profile/fingerprint/transition executable tests exist in this packet. Exact participant contracts and owner implementation candidate remain required.",
+    "Catalog probe RED/green alone does not establish behavior; runtime execution of these11 tests and profile/adversarial transition acceptance remains root work.",
+    "Corrupt deployment target/receipt, malformed body/ACL/overload, atomic install/replay, data-compatible recovery and source rollback must be proved by consolidated transition tests.",
+    "Company create\u2192reopen\u2192workspace\u2192finite grant/use/revoke and lost-response recovery remain required before product acceptance.",
+    "Whole Console, release-image, production, legal or HA claims remain outside this review."
+  ],
+  "claim_boundaries": [
+    "All11 counts are source expectations. No missing-helper RED was independently observed by this review; prose about keeping observed RED describes the required workflow, not completed runtime evidence.",
+    "Genuine WebAuthn fixture plus controlled security-state changes tests authority decisions; it does not certify implemented credential recovery or suspension workflows.",
+    "Normal owned spawned tasks are joined after holder release; timeout branches fail and are not accepted as successful cleanup evidence."
+  ]
+}

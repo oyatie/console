@@ -1,0 +1,120 @@
+warning: unused workspace dependency `console-attendance-application`
+   --> Cargo.toml:200:1
+    |
+200 | console-attendance-application = { path = "crates/attendance/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `cargo::unused_workspace_dependencies` is set to `warn` by default
+help: consider removing the workspace dependency `console-attendance-application`
+warning: unused workspace dependency `console-attendance-domain`
+   --> Cargo.toml:199:1
+    |
+199 | console-attendance-domain = { path = "crates/attendance/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-attendance-domain`
+warning: unused workspace dependency `console-comms-mailbox`
+   --> Cargo.toml:300:1
+    |
+300 | console-comms-mailbox = { path = "crates/comms/mailbox" }
+    | ^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-comms-mailbox`
+warning: unused workspace dependency `console-finance-gl-application`
+   --> Cargo.toml:216:1
+    |
+216 | console-finance-gl-application = { path = "crates/finance-gl/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-finance-gl-application`
+warning: unused workspace dependency `console-finance-gl-domain`
+   --> Cargo.toml:215:1
+    |
+215 | console-finance-gl-domain = { path = "crates/finance-gl/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-finance-gl-domain`
+warning: unused workspace dependency `console-inspection-application`
+   --> Cargo.toml:224:1
+    |
+224 | console-inspection-application = { path = "crates/inspection/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-inspection-application`
+warning: unused workspace dependency `console-inspection-domain`
+   --> Cargo.toml:223:1
+    |
+223 | console-inspection-domain = { path = "crates/inspection/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-inspection-domain`
+warning: unused workspace dependency `console-logistics-application`
+   --> Cargo.toml:232:1
+    |
+232 | console-logistics-application = { path = "crates/logistics/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-logistics-application`
+warning: unused workspace dependency `console-ontology-application`
+   --> Cargo.toml:321:1
+    |
+321 | console-ontology-application = { path = "crates/ontology/application" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-ontology-application`
+warning: unused workspace dependency `console-ontology-domain`
+   --> Cargo.toml:320:1
+    |
+320 | console-ontology-domain = { path = "crates/ontology/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-ontology-domain`
+warning: unused workspace dependency `console-orgchange-domain`
+   --> Cargo.toml:328:1
+    |
+328 | console-orgchange-domain = { path = "crates/orgchange/domain" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-orgchange-domain`
+warning: unused workspace dependency `console-policy-adapter-postgres`
+   --> Cargo.toml:308:1
+    |
+308 | console-policy-adapter-postgres = { path = "crates/policy/adapter-postgres" }
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: consider removing the workspace dependency `console-policy-adapter-postgres`
+warning: workspace (manifest) generated 12 warnings
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `console-app` (bin "console-app") generated 1 warning
+   Compiling console-app v0.1.0 (/private/tmp/console-client-release-20260919/backend/app)
+warning: `console-app` (test "auth_rest") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 39.32s
+warning: the following packages contain code that will be rejected by a future version of Rust: attribute-derive-macro v0.10.5, proc-macro-error2 v2.0.1
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running tests/auth_rest.rs (backend/target/debug/build/console-app/978748b4017c2c03/out/auth_rest-978748b4017c2c03)
+account_browser::deployment_operator_designation::company_setup::company_history_oracle_rejects_omission_mutation_duplicate_and_scalar_rows: test
+account_browser::deployment_operator_designation::company_setup::company_input_is_closed_bounded_preserved_and_html_escaped: test
+account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials: test
+account_browser::deployment_operator_designation::company_setup::company_setup_rejects_csrf_and_supplied_group_without_topology_authority: test
+account_browser::deployment_operator_designation::company_setup::company_snapshot_oracle_rejects_missing_table_non_array_and_empty_ledger: test
+account_browser::deployment_operator_designation::company_setup::concurrent_same_command_commits_once_and_foreign_account_cannot_reopen: test
+account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_document_expires_during_witnessed_head_wait: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_does_not_expand_command_login_authority: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_generation_is_current_session_not_old_admission: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_refuses_invalid_accounts_and_isolation: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_retains_account_guard_until_commit: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_retains_matching_head_lock_until_commit: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_retains_specific_account_lock_until_commit: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_revoke_and_historical_replay_do_not_restore_it: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_uses_current_exact_account_and_makes_no_rows: test
+account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_waits_for_account_invalidation_and_rechecks: test
+account_browser::deployment_operator_designation::company_setup::failed_actor_admission_rolls_back_topology_and_same_command_retries_once: test
+account_browser::deployment_operator_designation::company_setup::ordinary_account_cannot_get_or_submit_company_setup: test
+account_browser::deployment_operator_designation::company_setup::selected_administrator_receives_only_company_ceiling_without_operator_inheritance: test
+
+21 tests, 0 benchmarks

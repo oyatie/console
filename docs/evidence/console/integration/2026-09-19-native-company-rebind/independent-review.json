@@ -1,0 +1,129 @@
+{
+  "kind": "independent-exact-additive-company-test-rebind",
+  "reviewer": "integration_tests",
+  "verdict": "APPROVE_COMPILE_DISCOVERY_AND_NAMED_PROBES_ONLY",
+  "reviewed_utc": "2026-09-20T01:40:27.477707+00:00",
+  "base_sha": "6380fc42d9e88d1b89b69139bd81c0528a6e2f9a",
+  "retained_source_sha": "b9d43c444b7341d7c328a13d418f84815c9d8dda",
+  "source_files": {
+    "backend/app/tests/auth_rest/native_company_setup.rs": {
+      "source_sha256": "41c3af6900cab5d8de0fe905d7b37df875abb3918e6f3073e285b5ac053189be",
+      "destination_absent": true
+    },
+    "backend/app/tests/auth_rest/native_company_eligibility.rs": {
+      "source_sha256": "c25a58ee1b8f4760d3b9ad3a8cc8ab4817b7b271fe0f7413941cd7fa0f17294d",
+      "destination_absent": true
+    },
+    "backend/app/tests/auth_rest/native_company_browser.rs": {
+      "source_sha256": "c7782959d55ccd0d7f205e96e232b6379b9c00ac1c3d0ef87f7f711829866e1d",
+      "destination_absent": true
+    }
+  },
+  "registration": {
+    "path": "backend/app/tests/auth_rest/deployment_operator_designation.rs",
+    "preimage_sha256": "3f75bd1d7bbad42e848b2569a33245e2257d2e4e48fc17a52a0b8c2105c9fdb2",
+    "candidate_sha256": "3d583a6c624b2ab2e5c4f6f46656c65aaaba132df8404674330c34e32819a09a"
+  },
+  "registration_source": "/private/tmp/console-company-tests-current-rebind-review/deployment_operator_designation.rs.candidate",
+  "inherited_approvals": {
+    "/private/tmp/console-native-company-tests-rebind-review-operator-v1/review.json": "984bae6cc718690ab1a37dfb2deb568270345e859d79d20ba58677b22c68f895",
+    "/private/tmp/console-native-company-eligibility-review-operator-v3/review.json": "e3429b723ba407770bfe337ea7d95066a964cbd7664c43f49975294ec01a5b36"
+  },
+  "checks": [
+    "Three retained sources read from git object b9d43c44, not dirty Company worktree. All three destination paths absent at review.",
+    "Retained setup minus exactly its one eligibility include equals previously approved setup bytes; eligibility equals retained approved v3 bytes; browser equals retained approved browser bytes.",
+    "Exact current deployment_operator_designation preimage matches HEAD; candidate adds only original include!(\"native_company_setup.rs\"); immediately before existing final module close. Removing that line reproduces preimage byte-for-byte. Existing type alias/fixture additions preserved.",
+    "Reviewed fixture/dependency diffs: auth_rest adds two independent tests; designation adds ForeignKeyShape alias with same tuple type; native_entry_ui only formats one call. Existing fixture/enrolled/request/fresh_login/start/designate/revoke helpers remain in same enclosing module.",
+    "Current Cargo changes retain test-browser and required native test dependencies. Workspace version changes and removal of test-recovery are inherited base facts, not altered or approved by this test rebind. Compilation must establish their compatibility.",
+    "Ten explicitly selected dependencies hashed against source and target: five identical, five changed (including two Cargo manifests); each current file equals reviewed HEAD. This roster differs from prior 7/10 readiness audit and does not repeat its count.",
+    "The guessed #[path] mod company_setup registration was rejected because retained file already wraps mod company_setup; root confirmed original include registration. No test-source transformation performed."
+  ],
+  "dependencies": {
+    "backend/app/tests/auth_rest.rs": {
+      "source_sha256": "cb253be581dea7f5a7a480e09028ead275b7ecde6b65cbb07af634f431a1e6f6",
+      "target_sha256": "fdcd288718591a0ba7bf8c3b23af7acf9f4a604416e1366a93e438f9f7f6245d",
+      "byte_identical": false,
+      "target_matches_head": true
+    },
+    "backend/app/tests/auth_rest/deployment_operator_designation.rs": {
+      "source_sha256": "4e4f41865f135793b1d29073f743989f926c4624a9d3c9865f51fa088d99dd5f",
+      "target_sha256": "3f75bd1d7bbad42e848b2569a33245e2257d2e4e48fc17a52a0b8c2105c9fdb2",
+      "byte_identical": false,
+      "target_matches_head": true
+    },
+    "backend/app/tests/auth_rest/native_entry_ui_cases.rs": {
+      "source_sha256": "a7c07df027a28f8b4de354636acd1b58d647f15d9c3c600b643da97f9c24fb6d",
+      "target_sha256": "eaf8af31061736a71bc249b95d3e8bd962303541ca4ec7581d1a904dcff598ed",
+      "byte_identical": false,
+      "target_matches_head": true
+    },
+    "backend/app/tests/auth_rest/native_entry_browser.rs": {
+      "source_sha256": "0016b48ad3902a4adab2937c0e43b28b344513b56fd5e8786e40c958ccf46730",
+      "target_sha256": "0016b48ad3902a4adab2937c0e43b28b344513b56fd5e8786e40c958ccf46730",
+      "byte_identical": true,
+      "target_matches_head": true
+    },
+    "backend/app/tests/auth_rest/native_extension_cases.rs": {
+      "source_sha256": "f29e33e3612e8d26a77bae6f920a9a3cef915596ddaf3e16cc30b99e7449d938",
+      "target_sha256": "f29e33e3612e8d26a77bae6f920a9a3cef915596ddaf3e16cc30b99e7449d938",
+      "byte_identical": true,
+      "target_matches_head": true
+    },
+    "backend/app/tests/auth_rest/historical_native_enrollment.rs": {
+      "source_sha256": "6213b6c8630efbb4403cebc52165d2b5c91bf62118e4873f5f0be84c18df7b15",
+      "target_sha256": "6213b6c8630efbb4403cebc52165d2b5c91bf62118e4873f5f0be84c18df7b15",
+      "byte_identical": true,
+      "target_matches_head": true
+    },
+    "backend/app/Cargo.toml": {
+      "source_sha256": "d6453bbb8d4ea91a479b5b8fbf91ab967611b572c6481bb2ca72bcbae591b7a9",
+      "target_sha256": "46d03874555aa94db75541620fc2b47a427a2edca0b034d506dfc7199e26f6ca",
+      "byte_identical": false,
+      "target_matches_head": true
+    },
+    "backend/Cargo.toml": {
+      "source_sha256": "a5e16e5e06d0265958106a2a7860230b4ab6ea1368e9150a225cae66377bfd42",
+      "target_sha256": "4d566b31cb64b02dd8107d92e4926291e9afdf9d20bcf2cd53abee80f12dc064",
+      "byte_identical": false,
+      "target_matches_head": true
+    },
+    "backend/crates/platform/auth/src/account.rs": {
+      "source_sha256": "38ac7b0da955fd258da12f71d8c914437b676f3098acede3ffadce44c8d7253e",
+      "target_sha256": "38ac7b0da955fd258da12f71d8c914437b676f3098acede3ffadce44c8d7253e",
+      "byte_identical": true,
+      "target_matches_head": true
+    },
+    "backend/crates/platform/auth/src/session.rs": {
+      "source_sha256": "3c652d4e0fc6e8df05b02a54a06007718542c99075779280116f0a3afc6a212f",
+      "target_sha256": "3c652d4e0fc6e8df05b02a54a06007718542c99075779280116f0a3afc6a212f",
+      "byte_identical": true,
+      "target_matches_head": true
+    }
+  },
+  "source_expected_counts": {
+    "sqlx_setup": 8,
+    "sqlx_eligibility": 11,
+    "pure_controls": 2,
+    "ordinary_total": 21,
+    "optional_sqlx_browser": 1,
+    "with_browser_total": 22
+  },
+  "probes": [
+    "account_browser::deployment_operator_designation::company_setup::designated_account_discovers_mounted_company_setup_without_business_identity",
+    "account_browser::deployment_operator_designation::company_setup::eligibility::native_company_eligibility_catalog_has_only_exact_read_capability"
+  ],
+  "blocking_findings": [],
+  "execution": {
+    "cargo_compiled": 0,
+    "compiler_discovered": 0,
+    "database_tests": 0,
+    "browser_tests": 0,
+    "repository_edits": 0
+  },
+  "limits": [
+    "Approval only permits root to add exact three retained sources plus candidate one-include registration, compile/discover and run named probes. Root must recheck target preimage/source hashes before apply.",
+    "Missing schema, session, designation, custody or database prerequisites are not meaningful Company RED. Actual named boundary probe must execute after functioning prerequisites.",
+    "No helper implementation, SQL profile regeneration, enrollment/Company workflow acceptance, six-Company tenant or release/exposure authority granted.",
+    "Any semantic test change or changed fixture dependency requires exact review; preserve all existing tests and current fixture content."
+  ]
+}
