@@ -1,0 +1,46 @@
+{
+  "candidate": "77c29876731d8500ccaa20698b336f96fdfd9814",
+  "status": "bounded native build inputs and selected Group regressions accepted locally; complete release open",
+  "root_owner": "/root",
+  "fixtures": {
+    "test_commit": "84e7bcd324f13f5176b33881de913de4fb4bcabc",
+    "implementation_commit": "77c29876731d8500ccaa20698b336f96fdfd9814",
+    "exact_red": {
+      "executed": 1,
+      "failed": 1
+    },
+    "exact_green": {
+      "executed": 1,
+      "passed": 1
+    },
+    "full_suite": {
+      "executed": 60,
+      "passed": 60
+    },
+    "historical_full_suite": {
+      "executed": 60,
+      "passed": 59,
+      "failed": 1
+    },
+    "preserved_fixture_files": 37,
+    "new_native_mapped_inputs": 10
+  },
+  "group": {
+    "executed": 10,
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0,
+    "pure_tests": 4,
+    "database_tests": 6,
+    "auth_binary_tests_discovered": 476,
+    "each_auth_invocation_filtered": 475
+  },
+  "remaining_holds": [
+    "Full Group owner acceptance including concurrency and actual lost COMMIT acknowledgement",
+    "Unresolved intermittent source snapshot failure",
+    "Native WASM/release image/CI convergence",
+    "Protected dev integration",
+    "All release milestones and production qualification"
+  ],
+  "scope": "This evidence advances no capability state and does not establish crash durability. The disposable functional harness disables fsync/synchronous_commit/full_page_writes."
+}

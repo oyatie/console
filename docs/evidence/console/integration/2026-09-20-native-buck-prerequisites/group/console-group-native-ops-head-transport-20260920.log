@@ -1,0 +1,31 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-20T12:49:37.480-04:00] Build ID: eeafad61-a873-4775-8d2c-b3d26826d77f
+[2026-09-20T12:49:37.480-04:00] File changed (since mergebase): root//backend/crates/comms/adapter-imap/BUCK
+[2026-09-20T12:49:37.480-04:00] File changed (since mergebase): root//backend/crates/comms/adapter-mox/BUCK
+[2026-09-20T12:49:37.480-04:00] File changed (since mergebase): root//backend/crates/comms/adapter-postgres/BUCK
+[2026-09-20T12:49:37.480-04:00] 177 additional file change events (since mergebase)
+[2026-09-20T12:49:37.480-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:49:44.579-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 824 other actions
+[2026-09-20T12:49:52.079-04:00] Waiting on root//third-party/rust:zmij-1-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __ar_shim.sh), and 656 other actions
+[2026-09-20T12:49:59.178-04:00] Waiting on root//third-party/rust:config-0.15 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPL/config-link-diag.args), and 125 other actions
+[2026-09-20T12:50:03.228-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-20T12:50:03.329-04:00] Build ID: ed9d123d-8624-4040-af8d-84193654814f
+[2026-09-20T12:50:03.329-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:50:10.422-04:00] Waiting on root//third-party/rust:curve25519-dalek-4-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __cxx_shim.sh), and 742 other actions
+[2026-09-20T12:50:17.520-04:00] Waiting on root//third-party/rust:spki-0.7.3.crate (prelude//platforms:default#39893c7e49283da4) -- action (write spki-0.7.3.crate_unpack.sh), and 602 other actions
+[2026-09-20T12:50:24.616-04:00] Waiting on root//third-party/rust:thiserror-2 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPL/thiserror-link-diag.args), and 316 other actions
+[2026-09-20T12:50:27.779-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (0.1s)
+[2026-09-20T12:50:27.779-04:00] ---- STDOUT ----
+[2026-09-20T12:50:27.779-04:00]
+[2026-09-20T12:50:27.779-04:00] running 1 test
+[2026-09-20T12:50:27.779-04:00] test legacy_platform_list_reads::histories::legacy_platform_ops_reads::legacy_platform_ops_credentials::legacy_platform_ops_transport::ops_transport_selection_preserves_list_and_sibling_routes_and_methods ... ok
+[2026-09-20T12:50:27.779-04:00]
+[2026-09-20T12:50:27.779-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 475 filtered out; finished in 0.00s
+[2026-09-20T12:50:27.779-04:00]
+[2026-09-20T12:50:27.779-04:00]
+[2026-09-20T12:50:27.779-04:00] ---- STDERR ----
+[2026-09-20T12:50:27.779-04:00]
+[2026-09-20T12:50:27.823-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

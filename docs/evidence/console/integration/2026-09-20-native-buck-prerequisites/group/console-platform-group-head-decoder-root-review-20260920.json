@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root",
+  "decision": "APPROVE exact independently reviewed HEAD oracle correction and Group decoder supplemental test",
+  "base_sha": "bfe3a7b91ad6f609b2aa2b601fa088c47f36d1d1",
+  "head_candidate_sha256": "48f25bac74b7e1c0ef6f9fdc82c9fd068d13af88cde7e2fb04aac427737c2241",
+  "decoder_semantic_sha256": "bf3698eb2922c2c2b164066ee6fd56a9540bee77aa91404f7c46b2310729665b",
+  "decoder_formatted_sha256": "c2e6b7aec42c7dca4ac327f48da18cae28f2d148c278884f44f791b922660441",
+  "checks": [
+    "Read fullHEADdiff and actual pinnedAxum routeFuture HEADstrip; root rerun reproduces1failure; first exact-filter attempt ran0and is not evidence",
+    "Unwrappedcontrol retains allnonHEAD literalbody and headers; fullresponse equality catches unwantedselection;selectedchecks unchanged",
+    "Read fulldecoderfixture: genuineBusinessSQL success with1nonUUIDnestedmember,exactprojection compare,currentcredential direct/GET/HEAD503 and allstate/catalog unchanged",
+    "Outside-panic handles allow abort/join/barrierrelease/PIDcleanup before boundedDDLrestore; exactfunction/catalog recovery and same-token success required",
+    "Allpacketsha256 verified; formatter only pinnedrustfmt1.98.1 stdin; no historicalSQL,productioncode,grants or testweakening"
+  ],
+  "remaining_holds": [
+    "Rustcompile and runtime",
+    "Supplemental Group concurrency and lostCOMMIT acceptance",
+    "Complete release qualification"
+  ]
+}

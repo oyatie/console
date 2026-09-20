@@ -1,0 +1,8 @@
+{
+  "artifact": "console-group-native-buck-build-20260920.log",
+  "sha256": "a3a8541a09aabc2d1e99491ae87ab4092aa7bcec23a8f022e868dd0542c49691",
+  "classification": "failed Buck bootstrap in sandbox; not compiler or test evidence",
+  "reason_not_copied": "Contains signed public download URL token; full original retained privately unchanged",
+  "original_retained": "/private/tmp/console-group-native-buck-build-20260920.log",
+  "successful_successor": "console-group-native-buck-build-fixtures-fixed-20260920.log"
+}

@@ -1,0 +1,252 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT these ten bounded native Group prerequisite/regression leaves; full Group acceptance remains HOLD",
+  "immutable_source_commit": "77c29876731d8500ccaa20698b336f96fdfd9814",
+  "source_sha256": {
+    "backend/crates/platform/provisioning/src/lib.rs": "20219ba87a2adf267f4687f6a2baa6c7040adc839aa5214b7efdf06cf6fb1386",
+    "backend/crates/platform/platform-rest/src/lib.rs": "220a45f967a881dc481e33385344ed259be97ff0b0a6a752cc83c783c4fcf099",
+    "backend/crates/platform/auth-rest/src/lib.rs": "b1504e265f64e7788c50ecf603b29c029c9428855d6adcb89360bb963cca4b85",
+    "backend/app/tests/auth_rest/legacy_platform_group_reads.rs": "aa0934c70b5e881fc826c72251872279576301005b210fe2d334e184fbed0ec5",
+    "backend/app/tests/auth_rest/legacy_platform_group_credentials.rs": "a845ec25a81d14d5d98d5554f5c2e54f3b1069c5f043650d42b552051c2d31b1",
+    "backend/app/tests/auth_rest/legacy_platform_group_decoder.rs": "1eb4a638b50ea779cc908b40025c21d543428a1a0d55fc6a7d6fdad1c7369a03",
+    "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs": "6a350fce62bd7a6c6c7a0a2bfc2d08fd5069c63f2e7b9cde9be00dfb4cf4371a",
+    "backend/app/tests/auth_rest/legacy_platform_ops_transport.rs": "48f25bac74b7e1c0ef6f9fdc82c9fd068d13af88cde7e2fb04aac427737c2241",
+    "backend/crates/platform/platform-rest/tests/platform_groups.rs": "c1f0973d67cfd35e1acf76eab2318a6ff83d42b41f409562ef465e66367f04e7"
+  },
+  "results_manifest_sha256": "f918bb7ada17f4d19e42a88cc55539c06b7be4d785e133f21d80903f11152509",
+  "evidence": [
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_ops_reads::legacy_platform_ops_credentials::legacy_platform_ops_transport::ops_transport_selection_preserves_list_and_sibling_routes_and_methods",
+      "log": "/private/tmp/console-group-native-ops-head-transport-20260920.log",
+      "sha256": "d54ea8d2fa26fd66b41b685cc943ae6f8cf9793ec4584c86d8a30c869bbd5169",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 0.0,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_ops_reads::legacy_platform_ops_credentials::legacy_platform_ops_transport::ops_transport_selection_preserves_list_and_sibling_routes_and_methods"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_list_credentials::list_transport_selection_preserves_sibling_routes_and_methods",
+      "log": "/private/tmp/console-group-native-retained-list-transport-20260920.log",
+      "sha256": "54de1313be4c5956ce74d3eccc4f8ab3737cf764af74b072cb967867322efb4f",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 0.0,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_list_credentials::list_transport_selection_preserves_sibling_routes_and_methods"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::group_audit_allstate_oracle_rejects_omission_corruption_and_rewritten_history",
+      "log": "/private/tmp/console-group-native-group-audit-oracle-20260920.log",
+      "sha256": "1c101e0305f55cb4fd262e5a1b06d5a9a36ce5d24369d23e77f466de16a6509a",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 0.01,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_group_reads::group_audit_allstate_oracle_rejects_omission_corruption_and_rewritten_history"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::group_projection_oracle_rejects_every_field_topology_and_order_corruption",
+      "log": "/private/tmp/console-group-native-group-projection-oracle-20260920.log",
+      "sha256": "4d8def58c4258e04f12d6a66cfcbdb1615608336f4c35339e06a5cb042cf66b9",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 0.0,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_group_reads::group_projection_oracle_rejects_every_field_topology_and_order_corruption"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::mounted_group_list_current_member_denies_and_recovers",
+      "log": "/private/tmp/console-group-native-group-current-role-20260920.log",
+      "sha256": "7822658fd6e2cbeda600f47a3760b95f70cbf6e2c8b4a8e66ea9f3df9f00abeb",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 10.43,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_group_reads::mounted_group_list_current_member_denies_and_recovers"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_group_owner_reverifies_raw_credentials_and_current_role",
+      "log": "/private/tmp/console-group-native-group-raw-credentials-20260920.log",
+      "sha256": "8535e8582235b1a8e6bec5721df07ba7b91f8197253f901b5a437cc8a0063bec",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 32.7,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_group_owner_reverifies_raw_credentials_and_current_role"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::bound_group_rotation_preserves_access_and_exact_logout_refuses_only_selected_family",
+      "log": "/private/tmp/console-group-native-group-family-rotation-20260920.log",
+      "sha256": "878234907f5a86ecc937bf948ecbb0452e711f990c75fbe961fc493b2b678ba2",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 17.63,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::bound_group_rotation_preserves_access_and_exact_logout_refuses_only_selected_family"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_and_mounted_group_present_family_faults_do_not_fall_back_to_historical",
+      "log": "/private/tmp/console-group-native-group-present-family-20260920.log",
+      "sha256": "9ea9c4a4e7fe21b60ff7d0c81847ef4e9de19ba93596969a6677464f8cf626a3",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 32.2,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:app-auth-rest-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::direct_and_mounted_group_present_family_faults_do_not_fall_back_to_historical"
+      }
+    },
+    {
+      "test": "platform_group_crud_assigns_subsidiaries_and_audits",
+      "log": "/private/tmp/console-group-native-group-retained-crud-20260920.log",
+      "sha256": "062166d45eb3d81725c7b4e07c06a89f9492a1fec7e2e5503b3519e1366f3956",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 0,
+      "test_seconds": 6.56,
+      "command": [
+        "bash",
+        "tools/buck/test_needs_postgres.sh",
+        "--num-threads=1",
+        "//tools/buck:platform-platform-rest-platform-groups-pg"
+      ],
+      "exact_filter_env": {
+        "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT": "platform_group_crud_assigns_subsidiaries_and_audits"
+      }
+    },
+    {
+      "test": "legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::legacy_platform_group_decoder::actual_group_member_decode_failure_is_finite_atomic_and_recovers",
+      "log": "/private/tmp/console-group-decoder-native-buck-run1-20260920.log",
+      "sha256": "20fd8c54d2961f86e8bcd2dc8543fc65bbec5b4396a0ff395f02df8048162fbf",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 475,
+      "test_seconds": 13.19
+    }
+  ],
+  "totals": {
+    "distinct_selected_tests": 10,
+    "executed": 10,
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0,
+    "pure_oracle_transport_tests": 4,
+    "sqlx_database_tests": 6,
+    "test_body_seconds": 112.72
+  },
+  "checks": [
+    "Independently inspected all ten underlying logs and matched each exact named leaf to a single one-pass result and successful Buck wrapper outcome. Nine-row summary agrees with underlying logs; decoder separately executes exactly one leaf.",
+    "Native Buck build evidence and wrapper source use actual compiled rust_test targets, not Cargo compilation or source inclusion substitutes. Decoder compilation uses the previously approved two as_str typed borrows; exact decoder candidate hash matches.",
+    "Three production owner source hashes match prior independent source approval. Group initial and credential packet bytes survive unchanged with only approved additive includes. Retained Group CRUD/list and corrected HEAD test hashes match respective reviewed successors.",
+    "Selected auth_rest tests each report 475 filtered out: the binary contains 476 tests, but only one was executed per invocation. Standalone retained Group target has one test and zero filtered out. No claim that all 477 test definitions executed.",
+    "HEAD successor compares wrapped and unwrapped identical method/path responses while retaining original non-HEAD bytes and strict selected-route privacy assertions. Current successful ops/list controls close the bounded previous HEAD expectation failure.",
+    "Actual decoder leaf validates Business raw JSON success, corrupted member decode failure, finite direct/GET/HEAD503, no audit/effects, exact function/catalog restoration and same-token recovery. Runtime success now applies to its exact reviewed candidate.",
+    "Author runner uses CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT per leaf and rejects zero tests, count mismatches and wrong named output. The PostgreSQL wrapper uses native Buck local test execution and a disposable digest-pinned database."
+  ],
+  "historical_failures_preserved": [
+    "Original native compiler failed on missing ten fixture inputs and two decoder borrow types. Both bounded source successors were independently reviewed; original failure remains evidence.",
+    "Previous full generator run was 59/60 before staging reviewed generated output; unchanged 60/60 rerun is separately accepted.",
+    "Earlier zero-test exact-filter attempt and retained HEAD combined-assertion failure are not successful evidence. Corrected exact native leaves now pass without deleting historical logs."
+  ],
+  "remaining_holds": [
+    "Group supplemental current-source/expiry packet is source-approved only and is not in this frozen runtime candidate.",
+    "Group retained source/family concurrency, cancellation, unavailable paths, lost COMMIT acknowledgment and full affected regressions, final lint and complete owner acceptance still required.",
+    "PLATFORM-SOURCE-INTERMITTENT-OWNER-SNAPSHOT remains unresolved; these passes do not identify or fix its earlier differing snapshot component.",
+    "Raw SQL EXECUTE capabilities, other Group/Company/context mutation owners and assembled milestones 0\u201310 remain release blockers.",
+    "Disposable wrapper runs PostgreSQL with fsync/synchronous_commit/full_page_writes disabled; these functional tests do not establish crash durability, deployment-equivalent recovery, workload qualification or production readiness."
+  ],
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Contrarian / outside-the-box",
+    "Socratic",
+    "Pragmatism",
+    "Red Team",
+    "Systems Thinking",
+    "Operability / Day-2",
+    "Opportunity Cost",
+    "Blast-radius / cell-based",
+    "Constant-work / anti-fragility",
+    "Shared-nothing / eventual consistency",
+    "FinOps / unit-cost",
+    "Telemetry-first",
+    "Zero-trust / defense-in-depth"
+  ],
+  "reviewer_test_build_runtime_execution": 0,
+  "reviewer_repository_mutations": 0,
+  "release_states_changed": false
+}

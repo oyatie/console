@@ -1,0 +1,35 @@
+[
+  {
+    "lane": "native-auth-fixture-inputs",
+    "owner": "/root",
+    "base_sha": "84e7bcd324f13f5176b33881de913de4fb4bcabc",
+    "immutable_target": "Native auth_rest mapped sources include all37 actual literal fixture inputs via existing generator config; preserve fixture bytes and every old declaredinput",
+    "probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_auth_rest_maps_literal_fixture_inputs",
+    "allowed_paths": [
+      "tools/buck/gen_first_party.py",
+      "backend/app/BUCK"
+    ],
+    "mechanical_guide": "Append exactly10missing existingSQL fixture paths to auth_rest specific RESOURCE_CONFIG.srcs and regenerate; preserve all existing source/config/dependencies and sourceSQLbytes",
+    "pre_mortem": "Missing declared inputs prevent native test compilation or extra deps contaminate unrelatedtargets",
+    "blast_radius": "auth_rest mapped fixture inputs only",
+    "detection": "Exact generator RED\u2192GREEN,full60tests,nativebuild and independentinputdiff",
+    "rollback": "Revert configappend/generateddiff only; preserve fixtures and acceptedtest",
+    "stop_conditions": [
+      "Any SQLfixture bytechange",
+      "Unrelated generateddiff",
+      "Different missinginput set",
+      "Testweakening"
+    ],
+    "reviewers": [
+      "/root",
+      "/root/integration_security",
+      "/root/reference_inventory"
+    ],
+    "remaining_holds": [
+      "Native runtime tests",
+      "WASM and release-image native compilation",
+      "CI native convergence",
+      "Complete release"
+    ]
+  }
+]

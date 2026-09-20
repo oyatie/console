@@ -1,0 +1,37 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-20T12:46:54.990-04:00] Build ID: ef2d96ba-82d5-4f3f-9dd8-b72639986a25
+[2026-09-20T12:46:54.990-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:47:02.088-04:00] Waiting on root//third-party/rust:proc-macro2-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (write __ld_shim.sh), and 667 other actions
+[2026-09-20T12:47:09.289-04:00] Waiting on root//third-party/rust:libc-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 605 other actions
+[2026-09-20T12:47:16.389-04:00] Waiting on root//third-party/rust:digest-0.10 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 244 other actions
+[2026-09-20T12:47:19.312-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-20T12:47:19.415-04:00] Build ID: 89875c23-72aa-44b8-9b5b-8c333187e508
+[2026-09-20T12:47:19.418-04:00] Directory changed (since mergebase): root//tools/buck/_probe_envmain
+[2026-09-20T12:47:19.418-04:00] Directory changed (since mergebase): root//tools/buck/_probe_envmain/src
+[2026-09-20T12:47:19.418-04:00] Directory changed (since mergebase): root//tools/buck/_probe_envmain/tests
+[2026-09-20T12:47:19.418-04:00] 95 additional file change events (since mergebase)
+[2026-09-20T12:47:19.418-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T12:47:19.418-04:00] File changed: root//backend/crates/attendance/adapter-postgres/BUCK
+[2026-09-20T12:47:19.418-04:00] File changed: root//backend/crates/attendance/application/BUCK
+[2026-09-20T12:47:19.418-04:00] File changed: root//backend/crates/attendance/domain/BUCK
+[2026-09-20T12:47:19.418-04:00] 5 additional file change events
+[2026-09-20T12:47:26.516-04:00] Waiting on root//third-party/rust:rand_chacha-0.9.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write rand_chacha-0.9.0.crate_unpack.sh), and 662 other actions
+[2026-09-20T12:47:33.716-04:00] Waiting on root//third-party/rust:_darling_macro-0.23 (prelude//platforms:default#11a256c53bf8083e) -- action (write linker_wrapper.sh), and 582 other actions
+[2026-09-20T12:47:40.916-04:00] Waiting on root//third-party/rust:tracing-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write LPPL/tracing-link-diag.args), and 284 other actions
+[2026-09-20T12:47:48.316-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T12:47:55.416-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T12:47:58.777-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (15.7s)
+[2026-09-20T12:47:58.777-04:00] ---- STDOUT ----
+[2026-09-20T12:47:58.777-04:00]
+[2026-09-20T12:47:58.777-04:00] running 1 test
+[2026-09-20T12:47:58.777-04:00] test legacy_platform_list_reads::histories::legacy_platform_group_reads::legacy_platform_group_credentials::legacy_platform_group_decoder::actual_group_member_decode_failure_is_finite_atomic_and_recovers ... ok
+[2026-09-20T12:47:58.777-04:00]
+[2026-09-20T12:47:58.777-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 475 filtered out; finished in 13.19s
+[2026-09-20T12:47:58.777-04:00]
+[2026-09-20T12:47:58.777-04:00]
+[2026-09-20T12:47:58.777-04:00] ---- STDERR ----
+[2026-09-20T12:47:58.777-04:00]
+[2026-09-20T12:47:58.804-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

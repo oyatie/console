@@ -1,0 +1,65 @@
+{
+  "kind": "independent-semantic-test-review-Group-HEAD-control",
+  "reviewer": "/root/reference_inventory",
+  "independent_of_author": true,
+  "author": "/root/integration_tests",
+  "decision": "APPROVE exact narrowly corrected HEAD oracle for root integration and runtime verification; no product acceptance claim",
+  "reviewed_manifest_sha256": "d45a87ca2011d4a2638058b71a38725a5d8d79b12ec262f6de0384f9f3c5cd60",
+  "packet_declared_base_sha": "4adfcc52d564ba41953ac4eb3206c38d83d7e49f",
+  "verified_current_base_sha": "9fc8b80bdf3766ab9295a5d7e2c3ce925b277495",
+  "preimage_sha256": "222bbe594269500ad61e94cbf57b40b3029104f0f724f81e7136fd6ed3ab506b",
+  "candidate_sha256": "48f25bac74b7e1c0ef6f9fdc82c9fd068d13af88cde7e2fb04aac427737c2241",
+  "checks": {
+    "packet_members_verified": 6,
+    "source_pins_verified": 9,
+    "old_preimage_equals_current_and_exact_current_Git_blob": true,
+    "all_bytes_outside_one_existing_test_unchanged": true,
+    "method_path_selection_matrix_unchanged": true,
+    "matrix_cases": 19,
+    "selected_cases": 10,
+    "unselected_cases": 9,
+    "selected_privacy_branch_bytes_unchanged": true,
+    "four_no_header_selected_GET_HEAD_query_cases_bytes_unchanged": true,
+    "non_HEAD_literal_bytes_retained_on_wrapped_and_control": true,
+    "exact_original_cache_etag_vary_expectations_retained": true,
+    "complete_status_HeaderMap_body_equality_added_for_each_unselected_case": true,
+    "same_method_path_fixture_bearer_on_unwrapped_control": true,
+    "locked_axum_version": "0.8.9",
+    "workspace_has_no_axum_patch": true,
+    "registry_archive_sha256_matches_Cargo_lock": "31b698c5f9a010f6573133b09e0de5408834d0c82f8d7475a89fc1867a71cd90",
+    "four_pinned_source_members_equal_verified_archive": {
+      "axum-0.8.9/src/routing/route.rs": "d4b24b803c4dd9fb389da53f267ae06ec40531399f1062148a99dc4336982bd7",
+      "axum-0.8.9/src/routing/mod.rs": "1c6c4dd9d2b9085ebd1873a7753860779f35b6a162c9fb6a9365e02c19374a8a",
+      "axum-0.8.9/src/routing/method_routing.rs": "e5b220bc45a33b2a04d53041952b0edc114fe93be00a871a45d5c40d7ff5f6cd",
+      "axum-0.8.9/src/routing/path_router.rs": "9e3b1a566cc9986c352e682600680f55556a5f6c3fc3303aa4653e86f0f845b5"
+    },
+    "production_wrapper_and_strict_privacy_helpers_unchanged_at_current_base": true
+  },
+  "framework_reasoning": [
+    "Router::fallback at routing/mod.rs registers a MethodRouter(any(handler)). PathRouter selects that MethodRouter and call_with_state returns its RouteFuture.",
+    "RouteFuture::new defaults top_level=true. Its poll sets content length before replacing a HEAD response body with Body::empty(), including handler fallback responses. The locally inspected four routing files exactly match the Cargo.lock-checksummed registry archive.",
+    "Console platform_list_transport only selects exact orgs/ops/groups GET/HEAD paths. Trailing-slash Group HEAD goes directly to next.run, so framework body normalization is not a wrapper-selection defect.",
+    "The old assertion wrongly required nonempty fixture bytes for every unselected method. The successor fixes only HEAD expectations, still requires literal fixture bytes for all other methods, and adds identical-request unwrapped status/header/body controls.",
+    "Wrongly selecting an unselected path still fails original cache/ETag/Vary checks or complete HeaderMap equality; corrupting non-HEAD body/status or any other header still fails fixed expectations/full equality.",
+    "Selected strict private/no-store/Authorization-Vary/no-validator and selected HEAD-body behavior are unchanged byte-for-byte, as are all four missing-credential Group cases."
+  ],
+  "failure_evidence_limit": "Prior root failure log identifies only the combined assertion, not its method/path. Pinned framework source establishes the HEAD expectation error; the exact failing dynamic matrix case and corrected runtime result remain unobserved by this reviewer.",
+  "findings": [],
+  "tests_executed": 0,
+  "builds_executed": 0,
+  "product_runtime_executed": false,
+  "repo_edits": 0,
+  "remaining": [
+    "Root integrates only the reviewed candidate against matching preimage",
+    "Execute retained transport_selection_preserves tests and remaining Group CRUD coverage; root prior fail-fast log did not execute Group CRUD",
+    "No broader Group workflow or release acceptance follows from this source-only review"
+  ],
+  "lenses": [
+    "Chesterton's Fence",
+    "Cartesian doubt",
+    "Red Team",
+    "Zero-trust / defense-in-depth",
+    "Operability / Day-2",
+    "Blast-radius / cell-based"
+  ]
+}

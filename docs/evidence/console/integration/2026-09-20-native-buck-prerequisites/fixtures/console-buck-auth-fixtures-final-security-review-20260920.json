@@ -1,0 +1,46 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "ACCEPT bounded native Buck fixture prerequisite",
+  "immutable_commit": "77c29876731d8500ccaa20698b336f96fdfd9814",
+  "files_sha256": {
+    "tools/buck/gen_first_party.py": "279e0c12e989371a44f4137005367b9306a0966334a8ef2980675a14cc9f9f02",
+    "backend/app/BUCK": "f65343327915fb4459ead01ec4a3143e0d914188cba28431a64b900678865f9b"
+  },
+  "evidence": {
+    "/private/tmp/console-buck-auth-fixtures-full-staged-tests-20260920.log": {
+      "sha256": "09c328803efc714a2271d823d93a0be3093c4e78469a9f0b03183ca10d1e70af",
+      "discovered": 60,
+      "executed": 60,
+      "passed": 60,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 0.989
+    },
+    "/private/tmp/console-group-native-buck-build-fixtures-fixed-20260920.log": {
+      "sha256": "6044a05843c2771f2400f3c639ba37736bbd09e39e66323023d5c2b1d1355b4e",
+      "observed": "Real console-app-itest-auth_rest native rustc link action followed by BUILD SUCCEEDED; compilation evidence only."
+    }
+  },
+  "preserved_failure": "Prior full suite executed 60 with 59 pass and one unchanged index-cleanliness test failure before staging reviewed generated output. This was retained, not skipped or reclassified. Staging reviewed artifacts supplied the required comparison baseline; unchanged rerun passed. Earlier native missing-input and decoder type failures likewise remain historical evidence.",
+  "source_review_receipt_sha256": "720a34fa035208133f7b225a9efe8df8aca7cce5ae832f327c769e09d26bc97c",
+  "assessment": "Exact immutable source hashes match approved source; ten additions only and all 37 historical fixture hashes preserved. Existing assertions remain unchanged. Bounded prerequisite accepted; native Group runtime and full release qualification remain separate.",
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Contrarian / outside-the-box",
+    "Socratic",
+    "Pragmatism",
+    "Red Team",
+    "Systems Thinking",
+    "Operability / Day-2",
+    "Opportunity Cost",
+    "Blast-radius / cell-based",
+    "Constant-work / anti-fragility",
+    "Shared-nothing / eventual consistency",
+    "FinOps / unit-cost",
+    "Telemetry-first",
+    "Zero-trust / defense-in-depth"
+  ],
+  "reviewer_runtime_execution": 0
+}

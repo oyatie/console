@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact bounded source and generated candidate",
+  "base_sha": "84e7bcd324f13f5176b33881de913de4fb4bcabc",
+  "files_sha256": {
+    "tools/buck/gen_first_party.py": "279e0c12e989371a44f4137005367b9306a0966334a8ef2980675a14cc9f9f02",
+    "backend/app/BUCK": "f65343327915fb4459ead01ec4a3143e0d914188cba28431a64b900678865f9b"
+  },
+  "facts": [
+    "Only two files differ, one line each. Config retains all previous entries in original order and appends exactly the independently identified ten missing existing fixture paths.",
+    "Removing the exact appended ten-path text from each candidate reconstructs its base file byte for byte. BUCK change is restricted to console-app-itest-auth_rest mapped_srcs glob.",
+    "All 37 preservation manifest fixture hashes match both base Git objects and current filesystem bytes. Manifest SHA256 fb41c6604e421d02aabeaefe3542f011f1607f09a62cb30e47b9e6ac35c0178c.",
+    "Existing generation cleanliness test compares regenerated working files against index with git diff --quiet. Root staging independently reviewed generator/output before unchanged rerun is legitimate; test modification or omission is not needed."
+  ],
+  "reported_not_independently_executed": [
+    "Root reports named RED, successful admission, same named GREEN; full suite initially 59 pass and one index-cleanliness failure. Preserve this failure and rerun unchanged full suite after staging reviewed output."
+  ],
+  "required_followup": [
+    "Unchanged full 60 generator tests pass against staged reviewed candidate.",
+    "Actual native auth_rest build passes with separately reviewed decoder borrow correction.",
+    "Independent final evidence review before claiming prerequisite accepted."
+  ],
+  "runtime_executed_by_reviewer": 0,
+  "repository_mutations_by_reviewer": 0,
+  "lenses": [
+    "Cartesian doubt",
+    "Essentialism / YAGNI",
+    "Chesterton's Fence",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "scope": "Source approval only; no Group workflow or release qualification."
+}

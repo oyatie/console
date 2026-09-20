@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact two-site mechanical SqlSafeStr borrow type correction before root edit",
+  "observed_head": "bd2da96ebbe9d602fa29c59bb7c6ba0ae2fd816a",
+  "path": "backend/app/tests/auth_rest/legacy_platform_group_decoder.rs",
+  "preimage_sha256": "c2e6b7aec42c7dca4ac327f48da18cae28f2d148c278884f44f791b922660441",
+  "candidate_sha256": "1eb4a638b50ea779cc908b40025c21d543428a1a0d55fc6a7d6fdad1c7369a03",
+  "exact_changes": [
+    "Line190 AssertSqlSafe(&faulty_definition) becomes AssertSqlSafe(faulty_definition.as_str()).",
+    "Line275 AssertSqlSafe(&original_definition) becomes AssertSqlSafe(original_definition.as_str())."
+  ],
+  "checks": [
+    "Actual native Buck build log reports E0277 at exactly these two source sites: AssertSqlSafe<&String> lacks SqlSafeStr; diagnostic explicitly lists AssertSqlSafe<&str> as implemented. Duplicate rendered diagnostics do not imply four distinct source errors.",
+    "String::as_str borrows the same complete UTF-8 SQL bytes without allocation, normalization, truncation, ownership change or altered lifetime; both owned Strings outlive their awaited execution.",
+    "Existing audited AssertSqlSafe wrapper remains; no validation bypass is introduced. Function source and fixed typed UUID substitution were already reviewed; no new SQL or input interpolation added.",
+    "Both sites match existing as_str usage in retained transition and custody fixtures.",
+    "All SQL construction, literals, catalog assertions, cleanup/restoration, response checks, prior tests and owning production code remain unchanged."
+  ],
+  "findings": [],
+  "runtime_tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Root must apply exact candidate and rerun the native build; this approval does not resolve the separate15 missing declared fixture input errors.",
+    "Generated Buck fixture declaration changes need their independent lane/review; no source inclusion workaround authorized.",
+    "Actual decoder SQLx execution and full Group supplemental acceptance remain pending; preserve original failed native build log."
+  ]
+}
