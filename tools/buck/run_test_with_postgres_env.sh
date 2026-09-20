@@ -79,6 +79,15 @@ if [[ -n "${exact_test}" ]]; then
     echo "buck-postgres: exact Rust test name contains unsupported characters" >&2
     exit 1
   }
+  # libtest exits successfully when --exact matches nothing. Discover the
+  # selected leaf first so a stale name cannot masquerade as a passing test.
+  expected_listing="${exact_test}: test"$'\n\n1 test, 0 benchmarks'
+  if ! listing="$("$@" --list --exact "${exact_test}" 2>/dev/null)" \
+    || [[ "${listing}" != "${expected_listing}" ]]; then
+    # Discovery output may contain credentials; report only this fixed error.
+    echo "buck-postgres: exact Rust test discovery failed" >&2
+    exit 1
+  fi
   exec "$@" --exact "${exact_test}"
 fi
 exec "$@"
