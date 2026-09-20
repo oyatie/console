@@ -874,3 +874,20 @@ for (const [name, mutate] of supportMalformed) {
     assert.equal(isValidatedConsoleTruthLedger(value),false);
   });
 }
+
+for (const timestamp of ['2026-02-30T12:00:00Z','2026-02-29T12:00:00+09:00','2026-04-31T12:00:00.123456-04:00']) {
+  test(`release inventory refuses impossible retrieval date ${timestamp}`, async () => {
+    const { isValidatedConsoleTruthLedger } = await import('./validate-console-truth-ledger.mjs');
+    const value=structuredClone(registry);
+    value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc=timestamp;
+    assert.throws(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}),/release inventory.*timestamp/i);
+    assert.equal(isValidatedConsoleTruthLedger(value),false);
+  });
+}
+test('release inventory preserves valid leap date offset and fractional retrieval timestamp', () => {
+  const value=structuredClone(registry);
+  const timestamp='2024-02-29T23:59:59.123456+05:45';
+  value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc=timestamp;
+  assert.doesNotThrow(() => validateConsoleTruthLedger(value,jurisdiction,{expectedCandidateSha:CANDIDATE_SHA}));
+  assert.equal(value.release_inventory.reference_freeze.sources[0].retrieved_file_mtime_utc,timestamp);
+});
