@@ -1537,3 +1537,338 @@ for (const [id, level, select, key] of [
     }
   });
 }
+
+// Retained vendor reference data only; reuse existing canonical/hash and Node helpers.
+const MEDIA_RUNTIME = 'Media operations and reference compute rates';
+const MEDIA_SOURCE = 'media-sets-advanced-formats-media-usage-limits';
+const MEDIA_UNIT = 'Foundry compute-seconds per GB processed';
+const MEDIA_SCOPE = 'Public operation name only; executable semantics and Console acceptance not established; embedding model family is not specified by this source and does not imply AIP authority';
+const MEDIA_EXCLUDED_SCOPE = 'Excluded generative/model-specific operation; Intelligence roadmap authority required';
+const MEDIA_LEAVES = ['F04.media-capacity-recovery', 'F04.image-transform-library', 'F04.audio-transform-library', 'F04.video-transform-library', 'F04.document-transform-library', 'F04.spreadsheet-extraction', 'F12.inference'];
+const MEDIA_REPEATED_NAMES = {
+  'Extract text (OCR)': ['Images', 'Documents'], Chunk: ['Audio', 'Video'],
+  'Stream with HLS': ['Audio', 'Video'], Transcode: ['Audio', 'Video'],
+};
+const mediaRows = (value) => value.release_inventory.support_matrices.runtimes.entries;
+const mediaRuntime = (value) => mediaRows(value).find((row) => row.runtime === MEDIA_RUNTIME);
+const mediaCard = (row) => row.media_transform_catalog[0];
+const mediaExcluded = (row) => row.media_transform_catalog.find((card) => card.required_leaf === null);
+const mediaEmbedding = (row) => row.media_transform_catalog.find((card) => card.operation === 'Generate embedding');
+
+function frozenMediaRow() {
+  const relative = 'docs/evidence/console/research/2026-09-19-foundry-transforms';
+  const directory = path.join(repoRoot, relative);
+  const proposalBytes = readFileSync(path.join(directory, 'proposal.json'));
+  assert.equal(fusionHash(proposalBytes), '3d27a8cc372fba47d5f16b8d94415e82e26512742ece24d0d2f1b205e4c58d1d', 'Media prerequisite: reviewed proposal custody');
+  const reviewBytes = readFileSync(path.join(directory, 'independent-review.json'));
+  assert.equal(fusionHash(reviewBytes), '4fbeb6cd78ced4f729e6561b6cf322d543cc01867c43d0c5f5c8b5021ccf3284', 'Media prerequisite: independent original table review');
+  const review = JSON.parse(reviewBytes);
+  assert.equal(review.checks.media_rows_verified, 44);
+  assert.equal(review.checks.media_rows_exact, true);
+  const compressed = readFileSync(path.join(directory, `${MEDIA_SOURCE}.html.gz`));
+  assert.equal(compressed.length, 83929, 'Media prerequisite: complete compressed source');
+  assert.equal(fusionHash(compressed), '8eceaa3b77f2f1376c87ff6bafc26c521a5224b58748f5351c814bdc780ef4f4', 'Media prerequisite: compressed source custody');
+  const raw = gunzipSync(compressed);
+  assert.equal(raw.length, 761613, 'Media prerequisite: complete raw source');
+  assert.equal(fusionHash(raw), '816f394cdfb1200dc9bd2d83cb4fba12c4704ac370d1270e07ab876fa1b71460', 'Media prerequisite: raw source custody');
+  const source = releaseFreeze(registry).sources.find((item) => item.id === MEDIA_SOURCE);
+  assert.ok(source, 'Media prerequisite: retained source identity');
+  assert.equal(source.path, `${relative}/${MEDIA_SOURCE}.html.gz`);
+  assert.equal(source.bytes, raw.length);
+  assert.equal(source.sha256, fusionHash(raw));
+  assert.equal(source.compressed_sha256, fusionHash(compressed));
+  const media_transform_catalog = JSON.parse(proposalBytes).media_transform_catalog;
+  assert.equal(media_transform_catalog.length, 44);
+  assert.equal(fusionHash(fusionCanonical(media_transform_catalog)), '76e13ccb2918a75b6612415d891f68fd8695667f6e3539d68806281934b17504', 'Media prerequisite: exact ordered category/operation/rate tuples');
+  const count = (field) => media_transform_catalog.reduce((counts, card) => { counts[card[field]] = (counts[card[field]] ?? 0) + 1; return counts; }, {});
+  assert.deepEqual(count('category'), { All: 1, Images: 15, Audio: 6, Video: 7, Documents: 14, Spreadsheets: 1 });
+  assert.deepEqual(count('reference_compute_seconds_per_gb'), { 2: 1, 40: 9, 75: 20, 275: 14 });
+  assert.equal(new Set(media_transform_catalog.map((card) => fusionCanonical([card.category, card.operation]))).size, 44);
+  const required = media_transform_catalog.filter((card) => card.required_leaf !== null);
+  assert.equal(required.length, 43);
+  assert.deepEqual([...new Set(required.map((card) => card.required_leaf))].sort(), [...MEDIA_LEAVES].sort());
+  for (const card of media_transform_catalog) {
+    assert.equal(card.source_binding.source_id, MEDIA_SOURCE);
+    assert.equal(card.source_binding.artifact_path, source.path);
+    assert.equal(card.source_binding.sha256, source.sha256);
+    if (card.required_leaf !== null) {
+      assert.ok(registry.release_inventory.leaves.some((leaf) => leaf.id === card.required_leaf));
+      assert.equal(card.scope, MEDIA_SCOPE);
+      assert.ok(releaseFreeze(registry).source_bindings[card.required_leaf]?.some((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)), `Media prerequisite: exact shared binding ${card.category}/${card.operation}`);
+    }
+  }
+  const excluded = media_transform_catalog[42];
+  assert.deepEqual([excluded.category, excluded.operation, excluded.reference_compute_seconds_per_gb, excluded.required_leaf, excluded.scope], ['Documents', 'Extract text using VLM *', 275, null, MEDIA_EXCLUDED_SCOPE]);
+  assert.equal(media_transform_catalog[13].operation, 'Generate embedding');
+  assert.equal(media_transform_catalog[13].required_leaf, 'F12.inference');
+  assert.equal(media_transform_catalog[13].scope, MEDIA_SCOPE);
+  for (const [operation, categories] of Object.entries(MEDIA_REPEATED_NAMES)) {
+    assert.deepEqual(media_transform_catalog.filter((card) => card.operation === operation).map((card) => card.category), categories);
+  }
+  return {
+    runtime: MEDIA_RUNTIME,
+    reference_status: 'Frozen 44-row public operation/rate catalogue: 43 required references and 1 explicit Intelligence exclusion; vendor usage units are not Console price, latency or throughput; executable semantics unverified',
+    source: MEDIA_SOURCE, console_acceptance: 'not established', command: null,
+    media_transform_catalog, reference_rate_unit: MEDIA_UNIT, semantics_status: 'not_bound',
+    unqualified_semantics: {
+      operation_semantics: null, format_codec_and_version_support: null, runtime_and_model_versions: null,
+      limits_and_resource_accounting: null, authorization_and_source_restrictions: null,
+      output_publication_and_partial_failure: null, cancellation_and_recovery: null,
+      retention_and_deletion: null, lifecycle_and_successor_equivalence: null,
+    },
+  };
+}
+
+function mediaFixture() {
+  const expected = frozenMediaRow(), value = structuredClone(registry);
+  const existing = mediaRows(value).filter((row) => row.runtime === MEDIA_RUNTIME);
+  if (existing.length === 0) mediaRows(value).push(expected);
+  else {
+    assert.equal(existing.length, 1, 'Media prerequisite: one integrated row');
+    assert.deepEqual(existing[0], expected, 'Media prerequisite: integrated row equals reviewed data');
+  }
+  return value;
+}
+
+function assertMediaRejection(mutate, { label, invisible = false, keySwap = false, diagnostic = /release inventory.*Media/i } = {}) {
+  const value = mediaFixture(), sameObject = value, before = structuredClone(value);
+  const acceptedBytes = fusionCanonical(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before, `${label}: positive validation is read-only`);
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: actual owner positive prerequisite`);
+  const injected = mutate(value, mediaRuntime(value));
+  if (invisible) {
+    assert.equal(Object.hasOwn(injected, 'extraMediaProperty'), true, `${label}: own extra persists`);
+    assert.ok(Object.keys(injected).includes('extraMediaProperty'), `${label}: extra is enumerable`);
+    assert.equal(fusionCanonical(value), acceptedBytes, `${label}: canonical bytes unchanged`);
+    // Existing digest-only attestation need not become false before actual revalidation.
+  } else {
+    assert.notEqual(fusionCanonical(value), acceptedBytes, `${label}: mutation changes canonical bytes`);
+    assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: changed-content binding invalidated`);
+  }
+  if (keySwap) {
+    const { target, key, count, original } = injected;
+    assert.equal(Object.hasOwn(target, key), true);
+    assert.equal(target[key], original, `${label}: required value preserved`);
+    assert.equal(Object.keys(target).includes(key), false, `${label}: required key not enumerable`);
+    assert.equal(Object.keys(target).length, count, `${label}: deceptive key count unchanged`);
+    assert.equal(Object.hasOwn(target, 'extraMediaProperty'), true);
+    assert.ok(Object.keys(target).includes('extraMediaProperty'));
+  }
+  assert.throws(() => validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA }), diagnostic, `${label}: actual owning validator rejects`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: failed validation revokes attestation`);
+  for (const key of Object.keys(value)) delete value[key];
+  Object.assign(value, structuredClone(before));
+  assert.strictEqual(value, sameObject);
+  assert.deepEqual(value, before, `${label}: exact positive shape/keys restored`);
+  assert.equal(fusionCanonical(value), acceptedBytes, `${label}: accepted bytes restored`);
+  assert.equal(isValidatedConsoleTruthLedger(value), false, `${label}: SAME-object restoration cannot revive attestation`);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, `${label}: explicit successful validation restores attestation`);
+}
+
+test('Media catalogue frozen proposal and source retain exact reviewed custody', () => {
+  assert.equal(frozenMediaRow().media_transform_catalog.length, 44);
+});
+
+test('Media catalogue exact reference units remain unqualified without state promotion', () => {
+  const value = mediaFixture(), before = structuredClone(value);
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.deepEqual(value, before);
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+  assert.equal(mediaRuntime(value).reference_rate_unit, MEDIA_UNIT);
+  assert.equal(mediaRuntime(value).console_acceptance, 'not established');
+  assert.equal(mediaRuntime(value).command, null);
+  assert.equal(mediaRuntime(value).semantics_status, 'not_bound');
+  assert.equal(Object.keys(mediaRuntime(value).unqualified_semantics).length, 9);
+  assert.ok(Object.values(mediaRuntime(value).unqualified_semantics).every((cell) => cell === null));
+  assert.equal(releaseFreeze(value).status, 'partial_snapshot');
+  assert.ok(value.release_inventory.leaves.every((leaf) => leaf.states.planned && ['implemented', 'integration_accepted', 'production_qualified', 'released'].every((stage) => leaf.states[stage] === false)));
+});
+
+test('Media catalogue preserves sole VLM exclusion and unspecified embedding model scope', () => {
+  const value = mediaFixture(), row = mediaRuntime(value);
+  assert.equal(row.media_transform_catalog.filter((card) => card.required_leaf === null).length, 1);
+  assert.equal(mediaExcluded(row).operation, 'Extract text using VLM *');
+  assert.equal(mediaExcluded(row).scope, MEDIA_EXCLUDED_SCOPE);
+  assert.equal(mediaEmbedding(row).required_leaf, 'F12.inference');
+  assert.equal(mediaEmbedding(row).scope, MEDIA_SCOPE);
+  assert.equal(Object.hasOwn(releaseFreeze(value).source_bindings, 'null'), false);
+  assert.ok(!value.release_inventory.leaves.some((leaf) => leaf.id === null));
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true, 'excluded row needs no invented shared binding or leaf');
+});
+
+test('Media catalogue preserves repeated operation names in distinct categories', () => {
+  const value = mediaFixture(), cards = mediaRuntime(value).media_transform_catalog;
+  for (const [operation, categories] of Object.entries(MEDIA_REPEATED_NAMES)) {
+    assert.deepEqual(cards.filter((card) => card.operation === operation).map((card) => card.category), categories);
+  }
+  validateConsoleTruthLedger(value, jurisdiction, { expectedCandidateSha: CANDIDATE_SHA });
+  assert.equal(isValidatedConsoleTruthLedger(value), true);
+});
+
+test('Media catalogue fixture preserves every unrelated registry value', () => {
+  const value = mediaFixture();
+  if (!mediaRuntime(registry)) mediaRows(value).splice(mediaRows(value).findIndex((row) => row.runtime === MEDIA_RUNTIME), 1);
+  assert.deepEqual(value, registry);
+  // Root separately removes only the new integrated row to compare its exact full preimage.
+});
+
+const mediaChangedRate = (_value, row) => { mediaCard(row).reference_compute_seconds_per_gb += 1; };
+test('Media catalogue failed revalidation revokes attestation after same-object restoration', () => {
+  assertMediaRejection(mediaChangedRate, { label: 'named reference-rate restoration history' });
+});
+
+const mediaMalformed = [
+  ['N01', 'missing runtime entry', [
+    (v, row) => { mediaRows(v).splice(mediaRows(v).indexOf(row), 1); },
+  ]],
+  ['N02', 'duplicate runtime identity', [
+    (v, row) => { mediaRows(v).push(structuredClone(row)); },
+  ]],
+  ['N03', 'renamed runtime identity', [
+    (_v, row) => { row.runtime += ' renamed'; },
+  ]],
+  ['N04', 'changed valid source', [
+    (v, row) => { row.source = releaseFreeze(v).sources.find((source) => source.id !== MEDIA_SOURCE).id; },
+  ]],
+  ['N05', 'unsupported reference claims', [
+    (_v, row) => { row.reference_status = 'Media operations fully supported at published Console pricing and latency'; },
+  ]],
+  ['N06', 'invented support or command', [
+    (_v, row) => { row.console_acceptance = 'supported'; },
+    (_v, row) => { row.command = 'true'; },
+  ], /release inventory: support cell claims unverified Console acceptance/],
+  ['N07', 'extra promotion price or performance fields', [
+    ...['state', 'receipt', 'price', 'latency', 'throughput'].map((key) => (_v, row) => { row[key] = 'established'; }),
+  ]],
+  ['N08', 'missing or changed semantics status', [
+    (_v, row) => { delete row.semantics_status; },
+    (_v, row) => { row.semantics_status = 'qualified'; },
+  ]],
+  ['N09', 'removed extra or nonnull semantic dimension', [
+    (_v, row) => { delete row.unqualified_semantics.operation_semantics; },
+    (_v, row) => { row.unqualified_semantics.extra = null; },
+    ...['operation_semantics', 'format_codec_and_version_support', 'runtime_and_model_versions', 'limits_and_resource_accounting', 'authorization_and_source_restrictions', 'output_publication_and_partial_failure', 'cancellation_and_recovery', 'retention_and_deletion', 'lifecycle_and_successor_equivalence'].map((key) => (_v, row) => { row.unqualified_semantics[key] = 'qualified'; }),
+  ]],
+  ['N10', 'changed reference rate units', [
+    (_v, row) => { delete row.reference_rate_unit; },
+    ...['USD per GB', 'Console wall-clock seconds per GB', 'Foundry compute-seconds per GiB processed'].map((unit) => (_v, row) => { row.reference_rate_unit = unit; }),
+  ]],
+  ['N11', 'empty or nonarray catalogue', [
+    (_v, row) => { row.media_transform_catalog = []; },
+    (_v, row) => { row.media_transform_catalog = {}; },
+  ]],
+  ['N12', 'omitted first middle last excluded or embedding row', [
+    ...[0, 22, 43, 42, 13].map((index) => (_v, row) => { row.media_transform_catalog.splice(index, 1); }),
+  ]],
+  ['N13', 'duplicate or same length replaced row', [
+    (_v, row) => { row.media_transform_catalog.push(structuredClone(mediaCard(row))); },
+    (_v, row) => { row.media_transform_catalog[1] = structuredClone(mediaCard(row)); },
+  ]],
+  ['N14', 'reordered catalogue', [
+    (_v, row) => { row.media_transform_catalog.reverse(); },
+  ]],
+  ['N15', 'changed operation or exclusion footnote', [
+    (_v, row) => { mediaCard(row).operation += ' altered'; },
+    (_v, row) => { mediaCard(row).operation = 42; },
+    (_v, row) => { mediaCard(row).operation += ' '; },
+    (_v, row) => { mediaExcluded(row).operation = 'Extract text using VLM'; },
+  ]],
+  ['N16', 'changed reference rate', [
+    mediaChangedRate,
+    (_v, row) => { mediaCard(row).reference_compute_seconds_per_gb = '2'; },
+    (_v, row) => { mediaCard(row).reference_compute_seconds_per_gb = null; },
+  ]],
+  ['N17', 'changed category', [
+    (_v, row) => { mediaCard(row).category = 'Images'; },
+  ]],
+  ['N18', 'changed existing required leaf', [
+    (_v, row) => { mediaCard(row).required_leaf = 'F04.image-transform-library'; },
+  ]],
+  ['N19', 'erased embedding caveat or promoted record scope', [
+    (_v, row) => { mediaEmbedding(row).scope = 'Embedding model family and AIP runtime authorized'; },
+    (_v, row) => { mediaCard(row).scope = 'Executable semantics and Console support established'; },
+  ]],
+  ['N20', 'extra or removed card key', [
+    (_v, row) => { delete mediaCard(row).operation; },
+    (_v, row) => { mediaCard(row).extraMediaProperty = 'unreviewed'; },
+  ]],
+  ['N21', 'changed source binding fields', [
+    (v, row) => { mediaCard(row).source_binding.source_id = releaseFreeze(v).sources.find((source) => source.id !== MEDIA_SOURCE).id; },
+    (_v, row) => { mediaCard(row).source_binding.artifact_path = 'README.md'; },
+    (_v, row) => { mediaCard(row).source_binding.sha256 = '0'.repeat(64); },
+    (_v, row) => { mediaCard(row).source_binding.quote += ' changed'; },
+    (_v, row) => { mediaCard(row).source_binding.matching = 'unreviewed matching'; },
+    (_v, row) => { mediaCard(row).source_binding.scope = 'unrestricted claim'; },
+  ]],
+  ['N22', 'extra or removed binding key', [
+    (_v, row) => { delete mediaCard(row).source_binding.quote; },
+    (_v, row) => { mediaCard(row).source_binding.extraMediaProperty = 'unreviewed'; },
+    (_v, row) => { mediaCard(row).source_binding.artifact_uncompressed_sha256 = '0'.repeat(64); },
+  ]],
+  ['N23', 'removed exact required shared binding', [
+    (v, row) => { const card = mediaCard(row), bindings = releaseFreeze(v).source_bindings[card.required_leaf]; const index = bindings.findIndex((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)); assert.ok(index >= 0); bindings.splice(index, 1); },
+  ]],
+  ['N24', 'changed required shared quote', [
+    (v, row) => { const card = mediaCard(row); releaseFreeze(v).source_bindings[card.required_leaf].find((binding) => fusionCanonical(binding) === fusionCanonical(card.source_binding)).quote += ' changed'; },
+  ]],
+  ['N25', 'invented second excluded row', [
+    (_v, row) => { mediaCard(row).required_leaf = null; },
+    (_v, row) => { mediaCard(row).required_leaf = null; mediaCard(row).scope = MEDIA_EXCLUDED_SCOPE; },
+  ]],
+  ['N26', 'promoted or rewritten excluded VLM record', [
+    (_v, row) => { mediaExcluded(row).required_leaf = 'F12.inference'; },
+    (_v, row) => { mediaExcluded(row).scope = MEDIA_SCOPE; },
+    (_v, row) => { mediaExcluded(row).category = 'Images'; },
+    (_v, row) => { mediaExcluded(row).reference_compute_seconds_per_gb = 75; },
+    (_v, row) => { mediaExcluded(row).operation = 'Required text extraction'; },
+  ]],
+  ['N27', 'merged repeated operation names across categories', [
+    ...Object.keys(MEDIA_REPEATED_NAMES).map((name) => (_v, row) => {
+      const cards = row.media_transform_catalog;
+      const index = cards.findLastIndex((card) => card.operation === name);
+      assert.ok(index >= 0);
+      cards.splice(index, 1);
+    }),
+    (_v, row) => { row.media_transform_catalog.find((card) => card.operation === 'Extract text (OCR)' && card.category === 'Documents').category = 'Images'; },
+  ]],
+  ['N28', 'caller supplied expected digest', [
+    (v, row) => { mediaChangedRate(v, row); row.expected_catalogue_sha256 = fusionHash(fusionCanonical(row.media_transform_catalog)); },
+  ]],
+];
+for (const [id, name, mutations, diagnostic] of mediaMalformed) {
+  test(`Media catalogue rejects ${name}`, () => {
+    for (const [index, mutate] of mutations.entries()) assertMediaRejection(mutate, { label: `${id} variant ${index + 1}`, diagnostic });
+    if (id === 'N20' || id === 'N22') {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertMediaRejection((_v, row) => {
+          const target = id === 'N20' ? mediaCard(row) : mediaCard(row).source_binding;
+          target.extraMediaProperty = extra;
+          return target;
+        }, { label: `${id} ${typeof extra} own key`, invisible: true, diagnostic: /release inventory.*Media.*keys/i });
+      }
+    }
+  });
+}
+
+for (const [id, level, select, keys] of [
+  ['N29', 'runtime', (row) => row, ['command']],
+  ['N30', 'semantics', (row) => row.unqualified_semantics, ['operation_semantics']],
+  ['N31', 'card', (row) => mediaCard(row), ['operation', 'reference_compute_seconds_per_gb']],
+  ['N32', 'binding', (row) => mediaCard(row).source_binding, ['quote']],
+]) {
+  test(`Media catalogue rejects count preserving ${level} key substitution`, () => {
+    for (const key of keys) {
+      for (const extra of [undefined, () => 'unreviewed']) {
+        assertMediaRejection((_v, row) => {
+          const target = select(row), count = Object.keys(target).length, original = target[key];
+          Object.defineProperty(target, key, { value: original, enumerable: false, writable: true, configurable: true });
+          target.extraMediaProperty = extra;
+          return { target, key, count, original };
+        }, { label: `${id} ${key} ${typeof extra} key substitution`, keySwap: true, diagnostic: /release inventory.*Media.*keys/i });
+      }
+    }
+  });
+}
