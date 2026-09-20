@@ -375,6 +375,7 @@ fn es256_scoped_token_rejects_unknown_group_role_on_verify() {
         authz_subject_version: 0,
         authz_policy_version: 0,
         session_generation: 0,
+        legacy_session: None,
         alg: "ES256".to_owned(),
     };
     let token = jsonwebtoken::encode(
@@ -447,6 +448,7 @@ fn access_scope_claims_must_be_a_complete_pair() {
         authz_subject_version: 0,
         authz_policy_version: 0,
         session_generation: 0,
+        legacy_session: None,
         alg: "ES256".to_owned(),
     };
 

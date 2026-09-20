@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_ADDITIVE_PARSER_TESTS_PENDING_EXECUTABLE_RED",
+  "packet_manifest_sha256": "96fae2f4182310a746ce88bb7eb5d5093225194c1477c2e2ce7a318deb8059d9",
+  "candidate_sha256": "cecb65364c501b2b29c4f1ca9c7bdb8f02211c26f13cffd39c9b8ff1a08cfc56",
+  "preimage_sha256": "9a68df9056b171aa3efafa7130771b9c48675a74c9f5987c7da9566285c49086",
+  "checks": [
+    "All6 manifest members match. Current jwt_verifier.rs matches exact preimage; candidate is byte-for-byte preimage plus addition with7new test attributes.",
+    "Both actual signed ES256 verification entry points are called. Every fixture first proves same issuer/key/audience/time historical token accepted; accepted binding roundtrip detects silently ignored extension.",
+    "Five proposed valid shapes match strict old Group/view-as predicates and reviewed closed legacy_session contract: direct Company/platform plus three derived kinds.",
+    "Malformed/null/partial/extra/type/version/nil-ID probes preserve valid signer/time and reach actual decoder; no fixture manufacture of a current database family is claimed.",
+    "Custom SerializeMap produces duplicate outer/nested wire keys directly through JWT encoding with no Value roundtrip; pre-sign duplicate count controls and both key orders include identical values.",
+    "Historical absent defaults and unknown outer claims retain compatibility; old entire source, Account-protocol-separation and previous duplicate-marker tests are unchanged.",
+    "Failure messages print only fixed labels and acceptance flags, not credential bytes."
+  ],
+  "limits": [
+    "Seven tests are a bounded cryptographic parser prerequisite, not the exhaustive contradiction matrix or session authority qualification.",
+    "Runtime discovery/execution count remains0 for this reviewer. Root must compile/discover then execute actual owner RED before source admission; absence/default test is expected baselineGREEN.",
+    "No claim of genuine issuance/refresh correlation, exact family liveness/revocation, derived parent/source policy, transaction locking or release acceptance.",
+    "Do not enable bound token mint/routing into permissive historical owners on the strength of this parser-only approval; reviewed all-kind current-use guard contract remains mandatory."
+  ],
+  "required_followup": [
+    "Retain full historical verifier regression target.",
+    "Source candidate must preserve historical serialization/claims while adding closed new decoding; independently review exact shared verifier rather than treating tests as permission to bypass current policy."
+  ]
+}

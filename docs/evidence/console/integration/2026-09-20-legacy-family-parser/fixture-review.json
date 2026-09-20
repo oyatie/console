@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_TWO_LEGACY_TEST_LITERAL_COMPATIBILITY_ADDITIONS",
+  "observed_head": "97ce38b9864b0b4577c5f81ec8b8957d5b099c5d",
+  "preimage_sha256": "ecc5020a2478a262b89a26c531f2809d434999bc71a4a2b901420cf5974dd3fb",
+  "candidate_sha256": "bb66d74b60f86baf4cb96c02423d5945fba31bf92fe83d23bad2e58c3852f8ba",
+  "census": [
+    "Production legacy AccessClaims literal only auth/src/jwt.rs issuer; keep that source initialization separate and explicitly None for parser-only stage.",
+    "Exactly2test AccessClaims literals in jwt_es256.rs (unknownGroupRole verify and incompleteAccessScope pair) need newfield None. AccountAccessClaims constructors are separate and untouched."
+  ],
+  "approved_change": "Add legacy_session: None to exactly2existing test literals; removing these2lines reconstructs preimage byte-for-byte.",
+  "preservation": [
+    "All existing claims, typed malformed Group role/scope fixtures, keys, time/defaults, signing/verifier calls and assertions untouched.",
+    "Production optionalfield must serialize None with skip_serializing_if so historical signed claim payload representation remains absent, notnull. That source behavior requires independently reviewed parser implementation/tests.",
+    "AccessTokenInput unchanged; no bound issuance, consumer routing, schema/key change or historical record resealing authorized."
+  ],
+  "admission_boundary": "Futurefield fixture initializer is a compatibility prerequisite and cannot compile before source field exists. Missingfield/unknownfield compiler failure is never laneRED. Existing two cryptographic verifier APIs and approved additive7test packet remain actual owner probes.",
+  "runtime_executions": 0,
+  "next": "Root independently reviews exact patch, serializes with parser source transition, executes full jwt_es256 and jwt_verifier targets retaining existing history."
+}
