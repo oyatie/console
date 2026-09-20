@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/integration_security",
+  "status": "APPROVE_EXACT_SEMANTIC_SCOPE_AND_ADDITIVE_ADR_TESTS",
+  "manifest_sha256": "adbf54ff975c78ae4cdbe7e5cac1b55ccac54cdadecb0fc4007381f30f37c831",
+  "candidate_test_sha256": "1a30fa9a379d2452d7404b86f802b2bafccd4882bce96e3683e7710dcc0e55ec",
+  "source_preimage_sha256": "ce2f834007cd53a779e2e65183ca7e9cc7ed90a1ca1fc159f123446c17115d7b",
+  "scope_decision": "Only exact lowercase final .log extension strictly within docs/evidence is nonnormative retained raw execution transcript for this retired-ADR-reference scan. This format class can preserve arbitrary real historical failure text. All other formats/locations remain scanned. No evidence bytes are rewritten or quarantined, no whole-directory or global-log exclusion.",
+  "rationale": "Current3actual failures are two own negative-test reporter titles and one repeated own diagnostic. Full-line message parsing would couple governance to reporter wording and still reject future true historical failures; raw transcript versus normative artifact class is the simpler correct distinction. Initial line-matcher suggestion was withdrawn, not an unresolved finding.",
+  "test_review": [
+    "Exact oldtest file is a byte-preserved prefix;4leaves appended, no existing expectations weakened/deleted/skipped. Checker in packet is unchanged source custody, not implementation.",
+    "Both real temporary Git-index enumeration and fallback traversal tested; tracked mode independently asserts every fixture path indexed.",
+    "2rawlog paths each contain4historical transcript examples; byte-preservation asserted. Existing valid corpus positive precedes each new test.",
+    "16path matrix x2stale-rule lines x2enumeration modes=64exactexpected findings prevents broad exclusion. Includes evidence md/json/yaml/Rust/Terraform/extensionless, .log.md/.LOG, nearprefixdir, docs/evidence.log, outside logs, source/script/IaC.",
+    "Corruption expectations compare complete exactpath/line/message findings, not only count or success/failure, and allfixture bytes remain unchanged."
+  ],
+  "runtime_reviewed": {
+    "private_unchanged_checker_command": "node --test /private/tmp/console-adr-evidence-log-scope-tests-20260920/check-adrs.test.mjs",
+    "executed": 33,
+    "passed": 31,
+    "failed": 2,
+    "skipped": 0,
+    "old_tests_passed": 29,
+    "intended_new_failures": "Only2rawtranscript acceptance leaves; each actual8findings vs expected0. Both normative coverage leaves pass.",
+    "actual_repository_owner_command": "node scripts/check-adrs.mjs",
+    "actual_owner_exit": 1,
+    "actual_owner_findings": 3,
+    "reviewer_reexecution": false
+  },
+  "implementation_constraints": [
+    "Reuse node:path extname plus existing isWithinDirectory(join(root,docs,evidence),path) at retired-reference scan only.",
+    "Do not change retired-path/portability predicates, repository enumeration, frontmatter/relationship/index rules, existing checker selfexemption or diagnostics.",
+    "Root integrates approvedtests, records clean executableRED/lane admission, then narrow checker implementation; sameownerGREEN+33/33and historicalhashpreservation required."
+  ],
+  "historical_log_sha256": {
+    "docs/evidence/console/integration/2026-09-20-cedar-ci-and-readiness/candidate1085613a-verify.log": "ab0f941ccc58e62a2be73a7d1afe35b16470395790da8cc0afc93102eea9ebe7",
+    "docs/evidence/console/integration/2026-09-20-legacy-family-parser/candidate4b11ea01-sandbox-verify.log": "70882bb929794167772c536b14f8fd243e5d122e16beb9d9048b65af15506f90"
+  },
+  "remaining": "No checker implementation/source/runtimeGREEN or fullverification/release acceptance provided by this receipt.",
+  "reviewer_actions": "Read-only source/log/custody checks; private receipt only.",
+  "lenses": [
+    "Chestertons Fence: preserve normative source/IaC reference detection and immutable transcript history.",
+    "Cartesian doubt: exact intendedRED and positivecorruption controls, no missing-prerequisite substitute.",
+    "Blast radius: one contentclass in one scan, all other governance checks unchanged."
+  ]
+}

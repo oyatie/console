@@ -1,0 +1,15 @@
+{
+  "kind": "ADR-evidence-raw-log-scope-design-and-additive-tests",
+  "files_sha256": {
+    "DESIGN.md": "e9ddb864080d81278ee975a6ff3425ff3f24da16e3c6bd75d62e44fa844355bd",
+    "addition.mjs": "4ee0e3d208c366cbf92290456ebdf8d6887686808477fa3afa76a8ccac9c49cb",
+    "baseline-tests.log": "4ec0a2514f5d297f9dfac447a971f64beae64b00e7834133b78a7137e0b5d565",
+    "check-adrs.mjs": "ce2f834007cd53a779e2e65183ca7e9cc7ed90a1ca1fc159f123446c17115d7b",
+    "check-adrs.test.mjs": "1a30fa9a379d2452d7404b86f802b2bafccd4882bce96e3683e7710dcc0e55ec",
+    "owner-red.log": "a142f783c3281833ebfa1b0a1621f9484ebf5975eb1718f43ec75a80910635b0",
+    "preimage.test.mjs": "c9c0860b7f2afb2ae4cedd6df7e5899365cfb8b105a79835ecd2466a137e4806",
+    "source-custody.json": "203aae016e8eb1315144302e49d300a1ef248c0c23740e8db1488d90a986b8a2",
+    "tests.patch": "34784b6b126fd4a1e5e1211ac4ee8ba3f6679f74529564d04c1b575080833e27",
+    "verification.json": "c529ff522dbb971c5d64028c6ef84fe6e8c2ef589134af2bad72cc1517d6b500"
+  }
+}

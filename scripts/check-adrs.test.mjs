@@ -550,3 +550,95 @@ describe("ADR governance gate", () => {
     assertFailure(evaluateAdrGovernance(root), "ADR-0013 is reserved and must never be issued");
   });
 });
+
+// Raw command transcripts preserve what was observed, including test reporters
+// and prior diagnostics; all other evidence formats remain governed sources.
+describe("ADR retained evidence log scope", () => {
+  async function indexFixture(root, mode) {
+    if (mode === "tracked Git") {
+      const { execFileSync } = await import("node:child_process");
+      execFileSync("git", ["init", "--quiet", root]);
+      execFileSync("git", ["-C", root, "add", "--all"]);
+      const indexed = execFileSync("git", ["-C", root, "ls-files", "-z"], {
+        encoding: "utf8",
+      }).split("\0").filter(Boolean);
+      assert.ok(indexed.includes("docs/decisions/README.md"));
+      return indexed;
+    }
+    return null;
+  }
+
+  function writeFixtureFile(root, components, contents) {
+    mkdirSync(join(root, ...components.slice(0, -1)), { recursive: true });
+    writeFileSync(join(root, ...components), contents);
+  }
+
+  for (const mode of ["traversal", "tracked Git"]) {
+    it(`preserves raw evidence logs without treating transcript text as authority (${mode})`, async () => {
+      const root = createFixture();
+      assert.deepEqual(evaluateAdrGovernance(root).failures, []);
+      const logs = [
+        ["docs", "evidence", "run.log"],
+        ["docs", "evidence", "console", "integration", "candidate", "verify.log"],
+      ];
+      const transcript = Buffer.from([
+        "✔ rejects stale cross-repository references that still use ADR-0022 for portability (0.996042ms)",
+        "- docs/run.md:7: ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes",
+        "observed input: Governed by ADR-0022-bare-metal-portability-and-ha.",
+        "raw command output includes ADR-0022 portability before a repair",
+        "",
+      ].join("\n"));
+      for (const path of logs) writeFixtureFile(root, path, transcript);
+      const indexed = await indexFixture(root, mode);
+      if (indexed) {
+        for (const path of logs) assert.ok(indexed.includes(path.join("/")));
+      }
+      const result = evaluateAdrGovernance(root);
+      for (const path of logs) {
+        assert.deepEqual(readFileSync(join(root, ...path)), transcript);
+      }
+      assert.deepEqual(result.failures, []);
+      assert.equal(result.adrCount, 1);
+      assert.equal(result.noteCount, 0);
+    });
+
+    it(`still detects normative evidence, source, IaC and outside-log corruption (${mode})`, async () => {
+      const root = createFixture();
+      assert.deepEqual(evaluateAdrGovernance(root).failures, []);
+      const cases = [
+        ["docs", "current", "PRODUCT.md"],
+        ["docs", "evidence", "README.md"],
+        ["docs", "evidence", "decision.json"],
+        ["docs", "evidence", "policy.yaml"],
+        ["docs", "evidence", "source.rs"],
+        ["docs", "evidence", "main.tf"],
+        ["docs", "evidence", "AUTHORITY"],
+        ["docs", "evidence", "verify.log.md"],
+        ["docs", "evidence", "verify.LOG"],
+        ["docs", "evidence-other", "verify.log"],
+        ["docs", "evidence.log"],
+        ["docs", "run.log"],
+        ["backend", "source.rs"],
+        ["scripts", "governance.mjs"],
+        ["deploy", "opentofu", "main.tf"],
+        ["deploy", "evidence", "verify.log"],
+      ];
+      const contents = "Governed by ADR-0022-bare-metal-portability-and-ha.\nADR-0022 governs portability.\n";
+      for (const path of cases) writeFixtureFile(root, path, contents);
+      const indexed = await indexFixture(root, mode);
+      if (indexed) {
+        for (const path of cases) assert.ok(indexed.includes(path.join("/")));
+      }
+      const suffix = ": ADR-0022 is the local-identity decision, not the portability/HA decision; use ADR-0024 or its DN-0001/DN-0002 notes";
+      const expected = cases.flatMap((path) => [1, 2].map((line) =>
+        `${join(...path)}:${line}${suffix}`));
+      assert.deepEqual(
+        [...evaluateAdrGovernance(root).failures].sort(),
+        expected.sort(),
+      );
+      for (const path of cases) {
+        assert.equal(readFileSync(join(root, ...path), "utf8"), contents);
+      }
+    });
+  }
+});
