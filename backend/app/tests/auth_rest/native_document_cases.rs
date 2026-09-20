@@ -30,6 +30,8 @@ fn native_document_unavailable(response: &Response) {
     let html = native_entry_html(response, StatusCode::SERVICE_UNAVAILABLE);
     assert!(html.contains("지금은 계정을 확인할 수 없습니다"));
     assert!(html.contains("role=\"alert\""));
+    assert!(html.contains("<a class=\"button primary\" href=\"\">다시 시도</a>"));
+    assert!(html.contains("<a class=\"text-link\" href=\"/\">시작 화면으로</a>"));
     assert!(!html.contains("data-account-state="));
     assert!(!html.contains("data-context-state="));
     assert!(!html.contains("data-native-action="));
@@ -98,6 +100,15 @@ async fn native_document_auth_transport_outage_is_unavailable_not_anonymous(pool
     let recovered_account = native_document_get(&app, "/account", &cookies).await;
     native_entry_html(&recovered_root, StatusCode::OK);
     assert!(recovered_root.bytes == recovered_account.bytes);
+    assert!(before == native_document_snapshot(&pool).await);
+    // Repair must reopen the originally requested registration destination,
+    // not silently substitute sign-in or invent an enrolled identity.
+    let registration = native_document_get(&app, "/account/register", &anonymous_cookies).await;
+    let html = native_entry_html(&registration, StatusCode::OK);
+    assert!(html.contains("data-native-action=\"register\""));
+    assert!(html.contains(&format!("data-terms-version=\"{MANIFEST_DIGEST}\"")));
+    assert!(!html.contains("data-account-state=\"active\""));
+    native_entry_no_business_navigation(html);
     assert!(before == native_document_snapshot(&pool).await);
     recovered.close().await;
 }

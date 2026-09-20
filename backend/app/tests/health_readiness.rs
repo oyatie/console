@@ -156,7 +156,7 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
             ("Authorization", "Bearer root-unavailable-bearer"),
         ],
     ] {
-        for path in ["/", "/account"] {
+        for path in ["/", "/account", "/account/register"] {
             for (method, expected) in [
                 ("GET", StatusCode::SERVICE_UNAVAILABLE),
                 ("HEAD", StatusCode::METHOD_NOT_ALLOWED),
@@ -178,6 +178,11 @@ async fn ui_shell_serves_empty_ssr_html() -> Result<(), Box<dyn std::error::Erro
                                 console_payroll_ui::native_account::Page::Unavailable
                             )
                     );
+                    // Literal assertions must independently detect a wrong retry
+                    // destination even when the shared renderer matches itself.
+                    let html = std::str::from_utf8(&body)?;
+                    assert!(html.contains("<a class=\"button primary\" href=\"\">다시 시도</a>"));
+                    assert!(html.contains("<a class=\"text-link\" href=\"/\">시작 화면으로</a>"));
                 }
             }
         }

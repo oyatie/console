@@ -1,0 +1,27 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE exact additive native unavailable retry tests round2",
+  "manifest_sha256": "cbe9a1585d81725dbc8638a89981d631467e91c4db99ea627e6b7024a7edfe8e",
+  "source_custody": {
+    "backend/app/tests/auth_rest/native_document_cases.rs": {
+      "preimage_sha256": "f1082edf27121cea88ce8056eeb8dd45dd8360a46dcd61e00087e7f158096722",
+      "candidate_sha256": "4e8a270385142431b9d393c36201c5e20c344c439d2c7cac1873c051191800bf"
+    },
+    "backend/app/tests/health_readiness.rs": {
+      "preimage_sha256": "f989347c2afce618d56023115f18f696cde9a0839100ae7cb65f9de467e5ee9b",
+      "candidate_sha256": "a46f27e6f31411877066f83f6474d83b141fa63c2acbe2d8dca858033ebeb757"
+    }
+  },
+  "findings": [],
+  "evidence": [
+    "Twoexisting testfiles only. Allprior assertions unchanged; literal primaryemptyhref/home assertions independently catch incorrectdestination despite sharedrendererequality.",
+    "Real Authoutage test preserves positive session controls/closedpool/currentcookie roots/full snapshots; adds recovered anonymousregistration/currentterms/noactiveidentity/noBusinessnavigation.",
+    "NoDB health adds registration destination under existingGET503/HEAD405/noSetCookie cases, preserves exactsharedrenderedbody checks and every protectedroute assertion.",
+    "Round2 differs from firstpacket only pinnedrustfmt requested registrationline collapse; originalpacket retained."
+  ],
+  "limits": [
+    "No DB/browser/runtime executed by reviewer. Parent owns exactcleanRED/admission and sameprobeGREEN.",
+    "Realbrowser freshGET/query/fragment/keyboard preservation must still be executed; these Rustassertions alone do not establish relativeURL navigation behavior.",
+    "No test ignored/deleted or existing source rewritten in review."
+  ]
+}
