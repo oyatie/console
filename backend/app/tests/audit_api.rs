@@ -737,3 +737,356 @@ async fn insert_audit_with_trace(
     .await?;
     Ok(())
 }
+
+// Review candidate only; append to the approved audit_api.rs fixture.
+async fn freshness_audit_get(
+    service: &axum::Router,
+    token: &str,
+    path: &str,
+) -> (StatusCode, Value) {
+    let response = service
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri(path)
+                .header(header::AUTHORIZATION, format!("Bearer {token}"))
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let status = response.status();
+    let body = to_bytes(response.into_body(), 64 * 1024).await.unwrap();
+    (status, serde_json::from_slice(&body).unwrap())
+}
+
+async fn freshness_audit_rows(pool: &PgPool) -> String {
+    sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg(to_jsonb(e) ORDER BY e.id),'[]'::jsonb)::text FROM audit_events e",
+    )
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+async fn audit_role_demotion_history(pool: PgPool, original_role: &str, path: &str) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let user = UserId::new();
+    let branch = seed_branch(&pool, "Freshness Region", "Freshness Branch")
+        .await
+        .unwrap();
+    seed_user_with_branch(&pool, user, original_role, branch)
+        .await
+        .unwrap();
+    insert_audit(&pool, Some(user), "work_order", "freshness-visible", branch)
+        .await
+        .unwrap();
+    let token = issue_token(
+        private_pem.as_bytes(),
+        public_pem.as_bytes(),
+        user,
+        vec![original_role.to_owned()],
+        vec![branch],
+    )
+    .unwrap();
+    let service = build_router(app_state(pool.clone(), public_pem).await.unwrap());
+    let assert_visible = |status: StatusCode, body: &Value| {
+        assert_eq!(status, StatusCode::OK);
+        if path == "/api/v1/audit/attestation" {
+            assert_eq!(body["org_id"], OrgId::knl().to_string());
+            assert_eq!(body["ok"], true);
+            assert_eq!(body["kind"], "ok");
+        } else {
+            assert_eq!(body["items"].as_array().unwrap().len(), 1);
+            assert_eq!(body["items"][0]["target_id"], "freshness-visible");
+            assert_eq!(body["items"][0]["branch_id"], branch.to_string());
+        }
+    };
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_visible(status, &body);
+    let before = freshness_audit_rows(&pool).await;
+    // Committed fixture authority transition; no role-management workflow claim.
+    let demoted = sqlx::query("UPDATE users SET roles=$1 WHERE id=$2 AND org_id=$3")
+        .bind(vec!["MECHANIC"])
+        .bind(*user.as_uuid())
+        .bind(*OrgId::knl().as_uuid())
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(demoted.rows_affected(), 1);
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_eq!(
+        status,
+        StatusCode::FORBIDDEN,
+        "current role must override historical JWT role"
+    );
+    assert_eq!(body["error"]["code"], "forbidden");
+    assert!(body.get("items").is_none() && body.get("ok").is_none());
+    assert_eq!(
+        freshness_audit_rows(&pool).await,
+        before,
+        "denied read must have no audit effects"
+    );
+    let restored = sqlx::query("UPDATE users SET roles=$1 WHERE id=$2 AND org_id=$3")
+        .bind(vec![original_role])
+        .bind(*user.as_uuid())
+        .bind(*OrgId::knl().as_uuid())
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(restored.rows_affected(), 1);
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_visible(status, &body);
+}
+
+#[sqlx::test(migrations = false)]
+async fn audit_log_uses_current_role_after_token_issuance(pool: PgPool) {
+    audit_role_demotion_history(pool, "ADMIN", "/api/audit?target_type=work_order&limit=10").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn audit_attestation_uses_current_role_after_token_issuance(pool: PgPool) {
+    audit_role_demotion_history(pool, "SUPER_ADMIN", "/api/v1/audit/attestation").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn audit_log_uses_current_branches_after_token_issuance(pool: PgPool) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let user = UserId::new();
+    let retained = seed_branch(&pool, "Retained Region", "Retained Branch")
+        .await
+        .unwrap();
+    let revoked = seed_branch(&pool, "Revoked Region", "Revoked Branch")
+        .await
+        .unwrap();
+    seed_user_with_branch(&pool, user, "ADMIN", retained)
+        .await
+        .unwrap();
+    let added = sqlx::query("INSERT INTO user_branches(user_id,branch_id,org_id) VALUES($1,$2,$3)")
+        .bind(*user.as_uuid())
+        .bind(*revoked.as_uuid())
+        .bind(*OrgId::knl().as_uuid())
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(added.rows_affected(), 1);
+    insert_audit(&pool, Some(user), "work_order", "retained-target", retained)
+        .await
+        .unwrap();
+    insert_audit(&pool, Some(user), "work_order", "revoked-target", revoked)
+        .await
+        .unwrap();
+    let token = issue_token(
+        private_pem.as_bytes(),
+        public_pem.as_bytes(),
+        user,
+        vec!["ADMIN".to_owned()],
+        vec![retained, revoked],
+    )
+    .unwrap();
+    let service = build_router(app_state(pool.clone(), public_pem).await.unwrap());
+    let path = "/api/audit?target_type=work_order&limit=10";
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_eq!(status, StatusCode::OK);
+    let targets: std::collections::BTreeSet<_> = body["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|item| item["target_id"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        targets,
+        std::collections::BTreeSet::from(["retained-target", "revoked-target"])
+    );
+    assert_eq!(body["items"].as_array().unwrap().len(), 2);
+    // Revoke one membership, preserving useful authorized work on the other.
+    let removed =
+        sqlx::query("DELETE FROM user_branches WHERE user_id=$1 AND branch_id=$2 AND org_id=$3")
+            .bind(*user.as_uuid())
+            .bind(*revoked.as_uuid())
+            .bind(*OrgId::knl().as_uuid())
+            .execute(&pool)
+            .await
+            .unwrap();
+    assert_eq!(removed.rows_affected(), 1);
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        body["items"].as_array().unwrap().len(),
+        1,
+        "revoked branch cannot survive in historical claims"
+    );
+    assert_eq!(body["items"][0]["target_id"], "retained-target");
+    assert_eq!(body["items"][0]["branch_id"], retained.to_string());
+    let before = freshness_audit_rows(&pool).await;
+    let removed =
+        sqlx::query("DELETE FROM user_branches WHERE user_id=$1 AND branch_id=$2 AND org_id=$3")
+            .bind(*user.as_uuid())
+            .bind(*retained.as_uuid())
+            .bind(*OrgId::knl().as_uuid())
+            .execute(&pool)
+            .await
+            .unwrap();
+    assert_eq!(removed.rows_affected(), 1);
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert_eq!(body["error"]["code"], "forbidden");
+    assert!(body.get("items").is_none());
+    assert_eq!(freshness_audit_rows(&pool).await, before);
+}
+
+// Additive review candidate. Uses the previously proposed HTTP/snapshot helpers.
+async fn audit_current_grant_history(pool: PgPool, path: &str) {
+    console_platform_test_support::prepare_account_test_database(&pool).await;
+    let signing_key = SigningKey::random(&mut OsRng);
+    let private_pem = signing_key.to_pkcs8_pem(LineEnding::LF).unwrap();
+    let public_pem = signing_key
+        .verifying_key()
+        .to_public_key_pem(LineEnding::LF)
+        .unwrap();
+    let branch = seed_branch(&pool, "Grant Region", "Grant Branch")
+        .await
+        .unwrap();
+    let user = UserId::new();
+    // EXECUTIVE has all-branch scope but no built-in AuditLogRead permission.
+    seed_user_with_branch(&pool, user, "EXECUTIVE", branch)
+        .await
+        .unwrap();
+    let control_user = UserId::new();
+    seed_user_with_branch(&pool, control_user, "SUPER_ADMIN", branch)
+        .await
+        .unwrap();
+    insert_audit(&pool, Some(user), "work_order", "grant-visible", branch)
+        .await
+        .unwrap();
+    let token = issue_token(
+        private_pem.as_bytes(),
+        public_pem.as_bytes(),
+        user,
+        vec!["EXECUTIVE".to_owned()],
+        Vec::new(),
+    )
+    .unwrap();
+    let control_token = issue_token(
+        private_pem.as_bytes(),
+        public_pem.as_bytes(),
+        control_user,
+        vec!["SUPER_ADMIN".to_owned()],
+        Vec::new(),
+    )
+    .unwrap();
+    let service = build_router(app_state(pool.clone(), public_pem).await.unwrap());
+    let assert_visible = |status: StatusCode, body: &Value| {
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "current grant must reach the handler"
+        );
+        if path == "/api/v1/audit/attestation" {
+            assert_eq!(body["org_id"], OrgId::knl().to_string());
+            assert_eq!(body["ok"], true);
+            assert_eq!(body["kind"], "ok");
+        } else {
+            assert_eq!(body["items"].as_array().unwrap().len(), 1);
+            assert_eq!(body["items"][0]["target_id"], "grant-visible");
+            assert_eq!(body["items"][0]["branch_id"], branch.to_string());
+        }
+    };
+    // Same real router/seeded data: reject blanket denial or absent handler/data.
+    let (status, body) = freshness_audit_get(&service, &control_token, path).await;
+    assert_visible(status, &body);
+    let before = freshness_audit_rows(&pool).await;
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_eq!(status, StatusCode::FORBIDDEN);
+    assert_eq!(body["error"]["code"], "forbidden");
+    assert!(body.get("items").is_none() && body.get("ok").is_none());
+    assert_eq!(freshness_audit_rows(&pool).await, before);
+
+    // Already-committed policy fixture; does not prove the policy-authoring API.
+    let mut tx = pool.begin().await.unwrap();
+    let role: uuid::Uuid = sqlx::query_scalar(
+        "INSERT INTO policy_roles (org_id,role_key,display_name,status,is_system) \
+         VALUES ($1,'audit_current_grant','Audit current grant','ACTIVE',false) RETURNING id",
+    )
+    .bind(*OrgId::knl().as_uuid())
+    .fetch_one(tx.as_mut())
+    .await
+    .unwrap();
+    let permission = sqlx::query(
+        "INSERT INTO policy_role_permissions (org_id,role_id,feature_key,permission_level) \
+         VALUES ($1,$2,'audit_log_read','allow')",
+    )
+    .bind(*OrgId::knl().as_uuid())
+    .bind(role)
+    .execute(tx.as_mut())
+    .await
+    .unwrap();
+    assert_eq!(permission.rows_affected(), 1);
+    let assigned =
+        sqlx::query("INSERT INTO user_role_assignments (org_id,user_id,role_id) VALUES ($1,$2,$3)")
+            .bind(*OrgId::knl().as_uuid())
+            .bind(*user.as_uuid())
+            .bind(role)
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+    assert_eq!(assigned.rows_affected(), 1);
+    tx.commit().await.unwrap();
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_visible(status, &body);
+
+    let revoked = sqlx::query(
+        "DELETE FROM user_role_assignments WHERE org_id=$1 AND user_id=$2 AND role_id=$3",
+    )
+    .bind(*OrgId::knl().as_uuid())
+    .bind(*user.as_uuid())
+    .bind(role)
+    .execute(&pool)
+    .await
+    .unwrap();
+    assert_eq!(revoked.rows_affected(), 1);
+    let before = freshness_audit_rows(&pool).await;
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_eq!(
+        status,
+        StatusCode::FORBIDDEN,
+        "revoked grant cannot be cached"
+    );
+    assert_eq!(body["error"]["code"], "forbidden");
+    assert!(body.get("items").is_none() && body.get("ok").is_none());
+    assert_eq!(freshness_audit_rows(&pool).await, before);
+
+    let restored =
+        sqlx::query("INSERT INTO user_role_assignments (org_id,user_id,role_id) VALUES ($1,$2,$3)")
+            .bind(*OrgId::knl().as_uuid())
+            .bind(*user.as_uuid())
+            .bind(role)
+            .execute(&pool)
+            .await
+            .unwrap();
+    assert_eq!(restored.rows_affected(), 1);
+    let (status, body) = freshness_audit_get(&service, &token, path).await;
+    assert_visible(status, &body);
+}
+
+#[sqlx::test(migrations = false)]
+async fn audit_log_preserves_current_grants_after_token_issuance(pool: PgPool) {
+    audit_current_grant_history(pool, "/api/audit?target_type=work_order&limit=10").await;
+}
+
+#[sqlx::test(migrations = false)]
+async fn audit_attestation_preserves_current_grants_after_token_issuance(pool: PgPool) {
+    audit_current_grant_history(pool, "/api/v1/audit/attestation").await;
+}
