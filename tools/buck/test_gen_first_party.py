@@ -23,6 +23,17 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_payroll_application_declares_existing_manifest_input(self) -> None:
+        package = Path(GENERATOR.REPO) / "backend/crates/payroll/application"
+        self.assertIn('include_str!("../Cargo.toml")', (package / "src/lib.rs").read_text())
+        resources = GENERATOR.RESOURCE_CONFIG.get("console-payroll-application", {})
+        declared = {
+            path.resolve()
+            for pattern in resources.get("srcs", [])
+            for path in package.glob(pattern)
+        }
+        self.assertIn((package / "Cargo.toml").resolve(), declared)
+
     def test_private_company_intake_guards_auth_rest_resources_are_complete(self) -> None:
         config = GENERATOR.integration_resource_config("console-app", "tests/auth_rest.rs")
         self.assertEqual(
