@@ -296,6 +296,7 @@
     "backend/crates/platform/authz/src/lib.rs": 96,
     "backend/crates/platform/authz/tests/cedar_pbac_legacy_only_observe_and_record.rs": 5,
     "backend/crates/platform/authz/tests/cedar_pbac_readiness_cases.rs": 2,
+    "backend/crates/platform/authz/tests/cedar_sdk_identity.rs": 2,
     "backend/crates/platform/authz/tests/policy.rs": 45,
     "backend/crates/platform/db/src/lib.rs": 9,
     "backend/crates/platform/db/tests/attendance_console_migration_contract.rs": 10,

@@ -1090,7 +1090,7 @@ const requiredJobRunContracts = Object.freeze({
     setupDigest("Reconcile portable PostgreSQL role topology", "5da0f2d8c399657dbc0a9d358c81d71399af1ea6c659074a365653db21fcaded", { if: backendIndependentCondition }),
     proofDigest("Boot smoke — migrate + serve + /readyz", "d51d75f8cd49be1557c5b5c1f5f641345bc82f842d2384e9608e9872b0714d79", { if: backendLegTopologyCondition("cargo") }),
     proofDigest("Buck2 dev-auth feature PostgreSQL suites", "f059b50b432f8cafc4e58b14272fe76f5dd3d21842b8683f08c0a5f1f7a84001", { if: backendLegTopologyCondition("buck-dev-auth"), workingDirectory: "." }),
-    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
+    proofRun("Buck2 platform-authz unit suite", "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Buck2 console-app unit suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-unit", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofRun("Buck2 console-app OpenAPI drift suite", "env -u DATABASE_URL tools/buck2 test //backend/app:console-app-itest-openapi_drift", { if: backendLegCondition("buck-app"), workingDirectory: "." }),
     proofDigest("Buck2 console-app inline PostgreSQL suites", "2a59f90874addb48871158b672a9016159caba7382f49252d43beba2372daf63", { if: backendLegTopologyCondition("buck-app"), workingDirectory: "." }),
@@ -2820,7 +2820,7 @@ export function evaluateCiPreflight(
           // lowering decides row visibility, and its unit target executed in no
           // workflow at all until this contract existed.
           name: "Buck2 platform-authz unit suite",
-          run: "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit",
+          run: "env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity",
           workingDirectory: ".",
           if: backendLegCondition("buck-app"),
         },
