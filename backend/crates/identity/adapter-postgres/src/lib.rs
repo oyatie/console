@@ -36,6 +36,8 @@ use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 const DEFAULT_USER_LIMIT: i64 = 50;
 const MAX_USER_LIMIT: i64 = 200;
 
+mod company_policy;
+
 #[derive(Debug, thiserror::Error)]
 pub enum PgOrgError {
     #[error(transparent)]
@@ -83,12 +85,30 @@ fn direct_org_structure_mutation_refused() -> PgOrgError {
 #[derive(Debug, Clone)]
 pub struct PgOrgStore {
     pool: PgPool,
+    native_account_read: Option<company_policy::NativeAccountReadConfig>,
 }
 
 impl PgOrgStore {
     #[must_use]
     pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+        Self {
+            pool,
+            native_account_read: None,
+        }
+    }
+
+    /// Bind server-owned verification dependencies for native Account reads.
+    #[must_use]
+    pub fn with_native_account_auth(
+        mut self,
+        verifier: console_platform_auth::JwtVerifier,
+        absolute_ttl: time::Duration,
+    ) -> Self {
+        self.native_account_read = Some(company_policy::NativeAccountReadConfig {
+            verifier,
+            absolute_ttl,
+        });
+        self
     }
 
     #[must_use]

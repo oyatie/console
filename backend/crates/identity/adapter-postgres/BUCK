@@ -25,6 +25,7 @@ rust_library(
         "//backend/crates/identity/application:console-identity-application",
         "//backend/crates/identity/domain:console-identity-domain",
         "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
         "//backend/crates/platform/db:console-platform-db",
         "//backend/crates/platform/request-context:console-platform-request-context",
         "//third-party/rust:serde_json",

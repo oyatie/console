@@ -53,6 +53,32 @@ impl AccountEnrollmentCredentials {
         Ok(self.verify_at(verifier, account_now_in_tx(tx).await?)?.sub)
     }
 
+    /// Signed namespace only; no Account/family rows or shared locks are read.
+    pub async fn session_ids_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        absolute_ttl: Duration,
+    ) -> Result<(Uuid, Uuid), AccountOperationError> {
+        if absolute_ttl <= Duration::ZERO {
+            return Err(AccountOperationError::AuthorityUnavailable);
+        }
+        let claims = self.verify_at(verifier, account_now_in_tx(tx).await?)?;
+        Ok((claims.sub, claims.sid))
+    }
+
+    /// Resolve current read authority and retain the existing Account/family
+    /// shared guards until the caller ends this transaction. This read does not
+    /// consume or validate a captured mutation CSRF proof.
+    pub async fn read_session_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        absolute_ttl: Duration,
+    ) -> Result<AccountLiveSession, AccountOperationError> {
+        live_account_session_in_tx(tx, verifier, &self.access, absolute_ttl).await
+    }
+
     pub async fn lock_submit_in_tx<'b, 'c>(
         &'b self,
         tx: &'b mut Transaction<'c, Postgres>,
