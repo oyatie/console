@@ -36,6 +36,7 @@ use sqlx::{PgPool, Postgres, QueryBuilder, Row, Transaction};
 const DEFAULT_USER_LIMIT: i64 = 50;
 const MAX_USER_LIMIT: i64 = 200;
 
+mod company_enrollment;
 mod company_policy;
 
 #[derive(Debug, thiserror::Error)]
@@ -97,7 +98,7 @@ impl PgOrgStore {
         }
     }
 
-    /// Bind server-owned verification dependencies for native Account reads.
+    /// Bind server-owned verification dependencies for native Account operations.
     #[must_use]
     pub fn with_native_account_auth(
         mut self,

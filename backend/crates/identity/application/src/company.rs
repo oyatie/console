@@ -47,6 +47,22 @@ impl<'de> de::Visitor<'de> for InputObject {
 }
 
 impl CompanyEnrollmentV1 {
+    pub const fn command_id(&self) -> Uuid {
+        self.command_id
+    }
+    pub const fn group_id(&self) -> Option<Uuid> {
+        self.group_id
+    }
+    pub const fn administrative_account_id(&self) -> Uuid {
+        self.administrative_account_id
+    }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    pub fn slug(&self) -> &str {
+        &self.slug
+    }
+
     /// Parse the closed v1 input without losing duplicate-member evidence.
     /// The HTTP adapter must also bound body reads before allocating the body.
     pub fn from_json_slice(input: &[u8]) -> Result<Self, KernelError> {

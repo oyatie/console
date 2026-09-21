@@ -45,14 +45,16 @@ impl CompanyPolicyScope for PgCompanyPolicyScope<'_> {
 }
 
 impl PgOrgStore {
-    fn native_read_config(&self) -> Result<&NativeAccountReadConfig, CompanyPolicyError> {
+    pub(super) fn native_read_config(
+        &self,
+    ) -> Result<&NativeAccountReadConfig, CompanyPolicyError> {
         self.native_account_read
             .as_ref()
             .filter(|c| c.absolute_ttl > Duration::ZERO)
             .ok_or(CompanyPolicyError::MaterialUnavailable)
     }
 
-    async fn native_read_transaction(
+    pub(super) async fn native_read_transaction(
         &self,
     ) -> Result<Transaction<'static, Postgres>, CompanyPolicyError> {
         let mut tx = self.pool.begin().await.map_err(sql_error)?;
