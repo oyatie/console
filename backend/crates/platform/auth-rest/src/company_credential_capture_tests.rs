@@ -61,7 +61,7 @@ fn mutation() -> HeaderMap {
 }
 
 async fn api_error(
-    result: Result<AccountEnrollmentCredentials, Response>,
+    result: Result<AccountEnrollmentCredentials, Box<Response>>,
     status: StatusCode,
     code: &str,
 ) {
