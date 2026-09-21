@@ -1428,7 +1428,7 @@ jobs:
         id: authz-unit
         if: ${{ !cancelled() && matrix.leg == 'buck-app' && needs.preflight.outputs.run_heavy == 'true' }}
         working-directory: .
-        run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit
+        run: env -u DATABASE_URL tools/buck2 test //backend/crates/platform/authz:console-platform-authz-unit //backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity
 
       - name: Buck2 console-app unit suite
         id: app-unit

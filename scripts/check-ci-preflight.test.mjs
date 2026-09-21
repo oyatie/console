@@ -827,6 +827,35 @@ describe("CI preflight contract", () => {
     assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
   });
 
+  it("requires both native authz unit and Cedar SDK identity suites", () => {
+    const unit = "//backend/crates/platform/authz:console-platform-authz-unit";
+    const sdk = "//backend/crates/platform/authz:console-platform-authz-itest-cedar_sdk_identity";
+    const source = workflow.replace(
+      `        run: env -u DATABASE_URL tools/buck2 test ${unit}\n`,
+      `        run: env -u DATABASE_URL tools/buck2 test ${unit} ${sdk}\n`,
+    );
+    const steps = yaml.load(source).jobs.backend.steps.filter((step) =>
+      step.name === "Buck2 platform-authz unit suite");
+    assert.equal(steps.length, 1);
+    assert.deepEqual(steps[0], {
+      name: "Buck2 platform-authz unit suite",
+      id: "authz-unit",
+      if: backendBuckAppLegIf,
+      "working-directory": ".",
+      run: `env -u DATABASE_URL tools/buck2 test ${unit} ${sdk}`,
+    });
+    assert.deepEqual(evaluateCiPreflight(source).failures, []);
+    for (const target of [unit, sdk]) {
+      expectFailure(
+        mutateNamedStep(source, "backend", "Buck2 platform-authz unit suite", (step) => {
+          assert.equal(step.split(target).length, 2);
+          return step.replace(target, "");
+        }),
+        "backend must preserve the locked fail-fast step multiset and failure semantics",
+      );
+    }
+  });
+
   it("locks Required / CI to the oyatie-style presubmit proofs", () => {
     const requiredDependencies = [
       "preflight",

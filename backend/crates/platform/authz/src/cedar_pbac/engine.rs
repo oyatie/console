@@ -30,9 +30,9 @@ use sha2::{Digest, Sha256};
 use super::{AuthorizationRequest, CedarEvaluation, CompiledBundleCacheKey};
 use crate::{Feature, PermissionLevel, Role, permission_for};
 
-/// Cedar SDK version pinned in `authz/Cargo.toml` (`cedar-policy = "=4.11.2"`).
+/// Cedar SDK version pinned in `authz/Cargo.toml` (`cedar-policy = "=4.13.0"`).
 /// Recorded on the compiled-bundle cache key so a Cedar upgrade re-keys bundles.
-pub const CEDAR_SDK_VERSION: &str = "4.11.2";
+pub const CEDAR_SDK_VERSION: &str = "4.13.0";
 
 /// Cedar policy language version implemented by [`CEDAR_SDK_VERSION`].
 pub const CEDAR_LANGUAGE_VERSION: &str = "4.5";
@@ -623,7 +623,10 @@ mod tests {
         assert_eq!(bundle.key.org_id, OrgId::knl());
         assert_eq!(bundle.key.policy_version, 7);
         assert_eq!(bundle.key.schema_version, ROLE_MANAGE_SCHEMA_VERSION);
-        assert_eq!(bundle.key.cedar_sdk_version, "4.11.2");
+        assert_eq!(
+            bundle.key.cedar_sdk_version,
+            cedar_policy::get_sdk_version().to_string()
+        );
         assert_eq!(bundle.key.cedar_language_version, "4.5");
         assert!(!bundle.key.bundle_digest.is_empty());
     }
