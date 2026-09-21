@@ -23,6 +23,21 @@ SPEC.loader.exec_module(GENERATOR)
 
 
 class FirstPartyBuckGeneratorTests(unittest.TestCase):
+    def test_writer_ratchet_receives_workspace_and_topology_resources(self) -> None:
+        expected = GENERATOR.integration_external_resources(
+            "console-gate-layer-boundary", "tests/gate_detects_violation.rs", ""
+        )
+        self.assertGreater(len(expected), 100, "workspace resource oracle must not be empty")
+        self.assertEqual("backend/Cargo.toml", expected["//backend:Cargo.toml"])
+        expected["//ops:postgres-reconcile-topology.sh"] = "ops/postgres-reconcile-topology.sh"
+        self.assertTrue((Path(GENERATOR.REPO) / "ops/postgres-reconcile-topology.sh").is_file())
+        self.assertEqual(expected, GENERATOR.integration_external_resources(
+            "console-gate-writer-ownership", "tests/gate_detects_violation.rs", ""
+        ))
+        self.assertEqual({}, GENERATOR.integration_external_resources(
+            "console-gate-writer-ownership", "tests/unrelated.rs", ""
+        ))
+
     def test_payroll_application_declares_existing_manifest_input(self) -> None:
         package = Path(GENERATOR.REPO) / "backend/crates/payroll/application"
         self.assertIn('include_str!("../Cargo.toml")', (package / "src/lib.rs").read_text())
