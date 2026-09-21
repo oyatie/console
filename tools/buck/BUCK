@@ -1282,6 +1282,14 @@ sh_test(
 )
 
 sh_test(
+    name = "payroll-adapter-postgres-pay-run-port-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-pay_run_port_as_runtime_role)"],
+    deps = ["//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-pay_run_port_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
     name = "payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg",
     test = "run_test_with_postgres_env.sh",
     args = ["$(location //backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_lifecycle_rls_as_runtime_role)"],

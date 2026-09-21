@@ -1,0 +1,29 @@
+[
+  {
+    "lane": "payrun-native-wrapper-20260921",
+    "owner": "/root",
+    "base": "e40ab56519bfd2432d2c9d126cf85bc730a6900f",
+    "immutable_target": "standard five-field sh_test from approved test SHA d75745c870ac031d3bd9273eda917f9c5a8eda6471f0894d6459d4494640df79",
+    "allow": [
+      "tools/buck/BUCK"
+    ],
+    "probe": "python3 tools/buck/test_gen_first_party.py BrowserIntegrationVariantsTests.test_mapped_pay_run_port_wrapper_requires_credential_safe_native_execution -v",
+    "guide": "Add exactly existing mapped PayRun wrapper using adjacent sh_test pattern and unchanged protected loader. No generated files/map/CI/product edits.",
+    "premortem": "wrong inner target or credential bypass",
+    "blast_radius": "one native test wrapper",
+    "detection": "exact AST regression and native 17 test execution",
+    "rollback": "revert only unaccepted added wrapper preserving historical evidence",
+    "stop_conditions": [
+      "source drift",
+      "loader or map changes",
+      "missing actual native execution"
+    ],
+    "reviews": [
+      "/root/integration_tests",
+      "/root/integration_security"
+    ],
+    "holds": [
+      "payroll approval independence and connected MVP incomplete"
+    ]
+  }
+]
