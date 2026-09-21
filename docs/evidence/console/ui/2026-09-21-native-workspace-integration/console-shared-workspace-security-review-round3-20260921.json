@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/integration_security",
+  "reviewed_utc": "2026-09-21T18:36:26.476347+00:00",
+  "review_round": 3,
+  "design_path": "/private/tmp/console-shared-workspace-ui-design-round2-20260921.json",
+  "design_sha256": "6bb835b5065831f52c1472fa48fb139f347781543a7df16915edb2473a45f35d",
+  "design_verdict": "APPROVED_BOUNDED_PRESENTATION_DESIGN",
+  "test_path": "/private/tmp/console-workspace-ui-tests-round2-20260921.rs",
+  "test_sha256": "312731d33d2e9c4e6b94252da97938281298562496e351db07c78e2d0b5aa2d6",
+  "test_verdict": "SW2_PARTIALLY_REPAIRED_ONE_NARROW_CHANGE_REMAINS",
+  "resolved": [
+    "Company inventory cannot establish selected scope; header omitted without explicit current authorized projection.",
+    "Root page h1 and module h2 prevent duplicate subject.",
+    "SW1 actual nav start tag carries accessible name.",
+    "Static SSR content and native keyboard navigation retain no additional island requirement."
+  ],
+  "remaining": [
+    {
+      "id": "SW2",
+      "issue": "/hr current-state link is now locally checked but its search is still global; an unrelated current /hr content link could satisfy it while nav current marking is wrong.",
+      "correction": "Restrict /hr anchor search to actual nav fragment and require exactly one aria-current=page in that fragment."
+    }
+  ],
+  "custody_clarification": "No hydration behavior change does not exempt source custody: lib.rs is an existing manifest input and requires real producer validation/rebuild after source edits; never reseal stale output.",
+  "execution": {
+    "builds": 0,
+    "tests": 0,
+    "browser": 0,
+    "product_edits": 0
+  }
+}

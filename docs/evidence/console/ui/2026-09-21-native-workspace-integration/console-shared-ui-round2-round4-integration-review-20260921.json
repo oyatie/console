@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/integration_tests",
+  "design": "/private/tmp/console-shared-workspace-ui-design-round2-20260921.json",
+  "design_sha256": "6bb835b5065831f52c1472fa48fb139f347781543a7df16915edb2473a45f35d",
+  "round2": {
+    "verdict": "APPROVED_DESIGN_DIRECTION",
+    "actual_review": "Read successor clarifications and reviewed current source composition; root-only h1, no Company list as selected scope, non-run-specific payroll guide resolve earlier design ambiguity. No shell-only workflow acceptance."
+  },
+  "round4": {
+    "verdict": "APPROVED_RETAINED_SSR_ISLAND_COMPATIBILITY_DESIGN",
+    "actual_review": "Re-read unchanged ShippingNav/ShippingShell/render_screens and final candidate constraints after security round3; no target/type/data-contract expansion required.",
+    "checks": [
+      "Unauthenticated/denied focus retains exact empty shell; nav booleans still derive is_offered projections.",
+      "Module composition leaves AuthorizedRuns function, attributes, status filter and export source intact. Static focus omits JS/WASM; successful payroll rows retain existing hydration path.",
+      "Root owns one page h1; sidebar/main layout and module h2/h3 hierarchy support all four existing focuses.",
+      "Native disclosures/links need no extra hydration. Keyboard focus visibility, narrow layout and actual skip navigation await browser verification.",
+      "Current company inventory must not appear as selected authority scope; no Group/avatar/task badge invented.",
+      "New sources/style still change historical bundle input set; genuine rebuild/custody remains a separate required dependency, never manifest-only refresh."
+    ]
+  },
+  "test_candidate": {
+    "path": "/private/tmp/console-workspace-ui-tests-round3-20260921.rs",
+    "sha256": "10ab938f45f55c56ba37d6ba607cbecc63174294b63e56be545d7845e9c4bd59",
+    "verdict": "APPROVED_TWO_RENDERER_TESTS_FOR_EXECUTABLE_ADMISSION",
+    "checks": [
+      "Meaningful single h1, actual main target, named nav and static no-WASM assertion use current public renderer.",
+      "Active link assertion now scoped inside navigation and its exact anchor opening tag; unique current page marker prevents wrong-link false positive.",
+      "Denied/unimplemented destinations and dummy actions rejected; denied focus nav omitted."
+    ],
+    "limits": "No CSS/light-theme/reflow/keyboard success follows from these string assertions; actual browser and independent visual critique remain required."
+  },
+  "tests_run": 0,
+  "builds_run": 0,
+  "repo_edits": 0,
+  "lane_admission": "Requires actual compiled/discovered semantic RED and lease; these are design/test approvals only."
+}

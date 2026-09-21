@@ -1,0 +1,45 @@
+{
+  "kind": "independent_ui_design_and_test_candidate",
+  "status": "awaiting_independent_review_not_admitted",
+  "base": "0f812243c4af461bfd3685f8413ded84456f282b",
+  "author": "/root/integration_tests",
+  "boundary": "existing render_screens ShippingScreens UiScreen",
+  "tests_authored": 7,
+  "tests_executed": 0,
+  "native_builds": 0,
+  "repository_edits": 0,
+  "files_sha256": {
+    "workflow_presentation_tests.rs": "079398d8ac9a77ab8dadab79596ab89ec682f3918752e335398e0a1c6761405f",
+    "DESIGN.md": "23114dde8b1b9aa98f2d6aaa29e286499f34c0511d0437d3fbdf3daf90ac7d01",
+    "tests.patch": "dd9647a4cac0ad586c7888635ad9eb8024b952f7db302f833ec2980524defc0d"
+  },
+  "references_sha256": {
+    "/private/tmp/console-ux-reference-review-20260921/prototype-organization.png": "f01a76710bf7c03d561a2c75732c30bcb5eb2ef171a53b50c5811b4513d2bf3d",
+    "/private/tmp/console-ux-reference-review-20260921/prototype-payroll.png": "84264f636679da0ef0341a0d24b10aa24b86932690d8eef80b80364b0a4dedd7",
+    "/private/tmp/console-ux-reference-review-20260921/prototype-approval-detail-stable.png": "d34565f7a6aabf02b6725fba3e6b4178d2ed6f8a998875cc51ccf981c00f99ec"
+  },
+  "source_sha256": {
+    "backend/crates/payroll/ui/src/lib.rs": "59e62dcd06f5b8cd92ac2aec3733e349994c01ce4e1196450790fb35f45fb0b6",
+    "backend/app/src/lib.rs": "7b63de2c2e0781ff52c72f54d58544ec768b832c15183eaccfc1480739b1f390",
+    "backend/crates/payroll/adapter-postgres/src/lib.rs": "69e44f5c5aacde19e13254fc92d3b32b9298970e62c930de19dcb56a9b9bdec1",
+    "backend/crates/payroll/adapter-postgres/src/lifecycle.rs": "36d6c360c14cadb642ada5dc24861a86390397953a95910bb252469f0c4b357b",
+    "backend/crates/payroll/rest/src/lifecycle.rs": "9c6d4d7db3e482c1d8e19b736be2d175a0c1853227c00034f9456a61f5457edf"
+  },
+  "proposed_module_write_ownership": [
+    "backend/crates/payroll/ui/src/organization.rs",
+    "backend/crates/payroll/ui/src/payroll_workspace.rs"
+  ],
+  "shared_root_lease": [
+    "lib.rs",
+    "style",
+    "test_hookup",
+    "generator",
+    "BUCK",
+    "bundle_custody",
+    "authority"
+  ],
+  "full_owner_workflow_acceptance": false,
+  "red_probe": "tools/buck2 run //backend/crates/payroll/ui:console-payroll-ui-unit -- --exact workflow_presentation_tests::organization_preserves_partial_read_failure_and_offers_real_reload",
+  "revision": 2,
+  "predecessor_receipt_sha256": "fbd0fc43eb34121ea96419e027d7f8ad09e8567c78d59dac09627779e716056e"
+}

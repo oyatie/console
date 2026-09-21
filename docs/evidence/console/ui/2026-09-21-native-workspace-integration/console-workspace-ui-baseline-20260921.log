@@ -1,0 +1,32 @@
+[2026-09-21T14:33:18.643-04:00] Build ID: 0e3baeb6-62e0-4528-b6f0-bcf1decd4975
+[2026-09-21T14:33:18.658-04:00] Directory changed (since mergebase): root//docs/evidence/console/security
+[2026-09-21T14:33:18.658-04:00] Directory changed (since mergebase): root//docs/evidence/console/security/2026-09-21-scan-reconciliation
+[2026-09-21T14:33:18.658-04:00] File changed (since mergebase): root//docs/evidence/console/security/2026-09-21-scan-reconciliation/report.txt
+[2026-09-21T14:33:18.658-04:00] 13 additional file change events (since mergebase)
+[2026-09-21T14:33:18.658-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T14:33:25.737-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 609 other actions
+[2026-09-21T14:33:28.690-04:00] ✓ Pass: root//backend/crates/payroll/ui:console-payroll-ui-unit (0.0s)
+[2026-09-21T14:33:28.690-04:00] ---- STDOUT ----
+[2026-09-21T14:33:28.690-04:00]
+[2026-09-21T14:33:28.690-04:00] running 13 tests
+[2026-09-21T14:33:28.690-04:00] test private_document_tests::ssr_private_frame_oracle_rejects_missing_permissive_and_duplicate_policies ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::empty_runs_match_unauthenticated_shell ... ok
+[2026-09-21T14:33:28.690-04:00] test private_document_tests::ssr_private_shell_response_preserves_anonymous_document ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::shipping_screens_empty_matches_unauthenticated_shell ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::shipping_screens_focus_keeps_authorized_nav_and_omits_wasm_off_payroll ... ok
+[2026-09-21T14:33:28.690-04:00] test private_document_tests::ssr_private_screens_response_preserves_all_focus_and_disclosure_states ... ok
+[2026-09-21T14:33:28.690-04:00] test private_document_tests::ssr_private_native_documents_retain_status_bytes_and_restrictive_csp ... ok
+[2026-09-21T14:33:28.690-04:00] test private_document_tests::ssr_private_runs_response_preserves_empty_and_authorized_documents ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::authorized_runs_island_owns_a_presentation_only_status_filter ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::authorized_runs_carry_contract_keys_and_omit_won ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::shipping_screens_home_composes_authorized_sections_only ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::shipping_screens_organization_is_ssr_contracts_and_omits_wasm ... ok
+[2026-09-21T14:33:28.690-04:00] test tests::shipping_screens_hr_is_ssr_contracts_and_omits_phone ... ok
+[2026-09-21T14:33:28.690-04:00]
+[2026-09-21T14:33:28.690-04:00] test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+[2026-09-21T14:33:28.690-04:00]
+[2026-09-21T14:33:28.690-04:00]
+[2026-09-21T14:33:28.690-04:00] ---- STDERR ----
+[2026-09-21T14:33:28.690-04:00]
+[2026-09-21T14:33:28.698-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_security",
+  "round": 4,
+  "design_sha256": "6bb835b5065831f52c1472fa48fb139f347781543a7df16915edb2473a45f35d",
+  "test_sha256": "10ab938f45f55c56ba37d6ba607cbecc63174294b63e56be545d7845e9c4bd59",
+  "test_path": "/private/tmp/console-workspace-ui-tests-round3-20260921.rs",
+  "verdict": "APPROVED_EXACT_TWO_LEAF_SHARED_WORKSPACE_TEST_CANDIDATE",
+  "findings": [],
+  "verified": [
+    "SW1 accessible name checked on nav landmark start tag.",
+    "SW2 /hr anchor/current state now scoped to nav and exactly one current marker required.",
+    "Existing renderer and DTO only; no new phantom API or fixture product source.",
+    "Denied/empty and static island behavior preserved by explicit assertions and retained existing suite."
+  ],
+  "execution": {
+    "tests": 0,
+    "builds": 0
+  },
+  "not_lane_admission": true,
+  "custody": "Root confirms no manual stale-WASM rehash; real producer custody retained."
+}

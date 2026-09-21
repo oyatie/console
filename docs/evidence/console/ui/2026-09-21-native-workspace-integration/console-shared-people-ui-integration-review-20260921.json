@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/integration_tests",
+  "scope": "Independent read-only shared/People renderer design and test review; no native execution",
+  "shared": {
+    "path": "/private/tmp/console-shared-workspace-ui-design-20260921.json",
+    "sha256": "4099a85be19aa916158ae23f6e3f043312f1e77d290158ebc5780a1f2236959a",
+    "verdict": "APPROVE_DESIGN_DIRECTION_NOT_LANE_ADMISSION",
+    "conditions": [
+      "Root emits exactly one meaningful page h1 even on Home composing several module bodies; module headings are h2/h3.",
+      "Keep AuthorizedRuns island/export/source unchanged in this SSR lane; actual source-set custody drift remains pending real rebuild, never reseal.",
+      "Initial shell/renderer RED covers presentation only; five workflows and release acceptance require mounted owner actions/reopening, authentic browser/security/visual evidence.",
+      "No Company/Group context inferred from missing IDs and no unimplemented nav/action controls."
+    ],
+    "test_review_status": "Shared executable tests were not included in this design packet; independent test review and observed semantic RED still required."
+  },
+  "people": {
+    "path": "/private/tmp/console-people-ui-candidate-20260921/manifest.json",
+    "sha256": "22a83f0740d603cef13fab74a150573359b4b83e3540dae117be14ffb09d6e2f",
+    "candidate_hash_checks": {
+      "DESIGN.md": true,
+      "people_tests.rs": true,
+      "tests.patch": true
+    },
+    "source_hash_checks": {
+      "backend/crates/payroll/ui/src/lib.rs": true,
+      "backend/crates/contracts/src/semantic_dtos.rs": true,
+      "backend/crates/ontology/rest/src/lib.rs": true,
+      "backend/crates/ontology/canonical-adapter-postgres/src/person.rs": true,
+      "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs": true
+    },
+    "verdict": "DESIGN_APPROVED_TEST_STRENGTHENING_REQUIRED_BEFORE_FINAL_ACCEPTANCE",
+    "confirmed": [
+      "Uses existing callable renderer/types; current hr_body suppresses Employment Failure when Person Rows exists. This is a real semantic defect, not missing compile symbol.",
+      "Native details and stable UUID-linked Employment preserve existing published record routes and closed fields; no invented creation actions.",
+      "Four test fixtures remain cfg(test), no product fixtures/alternate server. Module partition does not collide with org/payroll; root lib/style hookups serialize.",
+      "Dates/action binding design correctly defers executable forms until exact mounted owner bridge; no unmounted scaffold implementation."
+    ],
+    "required_test_repairs": [
+      {
+        "id": "P1",
+        "problem": "Namesake test checks correct relation exists globally, so wrong additional relation to OTHER inspector can still pass.",
+        "repair": "Scope Employment relationship assertions to owning Person inspector and assert no Employment relation inside OTHER inspector; alternatively exact relationship structure that proves one correct owner without depending on class names."
+      },
+      {
+        "id": "P2",
+        "problem": "Only one direction of sibling Failure/Rows is exercised.",
+        "repair": "Extend the existing partial-failure leaf with people Failure plus Employment Rows; healthy Employment persists, specific Person failure/retry appears, and no Person empty state is substituted."
+      }
+    ],
+    "nonblocking_notes": [
+      "Exact discovery must precede run: libtest --exact zero tests otherwise exits success.",
+      "Source-string assertions cannot prove layout/keyboard/reflow; real browser checks remain required.",
+      "Counts must stay labelled visible projection counts because app list endpoints may paginate."
+    ]
+  },
+  "tests_run": 0,
+  "builds_run": 0,
+  "repository_edits": 0
+}

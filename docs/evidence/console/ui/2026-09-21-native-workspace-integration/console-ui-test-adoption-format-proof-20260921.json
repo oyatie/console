@@ -1,0 +1,26 @@
+{
+  "formatter": "rustfmt 1.10.0-nightly (a36d05efab 2026-09-09)",
+  "files": [
+    {
+      "reviewed_source": "/private/tmp/console-people-ui-candidate-round3-20260921/people_tests.rs",
+      "source_sha256": "7dc511ed0af8d570cbeae34386f99fa1acd85a427b3c9b2b6c1dd3653f9ba417",
+      "target": "/private/tmp/console-mvp-dev-integrate-20260921/backend/crates/payroll/ui/src/people_tests.rs",
+      "target_sha256": "8d3d171b6f9339b1a9a6891e4a4c567a45f3b118fd265bf20a0adef2969fd680",
+      "exact_rustfmt_projection": true
+    },
+    {
+      "reviewed_source": "/private/tmp/console-workspace-ui-tests-round3-20260921.rs",
+      "source_sha256": "10ab938f45f55c56ba37d6ba607cbecc63174294b63e56be545d7845e9c4bd59",
+      "target": "/private/tmp/console-mvp-dev-integrate-20260921/backend/crates/payroll/ui/src/workspace_tests.rs",
+      "target_sha256": "d09d6bc7dd8c81629505474e2e3522afe28a447f7a6037bf8cc9f95442901a12",
+      "exact_rustfmt_projection": true
+    },
+    {
+      "reviewed_source": "/private/tmp/console-org-payroll-ui-candidate-round2-20260921/workflow_presentation_tests.rs",
+      "source_sha256": "079398d8ac9a77ab8dadab79596ab89ec682f3918752e335398e0a1c6761405f",
+      "target": "/private/tmp/console-ui-org-payroll-20260921/backend/crates/payroll/ui/src/workflow_presentation_tests.rs",
+      "target_sha256": "7d0e3351a39c4d12cca9f9039479cd0e8d0c18fb9c47719985332ce9b6785c32",
+      "exact_rustfmt_projection": true
+    }
+  ]
+}

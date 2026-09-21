@@ -1,0 +1,31 @@
+{
+  "kind": "independent_design_test_review",
+  "reviewer": "/root/integration_security",
+  "candidate": "/private/tmp/console-org-payroll-ui-candidate-round2-20260921/receipt.json",
+  "candidate_sha256": "8201c0a9ba3fb01838a6b6f8cfd82fcd23d9b7f17d0d498aada6788c1b95c77d",
+  "base": "0f812243c4af461bfd3685f8413ded84456f282b",
+  "verdict": "APPROVED bounded SSR design and seven tests; not lane admission or workflow acceptance",
+  "verified": [
+    "All three candidate file hashes and five source hashes match immutable manifest and exact base.",
+    "Organization uses only supplied parent identity; no fabricated Company relation or hidden-parent links. Duplicate/cycle/orphan design preserves supplied information and identifies uncertainty.",
+    "Sibling failure/empty/omitted states independent with section-local route reload and both failure directions tested.",
+    "Payroll preserves one existing AuthorizedRuns representation/filter; surrounding evidence and consequence guide is not run-specific and never grants decisions or claims settlement.",
+    "Deep-chain and duplicate fixtures are test-only; iterative deterministic implementation and authentic source-to-bundle custody remain required."
+  ],
+  "nonblocking_notes": [
+    "Parent shared shell owns h1; its approved Home label is 업무 공간, superseding illustrative 내 업무 in this module design.",
+    "4096-node probe checks termination/count/endpoints, not every parent relation; implementation review must verify traversal correctness and uniqueness.",
+    "Global no-form/no-button assertions bind this bounded read-only candidate; future real shell controls require separately reviewed test evolution, never weakening silently."
+  ],
+  "ownership_refinement": "Per direct root instruction, isolated sole module writer may make exact lib.rs module/delegation hooks for executable GREEN. Shared integration/style/generated/authority roots remain root-owned and serial.",
+  "tests_authored": 7,
+  "tests_executed": 0,
+  "native_builds": 0,
+  "repository_edits": 0,
+  "remaining_holds": [
+    "Executable semantic RED and lane admission",
+    "Actual implementation correctness/security review",
+    "Native producer/custody and browser visual/interaction/restricted-policy evidence",
+    "Full organization/payroll owner projections/actions and release acceptance"
+  ]
+}

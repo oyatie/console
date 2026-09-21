@@ -1,0 +1,60 @@
+{
+  "kind": "shared_workspace_independent_design_and_test_review",
+  "reviewer": "/root/integration_security",
+  "reviewed_utc": "2026-09-21T18:35:25.362417+00:00",
+  "design_path": "/private/tmp/console-shared-workspace-ui-design-20260921.json",
+  "design_sha256": "4099a85be19aa916158ae23f6e3f043312f1e77d290158ebc5780a1f2236959a",
+  "tests_path": "/private/tmp/console-workspace-ui-tests-20260921.rs",
+  "tests_sha256": "16de48e768008cf9dd143cdb5e905b44c9a6c592f76bfbbe039955a84ead7810",
+  "base": "0f812243c4af461bfd3685f8413ded84456f282b",
+  "design_verdict": "APPROVED_BOUNDED_PRESENTATION_DESIGN",
+  "test_verdict": "TWO_NARROW_ORACLE_CORRECTIONS_REQUIRED",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Zero-trust / defense-in-depth",
+    "Operability / Day-2"
+  ],
+  "findings": [
+    {
+      "id": "SW1",
+      "path": "/private/tmp/console-workspace-ui-tests-20260921.rs",
+      "test": "workspace_focused_pages_have_a_named_main_and_keyboard_navigation",
+      "issue": "Global aria-label substring does not prove the navigation landmark has an accessible name; a label on unrelated content would pass.",
+      "correction": "Inspect the actual nav start tag or constrained nav fragment and require its aria-label=\uc8fc\uc694 \ud0d0\uc0c9. Keep real browser landmark/keyboard check."
+    },
+    {
+      "id": "SW2",
+      "path": "/private/tmp/console-workspace-ui-tests-20260921.rs",
+      "test": "workspace_navigation_never_advertises_denied_or_unimplemented_destinations",
+      "issue": "Separate global checks for /hr href and aria-current permit current marker on the wrong link or element.",
+      "correction": "Extract the /hr anchor start tag inside nav and require aria-current=page there; assert no other navigation link is current in this focused case."
+    }
+  ],
+  "accepted_properties": [
+    "Existing renderer/DTO boundary makes missing h1/skip target a genuine semantic RED after test compilation; no missing runtime infrastructure is used as RED.",
+    "Default denied ShippingScreens retains empty shell; only offered destinations drive nav. No permission inferred from role/title or client navigation.",
+    "Sibling Omitted/Empty/Failure/Rows preserved; People module successor separately covers both partial-failure and denied directions.",
+    "One light visual system, readable Korean/long text, native landmarks/disclosures and no unnecessary static collection islands match prototype adaptation.",
+    "No fixture product route, fake controls, unmounted forms or client-created success. Root shared writer and independent module files preserve ownership."
+  ],
+  "implementation_guardrails": [
+    "CompanyView is a list projection; do not label its first/only item as current Company/Group without an explicit owner-selected scope projection. A Company collection does not establish Group scope.",
+    "Preserve existing schema-required data attributes and compatible links until separately accepted successor; no extra restricted attributes to implement visual reference.",
+    "Do not mechanically attach skip/navigation to default denied render_shell because existing contract requires no href/nav there.",
+    "Shared CSS must match module tokens; People module uses inherited accent rather than a competing theme."
+  ],
+  "source_sha256": {
+    "backend/crates/payroll/ui/src/lib.rs": "59e62dcd06f5b8cd92ac2aec3733e349994c01ce4e1196450790fb35f45fb0b6"
+  },
+  "execution": {
+    "tests": 0,
+    "builds": 0,
+    "browser": 0,
+    "repository_edits": 0
+  },
+  "limits": [
+    "Presentation review only; no native Account business authority or release qualification inferred.",
+    "Actual browser visual/keyboard/320px/200% checks and independent screenshot critique still follow root implementation."
+  ]
+}

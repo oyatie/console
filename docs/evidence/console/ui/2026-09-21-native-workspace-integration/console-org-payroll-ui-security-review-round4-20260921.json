@@ -1,0 +1,22 @@
+{
+  "kind": "independent_design_final_review",
+  "reviewer": "/root/integration_security",
+  "round": 4,
+  "candidate_receipt_sha256": "8201c0a9ba3fb01838a6b6f8cfd82fcd23d9b7f17d0d498aada6788c1b95c77d",
+  "design_sha256": "23114dde8b1b9aa98f2d6aaa29e286499f34c0511d0437d3fbdf3daf90ac7d01",
+  "tests_sha256": "079398d8ac9a77ab8dadab79596ab89ec682f3918752e335398e0a1c6761405f",
+  "verdict": "APPROVED exact bounded SSR candidate after root round3; no semantic test change required",
+  "focus": [
+    "Duplicate IDs cannot select a winning parent; descendants cannot be rendered as if an ambiguous edge were a clean relationship. Design explicit conflict/unknown-parent treatment and every supplied unit retained govern implementation review.",
+    "Cycles/self-links/missing parent go to unknown-parent grouping; no hidden ancestor URL or inferred Company linkage. Iterative visited traversal prevents recursive overflow and repeated scans.",
+    "Flat ordered semantic hierarchy with explicit parent labels avoids 4096 DOM nesting/indentation blowups; narrow screens retain all labels without a horizontally panned chart.",
+    "Payroll has no per-run context outside working AuthorizedRuns filter. SSR guide does not infer lifecycle/current stage, evidence verification, authority, or settlement."
+  ],
+  "tests_executed": 0,
+  "remaining_holds": [
+    "Actual RED/admission and implementation review",
+    "Authentic bundle producer/custody",
+    "Browser320px/200percent zoom/keyboard plus independent visual critique",
+    "Full owning workflow acceptance"
+  ]
+}

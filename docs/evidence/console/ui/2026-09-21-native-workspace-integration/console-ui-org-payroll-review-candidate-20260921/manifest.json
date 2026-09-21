@@ -1,0 +1,10 @@
+{
+  "base": "1a647146cb90e9d3d17edfa612ced6fe0ded5b6a",
+  "source_root": "/private/tmp/console-ui-org-payroll-20260921",
+  "files": {
+    "backend/crates/payroll/ui/src/lib.rs": "fcf4ec45044031166ebfff3a9d1fc8aab826fa180d9e93cfcb7b2ba0ca413098",
+    "backend/crates/payroll/ui/src/organization.rs": "25b4b0bd6ecd6f3e7323e171f8a2d1505649697d7b20f66d9aae19278de76f5b",
+    "backend/crates/payroll/ui/src/payroll_workspace.rs": "d43635588577347cb7284cec1c9a5c1d0bd4fa1e152c9a1d2e1620a8fb3fbbc9"
+  },
+  "tests_unchanged": true
+}

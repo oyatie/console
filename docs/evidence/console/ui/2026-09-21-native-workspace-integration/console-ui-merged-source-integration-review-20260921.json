@@ -1,0 +1,19 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_merge_source_review",
+  "head": "bcb2fcc2380df802155df51d08e1949f7f5b405e",
+  "verdict": "APPROVED exact merged source; integrated native/browser results tracked separately",
+  "checks": [
+    "organization.rs byte-identical to independently reviewed module",
+    "payroll_workspace.rs byte-identical to independently reviewed module",
+    "people.rs byte-identical to independently reviewed module",
+    "AuthorizedRuns byte-identical to admitted base",
+    "people_tests.rs unchanged from independently reviewed test base",
+    "workspace_tests.rs unchanged from independently reviewed test base",
+    "workflow_presentation_tests.rs unchanged from independently reviewed test base",
+    "All original and adopted lib.rs test modules/hooks byte-identical to test base",
+    "Shared style/navigation/shell byte-identical to independently reviewed integration snapshot"
+  ],
+  "native_tests_executed": 0,
+  "browser_sessions_executed": 0
+}

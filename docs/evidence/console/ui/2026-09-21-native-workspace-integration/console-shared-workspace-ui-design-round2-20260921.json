@@ -1,0 +1,66 @@
+{
+  "base": "0f812243c4af461bfd3685f8413ded84456f282b",
+  "owner": "/root",
+  "kind": "bounded shared workspace presentation design",
+  "status": "proposed for independent review; not lane admission",
+  "intent": "Production-polished native Leptos workspace and five task modules first, connected to real owners module by module. Presentation acceptance never implies successful business execution or completed MVP.",
+  "references": [
+    "/private/tmp/console-ux-reference-review-20260921/prototype-people.png",
+    "/private/tmp/console-ux-reference-review-20260921/prototype-approval-detail-stable.png",
+    "docs/design/oyatie-console/Oyatie Console.dc.html",
+    "/private/tmp/console-prototype-five-workflow-parity-20260921.json",
+    "/private/tmp/console-official-ui-references-20260921/findings.md"
+  ],
+  "visual_direction": {
+    "theme": "One complete light theme: warm amber primary accent, ink text, quiet slate canvas, white work surfaces, semantic green/amber/red states with text labels. Adapt the actual prototype rather than introducing a marketing dashboard.",
+    "typography": "Korean-readable system/Pretendard-compatible stack; 14px minimum normal data text, 1.5 line height, clear page and section headings, tabular numbers only for numeric values. Long names wrap; IDs are secondary details, never substitute for invented names.",
+    "composition": "Compact labeled sidebar, Company/Group context header only from authorized projection, page subject and task explanation, main workspace with list/form and real evidence/detail beside it. No fake search/avatar/counts or empty communication rail. Existing communications remain independently navigable when actually available.",
+    "responsive": "Desktop sidebar and content; at narrow widths use native disclosure/navigation and stack evidence after subject with in-page anchors. 320px and200% zoom preserve every action and explanation. Only actual data tables may scroll horizontally.",
+    "interaction": "Visible focus, skip-to-main, keyboard-operable native controls/disclosures, accessible labels and status announcements, no animation required. Persisted server state and local unsaved input are visually distinct. No simulated timers, success toasts or client-issued authority."
+  },
+  "shared_contract": [
+    "Navigation reflects already-authorized destinations; no role inference, no unimplemented href or disabled pretend destination. Work/People/Communications/Data/Administration grouping is available only with real authorized destinations, payroll directly discoverable.",
+    "Existing Omitted/Empty/Failure/Rows semantics stay distinct for every subresource. A successful sibling list cannot hide an authorized failure; an omitted sibling must disclose no content or failure.",
+    "All contract-shaped data attributes, current compatible routes and existing SSR/island security checks remain preserved until separately reviewed successors. No new island for static collections.",
+    "Full workflow component designs may precede adapter wiring; mount/expose only when each offered link/action is real. Test fixtures remain in tests and are never served by a product preview route or binary. Browser business data is created through real UI.",
+    "Sustained creation/correction/review uses full pages, not oversized dialogs. Evidence/annotations/discrepancies and decision consequences remain accessible beside the action.",
+    "Root owns shared styles/lib.rs composition and generated outputs. Independent module workers own separate component files after admission; Company worker alone owns native_account.*. Integration is serialized and preserves historical tests/bundle custody."
+  ],
+  "implementation_partition": {
+    "shared": "Shared workspace presentation and only demonstrated repeated components; explicit typed page/view models, no universal screen generator.",
+    "people_employment": "People directory, person subject/related employment view, typed person/employment creation/change forms and state/recovery presentation against real domain input contracts.",
+    "organization_payroll_approval": "Organization hierarchy/effective-change context, payroll period and preparation/review/exception context, approval evidence/consequences/decision reason; stable objects and exact owner contracts."
+  },
+  "initial_executable_red": {
+    "boundary": "Existing render_screens(ShippingScreens, UiScreen), already called by mounted SSR handlers; tests use authorized viewmodel fixtures only.",
+    "requirements": [
+      "Authorized people/employment and organization panels preserve distinct sibling failure states instead of silently discarding them when another list has rows.",
+      "Focused authorized page supplies one meaningful h1 and labeled primary navigation, main skip target, light-theme responsive grammar; denied content remains omitted.",
+      "Every existing schema-required data attribute and payroll island boundary remains intact; no scripted hydration for static rows.",
+      "Following implementation, browser checks layout/keyboard/320px/200% using actual mounted product and real UI-created data where records are needed. No test fixture server constitutes delivery."
+    ],
+    "admission": "Exact reviewed tests must compile and fail semantically at this renderer on clean candidate. Missing imports, target/tool errors, missing Company SQL or denied native authentication are not this renderer lane's RED. Native build lease coordinated with Company owner."
+  },
+  "acceptance": "Polished presentation requires independent visual/interaction critique and prototype parity decisions; workflow acceptance additionally requires real browser authentication/current policy/owner effects/reopen/recovery. Complete five-module MVP, not a styled list or isolated component.",
+  "pre_mortem": [
+    "A polished screen hides missing business behavior",
+    "Sibling failure silently looks complete",
+    "Navigation leaks a forbidden resource",
+    "Narrow layout loses evidence/actions",
+    "Generic type abstraction replaces task-specific design"
+  ],
+  "rollback": "Revert reviewed presentation commit while preserving data, owner contracts, historical artifacts and tests; never restore rejected fixture routes.",
+  "stop_conditions": [
+    "Fixture product entry point",
+    "Fake success or unimplemented visible action",
+    "Authz/data-attribute regression",
+    "Unreviewed semantic test weakening",
+    "Generated-file/shared writer conflict"
+  ],
+  "clarifications": [
+    "CompanyView list is inventory, not a current scope. No current Company/Group header until explicitly selected authorized scope projection exists.",
+    "Root owns page h1. Module headings start at h2; no duplicate page subject.",
+    "Payroll SSR surrounding guide is non-run-specific; no mirror that diverges from the existing island filter.",
+    "Presentation lane does not change native_account.*, hydration source, or business action authority."
+  ]
+}

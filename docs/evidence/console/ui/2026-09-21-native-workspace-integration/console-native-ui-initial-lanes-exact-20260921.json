@@ -1,0 +1,81 @@
+[
+  {
+    "base": "25e6a6d2f8afa7354aeed1a21c3a69428703120a",
+    "immutable_target": "Existing mounted native Leptos renderer provides truthful, accessible authorized presentation; no new authority or fake action",
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "pre_mortem": [
+      "Denial leaks through navigation",
+      "Healthy sibling hides failure",
+      "Fixture becomes served data",
+      "Source bundle identity bypassed"
+    ],
+    "detection": [
+      "Exact semantic renderer RED turns GREEN",
+      "Retained13 SSR/island tests",
+      "Independent source and actual browser review before presentation acceptance"
+    ],
+    "rollback": "Revert bounded presentation changes; retain original tests, owner data and historical bundle evidence",
+    "stop_conditions": [
+      "Unreviewed test semantics",
+      "Changed authority",
+      "Fixture product route",
+      "Shared writer conflict",
+      "Missing tool treated as RED"
+    ],
+    "remaining_holds": [
+      "UI browser visual/reflow evidence",
+      "Real native bundle regeneration",
+      "Complete five workflows and full release"
+    ],
+    "mechanical_guide": "Existing DTOs only. No native_account or island changes. Tests remain unchanged apart from reviewed rustfmt. No SQL, generated artifacts, dependencies or authority edits.",
+    "lane": "native-ui-workspace-20260921",
+    "owner": "/root",
+    "allow": [
+      "backend/crates/payroll/ui/src/lib.rs"
+    ],
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin tools/buck2 run //backend/crates/payroll/ui:console-payroll-ui-unit -- --exact workspace_tests::workspace_focused_pages_have_a_named_main_and_keyboard_navigation > /private/tmp/console-ui-workspace-admission-probe-20260921.log 2>&1"
+  },
+  {
+    "base": "25e6a6d2f8afa7354aeed1a21c3a69428703120a",
+    "immutable_target": "Existing mounted native Leptos renderer provides truthful, accessible authorized presentation; no new authority or fake action",
+    "reviewers": [
+      "/root/integration_security",
+      "/root/integration_tests"
+    ],
+    "pre_mortem": [
+      "Denial leaks through navigation",
+      "Healthy sibling hides failure",
+      "Fixture becomes served data",
+      "Source bundle identity bypassed"
+    ],
+    "detection": [
+      "Exact semantic renderer RED turns GREEN",
+      "Retained13 SSR/island tests",
+      "Independent source and actual browser review before presentation acceptance"
+    ],
+    "rollback": "Revert bounded presentation changes; retain original tests, owner data and historical bundle evidence",
+    "stop_conditions": [
+      "Unreviewed test semantics",
+      "Changed authority",
+      "Fixture product route",
+      "Shared writer conflict",
+      "Missing tool treated as RED"
+    ],
+    "remaining_holds": [
+      "UI browser visual/reflow evidence",
+      "Real native bundle regeneration",
+      "Complete five workflows and full release"
+    ],
+    "mechanical_guide": "Existing DTOs only. No native_account or island changes. Tests remain unchanged apart from reviewed rustfmt. No SQL, generated artifacts, dependencies or authority edits. Agent alone owns isolated root. lib.rs only mod people, delegate hr_body, remove replaced DirectoryPeople/Employments to avoid dead code; root integrates hook serially and styles.",
+    "lane": "native-ui-people-20260921",
+    "owner": "/root/integration_security",
+    "allow": [
+      "backend/crates/payroll/ui/src/people.rs",
+      "backend/crates/payroll/ui/src/lib.rs"
+    ],
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin tools/buck2 run //backend/crates/payroll/ui:console-payroll-ui-unit -- --exact people_tests::people_directory_preserves_independent_failure_next_to_authorized_rows > /private/tmp/console-ui-people-admission-probe-20260921.log 2>&1"
+  }
+]

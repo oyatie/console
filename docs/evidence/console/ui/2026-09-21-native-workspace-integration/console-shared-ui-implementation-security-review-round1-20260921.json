@@ -1,0 +1,26 @@
+{
+  "kind": "independent_source_review",
+  "reviewer": "/root/integration_security",
+  "candidate": "/private/tmp/console-shared-ui-implementation-round1-20260921/manifest.json",
+  "source_sha256": "5dfb2181adf3dc4f914239d899fc442693757eec6bac3178fe37a295b8f019bd",
+  "verdict": "APPROVED bounded shared presentation source; browser and native test acceptance pending",
+  "evidence": [
+    "Source hash matches immutable packet; diff leaves AuthorizedRuns/island/bootstrap and DTO/owner functions unchanged.",
+    "Destination anchors still depend only on server-composed offered sections; no guessed Company/Group title or policy/mutation control. Generic navigation group text reveals no denied record.",
+    "One focus-specific h1/document title, skip link to focusable main, labelled navigation and aria-current on actual destination anchor; native controls receive visible focus outlines.",
+    "320px/mobile shell uses normal flow, wrapping nav and row content; People becomes one column <=1150px with bounded wrapping dl/summary. No table/diagram horizontal-pan requirement introduced.",
+    "Computed contrast ratios for actual declared pairs: muted/white6.16, muted/background5.64, accent/white6.82, selected nav8.25, flag6.37, chip7.13, glyph6.32, focus/white6.04. These are source color calculations, not whole-page accessibility qualification."
+  ],
+  "observations": [
+    "Real browser must still test long run status/source content, deep organization labels, open inspectors, keyboard focus and200percent zoom; source CSS inspection cannot establish overflow or screen-reader usability.",
+    "People section h2 repeats focused page h1 subject; assess spacing/repetition in actual visual critique, not a correctness blocker."
+  ],
+  "tests_executed": 0,
+  "browser_executed": 0,
+  "remaining_holds": [
+    "Native reviewed probes and preserved regressions",
+    "Actual browser screenshots/independent visual interaction critique/restricted permissions",
+    "Authentic regenerated bundle custody",
+    "Full release workflows/qualification"
+  ]
+}

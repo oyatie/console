@@ -1,0 +1,732 @@
+{
+  "kind": "bounded_ui_parity_review_not_roadmap",
+  "reviewer": "/root/integration_tests",
+  "source": {
+    "path": "/private/tmp/console-mvp-dev-integrate-20260921/docs/design/oyatie-console/Oyatie Console.dc.html",
+    "sha256": "845edf2ff0a445cdfa3a74bb5e031b43606ac8045fa5b805486887a13aabcfed",
+    "line_count": 20259
+  },
+  "product_inspection_base": "728b549173dd7e545ccc43b95b2a3034e47443f0",
+  "method": "Read-only static source/template/binding inspection; no browser, build, test, SQL or repo edits. Original dirty checkout read only. Smallest lenses: Cartesian doubt and Systems Thinking.",
+  "interpretation": "User-visible task outcomes and interactions must survive native Leptos implementation, with real owners and policy. Prototype simulation, erroneous claims, hardcoded identity and fake delivery must not be ported. This checklist supplies parity evidence to existing authorities/inventory, not another roadmap.",
+  "acceptance_common": "Create demo data through actual browser UI only; authenticate and authorize server-side; commit through canonical owner; reopen exact result; independently verify durable effects. Exercise denied/expired/revoked, stale/duplicate/interrupted and keyboard/IME/narrow states. Every exposed control/link works; no fake successes or seeded fallback.",
+  "checklist": [
+    {
+      "id": "W1",
+      "area": "shared workspace",
+      "user_visible_parity": "Keep list selection and working inspector while following related records or switching modules; pin/pop out/minimize/restore evidence.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "openDetail",
+          "line": 9406
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "snapTo",
+          "line": 9449
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "cardPinRight",
+          "line": 12856
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "cardPopOut",
+          "line": 12881
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "cardRestoreDefault",
+          "line": 12896
+        }
+      ],
+      "prototype_limit": "Client state/panel arrays and random panel IDs; not durable work or resource URLs.",
+      "required_real_behavior": "Native Leptos pages/inspectors preserve actual object IDs, current authorized context and draft progress; persistent URLs/reopening. Implement equivalent keyboard-accessible context retention, not necessarily identical floating-window mechanics.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "W2",
+      "area": "shared workspace",
+      "user_visible_parity": "Search and keyboard-open lists; Escape closes local overlays, Ctrl/Cmd+K opens search; columns resize without losing row alignment.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "handleKey",
+          "line": 14961
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrFiltered",
+          "line": 14408
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payListSorted",
+          "line": 9752
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payHeads bindings",
+          "line": 19266
+        }
+      ],
+      "prototype_limit": "Keyboard uses client seeded lists; not server-authorized search or IME qualification.",
+      "required_real_behavior": "Policy-filtered search/results and keyboard navigation with IME-safe typing, visible focus,320px and200% reflow; preserve state on reopen.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "W3",
+      "area": "shared workspace",
+      "user_visible_parity": "Typed mentions/object references open the same Person, organization, request or source record across workflows.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "tokenCatalog",
+          "line": 14273
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "tokenType",
+          "line": 14342
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "tokenKey",
+          "line": 14366
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "openPerson",
+          "line": 14261
+        }
+      ],
+      "prototype_limit": "Names/display strings often serve as identity; some token links only toast or no-op.",
+      "required_real_behavior": "Authorized stable object selection and normal links, including confidential-link omission; every exposed link resolves a usable destination.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "P1",
+      "area": "people",
+      "user_visible_parity": "Register a person with Company/team/job/rank/start date/employment kind/contact and wage context; field validation preserves input.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "onHrNew binding",
+          "line": 19837
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrNew form bindings",
+          "line": 19842
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrNewSubmit",
+          "line": 14389
+        }
+      ],
+      "prototype_limit": "Pushes EMPLOYEES/PEOPLE in memory; rejects duplicate display name; toast claims contract delivery without durable delivery.",
+      "required_real_behavior": "UI creation invokes canonical Person and separate Employment/assignment owners, stable IDs permit namesakes, durable receipt/reopen, current field policy, real contract/notification effects only when committed.",
+      "current_product_gap": "/people is legacy /hr list alias (app/src/lib.rs:3840); no native Person create/detail routes; native Person attribution gap recorded separately."
+    },
+    {
+      "id": "P2",
+      "area": "people",
+      "user_visible_parity": "Multi-field roster search; filter active/inactive/issue/field populations, select a row and open person card.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrMatch",
+          "line": 14376
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrFiltered",
+          "line": 14408
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "openPerson",
+          "line": 14261
+        }
+      ],
+      "prototype_limit": "Static role/viewer filtering and mutable EMPLOYEES; no authorized backend query.",
+      "required_real_behavior": "Real authorized roster/search with accurate state/counts and stable person route; post-departure person remains discoverable to authorized actors.",
+      "current_product_gap": "payroll/ui/src/lib.rs:349 DirectoryPeople is limited legacy SSR presentation; native cookie cannot reach it."
+    },
+    {
+      "id": "P3",
+      "area": "people",
+      "user_visible_parity": "Person details expose safe identity/contact, employment, team and Company links, current work and sensitive detail expansion.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "onPPhoneEdit/pFieldV bindings",
+          "line": 20029
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "onPTeamOpen/onPEntOpen bindings",
+          "line": 20063
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "onPDetailView binding",
+          "line": 20086
+        }
+      ],
+      "prototype_limit": "Phone edit mutates PEOPLE; detail gate depends on viewer/device simulation; organization matching uses names.",
+      "required_real_behavior": "Typed field-specific mutation through owner; server-rechecked sensitive projection; stable organization links and audit/provenance, no implied authority from rank.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "P4",
+      "area": "people/employment",
+      "user_visible_parity": "Cross-workflow person timeline links entry, employment, evaluations, attendance exceptions, leave, payroll and approvals.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "pLedger binding",
+          "line": 20090
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "openEmpDay",
+          "line": 14413
+        }
+      ],
+      "prototype_limit": "Timeline blends fixed sample history and transient state; synthetic attendance fallback at14418; some history links no-op.",
+      "required_real_behavior": "Chronological authorized persistent history/provenance with exact related object revisions; no invented attendance or wages when data is absent.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "E1",
+      "area": "employment",
+      "user_visible_parity": "Open action from person with person preselected: information change, appointment/transfer, leave grant, discipline/reward.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "pActions binding",
+          "line": 20115
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprOpenCompose",
+          "line": 10136
+        }
+      ],
+      "prototype_limit": "Most actions only prefill a generic approval title and display-name target. Canonical prototype has no separate employment screen or typed transfer form.",
+      "required_real_behavior": "Preserve entry convenience but supply typed Employment/OrgUnit/JobPosition references, current vs proposed values, effective date, reason/evidence, preview, draft, independent review and durable change.",
+      "current_product_gap": "No /employment native page in mounted route set; native Account business command attribution/current action schema missing."
+    },
+    {
+      "id": "E2",
+      "area": "employment",
+      "user_visible_parity": "Start leave-of-absence/departure case, see dependency/coverage impact, choose reason/date, submit and track staged approvals.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrSepStart",
+          "line": 12008
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrSepDeps",
+          "line": 12026
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrSepAdvance",
+          "line": 12037
+        }
+      ],
+      "prototype_limit": "Single viewer can advance every approval; date does not fence actual transition; EMPLOYEES status mutated directly.",
+      "required_real_behavior": "Employment owner enforces dated transitions and natural-person independence; current policy, actionable blockers, retained current/pending distinction and accountable recovery.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "E3",
+      "area": "employment",
+      "user_visible_parity": "Departure settlement checklist covers equipment, access, handover, unused leave, final payroll and filings; archive preserves history; leave case permits return.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "HRSEP_CHECKS",
+          "line": 11997
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrSepAdvance",
+          "line": 12078
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "hrSepCheckToggle",
+          "line": 12097
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "handoverRun",
+          "line": 10630
+        }
+      ],
+      "prototype_limit": "Checkboxes substitute for real outcomes; prototype says Account/access revoked and fixed filing deadline.",
+      "required_real_behavior": "Evidence-backed child outcomes and real handover, no eligible replacement path, independently validated legal applicability; Account persists after Employment, revoke only actual grants; immutable closure/history.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "O1",
+      "area": "organization",
+      "user_visible_parity": "Company/site/team tree with count/manager details and drill-through to the same people; inline rename/add and drag team move remain proposed edits.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgMoveTeam",
+          "line": 9649
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgTouched",
+          "line": 12664
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgAddSite",
+          "line": 12668
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgRenameSite",
+          "line": 12706
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgRenameEnt",
+          "line": 12710
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "organization bindings",
+          "line": 19480
+        }
+      ],
+      "prototype_limit": "Nested client arrays and name matching, immediate visible mutation; cross-Company drag possible in mock.",
+      "required_real_behavior": "Canonical effective-dated OrgUnit/assignment drafts with before/after; hierarchy invariants and Company legal boundary; cross-Company operation orchestrates separately authorized child commands.",
+      "current_product_gap": "legacy OrgUnits SSR at payroll/ui/src/lib.rs:317; no native hierarchy edit/draft/review route."
+    },
+    {
+      "id": "O2",
+      "area": "organization",
+      "user_visible_parity": "Create Company through staged setup: legal/display identity, first site/team, chosen approval/integration options, then visible workspace context.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgAddEntity",
+          "line": 12675
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "entNewCreate",
+          "line": 12678
+        }
+      ],
+      "prototype_limit": "Creates in-memory entities, channels and automation samples; no tenancy/policy/security transaction.",
+      "required_real_behavior": "Actual Account→Company/Group creation owner, durable receipt, current context discovery; only actually committed integration options exposed.",
+      "current_product_gap": "Company setup form exists; enroll/receipt/company object composition still incomplete at inspected728b baseline. Root integrating prerequisite; see real-browser inventory."
+    },
+    {
+      "id": "O3",
+      "area": "organization",
+      "user_visible_parity": "Organization change supports draft→precheck→approval→effective publication; abolition requires dependencies settled before archive.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgChangeOpen",
+          "line": 12616
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgChangePrecheck",
+          "line": 12630
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgChangeSubmit",
+          "line": 12631
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgChangeApprove",
+          "line": 12637
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgChangeEffectuate",
+          "line": 12642
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "orgChangeArchive",
+          "line": 12655
+        }
+      ],
+      "prototype_limit": "Arbitrary stage setState and approval checkbox; fixed approvers; audit text claims checks that are not enforced.",
+      "required_real_behavior": "Actual impact analysis, current independent grants, invariant revalidation on execute, versioned effective publication and settlement evidence; archive hides active view without erasing history.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "A1",
+      "area": "approvals",
+      "user_visible_parity": "Inbox, outbox and draft/template entry; show status and approval line, open pending or completed request and its evidence.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "appr tab template",
+          "line": 2411
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprOutbox binding",
+          "line": 18934
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprDrafts binding",
+          "line": 18949
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "openDetail",
+          "line": 9406
+        }
+      ],
+      "prototype_limit": "Outbox status/line from client arrays; some progress rows fixed samples.",
+      "required_real_behavior": "Durable policy-filtered inbox/outbox/task ownership with subject Company/date/revision/owner and persistent URLs/history; completed records reopen.",
+      "current_product_gap": "No /approvals product route at inspected baseline; generic engine APIs do not establish native business journey."
+    },
+    {
+      "id": "A2",
+      "area": "approvals",
+      "user_visible_parity": "Compose typed request with subject/reason, linked objects, structured evidence and configurable reviewer line; show related/duplicate requests.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "APPR_TEMPLATES",
+          "line": 10121
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprReasons",
+          "line": 10171
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprLinkSpec",
+          "line": 10186
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "APPR_ROUTING",
+          "line": 10215
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprEvidAdd",
+          "line": 10229
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprSubmit",
+          "line": 10245
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprDupList binding",
+          "line": 18962
+        }
+      ],
+      "prototype_limit": "Add-evidence inserts rotating sample receipts; duplicate detection is title-token heuristic; routing uses fixed role labels.",
+      "required_real_behavior": "Real uploaded/registered evidence with exact versions and authorized object refs; durable drafts/input preservation; current policy selects eligible reviewers; duplicate suggestion distinct from command idempotency.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "A3",
+      "area": "approvals",
+      "user_visible_parity": "Contract/critical request self-attestation and peer review prevent submission until required checks complete.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "GUARD_SELF_CK",
+          "line": 10151
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprCkToggle",
+          "line": 10154
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprPeerPick",
+          "line": 10164
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprSubmit",
+          "line": 10245
+        }
+      ],
+      "prototype_limit": "Client booleans/name filtering; logged permit is not Cedar enforcement or natural-person independence.",
+      "required_real_behavior": "Owner-owned prerequisites and evidence, separate Accounts tied to same natural person cannot self-review, execution rechecks same authority/invariants as preflight.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "A4",
+      "area": "approvals",
+      "user_visible_parity": "Approve, return for repair or reject with required reason; process bulk requests individually and see resulting status/notifications.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "panelDecide",
+          "line": 9503
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "approveFromModal",
+          "line": 14439
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "returnFromModal",
+          "line": 14455
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "bulk approval bindings",
+          "line": 18920
+        }
+      ],
+      "prototype_limit": "Marks item done and offers simplistic undo; reason notification often only toast.",
+      "required_real_behavior": "Exact reviewed revision, durable per-command/per-child receipt; known failure/conflict/unknown state; real notification and repair/revision/resubmit path; no deletion/rewrite of approved history.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "A5",
+      "area": "approvals",
+      "user_visible_parity": "Finalize completed request, delegated completion with reason, and post-approval correction/revocation keep participant history.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprOvrRun",
+          "line": 12104
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprFinalize",
+          "line": 12114
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "apprRevoke",
+          "line": 12122
+        }
+      ],
+      "prototype_limit": "Client status rewrites; claims Cedar override and24-hour archiving without backend job.",
+      "required_real_behavior": "Explicit authorized delegation and append-only supersession/correction; real retention/workflow owner; no implicit executive authority or stale approval effects.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "Y1",
+      "area": "payroll",
+      "user_visible_parity": "Clearly gated sequence: resolve attendance inputs/close→calculate→review exceptions→submit→independent decision→publish.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "attConfirmClose",
+          "line": 9690
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payRunCalc",
+          "line": 9709
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "paySubmit",
+          "line": 9729
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payCta derivation",
+          "line": 15326
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payGate bindings",
+          "line": 19222
+        }
+      ],
+      "prototype_limit": "Calculation is1400ms timeout over fixed1284-person sample, with fixed totals and stages.",
+      "required_real_behavior": "Real Company-run owner with persisted source/revision identities, exact money/time calculation, progress/recovery and reviewed publication; current preconditions enforced transactionally.",
+      "current_product_gap": "Current payroll UI exposes legacy RunSummary/status filter only (payroll/ui/src/lib.rs:561); native source/draft/review pages absent."
+    },
+    {
+      "id": "Y2",
+      "area": "payroll",
+      "user_visible_parity": "Expand exceptions beside person/attendance/evidence links; distinguish confirm versus hold to next run; unresolved exceptions block submission.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payExAct",
+          "line": 9718
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payExRows bindings",
+          "line": 19231
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "paySubmit",
+          "line": 9729
+        }
+      ],
+      "prototype_limit": "In-memory flags; some evidence links explicitly say next-stage scope and do not open an object.",
+      "required_real_behavior": "Actual repair/hold commands tied to source version, explained consequences and eligibility; reopen exact evidence; held wages carry accountable exception state and independent legal rule checks.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "Y3",
+      "area": "payroll",
+      "user_visible_parity": "Search roster, prioritize unresolved exceptions, compare base/allowances/deductions/net/month change; open person or payroll sheet.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payListSorted",
+          "line": 9752
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payHeads/payRows bindings",
+          "line": 19266
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "onPaySheet binding",
+          "line": 20127
+        }
+      ],
+      "prototype_limit": "Fixed amounts/rows and generic sheet populated from samples; audit may be toast.",
+      "required_real_behavior": "Authorized roster and exact calculation breakdown/provenance, restricted salary fields, meaningful comparison and actual governed sheet/read view if exposed.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "Y4",
+      "area": "payroll",
+      "user_visible_parity": "Returned run can reopen, repair exceptions/source and resubmit with visible approval and publication state.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payResubmit",
+          "line": 9746
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "payCta derivation",
+          "line": 15329
+        }
+      ],
+      "prototype_limit": "Deletes prior pa1 approval from array and flips submitted false.",
+      "required_real_behavior": "Superseding durable revisions and retained rejection/review history; exact reviewed result published; lost-response receipt/recovery and historical correction.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    },
+    {
+      "id": "Y5",
+      "area": "payroll",
+      "user_visible_parity": "Clear post-approval outcomes, statements, payment instructions and settlement tracking; no misleading payment-success feedback.",
+      "prototype": [
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "paySubmit",
+          "line": 9733
+        },
+        {
+          "path": "docs/design/oyatie-console/Oyatie Console.dc.html",
+          "anchor": "approveFromModal",
+          "line": 14448
+        }
+      ],
+      "prototype_limit": "Prototype says approval automatically schedules bank transfer. This conflicts with current explicitly bounded release payment contract.",
+      "required_real_behavior": "ADAPT: issue statements and approved immutable instruction/export artifact; external acknowledgement/settlement/reconciliation stays separate. Download/export never means paid. Direct execution remains separately authorized.",
+      "current_product_gap": "Business SSR still reaches legacy Bearer-only compose_ui_screens (backend/app/src/lib.rs:4064,4160); no native Account-owned connected workflow mounted."
+    }
+  ],
+  "focused_static_references": [
+    {
+      "path": "/Users/jasonlee/Developer/console/docs/design/hr-payroll/MyWork.dc.html",
+      "sha256": "eff85b8a6515d1f8030fa31bc35b1ae35e20f1bea913b88f1547dc27324a7225",
+      "lines": [
+        101,
+        110,
+        123,
+        141,
+        147,
+        151
+      ],
+      "visible_reference": "Assigned tasks with subject/owner/due/action, payroll/source blockers, departure handover and organization approval progress.",
+      "limit": "Static visual artifact: inspected controls have no corresponding action methods. Its appearance is a parity reference, not working implementation evidence."
+    },
+    {
+      "path": "/Users/jasonlee/Developer/console/docs/design/hr-payroll/HRPeople.dc.html",
+      "sha256": "19a1e475be4c7e766bd2e22b710c40a2cc0c196a688f7c567b3e811f5bc96282",
+      "lines": [
+        98,
+        108,
+        125,
+        134,
+        194
+      ],
+      "visible_reference": "Registration, structured roster filters and actionable wage/NTS/attendance/identity readiness.",
+      "limit": "Static visual artifact: inspected controls have no corresponding action methods. Its appearance is a parity reference, not working implementation evidence."
+    },
+    {
+      "path": "/Users/jasonlee/Developer/console/docs/design/hr-payroll/HRPerson.dc.html",
+      "sha256": "c2de57bbb81f84c2647b996c4728a440e1a98f29081b75dfad196e3f82efc821",
+      "lines": [
+        110,
+        117,
+        124,
+        132,
+        146,
+        178,
+        183
+      ],
+      "visible_reference": "Person→Employment/history→effective wage source→attendance→documents and statement receipt.",
+      "limit": "Static visual artifact: inspected controls have no corresponding action methods. Its appearance is a parity reference, not working implementation evidence."
+    },
+    {
+      "path": "/Users/jasonlee/Developer/console/docs/design/hr-payroll/PayrollRuns.dc.html",
+      "sha256": "b4defcae25882a3924e6713a8a57aa8b6530e3c6fe857e0e8cc1b44c9ccc09c4",
+      "lines": [
+        92,
+        99,
+        127,
+        140,
+        160
+      ],
+      "visible_reference": "New run, blocking reasons, request/review state, publication and exact Company/period totals.",
+      "limit": "Static visual artifact: inspected controls have no corresponding action methods. Its appearance is a parity reference, not working implementation evidence."
+    }
+  ],
+  "cross_cutting_conflicts_to_adapt": [
+    "Payroll approval must not schedule/execute direct bank payments.",
+    "Rank/title/hierarchy/manager labels never supply implicit authority.",
+    "Account persists independently from Employment; departure revokes scoped grants, not identity.",
+    "Cross-Company drag or Group scope cannot merge Company payroll truth.",
+    "Do not identify people by display name or reject legitimate namesakes.",
+    "Simulated undo/status replacement must become append-only authorized correction.",
+    "Money, legal filing deadlines, staffing decisions and Korean calculations require actual independently validated rules; prototype constants are not oracles."
+  ],
+  "prior_gap_inventory": "/private/tmp/console-real-browser-ui-inventory-20260921.md"
+}

@@ -1,0 +1,56 @@
+{
+  "base": "25e6a6d2f8afa7354aeed1a21c3a69428703120a",
+  "head": "5d762b164e55024c81011d5a31b71cda48f2a937",
+  "owner": "/root/integration_security",
+  "files_sha256": {
+    "backend/crates/payroll/ui/src/people.rs": "cf0bf8e1d22c9dc63e06217e7cd7391f80552f52e4c3b7f2b10167b3988f59fd",
+    "backend/crates/payroll/ui/src/lib.rs": "3b431162afde80ccad0bd51581c3e363db9f51343bbb9f512bc0c0d14ad0ac3b"
+  },
+  "artifact": "/private/tmp/console-ui-people-20260921/buck-out/v2/art/root/39893c7e49283da4/backend/crates/payroll/ui/__console-payroll-ui-unit__/console_payroll_ui",
+  "artifact_sha256": "10817274d28b6a37996f32b3513cb92b5cb4b3de691502b484944909387dcbd6",
+  "logs_sha256": {
+    "/private/tmp/console-ui-people-green-probe-20260921.log": "d3e8b354233ab7cafcb7dc9b5287cc2012dadacf18cab46af8e157b969fec642",
+    "/private/tmp/console-ui-people-discovery-20260921.log": "bfe7a5b2c6beba50ee717275295106070972e034dfcd9a1b0e12d7fb18ee76d3",
+    "/private/tmp/console-ui-people-full-20260921.log": "386a2ce54fdee881187c56f3198ff1e18f8d2a7a47ba32c750d713db3264ed12"
+  },
+  "verification": {
+    "exact_admitted_probe": {
+      "discovered": 1,
+      "executed": 1,
+      "passed": 1,
+      "filtered": 20
+    },
+    "full_target": {
+      "discovered": 21,
+      "executed": 21,
+      "passed": 20,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "people": {
+      "discovered": 6,
+      "executed": 6,
+      "passed": 6
+    },
+    "preserved": {
+      "discovered": 13,
+      "executed": 13,
+      "passed": 13
+    },
+    "remaining_failure": "workspace_tests::workspace_focused_pages_have_a_named_main_and_keyboard_navigation (parent shared workspace implementation not in this isolated root)",
+    "diff_check": "passed",
+    "rustfmt_edition2024_check": "passed",
+    "initial_prerequisite_failure": "Sandbox denied Buck daemon dir outside workspace; approved normal-cache execution succeeded; not semantic RED"
+  },
+  "review_fix": "Per parent source review stable fragment IDs moved inside native details so browser ancestor reveal can open related inspector; no custom JS or test changes. Actual browser behavior remains unverified. Korean label uses 직무 식별자.",
+  "tests_changed": false,
+  "scope": "New static People/Employment module and exact lib.rs registration/delegation/removal of replaced components only; no styles/island/native_account/generated/schema edits",
+  "remaining_holds": [
+    "Independent exact candidate source review",
+    "Root shared styles/integration and all21 native tests green",
+    "Real browser fragment reveal, reflow/zoom/keyboard/Korean text/screenshots and critique",
+    "Authentic source-bundle custody",
+    "Complete owning lifecycle workflows and release qualification"
+  ]
+}

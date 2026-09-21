@@ -1,0 +1,38 @@
+{
+  "base": "0f812243c4af461bfd3685f8413ded84456f282b",
+  "author": "/root/integration_security",
+  "status": "proposed_review_not_admitted",
+  "candidate_files": {
+    "DESIGN.md": "05c5adf0abec265a94e98cad694723c93f4dbe3b4b7b9f0b297b3670937c34d3",
+    "people_tests.rs": "7dc511ed0af8d570cbeae34386f99fa1acd85a427b3c9b2b6c1dd3653f9ba417",
+    "tests.patch": "73ca01fc4cc1594ea3052c7998d1fd2cf097d2fcee08c80aea5131b1c4bc2dfc"
+  },
+  "source_hashes": {
+    "backend/crates/payroll/ui/src/lib.rs": "59e62dcd06f5b8cd92ac2aec3733e349994c01ce4e1196450790fb35f45fb0b6",
+    "backend/crates/contracts/src/semantic_dtos.rs": "182d6adbd15fa4f59e796fb3705a2670155313df33eb419ce0795bb33e97427e",
+    "backend/crates/ontology/rest/src/lib.rs": "1f343cbba9704bd07fa87bcb5305d934089581a2f9ebf70d67a95c811dc334e9",
+    "backend/crates/ontology/canonical-adapter-postgres/src/person.rs": "f00ed2e62e114791f7f990f93cb8772f4f5c9f8338c439c363922890260eeec7",
+    "backend/crates/ontology/canonical-adapter-postgres/src/employment.rs": "c2177f48e35a90a8728215616cebe7d39fd5f8e3ce57eb9d0561e494bd4c3f59"
+  },
+  "reference_images_viewed": [
+    "/private/tmp/console-ux-reference-review-20260921/prototype-people.png",
+    "/private/tmp/console-ux-reference-review-20260921/prototype-person-detail-stable.png"
+  ],
+  "probe": "tools/buck2 run //backend/crates/payroll/ui:console-payroll-ui-unit -- --exact people_tests::people_directory_preserves_independent_failure_next_to_authorized_rows",
+  "tests_authored": 6,
+  "tests_executed": 0,
+  "builds_executed": 0,
+  "product_edits": 0,
+  "implementation_partition": [
+    "backend/crates/payroll/ui/src/people.rs",
+    "backend/crates/payroll/ui/src/people_tests.rs"
+  ],
+  "root_serialized": [
+    "backend/crates/payroll/ui/src/lib.rs",
+    "shared_styles",
+    "generated_artifacts"
+  ],
+  "forms": "Complete field/owner/command/recovery design now; implement only through subsequently accepted mounted form+bridge target, never placeholder components.",
+  "round": 3,
+  "predecessor_manifest_sha256": "4009697152f19cb1214de66828e80d804f18c867cf0eef2772942a114bf8e768"
+}
