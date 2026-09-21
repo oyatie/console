@@ -2476,6 +2476,22 @@ describe("CI preflight contract", () => {
     );
   });
 
+  it("requires both native platform authorization and topology codec unit suites", () => {
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+    for (const target of [
+      "//backend/crates/platform/authz:console-platform-authz-unit",
+      "//backend/crates/platform/provisioning:console-platform-provisioning-unit",
+    ]) {
+      expectFailure(
+        mutateNamedStep(workflow, "backend", "Buck2 platform-authz unit suite", (step) => {
+          assert.equal(step.split(target).length, 2);
+          return step.replace(target, "");
+        }),
+        "backend must preserve the locked fail-fast step multiset and failure semantics",
+      );
+    }
+  });
+
   it("keeps protected backend steps fail-slow and runs PR 473 contract tests before topology", () => {
     expectFailure(
       workflow.replace(
