@@ -720,9 +720,10 @@ impl IntoResponse for BrowserError {
 use axum::extract::{Extension, RawQuery, State};
 use console_platform_auth::AccountCsrfTokenInput;
 use console_platform_auth::account::{
-    AccountLiveSession, AccountOperationError, account_contexts_empty_in_tx,
-    account_csrf_session_in_tx, account_login_consent_in_tx, account_now_in_tx,
-    ensure_account_session_fresh_in_tx, live_account_session_in_tx, logout_account_session_in_tx,
+    AccountEnrollmentCredentials, AccountLiveSession, AccountOperationError,
+    account_contexts_empty_in_tx, account_csrf_session_in_tx, account_login_consent_in_tx,
+    account_now_in_tx, ensure_account_session_fresh_in_tx, live_account_session_in_tx,
+    logout_account_session_in_tx,
 };
 use console_platform_provisioning::{
     AccountRegistrationFinishInput, AccountRegistrationStartInput, ProvisioningError,
@@ -756,6 +757,39 @@ impl From<ProvisioningError> for BrowserError {
             // No SQL/crypto/input-bearing diagnostic can cross native transport.
             _ => Self::AuthorityUnavailable,
         }
+    }
+}
+
+impl AuthRestState {
+    /// Admit native API read transport and capture bounded private bytes only.
+    /// The owning transaction must establish current authentication and policy.
+    pub fn company_api_read_credentials(
+        &self,
+        headers: &HeaderMap,
+    ) -> Result<AccountEnrollmentCredentials, Box<Response>> {
+        let capture = || -> Result<AccountEnrollmentCredentials, BrowserError> {
+            let services = configured(self)?;
+            let cookies = admit_read(headers, &services.rp_origin)?;
+            let access = required(&cookies.session, BrowserError::AuthenticationInvalid)?;
+            Ok(AccountEnrollmentCredentials::for_read(access)?)
+        };
+        capture().map_err(|error| Box::new(error.into_response()))
+    }
+
+    /// Capture native mutation transport, including the exact bounded proof.
+    /// Signature, time and live binding are checked by the Auth/Company owner.
+    pub fn company_api_mutation_credentials(
+        &self,
+        headers: &HeaderMap,
+    ) -> Result<AccountEnrollmentCredentials, Box<Response>> {
+        let capture = || -> Result<AccountEnrollmentCredentials, BrowserError> {
+            let services = configured(self)?;
+            let cookies = admit_post(headers, &services.rp_origin)?;
+            let proof = csrf_header(headers)?;
+            let access = required(&cookies.session, BrowserError::AuthenticationInvalid)?;
+            Ok(AccountEnrollmentCredentials::for_mutation(access, proof)?)
+        };
+        capture().map_err(|error| Box::new(error.into_response()))
     }
 }
 

@@ -165,6 +165,21 @@ fn admit_document<'a>(
     Ok(cookies)
 }
 
+impl AuthRestState {
+    /// Capture credentials for a mounted GET document using document admission.
+    /// No headers are fabricated and no authentication or policy is established.
+    pub fn company_document_credentials(
+        &self,
+        headers: &HeaderMap,
+    ) -> Result<AccountEnrollmentCredentials, NativeEntryError> {
+        let services = configured(self)?;
+        let cookies = admit_document(headers, &services.rp_origin)?;
+        let access = supplied(&cookies.session, BrowserError::AuthenticationInvalid)?
+            .ok_or(NativeEntryError::Unauthorized)?;
+        AccountEnrollmentCredentials::for_read(access).map_err(|_| NativeEntryError::Unauthorized)
+    }
+}
+
 /// Safe document projection only: no session/refresh/proof values, database
 /// capability or legacy Company identity can cross this interface.
 pub async fn native_account_entry(
