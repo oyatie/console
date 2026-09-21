@@ -56,6 +56,112 @@ enum PgWorkflowRuntimeError {
     Domain(#[from] KernelError),
 }
 
+/// Compare one coherent snapshot, without taking node/task locks in the opposite
+/// order from finalization. Progress fields may advance; creation material cannot.
+async fn verify_node_replay(
+    connection: &mut sqlx::PgConnection,
+    org: OrgId,
+    commit: &NodeStepCommit,
+) -> Result<(), PgWorkflowRuntimeError> {
+    use serde_json::{Value, json};
+
+    let conflict = || KernelError::conflict("workflow node replay material differs");
+    let node = &commit.new_node;
+    let row = sqlx::query(
+        "SELECT n.*, \
+          COALESCE((SELECT jsonb_object_agg(e.idempotency_key, jsonb_build_object(\
+            'run_id', e.run_id, 'node_run_id', e.node_run_id, 'channel', e.channel, \
+            'destination_ref', e.destination_ref, 'payload', e.payload)) \
+            FROM workflow_outbox_events e WHERE e.org_id=n.org_id AND e.node_run_id=n.id), \
+            '{}'::jsonb) AS emissions, \
+          COALESCE((SELECT jsonb_agg(jsonb_build_object(\
+            'run_id', t.run_id, 'node_run_id', t.node_run_id, 'waiting_key', t.waiting_key, \
+            'title', t.title, 'assignee_role_key', t.assignee_role_key, \
+            'required_policy', t.required_policy, 'form_payload', t.form_payload, \
+            'due_at_matches', t.due_at IS NOT DISTINCT FROM $3::timestamptz, \
+            'assignee_user_id', t.assignee_user_id, 'source_object_type', t.source_object_type, \
+            'source_object_id', t.source_object_id)) \
+            FROM workflow_waiting_tasks t WHERE t.org_id=n.org_id AND t.node_run_id=n.id), \
+            '[]'::jsonb) AS waiting_tasks \
+         FROM workflow_node_runs n WHERE n.org_id=$1 AND n.idempotency_key=$2",
+    )
+    .bind(*org.as_uuid())
+    .bind(&node.idempotency_key)
+    .bind(commit.waiting_task.as_ref().and_then(|task| task.due_at))
+    .fetch_optional(connection)
+    .await?
+    .ok_or_else(conflict)?;
+    let stored_id: Uuid = row.try_get("id")?;
+    let status: String = row.try_get("status")?;
+    if row.try_get::<Uuid, _>("run_id")? != node.run_id
+        || row.try_get::<String, _>("node_key")? != node.node_key
+        || row.try_get::<String, _>("node_type")? != node.node_type
+        || row.try_get::<i32, _>("attempt")? != node.attempt
+        || row.try_get::<Value, _>("input_payload")? != node.input_payload
+        || matches!(status.as_str(), "PENDING" | "RUNNING")
+        || status != commit.node_final_status.as_db_str()
+        || row.try_get::<Option<Value>, _>("output_payload")? != commit.node_output
+        || row.try_get::<Option<Value>, _>("error_payload")? != commit.node_error
+    {
+        return Err(conflict().into());
+    }
+
+    let mut emissions = serde_json::Map::new();
+    for emission in &commit.emissions {
+        // Only the existing JOB producer embeds this transient node UUID in its
+        // key. Rebind that exact segment; never rewrite payloads or arbitrary keys.
+        let logical = emission.payload.get("job").and_then(Value::as_str);
+        let Some(logical) = logical else {
+            return Err(conflict().into());
+        };
+        if emission.node_run_id != Some(node.id)
+            || emission.channel != console_workflow_domain::OutboxChannel::Job
+            || emission.idempotency_key
+                != format!("outbox:{}:{}:job:{logical}", node.run_id, node.id)
+        {
+            return Err(conflict().into());
+        }
+        let key = format!("outbox:{}:{stored_id}:job:{logical}", node.run_id);
+        let material = json!({
+            "run_id": node.run_id,
+            "node_run_id": stored_id,
+            "channel": emission.channel.as_db_str(),
+            "destination_ref": emission.destination_ref,
+            "payload": emission.payload,
+        });
+        if emissions.insert(key, material).is_some() {
+            return Err(conflict().into());
+        }
+    }
+    let waiting_tasks = match &commit.waiting_task {
+        Some(task) => {
+            if task.run_id != node.run_id || task.node_run_id != Some(node.id) {
+                return Err(conflict().into());
+            }
+            json!([{
+                "run_id": task.run_id,
+                "node_run_id": stored_id,
+                "waiting_key": task.waiting_key,
+                "title": task.title,
+                "assignee_role_key": task.assignee_role_key,
+                "required_policy": task.required_policy,
+                "form_payload": task.form_payload,
+                "due_at_matches": true,
+                "assignee_user_id": null,
+                "source_object_type": null,
+                "source_object_id": null,
+            }])
+        }
+        None => json!([]),
+    };
+    if row.try_get::<Value, _>("emissions")? != Value::Object(emissions)
+        || row.try_get::<Value, _>("waiting_tasks")? != waiting_tasks
+    {
+        return Err(conflict().into());
+    }
+    Ok(())
+}
+
 #[derive(Debug, Clone)]
 struct ReceiptNodeSpec {
     title: String,
@@ -2183,6 +2289,35 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
         Box::pin(async move {
             with_audits::<_, (), PgWorkflowRuntimeError>(&self.pool, org, move |tx| {
                 Box::pin(async move {
+                    let new_node = &commit.new_node;
+                    let org_uuid = *org.as_uuid();
+
+                    // The unique key serializes competing first commits. A replay
+                    // must verify the acknowledged material before returning without
+                    // any effects, including audits targeting a fresh transient UUID.
+                    let inserted = sqlx::query(
+                        "INSERT INTO workflow_node_runs \
+                             (id, org_id, run_id, node_key, node_type, status, attempt, \
+                              idempotency_key, input_payload) \
+                         VALUES ($1, $2, $3, $4, $5, 'PENDING', $6, $7, $8) \
+                         ON CONFLICT (org_id, idempotency_key) DO NOTHING",
+                    )
+                    .bind(new_node.id)
+                    .bind(org_uuid)
+                    .bind(new_node.run_id)
+                    .bind(&new_node.node_key)
+                    .bind(&new_node.node_type)
+                    .bind(new_node.attempt)
+                    .bind(&new_node.idempotency_key)
+                    .bind(&new_node.input_payload)
+                    .execute(tx.as_mut())
+                    .await
+                    .map_err(PgWorkflowRuntimeError::from)?;
+
+                    if inserted.rows_affected() == 0 {
+                        verify_node_replay(tx.as_mut(), org, &commit).await?;
+                        return Ok(((), Vec::new()));
+                    }
                     let NodeStepCommit {
                         new_node,
                         node_final_status,
@@ -2193,33 +2328,6 @@ impl WorkflowRuntimePort for PgWorkflowRuntimeStore {
                         run_transition,
                         audit_events,
                     } = commit;
-                    let org_uuid = *org.as_uuid();
-
-                    // 1. Insert the node run PENDING. ON CONFLICT DO NOTHING on the
-                    //    reused UNIQUE(org_id, idempotency_key) (0077:69) so a RESUMED
-                    //    completion tail (a reconciler re-drive after a crash) does not
-                    //    23505-abort on a node it already recorded — the node key is
-                    //    deterministic (node:{run_id}:{node_key}:{attempt}), so a re-run
-                    //    of the same node is a no-op and the subsequent status UPDATEs
-                    //    (guarded on the fresh node id) simply match zero rows.
-                    sqlx::query(
-                        "INSERT INTO workflow_node_runs \
-                             (id, org_id, run_id, node_key, node_type, status, attempt, \
-                              idempotency_key, input_payload) \
-                         VALUES ($1, $2, $3, $4, $5, 'PENDING', $6, $7, $8) \
-                         ON CONFLICT (org_id, idempotency_key) DO NOTHING",
-                    )
-                    .bind(new_node.id)
-                    .bind(org_uuid)
-                    .bind(new_node.run_id)
-                    .bind(new_node.node_key)
-                    .bind(new_node.node_type)
-                    .bind(new_node.attempt)
-                    .bind(new_node.idempotency_key)
-                    .bind(new_node.input_payload)
-                    .execute(tx.as_mut())
-                    .await
-                    .map_err(PgWorkflowRuntimeError::from)?;
 
                     // 2. Node PENDING -> RUNNING.
                     sqlx::query(
