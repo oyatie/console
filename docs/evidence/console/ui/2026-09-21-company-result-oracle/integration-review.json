@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_tests",
+  "status": "APPROVE bounded applied driver/pin/evidence candidate",
+  "head_sha": "019b32db4b3076122672e9f3eb938ff872a45bfd",
+  "receipt_sha256": "4d20dc0e621482bc2fb7784e38eab690378a5326ee67075313c262acca6e1424",
+  "verified": [
+    "Exact parent/base and only three changed paths.",
+    "Applied driver byte-identical to independently reviewed round2.",
+    "Each stager file changes only one exact Company driver SHA; Account and other pins byte-preserved.",
+    "Both copied review digests match; all security-review source/log/UI hashes independently match.",
+    "Recorded security control log has 25 passes; six stager tests are present.",
+    "Receipt explicitly denies actual Company browser, DOM/database, workflow/inventory, optical visibility or production acceptance."
+  ],
+  "verification_attribution": "Root reports rerunning 25 pure controls and 6 staging tests. Existing security log independently establishes its 25 pure-control passes; no root raw execution logs accompany this three-file evidence packet. Reviewer did not repeat tests or independently verify root timing.",
+  "limits": [
+    "No product build, PostgreSQL or browser execution by reviewer.",
+    "Staging tests use retained official archive and mocked transport; not product execution.",
+    "Full Company current-custody/HTTP/browser acceptance remains pending."
+  ],
+  "payload_hashes": {
+    "receipt.json": "4d20dc0e621482bc2fb7784e38eab690378a5326ee67075313c262acca6e1424",
+    "root-review.json": "84162f542aff6440633a07b4ffd2a349d67f1c57db96c08061280004f7352d2d",
+    "security-review.json": "959c5dc74d70a7f729adb56f2bf3283673143261e7fb985550abc7111369a939"
+  }
+}
