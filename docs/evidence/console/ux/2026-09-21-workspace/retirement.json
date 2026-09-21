@@ -1,0 +1,10 @@
+{
+  "status": "REJECTED_BY_OWNER_NOT_DELIVERY",
+  "reason": "Owner requires release-ready enterprise functionality; synthetic preview and demo-only paths violate task. Demonstration data must be created through actual UI workflows, never direct API or SQL seeds.",
+  "removed": "Only newly introduced console-platform-ui preview crate, its 3 preview-only tests and standalone browser driver; exact graph additions reversed. Existing product tests unchanged.",
+  "historical_test_baseline": "728b549173dd7e545ccc43b95b2a3034e47443f0",
+  "preserved_design_archive": "/private/tmp/console-rejected-preview-preserved-20260921",
+  "test_review": "retirement-test-review.json",
+  "production_exposure": "not authorized",
+  "followup": "Real authenticated current-policy owner-backed workflows and prototype depth required; no release acceptance."
+}

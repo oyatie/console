@@ -3185,16 +3185,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "console-platform-ui"
-version = "0.1.0"
-dependencies = [
- "axum",
- "leptos",
- "serde",
- "tokio",
-]
-
-[[package]]
 name = "console-policy-adapter-postgres"
 version = "0.1.0"
 dependencies = [

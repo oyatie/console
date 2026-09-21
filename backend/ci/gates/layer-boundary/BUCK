@@ -342,8 +342,6 @@ rust_test(
         "//backend/crates/platform/storage:crate-source-tree": "backend/crates/platform/storage/src",
         "//backend/crates/platform/test-support:Cargo.toml": "backend/crates/platform/test-support/Cargo.toml",
         "//backend/crates/platform/test-support:crate-source-tree": "backend/crates/platform/test-support/src",
-        "//backend/crates/platform/ui:Cargo.toml": "backend/crates/platform/ui/Cargo.toml",
-        "//backend/crates/platform/ui:crate-source-tree": "backend/crates/platform/ui/src",
         "//backend/crates/policy/adapter-postgres:Cargo.toml": "backend/crates/policy/adapter-postgres/Cargo.toml",
         "//backend/crates/policy/adapter-postgres:crate-source-tree": "backend/crates/policy/adapter-postgres/src",
         "//backend/crates/policy/application:Cargo.toml": "backend/crates/policy/application/Cargo.toml",

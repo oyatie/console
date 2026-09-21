@@ -287,9 +287,6 @@ TEST_MARKERS = ("#[test]", "#[tokio::test", "#[sqlx::test", "#[rstest")
 # the generated face in the same reviewed diff. Every generated target is
 # enumerated explicitly; missing or stale metadata fails generation.
 TEST_RESOURCE_REQUIREMENTS = {
-    'console-platform-ui': {
-        'unit': 'none',
-    },
     'console-payroll-ui': {
         # SSR render tests only: no database and no network. They DO read
         # fixtures -- the two OpenAPI files mapped in by RESOURCE_CONFIG above,
