@@ -880,4 +880,434 @@ mod signed_credentials {
         f.business.close().await;
         f.startup.close().await;
     }
+
+    fn intake_store(f: &Signed) -> console_identity_adapter_postgres::PgOrgStore {
+        console_identity_adapter_postgres::PgOrgStore::new(f.business.clone())
+            .with_native_account_auth(f.verifier.clone(), f.ttl)
+    }
+
+    fn assert_intake_pending(
+        status: console_identity_application::company_enrollment::CompanyEnrollmentStatus,
+        command: Uuid,
+        administrator: Uuid,
+    ) {
+        use console_identity_application::company_enrollment::CompanyEnrollmentStatus;
+        let CompanyEnrollmentStatus::Pending(input) = status else {
+            panic!("owning transaction did not confirm expected pending draft");
+        };
+        assert_eq!(input.command_id(), command);
+        assert_eq!(input.administrative_account_id(), administrator);
+        assert_eq!(input.group_id(), None);
+        assert_eq!(input.slug(), format!("native-{}", command.simple()));
+        assert_eq!(input.name(), "연결된 업무 회사");
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_prepares_reopens_conflicts_and_cancels_exact_history(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, CompanyEnrollmentStatus, cancel_company_enrollment,
+            company_enrollment_status, prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let command = Uuid::new_v4();
+        let input = enrollment(command, f.account);
+        let raw = serde_json::to_vec(&input).unwrap();
+        let before = all_rows(&pool).await;
+        let lower = now(&pool).await;
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        let upper = now(&pool).await;
+        pending(
+            &pool,
+            f.account,
+            f.session,
+            command,
+            &bytes(f.account, command, f.account),
+            f.designation,
+            (lower, upper),
+        )
+        .await;
+        let prepared = all_rows(&pool).await;
+        unrelated_unchanged(&before, &prepared);
+        for table in [
+            "company_enrollment_requests",
+            "company_enrollment_request_events",
+        ] {
+            assert_eq!(
+                added_rows(&before[table], &prepared[table]).unwrap().len(),
+                1
+            );
+        }
+        // A newly composed store must reopen persisted state, not local memory.
+        let reopened = intake_store(&f);
+        assert_intake_pending(
+            company_enrollment_status(&reopened, &read, command)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert_intake_pending(
+            prepare_company_enrollment(&reopened, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert!(prepared == all_rows(&pool).await);
+        let mut changed = input;
+        changed["name"] = json!("다른 회사 이름");
+        assert!(matches!(
+            prepare_company_enrollment(&store, &mutation, &serde_json::to_vec(&changed).unwrap())
+                .await,
+            Err(CompanyEnrollmentError::Conflict)
+        ));
+        assert!(
+            prepared == all_rows(&pool).await,
+            "conflict modified retained command bytes/history"
+        );
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        let cancelled = all_rows(&pool).await;
+        assert!(cancel_successor(
+            &prepared, &cancelled, f.account, command, f.session
+        ));
+        assert!(matches!(
+            company_enrollment_status(&reopened, &read, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&reopened, &mutation, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        assert!(matches!(
+            prepare_company_enrollment(&reopened, &mutation, &raw)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        let unknown = Uuid::new_v4();
+        assert!(matches!(
+            company_enrollment_status(&store, &read, unknown)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Missing
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, unknown)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Missing
+        ));
+        assert!(
+            cancelled == all_rows(&pool).await,
+            "terminal replay/healthy absence changed history"
+        );
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_rejects_invalid_transport_configuration_and_input(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, cancel_company_enrollment, company_enrollment_status,
+            prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let wrong =
+            AccountEnrollmentCredentials::for_mutation(&f.access, &f.other_family_csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        let before = all_rows(&pool).await;
+        for credentials in [&read, &wrong] {
+            assert!(matches!(
+                prepare_company_enrollment(&store, credentials, &raw).await,
+                Err(CompanyEnrollmentError::CsrfInvalid)
+            ));
+            assert!(matches!(
+                cancel_company_enrollment(&store, credentials, command).await,
+                Err(CompanyEnrollmentError::CsrfInvalid)
+            ));
+            assert!(before == all_rows(&pool).await);
+        }
+        for unconfigured in [
+            console_identity_adapter_postgres::PgOrgStore::new(f.business.clone()),
+            console_identity_adapter_postgres::PgOrgStore::new(f.business.clone())
+                .with_native_account_auth(f.verifier.clone(), time::Duration::ZERO),
+        ] {
+            assert!(matches!(
+                prepare_company_enrollment(&unconfigured, &mutation, &raw).await,
+                Err(CompanyEnrollmentError::Unavailable)
+            ));
+            assert!(matches!(
+                company_enrollment_status(&unconfigured, &read, command).await,
+                Err(CompanyEnrollmentError::Unavailable)
+            ));
+            assert!(matches!(
+                cancel_company_enrollment(&unconfigured, &mutation, command).await,
+                Err(CompanyEnrollmentError::Unavailable)
+            ));
+            assert!(before == all_rows(&pool).await);
+        }
+        let duplicate =
+            String::from_utf8(raw.clone())
+                .unwrap()
+                .replacen("{", "{\"name\":\"duplicate\",", 1);
+        for malformed in [b"[]".to_vec(), duplicate.into_bytes(), vec![b' '; 4097]] {
+            assert!(matches!(
+                prepare_company_enrollment(&store, &mutation, &malformed).await,
+                Err(CompanyEnrollmentError::InvalidInput)
+            ));
+        }
+        assert!(matches!(
+            company_enrollment_status(&store, &read, Uuid::nil()).await,
+            Err(CompanyEnrollmentError::InvalidInput)
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, Uuid::nil()).await,
+            Err(CompanyEnrollmentError::InvalidInput)
+        ));
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_real_logout_cannot_become_missing_or_pending(pool: PgPool) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, cancel_company_enrollment, company_enrollment_status,
+            prepare_company_enrollment,
+        };
+        let f = fixture(&pool, true).await;
+        let store = intake_store(&f);
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        let before = all_rows(&pool).await;
+        assert!(matches!(
+            company_enrollment_status(&store, &read, command).await,
+            Err(CompanyEnrollmentError::AuthenticationInvalid)
+        ));
+        assert!(matches!(
+            prepare_company_enrollment(&store, &mutation, &raw).await,
+            Err(CompanyEnrollmentError::AuthenticationInvalid)
+        ));
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, command).await,
+            Err(CompanyEnrollmentError::AuthenticationInvalid)
+        ));
+        assert!(before == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_designation_revocation_denies_new_work_preserves_recovery(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, CompanyEnrollmentStatus, cancel_company_enrollment,
+            company_enrollment_status, prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let read = AccountEnrollmentCredentials::for_read(&f.access).unwrap();
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        let current_designation = designation(&pool, f.account).await;
+        let receipt = revoke(
+            &f.startup,
+            &current_designation,
+            Uuid::new_v4(),
+            1,
+            "intake usecase recovery test",
+        )
+        .await
+        .unwrap();
+        assert!(!receipt.0.is_nil() && receipt.1 == 2 && !receipt.2);
+        let revoked = all_rows(&pool).await;
+        let new_command = Uuid::new_v4();
+        let new_raw = serde_json::to_vec(&enrollment(new_command, f.account)).unwrap();
+        assert!(matches!(
+            prepare_company_enrollment(&store, &mutation, &new_raw).await,
+            Err(CompanyEnrollmentError::Forbidden)
+        ));
+        assert_intake_pending(
+            company_enrollment_status(&store, &read, command)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert!(
+            revoked == all_rows(&pool).await,
+            "revocation/recovery changed existing pending command"
+        );
+        assert!(matches!(
+            cancel_company_enrollment(&store, &mutation, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        let cancelled = all_rows(&pool).await;
+        assert!(cancel_successor(
+            &revoked, &cancelled, f.account, command, f.session
+        ));
+        assert!(matches!(
+            company_enrollment_status(&intake_store(&f), &read, command)
+                .await
+                .unwrap(),
+            CompanyEnrollmentStatus::Cancelled
+        ));
+        assert!(cancelled == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_intake_usecase_deferred_commit_refusal_rolls_back_before_view_and_recovers(
+        pool: PgPool,
+    ) {
+        use console_identity_application::company_enrollment::{
+            CompanyEnrollmentError, prepare_company_enrollment,
+        };
+        let f = fixture(&pool, false).await;
+        let store = intake_store(&f);
+        let mutation = AccountEnrollmentCredentials::for_mutation(&f.access, &f.csrf).unwrap();
+        let command = Uuid::new_v4();
+        let raw = serde_json::to_vec(&enrollment(command, f.account)).unwrap();
+        let before = all_rows(&pool).await;
+        for (code, message, expected) in [
+            (
+                "23514",
+                "test.intake_deferred_refusal",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "P0001",
+                "company_enrollment.intake_closure_invalid",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "P0001",
+                "company_enrollment.effect_unavailable",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "P0001",
+                "company_enrollment.guard_context_invalid",
+                CompanyEnrollmentError::Unavailable,
+            ),
+            (
+                "40003",
+                "test.statement_completion_unknown",
+                CompanyEnrollmentError::Unconfirmed,
+            ),
+            (
+                "P0001",
+                "test.unrecognized_deferred_refusal",
+                CompanyEnrollmentError::Unconfirmed,
+            ),
+        ] {
+            // Finite test-only server error injection at an actual deferred
+            // transaction boundary; not a simulation of network response loss.
+            sqlx::raw_sql(
+                r#"
+                CREATE SEQUENCE public.intake_usecase_commit_witness;
+                CREATE FUNCTION public.intake_usecase_refuse_commit() RETURNS trigger
+                LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+                BEGIN
+                    PERFORM nextval('public.intake_usecase_commit_witness'::regclass);
+                    RAISE EXCEPTION USING ERRCODE=TG_ARGV[0],MESSAGE=TG_ARGV[1];
+                END $$;
+            "#,
+            )
+            .execute(&pool)
+            .await
+            .unwrap();
+            // Inputs are the fixed strings above, never caller-provided SQL.
+            let trigger = format!(
+                "CREATE CONSTRAINT TRIGGER zz_intake_usecase_refuse_commit AFTER INSERT ON public.company_enrollment_requests DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.intake_usecase_refuse_commit('{code}','{message}')"
+            );
+            sqlx::raw_sql(sqlx::AssertSqlSafe(trigger))
+                .execute(&pool)
+                .await
+                .unwrap();
+            let result = prepare_company_enrollment(&store, &mutation, &raw).await;
+            let witnessed: bool = sqlx::query_scalar(
+                "SELECT is_called AND last_value=1 FROM public.intake_usecase_commit_witness",
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+            sqlx::raw_sql("DROP TRIGGER zz_intake_usecase_refuse_commit ON public.company_enrollment_requests; DROP FUNCTION public.intake_usecase_refuse_commit(); DROP SEQUENCE public.intake_usecase_commit_witness;")
+                .execute(&pool).await.unwrap();
+            assert!(witnessed, "actual deferred commit boundary was not reached");
+            match result {
+                Err(error) => assert_eq!(error, expected),
+                Ok(_) => panic!("unconfirmed/rejected commit released a provisional view"),
+            }
+            assert!(
+                before == all_rows(&pool).await,
+                "rejected commit leaked intake or partial history"
+            );
+        }
+        assert_intake_pending(
+            prepare_company_enrollment(&store, &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        let complete = all_rows(&pool).await;
+        assert_intake_pending(
+            prepare_company_enrollment(&intake_store(&f), &mutation, &raw)
+                .await
+                .unwrap(),
+            command,
+            f.account,
+        );
+        assert!(complete == all_rows(&pool).await);
+        f.business.close().await;
+        f.startup.close().await;
+    }
 }
