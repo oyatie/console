@@ -1,0 +1,80 @@
+{
+  "status": "EXACT_INDEX_CUSTODY_REGRESSION_FIXED",
+  "head": "b806a09230b1d150ec29691ec4b244067f6ae726",
+  "members": [
+    {
+      "path": "console-documentation-large-index-20260920/DESIGN.txt.log.gz",
+      "sha256": "bbef07d1157a48c9a0cfdb8c4df218ce3493e7b855e0d7581dc17f004625027e",
+      "original_path": "/private/tmp/console-documentation-large-index-20260920/DESIGN.txt",
+      "original_sha256": "847383bf88539a1a0480e8680dd200196b7b2c5869e32a61f333b2b2910220d8",
+      "original_bytes": 457
+    },
+    {
+      "path": "console-documentation-large-index-20260920/check-doc-links.test.mjs.log.gz",
+      "sha256": "50e88d5f5eb4fefeda24f93533fcee14fa6a4eb12761c384a13d35bff7e9ce19",
+      "original_path": "/private/tmp/console-documentation-large-index-20260920/check-doc-links.test.mjs",
+      "original_sha256": "fce1aee3711f7dbee11797428552acd00ef2a54f0b4fa192d5db3cc0f9d0e4aa",
+      "original_bytes": 45732
+    },
+    {
+      "path": "console-documentation-large-index-actual-20260920.log.gz",
+      "sha256": "026028557ef1b1910e48641bdff6926f0e568b4d1125d93265fd97ea063e17e5",
+      "original_path": "/private/tmp/console-documentation-large-index-actual-20260920.log",
+      "original_sha256": "48a645f4d7e4db26498a865cd73cdb2e708d490880e3fc7279e28b686f87709a",
+      "original_bytes": 34
+    },
+    {
+      "path": "console-documentation-large-index-adrs-20260920.log.gz",
+      "sha256": "c3666319379d205c1f61d8b960cc635867b20e65f663ccdc7002290355258157",
+      "original_path": "/private/tmp/console-documentation-large-index-adrs-20260920.log",
+      "original_sha256": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995",
+      "original_bytes": 53
+    },
+    {
+      "path": "console-documentation-large-index-final-security-review-20260920.json",
+      "sha256": "9b9aa206452650ea2e9a2583f2cecb5acc4593a02e24f792e45eb459117d1714",
+      "original_path": "/private/tmp/console-documentation-large-index-final-security-review-20260920.json",
+      "original_sha256": "9b9aa206452650ea2e9a2583f2cecb5acc4593a02e24f792e45eb459117d1714",
+      "original_bytes": 2531
+    },
+    {
+      "path": "console-documentation-large-index-green-20260920.log.gz",
+      "sha256": "9e3d1439a55433b8d4e6679c31905aa585db908fe478a0d4b365c1b8e7b9ec0b",
+      "original_path": "/private/tmp/console-documentation-large-index-green-20260920.log",
+      "original_sha256": "609f5297474718d751b33206e221141b9b6a05fd173131cec0aec23627240df3",
+      "original_bytes": 205
+    },
+    {
+      "path": "console-documentation-large-index-lane-20260920.json",
+      "sha256": "7044bfd837a08063db11358ec705dc4e9ba97f58f64f0703b49485019305c6f2",
+      "original_path": "/private/tmp/console-documentation-large-index-lane-20260920.json",
+      "original_sha256": "7044bfd837a08063db11358ec705dc4e9ba97f58f64f0703b49485019305c6f2",
+      "original_bytes": 1135
+    },
+    {
+      "path": "console-documentation-large-index-red-20260920.log.gz",
+      "sha256": "fe54f0dbcd77c3ad3cfeca0c34898f179b9515e556a8122325c816f9d3f5ae7e",
+      "original_path": "/private/tmp/console-documentation-large-index-red-20260920.log",
+      "original_sha256": "867d86e597dce2d7fd5dc63d5e8b2ce6710fa8a33ba5159e924c67c69f0c0caf",
+      "original_bytes": 1438
+    },
+    {
+      "path": "console-documentation-large-index-source-security-review-20260920.json",
+      "sha256": "c8d910ef1b1b6c9722ea91b700e705a2ee76fb6c156f8b212ee2e73ff6a40b62",
+      "original_path": "/private/tmp/console-documentation-large-index-source-security-review-20260920.json",
+      "original_sha256": "c8d910ef1b1b6c9722ea91b700e705a2ee76fb6c156f8b212ee2e73ff6a40b62",
+      "original_bytes": 2550
+    },
+    {
+      "path": "console-documentation-large-index-suite-20260920.log.gz",
+      "sha256": "c3130d27fa0135c3127cadae62b0ea4ad74625913e8a55095bcb587b810c32c7",
+      "original_path": "/private/tmp/console-documentation-large-index-suite-20260920.log",
+      "original_sha256": "744b6d6fcc1d1066d5b32f764db608f6e6a11b181cae3fd3d86787537446715e",
+      "original_bytes": 4410
+    }
+  ],
+  "limits": [
+    "No complete Company workflow, five-workflow MVP, or full release acceptance. Native birth/routes remain ordinary implementation work.",
+    "Exact source, logs and failures preserved; JSON byte-exact and raw evidence losslessly compressed."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "head": "8dd2b4b4ccb767283393752c607170673e426058",
+  "files": {
+    "backend/crates/identity/application/src/company.rs": "0d31297b18e0b41803e129dbeb2f52ff9b493dea538fce1c7b3234f12f484683",
+    "backend/crates/identity/application/src/company_enrollment.rs": "7f2ee01a06833be25b3a34abfd22fbddc8a36b144d5203f24496f1cd7a23494b",
+    "backend/crates/identity/application/src/company/enrollment_projection_tests.rs": "1bb992bac86faf1182dc88cb5d1c7d086febaa595554ef5d58bcfed5ae9e881a",
+    "backend/crates/identity/application/src/lib.rs": "b3e4fce752f87fe58ce03a45b118bcd360eef09c3df9a62ea4a586cdbeb1cd2b",
+    "backend/crates/identity/adapter-postgres/src/company_enrollment.rs": "36a273e9bc299dcae4984a3bb34c0660b2f5f57a56ed1c9c4ac86c624bd1eefa",
+    "backend/crates/identity/adapter-postgres/src/company_policy.rs": "a432db866d3e8c8718658ded63a714ab959147afb31e67f43edbf8aa2166de88",
+    "backend/crates/identity/adapter-postgres/src/lib.rs": "f2daddea7cf41a72c8a8af44edd0ac6ddef282340e5dafac83187b99c6ed1a00",
+    "backend/app/tests/auth_rest/native_company_signed_credentials.rs": "b370b7be977b268e050d36e6875a3a349a8eed3d9cda0d2c7bdff7a1306ff39a",
+    "docs/program/executed-tests-baseline.json": "ebeaec140d8bca24d88e2f56b784f40d51f4406bb63ec893ea72028ad18504bd"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_INTAKE_DESIGN_DIRECTION_CONCRETE_SOURCE_AND_TEST_REVIEW_PENDING",
+  "design_sha256": "b32bd97fbd4f035d49ff216562c2ba0ebd1ec63176a712b0c99778b3f13e16a0",
+  "findings": [],
+  "required_constraints": [
+    "Application owns typed prepare/status/cancel use cases and port; existing PgOrgStore owns same-transaction SQL adapter. Reuse strict immutable v1 parser/codec and existing server verifier/TTL.",
+    "Obtain signed Account namespace without authority locks before encoding, then respective existing lock_submit/status/cancel guard establishes current retained Account/family and mutation CSRF checks. Never accept caller Account as authority.",
+    "Prepare/status/cancel SQL and row decode remain inside retained guarded transaction. Validate exact cardinality, codec1, nonnil IDs, retained input account/command equality, exact allowed terminal field shape. Finish after all owner waits and commit before any projection escapes.",
+    "Unknown/missing command returns Missing only after currentAuth and confirmed commit. Decoding/statement/finalAuth failure discards transaction; no view on failure.",
+    "Existing SQL allows exact pending-command prepare/status/cancel recovery after deployment designation revocation while current Account credentials remain valid. Do not add current eligibility preflight to recovery paths. New command still requires existing owner eligibility.",
+    "Existing SQL explicitly refuses COMMITTED until full birth owner. Pure future variant does not activate SQL support or demonstrate receipt closure. No synthetic receipt/future fixture assertion can replace owner completion.",
+    "At COMMIT distinguish explicit known server refusal from unknown outcome. Communication/protocol loss and completion-unknown SQLSTATE such as40003 must be Unconfirmed; caller recovers same immutable command. No auto retry or failure claim after unknown commit. Auth40001 remains existing unavailable rather than weakening guard mapping.",
+    "No schema/migration/custody changes, serving activation, alternate writer, dynamic dispatcher, or replacement of full topology/birth owner work."
+  ],
+  "limits": [
+    "Exact checked constructor/API, adapter source, semantic tests and final native execution remain unreviewed. This receipt approves design direction with above explicit constraints only.",
+    "Reviewer inspected existing intake SQL and Auth guards read-only, no product execution or repository edits."
+  ]
+}

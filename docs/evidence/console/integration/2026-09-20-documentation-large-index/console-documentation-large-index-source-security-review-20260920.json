@@ -1,0 +1,26 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_LARGE_INDEX_REGRESSION_TEST_AND_TWO_MAXBUFFER_OPTIONS_DESIGN",
+  "base": "73972b9b5e6f26555a41e110ddd7d56e1739356d",
+  "proposal_hashes": {
+    "/private/tmp/console-documentation-large-index-20260920/DESIGN.txt": "847383bf88539a1a0480e8680dd200196b7b2c5869e32a61f333b2b2910220d8",
+    "/private/tmp/console-documentation-large-index-20260920/check-doc-links.test.mjs": "fce1aee3711f7dbee11797428552acd00ef2a54f0b4fa192d5db3cc0f9d0e4aa"
+  },
+  "source_locks": {
+    "scripts/check-doc-links.mjs": "3717fc444375ac179dd63e97cc00cd3cc65a87ce0c7535ba94f93a2e503f33a4",
+    "scripts/console/generate-documentation-manifest.mjs": "df87d926caa67c08ccecc6eba7fca58c9f4bc1190c1e08fd3857290985379481",
+    "scripts/check-doc-links.test.mjs": "36b2fadb2340ff46585f6d6cc2282e0563131d1afc3a3d02d9d2057236b7203b"
+  },
+  "findings": [],
+  "checks": [
+    "Existing two Git helpers use default execFileSync buffer and exact full ls-tree -r -z parsing. Adding maxBuffer16*1024*1024 to each is finite capacity correction; all sanitization, exact-tree parsing, custody/exclusion validation and nonzero error handling remain intact.",
+    "New single regression uses real Git repository and update-index stdin with6000regular evidence entries pointing to genuine blob; no fake command stdout or shell interpolation. It proves actual listing exceeds1MiB before checker and generator success.",
+    "Post-generation unclassified tracked Markdown negative retains failure oracle. Large-index success cannot be achieved by truncating index, skipping validation or broadening exclusions without this negative failing.",
+    "Test is additive after exact existing source body; no existing tests weakened. Actual repository1049290byte ENOBUFS workload is reported by root; this review verifies the matching production default and realistic fixture, not independently rerunning product/tooling tests."
+  ],
+  "approved_implementation": "Only add maxBuffer:16*1024*1024 to options of existing git execFileSync helpers in scripts/check-doc-links.mjs and scripts/console/generate-documentation-manifest.mjs. Preserve finite failure above bound.",
+  "limits": [
+    "Root must capture named executable RED on clean test-only candidate then exact same GREEN after two-option implementation; final suite and actual archived index gates pending.",
+    "No product authentication or Company acceptance implied. Reviewer read-only source/hash inspection/private receipt, no test runtime or repo writes."
+  ]
+}

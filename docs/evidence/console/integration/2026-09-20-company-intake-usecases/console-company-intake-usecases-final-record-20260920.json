@@ -1,0 +1,31 @@
+{
+  "head": "8dd2b4b4ccb767283393752c607170673e426058",
+  "source": "/private/tmp/console-company-intake-usecases-final-source-20260920.json",
+  "verification": "/private/tmp/console-company-intake-usecases-final-verification-20260920.json",
+  "artifacts": "/private/tmp/console-company-intake-usecases-artifacts-20260920.json",
+  "product_distinct_executed": 17,
+  "unit": {
+    "discovered": 12,
+    "passed": 12
+  },
+  "app": {
+    "discovered": 517,
+    "selected_passed": 5,
+    "filtered_each": 516
+  },
+  "static_count": {
+    "before": 3125,
+    "after": 3127,
+    "exact_delta": "identity/application/src/lib.rs10->12"
+  },
+  "retained_failures": [
+    "First native unit invocation rejected unsupported executor --test-threads argument;0tests, correct --num-threads invocation passed.",
+    "Initial format check found helper signature reflow; formatting-only repair passed."
+  ],
+  "scope": [
+    "Durable prepare/reopen/cancel adapter and owning usecases; no new enrollment route/SQL/birth activation.",
+    "Company complete HTTP404vs201 lane remains open. Five MVP workflows and full release remain unaccepted.",
+    "Injected40003 exercises classifier and actual rollback boundary, not real network-loss or production durability.",
+    "Clippy/format supporting tooling; native Buck2 produced/executed product artifacts."
+  ]
+}

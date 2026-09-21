@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_EXACT_INDEX_CAPACITY_FIX_FINAL",
+  "base": "ec590f81879dc574a92d532fe5a2230127c54633",
+  "source_hashes": {
+    "scripts/check-doc-links.mjs": "e4c010cefbf0848c9141bf5f564fd08e7c911ab17133a0ee8669b1d9018e5e0e",
+    "scripts/console/generate-documentation-manifest.mjs": "e83a9bccc6e89812916fb1122e745a36ce58b6c69b515841804a17618db07798",
+    "scripts/check-doc-links.test.mjs": "fce1aee3711f7dbee11797428552acd00ef2a54f0b4fa192d5db3cc0f9d0e4aa"
+  },
+  "log_hashes": {
+    "/private/tmp/console-documentation-large-index-red-20260920.log": "867d86e597dce2d7fd5dc63d5e8b2ce6710fa8a33ba5159e924c67c69f0c0caf",
+    "/private/tmp/console-documentation-large-index-green-20260920.log": "609f5297474718d751b33206e221141b9b6a05fd173131cec0aec23627240df3",
+    "/private/tmp/console-documentation-large-index-suite-20260920.log": "744b6d6fcc1d1066d5b32f764db608f6e6a11b181cae3fd3d86787537446715e",
+    "/private/tmp/console-documentation-large-index-actual-20260920.log": "48a645f4d7e4db26498a865cd73cdb2e708d490880e3fc7279e28b686f87709a",
+    "/private/tmp/console-documentation-large-index-adrs-20260920.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995"
+  },
+  "findings": [],
+  "checks": [
+    "Two production diffs are exactly maxBuffer16*1024*1024 options on existing execFileSync Git helpers. All authority/custody parsing, error handling, exclusions and environment isolation unchanged.",
+    "Committed regression bytes exactly approved private test. Named clean-tree lane base/owner/two-path allowlist reviewed. Actual named RED executes1failure at exact-index custody; same named GREEN executes1pass.",
+    "Full existing suite55passed0failed0skipped, including realistic >1MiB index positive for checker/generator and unclassified Markdown negative. Count is55distinct, not56 by adding targeted rerun.",
+    "Actual restored archive doc-link gate succeeds474Markdown files; ADR gate succeeds44ADRs8design notes. Capture archive receipt remains exact f7b44104af56869ed722379a0ebec7720a0a3525a7824861dac1e6fd3c0d29b8."
+  ],
+  "limits": [
+    "Capacity remains bounded16MiB; overbound still fails closed. This does not justify future exclusions/truncation.",
+    "Approve only two tooling paths; separate archived evidence commit retains prior custody scope. No Company/MVP/release acceptance.",
+    "Reviewer inspected Git/source/log/hash evidence read-only and wrote private receipt; no test execution or repository edits."
+  ]
+}
