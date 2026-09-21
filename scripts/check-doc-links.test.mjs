@@ -1125,3 +1125,31 @@ test("A18 rejects an archive-tree gitlink while the live manifest path remains 1
   assert.equal(validation.telemetry.validated_count, 0);
   assert.match(validation.failures.join("\n"), /must be the exact 100644 document blob/);
 });
+
+// Match the real custody workload: retained non-Markdown evidence enlarges the
+// exact index tree even when the governed documentation set stays small.
+test("large exact Git index preserves custody checks and manifest generation", async () => {
+  const root = await makeGeneratorRepo();
+  const { stdout: oid } = await run("git", ["rev-parse", ":README.md"], { cwd: root });
+  const entries = Array.from({ length: 6000 }, (_, i) =>
+    `100644 ${oid.trim()}\tdocs/evidence/${"retained-evidence/".repeat(8)}${i}.log\n`,
+  ).join("");
+  // Feed Git directly: no shell interpolation and no fabricated tree output.
+  const child = run("git", ["update-index", "--index-info"], { cwd: root });
+  child.child.stdin.end(entries);
+  await child;
+  const { stdout: tree } = await run("git", ["write-tree"], { cwd: root });
+  const { stdout: listing } = await run("git", ["ls-tree", "-r", "-z", tree.trim()], {
+    cwd: root, maxBuffer: 4 * 1024 * 1024,
+  });
+  assert.ok(Buffer.byteLength(listing) > 1024 * 1024);
+  await run(process.execPath, [script, root]);
+  await run(process.execPath, [generator, "--write"], { cwd: root });
+  await run("git", ["add", "docs/documentation-index.json"], { cwd: root });
+  await run(process.execPath, [script, root]);
+
+  // A successful large read must still catch an unclassified tracked document.
+  await writeFile(join(root, "docs/unclassified.md"), "# Must be classified\n");
+  await run("git", ["add", "docs/unclassified.md"], { cwd: root });
+  await assert.rejects(run(process.execPath, [script, root]), /docs\/unclassified\.md/);
+});
