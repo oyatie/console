@@ -959,6 +959,144 @@ mod authorized {
         assert!(!lowered.contains("comms-rail"), "{payroll_html}");
     }
 
+    /// Real mounted-route regression. Legacy owner fixtures establish transport
+    /// compatibility only; this does not claim native browser workflow acceptance.
+    #[sqlx::test(migrations = false)]
+    async fn payroll_listing_audit_failure_is_recoverable_and_never_empty(pool: PgPool) {
+        console_platform_test_support::prepare_account_test_database(&pool).await;
+        let keys = keys();
+        let org = OrgId::knl();
+        let administrator = UserId::new();
+        let member = UserId::new();
+        seed_user(&pool, org, administrator, "SUPER_ADMIN").await;
+        seed_user(&pool, org, member, "MEMBER").await;
+        let run = seed_run(&pool, org, administrator).await;
+        let service = build_router(jwt_app_state(&pool, keys.public_pem.clone()).await);
+        let admin_token = bearer(&keys, org, administrator, "SUPER_ADMIN");
+        let member_token = bearer(&keys, org, member, "MEMBER");
+
+        let (status, json) =
+            get_ui_path(service.clone(), "/api/v1/payroll/runs", Some(&admin_token)).await;
+        assert_eq!(status, StatusCode::OK, "JSON prerequisite: {json}");
+        let page: serde_json::Value = serde_json::from_str(&json).unwrap();
+        assert!(
+            page["items"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|row| row["id"] == run.to_string())
+        );
+        let (status, before) = get_ui_path(service.clone(), "/payroll", Some(&admin_token)).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(
+            before.contains(&format!("data-run-id=\"{run}\"")),
+            "SSR prerequisite: {before}"
+        );
+        let audits_before = list_read_audits(&pool, administrator).await;
+        assert_eq!(
+            audits_before, 2,
+            "both positive reads must commit their actual audit"
+        );
+
+        // Inject only the actual read-audit failure after every prerequisite
+        // passes. Authentication, policy, source tables and queries stay intact.
+        sqlx::raw_sql(
+            r#"
+            CREATE FUNCTION public.test_payroll_list_audit_refusal() RETURNS trigger
+            LANGUAGE plpgsql SET search_path=pg_catalog,pg_temp AS $body$
+            BEGIN
+                IF NEW.action='payroll_run.list_read' THEN
+                    RAISE EXCEPTION USING ERRCODE='23514', MESSAGE='private-payroll-audit-fault';
+                END IF;
+                RETURN NEW;
+            END
+            $body$;
+            CREATE TRIGGER test_payroll_list_audit_refusal BEFORE INSERT ON public.audit_events
+            FOR EACH ROW EXECUTE FUNCTION public.test_payroll_list_audit_refusal();
+        "#,
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+        let (status, failed_json) =
+            get_ui_path(service.clone(), "/api/v1/payroll/runs", Some(&admin_token)).await;
+        assert_eq!(
+            status,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "fault must reach actual audit path"
+        );
+        assert!(!failed_json.contains(&run.to_string()));
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&failed_json).unwrap(),
+            json!({"error":{"code":"internal","message":"internal server error"}}),
+            "audit failures must retain the exact sanitized public error envelope"
+        );
+        let (status, failed) = get_ui_path(service.clone(), "/payroll", Some(&admin_token)).await;
+        assert_eq!(
+            status,
+            StatusCode::OK,
+            "SSR document keeps its existing response envelope"
+        );
+        assert!(
+            failed.contains("data-state=\"failure\""),
+            "authorized read failure was swallowed: {failed}"
+        );
+        assert!(failed.contains("다시 불러오기") && failed.contains("href=\"/payroll\""));
+        for forbidden in [
+            "data-state=\"empty\"",
+            "data-run-id",
+            "/pkg/",
+            "private-payroll-audit-fault",
+        ] {
+            assert!(
+                !failed.contains(forbidden),
+                "failure disclosed {forbidden}: {failed}"
+            );
+        }
+        for token in [None, Some(member_token.as_str()), Some("invalid-token")] {
+            let (status, denied) = get_ui_path(service.clone(), "/payroll", token).await;
+            assert_eq!(status, StatusCode::OK);
+            assert_eq!(
+                denied,
+                console_payroll_ui::render_shell(),
+                "failure must not disclose a denied payroll destination"
+            );
+        }
+        assert_eq!(
+            list_read_audits(&pool, administrator).await,
+            audits_before,
+            "failed reads must not commit audits"
+        );
+        assert_eq!(list_read_audits(&pool, member).await, 0);
+
+        sqlx::raw_sql(
+            r#"
+            DROP TRIGGER test_payroll_list_audit_refusal ON public.audit_events;
+            DROP FUNCTION public.test_payroll_list_audit_refusal();
+        "#,
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+        let (status, recovered) = get_ui_path(service, "/payroll", Some(&admin_token)).await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(recovered.contains(&format!("data-run-id=\"{run}\"")));
+        assert!(!recovered.contains("data-state=\"failure\""));
+        assert_eq!(
+            list_read_audits(&pool, administrator).await,
+            audits_before + 1
+        );
+        let stored: Uuid = sqlx::query_scalar("SELECT id FROM payroll_draft_runs WHERE id=$1")
+            .bind(run)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(
+            stored, run,
+            "read failure and repair must preserve the owner record"
+        );
+    }
+
     async fn list_read_audits(pool: &PgPool, actor: UserId) -> i64 {
         sqlx::query_scalar(
             "SELECT COUNT(*) FROM audit_events \
