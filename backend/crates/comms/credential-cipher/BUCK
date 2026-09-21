@@ -24,6 +24,7 @@ rust_library(
     deps = [
         "//backend/crates/comms/application:console-comms-application",
         "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:aws-lc-rs",
         "//third-party/rust:base64",
         "//third-party/rust:chacha20poly1305",
         "//third-party/rust:secrecy",
@@ -43,6 +44,7 @@ rust_test(
     deps = [
         "//backend/crates/comms/application:console-comms-application",
         "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:aws-lc-rs",
         "//third-party/rust:base64",
         "//third-party/rust:chacha20poly1305",
         "//third-party/rust:secrecy",

@@ -121,7 +121,18 @@ async fn raw_bundles(pool: &PgPool, account: EmailAccountId) -> [SealedCredentia
         .execute(tx.as_mut())
         .await
         .unwrap();
-    let row:(Vec<u8>,Vec<u8>,Vec<u8>,Vec<u8>,Vec<u8>,Vec<u8>,Vec<u8>,Vec<u8>,i16)=sqlx::query_as("SELECT smtp_password_ct,smtp_password_nonce,dek_wrapped,dek_nonce,imap_password_ct,imap_password_nonce,imap_dek_wrapped,imap_dek_nonce,key_version FROM public.email_accounts WHERE id=$1")
+    type RawCredentialRow = (
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+        Vec<u8>,
+        i16,
+    );
+    let row: RawCredentialRow = sqlx::query_as("SELECT smtp_password_ct,smtp_password_nonce,dek_wrapped,dek_nonce,imap_password_ct,imap_password_nonce,imap_dek_wrapped,imap_dek_nonce,key_version FROM public.email_accounts WHERE id=$1")
         .bind(*account.as_uuid()).fetch_one(tx.as_mut()).await.unwrap();
     tx.commit().await.unwrap();
     [

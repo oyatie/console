@@ -38,7 +38,7 @@ rust_library(
 
 rust_test(
     name = "console-comms-adapter-postgres-itest-mail_account_rls_surfaces_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-postgres", ["tests/mail_account_rls_surfaces_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-postgres", ["tests/mail_account_rls_surfaces_as_runtime_role.rs", "tests/mail_account_rls_surfaces_as_runtime_role/mixed_format.rs"] + glob(["tests/mail_account_rls_surfaces_as_runtime_role/fixtures/credential-legacy-v1.json"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "mail_account_rls_surfaces_as_runtime_role",
@@ -69,7 +69,7 @@ rust_test(
 
 rust_test(
     name = "console-comms-adapter-postgres-itest-mail_sync_rls_surfaces_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-postgres", ["tests/mail_sync_rls_surfaces_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-postgres", ["tests/mail_account_rls_surfaces_as_runtime_role/mixed_format.rs", "tests/mail_sync_rls_surfaces_as_runtime_role.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "mail_sync_rls_surfaces_as_runtime_role",
@@ -100,7 +100,7 @@ rust_test(
 
 rust_test(
     name = "console-comms-adapter-postgres-itest-send_rate_limit_rls_surfaces_as_runtime_role",
-    mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-postgres", ["tests/send_rate_limit_rls_surfaces_as_runtime_role.rs"], external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/comms/adapter-postgres", ["tests/mail_account_rls_surfaces_as_runtime_role/mixed_format.rs", "tests/send_rate_limit_rls_surfaces_as_runtime_role.rs"], external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
     }),
     crate = "send_rate_limit_rls_surfaces_as_runtime_role",

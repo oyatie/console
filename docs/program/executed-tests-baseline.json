@@ -131,7 +131,7 @@
     "backend/crates/comms/adapter-postgres/tests/send_rate_limit_rls_surfaces_as_runtime_role.rs": 3,
     "backend/crates/comms/adapter-smtp/src/lib.rs": 17,
     "backend/crates/comms/application/src/lib.rs": 15,
-    "backend/crates/comms/credential-cipher/src/lib.rs": 17,
+    "backend/crates/comms/credential-cipher/src/lib.rs": 22,
     "backend/crates/comms/domain/src/lib.rs": 14,
     "backend/crates/comms/mailbox/src/lib.rs": 7,
     "backend/crates/comms/rest/src/lib.rs": 5,

@@ -105,6 +105,13 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
+    "console-comms-adapter-postgres": {
+        "itests": {
+            "tests/mail_account_rls_surfaces_as_runtime_role.rs": {
+                "srcs": ["tests/mail_account_rls_surfaces_as_runtime_role/fixtures/credential-legacy-v1.json"],
+            },
+        },
+    },
     "console-payroll-ui": {
         # The crate compiles three non-Rust files in. `island_script.js` is
         # `include_str!` from src/, and the committed bindgen pair under pkg/ is

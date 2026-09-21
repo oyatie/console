@@ -1,53 +1,37 @@
-//! Webmail credential cipher — envelope AEAD for SMTP/IMAP passwords at rest.
+//! Envelope AEAD for SMTP/IMAP credentials, implementing the application-owned port.
 //!
-//! This crate provides the CONCRETE [`EnvelopeCredentialCipher`] implementation
-//! of the [`CredentialCipher`] PORT. The trait and its value types ([`Aad`],
-//! [`SealedCredential`], [`CipherError`]) are owned by the application layer
-//! (`console-comms-application`); this crate depends on that abstraction and
-//! implements it, so the dependency direction stays clean (the application /
-//! adapter layers speak only to the port, and only the app composition root
-//! wires this concrete cipher).
+//! New writes use AES-256-GCM with a fresh 256-bit DEK per secret and independent
+//! provider-generated 96-bit payload and KEK-wrap nonces. Both stages bind the
+//! versioned domain, distinct purpose and exact caller row/field AAD.
 //!
-//! # Scheme (envelope encryption)
+//! The per-field v2 tuple is (12-byte nonce, 12-byte wrap nonce, 49-byte wrapped
+//! DEK): the wrap starts with format byte 2 followed by 32 ciphertext bytes and
+//! a 16-byte tag. Legacy (24, 24, 48) XChaCha bundles remain readable with their
+//! original AAD. Other tuples fail closed; authentication failure never falls
+//! back. The shared SMTP/IMAP KEK version remains 1, independently of format.
 //!
-//! Each encrypted secret gets its OWN random 256-bit data-encryption key (DEK):
+//! The master KEK comes from base64 `CONSOLE_MAIL_MASTER_KEY`. Working secrets
+//! are zeroized on failure/drop; this crate never logs credentials or keys.
 //!
-//! 1. A fresh DEK is generated per `encrypt` call (`OsRng`).
-//! 2. The plaintext secret is sealed under the DEK with `XChaCha20Poly1305`
-//!    (24-byte random nonce), with the caller's [`Aad`] bound as associated
-//!    data — so a ciphertext copied to another row/field fails authentication.
-//! 3. The DEK itself is sealed ("wrapped") under the master KEK with
-//!    `XChaCha20Poly1305` (its own 24-byte random nonce), with the same [`Aad`]
-//!    bound. Only the *wrapped* DEK is ever persisted.
+//! # Deployment and key lifetime
 //!
-//! The store therefore persists, per secret: `(ciphertext, nonce, dek_wrapped,
-//! dek_nonce, key_version)` — and NEVER a plaintext password nor the bare DEK.
-//! KEK rotation re-wraps the small DEK (a follow-on job), not every secret.
-//!
-//! # Master key (KEK)
-//!
-//! The KEK is loaded from the `CONSOLE_MAIL_MASTER_KEY` environment variable — a
-//! base64 (standard alphabet) encoding of exactly 32 bytes — sourced from OCI
-//! Vault into the `console-secrets` env in production. It is NEVER hardcoded, logged,
-//! or written to disk by this crate, and is held in a [`SecretBox`] so it is
-//! zeroized on drop and prints as `[REDACTED]`.
-//!
-//! # Security invariants
-//!
-//! * `XChaCha20Poly1305` (AEAD): tampering with ciphertext, nonce, the wrapped
-//!   DEK, or the AAD makes decryption FAIL (no silent acceptance).
-//! * 24-byte nonces drawn from the OS CSPRNG (`OsRng`) — the 192-bit XChaCha
-//!   nonce makes random-per-row collision negligible.
-//! * Decrypted secrets and the KEK live only inside [`SecretBox`]; the inner
-//!   bytes are zeroized on drop. This crate logs NOTHING.
+//! Drain every old API/send/sync/worker reader before enabling AES writes. Every
+//! rollback artifact must also read AES; no ciphertext migration or KEK rotation
+//! occurs here. Randomized GCM wrapping requires at most 2^32 invocations per
+//! KEK across its entire fleet lifetime, including retries/discarded writes and
+//! restores. Operators must bound that aggregate before exposure; this provider
+//! does not enforce a fleet counter and key rotation is not implemented here.
+//! AES-256-GCM is a NIST-approved algorithm; the workspace's non-FIPS provider
+//! configuration does not establish FIPS module certification.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+use aws_lc_rs::aead::{AES_256_GCM, Aad as ProviderAad, Nonce, RandomizedNonceKey};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD as BASE64;
-use chacha20poly1305::aead::{Aead, AeadCore, KeyInit, OsRng, Payload};
+use chacha20poly1305::aead::{Aead, KeyInit, Payload};
 use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
 use secrecy::{ExposeSecret, SecretBox};
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 pub use console_comms_application::credential_cipher::{
     Aad, CipherError, CredentialCipher, SealedCredential,
@@ -62,7 +46,7 @@ pub const CURRENT_KEY_VERSION: i16 = 1;
 
 const KEY_LEN: usize = 32;
 
-/// `XChaCha20Poly1305` envelope cipher holding the master KEK in a [`SecretBox`].
+/// AES-256-GCM writer and compatible legacy reader with a protected master KEK.
 pub struct EnvelopeCredentialCipher {
     /// The master key-encryption key (32 bytes), zeroized on drop.
     kek: SecretBox<[u8; KEY_LEN]>,
@@ -73,19 +57,20 @@ impl EnvelopeCredentialCipher {
     /// Build the cipher from the base64-encoded 32-byte KEK in the
     /// `CONSOLE_MAIL_MASTER_KEY` environment variable.
     pub fn from_env() -> Result<Self, CipherError> {
-        let encoded = std::env::var(MASTER_KEY_ENV).map_err(|_| CipherError::MasterKey)?;
+        let encoded =
+            Zeroizing::new(std::env::var(MASTER_KEY_ENV).map_err(|_| CipherError::MasterKey)?);
         Self::from_base64_key(&encoded)
     }
 
     /// Build the cipher from a base64 (standard alphabet) encoding of exactly
     /// 32 key bytes. The decoded buffer is zeroized after the key is copied in.
     pub fn from_base64_key(encoded: &str) -> Result<Self, CipherError> {
-        let mut decoded = BASE64
-            .decode(encoded.trim())
-            .map_err(|_| CipherError::MasterKey)?;
-        let result = Self::from_key_bytes(&decoded);
-        decoded.zeroize();
-        result
+        let decoded = Zeroizing::new(
+            BASE64
+                .decode(encoded.trim())
+                .map_err(|_| CipherError::MasterKey)?,
+        );
+        Self::from_key_bytes(&decoded)
     }
 
     /// Build the cipher directly from raw key bytes (must be exactly 32).
@@ -103,56 +88,26 @@ impl EnvelopeCredentialCipher {
             key_version: CURRENT_KEY_VERSION,
         })
     }
-
-    /// The KEK cipher instance. Constructed per call so the expanded key
-    /// schedule never outlives the operation.
-    fn kek_cipher(&self) -> XChaCha20Poly1305 {
-        let key = Key::from_slice(self.kek.expose_secret().as_slice());
-        XChaCha20Poly1305::new(key)
-    }
 }
 
 impl CredentialCipher for EnvelopeCredentialCipher {
     fn encrypt(&self, plaintext: &[u8], aad: Aad<'_>) -> Result<SealedCredential, CipherError> {
-        let aad_bytes = aad.encode();
-
-        // 1. Fresh per-row DEK.
-        let dek = XChaCha20Poly1305::generate_key(&mut OsRng);
-
-        // 2. Seal the secret under the DEK, AAD-bound.
-        let dek_cipher = XChaCha20Poly1305::new(&dek);
-        let nonce = XChaCha20Poly1305::generate_nonce(&mut OsRng);
-        let ciphertext = dek_cipher
-            .encrypt(
-                &nonce,
-                Payload {
-                    msg: plaintext,
-                    aad: &aad_bytes,
-                },
-            )
-            .map_err(|_| CipherError::Encrypt)?;
-
-        // 3. Wrap the DEK under the KEK, AAD-bound.
-        let kek_cipher = self.kek_cipher();
-        let dek_nonce = XChaCha20Poly1305::generate_nonce(&mut OsRng);
-        let mut dek_bytes = dek;
-        let dek_wrapped = kek_cipher
-            .encrypt(
-                &dek_nonce,
-                Payload {
-                    msg: dek_bytes.as_slice(),
-                    aad: &aad_bytes,
-                },
-            )
-            .map_err(|_| CipherError::Encrypt)?;
-        // The bare DEK never leaves this function — zeroize the working copy.
-        dek_bytes.zeroize();
-
+        let mut dek = Zeroizing::new([0u8; KEY_LEN]);
+        aws_lc_rs::rand::fill(dek.as_mut()).map_err(|_| CipherError::Encrypt)?;
+        let (ciphertext, nonce) = aes_seal(dek.as_ref(), plaintext, &versioned_aad(1, aad))?;
+        let (wrapped, dek_nonce) = aes_seal(
+            self.kek.expose_secret().as_slice(),
+            dek.as_ref(),
+            &versioned_aad(2, aad),
+        )?;
+        let mut dek_wrapped = Vec::with_capacity(49);
+        dek_wrapped.push(2);
+        dek_wrapped.extend_from_slice(&wrapped);
         Ok(SealedCredential {
             ciphertext,
-            nonce: nonce.to_vec(),
+            nonce,
             dek_wrapped,
-            dek_nonce: dek_nonce.to_vec(),
+            dek_nonce,
             key_version: self.key_version,
         })
     }
@@ -165,292 +120,102 @@ impl CredentialCipher for EnvelopeCredentialCipher {
         if sealed.key_version != self.key_version {
             return Err(CipherError::KeyVersion);
         }
-        let aad_bytes = aad.encode();
-
-        // 1. Unwrap the DEK under the KEK (authenticates the wrap + AAD).
-        let kek_cipher = self.kek_cipher();
-        let dek_nonce = nonce_from_slice(&sealed.dek_nonce)?;
-        let mut dek_bytes = kek_cipher
-            .decrypt(
-                &dek_nonce,
-                Payload {
-                    msg: &sealed.dek_wrapped,
-                    aad: &aad_bytes,
-                },
-            )
-            .map_err(|_| CipherError::Decrypt)?;
-        if dek_bytes.len() != KEY_LEN {
-            dek_bytes.zeroize();
-            return Err(CipherError::Decrypt);
-        }
-
-        // 2. Decrypt the secret under the DEK (authenticates the secret + AAD).
-        let dek = Key::from_slice(&dek_bytes).to_owned();
-        let dek_cipher = XChaCha20Poly1305::new(&dek);
-        dek_bytes.zeroize();
-        let nonce = nonce_from_slice(&sealed.nonce)?;
-        let plaintext = dek_cipher
-            .decrypt(
-                &nonce,
-                Payload {
-                    msg: &sealed.ciphertext,
-                    aad: &aad_bytes,
-                },
-            )
-            .map_err(|_| CipherError::Decrypt)?;
-
-        Ok(SecretBox::new(Box::new(plaintext)))
+        let mut plaintext = match (
+            sealed.nonce.len(),
+            sealed.dek_nonce.len(),
+            sealed.dek_wrapped.len(),
+        ) {
+            (12, 12, 49) if sealed.dek_wrapped[0] == 2 => {
+                let dek = aes_open(
+                    self.kek.expose_secret().as_slice(),
+                    &sealed.dek_nonce,
+                    &sealed.dek_wrapped[1..],
+                    &versioned_aad(2, aad),
+                )?;
+                aes_open(
+                    &dek,
+                    &sealed.nonce,
+                    &sealed.ciphertext,
+                    &versioned_aad(1, aad),
+                )?
+            }
+            (24, 24, 48) => {
+                let aad_bytes = aad.encode();
+                let dek = legacy_open(
+                    self.kek.expose_secret().as_slice(),
+                    &sealed.dek_nonce,
+                    &sealed.dek_wrapped,
+                    &aad_bytes,
+                )?;
+                legacy_open(&dek, &sealed.nonce, &sealed.ciphertext, &aad_bytes)?
+            }
+            _ => return Err(CipherError::Decrypt),
+        };
+        Ok(SecretBox::new(Box::new(std::mem::take(&mut *plaintext))))
     }
 }
 
-/// Build a 24-byte XChaCha nonce from a stored slice, rejecting the wrong size.
-fn nonce_from_slice(bytes: &[u8]) -> Result<XNonce, CipherError> {
-    if bytes.len() != 24 {
+fn versioned_aad(purpose: u8, aad: Aad<'_>) -> Vec<u8> {
+    let mut bytes = b"console.mail.credential\0\x02".to_vec();
+    bytes.push(purpose);
+    bytes.extend_from_slice(&aad.encode());
+    bytes
+}
+
+fn aes_seal(key: &[u8], plaintext: &[u8], aad: &[u8]) -> Result<(Vec<u8>, Vec<u8>), CipherError> {
+    let key = RandomizedNonceKey::new(&AES_256_GCM, key).map_err(|_| CipherError::Encrypt)?;
+    // Reserve the tag before copying plaintext; appending it must not free an
+    // allocation that still contains a plaintext copy.
+    let capacity = plaintext
+        .len()
+        .checked_add(16)
+        .ok_or(CipherError::Encrypt)?;
+    let mut buffer = Zeroizing::new(Vec::with_capacity(capacity));
+    buffer.extend_from_slice(plaintext);
+    let nonce = key
+        .seal_in_place_append_tag(ProviderAad::from(aad), &mut *buffer)
+        .map_err(|_| CipherError::Encrypt)?;
+    Ok((std::mem::take(&mut *buffer), nonce.as_ref().to_vec()))
+}
+
+fn aes_open(
+    key: &[u8],
+    nonce: &[u8],
+    ciphertext: &[u8],
+    aad: &[u8],
+) -> Result<Zeroizing<Vec<u8>>, CipherError> {
+    let key = RandomizedNonceKey::new(&AES_256_GCM, key).map_err(|_| CipherError::Decrypt)?;
+    let nonce = Nonce::try_assume_unique_for_key(nonce).map_err(|_| CipherError::Decrypt)?;
+    let mut buffer = Zeroizing::new(ciphertext.to_vec());
+    let length = key
+        .open_in_place(nonce, ProviderAad::from(aad), &mut buffer)
+        .map_err(|_| CipherError::Decrypt)?
+        .len();
+    buffer.truncate(length);
+    Ok(buffer)
+}
+
+fn legacy_open(
+    key: &[u8],
+    nonce: &[u8],
+    ciphertext: &[u8],
+    aad: &[u8],
+) -> Result<Zeroizing<Vec<u8>>, CipherError> {
+    if key.len() != KEY_LEN || nonce.len() != 24 {
         return Err(CipherError::Decrypt);
     }
-    Ok(*XNonce::from_slice(bytes))
+    XChaCha20Poly1305::new(Key::from_slice(key))
+        .decrypt(
+            XNonce::from_slice(nonce),
+            Payload {
+                msg: ciphertext,
+                aad,
+            },
+        )
+        .map(Zeroizing::new)
+        .map_err(|_| CipherError::Decrypt)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// A deterministic 32-byte test KEK, base64-encoded.
-    fn test_key_b64() -> String {
-        let key = [7u8; KEY_LEN];
-        BASE64.encode(key)
-    }
-
-    fn cipher() -> EnvelopeCredentialCipher {
-        EnvelopeCredentialCipher::from_base64_key(&test_key_b64()).unwrap()
-    }
-
-    fn aad<'a>() -> Aad<'a> {
-        Aad {
-            org_id: "11111111-1111-1111-1111-111111111111",
-            account_id: "22222222-2222-2222-2222-222222222222",
-            field: "smtp_password",
-        }
-    }
-
-    #[test]
-    fn round_trip_recovers_plaintext() {
-        let c = cipher();
-        let secret = b"super-secret-smtp-pw";
-        let sealed = c.encrypt(secret, aad()).unwrap();
-        let out = c.decrypt(&sealed, aad()).unwrap();
-        assert_eq!(out.expose_secret().as_slice(), secret);
-    }
-
-    #[test]
-    fn ciphertext_is_not_plaintext_and_nonces_are_24_bytes() {
-        let c = cipher();
-        let secret = b"another-pw";
-        let sealed = c.encrypt(secret, aad()).unwrap();
-        assert_ne!(sealed.ciphertext, secret);
-        assert_eq!(sealed.nonce.len(), 24);
-        assert_eq!(sealed.dek_nonce.len(), 24);
-        assert_eq!(sealed.key_version, CURRENT_KEY_VERSION);
-        // The wrapped DEK is 32 bytes + 16-byte Poly1305 tag.
-        assert_eq!(sealed.dek_wrapped.len(), KEY_LEN + 16);
-    }
-
-    #[test]
-    fn fresh_dek_and_nonce_per_call_yield_distinct_ciphertext() {
-        let c = cipher();
-        let secret = b"same-input";
-        let a = c.encrypt(secret, aad()).unwrap();
-        let b = c.encrypt(secret, aad()).unwrap();
-        // Random DEK + random nonces => different ciphertext for identical input.
-        assert_ne!(a.ciphertext, b.ciphertext);
-        assert_ne!(a.nonce, b.nonce);
-        assert_ne!(a.dek_wrapped, b.dek_wrapped);
-        // Both still decrypt to the same plaintext.
-        assert_eq!(
-            c.decrypt(&a, aad()).unwrap().expose_secret().as_slice(),
-            secret
-        );
-        assert_eq!(
-            c.decrypt(&b, aad()).unwrap().expose_secret().as_slice(),
-            secret
-        );
-    }
-
-    #[test]
-    fn wrong_kek_fails_to_decrypt() {
-        let c = cipher();
-        let sealed = c.encrypt(b"pw", aad()).unwrap();
-        let other = EnvelopeCredentialCipher::from_key_bytes(&[9u8; KEY_LEN]).unwrap();
-        assert!(matches!(
-            other.decrypt(&sealed, aad()),
-            Err(CipherError::Decrypt)
-        ));
-    }
-
-    #[test]
-    fn tampered_ciphertext_fails_auth() {
-        let c = cipher();
-        let mut sealed = c.encrypt(b"pw", aad()).unwrap();
-        sealed.ciphertext[0] ^= 0xff;
-        assert!(matches!(
-            c.decrypt(&sealed, aad()),
-            Err(CipherError::Decrypt)
-        ));
-    }
-
-    #[test]
-    fn tampered_nonce_fails_auth() {
-        let c = cipher();
-        let mut sealed = c.encrypt(b"pw", aad()).unwrap();
-        sealed.nonce[0] ^= 0xff;
-        assert!(matches!(
-            c.decrypt(&sealed, aad()),
-            Err(CipherError::Decrypt)
-        ));
-    }
-
-    #[test]
-    fn tampered_wrapped_dek_fails_auth() {
-        let c = cipher();
-        let mut sealed = c.encrypt(b"pw", aad()).unwrap();
-        sealed.dek_wrapped[0] ^= 0xff;
-        assert!(matches!(
-            c.decrypt(&sealed, aad()),
-            Err(CipherError::Decrypt)
-        ));
-    }
-
-    #[test]
-    fn tampered_dek_nonce_fails_auth() {
-        let c = cipher();
-        let mut sealed = c.encrypt(b"pw", aad()).unwrap();
-        sealed.dek_nonce[0] ^= 0xff;
-        assert!(matches!(
-            c.decrypt(&sealed, aad()),
-            Err(CipherError::Decrypt)
-        ));
-    }
-
-    #[test]
-    fn wrong_aad_org_fails_auth() {
-        let c = cipher();
-        let sealed = c.encrypt(b"pw", aad()).unwrap();
-        let mut bad = aad();
-        bad.org_id = "99999999-9999-9999-9999-999999999999";
-        assert!(matches!(c.decrypt(&sealed, bad), Err(CipherError::Decrypt)));
-    }
-
-    #[test]
-    fn wrong_aad_account_fails_auth() {
-        let c = cipher();
-        let sealed = c.encrypt(b"pw", aad()).unwrap();
-        let mut bad = aad();
-        bad.account_id = "00000000-0000-0000-0000-000000000000";
-        assert!(matches!(c.decrypt(&sealed, bad), Err(CipherError::Decrypt)));
-    }
-
-    #[test]
-    fn wrong_aad_field_fails_auth() {
-        // The crux of envelope AAD-binding: a ciphertext sealed for
-        // `smtp_password` must NOT decrypt under the `imap_password` field.
-        let c = cipher();
-        let sealed = c.encrypt(b"pw", aad()).unwrap();
-        let mut bad = aad();
-        bad.field = "imap_password";
-        assert!(matches!(c.decrypt(&sealed, bad), Err(CipherError::Decrypt)));
-    }
-
-    #[test]
-    fn aad_encoding_is_unambiguous() {
-        // Length-prefixing keeps ("ab","c") distinct from ("a","bc").
-        let one = Aad {
-            org_id: "ab",
-            account_id: "c",
-            field: "f",
-        }
-        .encode();
-        let two = Aad {
-            org_id: "a",
-            account_id: "bc",
-            field: "f",
-        }
-        .encode();
-        assert_ne!(one, two);
-    }
-
-    #[test]
-    fn wrong_key_version_is_rejected() {
-        let c = cipher();
-        let mut sealed = c.encrypt(b"pw", aad()).unwrap();
-        sealed.key_version = 99;
-        assert!(matches!(
-            c.decrypt(&sealed, aad()),
-            Err(CipherError::KeyVersion)
-        ));
-    }
-
-    #[test]
-    fn bad_master_key_inputs_are_rejected() {
-        assert!(matches!(
-            EnvelopeCredentialCipher::from_base64_key("not!base64!"),
-            Err(CipherError::MasterKey)
-        ));
-        // Valid base64 but wrong length (16 bytes, not 32).
-        let short = BASE64.encode([1u8; 16]);
-        assert!(matches!(
-            EnvelopeCredentialCipher::from_base64_key(&short),
-            Err(CipherError::MasterKey)
-        ));
-        assert!(matches!(
-            EnvelopeCredentialCipher::from_key_bytes(&[0u8; 31]),
-            Err(CipherError::MasterKey)
-        ));
-    }
-
-    #[test]
-    fn secret_debug_is_redacted() {
-        // `SecretBox`'s Debug never prints the secret bytes.
-        let c = cipher();
-        let sealed = c.encrypt(b"top-secret-value", aad()).unwrap();
-        let recovered = c.decrypt(&sealed, aad()).unwrap();
-        let dbg = format!("{recovered:?}");
-        assert!(
-            dbg.contains("REDACTED"),
-            "secret Debug must redact, got: {dbg}"
-        );
-        assert!(!dbg.contains("top-secret-value"));
-    }
-
-    #[test]
-    fn empty_plaintext_round_trips() {
-        let c = cipher();
-        let sealed = c.encrypt(b"", aad()).unwrap();
-        let out = c.decrypt(&sealed, aad()).unwrap();
-        assert!(out.expose_secret().is_empty());
-    }
-
-    #[test]
-    fn wrong_nonce_length_is_rejected() {
-        let c = cipher();
-        let mut sealed = c.encrypt(b"pw", aad()).unwrap();
-        sealed.nonce.truncate(12);
-        assert!(matches!(
-            c.decrypt(&sealed, aad()),
-            Err(CipherError::Decrypt)
-        ));
-    }
-    #[test]
-    fn ciphertext_is_not_plaintext_and_aes_v2_format_is_explicit() {
-        let c = cipher();
-        let secret = b"another-pw";
-        let sealed = c.encrypt(secret, aad()).unwrap();
-        assert_ne!(sealed.ciphertext, secret);
-        assert_eq!(sealed.nonce.len(), 12);
-        assert_eq!(sealed.dek_nonce.len(), 12);
-        assert_eq!(sealed.key_version, CURRENT_KEY_VERSION);
-        assert_eq!(sealed.key_version, 1);
-        // One format byte, 32 encrypted DEK bytes and a 16-byte GCM tag.
-        assert_eq!(sealed.dek_wrapped.len(), 1 + KEY_LEN + 16);
-        assert_eq!(sealed.dek_wrapped[0], 2);
-    }
-}
+#[path = "aes_tests.rs"]
+mod tests;

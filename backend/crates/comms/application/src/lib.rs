@@ -100,13 +100,13 @@ pub mod credential_cipher {
     /// plaintext.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub struct SealedCredential {
-        /// AEAD ciphertext of the secret (includes the Poly1305 tag).
+        /// AEAD ciphertext of the secret, including its authentication tag.
         pub ciphertext: Vec<u8>,
-        /// 24-byte XChaCha nonce used to seal the secret under the DEK.
+        /// Payload nonce in the cipher-owned per-field envelope format.
         pub nonce: Vec<u8>,
-        /// The DEK, itself AEAD-sealed under the KEK (includes its tag).
+        /// The DEK, AEAD-sealed under the KEK, including its format and tag.
         pub dek_wrapped: Vec<u8>,
-        /// 24-byte XChaCha nonce used to wrap the DEK under the KEK.
+        /// Wrap nonce in the cipher-owned per-field envelope format.
         pub dek_nonce: Vec<u8>,
         /// The KEK version used to wrap the DEK.
         pub key_version: i16,
