@@ -10,6 +10,8 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 pub mod lifecycle;
+mod read;
+pub use read::PgPayrollRunsReadPort;
 /// `ObjectKey::PayRun`'s canonical write port, plus the one
 /// `payroll_draft_runs` statement that used to live in
 /// `console-workflow-runtime-adapter-postgres`.
@@ -77,35 +79,8 @@ impl From<PgPayrollError> for KernelError {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct PayrollRunSummary {
-    pub id: Uuid,
-    pub period_start: Date,
-    pub period_end: Date,
-    pub source_label: String,
-    pub status: String,
-    pub calculation_enabled: bool,
-    pub created_by: Option<Uuid>,
-    pub approved_by: Option<Uuid>,
-    pub approved_at: Option<OffsetDateTime>,
-    pub close_receipt: Option<serde_json::Value>,
-    pub submitted_by: Option<Uuid>,
-    pub submitted_at: Option<OffsetDateTime>,
-    pub decided_by: Option<Uuid>,
-    pub decided_at: Option<OffsetDateTime>,
-    pub decision_reason: Option<String>,
-    pub approval_ref: Option<Uuid>,
-    pub created_at: OffsetDateTime,
-    pub updated_at: OffsetDateTime,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct PayrollRunPage {
-    pub items: Vec<PayrollRunSummary>,
-    pub total: i64,
-    pub limit: i64,
-    pub offset: i64,
-}
+// Preserve established adapter import paths while the application owns read contracts.
+pub use console_payroll_application::read::{PayrollRunPage, PayrollRunSummary};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PayrollRunDetail {

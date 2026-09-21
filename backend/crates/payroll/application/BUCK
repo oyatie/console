@@ -22,7 +22,11 @@ rust_library(
     visibility = ["PUBLIC"],
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/application"},
     deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )
@@ -37,7 +41,11 @@ rust_test(
     env = {"CARGO_MANIFEST_DIR": "backend/crates/payroll/application"},
     labels = ["owner.backend.crates.payroll.application", "domain.payroll", "test.unit", "resource.none"],
     deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
         "//third-party/rust:thiserror",
+        "//third-party/rust:time",
         "//third-party/rust:uuid",
     ],
 )

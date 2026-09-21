@@ -3725,6 +3725,7 @@ pub fn build_router(state: AppState) -> Router {
                 .merge(console_payroll_rest::router(PayrollRestState::new(
                     PgPayrollStore::new(pool.clone()),
                     session_verification.clone(),
+                    payroll_runs_reader(pool),
                 )))
                 // Deterministic statistical projection (read-only, stateless).
                 .merge(console_analytics_quant_rest::router(
@@ -4065,7 +4066,7 @@ async fn compose_ui_screens(
     state: &AppState,
     headers: &HeaderMap,
 ) -> console_payroll_ui::ShippingScreens {
-    let (companies, org_units, people, employments, runs, floors) =
+    let (companies, org_units, people, employments, runs) =
         match (&state.database, &state.session_verification()) {
             (DatabaseDependency::Postgres(pool), Some(verifier)) => {
                 let floors = ui_listing_floors(verifier, pool, headers).await;
@@ -4111,18 +4112,18 @@ async fn compose_ui_screens(
                 let runs = PayrollRestState::new(
                     PgPayrollStore::new(pool.clone()),
                     Some(verifier.clone()),
+                    payroll_runs_reader(pool),
                 )
                 .visible_run_summaries(headers)
                 .await;
-                (heads.0, heads.1, heads.2, heads.3, runs, floors)
+                (heads.0, heads.1, heads.2, heads.3, runs)
             }
             _ => (
                 console_payroll_ui::ScreenSection::Omitted,
                 console_payroll_ui::ScreenSection::Omitted,
                 console_payroll_ui::ScreenSection::Omitted,
                 console_payroll_ui::ScreenSection::Omitted,
-                Vec::new(),
-                UiListingFloors::denied(),
+                console_payroll_rest::VisiblePayrollRuns::Omitted,
             ),
         };
     console_payroll_ui::ShippingScreens {
@@ -4130,16 +4131,34 @@ async fn compose_ui_screens(
         org_units,
         people,
         employments,
-        runs: console_payroll_ui::ScreenSection::from_authorized_listing(
-            runs.iter().map(ui_run_summary).collect(),
-            floors.payroll,
-        ),
+        runs: match runs {
+            console_payroll_rest::VisiblePayrollRuns::Omitted => {
+                console_payroll_ui::ScreenSection::Omitted
+            }
+            console_payroll_rest::VisiblePayrollRuns::Failed => {
+                console_payroll_ui::ScreenSection::Failure
+            }
+            console_payroll_rest::VisiblePayrollRuns::Loaded(page) => {
+                console_payroll_ui::ScreenSection::from_authorized_listing(
+                    page.items.iter().map(ui_run_summary).collect(),
+                    true,
+                )
+            }
+        },
     }
+}
+
+fn payroll_runs_reader(pool: &PgPool) -> console_payroll_rest::PayrollRunsReaderFactory {
+    let pool = pool.clone();
+    std::sync::Arc::new(move |principal| {
+        Box::new(
+            console_payroll_adapter_postgres::PgPayrollRunsReadPort::new(pool.clone(), principal),
+        )
+    })
 }
 
 struct UiListingFloors {
     heads: bool,
-    payroll: bool,
     org_id: Option<OrgId>,
 }
 
@@ -4147,7 +4166,6 @@ impl UiListingFloors {
     const fn denied() -> Self {
         Self {
             heads: false,
-            payroll: false,
             org_id: None,
         }
     }
@@ -4155,8 +4173,7 @@ impl UiListingFloors {
 
 /// Same listing floors as the published Head GETs those screens already use.
 /// Company / OrgUnit / Person / Employment collection GETs are
-/// `EmployeeDirectoryRead` org-wide. `visible_run_summaries` still collapses
-/// errors to `[]`; payroll empty vs omit stays that helper's floor.
+/// `EmployeeDirectoryRead` org-wide. Payroll returns its own authorized outcome.
 async fn ui_listing_floors(
     verifier: &SessionVerification,
     pool: &PgPool,
@@ -4169,7 +4186,6 @@ async fn ui_listing_floors(
         };
     UiListingFloors {
         heads: authorize_org_wide(&principal, Action::new(Feature::EmployeeDirectoryRead)).is_ok(),
-        payroll: authorize_org_wide(&principal, Action::new(Feature::PayrollRunRead)).is_ok(),
         org_id: Some(principal.org_id),
     }
 }

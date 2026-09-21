@@ -129,6 +129,7 @@ async fn app(pool: PgPool, keys: &Keys) -> axum::Router {
         keys.public_pem.as_bytes(),
     )
     .unwrap();
+    let read_pool = pool.clone();
     let store = PgPayrollStore::new(pool);
     router(PayrollRestState::new(
         store,
@@ -136,6 +137,14 @@ async fn app(pool: PgPool, keys: &Keys) -> axum::Router {
             verifier,
             auth_database.clone(),
         )),
+        std::sync::Arc::new(move |principal| {
+            Box::new(
+                console_payroll_adapter_postgres::PgPayrollRunsReadPort::new(
+                    read_pool.clone(),
+                    principal,
+                ),
+            )
+        }),
     ))
 }
 

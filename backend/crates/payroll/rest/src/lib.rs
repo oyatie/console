@@ -47,14 +47,17 @@ use axum::routing::{get, post};
 use axum::{Json, Router};
 use console_kernel_core::{AuditAction, AuditEvent, ErrorKind, KernelError, TraceContext};
 use console_payroll_adapter_postgres::{
-    MyPayrollLinePage, PayrollRunDetail, PayrollRunPage, PayrollRunSummary, PgPayrollError,
-    PgPayrollStore, get_run_in_tx, list_runs_in_tx,
+    MyPayrollLinePage, PayrollRunDetail, PgPayrollError, PgPayrollStore, get_run_in_tx,
+};
+use console_payroll_application::read::{
+    ListPayrollRuns, PayrollRunPage, PayrollRunsReadError, PayrollRunsReadPort, list_payroll_runs,
 };
 use console_platform_auth::SessionVerification;
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::{DbError, with_audits};
 use console_platform_request_context::RequestContextError;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use uuid::Uuid;
 
 pub const PAYROLL_RUNS_PATH: &str = "/api/v1/payroll/runs";
@@ -104,10 +107,21 @@ pub const PAYROLL_ROUTE_PATHS: &[&str] = &[
     PAYROLL_EMPLOYEE_CONTRACT_WAGES_PATH_TEMPLATE,
 ];
 
+pub type PayrollRunsReaderFactory =
+    Arc<dyn Fn(Principal) -> Box<dyn PayrollRunsReadPort> + Send + Sync>;
+
+/// Only a failure after current authorization can disclose the payroll retry state.
+pub enum VisiblePayrollRuns {
+    Omitted,
+    Loaded(PayrollRunPage),
+    Failed,
+}
+
 #[derive(Clone)]
 pub struct PayrollRestState {
     store: PgPayrollStore,
     session_verification: Option<SessionVerification>,
+    runs_reader: PayrollRunsReaderFactory,
 }
 
 impl std::fmt::Debug for PayrollRestState {
@@ -123,17 +137,21 @@ impl std::fmt::Debug for PayrollRestState {
 
 impl PayrollRestState {
     #[must_use]
-    pub fn new(store: PgPayrollStore, session_verification: Option<SessionVerification>) -> Self {
+    pub fn new(
+        store: PgPayrollStore,
+        session_verification: Option<SessionVerification>,
+        runs_reader: PayrollRunsReaderFactory,
+    ) -> Self {
         Self {
             store,
             session_verification,
+            runs_reader,
         }
     }
 
-    /// SSR composition helper: the same `PayrollRunRead` listing as GET `/runs`,
-    /// or an empty vec (omit) when the caller is unauthenticated, unauthorized,
-    /// or the listing fails. Never a 401/403 on the HTML shell.
-    pub async fn visible_run_summaries(&self, headers: &HeaderMap) -> Vec<PayrollRunSummary> {
+    /// SSR and JSON use the same authorization, collection read and audit commit.
+    /// Inability to establish authority omits the destination entirely.
+    pub async fn visible_run_summaries(&self, headers: &HeaderMap) -> VisiblePayrollRuns {
         match list_runs_page(
             self,
             headers,
@@ -144,8 +162,9 @@ impl PayrollRestState {
         )
         .await
         {
-            Ok(page) => page.items,
-            Err(_) => Vec::new(),
+            Ok(page) => VisiblePayrollRuns::Loaded(page),
+            Err(ListRunsRequestError::Authority(_)) => VisiblePayrollRuns::Omitted,
+            Err(ListRunsRequestError::Read(_)) => VisiblePayrollRuns::Failed,
         }
     }
 }
@@ -216,35 +235,44 @@ pub(crate) struct PageParams {
     pub(crate) offset: Option<i64>,
 }
 
+enum ListRunsRequestError {
+    Authority(RestError),
+    Read(RestError),
+}
+
+impl ListRunsRequestError {
+    fn into_rest_error(self) -> RestError {
+        match self {
+            Self::Authority(error) | Self::Read(error) => error,
+        }
+    }
+}
+
 async fn list_runs_page(
     state: &PayrollRestState,
     headers: &HeaderMap,
     params: PageParams,
-) -> Result<PayrollRunPage, RestError> {
-    let principal = principal_from_headers(state, headers).await?;
-    require_run_read(&principal)?;
-
-    let org = principal.org_id;
-    let actor = principal.user_id;
-    let pool = state.store.pool().clone();
-    with_audits::<_, PayrollRunPage, RestError>(&pool, org, move |tx| {
-        Box::pin(async move {
-            let page = list_runs_in_tx(tx, params.limit, params.offset)
-                .await
-                .map_err(RestError::from_store)?;
-            let event = AuditEvent::new(
-                Some(actor),
-                AuditAction::new("payroll_run.list_read").map_err(RestError::from_kernel)?,
-                "payroll_draft_run",
-                "query",
-                TraceContext::generate(),
-                time::OffsetDateTime::now_utc(),
-            )
-            .with_org(org);
-            Ok((page, vec![event]))
-        })
-    })
+) -> Result<PayrollRunPage, ListRunsRequestError> {
+    let principal = principal_from_headers(state, headers)
+        .await
+        .map_err(ListRunsRequestError::Authority)?;
+    let mut reader = (state.runs_reader)(principal);
+    list_payroll_runs(
+        reader.as_mut(),
+        ListPayrollRuns {
+            limit: params.limit,
+            offset: params.offset,
+        },
+    )
     .await
+    .map_err(|error| match error {
+        PayrollRunsReadError::Authorization(error) => {
+            ListRunsRequestError::Authority(RestError::from_kernel(error))
+        }
+        PayrollRunsReadError::Read(error) => {
+            ListRunsRequestError::Read(RestError::from_kernel(error))
+        }
+    })
 }
 
 async fn list_runs(
@@ -252,7 +280,9 @@ async fn list_runs(
     headers: HeaderMap,
     Query(params): Query<PageParams>,
 ) -> Result<Response, RestError> {
-    let page = list_runs_page(&state, &headers, params).await?;
+    let page = list_runs_page(&state, &headers, params)
+        .await
+        .map_err(ListRunsRequestError::into_rest_error)?;
     Ok(Json(page).into_response())
 }
 

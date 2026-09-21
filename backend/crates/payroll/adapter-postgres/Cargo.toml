@@ -14,6 +14,9 @@ console-kernel-core = { workspace = true }
 # path. Required, not optional: this crate is named as `ObjectKey::PayRun`'s
 # owner, and `CanonicalPort` is declared there.
 console-ontology-canonical-domain = { path = "../../ontology/canonical-domain" }
+console-payroll-application = { workspace = true }
+console-platform-authz = { workspace = true }
+tracing = { workspace = true }
 console-payroll-domain = { workspace = true }
 console-platform-db = { workspace = true }
 console-platform-request-context = { workspace = true }
