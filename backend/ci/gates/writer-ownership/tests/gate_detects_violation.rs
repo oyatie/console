@@ -3039,3 +3039,98 @@ fn the_permitted_set_is_derived_from_the_receipt_owner_roster() {
     expected.dedup();
     assert_eq!(rule.permitted_crates, expected);
 }
+
+// Native mapped resources and ordinary Rust module inputs may be symbolic links.
+#[cfg(unix)]
+#[test]
+fn linked_source_paths_keep_every_crate_owner() -> Result<(), Box<dyn std::error::Error>> {
+    use std::os::unix::fs::symlink;
+    let root = temp_tree("linked-source-paths")?;
+    let shared = temp_tree("linked-source-bytes")?;
+    write_file(&shared.join("mod.rs"), CANARY)?;
+    for (directory, name) in [
+        ("owner", ObjectKey::Company.owner_crate()),
+        ("directory", "console-linked-directory-adapter"),
+        ("file", "console-linked-file-adapter"),
+    ] {
+        crate_with_source(&root, directory, name, "src/lib.rs", "pub mod linked;\n")?;
+    }
+    symlink(&shared, root.join("owner/src/linked"))?;
+    symlink(&shared, root.join("directory/src/linked"))?;
+    symlink(shared.join("mod.rs"), root.join("file/src/linked.rs"))?;
+    fs::rename(
+        root.join("file/Cargo.toml"),
+        shared.join("file-manifest.toml"),
+    )?;
+    symlink(
+        shared.join("file-manifest.toml"),
+        root.join("file/Cargo.toml"),
+    )?;
+
+    let report = scan(&root)?;
+    assert_eq!(
+        report.scanned_files, 6,
+        "each logical source path must be examined"
+    );
+    assert_eq!(
+        report.unknown().len(),
+        2,
+        "shared bytes must not hide a second writer"
+    );
+    for name in [
+        "console-linked-directory-adapter",
+        "console-linked-file-adapter",
+    ] {
+        let hit = report
+            .unknown()
+            .into_iter()
+            .find(|v| v.offending_crate == name)
+            .ok_or("linked source lost its logical crate attribution")?;
+        assert_eq!(hit.table, "organizations");
+        assert_eq!(hit.owner_crate, ObjectKey::Company.owner_crate());
+    }
+    assert_eq!(
+        report.violations.len(),
+        2,
+        "the canonical owner remains allowed"
+    );
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn source_directory_cycle_is_an_error() -> Result<(), Box<dyn std::error::Error>> {
+    let root = temp_tree("linked-source-cycle")?;
+    crate_with_source(
+        &root,
+        "intruder",
+        "console-linked-cycle-adapter",
+        "src/lib.rs",
+        CANARY,
+    )?;
+    std::os::unix::fs::symlink(&root, root.join("intruder/src/ancestor"))?;
+    let error = scan(&root).expect_err("a directory cycle must not become a clean partial scan");
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+    assert!(error.to_string().contains("source directory cycle"));
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn broken_source_symlink_is_an_error() -> Result<(), Box<dyn std::error::Error>> {
+    let root = temp_tree("broken-source-link")?;
+    crate_with_source(
+        &root,
+        "intruder",
+        "console-broken-link-adapter",
+        "src/lib.rs",
+        CANARY,
+    )?;
+    std::os::unix::fs::symlink(
+        root.join("missing.rs"),
+        root.join("intruder/src/missing.rs"),
+    )?;
+    let error = scan(&root).expect_err("an unreadable source must not disappear from coverage");
+    assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
+    Ok(())
+}
