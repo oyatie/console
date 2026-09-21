@@ -2492,6 +2492,25 @@ describe("CI preflight contract", () => {
     }
   });
 
+  it("requires the native credential cipher unit suite in the existing protected platform step", () => {
+    assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+    const steps = yaml.load(workflow).jobs.backend.steps.filter((step) =>
+      step.name === "Buck2 platform-authz unit suite");
+    assert.equal(steps.length, 1);
+    assert.equal(steps[0].id, "authz-unit");
+    assert.equal(steps[0].if, backendBuckAppLegIf);
+    assert.equal(steps[0]["working-directory"], ".");
+    const target = "//backend/crates/comms/credential-cipher:console-comms-credential-cipher-unit";
+    expectFailure(
+      mutateNamedStep(workflow, "backend", "Buck2 platform-authz unit suite", (step) => {
+        assert.equal(step.split(target).length, 2);
+        return step.replace(target, "");
+      }),
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
+  });
+
+
   it("keeps protected backend steps fail-slow and runs PR 473 contract tests before topology", () => {
     expectFailure(
       workflow.replace(
