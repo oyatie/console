@@ -25,6 +25,14 @@ function fixture() {
   cpSync(join(ROOT, "tools/ui/build-payroll-wasm.sh"), join(dir, "tools/ui/build-payroll-wasm.sh"));
   cpSync(join(ROOT, "backend/Cargo.toml"), join(dir, "backend/Cargo.toml"));
   cpSync(join(ROOT, "rust-toolchain.toml"), join(dir, "rust-toolchain.toml"));
+  // Every native source/recipe/graph/tool input recorded by the real bundle
+  // is copied from this exact candidate, not synthesized or resealed here.
+  for (const rel of Object.keys(JSON.parse(readFileSync(join(ROOT, MANIFEST), "utf8")).inputs)) {
+    mkdirSync(dirname(join(dir, rel)), { recursive: true });
+    cpSync(join(ROOT, rel), join(dir, rel));
+  }
+  mkdirSync(join(dir, "tools/ui"), { recursive: true });
+  cpSync(join(ROOT, "tools/ui/wasm_bundle.py"), join(dir, "tools/ui/wasm_bundle.py"));
   // The repo's own .gitignore, so the fixture models the real tree. Without it
   // `.DS_Store` here is untracked-and-NOT-ignored, and the strict write check
   // fires on the very noise it was written to stay silent about.
@@ -47,25 +55,10 @@ function gate(dir) {
   }
 }
 
-/** Run `--write`, returning status and stderr. The strict source checks live
- *  on this path only: the write side is where blindness gets recorded.
- *
- * `--write` records the wasm-bindgen CLI version, so it shells out to that
- * binary -- which CI runners do NOT have: the bundle is rebuilt by hand and
- * nothing in CI installs it. All four write cases died with ENOENT there,
- * passing locally only because this machine happens to have it.
- *
- * The first fix was this shim alone, and that was papering over the real
- * defect: `describe({ cli: cliBindgen() })` evaluates its argument first, so
- * the subprocess probe ran BEFORE the local source check and a developer with
- * an untracked file was told to install wasm-bindgen. The gate now validates
- * the listing first, which is both the more actionable error and the reason
- * the three FAILURE cases below need no stub at all -- verified by running
- * them with wasm-bindgen removed from PATH.
- *
- * The shim survives for the one case that expects `--write` to SUCCEED, which
- * cannot complete without the tool. It stays a real binary on PATH rather than
- * a monkeypatch, so `cliBindgen()` is exercised unstubbed.
+/** Exercise the compatibility --write entrypoint with a version-only CLI.
+ * Strict source-enumeration failures retain their specific diagnostics. A
+ * source-clean call must still refuse: a version string is no evidence that
+ * this executable produced the old artifacts from the current source inputs.
  */
 function writeManifest(dir) {
   const shim = join(dir, "shim");
@@ -243,14 +236,35 @@ describe("the committed hydration bundle cannot drift from its source", () => {
     }
   });
 
-  it("still tolerates ignored NON-source noise when writing", () => {
-    // The other half, and the reason the ignored check filters by extension:
-    // `.DS_Store` is gitignored too, and firing on it would reopen the Finder
-    // loop this gate was changed to close.
+  it("refuses standalone resealing even with ignored NON-source noise", () => {
+    // Preserve the ignored-noise positive control while retiring the old
+    // standalone resealing behavior. A fake version CLI must not authorize a
+    // new provenance record for artifacts it did not build.
     const dir = fixture();
     try {
       write(dir, `${CRATE}/src/.DS_Store`, "\0\0junk");
-      assert.equal(writeManifest(dir).status, 0, "--write refused over an ignored non-source file");
+      const before = read(dir, MANIFEST);
+      const { status, stderr } = writeManifest(dir);
+      assert.notEqual(status, 0, "--write must not reseal old outputs without a native producer result");
+      assert.match(stderr, /requires an action-bound native producer bundle/);
+      assert.equal(read(dir, MANIFEST), before, "refused write must preserve the original manifest");
+      assert.equal(gate(dir), 0, "ignored noise must still leave a valid existing bundle accepted");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("cannot reseal old output after a source change", () => {
+    const dir = fixture();
+    try {
+      const before = read(dir, MANIFEST);
+      write(dir, `${CRATE}/src/lib.rs`, `${read(dir, `${CRATE}/src/lib.rs`)}\n// unbuilt edit\n`);
+      track(dir);
+      const { status, stderr } = writeManifest(dir);
+      assert.notEqual(status, 0, "old output was resealed against changed sources");
+      assert.match(stderr, /requires an action-bound native producer bundle/);
+      assert.equal(read(dir, MANIFEST), before);
+      assert.match(why(dir), /src\/lib\.rs has changed/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
