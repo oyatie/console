@@ -1,0 +1,529 @@
+{
+  "status": "PROPOSED_NOT_REVIEWED_NOT_INSTALLER",
+  "new_topology_tables": {
+    "company_enrollment_effect_bindings": {
+      "owner": "console_account_owner",
+      "rls": false,
+      "force_rls": false,
+      "table_acl": {
+        "console_account_owner": [
+          "INSERT",
+          "REFERENCES",
+          "SELECT"
+        ]
+      },
+      "column_acl": {}
+    },
+    "group_authority_heads": {
+      "owner": "console_app",
+      "rls": false,
+      "force_rls": false,
+      "table_acl": {
+        "console_app": [
+          "DELETE",
+          "INSERT",
+          "REFERENCES",
+          "SELECT"
+        ],
+        "console_account_owner": [
+          "SELECT"
+        ]
+      },
+      "column_acl": {
+        "console_app": {
+          "UPDATE": [
+            "revision",
+            "state"
+          ]
+        }
+      }
+    },
+    "group_membership_revisions": {
+      "owner": "console_app",
+      "rls": false,
+      "force_rls": false,
+      "table_acl": {
+        "console_app": [
+          "INSERT",
+          "REFERENCES",
+          "SELECT"
+        ],
+        "console_account_owner": [
+          "SELECT"
+        ]
+      },
+      "column_acl": {}
+    }
+  },
+  "new_guard_functions": {
+    "public.company_effect_binding_guard_v1()": {
+      "returns": "trigger",
+      "owner": "console_account_owner",
+      "security_definer": false,
+      "search_path": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "row_security": "on",
+      "volatility": "v",
+      "parallel": "u",
+      "execute": [
+        "console_account_owner"
+      ]
+    },
+    "public.company_topology_history_immutable_v1()": {
+      "returns": "trigger",
+      "owner": "console_account_owner",
+      "security_definer": false,
+      "search_path": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "row_security": "on",
+      "volatility": "v",
+      "parallel": "u",
+      "execute": [
+        "console_account_owner"
+      ]
+    },
+    "public.company_topology_write_guard_v1()": {
+      "returns": "trigger",
+      "owner": "console_app",
+      "security_definer": false,
+      "search_path": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "row_security": "on",
+      "volatility": "v",
+      "parallel": "u",
+      "execute": [
+        "console_app"
+      ]
+    },
+    "public.company_topology_truncate_guard_v1()": {
+      "returns": "trigger",
+      "owner": "console_app",
+      "security_definer": false,
+      "search_path": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "row_security": "on",
+      "volatility": "v",
+      "parallel": "u",
+      "execute": [
+        "console_app"
+      ]
+    },
+    "public.company_native_topology_birth_closure_v1()": {
+      "returns": "trigger",
+      "owner": "console_account_owner",
+      "security_definer": true,
+      "search_path": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "row_security": "on",
+      "volatility": "v",
+      "parallel": "u",
+      "execute": [
+        "console_account_owner"
+      ]
+    }
+  },
+  "triggers": [
+    {
+      "table": "public.company_enrollment_effect_bindings",
+      "name": "company_effect_binding_insert_v1",
+      "function": "public.company_effect_binding_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.company_enrollment_effect_bindings",
+      "name": "company_enrollment_effect_bindings_immutable_v1",
+      "function": "public.company_topology_history_immutable_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_membership_revisions",
+      "name": "group_membership_revisions_immutable_v1",
+      "function": "public.company_topology_history_immutable_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "UPDATE",
+        "DELETE",
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_membership_revisions",
+      "name": "group_history_insert_v1",
+      "function": "public.company_topology_write_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.organizations",
+      "name": "organizations_topology_write_v1",
+      "function": "public.company_topology_write_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.organizations",
+      "name": "organizations_topology_truncate_v1",
+      "function": "public.company_topology_truncate_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.groups",
+      "name": "groups_topology_write_v1",
+      "function": "public.company_topology_write_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.groups",
+      "name": "groups_topology_truncate_v1",
+      "function": "public.company_topology_truncate_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_memberships",
+      "name": "group_memberships_topology_write_v1",
+      "function": "public.company_topology_write_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_memberships",
+      "name": "group_memberships_topology_truncate_v1",
+      "function": "public.company_topology_truncate_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_authority_heads",
+      "name": "group_authority_heads_topology_write_v1",
+      "function": "public.company_topology_write_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "INSERT",
+        "UPDATE",
+        "DELETE"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_authority_heads",
+      "name": "group_authority_heads_topology_truncate_v1",
+      "function": "public.company_topology_truncate_guard_v1()",
+      "timing": "BEFORE",
+      "events": [
+        "TRUNCATE"
+      ],
+      "level": "STATEMENT",
+      "enabled": "ALWAYS",
+      "deferrable": false,
+      "initially_deferred": false,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.company_enrollment_effect_bindings",
+      "name": "company_enrollment_effect_bindings_native_birth_closure_v1",
+      "function": "public.company_native_topology_birth_closure_v1()",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": true,
+      "initially_deferred": true,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.organizations",
+      "name": "organizations_native_birth_closure_v1",
+      "function": "public.company_native_topology_birth_closure_v1()",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": true,
+      "initially_deferred": true,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.groups",
+      "name": "groups_native_birth_closure_v1",
+      "function": "public.company_native_topology_birth_closure_v1()",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": true,
+      "initially_deferred": true,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_memberships",
+      "name": "group_memberships_native_birth_closure_v1",
+      "function": "public.company_native_topology_birth_closure_v1()",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": true,
+      "initially_deferred": true,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_authority_heads",
+      "name": "group_authority_heads_native_birth_closure_v1",
+      "function": "public.company_native_topology_birth_closure_v1()",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": true,
+      "initially_deferred": true,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    },
+    {
+      "table": "public.group_membership_revisions",
+      "name": "group_membership_revisions_native_birth_closure_v1",
+      "function": "public.company_native_topology_birth_closure_v1()",
+      "timing": "AFTER",
+      "events": [
+        "INSERT"
+      ],
+      "level": "ROW",
+      "enabled": "ALWAYS",
+      "deferrable": true,
+      "initially_deferred": true,
+      "when": null,
+      "arguments": [],
+      "update_columns": [],
+      "transition_tables": null,
+      "parent": null
+    }
+  ],
+  "cross_owner_column_additions": {
+    "company_enrollment_receipts": {
+      "console_app": {
+        "REFERENCES": [
+          "account_id",
+          "command_id",
+          "receipt_id"
+        ]
+      }
+    },
+    "organizations": {
+      "console_account_owner": {
+        "SELECT": [
+          "id",
+          "group_id",
+          "slug",
+          "name",
+          "status",
+          "created_at",
+          "updated_at",
+          "origin_account_id",
+          "origin_command_id",
+          "origin_receipt_id"
+        ]
+      }
+    },
+    "groups": {
+      "console_account_owner": {
+        "SELECT": [
+          "id",
+          "slug",
+          "name",
+          "status",
+          "created_at",
+          "updated_at",
+          "origin_account_id",
+          "origin_command_id",
+          "origin_receipt_id"
+        ]
+      }
+    },
+    "group_memberships": {
+      "console_account_owner": {
+        "SELECT": [
+          "group_id",
+          "org_id",
+          "created_at",
+          "membership_id",
+          "current_revision",
+          "incarnation"
+        ]
+      }
+    }
+  },
+  "preserve": "Existing owners/RLS/defaults/root privileges preserved except exact explicitly reviewed additions; remove default new-table ACLs. No PUBLIC/grant option/serving/new-role or membership additions. Cross-owner requested grant must be reconciled with exact current ACL so do not duplicate already-held privilege.",
+  "legacy_receipt": "Entire platform_legacy_topology_receipts schema remains governed by accepted legacycodec round2; add exact origin UNIQUE shown in topology-shape.sql. History native versus legacy receipt FK roots are immutable receipts, never deletable identity rows."
+}
