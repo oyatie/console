@@ -1,0 +1,46 @@
+// Append helper to existing run_lifecycle_api.rs; call only in its original
+// executive_drives_full_lifecycle_with_audit_readback fixture.
+async fn bind_independent_payroll_reviewers(
+    pool: &PgPool,
+    org: OrgId,
+    submitter: UserId,
+    decider: UserId,
+) {
+    let actual = console_platform_test_support::login_test_pool(
+        pool,
+        console_platform_test_support::TestDatabaseLogin::Business,
+    )
+    .await;
+    let port = PgPersonPort::new(actual.clone(), tokio::runtime::Handle::current());
+    let mut persons = Vec::new();
+    for user in [submitter, decider] {
+        let employee = seed_employee(pool, org, "독립 급여 검토자").await;
+        let receipt = execute_sync(
+            &port,
+            PersonCommand {
+                org_id: org,
+                command_id: CommandId::from_uuid(Uuid::new_v4()),
+                actor_id: user,
+                query: PersonQuery::Create {
+                    employee_id: Some(employee),
+                    attributes: json!({"legal_name":"독립 급여 검토자"}),
+                },
+                action_key: "create_person".to_owned(),
+                object_type_id: Uuid::nil(),
+            },
+        )
+        .await
+        .unwrap();
+        persons.push(receipt.result()["person_id"].as_str().unwrap().to_owned());
+        let changed = sqlx::query("UPDATE users SET employee_id=$1 WHERE id=$2 AND org_id=$3")
+            .bind(employee)
+            .bind(*user.as_uuid())
+            .bind(*org.as_uuid())
+            .execute(pool)
+            .await
+            .unwrap();
+        assert_eq!(changed.rows_affected(), 1);
+    }
+    assert_ne!(persons[0], persons[1]);
+    actual.close().await;
+}

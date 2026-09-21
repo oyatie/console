@@ -1,0 +1,26 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_EXACT_SHARED_PAYROLL_PERSON_GUARD_SOURCE_RUNTIME_PENDING",
+  "base": "a48daad2c61c5f2f330c3bc203172f8d59485a99",
+  "source": "backend/crates/payroll/adapter-postgres/src/lifecycle.rs",
+  "source_sha256": "36d6c360c14cadb642ada5dc24861a86390397953a95910bb252469f0c4b357b",
+  "red_log_sha256": "a2b575e350e999ff91458ad7ed5b2cef9517adb7c6fcfa7538aa43a443810fe8",
+  "facts": [
+    "Exact admitted single-file diff adds private retained reader and invokes it in shared decide_run_in_tx before either decision mutation.",
+    "Run FOR UPDATE/state guard remains first; missing submitter and same User return existing SodViolation.",
+    "First sorted FOR SHARE locks exactly two requested User rows; missing/null selectors, mixed Company or duplicate Employee refuse.",
+    "Second sorted FOR SHARE locks exactly two ownCompany binding rows, using actual locked Employee keys; missing or same Person refuse. SQL errors propagate rather than pretending successful decisions.",
+    "Both row classes remain held by same caller-owned transaction through decision commit; existing canonical and REST callers unchanged.",
+    "Inspected genuine samePerson RED1failed/23filtered: canonical PayrollDecideRun improperly returned successful receipt, no schema/ACL/infrastructure failure.",
+    "Approved test adoption matches oldsource+three insertions+two appended packet sources; original assertions and privilege leaf preserved."
+  ],
+  "requirements": [
+    "Same named probe GREEN, full native24leaves including six real-login behavior/concurrency histories, and existing REST full lifecycle must execute.",
+    "Evidence must retain original unsafe RED and count skips/filters/cancelled attempts truthfully."
+  ],
+  "limits": [
+    "Reviewer product builds/tests/SQL/browser execution0.",
+    "Exact code remains legacy User-to-Employee-to-Person mapping; native Account-to-Person/current-policy integration and Governance correction separate.",
+    "No whole payroll/release/exposure acceptance."
+  ]
+}

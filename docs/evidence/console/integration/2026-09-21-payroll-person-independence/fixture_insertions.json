@@ -1,0 +1,17 @@
+[
+  {
+    "path": "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs",
+    "anchor": "async fn submit_and_decide_drive_the_statements_this_crate_already_owned(owner_pool: PgPool) {\n    let (org, submitter, decider, port) = fixture(&owner_pool).await;",
+    "append": "\n    natural_person_guard_tests::bind_distinct_actors(&owner_pool, org, submitter, decider).await;"
+  },
+  {
+    "path": "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs",
+    "anchor": "    let (org, submitter, decider, port, appointed) =\n        empty_tenant_pay_run_fixture(&owner_pool).await;",
+    "append": "\n    natural_person_guard_tests::bind_distinct_actors(&owner_pool, org, submitter, decider).await;"
+  },
+  {
+    "path": "backend/crates/payroll/rest/tests/run_lifecycle_api.rs",
+    "anchor": "    let decider = seed_user(&pool, org, \"EXECUTIVE\", None).await;",
+    "append": "\n    bind_independent_payroll_reviewers(&pool, org, submitter, decider).await;"
+  }
+]

@@ -1,0 +1,74 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T12:43:48.627-04:00] Build ID: 44e3fbdd-4b5f-4918-b352-e6ba231f3a5f
+[2026-09-21T12:43:48.628-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T12:43:55.729-04:00] Waiting on root//third-party/rust:form_urlencoded-1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 348 other actions
+[2026-09-21T12:44:01.983-04:00] Cache hits: 0%
+[2026-09-21T12:44:01.986-04:00] Commands: 6 (cached: 0, remote: 0, local: 6)
+[2026-09-21T12:44:01.986-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T12:44:02.003-04:00] Build ID: 0e5f371c-3c22-45af-b842-f57e5c1f98ea
+[2026-09-21T12:44:02.004-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T12:44:09.104-04:00] Waiting on root//third-party/rust:indexmap-2 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 1136 other actions
+[2026-09-21T12:44:16.304-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute], and 1 other actions
+[2026-09-21T12:44:23.304-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute], and 1 other actions
+[2026-09-21T12:44:30.405-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute], and 1 other actions
+[2026-09-21T12:44:37.504-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute], and 1 other actions
+[2026-09-21T12:44:44.604-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute], and 1 other actions
+[2026-09-21T12:44:51.704-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute], and 1 other actions
+[2026-09-21T12:44:55.250-04:00] ✓ Pass: root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg (43.3s)
+[2026-09-21T12:44:55.250-04:00] ---- STDOUT ----
+[2026-09-21T12:44:55.250-04:00]
+[2026-09-21T12:44:55.250-04:00] running 24 tests
+[2026-09-21T12:44:55.250-04:00] test a_changed_provenance_on_the_same_run_and_period_is_refused ... ok
+[2026-09-21T12:44:55.250-04:00] test a_decider_who_submitted_the_run_is_refused ... ok
+[2026-09-21T12:44:55.250-04:00] test a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role ... ok
+[2026-09-21T12:44:55.250-04:00] test a_lock_committed_after_the_gate_read_but_before_the_write_is_refused ... ok
+[2026-09-21T12:44:55.250-04:00] test a_noncanonical_stored_provenance_is_refused_not_absorbed ... ok
+[2026-09-21T12:44:55.250-04:00] test a_pay_run_is_created_through_the_port_and_the_receipt_names_the_owner ... ok
+[2026-09-21T12:44:55.250-04:00] test a_repeat_of_the_same_command_replays_the_receipt_and_stages_no_second_run ... ok
+[2026-09-21T12:44:55.250-04:00] test a_stored_receipt_naming_no_dispatch_target_is_refused ... ok
+[2026-09-21T12:44:55.250-04:00] test actual_business_login_can_lock_person_bindings_without_mutating_them ... ok
+[2026-09-21T12:44:55.250-04:00] test an_existing_draft_is_acknowledged_after_the_period_is_locked ... ok
+[2026-09-21T12:44:55.250-04:00] test canonical_create_run_refuses_a_locked_period ... ok
+[2026-09-21T12:44:55.250-04:00] test empty_tenant_pay_run_lifecycle_sits_on_canonical_org_tree ... ok
+[2026-09-21T12:44:55.250-04:00] test natural_person_guard_tests::decision_retains_user_and_binding_locks_until_commit_or_rollback ... ok
+[2026-09-21T12:44:55.250-04:00] test natural_person_guard_tests::distinct_people_can_decide_and_exact_command_replay_has_no_effect ... ok
+[2026-09-21T12:44:55.250-04:00] test natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject ... ok
+[2026-09-21T12:44:55.250-04:00] test natural_person_guard_tests::identity_lock_timeout_rolls_back_then_canonical_retry_and_replay_succeed ... ok
+[2026-09-21T12:44:55.250-04:00] test natural_person_guard_tests::identity_writer_winning_first_cannot_leave_a_stale_approval ... ok
+[2026-09-21T12:44:55.250-04:00] test natural_person_guard_tests::unresolved_or_foreign_person_identity_refuses_both_decisions ... ok
+[2026-09-21T12:44:55.250-04:00] test preflight_is_pure_and_blocks_what_the_database_would_only_refuse_later ... ok
+[2026-09-21T12:44:55.250-04:00] test submit_and_decide_drive_the_statements_this_crate_already_owned ... ok
+[2026-09-21T12:44:55.250-04:00] test the_contract_identity_is_copied_verbatim_and_the_port_is_the_named_one ... ok
+[2026-09-21T12:44:55.250-04:00] test the_create_receipt_alone_is_enough_to_submit ... ok
+[2026-09-21T12:44:55.250-04:00] test the_workflow_staging_seam_is_idempotent_on_the_natural_key ... ok
+[2026-09-21T12:44:55.250-04:00] test the_workflow_staging_seam_refuses_a_locked_period ... ok
+[2026-09-21T12:44:55.250-04:00]
+[2026-09-21T12:44:55.250-04:00] test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 43.19s
+[2026-09-21T12:44:55.250-04:00]
+[2026-09-21T12:44:55.250-04:00]
+[2026-09-21T12:44:55.250-04:00] ---- STDERR ----
+[2026-09-21T12:44:55.250-04:00]
+[2026-09-21T12:44:58.705-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute]
+[2026-09-21T12:45:05.805-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute]
+[2026-09-21T12:45:12.905-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute]
+[2026-09-21T12:45:20.004-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute]
+[2026-09-21T12:45:27.105-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute]
+[2026-09-21T12:45:28.181-04:00] ✓ Pass: root//tools/buck:payroll-rest-run-lifecycle-api-pg (32.9s)
+[2026-09-21T12:45:28.181-04:00] ---- STDOUT ----
+[2026-09-21T12:45:28.181-04:00]
+[2026-09-21T12:45:28.181-04:00] running 5 tests
+[2026-09-21T12:45:28.181-04:00] test close_preflight_persists_no_verdict_only_its_read_audit ... ok
+[2026-09-21T12:45:28.181-04:00] test close_recomputes_the_preflight_after_the_read_verdict_goes_stale ... ok
+[2026-09-21T12:45:28.181-04:00] test empty_tenant_run_close_preflight_sits_on_canonical_org_tree ... ok
+[2026-09-21T12:45:28.181-04:00] test executive_drives_full_lifecycle_with_audit_readback ... ok
+[2026-09-21T12:45:28.181-04:00] test lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible ... ok
+[2026-09-21T12:45:28.181-04:00]
+[2026-09-21T12:45:28.181-04:00] test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 32.46s
+[2026-09-21T12:45:28.181-04:00]
+[2026-09-21T12:45:28.181-04:00]
+[2026-09-21T12:45:28.181-04:00] ---- STDERR ----
+[2026-09-21T12:45:28.181-04:00]
+[2026-09-21T12:45:28.189-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 2[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

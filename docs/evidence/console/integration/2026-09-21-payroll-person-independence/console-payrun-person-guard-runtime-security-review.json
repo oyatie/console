@@ -1,0 +1,31 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_SHARED_PAYROLL_PERSON_GUARD_RECORDED_RUNTIME",
+  "base": "a48daad2c61c5f2f330c3bc203172f8d59485a99",
+  "source_sha256": "36d6c360c14cadb642ada5dc24861a86390397953a95910bb252469f0c4b357b",
+  "source_review_sha256": "7385139f4d15459850c71ce033a3ec18ea37dc0c4620e84a5db0efa93f6e0848",
+  "facts": [
+    "Exact approved source remains unchanged.",
+    "Focused same-Person canonical owner probe1passed/23filtered after prior genuine unsafe approvalRED.",
+    "Full native canonical owner24passed and REST lifecycle5passed,0failed/ignored/filtered; Buck2 suites passed with0skip/omit/infra/build failures.",
+    "Inspected all six new named behavioral leaves passing, including same-Person/missing/foreign denials, distinct-Person/replay positives, eight lock-retention cases, writer-first stale-approval denials and exact lock-timeout recovery.",
+    "Original REST full lifecycle positive passed with explicit distinct-Person fixture; prior assertions retained."
+  ],
+  "logs": {
+    "/private/tmp/console-payrun-person-guard-red-20260921.log": "a2b575e350e999ff91458ad7ed5b2cef9517adb7c6fcfa7538aa43a443810fe8",
+    "/private/tmp/console-payrun-person-guard-admit-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-payrun-person-guard-green-20260921.log": "ddf2130dd7a8bebe1eef7f08a78e1f1bf570c4d46c7f78b1f0a75acdecb7838f",
+    "/private/tmp/console-payrun-person-guard-full-20260921.log": "04ea1ccf3dee8008f0a90f6ac6379d0c55d6199bb5bb37372aafe814f937a656"
+  },
+  "reviewer_execution": {
+    "builds": 0,
+    "tests": 0,
+    "sql": 0,
+    "browser": 0
+  },
+  "holds": [
+    "Final committed-source/evidence readback pending.",
+    "This protects current legacy User/Employee/Person decision mapping; native Account attribution/current-policy integration and broader approval identity-history contracts remain required.",
+    "Governance unlocked reader and complete payroll/UI/release qualification remain incomplete; no exposure authority."
+  ]
+}

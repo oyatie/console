@@ -1,0 +1,32 @@
+[
+  {
+    "lane": "payrun-person-independence-20260921",
+    "owner": "/root",
+    "base": "a48daad2c61c5f2f330c3bc203172f8d59485a99",
+    "immutable_target": "design6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134 testsdf3ff84cb9721143d5b27462e27fc43ac4fc514331923bb75c8f830a4558161f",
+    "allow": [
+      "backend/crates/payroll/adapter-postgres/src/lifecycle.rs"
+    ],
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH DOCKER_CONTEXT=colima-console-release-20260919 CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg",
+    "guide": "Extend shared decide owner using private reader of both sorted User rows and both exact binding rows FOR SHARE; reject missing/unbound/samePerson with existingSodViolation. Preserve all paths/receipts/history; no new writer/port/schema.",
+    "premortem": "equal user-only guard or unlocked Person binding permits samehuman approval",
+    "blast_radius": "shared payroll decision used by canonical port and REST",
+    "detection": "actual samePerson ownerRED, six behavioral leaves including actual-login blocking edges, old positives/REST lifecycle",
+    "rollback": "revert unaccepted guard only with approvals fenced; retain history and receipts",
+    "stop_conditions": [
+      "unreviewedsemanticchange",
+      "testsourcealteration",
+      "lost historicalbytes",
+      "missing nativeexec",
+      "unexpected SQL failure mistaken forbusiness denial"
+    ],
+    "reviews": [
+      "/root/integration_security",
+      "/root/integration_tests",
+      "/root/company_owner"
+    ],
+    "holds": [
+      "nativeAccount business integration and completeMVP incomplete"
+    ]
+  }
+]

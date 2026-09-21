@@ -992,6 +992,39 @@ pub async fn submit_run_in_tx(
     Ok(())
 }
 
+async fn require_distinct_review_persons_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    submitter: Uuid,
+    decider: Uuid,
+) -> Result<(), LifecycleError> {
+    // Retain both links through the decision commit, in stable lock order.
+    // Locking only Users would still permit a binding DELETE followed by INSERT.
+    let users: Vec<(Uuid, Option<Uuid>)> = sqlx::query_as(
+        "SELECT org_id, employee_id FROM users WHERE id = ANY($1) ORDER BY id FOR SHARE",
+    )
+    .bind([submitter, decider].as_slice())
+    .fetch_all(tx.as_mut())
+    .await?;
+    let [(org, Some(first)), (other_org, Some(second))] = users.as_slice() else {
+        return Err(LifecycleError::SodViolation);
+    };
+    if org != other_org || first == second {
+        return Err(LifecycleError::SodViolation);
+    }
+    let persons: Vec<Uuid> = sqlx::query_scalar(
+        "SELECT person_id FROM employee_person_bindings \
+         WHERE org_id = $1 AND employee_id = ANY($2) ORDER BY employee_id FOR SHARE",
+    )
+    .bind(org)
+    .bind([*first, *second].as_slice())
+    .fetch_all(tx.as_mut())
+    .await?;
+    if persons.len() != 2 || persons[0] == persons[1] {
+        return Err(LifecycleError::SodViolation);
+    }
+    Ok(())
+}
+
 pub async fn decide_run_in_tx(
     tx: &mut Transaction<'_, Postgres>,
     run_id: Uuid,
@@ -1005,9 +1038,11 @@ pub async fn decide_run_in_tx(
     if run.status != "SUBMITTED" {
         return Err(invalid_state("decide", &run.status));
     }
-    if run.submitted_by == Some(actor) {
+    let submitter = run.submitted_by.ok_or(LifecycleError::SodViolation)?;
+    if submitter == actor {
         return Err(LifecycleError::SodViolation);
     }
+    require_distinct_review_persons_in_tx(tx, submitter, actor).await?;
     match decision {
         "APPROVE" => {
             sqlx::query(

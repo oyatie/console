@@ -1,0 +1,27 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T12:42:29.445-04:00] Build ID: e4d2150f-e46f-4231-8713-8bd20393c368
+[2026-09-21T12:42:29.446-04:00] File changed (since mergebase): root//backend/crates/payroll/adapter-postgres/src/lifecycle.rs
+[2026-09-21T12:42:29.446-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T12:42:36.544-04:00] Waiting on root//third-party/rust:crc-3 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 582 other actions
+[2026-09-21T12:42:43.845-04:00] Waiting on root//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-pay_run_port_as_runtime_role (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T12:42:45.993-04:00] Cache hits: 0%
+[2026-09-21T12:42:45.993-04:00] Commands: 2 (cached: 0, remote: 0, local: 2)
+[2026-09-21T12:42:45.993-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T12:42:46.010-04:00] Build ID: b129880e-3ac2-4724-b549-3cb2c682a66b
+[2026-09-21T12:42:46.011-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T12:42:53.111-04:00] Waiting on root//third-party/rust:serde_core-1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 544 other actions
+[2026-09-21T12:43:00.168-04:00] ✓ Pass: root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg (3.2s)
+[2026-09-21T12:43:00.168-04:00] ---- STDOUT ----
+[2026-09-21T12:43:00.168-04:00]
+[2026-09-21T12:43:00.168-04:00] running 1 test
+[2026-09-21T12:43:00.168-04:00] test natural_person_guard_tests::distinct_users_and_employees_for_one_person_cannot_approve_or_reject ... ok
+[2026-09-21T12:43:00.168-04:00]
+[2026-09-21T12:43:00.168-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 23 filtered out; finished in 2.86s
+[2026-09-21T12:43:00.168-04:00]
+[2026-09-21T12:43:00.168-04:00]
+[2026-09-21T12:43:00.168-04:00] ---- STDERR ----
+[2026-09-21T12:43:00.168-04:00]
+[2026-09-21T12:43:00.175-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

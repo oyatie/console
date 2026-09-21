@@ -1,0 +1,64 @@
+{
+  "owner": "/root/integration_tests",
+  "root_writer": "/root",
+  "base": "bb215ee2ac706238d051d75ac623ccf92cc2a90b",
+  "design_manifest_sha256": "6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134",
+  "adoption": "Three unique anchor-only insertions plus append native module/helper. Preserve entire current source including root123line privilege probe. Root serializes adoption/build/RED/GREEN.",
+  "files": {
+    "natural_person_guard_tests.rs": "201fc4f01dfcfdb1fc416a5d160c3ab9003f61da5d2c4fac48e90222f348bdcf",
+    "rest_fixture_helper.rs": "d99784cf3f69c3672fead3d9b4a07a6da41501577084312c28e3035c0a8549f1",
+    "fixture_insertions.json": "b2a2f90c022e3f56d48572f8213afdee9b4f6242513f124439c529a6bbac280a"
+  },
+  "source_locks": {
+    "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs": "9ff2be5542cd0eecd5236e5e53ef1901bd13b1f7d2d4b5be08fdfa4ad98943df",
+    "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": "a9210b7ffd434333c99e3bfa6ae5b76aab29a6e15a570c6bfecfe8b09b4604e4",
+    "backend/crates/payroll/adapter-postgres/src/lifecycle.rs": "55a14b1dc067e245d647e7133942994f6ac6d8c0f902b14482184d3c73e87964",
+    "backend/crates/payroll/adapter-postgres/src/pay_run.rs": "0343138dc4979b0a544adb7ec63cfeb96da6fac7b83f47d77669319bfbc15be8",
+    "backend/crates/ontology/canonical-adapter-postgres/src/person.rs": "f00ed2e62e114791f7f990f93cb8772f4f5c9f8338c439c363922890260eeec7",
+    "backend/crates/platform/test-support/src/lib.rs": "bb4ace9c9864db932253ae3013114e9aac9681da72192c1058ff7de6b57f414c"
+  },
+  "new_sqlx_leaves": 6,
+  "execution": {
+    "tests": 0,
+    "builds": 0,
+    "SQL": 0,
+    "browser": 0,
+    "private_rustfmt": "--edition 2024 succeeded"
+  },
+  "oracles": [
+    "samePerson across distinct Users and distinct Employees APPROVE/REJECT denied through canonical owner and repeated denial exact full public-table census",
+    "missing submitter, either employee, either binding, foreign or absent decider:14 canonical denials full census",
+    "distinct people APPROVE/REJECT row attribution timestamp and exact receipt replay full census",
+    "both Users and both bindings locked through actual shared owner commit/rollback; eight pg_blocking_pids histories actual Business login",
+    "writer-first User change using third unused Employee or explicit binding DELETE/INSERT to samePerson: two actual blocking edges then SodViolation; denied row/receipt/audit unchanged",
+    "exact55P03 lock timeout at shared owner rollback no effects; subsequent canonical success+replay"
+  ],
+  "fixture_successors": [
+    "two original canonical positive decision journeys preserve every assertion",
+    "original REST full lifecycle positive REJECT+APPROVE preserve every assertion"
+  ],
+  "premortem": [
+    "sameUser-only fixture fails to exercise Person independence",
+    "missing privilege mistaken for productRED",
+    "sleep-only races falsely green",
+    "fixture rollback masks durable effects",
+    "root privilege probe overwritten"
+  ],
+  "detection": "Actual owner response variants, full durable census, exact receipt equality, independent pg_blocking_pids edges; missing schema/ACL/login is prerequisite failure",
+  "blast_radius": "Private proposed test sources only. No production code/schema/contracts/native Account representation.",
+  "rollback": "Discard unapplied packet; root may revert only adopted additive proposal, never original tests.",
+  "stop_conditions": [
+    "semantic source drift or test change requires review",
+    "missing Business login/schema or0229 prerequisite",
+    "original assertion removed",
+    "attempt to weaken immutability or bypass row locks"
+  ],
+  "remaining_holds": [
+    "independent security review",
+    "root compiler and realRED/GREEN execution",
+    "native Account person/policy integration",
+    "complete payroll/UI/whole release qualification"
+  ],
+  "supersedes": "0b2c22c70da1f923173c88cce2bed0efa7d8442834c1c63ca9fcf1f1755f11f9",
+  "round2_delta": "Only SQLx0.9 typed AssertSqlSafe for fully quoted pg_catalog-derived census identifiers plus justification comment; assertions unchanged."
+}
