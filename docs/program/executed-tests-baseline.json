@@ -387,7 +387,7 @@
     "backend/crates/workflow/adapter-postgres/tests/notification_bridge.rs": 2,
     "backend/crates/workflow/adapter-postgres/tests/payroll_drain_period_lock.rs": 2,
     "backend/crates/workflow/domain/src/lib.rs": 5,
-    "backend/crates/workflow/runtime/src/lib.rs": 33,
+    "backend/crates/workflow/runtime/src/lib.rs": 40,
     "backend/crates/workorder/adapter-postgres/tests/m2_flag_off_parity.rs": 1,
     "backend/crates/workorder/adapter-postgres/tests/rls_read_surfaces_as_runtime_role.rs": 10,
     "backend/crates/workorder/adapter-postgres/tests/use_cases.rs": 9,

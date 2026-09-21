@@ -3,7 +3,7 @@
 //! One shared entry for every NON-human run producer — the domain-event
 //! trigger-binding dispatcher and the cron schedule poller — so both start a
 //! run exactly the way the REST `POST /api/v1/workflow-runs` path does
-//! (`start_run` → synchronous [`drive_from`] until the first WAITING task or a
+//! (shared insertion/activation → synchronous [`drive_from`] until the first WAITING task or a
 //! terminal node) without duplicating the walk. Pure over the domain port: no
 //! sqlx here; callers resolve the published definition JSON themselves.
 //!
@@ -25,7 +25,9 @@ use console_kernel_core::{ErrorKind, KernelError};
 use console_workflow_domain::{RunStatus, RunTransition, WorkflowRuntimePort};
 use serde_json::Value;
 
-use crate::engine::{AuditContext, StartRunRequest, run_audit_event, start_run};
+use crate::engine::{
+    AuditContext, StartRunRequest, activate_run, insert_starting_run, run_audit_event,
+};
 use crate::graph::{ExecGraph, drive_from};
 
 /// How a system-triggered start landed.
@@ -71,8 +73,25 @@ pub async fn start_bound_run<P: WorkflowRuntimePort + ?Sized>(
     // identically.
     let context = request.context_payload.clone();
 
-    match start_run(port, request, audit).await {
+    match insert_starting_run(port, request, audit).await {
         Ok(run_id) => {
+            if let Err(err) = activate_run(port, org, run_id, audit).await {
+                if err.kind != ErrorKind::Conflict {
+                    return Err(err);
+                }
+                let status =
+                    current_inserted_status(port, org, run_id, requested_definition).await?;
+                match status {
+                    RunStatus::Waiting | RunStatus::Succeeded => {
+                        return Ok(TriggeredStart::Started {
+                            run_id,
+                            run_status: status,
+                        });
+                    }
+                    RunStatus::Running => {}
+                    _ => return Err(err),
+                }
+            }
             let outcome = drive_from(
                 port,
                 org,
@@ -84,11 +103,20 @@ pub async fn start_bound_run<P: WorkflowRuntimePort + ?Sized>(
                 &context,
                 audit,
             )
-            .await?;
-            Ok(TriggeredStart::Started {
-                run_id,
-                run_status: outcome.run_status,
-            })
+            .await;
+            let run_status = match outcome {
+                Ok(outcome) => outcome.run_status,
+                Err(err) if err.kind == ErrorKind::Conflict => {
+                    let status =
+                        current_inserted_status(port, org, run_id, requested_definition).await?;
+                    if !matches!(status, RunStatus::Waiting | RunStatus::Succeeded) {
+                        return Err(err);
+                    }
+                    status
+                }
+                Err(err) => return Err(err),
+            };
+            Ok(TriggeredStart::Started { run_id, run_status })
         }
         // UNIQUE(org_id, idempotency_key): this fire/event already has a run.
         // Inspect it instead of blindly skipping so a crash after INSERT but
@@ -108,6 +136,29 @@ pub async fn start_bound_run<P: WorkflowRuntimePort + ?Sized>(
         }
         Err(err) => Err(err),
     }
+}
+
+// Only a confirmed insertion reaches this reconciliation. UUID equality alone
+// cannot distinguish a fresh insert from a replay of the same requested UUID.
+async fn current_inserted_status<P: WorkflowRuntimePort + ?Sized>(
+    port: &P,
+    org: console_kernel_core::OrgId,
+    run_id: uuid::Uuid,
+    definition: RequestedDefinition,
+) -> Result<RunStatus, KernelError> {
+    let existing = port.load_run(org, run_id).await?.ok_or_else(|| {
+        KernelError::conflict("inserted workflow run is unavailable during reconciliation")
+    })?;
+    if existing.id != run_id
+        || existing.org_id != org
+        || existing.definition_id != definition.id
+        || existing.definition_version != definition.version
+    {
+        return Err(KernelError::conflict(
+            "inserted workflow run identity changed during reconciliation",
+        ));
+    }
+    Ok(existing.status)
 }
 
 #[allow(clippy::too_many_arguments)]
