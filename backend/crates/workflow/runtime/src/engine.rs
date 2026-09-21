@@ -88,6 +88,19 @@ pub async fn start_run<P: WorkflowRuntimePort + ?Sized>(
     request: StartRunRequest,
     audit: &AuditContext,
 ) -> Result<Uuid, KernelError> {
+    let org = request.org_id;
+    let run_id = insert_starting_run(port, request, audit).await?;
+    activate_run(port, org, run_id, audit).await?;
+    Ok(run_id)
+}
+
+// Keep insertion acknowledgement separate from activation so system-triggered
+// callers retain fresh-run attribution when a concurrent dispatcher activates it.
+pub(crate) async fn insert_starting_run<P: WorkflowRuntimePort + ?Sized>(
+    port: &P,
+    request: StartRunRequest,
+    audit: &AuditContext,
+) -> Result<Uuid, KernelError> {
     // A run is born STARTING and immediately advances to RUNNING; validate the
     // edge up front so an illegal FSM table never reaches the DB.
     validate_run_transition(RunStatus::Starting, RunStatus::Running)?;
@@ -120,7 +133,15 @@ pub async fn start_run<P: WorkflowRuntimePort + ?Sized>(
         Some(json!({ "status": RunStatus::Starting.as_db_str() })),
     )?;
     port.insert_run(new_run, insert_audit).await?;
+    Ok(run_id)
+}
 
+pub(crate) async fn activate_run<P: WorkflowRuntimePort + ?Sized>(
+    port: &P,
+    org: OrgId,
+    run_id: Uuid,
+    audit: &AuditContext,
+) -> Result<(), KernelError> {
     let transition = RunTransition {
         run_id,
         from: RunStatus::Starting,
@@ -136,10 +157,7 @@ pub async fn start_run<P: WorkflowRuntimePort + ?Sized>(
         Some(json!({ "status": RunStatus::Starting.as_db_str() })),
         Some(json!({ "status": RunStatus::Running.as_db_str() })),
     )?;
-    port.transition_run(org, transition, transition_audit)
-        .await?;
-
-    Ok(run_id)
+    port.transition_run(org, transition, transition_audit).await
 }
 
 /// Process one node atomically: interpret it, validate the node walk
