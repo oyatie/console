@@ -31,7 +31,7 @@ cp "${source_dir}/playwright-package-lock.json" "${stage}/runtime/package-lock.j
 verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d193c20e3b2473c1e59f43e798a9b9
 verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
 for entry in \
-  account:1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664 \
+  account:3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d \
   company:7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57 \
   company-preview:a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90 \
   hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c; do

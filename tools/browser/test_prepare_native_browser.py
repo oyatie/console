@@ -26,7 +26,7 @@ PACKAGE_FILES = {
     "playwright-browsers.json": "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946",
 }
 DRIVERS = {
-    "account.cjs": "1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664",
+    "account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
     "company.cjs": "7aed45aa29ae25a1ca042d752efe97360b46319fcdad2b4479d8db1e3bc3ca57",
     "company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
     "hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
