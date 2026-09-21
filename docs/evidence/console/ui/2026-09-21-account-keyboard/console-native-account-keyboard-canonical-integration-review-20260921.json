@@ -1,0 +1,30 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "approved bounded canonical test/plan and driver source; actual private browser evidence supports new observations, canonical RED/admission pending",
+  "base_sha": "169706eb26a3f22770d7cc121ea083e31b168440",
+  "plan_sha256": "7bca521885b70e186ddb683ca02bef8473590477a4422d8eb5c84da42a947307",
+  "test_sha256": "9daa360933b21d8ab95de658fe9219c12380c5a8324823e2261d66edd8403d8e",
+  "driver_sha256": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
+  "test_count": 46,
+  "tests_executed_by_reviewer": 0,
+  "checks": [
+    "Canonical tests import same directory account.cjs; no previous private comparator path dependency",
+    "46control cases counted:1positive+15newflag absence/type corruption+15retainedflag omissions+5request omissions+3checkpoint omissions+7retained failure controls",
+    "Each new flag must equal booleantrue in actual shared completeObservations; no old predicate removed",
+    "Allthree pointer activations replaced by existing finite tabTo visible-focus/geometry checks and Enter; real wire/status/cookie/Account effects remain required",
+    "Stager and its expected-driver mapping each carry exactly old Account pin; proposed mechanical same-new-pin replacement is appropriate",
+    "No product/auth/CSS/markup or generated contracts in proposed scope",
+    "Read actual native browser log:1passed0failed0ignored522filtered; browser result requires allthree new keyboard observations and exactly5authPOSTs/0extraPOSTs/0externalrequests",
+    "Independent DB receipt agrees on ENROLLED/LOGGED_OUT/LOGGED_IN, browser PID, source unchanged and completed cleanup"
+  ],
+  "evidence_sha256": {
+    "/private/tmp/console-native-account-keyboard-20260921/browser.log": "6614961fe32b5e6cf76f16415da5ed4cb1aa057555a248c1aa7b6ba200b8799c",
+    "/private/tmp/console-native-account-keyboard-browser-20260921/result.json": "9c188790e211db7afa261d19653717e1abfc8ee6b2c311f1e0200bb955d1ea23",
+    "/private/tmp/console-native-account-keyboard-browser-20260921/owner-receipt.json": "dbe30275509b13290656d6838525f65b75f3d70ec6be2c052fb38c2ff1641fe8"
+  },
+  "remaining_holds": [
+    "Root must add test-only on clean exactbase, record expected semanticRED before admission, then apply exact reviewed driver and onlytwo pin replacements",
+    "Same46canonical controls and retained staging suite must pass on applied candidate",
+    "Virtual authenticator presence only; no platform-picker human accessibility,screenreader,zoom,IME or Company/business qualification"
+  ]
+}

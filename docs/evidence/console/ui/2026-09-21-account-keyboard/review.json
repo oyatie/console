@@ -1,0 +1,26 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "approved exact bounded evidence accuracy for commit",
+  "receipt_sha256": "0729b6d077ee5307594781e3a48d85e0cb953cf5689d34550ceda38531a64f8d",
+  "implementation_head": "982a43a26b8389d287159bd8eb76dafc424307c4",
+  "checks": [
+    "All16evidence hashes verified and no unlisted payload",
+    "All4source hashes match current root and implementation commit",
+    "Exact git diff from native-browser productbase169706e to982a43a contains only four listed tools/browser files; application/database/auth/runtime source unchanged",
+    "CanonicalRED46executed31pass15expectednewflagfail; sameGREEN46pass; admitted clean testbase",
+    "Staging6passed and correctly described mockeddownload/npm with real hashing/extraction, no Linux-browser claim",
+    "Actual native browser1passed522filtered; source-identical driver and product mapping clear",
+    "Three DBacknowledgements,new keyboard observations,exact5POSTs,zeroexternal/extraPOSTs and cleanup correlate",
+    "Claim narrowed to tested Account journey activation points; no terms-expansion/recovery/fullcontrol claim",
+    "Five screenshot bytes match previously viewed shared-theme renders; no visual-polish upgrade claim",
+    "Text payload scan found no private keys,bearer/JWTtokens or credentialledDBURLs"
+  ],
+  "remaining_holds": [
+    "OS passkey picker uses virtual automatic presence; no physical-device picker accessibility proof.",
+    "No screen-reader, 200% zoom, IME or representative-user acceptance.",
+    "No populated Company/payroll/people/employment/organization/approval acceptance.",
+    "Native hydration approvals, complete release qualification and protected integration remain outstanding."
+  ],
+  "inventory_promotion": "None",
+  "tests_executed_by_reviewer": 0
+}

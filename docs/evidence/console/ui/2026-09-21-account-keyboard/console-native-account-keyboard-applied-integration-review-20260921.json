@@ -1,0 +1,36 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "approved exact mechanical application and bounded verification for commit",
+  "test_base": "68e3c74b633dd60bc4e44eb228103de200361412",
+  "checks": [
+    "Dirty tree exactly3allowed implementation files",
+    "Canonical account.cjs byte-identical to reviewed3e59f4f6 candidate",
+    "Canonical46tests remain byte-identical9daa3609 and unchanged from test-onlyHEAD",
+    "Both stager and staging-test diffs are exactly one replacement of same old Account pin with new driver hash; no other behavior or runtime dependency change",
+    "RED46discovered31pass15fail: exactly three new keyboard flags omission/invalidtype cases; no unrelated failure",
+    "Admission log confirms every named probeRED",
+    "Same canonicalGREEN46pass0failed0skipped",
+    "Retained stager suite6executed6pass",
+    "Actual private native browser1pass522filtered and matching3DB acknowledgements already independently reviewed; installed driver matches exact tested candidate"
+  ],
+  "files": {
+    "tools/browser/account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
+    "tools/browser/account.test.cjs": "9daa360933b21d8ab95de658fe9219c12380c5a8324823e2261d66edd8403d8e",
+    "tools/browser/prepare_native_browser.sh": "6ad04e1beb0d630cd54bad4f4cf38ed303c58cf6804958e2358b273e2179a82a",
+    "tools/browser/test_prepare_native_browser.py": "a060b3481771f570698c064af389d5b412e52ab680e68054315dbeec5283d24e"
+  },
+  "evidence_sha256": {
+    "/private/tmp/console-native-account-keyboard-20260921/canonical-red.log": "b793ee38b3a040877912b9f406d1bd944f15c6180f2f10a5f255859f7517db12",
+    "/private/tmp/console-native-account-keyboard-20260921/canonical-green.log": "9f01858b64e5150290912f109fcb9b6e3a8951ab43b096db74b81d112d7a1d56",
+    "/private/tmp/console-native-account-keyboard-20260921/admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "/private/tmp/console-native-account-keyboard-20260921/staging.log": "30022aa12d45386c5baf870e2a88995a18df25a997c40e4efbcf46b1d7ca6785",
+    "/private/tmp/console-native-account-keyboard-20260921/browser.log": "6614961fe32b5e6cf76f16415da5ed4cb1aa057555a248c1aa7b6ba200b8799c",
+    "/private/tmp/console-native-account-keyboard-browser-20260921/result.json": "9c188790e211db7afa261d19653717e1abfc8ee6b2c311f1e0200bb955d1ea23",
+    "/private/tmp/console-native-account-keyboard-browser-20260921/owner-receipt.json": "dbe30275509b13290656d6838525f65b75f3d70ec6be2c052fb38c2ff1641fe8"
+  },
+  "remaining_holds": [
+    "No complete WCAG/screenreader/zoom/IME/human passkey-picker acceptance",
+    "No Company/business workflow or full release qualification"
+  ],
+  "test_execution_by_reviewer": 0
+}

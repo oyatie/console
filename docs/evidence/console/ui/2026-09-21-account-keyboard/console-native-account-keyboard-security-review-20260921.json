@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE bounded additive keyboard browser-test candidate for actual run",
+  "base_sha256": "1ece7ccf64f842fdfa33610e0c8ebfd95571d8ec3e5c7a80610d4fb46f37c664",
+  "driver_sha256": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
+  "manifest_sha256": "bcbdcbab1cc66c6694c3275072b7aa8002c0011901f69a317eb3d4c7604f4b84",
+  "candidate": "169706eb26a3f22770d7cc121ea083e31b168440",
+  "blocking_findings": [],
+  "source_observations": [
+    "Exact diff changes only remaining logout/login-entry/login-submit activations from click to existing tabTo plus Enter and adds3 required true completion fields.",
+    "tabTo requires unique semantic locator, uses at most12 real Tab presses, and checks focus-visible, viewport geometry and visible outline before activation. No pointer click remains in driver.",
+    "New flags are written after Enter delivery and cannot independently pass the leaf: existing actual response, authenticated Account/DB checkpoints, cookies, same Account, final page and cleanup conditions remain required.",
+    "Browser pin, runtime paths, network observer, credential checks,3 owner acknowledgements and teardown code remain byte-for-byte unchanged outside the4 diff locations."
+  ],
+  "controls": {
+    "kind": "Synthetic exported completion-predicate controls only; no browser/app/DB evidence",
+    "command": "node --test /private/tmp/console-native-account-keyboard-security-controls-20260921.cjs",
+    "discovered": 46,
+    "executed": 46,
+    "passed": 46,
+    "failed": 0,
+    "tests_sha256": "a98927cd42cef4a9e561bced1262f3464ac605578113b8a7f120815e493c0e13",
+    "log_sha256": "74b06c590db78052b60c8f0579716f7ed078a2ee0d9e413eaaca535a4b6dd1cf",
+    "coverage": [
+      "Full predicate positive control",
+      "3new observations missing/false/null/string/numeric refuse",
+      "Prior comparator accepts missing new observations, proving additive control sensitivity",
+      "All15 prior true observations omitted refuse",
+      "Each5 request count and3 checkpoint omissions refuse",
+      "Cleanup,explicit failure,unexpected post,external request,browser drift,TLS/relay refusal"
+    ]
+  },
+  "syntax": "node --check passed",
+  "actual_browser_tests_executed": 0,
+  "limits": [
+    "Requires genuine serving application/database run with exact driver hash before keyboard journey acceptance",
+    "Virtual authenticator presence does not prove OS/native passkey picker accessibility",
+    "No screen reader,200percent zoom,IME,Company/business or complete accessibility claim"
+  ]
+}
