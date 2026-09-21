@@ -478,3 +478,6 @@ async fn smtp_port_check_rejects_25_accepts_submission_ports(owner_pool: PgPool)
         "465 (implicit TLS submission) must still be accepted"
     );
 }
+
+#[path = "mail_account_rls_surfaces_as_runtime_role/mixed_format.rs"]
+mod mixed_format;
