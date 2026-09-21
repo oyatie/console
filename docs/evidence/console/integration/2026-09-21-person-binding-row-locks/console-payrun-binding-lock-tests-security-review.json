@@ -1,0 +1,28 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_ADDITIVE_ROW_LOCK_PRIVILEGE_PREREQUISITE_TEST",
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "manifest_sha256": "516f719a9355019006af81f2b3234a82c6547bbcdfd8c9b5524410067f358c78",
+  "test_sha256": "9ff2be5542cd0eecd5236e5e53ef1901bd13b1f7d2d4b5be08fdfa4ad98943df",
+  "facts": [
+    "All six packet members and both exact base/current source locks match.",
+    "Entire historical test file remains exact prefix; one additive leaf.",
+    "Real Business login loader checks session_user/current_user and rejects administrative capabilities.",
+    "Actual own and foreign bindings exist before locked SELECT; query exposes only own Company under forced RLS.",
+    "Exact six-column privilege census permits only employee_id UPDATE, rejects whole-table UPDATE.",
+    "Existing-row UPDATE(employee_id=employee_id) must reach original immutable trigger and fail P0001; person_id UPDATE and trigger disabling require42501.",
+    "Complete binding-row snapshots identical afterward; test neither installs grants nor weakens historical trigger."
+  ],
+  "authorized_next_step": "Root adopts test only, executes exact native prerequisite RED, then admits serialized privilege repair; same leaf and full18 suite must pass.",
+  "execution": {
+    "reviewer_tests": 0,
+    "builds": 0,
+    "sql": 0,
+    "browser": 0
+  },
+  "limits": [
+    "This is ACL prerequisite RED, not same-Person business regression or payroll approval acceptance.",
+    "Direct owner fixture inserts only establish privilege test rows; no canonical Person workflow claim.",
+    "Actual lock-contention histories and full payroll guard tests remain separately required."
+  ]
+}

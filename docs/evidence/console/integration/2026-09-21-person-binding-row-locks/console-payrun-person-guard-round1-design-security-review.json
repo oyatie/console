@@ -1,0 +1,25 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_BOUNDED_DESIGN_NOT_CODE_OR_RUNTIME",
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "manifest_sha256": "6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134",
+  "facts": [
+    "All packet members and six exact base/current source locks verified.",
+    "Private lifecycle reader reaches both current REST and canonical PayRun through existing writer; no cross-adapter import.",
+    "Sorted retained actual User rows followed by exact Company/employee binding keys protects mutable identity mapping through decision commit.",
+    "New minimal UPDATE(employee_id) grant can enable row locking while original unconditional immutable trigger and forced RLS remain; actual-login proof required.",
+    "Design distinguishes ACL prerequisite from actual business RED, preserves historical migrations, and explicitly addresses rollback admission and unsafe mixed old binaries."
+  ],
+  "migration_lease": "Root reports Company owner leased new migration0229; exact migration contents still require review.",
+  "required_before_acceptance": [
+    "Actual-login privilege and immutable-trigger controls.",
+    "Reviewed same-Person real-owner RED with functioning prerequisites, all absent/foreign cases, distinct-Person positive controls and full durable effects.",
+    "Both concurrent writer orders, PostgreSQL blocking witness, rollback and unchanged source bytes.",
+    "Exact source/migration and fixture review after implementation."
+  ],
+  "execution": 0,
+  "holds": [
+    "Native Account-to-Person attribution and current Company integration separate.",
+    "Governance unlocked natural-person reader separate known gap."
+  ]
+}

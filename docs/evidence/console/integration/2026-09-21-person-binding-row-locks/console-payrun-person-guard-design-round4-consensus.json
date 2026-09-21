@@ -1,0 +1,17 @@
+{
+  "reviewer": "integration_security",
+  "round": 4,
+  "status": "DESIGN_CONSENSUS_APPROVED_EXACT_MANIFEST",
+  "manifest_sha256": "6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134",
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "reviews": {
+    "/private/tmp/console-payrun-person-guard-round1-design-security-review-20260921.json": "9434a8ff58877cefcbfac5cfa0b6bd5c3c710d3786548df7c9ee18fcc65320e4",
+    "/private/tmp/console-payrun-person-guard-design-test-review-20260921.json": "43ce3deaab270d41f6a682884c87655eaaa1e5a3af1d97362379ed9e43380f91",
+    "/private/tmp/console-payrun-person-guard-design-owner-review-20260921.json": "c1d85c42afe78b3e75d9adcaf042e68a72331aa71f447860497137be7637c70f"
+  },
+  "conclusion": "All three independent role reviews concern the same exact design and retain actual runtime/ACL prerequisites, two row-class locks, real owner RED, migration compatibility and native Account/Governance gaps. No unresolved design finding.",
+  "limits": [
+    "Design consensus only; code, test-source and migration reviews remain separate.",
+    "No reviewer tests/builds/SQL/browser execution."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "APPROVE_BOUNDED_PAYRUN_PERSON_GUARD_DESIGN_FOR_TEST_AUTHORING",
+  "manifest_sha256": "6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134",
+  "design_sha256": "58cdd73d3e4cd57290e3d2027e2a8f70da6be3d379ee9d265e2f84270e3cfd02",
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "source_locks_match": true,
+  "findings": [],
+  "correctness_readback": [
+    "Shared decide_run_in_tx is the actual common writer reached by REST and canonical PayRun. Checking here before mutation closes both UUID-only paths without a second payroll writer or cross-adapter dependency.",
+    "Retaining both sorted User rows and sorted actual employee_person_bindings rows addresses the two demonstrated mutable paths. FOR SHARE conflicts with User link UPDATE and binding DELETE; retaining only User locks or copying governance unlocked SELECT would be insufficient.",
+    "Missing submitted_by/User/employee/binding and same Person fail closed. Own Company/RLS and exact two-User/key resolution must remain explicit; names and employee UUID equality cannot substitute for canonical Person.",
+    "If an earlier binding DELETE/reinsert commits while locking SELECT waits, the SELECT may see no matching original tuple rather than its replacement. The design permits refusal, which is safe. Tests must accept only current distinct resolution or denial, never stale approval.",
+    "One-column UPDATE(employee_id) grant is a row-locking prerequisite only; original immutable UPDATE trigger remains enforcement. New migration must preserve historical0213bytes and avoid other-column/tableUPDATE or trigger-control access."
+  ],
+  "required_test_constraints": [
+    "Actual Business login, checked session_user/current_user; no owner SET ROLE mislabeled as actual login.",
+    "Existing unique users(org_id,employee_id) remains unchanged. Two Users need two distinct Employees bound to one Person for same-Person cases. User rebind concurrency needs a third otherwise-unused Employee when assigning a competing canonical Person; direct same-Employee reuse would fail uniqueness before testing the reader.",
+    "Same-Person APPROVE and reason-valid REJECT must reach shared owner with valid prerequisites and preserve run/receipt/audit/public census. Distinct Persons must retain every original positive decision assertion in both canonical positive leaves and REST full lifecycle.",
+    "Writer-waits histories must inspect actual pg_blocking_pids and uncompleted writer with reader transaction retained; then reader commit and writer completion. No sleep-only witness. Inverse User UPDATE and binding DELETE/INSERT ordering must reach actual competing rows and deny when identity becomes same Person.",
+    "Missing rows, rollback and injected timeout cases must distinguish prerequisite errors from product denial and retain complete no-effect evidence.",
+    "Original same-User refusal, foreign-run NotFound, state guards, reason validation and exact historical receipt replay stay covered."
+  ],
+  "limits": [
+    "Design approval only; no proposed test-source semantic approval until exact fixtures/oracles receive separate review.",
+    "Reviewer ran no product tests/builds/SQL/browser and made no repository changes.",
+    "Root reports migration0229lease; exact new migration and actual privilege/lock behavior still require review and execution.",
+    "Native Account-to-Person integration and governance unlocked reader correction remain separate required work."
+  ]
+}

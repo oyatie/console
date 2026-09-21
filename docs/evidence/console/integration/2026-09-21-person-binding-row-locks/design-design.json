@@ -1,0 +1,55 @@
+{
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "owner": "/root",
+  "target": "Shared payroll decide_run_in_tx rejects non-independent natural persons through both REST and canonical PayRun.",
+  "scope": [
+    "Extend private reader in payroll adapter lifecycle; no new cross-adapter dependency or business writer.",
+    "One new serialized migration grants UPDATE(employee_id) on public.employee_person_bindings to console_rt solely to enable row locking. Final number awaits migration owner lease. Historical0213 and its unconditional immutable UPDATE trigger remain byte-identical."
+  ],
+  "algorithm": [
+    "Keep existing run_head FOR UPDATE and SUBMITTED validation, account-level SodViolation and public error shape. Missing submitted_by rejects as SodViolation.",
+    "Read both users id/org_id/employee_id WHERE id=ANY(two actor UUIDs) ordered id FOR SHARE. Require exactly two rows under armed Company RLS and nonnull employee IDs; retain locks. Do not infer Person from names, user UUID, employee UUID or employment.",
+    "Read exact binding keys from the locked users, ordered org_id,employee_id FOR SHARE. Require each locked User resolves to one binding in its own Company. Existing unique FK guarantees make lookup bounded to two. Retain all locks through transaction commit.",
+    "Same Person or missing resolution returns existing SodViolation without receipt, audit or run effects. Distinct Persons continue unchanged APPROVE or reason-required REJECT. Existing notfound/state/validation behaviors and same-command replay semantics remain.",
+    "No advisory lock, table lock, privileged routine, client identity selector, new port or schema representation."
+  ],
+  "locking": [
+    "Existing run lock precedes sorted User locks then sorted binding locks. Reader shared locks allow unrelated and same-actor independent runs. Update User links and binding DELETE/INSERT must block until decision commit.",
+    "Concurrent writer wins first: after waiting, reader must use current committed identity or refuse; never approve using stale deleted binding. Deadlock/statement timeout rolls back whole attempt; never convert SQL errors to successful approval.",
+    "No new User/Person locking convention required of writers: PostgreSQL row conflicts protect actual rows."
+  ],
+  "verification": [
+    "Prerequisite native17 PayRun suite green at base, generator69green.",
+    "Before implementation independently approved executable RED at actual owner with valid samePerson across different Users and different Employees, for both APPROVE and REJECT. No missing-schema/permission-only RED accepted as business regression.",
+    "Separate actual Business-login privilege probe: one-column ACL exact, FOR SHARE succeeds, UPDATE affected granted column triggers original immutability refusal, UPDATE other column denies, disabling trigger denies, crossCompany rows absent, owner-visible before/after rows unchanged.",
+    "Actual owning PayRun samePerson/missing User/employee/binding/foreignCompany denial, distinct Person positives and full durable row/receipt/audit snapshot. Preserve all original positive assertions through reviewed bound-Person fixture successors.",
+    "Both callers invoke same owner; existing REST full lifecycle APPROVE/REJECT positives receive reviewed explicit distinct Person fixture.",
+    "Concurrency direct shared-owner transaction plus actual Business login: hold after successful decide, competing User UPDATE and binding DELETE wait until commit, verify pg_blocking_pids not sleeps alone. Inverse ordering changed-to-samePerson denies; rollback/timeouts leave no acknowledged effects.",
+    "Read historical migration hashes and full fixture suite; canonical generated inputs refreshed only by root generator."
+  ],
+  "rollout": [
+    "Add privilege first; existing immutable trigger continues rejecting updates. New code needs grant or fails closed.",
+    "Old readers continue behavior during overlap: do not claim whole-service natural-person enforcement until old binaries drained. No production exposure authorized.",
+    "Code rollback alone restores known unsafe old behavior, so suspend approval admission before security rollback. Column privilege can be revoked after new reader disabled; preserve histories."
+  ],
+  "premortem": [
+    "Only locking Users permits binding DELETE/reinsert race.",
+    "FOR SHARE silently assumed executable despite missing UPDATE.",
+    "Same Person fixture uses same User and tests only existing guard.",
+    "Fixture sets role in owner connection and misstates real login."
+  ],
+  "blast_radius": "PayRun decision reader, one column privilege, fixture successors and actual concurrency probes. No Company enrollment authority/schema change.",
+  "stop_conditions": [
+    "Migration collision",
+    "semantic source drift",
+    "tests unreviewed",
+    "immutable trigger or forced RLS lost",
+    "credential exposure",
+    "source/receipt reinterpretation"
+  ],
+  "remaining": [
+    "Native Account-to-Person attribution and native Company policy integration separate and still required for MVP.",
+    "Governance unlocked reader is a distinct known gap requiring its owning correction before approval workflow acceptance.",
+    "No legal qualification/exposure/payment authority."
+  ]
+}

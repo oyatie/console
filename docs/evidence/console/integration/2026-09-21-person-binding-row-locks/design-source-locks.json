@@ -1,0 +1,8 @@
+{
+  "backend/crates/payroll/adapter-postgres/src/lifecycle.rs": "55a14b1dc067e245d647e7133942994f6ac6d8c0f902b14482184d3c73e87964",
+  "backend/crates/payroll/adapter-postgres/src/pay_run.rs": "0343138dc4979b0a544adb7ec63cfeb96da6fac7b83f47d77669319bfbc15be8",
+  "backend/crates/payroll/rest/src/lifecycle.rs": "9c6d4d7db3e482c1d8e19b736be2d175a0c1853227c00034f9456a61f5457edf",
+  "backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs": "b1e4b7b6a2f6106770a5602e537db887921a372c71779f14cde4ca6f9c53a477",
+  "backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql": "9b0f786d715621a88d29178f628277d29f626e464aa597cffc169032dd810b5a",
+  "backend/crates/platform/db/migrations/0076_user_employee_link.sql": "58c9068c088d62bfc865816a665119a97144db9942e96f7c1941d9f79c63a7d1"
+}

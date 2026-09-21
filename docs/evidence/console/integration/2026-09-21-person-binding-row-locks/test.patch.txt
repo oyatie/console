@@ -1,0 +1,129 @@
+--- a/backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs
++++ b/backend/crates/payroll/adapter-postgres/tests/pay_run_port_as_runtime_role.rs
+@@ -1534,3 +1534,126 @@
+         .await
+         .unwrap()
+ }
++
++/// PostgreSQL row-lock SELECT needs an UPDATE privilege, while the existing
++/// immutable trigger must continue rejecting actual binding updates.
++#[sqlx::test(migrations = "../../platform/db/migrations")]
++async fn actual_business_login_can_lock_person_bindings_without_mutating_them(owner_pool: PgPool) {
++    use console_platform_test_support::{TestDatabaseLogin, login_test_pool};
++
++    let mut binding_ids = Vec::new();
++    for (org, tag) in [(ORG, "binding-lock"), (FOREIGN_ORG, "binding-foreign")] {
++        let user = seed_org_and_user(&owner_pool, org, tag).await;
++        let employee: Uuid = sqlx::query_scalar(
++            "INSERT INTO employees (org_id, company, name, source_filename, source_sheet, source_row, source_key) \
++             VALUES ($1, 'ACME', $2, 'fixture', 'fixture', 1, $2) RETURNING id",
++        )
++        .bind(org).bind(tag).fetch_one(&owner_pool).await.unwrap();
++        let person: Uuid =
++            sqlx::query_scalar("INSERT INTO persons (org_id) VALUES ($1) RETURNING id")
++                .bind(org)
++                .fetch_one(&owner_pool)
++                .await
++                .unwrap();
++        sqlx::query(
++            "INSERT INTO employee_person_bindings (org_id, employee_id, person_id, actor_id, payload_digest) \
++             VALUES ($1, $2, $3, $4, $5)",
++        )
++        .bind(org).bind(employee).bind(person).bind(user.as_uuid())
++        .bind([7_u8; 32].as_slice()).execute(&owner_pool).await.unwrap();
++        binding_ids.push((org, employee, person));
++    }
++    let before: Vec<serde_json::Value> = sqlx::query_scalar(
++        "SELECT to_jsonb(b) FROM employee_person_bindings b ORDER BY org_id, employee_id",
++    )
++    .fetch_all(&owner_pool)
++    .await
++    .unwrap();
++    assert_eq!(
++        before.len(),
++        2,
++        "own and foreign bindings must really exist"
++    );
++    let actual = login_test_pool(&owner_pool, TestDatabaseLogin::Business).await;
++    let mut tx = actual.begin().await.unwrap();
++    sqlx::query("SELECT set_config('app.current_org', $1, true)")
++        .bind(ORG.to_string())
++        .execute(&mut *tx)
++        .await
++        .unwrap();
++    let locked: Vec<(Uuid, Uuid)> = sqlx::query_as(
++        "SELECT employee_id, person_id FROM employee_person_bindings ORDER BY org_id, employee_id FOR SHARE",
++    ).fetch_all(&mut *tx).await.expect("PERSON_BINDING_ROW_LOCK_REQUIRED: actual Business login must acquire row locks");
++    assert_eq!(locked, vec![(binding_ids[0].1, binding_ids[0].2)]);
++    let privileges: Vec<(String, bool)> = sqlx::query_as(
++        "SELECT attname::text, has_column_privilege(current_user, attrelid, attnum, 'UPDATE') \
++         FROM pg_attribute WHERE attrelid='public.employee_person_bindings'::regclass \
++         AND attnum>0 AND NOT attisdropped ORDER BY attnum",
++    )
++    .fetch_all(&mut *tx)
++    .await
++    .unwrap();
++    assert_eq!(privileges.len(), 6);
++    for (column, allowed) in privileges {
++        assert_eq!(
++            allowed,
++            column == "employee_id",
++            "unexpected UPDATE grant for {column}"
++        );
++    }
++    let whole_table: bool = sqlx::query_scalar(
++        "SELECT has_table_privilege(current_user, 'public.employee_person_bindings', 'UPDATE')",
++    )
++    .fetch_one(&mut *tx)
++    .await
++    .unwrap();
++    assert!(
++        !whole_table,
++        "row locking must not grant whole-table UPDATE"
++    );
++    tx.rollback().await.unwrap();
++
++    for (statement, code, message) in [
++        (
++            "UPDATE employee_person_bindings SET employee_id=employee_id",
++            "P0001",
++            "row is immutable",
++        ),
++        (
++            "UPDATE employee_person_bindings SET person_id=person_id",
++            "42501",
++            "permission denied",
++        ),
++        (
++            "ALTER TABLE employee_person_bindings DISABLE TRIGGER trg_employee_person_bindings_immutable",
++            "42501",
++            "must be owner",
++        ),
++    ] {
++        let mut tx = actual.begin().await.unwrap();
++        sqlx::query("SELECT set_config('app.current_org', $1, true)")
++            .bind(ORG.to_string())
++            .execute(&mut *tx)
++            .await
++            .unwrap();
++        let error = sqlx::query(statement)
++            .execute(&mut *tx)
++            .await
++            .expect_err("binding mutation must fail");
++        let database = error.as_database_error().expect("database refusal");
++        assert_eq!(database.code().as_deref(), Some(code));
++        assert!(database.message().contains(message), "{database}");
++        tx.rollback().await.unwrap();
++    }
++    let after: Vec<serde_json::Value> = sqlx::query_scalar(
++        "SELECT to_jsonb(b) FROM employee_person_bindings b ORDER BY org_id, employee_id",
++    )
++    .fetch_all(&owner_pool)
++    .await
++    .unwrap();
++    assert_eq!(
++        after, before,
++        "locking and refused mutations preserve every binding byte"
++    );
++    actual.close().await;
++}

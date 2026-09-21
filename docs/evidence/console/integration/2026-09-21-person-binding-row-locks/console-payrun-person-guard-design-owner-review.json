@@ -1,0 +1,28 @@
+{
+  "reviewer": "/root/company_owner",
+  "verdict": "APPROVE_BOUNDED_OWNERSHIP_OPERABILITY_DESIGN",
+  "round": 3,
+  "manifest_sha256": "6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134",
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "verified_packet_files": 2,
+  "verified_actual_source_files": 6,
+  "findings": [],
+  "evidence": [
+    "Actual shared decide_run_in_tx currently checks only User UUID equality; both APPROVE and REJECT mutate after that guard. Placement within this owner prevents an alternate PayRun/REST decision writer.",
+    "Actual0076 permits nullable same-Company employee linkage; distinct User IDs can resolve via distinct employees to one Person under0213. Missing resolution must deny rather than infer identity.",
+    "Actual0213 grants SELECT/INSERT/DELETE only on bindings and has unconditional per-row BEFORE UPDATE immutability trigger. Narrow UPDATE(employee_id) enables PostgreSQL row locking without permitting actual affected-row UPDATE while that trigger remains installed.",
+    "User FOR SHARE retains the employee selector; binding FOR SHARE retains the selected natural Person. The retained run/User/binding locks cover the actual decision through caller commit. Deleted or changed binding observed after wait may fail closed rather than treating an absent old tuple as valid.",
+    "Design separates migration prerequisite evidence from actual same-Person business RED and requires real Business login and reached lock witnesses. No successful implicit role/fixture owner result is treated as serving ACL proof."
+  ],
+  "required_before_acceptance": [
+    "Exact one-column privilege and actual no-op UPDATE(existing row) refusal; zero affected rows do not exercise a per-row trigger. Preserve historical0076/0213 bytes and current forced RLS.",
+    "Reviewed tests and candidate-bound execution for both callers, both decisions, same Person across different Users/Employees, missing/foreign bindings and distinct Person positives.",
+    "Concurrent User UPDATE and binding DELETE must be proven blocked by the actual owning transaction; inverse-order waits must read current state or deny. Measure timeout/rollback honestly.",
+    "Apply migration before new reader admission; drain old instances before claiming assembled natural-Person enforcement. Fence approvals before any rollback to unsafe reader."
+  ],
+  "limits": [
+    "Design/source inspection only; zero reviewer product tests executed.",
+    "Native Account-to-Person and governance natural-Person path remain separate incomplete MVP dependencies.",
+    "No production exposure or legal/payment authority."
+  ]
+}

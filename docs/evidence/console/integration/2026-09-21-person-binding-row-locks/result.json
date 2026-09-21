@@ -1,0 +1,48 @@
+{
+  "base": "b8f83f1dd5cd83cd1cdaa6b28cb5dee9b1c02c16",
+  "test_commit": "bb215ee2ac706238d051d75ac623ccf92cc2a90b",
+  "owner": "/root",
+  "design_manifest": "6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134",
+  "implementation": {
+    "migration": "0229_person_binding_row_lock_privilege.sql",
+    "statement": "GRANT UPDATE (employee_id) ON public.employee_person_bindings TO console_rt;",
+    "historical_migrations_byte_preserved": 228,
+    "generated_outputs": "Canonical unchanged generator appended229/SHA384 only; all other outputs unchanged."
+  },
+  "verification": {
+    "red": {
+      "executed": 1,
+      "failed": 1,
+      "filtered": 17,
+      "boundary": "actual Business login row-lock SELECT, PostgreSQL42501"
+    },
+    "green": {
+      "executed": 1,
+      "passed": 1,
+      "filtered": 17
+    },
+    "full": {
+      "executed": 18,
+      "passed": 18,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    "migration_gate": "Buck2 native PASSED",
+    "generator_check": "python3 ops/generate-account-custody.py --check PASSED",
+    "cancelled_attempt": "Concurrent native migration gate cancelled firstGREEN graph evaluation before test execution. Preserved log; both processes drained and exact test rerun serially."
+  },
+  "qualified_behavior": [
+    "Actual console_rt session/current user, no administrative role attributes.",
+    "Own binding row locks succeed, existing foreign binding invisible.",
+    "Only employee_id column UPDATE privilege present; no table-level UPDATE.",
+    "Affected-row employee_id UPDATE rejected by historical immutability trigger; other-column UPDATE and disabling trigger denied.",
+    "All binding rows retain exact JSON values; no mutation effects."
+  ],
+  "limits": [
+    "Privilege prerequisite only: same-Person payroll guard implementation and contention tests pending.",
+    "Most inherited owner leaves still use owner connection SET ROLE; only new leaf proves actual Business login.",
+    "Native Account attribution, five connected MVP workflows and full release incomplete.",
+    "No production exposure, legal qualification or payment execution authorized."
+  ]
+}

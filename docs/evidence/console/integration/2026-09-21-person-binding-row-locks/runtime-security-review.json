@@ -1,0 +1,27 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_BOUNDED_PRIVILEGE_MIGRATION_AND_RUNTIME_EVIDENCE",
+  "base": "bb215ee2ac706238d051d75ac623ccf92cc2a90b",
+  "source_review_sha256": "f2bf20cbe6e5071f32311a4c2b27eed19f8b7732ae9e550976743881b043211d",
+  "migration_sha256": "f847d19fd72ae6605dc7bbccc96f46fa5ad5d8c03601229a873f9ee233293bcc",
+  "ledger_sha256": "6a7e45857de4892b314243679a3558b0b6f09122d838d484803dfc0a82455b27",
+  "facts": [
+    "Migration and ledger still match exact source-approved bytes.",
+    "Successful serialized focused native prerequisite1passed,0failed,17filtered.",
+    "Full native owner suite18passed,0failed,0ignored,0filtered; Buck0skips/omits/infra/build failures.",
+    "Migration safety gate passed; earlier cancelled concurrent Buck attempt retained separately.",
+    "Successful additive actual-login leaf executes exact column ACL census, actual row-lock read, affected-row immutable UPDATE/P0001, other-column and trigger-control42501, foreign Company exclusion and unchanged binding snapshots."
+  ],
+  "logs": {
+    "/private/tmp/console-payrun-binding-lock-green-20260921.log": "c0024b35fad022f486ba04500b66c94209e9b25e178ec26015e814eb8f526946",
+    "/private/tmp/console-payrun-binding-lock-full-20260921.log": "ff8c2e781fc3576789ea6f90a3e71c1d1fa25d3432c47da81da17e02340aaed7",
+    "/private/tmp/console-payrun-binding-lock-migration-gate-20260921.log": "225518840567e0bf57a88e8f9e135b4b15c339afc3f9a3ec282cd785742b09f6",
+    "/private/tmp/console-payrun-binding-lock-green-cancelled-20260921.log": "ea954eb055999ffe8bb72db35c96c25797ab1c91c04020c523dbf0c595eebfa6"
+  },
+  "reviewer_execution": 0,
+  "holds": [
+    "Final committed-source/evidence readback pending.",
+    "17 original owner leaves still use SET ROLE; only new prerequisite claims actual Business LOGIN.",
+    "Payroll same-Person shared business guard, native Account integration and full release remain incomplete."
+  ]
+}

@@ -1,0 +1,43 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T06:21:33.722-04:00] Build ID: cdd78a58-dd2e-4dcf-813f-d0f59be3a48d
+[2026-09-21T06:21:33.723-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:21:40.724-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 595 other actions
+[2026-09-21T06:21:46.725-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T06:21:46.738-04:00] Build ID: dec9fa3d-7cf2-4ea1-bc86-b3af8ea88999
+[2026-09-21T06:21:46.739-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T06:21:53.838-04:00] Waiting on root//third-party/rust:percent-encoding-2 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 697 other actions
+[2026-09-21T06:22:02.140-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute]
+[2026-09-21T06:22:09.240-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute]
+[2026-09-21T06:22:16.240-04:00] Waiting on Test payroll-adapter-postgres-pay-run-port-as-runtime-role-pg --  [local_execute]
+[2026-09-21T06:22:17.634-04:00] ✓ Pass: root//tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg (18.3s)
+[2026-09-21T06:22:17.634-04:00] ---- STDOUT ----
+[2026-09-21T06:22:17.634-04:00]
+[2026-09-21T06:22:17.634-04:00] running 18 tests
+[2026-09-21T06:22:17.634-04:00] test a_changed_provenance_on_the_same_run_and_period_is_refused ... ok
+[2026-09-21T06:22:17.634-04:00] test a_decider_who_submitted_the_run_is_refused ... ok
+[2026-09-21T06:22:17.634-04:00] test a_foreign_tenant_is_invisible_and_unwritable_to_the_runtime_role ... ok
+[2026-09-21T06:22:17.634-04:00] test a_lock_committed_after_the_gate_read_but_before_the_write_is_refused ... ok
+[2026-09-21T06:22:17.634-04:00] test a_noncanonical_stored_provenance_is_refused_not_absorbed ... ok
+[2026-09-21T06:22:17.634-04:00] test a_pay_run_is_created_through_the_port_and_the_receipt_names_the_owner ... ok
+[2026-09-21T06:22:17.634-04:00] test a_repeat_of_the_same_command_replays_the_receipt_and_stages_no_second_run ... ok
+[2026-09-21T06:22:17.634-04:00] test a_stored_receipt_naming_no_dispatch_target_is_refused ... ok
+[2026-09-21T06:22:17.634-04:00] test actual_business_login_can_lock_person_bindings_without_mutating_them ... ok
+[2026-09-21T06:22:17.634-04:00] test an_existing_draft_is_acknowledged_after_the_period_is_locked ... ok
+[2026-09-21T06:22:17.634-04:00] test canonical_create_run_refuses_a_locked_period ... ok
+[2026-09-21T06:22:17.634-04:00] test empty_tenant_pay_run_lifecycle_sits_on_canonical_org_tree ... ok
+[2026-09-21T06:22:17.634-04:00] test preflight_is_pure_and_blocks_what_the_database_would_only_refuse_later ... ok
+[2026-09-21T06:22:17.634-04:00] test submit_and_decide_drive_the_statements_this_crate_already_owned ... ok
+[2026-09-21T06:22:17.634-04:00] test the_contract_identity_is_copied_verbatim_and_the_port_is_the_named_one ... ok
+[2026-09-21T06:22:17.634-04:00] test the_create_receipt_alone_is_enough_to_submit ... ok
+[2026-09-21T06:22:17.634-04:00] test the_workflow_staging_seam_is_idempotent_on_the_natural_key ... ok
+[2026-09-21T06:22:17.634-04:00] test the_workflow_staging_seam_refuses_a_locked_period ... ok
+[2026-09-21T06:22:17.634-04:00]
+[2026-09-21T06:22:17.634-04:00] test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.24s
+[2026-09-21T06:22:17.634-04:00]
+[2026-09-21T06:22:17.634-04:00]
+[2026-09-21T06:22:17.634-04:00] ---- STDERR ----
+[2026-09-21T06:22:17.634-04:00]
+[2026-09-21T06:22:17.640-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

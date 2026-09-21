@@ -1,0 +1,33 @@
+[
+  {
+    "lane": "payrun-binding-row-lock-privilege-20260921",
+    "owner": "/root",
+    "base": "bb215ee2ac706238d051d75ac623ccf92cc2a90b",
+    "immutable_target": "design6bcb066bc93fdfa42c16d25a3154442085fc322bf716c530ca8062e1abef5134 test9ff2be5542cd0eecd5236e5e53ef1901bd13b1f7d2d4b5be08fdfa4ad98943df",
+    "allow": [
+      "backend/crates/platform/db/migrations/0229_person_binding_row_lock_privilege.sql",
+      "ops/account-custody-migrations.sha384"
+    ],
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH DOCKER_CONTEXT=colima-console-release-20260919 CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=actual_business_login_can_lock_person_bindings_without_mutating_them bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:payroll-adapter-postgres-pay-run-port-as-runtime-role-pg",
+    "guide": "Add only GRANT UPDATE(employee_id) ON public.employee_person_bindings TO console_rt with explanatory preservation/rollback comments. Run unchanged ops/generate-account-custody.py; exact one checksum append, preserve228historical entries and all other generated outputs. No predicate change in prerequisite lane.",
+    "premortem": "grant broad mutation or pretend ACL denial proves business defect",
+    "blast_radius": "one-column runtime privilege; all row updates still rejected by original trigger",
+    "detection": "actual Business rowlock, exact ACL census, existing-row immutableUPDATE refusal, forbiddenothercolumn/triggercontrol and crossCompany denial; full18owner baseline",
+    "rollback": "revoke column grant after disabling new reader; approval guard security rollback requires fenced admission",
+    "stop_conditions": [
+      "review missing",
+      "historical hash drift",
+      "other generated artifact change",
+      "native test does not execute"
+    ],
+    "reviews": [
+      "/root/integration_security",
+      "/root/integration_tests",
+      "/root/company_owner"
+    ],
+    "holds": [
+      "samePerson business guard not implemented",
+      "nativeAccount integration and MVP incomplete"
+    ]
+  }
+]

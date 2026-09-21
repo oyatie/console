@@ -1,0 +1,21 @@
+{
+  "reviewer": "integration_security",
+  "status": "APPROVED_NECESSARY_GENERATED_LEDGER_SCOPE_ADDITION",
+  "generator_sha256": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+  "ledger_before_sha256": "736d28bc7b3b5cf15ca4c341fd3622dc76521db9dbf974b75cef7e73eb68fbf5",
+  "historical_migrations": 228,
+  "facts": [
+    "Unchanged canonical generator lines318-323 enumerates sorted numbered migrations and records number plus SHA384.",
+    "Independent read-only reconstruction verifies all228 current ledger entries match original migration bytes.",
+    "Adding numbered0229 necessarily appends one ledger line; no historical fingerprints are reinterpreted."
+  ],
+  "authorized_scope": [
+    "Root may extend admitted lane allowlist with ops/account-custody-migrations.sha384 and invoke unchanged ops/generate-account-custody.py after approved0229 source addition.",
+    "Require generated ledger starts with entire original228-line bytes and has exactly one new229/checksum line.",
+    "All other generated outputs and generator sources must remain byte-identical; unrelated differences stop lane and require review."
+  ],
+  "limits": [
+    "Exact migration text and final generated diff still require review; this receipt authorizes necessary artifact scope only.",
+    "No generator/product/test execution by reviewer."
+  ]
+}
