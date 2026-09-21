@@ -189,8 +189,7 @@ impl CompanyPolicyDecisionPort for CompanyPolicy {
 }
 
 fn sdk_identity() -> Result<(), CompanyPolicyError> {
-    if CEDAR_SDK_VERSION != "4.12.0"
-        || CEDAR_LANGUAGE_VERSION != "4.5"
+    if CEDAR_LANGUAGE_VERSION != "4.5"
         || cedar_policy::get_sdk_version().to_string() != CEDAR_SDK_VERSION
     {
         return Err(CompanyPolicyError::EvaluatorUnavailable);
