@@ -1,0 +1,43 @@
+{
+  "reviewer": "/root/integration_security",
+  "verdict": "APPROVE_FINITE_CI_MACHINERY_REGISTRATION",
+  "packet_manifest_sha256": "e0bbf9e6a8be1a81aaf03a3f7cc61bb61b01e0398c191bc3d7031f2e7f2496a2",
+  "base": "2c4ab1f8342bbdd95878014a49336795b4beca49",
+  "source_locks": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "base_sha256": "a253cfe965782e7c8e12c88825401065343ac730e6ae28ef8b92019c9a8afac5",
+      "successor_sha256": "e408f6b3e8265867932a0fcfc9f7f07d1c5ba8aebcb207499c3740e384af489a"
+    },
+    {
+      "path": "scripts/check-ci-preflight.mjs",
+      "base_sha256": "d8c766c39174ccbcd92de50660503153e9be32983b4c286cadc89394b88566a3",
+      "successor_sha256": "9c89306445ccf618c20481c0da9d6b558e446b9fa914b225dc8ca68eadf6b858"
+    },
+    {
+      "path": "scripts/check-ci-preflight.test.mjs",
+      "base_sha256": "b4bce471112f22b2ba1e224a027fcbfb62f1657e91c5531e487572dd54577327",
+      "successor_sha256": "b2d245f185e042ddf9fd5adca0cf4b36edb3982ebe1dfab4a0d3ad699a2a24e5"
+    },
+    {
+      "path": "tools/buck/test_gen_first_party.py",
+      "base_sha256": "275d6d98bc7cec743a73a40162ceb9ba1bbf8096609da7d4d1a8aeab7b81b94b",
+      "successor_sha256": "3cb98ac906549baac05ca7e614a1db600460410451020842b4bc21f859d1f956"
+    }
+  ],
+  "findings": [],
+  "evidence": [
+    "All manifest hashes and four originals match exact2c4ab1fGit blobs. CI adds exactly one Node command first in existing guarded Company preview step; preflight and generator mirrors each add same one line only.",
+    "Existing Linux run default fail-fast behavior retained; no changed step guard, IDs, runner, working directory, browser invocation, evidence checks or artifact ownership.",
+    "Original preflight regression bytes preserved as exact prefix; one appended case parses actual workflow, asserts first/unique command, positive full contract and removal/comment/swallowed-failure/wrong-file rejection.",
+    "No historical test deletion, quarantine or weakening; three reviewed Node machinery leaves are separate adopted file prerequisites."
+  ],
+  "reviewer_execution": {
+    "tests": 0,
+    "builds": 0,
+    "sql": 0,
+    "browser": 0
+  },
+  "repository_edits": 0,
+  "required_evidence": "Root must execute exact additive test RED on old registration, GREEN after four-file composition, full preflight and generator checks plus three actual Node controls. Real browser/SQL acceptance remains separate."
+}

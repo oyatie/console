@@ -1,0 +1,13 @@
+{
+  ".github/workflows/ci.yml": "e408f6b3e8265867932a0fcfc9f7f07d1c5ba8aebcb207499c3740e384af489a",
+  "ADOPTION.md": "462057ba85169c673ac650a646dd3b77cbbac46c9e6771c8e147b3d16e173c95",
+  "historical/.github/workflows/ci.yml": "a253cfe965782e7c8e12c88825401065343ac730e6ae28ef8b92019c9a8afac5",
+  "historical/scripts/check-ci-preflight.mjs": "d8c766c39174ccbcd92de50660503153e9be32983b4c286cadc89394b88566a3",
+  "historical/scripts/check-ci-preflight.test.mjs": "b4bce471112f22b2ba1e224a027fcbfb62f1657e91c5531e487572dd54577327",
+  "historical/tools/buck/test_gen_first_party.py": "275d6d98bc7cec743a73a40162ceb9ba1bbf8096609da7d4d1a8aeab7b81b94b",
+  "registration.patch": "fb3dafc306c277123dd0a7c942688b8991896190f351b14f816629bec1f88a98",
+  "scripts/check-ci-preflight.mjs": "9c89306445ccf618c20481c0da9d6b558e446b9fa914b225dc8ca68eadf6b858",
+  "scripts/check-ci-preflight.test.mjs": "b2d245f185e042ddf9fd5adca0cf4b36edb3982ebe1dfab4a0d3ad699a2a24e5",
+  "source-locks.json": "bc3d3cb3ebb1fca4d25911498b6fc553606e957cf7a28cd5d8f73ad6876f98f1",
+  "tools/buck/test_gen_first_party.py": "3cb98ac906549baac05ca7e614a1db600460410451020842b4bc21f859d1f956"
+}

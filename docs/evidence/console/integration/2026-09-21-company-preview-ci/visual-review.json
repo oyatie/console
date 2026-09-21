@@ -1,0 +1,46 @@
+{
+  "reviewer": "/root/integration_tests",
+  "scope": "Independent visual and interaction critique of retained320px Company invalid-input screenshot plus browser and owner receipts; no source writes, builds, browser or SQL execution.",
+  "evidence": [
+    {
+      "path": "/private/tmp/console-company-invalid-enter-browser-20260921/output/04-company-preview-input-preserved.png",
+      "sha256": "94af0433cfc90bd47ad8d88ba4a9d28681eafb84dc4d3f460aa38e14a2d1264a"
+    },
+    {
+      "path": "/private/tmp/console-company-invalid-enter-browser-20260921/output/result.json",
+      "sha256": "47f86a5bf595be4024da1513c3ecd22fac932a47d928311e74ee3a2006f6baa8"
+    },
+    {
+      "path": "/private/tmp/console-company-invalid-enter-browser-20260921/output/owner-receipt.json",
+      "sha256": "2b4749594a8bb41ef0f309bbaa2cd5cf3b7b98dae2b498b755b9621780d7b864"
+    }
+  ],
+  "decision": "ADOPT scoped form and invalid-Enter preservation interaction; ADAPT feedback and account-recipient clarity before release; no full workflow or release acceptance.",
+  "observed_strengths": [
+    "Screenshot has readable Korean typography, distinct page/section/field headings, one primary full-width Company creation action and account return link. Single-column content fits320px without a page-level horizontal scroll in retained screenshot; browser receipt separately reports reflow_setup_320 true.",
+    "Invalid slug retains a conspicuous blue focus outline. Both required fields remain visible with preserved user content. Long company name scrolls/clips within its normal single-line input, without forcing whole page overflow.",
+    "Account consequences card explains company-information access and limited permission administration and expressly excludes payroll and HR permissions beside the final action.",
+    "Browser result reports both name and slug invalid Enter cases preserving values, URL/history, enabled submit and zero requests; corrected valid input passed validity before each invalid case. Owner receipt confirms two checkpoint acknowledgements and clean shutdown. This supports the bounded local error-correction path."
+  ],
+  "adapt_findings": [
+    {
+      "severity": "usability refinement before release",
+      "observation": "The native validation bubble overlays the slug helper text and gives only a generic pattern-mismatch instruction in this screenshot. The actual field remains focused and editable.",
+      "recommendation": "Keep concise allowed-format guidance and an example available when validation is active; confirm understandable correction feedback in a Korean-configured browser. Preserve the tested native validation and no-request behavior.",
+      "qualification": "The English bubble is browser-provided in the recorded runtime locale; it is not evidence the application authored an English error or that Korean browser localization fails."
+    },
+    {
+      "severity": "recipient clarity before release",
+      "observation": "The consequences card names the authority recipient only as 내 계정. The screenshot provides no recognizable Account cue for a user who operates multiple Accounts. Actual result account UUID matches the form, so this is display clarity rather than evidence of wrong authority.",
+      "recommendation": "When an authorized human-recognizable Account identifier is available, display it beside 내 계정 so the operator can verify who receives the access."
+    }
+  ],
+  "limits": [
+    "One screenshot displays the final invalid slug state; it cannot independently show the complete keyboard sequence, transient name-error state or corrected valid creation. Those observations are attributed to result.json rather than fabricated visual inspection.",
+    "The screenshot height is greater than a phone viewport; ordinary vertical page scrolling is expected. Actual touch ergonomics, assistance and completion time were not measured.",
+    "No representative-user study, Korean IME composition, screen reader,200percent zoom, contrast measurement, Korean-locale native bubble or full accessibility certification was performed.",
+    "No successful Company commit, response-loss recovery, reopen after navigation, independent account switching or permission revocation is accepted by this invalid-Enter leaf.",
+    "Parent reports native browser1passed522filtered; this read-only critique did not execute or independently inspect the full runner log. Full DB census assertion is credited to owning executed leaf, not derivable from compact owner receipt alone.",
+    "No production exposure, overall Company workflow or milestones0–10 completion claim."
+  ]
+}

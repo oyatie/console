@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "verdict": "APPROVE_FINITE_CI_REGISTRATION_ADOPTION",
+  "base_test_commit": "6bb0d4ce213be694492a90c120cdd37b33c6bffb",
+  "source_sha256": {
+    ".github/workflows/ci.yml": "e408f6b3e8265867932a0fcfc9f7f07d1c5ba8aebcb207499c3740e384af489a",
+    "scripts/check-ci-preflight.mjs": "9c89306445ccf618c20481c0da9d6b558e446b9fa914b225dc8ca68eadf6b858",
+    "scripts/check-ci-preflight.test.mjs": "18854ba30937f0dfdb83870018992ba4dc8280e037bca760823fcfc0bb32ae5f",
+    "tools/buck/test_gen_first_party.py": "3cb98ac906549baac05ca7e614a1db600460410451020842b4bc21f859d1f956"
+  },
+  "evidence_verification_path": "/private/tmp/console-mvp-dev-integrate-20260921/docs/evidence/console/integration/2026-09-21-company-preview-ci/verification.json",
+  "evidence_verification_sha256": "cc62e3180d47c69df8107f9d13bcb986c5ebc72d001bd4242781e8b1fac6ed9a",
+  "all_evidence_member_hashes_match": true,
+  "findings": [],
+  "evidence": [
+    "Both modified registration sources match independently approved e0bbf9 packet. Regression file matches independently approved one-string18854b successor; generator mirror matches approved committed counterpart.",
+    "Actual original registration RED is missing first Node command. Intermediate wrong diagnostic failure preserved with independent correction approval; no product gate weakened.",
+    "Inspected focused1/1, full preflight72/72zero skips, generator68/68 and gate pass. Exact logged counts support local CI registration qualification.",
+    "Evidence verification explicitly retains hosted CI/merge, Company current-policy/create/reopen/recovery, visual findings and whole MVP/release outstanding."
+  ],
+  "reviewer_product_execution": 0,
+  "repository_edits": 0,
+  "limits": "Finite local registration and supplied evidence review only. Final commit readback and hosted CI remain separate; no Company/MVP/release/production acceptance. Browser checkpoint2b138c8f reported by root separately and not expanded into this CI review."
+}

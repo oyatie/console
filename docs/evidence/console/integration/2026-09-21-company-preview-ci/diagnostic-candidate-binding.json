@@ -1,0 +1,11 @@
+{
+  "reviewer": "/root/integration_security",
+  "verdict": "APPROVE_EXACT_PRIVATE_EXPECTED_DIAGNOSTIC_CANDIDATE",
+  "candidate": "/private/tmp/console-company-preview-ci-regression-diagnostic-successor-20260921.mjs",
+  "candidate_sha256": "18854ba30937f0dfdb83870018992ba4dc8280e037bca760823fcfc0bb32ae5f",
+  "prior_review": "/private/tmp/console-company-preview-ci-diagnostic-successor-security-review-20260921.json",
+  "prior_review_sha256": "ed9ca286210fb2fe820486cb6d10518805680d2b1f0ceba9feff8a132f004974",
+  "evidence": "Actual private candidate hash equals independently constructed one-string successor hash; no additional source delta. Root reports directly evaluated four mutation variants all yield only expected step28 execution-semantics diagnostic.",
+  "reviewer_execution": 0,
+  "remaining": "Root corrected focused/full preflight runtime results and final commit readback remain separate."
+}

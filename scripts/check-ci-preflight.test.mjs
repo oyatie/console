@@ -2832,7 +2832,7 @@ it("requires Company preview machinery execution in its protected browser step",
     assert.notEqual(mutated, workflow);
     expectFailure(
       mutated,
-      "backend must preserve the locked fail-fast step multiset and failure semantics",
+      "must preserve its exact name, command, condition, and execution semantics",
     );
   }
 });

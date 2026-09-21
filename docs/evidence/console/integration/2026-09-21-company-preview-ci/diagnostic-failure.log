@@ -1,0 +1,28 @@
+✖ requires Company preview machinery execution in its protected browser step (102.934792ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.471292
+
+✖ failing tests:
+
+test at scripts/check-ci-preflight.test.mjs:2816:1
+✖ requires Company preview machinery execution in its protected browser step (102.934792ms)
+  AssertionError [ERR_ASSERTION]: backend proof run step 28 must preserve its exact name, command, condition, and execution semantics
+      at expectFailure (file:///private/tmp/console-mvp-dev-integrate-20260921/scripts/check-ci-preflight.test.mjs:106:10)
+      at TestContext.<anonymous> (file:///private/tmp/console-mvp-dev-integrate-20260921/scripts/check-ci-preflight.test.mjs:2833:5)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1397:25)
+      at Test.start (node:internal/test_runner/test:1257:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
