@@ -623,7 +623,10 @@ mod tests {
         assert_eq!(bundle.key.org_id, OrgId::knl());
         assert_eq!(bundle.key.policy_version, 7);
         assert_eq!(bundle.key.schema_version, ROLE_MANAGE_SCHEMA_VERSION);
-        assert_eq!(bundle.key.cedar_sdk_version, "4.11.2");
+        assert_eq!(
+            bundle.key.cedar_sdk_version,
+            cedar_policy::get_sdk_version().to_string()
+        );
         assert_eq!(bundle.key.cedar_language_version, "4.5");
         assert!(!bundle.key.bundle_digest.is_empty());
     }

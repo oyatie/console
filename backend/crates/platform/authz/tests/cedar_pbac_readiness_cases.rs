@@ -380,7 +380,10 @@ fn assert_must_audit(
             for key in [expected, evaluated] {
                 assert!(!key.bundle_digest.is_empty());
                 assert!(!key.schema_version.is_empty());
-                assert_eq!(key.cedar_sdk_version, "4.11.2");
+                assert_eq!(
+                    key.cedar_sdk_version,
+                    cedar_policy::get_sdk_version().to_string()
+                );
                 assert_eq!(key.cedar_language_version, "4.5");
             }
         }
@@ -420,7 +423,10 @@ fn assert_must_audit(
             );
             let key = audit.bundle_key.as_ref().expect("map bundle key");
             assert!(!key.bundle_digest.is_empty());
-            assert_eq!(key.cedar_sdk_version, "4.11.2");
+            assert_eq!(
+                key.cedar_sdk_version,
+                cedar_policy::get_sdk_version().to_string()
+            );
             assert_eq!(key.cedar_language_version, "4.5");
         }
         "missing_freshness_denies" => {

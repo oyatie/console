@@ -873,6 +873,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         'integration': {
             'tests/cedar_pbac_legacy_only_observe_and_record.rs': 'none',
             'tests/cedar_pbac_readiness_cases.rs': 'none',
+            'tests/cedar_sdk_identity.rs': 'none',
             'tests/policy.rs': 'postgres',
         },
     },

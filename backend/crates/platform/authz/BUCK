@@ -98,6 +98,28 @@ rust_test(
 )
 
 rust_test(
+    name = "console-platform-authz-itest-cedar_sdk_identity",
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", ["tests/cedar_sdk_identity.rs"] + glob(["tests/fixtures/**"])),
+    crate = "cedar_sdk_identity",
+    edition = "2024",
+    crate_root = "backend/crates/platform/authz/tests/cedar_sdk_identity.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/authz"},
+    labels = ["owner.backend.crates.platform.authz", "domain.platform", "test.integration", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//third-party/rust:cedar-policy",
+        "//third-party/rust:hex",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:uuid",
+        ":console-platform-authz",
+    ],
+)
+
+rust_test(
     name = "console-platform-authz-itest-policy",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/authz", ["tests/policy.rs"] + glob(["tests/fixtures/**"]), external = {
         "//backend/crates/platform/db/migrations:tree": "backend/crates/platform/db/migrations",
