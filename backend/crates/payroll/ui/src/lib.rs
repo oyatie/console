@@ -662,6 +662,91 @@ mod ssr {
             .route("/pkg/console_payroll_ui.js", get(pkg_js))
             .route("/pkg/console_payroll_ui_bg.wasm", get(pkg_wasm))
     }
+
+    #[cfg(test)]
+    #[allow(clippy::unwrap_used, clippy::panic)]
+    mod theme_tests {
+        use super::*;
+        use std::future::Future;
+        use std::task::{Context, Poll, Waker};
+
+        fn ready<F: Future>(future: F) -> F::Output {
+            let mut future = std::pin::pin!(future);
+            match future
+                .as_mut()
+                .poll(&mut Context::from_waker(Waker::noop()))
+            {
+                Poll::Ready(value) => value,
+                Poll::Pending => panic!("static CSS response unexpectedly needs asynchronous I/O"),
+            }
+        }
+
+        fn definition<'a>(css: &'a str, property: &str) -> &'a str {
+            let prefix = format!("{property}:");
+            let values: Vec<_> = css
+                .split(['{', '}', ';'])
+                .filter_map(|part| part.trim().strip_prefix(&prefix))
+                .map(str::trim)
+                .collect();
+            assert_eq!(
+                values.len(),
+                1,
+                "theme property {property} must have one definition"
+            );
+            values[0]
+        }
+
+        #[test]
+        fn native_account_asset_and_workspace_share_one_light_theme() {
+            let response = ready(native_account_css()).into_response();
+            assert_eq!(response.status(), axum::http::StatusCode::OK);
+            assert_eq!(
+                response.headers()[header::CONTENT_TYPE],
+                "text/css; charset=utf-8"
+            );
+            assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+            assert_eq!(
+                response.headers()[header::X_CONTENT_TYPE_OPTIONS],
+                "nosniff"
+            );
+            let bytes = ready(axum::body::to_bytes(response.into_body(), 128 * 1024)).unwrap();
+            let account = std::str::from_utf8(&bytes).unwrap();
+            let document = crate::render_shell();
+            let workspace = document
+                .split_once("<style>")
+                .unwrap()
+                .1
+                .split_once("</style>")
+                .unwrap()
+                .0;
+            for property in [
+                "--bg",
+                "--surface",
+                "--ink",
+                "--muted",
+                "--accent",
+                "--focus",
+                "--font-sans",
+            ] {
+                assert_eq!(
+                    definition(account, property),
+                    definition(workspace, property),
+                    "Account and workspace disagree on {property}"
+                );
+            }
+            for css in [account, workspace] {
+                assert!(css.contains("color-scheme:light"));
+                assert!(
+                    !css.contains("@import"),
+                    "theme must not fetch external fonts"
+                );
+            }
+            assert!(
+                !document.contains("/pkg/"),
+                "public shell must remain unhydrated"
+            );
+        }
+    }
 }
 
 #[cfg(feature = "ssr")]
