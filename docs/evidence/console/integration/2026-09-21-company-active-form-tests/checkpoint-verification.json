@@ -1,0 +1,67 @@
+{
+  "base": "2c4ab1f8342bbdd95878014a49336795b4beca49",
+  "source_files": {
+    "backend/app/tests/auth_rest/native_company_browser.rs": "60b0b771c65d31dad7b6dd014dffe4d9a8976edeb04c2c926596a027a7d5febc",
+    "backend/app/tests/auth_rest/native_company_setup.rs": "6a0d7c50cb532dfe8d21b61fd58339a445846def9a5af65639dbb5ad4b0bf7be",
+    "tools/browser/company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
+    "tools/browser/company-preview.test.cjs": "70b02c5351e72a72716ea7c31b69e1b63404d7eed9a87b04a8c78272f764308a",
+    "tools/browser/prepare_native_browser.sh": "0551794d1dabe3a5101eb6880a3423c1e86a5c432ea74b6fa82e6615f4fc5704",
+    "tools/browser/test_prepare_native_browser.py": "91abf7534c8a5e2b756fe2d0b8f18c323e023473fdaf9e5c60ded50e1e3fe657"
+  },
+  "proofs": {
+    "ssr_before": {
+      "executed": 1,
+      "failed": 1,
+      "ignored": 0,
+      "filtered": 516,
+      "boundary": "original obsolete no-form assertion1044 after actual native Account fixture"
+    },
+    "ssr_after": {
+      "executed": 1,
+      "passed": 1,
+      "ignored": 0,
+      "filtered": 516
+    },
+    "node_machinery": {
+      "executed": 3,
+      "passed": 3,
+      "skipped": 0
+    },
+    "installer": {
+      "executed": 6,
+      "passed": 6,
+      "fixture": "official pinned Linux archive; real hashing/extraction; mocked download/npm/deps; no Linux browser execution"
+    },
+    "browser": {
+      "executed": 1,
+      "passed": 1,
+      "ignored": 0,
+      "filtered": 522,
+      "runtime": "native Buck2 app-auth-rest-browser; pinned macOS arm64 Chromium153; disposable PostgreSQL18.4",
+      "contract": "company-invalid-enter-v2",
+      "observed": "real Account registration/designation; enabled form; corrected-valid and two invalid Enter cases; all requests/effects absent during invalid submissions; exact parent full-row census and PID cleanup",
+      "limitations": "synthetic passkey/test-only terms; no Company create/reopen, human accessibility or production qualification"
+    }
+  },
+  "artifact_sha256": {
+    "ssr-red.log": "594a97a0954ce125f80a9f2577cfc45ef4208ccf2c63e9ce0bfed9bfbaba226e",
+    "ssr-green.log": "3e566fc2853a0a8d15a419d2de71b7b1372478ff1d94f07687684a5a9a406b0c",
+    "node-green.log": "ab0f5f2ade8a965b113a646a24c4e6f87c1aa228cae8d32f52356170c643fdbf",
+    "installer-green.log": "d31f9e8c1420d3ed4eafd85e45fb16cf61b11fd1cee196873cae52b52041db01",
+    "lane.json": "c26b7f0b26e211d5b829ec2d7ee7d0ff43b1f62525de9bafa0e56b5ba63ed436",
+    "admission.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "browser-01-public.png": "e4909c50f7b64bb9549d99d1e6ea3c02ece50c38a017b3a456928eab2b14f2cb",
+    "browser-green.log": "af93415322b2e04c83b0e23659880f484879e0e2b485cd9a219c10fc00d10cbf",
+    "browser-owner-receipt.json": "2b4749594a8bb41ef0f309bbaa2cd5cf3b7b98dae2b498b755b9621780d7b864",
+    "browser-02-terms.png": "0488386a4be2be2d2e9e7c7cecac65b627dd5ac11ed79249cf75eb23a63e3a18",
+    "browser-03-account-enrolled.png": "13ef9c966527b3341a96701f174e10ed0ac9b49f398db8474e2e49eb3a99bbb2",
+    "browser-result.json": "47f86a5bf595be4024da1513c3ecd22fac932a47d928311e74ee3a2006f6baa8",
+    "browser-04-company-preview-input-preserved.png": "94af0433cfc90bd47ad8d88ba4a9d28681eafb84dc4d3f460aa38e14a2d1264a",
+    "independent-adoption-review.json": "bbefafdedf229b6e632975f10895bf5312c90e14304be7dd561b34f2a7ac36db"
+  },
+  "remaining": [
+    "three Node tests CI registration",
+    "full Company create/reopen/recovery and current policy",
+    "connected MVP acceptance"
+  ]
+}

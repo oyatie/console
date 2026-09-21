@@ -1,0 +1,35 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T05:40:33.552-04:00] Build ID: 9d2d1404-cb0a-4408-b3f4-4523949926ce
+[2026-09-21T05:40:33.554-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T05:40:40.554-04:00] Waiting on root//third-party/rust:indexmap-2 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 809 other actions
+[2026-09-21T05:40:47.953-04:00] Waiting on root//third-party/rust:phf_shared-0.11 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 370 other actions
+[2026-09-21T05:40:55.055-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:41:02.155-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:41:09.155-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:41:16.356-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:41:23.455-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T05:41:30.555-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic])
+[2026-09-21T05:41:30.821-04:00] Cache hits: 0%
+[2026-09-21T05:41:30.821-04:00] Commands: 2 (cached: 0, remote: 0, local: 2)
+[2026-09-21T05:41:30.821-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T05:41:30.842-04:00] Build ID: c5355098-192c-4ea5-83d6-3fe8e6c57f39
+[2026-09-21T05:41:30.844-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T05:41:37.944-04:00] Waiting on root//third-party/rust:convert_case-0.11 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 977 other actions
+[2026-09-21T05:41:46.644-04:00] Waiting on root//third-party/rust:same-file-1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 279 other actions
+[2026-09-21T05:41:54.143-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T05:42:01.145-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T05:42:05.503-04:00] ✓ Pass: root//tools/buck:app-auth-rest-browser-pg (13.6s)
+[2026-09-21T05:42:05.503-04:00] ---- STDOUT ----
+[2026-09-21T05:42:05.503-04:00]
+[2026-09-21T05:42:05.503-04:00] running 1 test
+[2026-09-21T05:42:05.503-04:00] test account_browser::deployment_operator_designation::company_setup::native_company_real_browser_preview_preserves_enter_without_commands ... ok
+[2026-09-21T05:42:05.503-04:00]
+[2026-09-21T05:42:05.503-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 522 filtered out; finished in 11.05s
+[2026-09-21T05:42:05.503-04:00]
+[2026-09-21T05:42:05.503-04:00]
+[2026-09-21T05:42:05.503-04:00] ---- STDERR ----
+[2026-09-21T05:42:05.503-04:00]
+[2026-09-21T05:42:05.520-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

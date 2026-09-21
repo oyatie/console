@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_security",
+  "verdict": "APPROVE_FINITE_INVALID_ENTER_V2_TEST_SUCCESSOR",
+  "packet": "/private/tmp/console-company-invalid-enter-tests-20260921",
+  "manifest_sha256": "857c3e74a49a270a9e712510a6fa91de2d19a7091dbb7732b185c26bb436c7dd",
+  "driver_sha256": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
+  "findings": [],
+  "evidence": [
+    "All packet hashes and12current source locks match; five historical copies match exact original hashes. Each supplied patch equals independently computed full old/new source diff.",
+    "SSR helper changes only obsolete positive form-free contract into one actualAccount-bound form/submit; all current denial/413/island/role/root-secret/navigation and state-census checks remain. Rust leaf counts unchanged2browser/15setup.",
+    "Browser requires enabled actualAccount-bound form, correct valid inputs before each whitespace-name and malformed-slug Enter, actual invalidity/nonempty validation message, unchanged inputs/history/URL, zero per-case all-context HTTP requests and unchanged parent complete public census.",
+    "Raw form properties cannot be replaced by ready flag alone. Three additive Node machinery leaves cover missing/duplicated evidence, malformed form facts, and real EventEmitter mutation observation; source-only review, no execution.",
+    "Stable protected leaf/environment/output paths retained while result and owner receipt explicitly versioned; old evidence not relabeled. Installer and installer test change only preview driver hash. Successful Company driver and CI source remain unchanged."
+  ],
+  "required_before_acceptance": [
+    "Root must execute new3Node machinery tests and existing installer checks, establish functional owner/database/startup prerequisites, then record actual old assertion failure and new browser/SSR results.",
+    "Successful Company and lost-response/denial leaves remain required; valid checkValidity plus enabled submit is readiness evidence, not successful dispatch or recovery proof.",
+    "Compose bounded browser patch with separately accepted lost-response append; do not overwrite intervening tests using whole snapshot.",
+    "Actual Korean IME, human usability, screen reader and complete accessibility/production qualification remain separate."
+  ],
+  "reviewer_product_execution": 0,
+  "repository_edits": 0,
+  "limits": "Approval of semantic test successor only; no executable RED, Company workflow or release acceptance."
+}

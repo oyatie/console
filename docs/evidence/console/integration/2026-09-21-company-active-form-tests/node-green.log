@@ -1,0 +1,11 @@
+✔ v2 requires both invalid Enter cases and complete unchanged observations (1.376583ms)
+✔ a forged ready flag cannot cover missing disabled foreign or wrong form controls (0.113834ms)
+✔ actual request observer rejects Company commands duplicates and omitted registration effects (0.265375ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 38.82425

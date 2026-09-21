@@ -1,0 +1,37 @@
+[
+  {
+    "lane": "company-active-form-validation-successor-20260921",
+    "owner": "/root",
+    "base": "2c4ab1f8342bbdd95878014a49336795b4beca49",
+    "immutable_target": "857c3e74a49a270a9e712510a6fa91de2d19a7091dbb7732b185c26bb436c7dd",
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:$PATH DOCKER_CONTEXT=colima-console-release-20260919 CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::deployment_operator_designation::company_setup::entry_read::company_entry_preview_metadata_cookie_and_method_contract_is_current bash tools/buck/test_needs_postgres.sh --num-threads=1 //tools/buck:app-auth-rest-pg",
+    "allow": [
+      "backend/app/tests/auth_rest/native_company_setup.rs",
+      "backend/app/tests/auth_rest/native_company_browser.rs",
+      "tools/browser/company-preview.cjs",
+      "tools/browser/company-preview.test.cjs",
+      "tools/browser/prepare_native_browser.sh",
+      "tools/browser/test_prepare_native_browser.py",
+      "docs/evidence/console/integration/2026-09-21-company-active-form-tests"
+    ],
+    "guide": "Apply only independently approved semantic successor packet857c3e; preserve five original sources byte-for-byte and all denial/happy-path/lost-response assertions. Real native SSR old no-form assertion must fail on functioning fixture; same exact leaf must pass after successor. Execute real browser with exact SHA and fresh output. New Node controls registration requires independent additive review.",
+    "premortem": "active form accepted despite disabled submit, invalid input mutates owner, or historical evidence relabeled",
+    "blast_radius": "one Company input-validation browser leaf and shared positive SSR helper; no owner behavior change",
+    "detection": "exact Account binding, native validity, complete request and database census, three corruption controls and separate happy/lost-response leaves",
+    "rollback": "restore exact preimages only before accepted successor; preserve all evidence",
+    "stop_conditions": [
+      "prerequisite failure before asserted boundary",
+      "unreviewed semantic changes",
+      "historical source byte drift",
+      "denial regression"
+    ],
+    "reviews": [
+      "/root",
+      "/root/integration_security"
+    ],
+    "remaining_holds": [
+      "full Company creation and recovery",
+      "full connected MVP and release"
+    ]
+  }
+]

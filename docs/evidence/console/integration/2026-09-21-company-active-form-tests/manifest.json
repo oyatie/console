@@ -1,0 +1,34 @@
+{
+  "base": "2c4ab1f8342bbdd95878014a49336795b4beca49",
+  "test_contract": "company-invalid-enter-v2",
+  "approved_packet_sha256": "857c3e74a49a270a9e712510a6fa91de2d19a7091dbb7732b185c26bb436c7dd",
+  "historical_sources": {
+    "company-preview.cjs.txt": {
+      "original_path": "tools/browser/company-preview.cjs",
+      "sha256": "7e52a48f2e851457dba7d55fa0874fc10dc516506bdd5701b086f2fac4ee0ce6"
+    },
+    "prepare_native_browser.sh.txt": {
+      "original_path": "tools/browser/prepare_native_browser.sh",
+      "sha256": "46e4c2210c73a4bc89f53292b8dd05bc5729a127b48df1208c86be762c0d8cde"
+    },
+    "test_prepare_native_browser.py.txt": {
+      "original_path": "tools/browser/test_prepare_native_browser.py",
+      "sha256": "0ad67f6629c93c58dddbf6efe4dcaddf9504cf034c00c37e8952396d5ba0d327"
+    },
+    "native_company_browser.rs.txt": {
+      "original_path": "backend/app/tests/auth_rest/native_company_browser.rs",
+      "sha256": "5741d4a033be256f3f274726e96379b48ef674e9603d5ab5291beca0afb52018"
+    },
+    "native_company_setup.rs.txt": {
+      "original_path": "backend/app/tests/auth_rest/native_company_setup.rs",
+      "sha256": "46d132ab76777cfdab8db769a2c0ce615ca965ffc59b159a402981d4b9b1072a"
+    }
+  },
+  "decision": "Replace obsolete no-form positive tests with independently reviewed enabled-form/invalid-Enter tests; preserve denial and other browser leaves. Historical sources below retain every original byte.",
+  "independent_review_sha256": "78618a0ed5921cd898baf943e26e91034810cdb4d343c3bfab1f4a175c0e9f28",
+  "remaining": [
+    "CI registration of new machinery controls",
+    "Full Company creation and recovery",
+    "Connected MVP acceptance"
+  ]
+}

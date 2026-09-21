@@ -330,7 +330,7 @@ async fn native_company_real_browser_create_reopen_and_workspace(pool: PgPool) {
     );
 }
 
-// Stable protected leaf name retained; v2 validates invalid Enter on the active form.
+// Included inside company_setup only with test-browser. Existing verified browser helpers remain unchanged.
 #[sqlx::test(migrations = false)]
 async fn native_company_real_browser_preview_preserves_enter_without_commands(pool: PgPool) {
     use futures::FutureExt;
@@ -527,7 +527,7 @@ async fn native_company_real_browser_preview_preserves_enter_without_commands(po
         assert_eq!(browser_checkpoint(&observed, "PREVIEW_PRESERVED"), account);
         assert!(
             before_company == all_rows(&pool).await,
-            "invalid Company input Enter made durable effects"
+            "preview typing/Enter made durable effects"
         );
         assert_no_company_identity(&pool, account).await;
         checkpoint_receipts.push("PREVIEW_PRESERVED");
@@ -542,13 +542,6 @@ async fn native_company_real_browser_preview_preserves_enter_without_commands(po
             final_event["result_path"].as_str(),
             output.join("result.json").to_str()
         );
-        let browser_result: Value =
-            serde_json::from_slice(&std::fs::read(output.join("result.json")).unwrap()).unwrap();
-        assert_eq!(
-            browser_result["contract_revision"],
-            "company-invalid-enter-v2"
-        );
-        assert_eq!(browser_result["account_id"], json!(account));
     })
     .catch_unwind()
     .await;
@@ -581,7 +574,7 @@ async fn native_company_real_browser_preview_preserves_enter_without_commands(po
     let browser_exit_confirmed = browser_seen_alive && browser_exit_observation == Some(false);
     let source_unchanged = std::fs::read(&driver).is_ok_and(|bytes| bytes == driver_bytes);
     let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_INPUT_VALIDATION_DATABASE_CHECKPOINTS","contract_revision":"company-invalid-enter-v2","checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/invalid Company input Enter; complete no-effect census; successful Company commands and recovery retain separate browser leaves; no release acceptance; no human usability/WCAG/production exposure"});
+    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_PREVIEW_DATABASE_CHECKPOINTS","checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/preview only; no Company command or release acceptance; no human usability/WCAG/production exposure"});
     if output.is_dir() {
         std::fs::write(
             output.join("owner-receipt.json"),

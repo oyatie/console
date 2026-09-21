@@ -1016,12 +1016,10 @@ pub(crate) mod company_setup {
             );
         }
 
-        fn preview(response: &Response, account: Uuid) {
+        fn preview(response: &Response) {
             let html = native_entry_html(response, StatusCode::OK);
             for required in [
                 "data-company-setup",
-                "data-company-enrollment",
-                "type=\"submit\"",
                 "name=\"name\"",
                 "name=\"slug\"",
                 "회사 이름",
@@ -1035,6 +1033,8 @@ pub(crate) mod company_setup {
                 );
             }
             for forbidden in [
+                "<form",
+                "type=\"submit\"",
                 "data-native-action=",
                 "<leptos-island",
                 "/_ui",
@@ -1043,12 +1043,9 @@ pub(crate) mod company_setup {
             ] {
                 assert!(
                     !html.contains(forbidden),
-                    "Company form must not invent authority or ship unnecessary islands"
+                    "unreleased preview must not submit or invent authority"
                 );
             }
-            assert_eq!(html.matches("<form").count(), 1);
-            assert_eq!(html.matches("type=\"submit\"").count(), 1);
-            assert!(html.contains(&format!("data-account-id=\"{account}\"")));
             native_entry_no_business_navigation(html);
         }
 
@@ -1118,14 +1115,10 @@ pub(crate) mod company_setup {
                 preview(
                     &native_entry_get(&app, ENTRY, &cookies, site, "navigate", "document", &[])
                         .await,
-                    account.account,
                 );
                 assert!(before == all_rows(&pool).await);
             }
-            preview(
-                &native_entry_get(&app, ENTRY, &cookies, "", "", "", &[]).await,
-                account.account,
-            );
+            preview(&native_entry_get(&app, ENTRY, &cookies, "", "", "", &[]).await);
             for (site, mode, dest, extra, expected) in [
                 (
                     "cross-site",
@@ -1179,7 +1172,7 @@ pub(crate) mod company_setup {
                 let presented = Cookies(BTreeMap::from([(name.to_owned(), value)]));
                 let response = document(&app, ENTRY, &presented).await;
                 if name == ACCESS {
-                    preview(&response, account.account);
+                    preview(&response);
                 } else {
                     denied(&response, StatusCode::UNAUTHORIZED, Some(account.account));
                 }
@@ -1277,7 +1270,7 @@ pub(crate) mod company_setup {
                 .await
                 .unwrap();
             let before = all_rows(&pool).await;
-            preview(&document(&app, ENTRY, &cookies).await, account.account);
+            preview(&document(&app, ENTRY, &cookies).await);
             auth.close().await;
             assert!(auth.is_closed());
             for presented in [&cookies, &Cookies::default()] {
@@ -1298,7 +1291,7 @@ pub(crate) mod company_setup {
             let recovered = logout_auth_pool(&pool).await;
             let state = state_with_key(&pool, app._artifacts.root.clone(), &key).await;
             app.service = build_router(state.with_auth_database(recovered.clone()));
-            preview(&document(&app, ENTRY, &cookies).await, account.account);
+            preview(&document(&app, ENTRY, &cookies).await);
             assert!(
                 before == all_rows(&pool).await,
                 "actual transport replacement changed state"
@@ -1328,7 +1321,7 @@ pub(crate) mod company_setup {
                     .await
                     .unwrap();
             assert!(original);
-            preview(&document(&app, ENTRY, &cookies).await, account.account);
+            preview(&document(&app, ENTRY, &cookies).await);
             // Fixture-only real permission failure, with exact restoration below.
             sqlx::query("REVOKE EXECUTE ON FUNCTION public.account_company_setup_eligibility_v1(uuid) FROM console_auth_rt").execute(&pool).await.unwrap();
             let failed = sqlx::query_scalar::<_, bool>(
@@ -1444,7 +1437,7 @@ pub(crate) mod company_setup {
                 .await
                 .unwrap()
             );
-            preview(&document(&app, ENTRY, &cookies).await, account.account);
+            preview(&document(&app, ENTRY, &cookies).await);
             assert!(
                 after_proof == all_rows(&pool).await,
                 "restored eligibility document changed the validated post-CSRF state"
@@ -1459,7 +1452,7 @@ pub(crate) mod company_setup {
         ) {
             let (app, account, cookies, startup, _) = designated(&pool).await;
             owner_ready(&pool).await;
-            preview(&document(&app, ENTRY, &cookies).await, account.account);
+            preview(&document(&app, ENTRY, &cookies).await);
             assert_eq!(sqlx::query("UPDATE public.account_security SET context_generation=2,revision=revision+1,updated_at=clock_timestamp() WHERE account_id=$1 AND context_generation=1").bind(account.account).execute(&pool).await.unwrap().rows_affected(), 1);
             let before = all_rows(&pool).await;
             let auth = logout_auth_pool(&pool).await;
@@ -1484,7 +1477,7 @@ pub(crate) mod company_setup {
                         && html.contains("href=\"/account/companies/new\"")
                 );
             }
-            preview(&document(&app, ENTRY, &cookies).await, account.account);
+            preview(&document(&app, ENTRY, &cookies).await);
             assert_no_company_identity(&pool, account.account).await;
             assert!(
                 before == all_rows(&pool).await,
