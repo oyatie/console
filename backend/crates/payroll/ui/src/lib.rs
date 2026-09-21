@@ -14,48 +14,118 @@ const PKG_WASM: &str = "/pkg/console_payroll_ui_bg.wasm";
 /// shell forbids it. Inlining also costs the authorized screens no extra
 /// round trip. No `>` in any selector: `<style>` content is emitted raw, and
 /// descendant selectors keep the sheet independent of that.
-const STYLE: &str = "\
-:root{color-scheme:light dark;--bg:#f5f6f8;--surface:#fff;--line:#e4e7ec;--ink:#111418;\
---muted:#5c6773;--accent:#2563c7;--chip:#eef1f5;--chip-ink:#41505f;--flag:#fdeceb;--flag-ink:#9a2b25}\
-@media (prefers-color-scheme:dark){:root{--bg:#0e1115;--surface:#161a20;--line:#252b33;\
---ink:#e7ebf0;--muted:#98a3af;--accent:#6ea8fe;--chip:#212831;--chip-ink:#c3ccd6;\
---flag:#3b1d1c;--flag-ink:#f0a6a1}}\
-*{box-sizing:border-box}\
-[hidden]{display:none!important}\
-body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;\
-font:15px/1.5 -apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}\
-a{color:inherit;text-decoration:none}\
-header.app{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:22px;\
-height:56px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--line)}\
-.brand{font-weight:650;letter-spacing:-.01em;font-size:15px}\
-header.app nav{display:flex;gap:2px}\
-header.app nav a{padding:6px 12px;border-radius:8px;color:var(--muted);font-weight:550}\
-header.app nav a:hover{background:var(--chip);color:var(--ink)}\
-header.app nav a[aria-current]{background:var(--chip);color:var(--ink)}\
-main{max-width:1020px;margin:0 auto;padding:26px 24px 72px}\
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;\
-margin:0 0 20px;overflow:hidden}\
-.panel h2{margin:0;padding:13px 18px;font-size:12px;font-weight:650;letter-spacing:.05em;\
-text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}\
-.toolbar{display:flex;align-items:center;gap:10px;padding:11px 18px;border-bottom:1px solid var(--line)}\
-.fl{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}\
-select{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);\
-color:var(--ink);font:inherit;font-size:14px}\
-select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}\
-.row{display:flex;align-items:baseline;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line)}\
-.row:last-child{border-bottom:0}\
-.row:hover{background:var(--bg)}\
-.row .name{font-weight:550;flex:0 0 auto}\
-.row .meta{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;\
-color:var(--muted);font-size:13px}\
-.row .rev{flex:0 0 auto;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}\
-.badge{flex:0 0 auto;margin-left:auto;padding:3px 9px;border-radius:999px;background:var(--chip);\
-color:var(--chip-ink);font-size:12px;font-weight:600;letter-spacing:.02em}\
-.badge[data-status*='BLOCK']{background:var(--flag);color:var(--flag-ink)}\
-.state{margin:0;padding:34px 18px;text-align:center;color:var(--muted)}\
-@media (max-width:640px){header.app{gap:12px;padding:0 14px}main{padding:18px 14px 56px}\
-.row{flex-wrap:wrap;gap:6px 12px}.row .meta{flex:1 0 100%;order:3}}\
-";
+const STYLE: &str = r#"
+:root{color-scheme:light;--bg:#f5f5f2;--surface:#fff;--line:#e1e3df;--ink:#202923;
+--muted:#59645e;--accent:#815000;--accent-bg:#fff2cb;--chip:#edf1ed;--chip-ink:#405448;
+--flag:#fff0eb;--flag-ink:#963c23}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+a{color:var(--accent);text-underline-offset:3px}
+a:hover{text-decoration-thickness:2px}
+a,button,input,select,summary{touch-action:manipulation}
+:focus-visible{outline:3px solid #2364aa;outline-offset:4px}
+.workspace{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100dvh}
+.skip-link{position:fixed;left:16px;top:12px;z-index:20;padding:12px 18px;background:var(--ink);
+color:#fff;border-radius:8px;transform:translateY(-160%)}
+.skip-link:focus{transform:none}
+header.app{position:sticky;top:0;align-self:start;height:100dvh;padding:28px 16px;
+background:var(--surface);border-right:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;padding:0 12px 30px;color:var(--ink);
+font-size:20px;font-weight:750;letter-spacing:-.04em;text-decoration:none}
+.brand-mark{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;
+background:#eeb94b;color:#302714;font-size:20px;font-weight:800}
+.nav-group{margin:12px 12px 8px;color:var(--muted);font-size:12px;font-weight:650;letter-spacing:.04em}
+header.app nav{display:flex;flex-direction:column;gap:4px}
+header.app nav a{display:flex;align-items:center;gap:12px;min-height:46px;padding:10px 12px;
+border-radius:8px;color:var(--muted);font-weight:550;text-decoration:none}
+header.app nav a:hover{background:var(--bg);color:var(--ink)}
+header.app nav a[aria-current]{background:var(--accent-bg);color:#62410b;font-weight:700}
+.nav-symbol{font-size:18px;width:22px;text-align:center}
+main{min-width:0;width:100%;max-width:1440px;padding:36px 40px 80px;margin:0 auto}
+.page-heading{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.page-eyebrow{margin:0 0 6px;font-size:12px;font-weight:650;letter-spacing:.08em;color:var(--muted)}
+h1{margin:0;font-size:28px;line-height:1.35;letter-spacing:-.04em;font-weight:700}
+.page-description{margin:10px 0 0;color:var(--muted);max-width:65ch;word-break:keep-all;overflow-wrap:anywhere}
+h2,h3,p,dd,a,summary{overflow-wrap:anywhere}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 0 24px;min-width:0}
+.panel h2{margin:0;padding:18px 22px;font-size:17px;line-height:1.45;font-weight:650;border-bottom:1px solid var(--line)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}
+.fl{font-size:14px;font-weight:600;color:var(--muted)}
+select,input,textarea,button{font:inherit}
+select{min-height:44px;padding:8px 12px;border:1px solid #9da89f;border-radius:8px;background:var(--surface);color:var(--ink);max-width:100%}
+.row{display:flex;align-items:baseline;gap:14px;padding:17px 22px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+.row:last-child{border-bottom:0}
+.row:hover{background:#fafbf8}
+.row .name{font-weight:600;min-width:0}
+.row .meta{flex:1 1 16ch;min-width:0;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.row .rev{flex:none;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.badge{flex:none;max-width:100%;margin-left:auto;padding:4px 10px;border-radius:6px;background:var(--chip);
+color:var(--chip-ink);font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.badge[data-status*='BLOCK']{background:var(--flag);color:var(--flag-ink)}
+.state{margin:0;padding:32px 22px;color:var(--muted)}
+.people-introduction{margin:0 0 20px}.people-introduction h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}
+.people-introduction p{margin:0;color:var(--muted);max-width:70ch}
+.people-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+.people-section h3{margin:0;padding:20px 22px 8px;font-size:17px;line-height:1.4}
+.people-count{margin:0;padding:0 22px 18px;color:var(--muted);font-size:13px}
+.person-inspector,.employment-inspector{min-width:0;border-top:1px solid var(--line);scroll-margin-top:24px}
+.person-summary,.employment-summary{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+min-height:76px;padding:16px 20px;cursor:pointer;list-style:none}
+.person-summary::-webkit-details-marker,.employment-summary::-webkit-details-marker{display:none}
+.person-summary:hover,.employment-summary:hover{background:#fafbf8}
+.person-summary::after,.employment-summary::after{content:'⌄';font-size:18px;color:var(--muted)}
+.person-inspector[open] .person-summary::after,.employment-inspector[open] .employment-summary::after{content:'⌃'}
+.person-inspector[open],.employment-inspector[open]{background:#fcfdfb}
+.person-glyph{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--accent-bg);color:#75521b;font-size:16px;font-weight:650}
+.person-heading,.employment-heading{display:flex;flex:1 1 110px;min-width:0;flex-direction:column;gap:3px}
+.person-secondary,.employment-heading span{font-size:14px;color:var(--muted)}
+.person-revision{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.person-disclosure{font-size:12px;color:var(--muted)}
+.person-detail,.employment-detail{padding:4px 22px 22px}
+.people-facts{display:grid;grid-template-columns:minmax(80px,.65fr) minmax(0,1.5fr);column-gap:16px;row-gap:12px;margin:12px 0 20px;font-size:14px}
+.people-facts dt{color:var(--muted)}.people-facts dd{margin:0;overflow-wrap:anywhere;min-width:0}
+.people-identity{font-variant-numeric:tabular-nums;font-size:13px}
+.person-relationships{margin:18px 0;padding-top:16px;border-top:1px solid var(--line)}
+.person-relationships h4{margin:0 0 8px;font-size:14px}.person-relationships ul{margin:0;padding-left:20px}
+.person-relationships li{padding:6px 0}
+.people-source,.people-retry{display:inline-block;padding:10px 0;min-height:44px;font-size:14px;font-weight:600}
+.people-retry{margin:0 22px 18px}
+@media(max-width:1150px){.people-layout{grid-template-columns:minmax(0,1fr);gap:0}}
+@media(max-width:680px){.person-summary,.employment-summary{padding:16px}.person-detail,.employment-detail{padding:0 16px 16px}
+.people-section h3{padding:18px 16px 8px}.people-count{padding:0 16px 16px}.people-facts{grid-template-columns:minmax(70px,.7fr) minmax(0,1.3fr);gap:10px}}
+.workflow-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.workflow-main,.workflow-guide{min-width:0}.workflow-guide .panel{background:#fdfefa}
+.section-intro{margin:0;padding:18px 22px;color:var(--muted);font-size:14px}
+.record-list{margin:0;padding:0 22px 0 42px}
+.record-card{padding:20px 0;border-bottom:1px solid var(--line)}.record-card:last-child{border-bottom:0}
+.record-card::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+.record-title{margin:0 0 12px;font-size:16px;line-height:1.5}.record-title a{color:var(--ink)}
+.record-meta{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px 16px;margin:0;font-size:14px}
+.record-meta dt{color:var(--muted)}.record-meta dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.record-id,.record-revision{font-variant-numeric:tabular-nums}
+.recovery-link{display:inline-block;min-height:44px;margin:0 22px 18px;padding:10px 0;font-weight:600;font-size:14px}
+.hierarchy-note{margin:8px 22px 0;font-size:16px}.record-card .hierarchy-note{margin:0 0 14px;font-size:14px;color:var(--muted)}
+.conflict-note{margin:0 0 12px;padding:8px 12px;border-left:3px solid #b4681d;background:var(--flag);color:var(--flag-ink);font-size:14px}
+.guidance-list{margin:0;padding:10px 22px 22px 42px;color:var(--muted);font-size:14px}.guidance-list li{padding:6px 0}
+.process-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px 28px;margin:0;padding:4px 22px 22px 42px;font-size:14px;font-weight:600}
+.process-guide li{padding:10px 8px}.process-guide li::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+.review-notice{margin:0 22px;padding:14px;border:1px solid #e5cc92;border-radius:8px;background:var(--accent-bg);color:#62410b;font-size:14px;font-weight:600}
+.person-detail,.employment-detail{scroll-margin-top:24px}
+@media(max-width:1150px){.workflow-layout{grid-template-columns:minmax(0,1fr);gap:0}.workflow-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 24px}}
+@media(max-width:680px){.section-intro{padding:16px}.record-list{padding:0 16px 0 36px}.record-meta{grid-template-columns:72px minmax(0,1fr);gap:8px 12px}
+.guidance-list{padding:8px 16px 20px 36px}.process-guide{padding:0 16px 20px 36px}.review-notice{margin:0 16px}.workflow-guide{display:block}}
+@media(min-width:1600px){main{padding-top:48px}}
+@media(max-width:1000px){.workspace{grid-template-columns:188px minmax(0,1fr)}main{padding:28px 24px 64px}}
+@media(max-width:680px){.workspace{display:block}header.app{position:static;height:auto;padding:16px;border-right:0;border-bottom:1px solid var(--line)}
+.brand{padding:0 4px 12px;font-size:18px}.brand-mark{width:28px;height:28px}.nav-group{margin:0 4px 6px}
+header.app nav{flex-direction:row;flex-wrap:wrap;gap:4px}header.app nav a{padding:8px 12px;min-height:44px}
+main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px}h1{font-size:25px}
+.panel h2{padding:16px}.toolbar{padding:12px 16px}.row{flex-wrap:wrap;gap:8px 12px;padding:16px}
+.row .meta{flex:1 0 100%;order:3}.badge{margin-left:0}.state{padding:24px 16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+"#;
 
 const ISLAND_BOOTSTRAP: &str = concat!(
     include_str!("island_script.js"),
@@ -422,23 +492,21 @@ fn Employments(employments: Vec<EmploymentView>) -> impl IntoView {
 fn ShippingNav(has_org: bool, has_hr: bool, has_payroll: bool, focus: UiScreen) -> impl IntoView {
     view! {
         <header class="app">
-            <a class="brand" href="/">"Console"</a>
-            <nav>
-                {has_org
-                    .then(|| {
-                        let current = matches!(focus, UiScreen::Organization).then_some("page");
-                        view! { <a href="/organization" aria-current=current>"조직"</a> }
-                    })}
-                {has_hr
-                    .then(|| {
-                        let current = matches!(focus, UiScreen::Hr).then_some("page");
-                        view! { <a href="/hr" aria-current=current>"인사"</a> }
-                    })}
-                {has_payroll
-                    .then(|| {
-                        let current = matches!(focus, UiScreen::Payroll).then_some("page");
-                        view! { <a href="/payroll" aria-current=current>"급여"</a> }
-                    })}
+            <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>
+            <p class="nav-group">"사람과 조직"</p>
+            <nav aria-label="주요 탐색">
+                {has_hr.then(|| {
+                    let current = matches!(focus, UiScreen::Hr).then_some("page");
+                    view! { <a href="/hr" aria-current=current><span class="nav-symbol" aria-hidden="true">"◎"</span>"사람과 고용"</a> }
+                })}
+                {has_org.then(|| {
+                    let current = matches!(focus, UiScreen::Organization).then_some("page");
+                    view! { <a href="/organization" aria-current=current><span class="nav-symbol" aria-hidden="true">"⊞"</span>"조직"</a> }
+                })}
+                {has_payroll.then(|| {
+                    let current = matches!(focus, UiScreen::Payroll).then_some("page");
+                    view! { <a href="/payroll" aria-current=current><span class="nav-symbol" aria-hidden="true">"▤"</span>"급여"</a> }
+                })}
             </nav>
         </header>
     }
@@ -598,12 +666,27 @@ fn ShippingShell(
     focus: UiScreen,
 ) -> impl IntoView {
     let hydrate_payroll = matches!(&runs, ScreenSection::Rows(rows) if !rows.is_empty());
+    let (subject, description) = match focus {
+        UiScreen::Home => (
+            "업무 공간",
+            "현재 접근할 수 있는 사람, 조직, 급여 기록을 확인하고 업무를 이어가세요.",
+        ),
+        UiScreen::Organization => (
+            "조직",
+            "법인과 조직 구조를 확인하세요. 서로 연결된 조직의 관계와 기록을 함께 살펴볼 수 있습니다.",
+        ),
+        UiScreen::Hr => (
+            "사람과 고용",
+            "사람의 기록과 연결된 고용 이력을 함께 확인하세요.",
+        ),
+        UiScreen::Payroll => ("급여", "급여 기간별 실행 기록과 검토할 자료를 확인하세요."),
+    };
     view! {
         <html lang="ko">
             <head>
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <title>"Console"</title>
+                <title>{format!("{subject} · Console")}</title>
                 <style>{STYLE}</style>
                 {hydrate_payroll
                     .then(|| {
@@ -625,14 +708,20 @@ fn ShippingShell(
                         }
                     })}
             </head>
-            <body>
+            <body class="workspace">
+                <a class="skip-link" href="#main-content">"본문으로 건너뛰기"</a>
                 <ShippingNav
                     has_org=nav_org
                     has_hr=nav_hr
                     has_payroll=nav_payroll
                     focus=focus
                 />
-                <main>
+                <main id="main-content" tabindex="-1">
+                    <div class="page-heading">
+                        <p class="page-eyebrow">"CONSOLE WORKSPACE"</p>
+                        <h1>{subject}</h1>
+                        <p class="page-description">{description}</p>
+                    </div>
                     {org_body(companies, org_units)}
                     {hr_body(people, employments)}
                     {payroll_body(runs)}
