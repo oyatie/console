@@ -195,16 +195,21 @@ async function main(backendPort,out){
   const sent=response.request().postDataJSON();requireFact(Object.keys(sent).sort().join(',')==='administrative_account_id,command_id,group_id,name,slug'&&nonnil(sent.command_id)&&sent.group_id===null&&sent.name===companyName&&sent.slug===slug&&sent.administrative_account_id===account,'COMPANY_WIRE');
   const body=await response.json();requireFact(Object.keys(body).sort().join(',')==='administrative_account_id,group_id,org_id,original_command_id,outcome,receipt_id,replayed,result_path'&&body.outcome==='COMMITTED'&&body.original_command_id===sent.command_id&&body.administrative_account_id===account&&body.replayed===false&&[body.org_id,body.group_id,body.receipt_id].every(nonnil)&&body.result_path===`/account/companies/requests/${sent.command_id}`,'COMPANY_WIRE');
   result.company_wire=true;result.command_id=sent.command_id;result.org_id=body.org_id;
+  const committedPanel=page.locator('[data-company-outcome="committed"]');
+  const openCompany=committedPanel.getByRole('link',{name:'업무 공간 열기',exact:true});
+  const completionHeading=committedPanel.getByRole('heading',{name:'생성 완료',exact:true,level:1});
+  const companyHeading=committedPanel.getByRole('heading',{name:companyName,exact:true,level:2});
+  async function committedCompanyResult(){return await committedPanel.count()===1&&await completionHeading.count()===1&&await companyHeading.count()===1&&await openCompany.count()===1&&await completionHeading.isVisible()&&await companyHeading.isVisible()&&await openCompany.isVisible()&&await openCompany.getAttribute('href')===`/companies/${body.org_id}`;}
   stage='company_result';await page.waitForURL(origin+body.result_path);await page.getByText('생성 완료',{exact:true}).waitFor();
-  result.company_result=await page.getByRole('link',{name:companyName,exact:true}).getAttribute('href')===`/companies/${body.org_id}`;requireFact(result.company_result,'COMPANY_RESULT');
+  result.company_result=await committedCompanyResult();requireFact(result.company_result,'COMPANY_RESULT');
   result.reflow_result_320=await reflow320();requireFact(result.reflow_result_320,'REFLOW_320');await secretFree();await capture('04-company-created.png');
   emit({kind:'CHECKPOINT',phase:'COMPANY_COMMITTED',account_id:account,command_id:sent.command_id,org_id:body.org_id,group_id:body.group_id,receipt_id:body.receipt_id});requireFact(validCheckpointCommand(await receive(),'COMPANY_COMMITTED'),'OWNER_PROTOCOL');result.checkpoints.push('COMPANY_COMMITTED');
-  stage='company_reopen';await page.reload({waitUntil:'domcontentloaded'});result.company_reopen=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1;requireFact(result.company_reopen,'COMPANY_REOPEN');
-  await page.getByRole('link',{name:companyName,exact:true}).click();await page.waitForURL(origin+`/companies/${body.org_id}`);
+  stage='company_reopen';await page.reload({waitUntil:'domcontentloaded'});result.company_reopen=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1&&await committedCompanyResult();requireFact(result.company_reopen,'COMPANY_REOPEN');
+  await openCompany.click();await page.waitForURL(origin+`/companies/${body.org_id}`);
   result.company_workspace=await page.getByRole('heading',{name:companyName,exact:true}).count()===1&&await page.getByRole('link',{name:'권한 관리',exact:true}).count()===1;requireFact(result.company_workspace,'COMPANY_WORKSPACE');
   result.reflow_company_320=await reflow320();requireFact(result.reflow_company_320,'REFLOW_320');await secretFree();await capture('05-company-workspace.png');
   // A fresh real document read of the stable result URL models reopening; no back-forward cache is accepted as server evidence.
-  await page.goto(origin+body.result_path,{waitUntil:'domcontentloaded'});result.company_back=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1;requireFact(result.company_back,'COMPANY_REOPEN');
+  await page.goto(origin+body.result_path,{waitUntil:'domcontentloaded'});result.company_back=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1&&await committedCompanyResult();requireFact(result.company_back,'COMPANY_REOPEN');
   result.business_input_not_stored=await page.evaluate(({name,slug})=>!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(name)&&!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(slug),{name:companyName,slug});requireFact(result.business_input_not_stored,'BUSINESS_STORAGE');
   await checkpoint('COMPANY_REOPENED',account);
   requireFact(!result.relay_failure&&!result.tls_client_error,'TLS_RELAY_FAILED');requireFact(result.external_requests===0,'EXTERNAL_REQUEST');requireFact(completeObservations(result),'OBSERVATION_INCOMPLETE');
