@@ -232,19 +232,33 @@ mod tests {
         existing: RunRecord,
         transitions: Mutex<Vec<RunTransition>>,
         commits: Mutex<Vec<NodeStepCommit>>,
+        // Deterministic history: INSERT commits, then another dispatcher wins
+        // activation (true) or graph completion (false) before this call resumes.
+        inserted_race: Option<(bool, ErrorKind)>,
+        inserted: Mutex<Vec<Uuid>>,
+        visible: bool,
     }
 
     impl WorkflowRuntimePort for ConflictPort {
         fn insert_run<'a>(
             &'a self,
-            _run: NewRun,
+            run: NewRun,
             _audit: console_kernel_core::AuditEvent,
         ) -> PortFuture<'a, ()> {
-            Box::pin(async { Err(KernelError::conflict("duplicate idempotency key")) })
+            Box::pin(async move {
+                if self.inserted_race.is_some() {
+                    self.inserted.lock().unwrap().push(run.id);
+                    Ok(())
+                } else {
+                    Err(KernelError::conflict("duplicate idempotency key"))
+                }
+            })
         }
 
         fn load_run<'a>(&'a self, _org: OrgId, run_id: Uuid) -> PortFuture<'a, Option<RunRecord>> {
-            Box::pin(async move { Ok((run_id == self.existing.id).then(|| self.existing.clone())) })
+            Box::pin(async move {
+                Ok((self.visible && run_id == self.existing.id).then(|| self.existing.clone()))
+            })
         }
 
         fn load_run_by_idempotency_key<'a>(
@@ -253,8 +267,10 @@ mod tests {
             idempotency_key: String,
         ) -> PortFuture<'a, Option<RunRecord>> {
             Box::pin(async move {
-                Ok((org == self.org && idempotency_key == self.idempotency_key)
-                    .then(|| self.existing.clone()))
+                Ok(
+                    (self.visible && org == self.org && idempotency_key == self.idempotency_key)
+                        .then(|| self.existing.clone()),
+                )
             })
         }
 
@@ -266,6 +282,9 @@ mod tests {
         ) -> PortFuture<'a, ()> {
             Box::pin(async move {
                 self.transitions.lock().unwrap().push(transition);
+                if let Some((true, kind)) = self.inserted_race {
+                    return Err(KernelError::new(kind, "activation lost status race"));
+                }
                 Ok(())
             })
         }
@@ -277,6 +296,9 @@ mod tests {
         ) -> PortFuture<'a, ()> {
             Box::pin(async move {
                 self.commits.lock().unwrap().push(commit);
+                if let Some((false, kind)) = self.inserted_race {
+                    return Err(KernelError::new(kind, "graph completion lost status race"));
+                }
                 Ok(())
             })
         }
@@ -323,6 +345,9 @@ mod tests {
             },
             transitions: Mutex::new(Vec::new()),
             commits: Mutex::new(Vec::new()),
+            inserted_race: None,
+            inserted: Mutex::new(Vec::new()),
+            visible: true,
         }
     }
 
@@ -431,5 +456,177 @@ mod tests {
         assert_eq!(err.kind, ErrorKind::Conflict);
         assert!(port.transitions.lock().unwrap().is_empty());
         assert!(port.commits.lock().unwrap().is_empty());
+    }
+
+    fn inserted_race(status: RunStatus, activation: bool) -> (ConflictPort, StartRunRequest) {
+        let mut port = conflict_port(status);
+        let mut request = request(&port);
+        request.run_id = port.existing.id;
+        port.inserted_race = Some((activation, ErrorKind::Conflict));
+        (port, request)
+    }
+
+    fn assert_inserted_race_reports_one_start(activation: bool) {
+        for status in [RunStatus::Waiting, RunStatus::Succeeded] {
+            let (port, request) = inserted_race(status, activation);
+            let run_id = request.run_id;
+            let result = block_on_ready(start_bound_run(
+                &port,
+                request,
+                &definition(),
+                &audit_context(),
+            ))
+            .unwrap();
+            assert_eq!(
+                result,
+                TriggeredStart::Started {
+                    run_id,
+                    run_status: status
+                }
+            );
+            assert_eq!(*port.inserted.lock().unwrap(), vec![run_id]);
+            assert_eq!(port.transitions.lock().unwrap().len(), 1);
+            assert_eq!(port.commits.lock().unwrap().len(), usize::from(!activation));
+        }
+    }
+
+    #[test]
+    fn inserted_run_activation_conflict_reports_the_durable_start() {
+        assert_inserted_race_reports_one_start(true);
+    }
+
+    #[test]
+    fn inserted_run_drive_conflict_reports_the_durable_start() {
+        assert_inserted_race_reports_one_start(false);
+    }
+
+    #[test]
+    fn inserted_run_activation_conflict_with_running_state_drives_once() {
+        let (port, request) = inserted_race(RunStatus::Running, true);
+        let run_id = request.run_id;
+        let result = block_on_ready(start_bound_run(
+            &port,
+            request,
+            &definition(),
+            &audit_context(),
+        ))
+        .unwrap();
+        assert_eq!(
+            result,
+            TriggeredStart::Started {
+                run_id,
+                run_status: RunStatus::Succeeded,
+            }
+        );
+        assert_eq!(*port.inserted.lock().unwrap(), vec![run_id]);
+        assert_eq!(port.transitions.lock().unwrap().len(), 1);
+        assert_eq!(port.commits.lock().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn duplicate_same_run_id_is_still_already_started() {
+        for status in [RunStatus::Waiting, RunStatus::Succeeded] {
+            let port = conflict_port(status);
+            let mut request = request(&port);
+            request.run_id = port.existing.id;
+            let result = block_on_ready(start_bound_run(
+                &port,
+                request,
+                &definition(),
+                &audit_context(),
+            ))
+            .unwrap();
+            assert_eq!(result, TriggeredStart::AlreadyStarted);
+            assert!(port.inserted.lock().unwrap().is_empty());
+            assert!(port.transitions.lock().unwrap().is_empty());
+            assert!(port.commits.lock().unwrap().is_empty());
+        }
+    }
+
+    #[test]
+    fn inserted_run_conflict_reconciliation_rejects_missing_or_foreign_state() {
+        for activation in [true, false] {
+            for corruption in ["missing", "run", "org", "definition", "version"] {
+                let (mut port, request) = inserted_race(RunStatus::Succeeded, activation);
+                match corruption {
+                    "missing" => port.visible = false,
+                    "run" => port.existing.id = Uuid::new_v4(),
+                    "org" => port.existing.org_id = OrgId::from_uuid(Uuid::new_v4()),
+                    "definition" => port.existing.definition_id = Uuid::new_v4(),
+                    "version" => port.existing.definition_version += 1,
+                    _ => unreachable!(),
+                }
+                let err = block_on_ready(start_bound_run(
+                    &port,
+                    request,
+                    &definition(),
+                    &audit_context(),
+                ))
+                .expect_err("a fresh INSERT cannot reconcile to missing or foreign state");
+                assert_eq!(err.kind, ErrorKind::Conflict, "{corruption}");
+                assert_eq!(port.inserted.lock().unwrap().len(), 1);
+                assert_eq!(port.transitions.lock().unwrap().len(), 1);
+                assert_eq!(port.commits.lock().unwrap().len(), usize::from(!activation));
+            }
+        }
+    }
+
+    #[test]
+    fn inserted_run_conflict_reconciliation_does_not_claim_unconfirmed_completion() {
+        for activation in [true, false] {
+            let statuses = if activation {
+                vec![
+                    RunStatus::Starting,
+                    RunStatus::Failed,
+                    RunStatus::Cancelled,
+                    RunStatus::DeadLettered,
+                ]
+            } else {
+                vec![
+                    RunStatus::Starting,
+                    RunStatus::Running,
+                    RunStatus::Failed,
+                    RunStatus::Cancelled,
+                    RunStatus::DeadLettered,
+                ]
+            };
+            for status in statuses {
+                let (port, request) = inserted_race(status, activation);
+                let err = block_on_ready(start_bound_run(
+                    &port,
+                    request,
+                    &definition(),
+                    &audit_context(),
+                ))
+                .expect_err("only confirmed Waiting or Succeeded resolves a completion conflict");
+                assert_eq!(err.kind, ErrorKind::Conflict);
+                assert_eq!(port.inserted.lock().unwrap().len(), 1);
+                assert_eq!(port.transitions.lock().unwrap().len(), 1);
+                assert_eq!(port.commits.lock().unwrap().len(), usize::from(!activation));
+            }
+        }
+    }
+
+    #[test]
+    fn inserted_run_nonconflict_errors_are_not_hidden_by_a_completed_row() {
+        for activation in [true, false] {
+            for kind in [
+                ErrorKind::Internal,
+                ErrorKind::Forbidden,
+                ErrorKind::Validation,
+            ] {
+                let (mut port, request) = inserted_race(RunStatus::Succeeded, activation);
+                port.inserted_race = Some((activation, kind));
+                let err = block_on_ready(start_bound_run(
+                    &port,
+                    request,
+                    &definition(),
+                    &audit_context(),
+                ))
+                .expect_err("only a status Conflict can enter race reconciliation");
+                assert_eq!(err.kind, kind);
+                assert_eq!(port.inserted.lock().unwrap().len(), 1);
+            }
+        }
     }
 }
