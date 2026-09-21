@@ -1,0 +1,297 @@
+//! Reviewed renderer-bound behavior candidates; fixtures are tests only.
+use super::{
+    CompanyView, OrgUnitView, RunSummary, ScreenSection, ShippingScreens, UiScreen, render_screens,
+    render_shell,
+};
+
+fn unit(id: &str, name: &str, parent: &str) -> OrgUnitView {
+    OrgUnitView {
+        id: id.into(),
+        name: name.into(),
+        parent_id: parent.into(),
+        version: "7".into(),
+    }
+}
+
+fn company() -> CompanyView {
+    CompanyView {
+        org_id: "00000000-0000-0000-0000-000000000001".into(),
+        legal_name: "한빛 제조 주식회사".into(),
+        reg_no: "123-45-67890".into(),
+        version: "4".into(),
+    }
+}
+
+fn run(status: &str) -> RunSummary {
+    RunSummary {
+        id: "00000000-0000-0000-0000-000000000040".into(),
+        period_start: "2026-08-01".into(),
+        period_end: "2026-08-31".into(),
+        source_label: "8월 출퇴근 기록 · 검토본".into(),
+        status: status.into(),
+        calculation_enabled: false,
+        created_at: "2026-09-01T03:00:00Z".into(),
+        updated_at: "2026-09-03T04:30:00Z".into(),
+    }
+}
+
+fn payroll(status: &str) -> String {
+    render_screens(
+        &ShippingScreens {
+            runs: ScreenSection::Rows(vec![run(status)]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Payroll,
+    )
+}
+
+fn failure_section<'a>(html: &'a str, label: &str) -> &'a str {
+    let marker = format!("aria-label=\"{label}\"");
+    let start = html.find(&marker).expect("labeled failed resource section");
+    html[start..]
+        .split_once("</section>")
+        .expect("closed failed resource section")
+        .0
+}
+
+fn assert_once(html: &str, value: &str) {
+    assert_eq!(html.matches(value).count(), 1, "{value}: {html}");
+}
+
+#[test]
+fn organization_orders_children_under_known_parents_without_invented_company_links() {
+    let parent = "00000000-0000-0000-0000-000000000010";
+    let child = "00000000-0000-0000-0000-000000000011";
+    let html = render_screens(
+        &ShippingScreens {
+            companies: ScreenSection::Rows(vec![company()]),
+            org_units: ScreenSection::Rows(vec![
+                unit(child, "생산 운영팀", parent),
+                unit(parent, "운영본부", ""),
+            ]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert!(html.contains("aria-label=\"조직 구조\""), "{html}");
+    assert!(html.contains("한빛 제조 주식회사"), "{html}");
+    assert!(html.contains("조직 변경 시 확인할 사항"), "{html}");
+    let parent_position = html
+        .find(&format!("data-org-unit-id=\"{parent}\""))
+        .unwrap();
+    let child_position = html.find(&format!("data-org-unit-id=\"{child}\"")).unwrap();
+    assert!(
+        parent_position < child_position,
+        "child lost hierarchy: {html}"
+    );
+    assert_once(&html, &format!("data-org-unit-id=\"{parent}\""));
+    assert_once(&html, &format!("data-org-unit-id=\"{child}\""));
+    assert!(html.contains("data-parent-id=\"00000000-0000-0000-0000-000000000010\""));
+    assert!(html.contains("data-version=\"7\""));
+    assert!(!html.contains("/pkg/") && !html.contains("<leptos-island"));
+    assert!(!html.contains("data-company-id=") && !html.contains("data-effective-date="));
+}
+
+#[test]
+fn organization_preserves_partial_read_failure_and_offers_real_reload() {
+    let html = render_screens(
+        &ShippingScreens {
+            companies: ScreenSection::Rows(vec![company()]),
+            org_units: ScreenSection::Failure,
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert!(html.contains("한빛 제조 주식회사"), "{html}");
+    assert!(html.contains("조직 목록을 불러오지 못했습니다"), "{html}");
+    let failed = failure_section(&html, "조직 목록 불러오기 오류");
+    assert!(failed.contains("다시 불러오기") && failed.contains("href=\"/organization\""));
+    let reverse = render_screens(
+        &ShippingScreens {
+            companies: ScreenSection::Failure,
+            org_units: ScreenSection::Rows(vec![unit(
+                "00000000-0000-0000-0000-000000000010",
+                "운영본부",
+                "",
+            )]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert!(reverse.contains("운영본부") && reverse.contains("법인 목록을 불러오지 못했습니다"));
+    let company_failure = failure_section(&reverse, "법인 목록 불러오기 오류");
+    assert!(
+        company_failure.contains("다시 불러오기")
+            && company_failure.contains("href=\"/organization\"")
+    );
+    assert!(
+        !html.contains("표시할 조직이 없습니다"),
+        "failure became empty: {html}"
+    );
+    let denied_units = render_screens(
+        &ShippingScreens {
+            companies: ScreenSection::Rows(vec![company()]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert!(!denied_units.contains("조직 목록을 불러오지 못했습니다"));
+    assert!(!denied_units.contains("aria-label=\"조직 구조\""));
+}
+
+#[test]
+fn organization_retains_orphans_and_cycles_once_without_fabricated_ancestors() {
+    let html = render_screens(
+        &ShippingScreens {
+            org_units: ScreenSection::Rows(vec![
+                unit(
+                    "00000000-0000-0000-0000-000000000020",
+                    "연구 조직",
+                    "00000000-0000-0000-0000-000000000021",
+                ),
+                unit(
+                    "00000000-0000-0000-0000-000000000021",
+                    "지원 조직",
+                    "00000000-0000-0000-0000-000000000020",
+                ),
+                unit(
+                    "00000000-0000-0000-0000-000000000022",
+                    "독립 조직",
+                    "00000000-0000-0000-0000-000000000099",
+                ),
+            ]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert!(html.contains("상위 조직 확인 필요"), "{html}");
+    for id in [
+        "00000000-0000-0000-0000-000000000020",
+        "00000000-0000-0000-0000-000000000021",
+        "00000000-0000-0000-0000-000000000022",
+    ] {
+        assert_once(&html, &format!("data-org-unit-id=\"{id}\""));
+    }
+    assert!(!html.contains("data-org-unit-id=\"00000000-0000-0000-0000-000000000099\""));
+    assert!(!html.contains("href=\"/api/v1/org-units/00000000-0000-0000-0000-000000000099\""));
+    assert!(!html.contains("<button") && !html.contains("<form"));
+}
+
+#[test]
+fn payroll_explains_period_review_evidence_and_payment_boundary_without_fake_decisions() {
+    let html = payroll("BLOCKED_LEGAL_GATE");
+    assert!(html.contains("aria-label=\"급여 처리 순서\""), "{html}");
+    for label in [
+        "원천 확인",
+        "계산",
+        "예외 검토",
+        "독립 검토",
+        "명세서·지급 지시",
+        "지급 대사",
+    ] {
+        assert!(html.contains(label), "missing {label}: {html}");
+    }
+    assert!(
+        html.contains("검토 자료") && html.contains("검토 전 확인"),
+        "{html}"
+    );
+    assert!(html.contains("2026-08-01") && html.contains("2026-08-31"));
+    assert!(html.contains("8월 출퇴근 기록 · 검토본"));
+    assert!(
+        html.contains("승인은 지급 완료를 의미하지 않습니다"),
+        "{html}"
+    );
+    assert!(!html.contains("<button") && !html.contains("<form"));
+    assert!(!html.contains("자동 이체") && !html.contains("₩"));
+    assert!(
+        html.contains("data-run-status-filter"),
+        "existing working filter lost: {html}"
+    );
+    assert!(html.contains("data-status=\"BLOCKED_LEGAL_GATE\""));
+}
+
+#[test]
+fn payroll_preserves_one_record_representation_inside_its_working_filter() {
+    let html = payroll("APPROVED");
+    assert_once(
+        &html,
+        "data-run-id=\"00000000-0000-0000-0000-000000000040\"",
+    );
+    assert_once(&html, "data-run-status-filter");
+    assert!(html.contains("승인은 지급 완료를 의미하지 않습니다"));
+    assert!(!html.contains("data-settlement-status=\"paid\""));
+    assert!(!html.contains("<button") && !html.contains("<form"));
+}
+
+#[test]
+fn payroll_empty_failure_and_denied_remain_distinct_with_no_unavailable_actions() {
+    let render = |runs| {
+        render_screens(
+            &ShippingScreens {
+                runs,
+                ..ShippingScreens::default()
+            },
+            UiScreen::Payroll,
+        )
+    };
+    let empty = render(ScreenSection::Empty);
+    let failure = render(ScreenSection::Failure);
+    assert!(empty.contains("표시할 급여 이력이 없습니다"));
+    assert!(failure.contains("목록을 불러오지 못했습니다"));
+    let failed = failure_section(&failure, "급여 목록 불러오기 오류");
+    assert!(failed.contains("다시 불러오기") && failed.contains("href=\"/payroll\""));
+    assert!(!failure.contains("표시할 급여 이력이 없습니다"));
+    assert!(!empty.contains("<button") && !failure.contains("<button"));
+    assert!(!empty.contains("/pkg/") && !failure.contains("/pkg/"));
+    assert_eq!(render(ScreenSection::Omitted), render_shell());
+}
+
+#[test]
+fn organization_duplicate_identity_is_a_conflict_and_deep_chains_remain_bounded() {
+    let duplicate = "00000000-0000-0000-0000-000000000055";
+    let html = render_screens(
+        &ShippingScreens {
+            org_units: ScreenSection::Rows(vec![
+                unit(duplicate, "서로 다른 원본 가", ""),
+                unit(duplicate, "서로 다른 원본 나", ""),
+            ]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert!(html.contains("중복 식별자 확인 필요"));
+    assert!(html.contains("서로 다른 원본 가") && html.contains("서로 다른 원본 나"));
+    assert!(
+        !html.contains(&format!("href=\"/api/v1/org-units/{duplicate}\"")),
+        "ambiguous identity cannot masquerade as a clean object"
+    );
+    let id = |n: usize| format!("00000000-0000-0000-0000-{n:012}");
+    let units = (1..=4096)
+        .rev()
+        .map(|n| {
+            unit(
+                &id(n),
+                &format!("조직 {n}"),
+                &if n == 1 { String::new() } else { id(n - 1) },
+            )
+        })
+        .collect();
+    let deep = render_screens(
+        &ShippingScreens {
+            org_units: ScreenSection::Rows(units),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Organization,
+    );
+    assert_eq!(deep.matches("data-org-unit-id=").count(), 4096);
+    let first = deep
+        .find(&format!("data-org-unit-id=\"{}\"", id(1)))
+        .unwrap();
+    let last = deep
+        .find(&format!("data-org-unit-id=\"{}\"", id(4096)))
+        .unwrap();
+    assert!(
+        first < last,
+        "deep hierarchy must finish and preserve order"
+    );
+}

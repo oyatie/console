@@ -1775,3 +1775,7 @@ mod people_tests;
 #[cfg(all(test, feature = "ssr"))]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod workspace_tests;
+
+#[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod workflow_presentation_tests;
