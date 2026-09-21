@@ -439,4 +439,18 @@ mod tests {
             Err(CipherError::Decrypt)
         ));
     }
+    #[test]
+    fn ciphertext_is_not_plaintext_and_aes_v2_format_is_explicit() {
+        let c = cipher();
+        let secret = b"another-pw";
+        let sealed = c.encrypt(secret, aad()).unwrap();
+        assert_ne!(sealed.ciphertext, secret);
+        assert_eq!(sealed.nonce.len(), 12);
+        assert_eq!(sealed.dek_nonce.len(), 12);
+        assert_eq!(sealed.key_version, CURRENT_KEY_VERSION);
+        assert_eq!(sealed.key_version, 1);
+        // One format byte, 32 encrypted DEK bytes and a 16-byte GCM tag.
+        assert_eq!(sealed.dek_wrapped.len(), 1 + KEY_LEN + 16);
+        assert_eq!(sealed.dek_wrapped[0], 2);
+    }
 }
