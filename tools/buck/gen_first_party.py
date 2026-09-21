@@ -190,6 +190,9 @@ RESOURCE_CONFIG = {
         # consumer are one reviewed pair.
         "exports_openapi_tree": True,
     },
+    "console-payroll-application": {
+        "srcs": ["Cargo.toml"],
+    },
     "console-intelligence-application": {
         "srcs": ["Cargo.toml"],
     },
