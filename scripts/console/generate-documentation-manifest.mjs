@@ -125,6 +125,7 @@ function git(args) {
     encoding: "utf8",
     env: gitEnvironment,
     stdio: ["ignore", "pipe", "pipe"],
+    maxBuffer: 16 * 1024 * 1024,
   });
 }
 
