@@ -1,0 +1,57 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-20T21:20:21.423-04:00] Build ID: 6271aab9-7ff0-4bd0-adfc-6f189cce9d3c
+[2026-09-20T21:20:21.425-04:00] File changed (since mergebase): root//docs/specs/foundation-gates.md
+[2026-09-20T21:20:21.425-04:00] File changed (since mergebase): root//docs/specs/review-fix-merge-governance.md
+[2026-09-20T21:20:21.425-04:00] File changed (since mergebase): root//docs/CI-GATES.md
+[2026-09-20T21:20:21.425-04:00] 130 additional file change events (since mergebase)
+[2026-09-20T21:20:21.425-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T21:20:28.520-04:00] Waiting on root//third-party/rust:_pin-project-internal-1 (prelude//platforms:default#11a256c53bf8083e) -- action (write MPPL/__pin_project_internal-link_linker_args.txt), and 725 other actions
+[2026-09-20T21:20:35.620-04:00] Waiting on root//third-party/rust:percent-encoding-2 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 639 other actions
+[2026-09-20T21:20:43.119-04:00] Waiting on root//third-party/rust:tracing-serde-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPL/tracing_serde-link-diag.args), and 332 other actions
+[2026-09-20T21:20:50.320-04:00] Waiting on root//backend/crates/platform/auth-rest:console-platform-auth-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 3 other actions
+[2026-09-20T21:20:57.420-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-20T21:21:04.519-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-20T21:21:11.520-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T21:21:18.620-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T21:21:25.720-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T21:21:32.820-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-20T21:21:34.347-04:00] Cache hits: 0%
+[2026-09-20T21:21:34.347-04:00] Commands: 8 (cached: 0, remote: 0, local: 8)
+[2026-09-20T21:21:34.347-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-20T21:21:34.381-04:00] Build ID: 21309f4b-8baa-4d8c-ba4a-f6f0a8b5c925
+[2026-09-20T21:21:34.386-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-20T21:21:41.483-04:00] Waiting on root//third-party/rust:tokio-1.53.1.crate (prelude//platforms:default#11a256c53bf8083e) -- action (write tokio-1.53.1.crate_unpack.sh), and 697 other actions
+[2026-09-20T21:21:48.683-04:00] Waiting on root//third-party/rust:crc-catalog-2 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 574 other actions
+[2026-09-20T21:21:56.383-04:00] Waiting on root//third-party/rust:tokio-rustls-0.26 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/tokio_rustls-metadata-full-diag.args), and 41 other actions
+[2026-09-20T21:22:03.383-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-20T21:22:08.032-04:00] ✗ Fail: root//tools/buck:app-auth-rest-pg (10.7s)
+[2026-09-20T21:22:08.032-04:00] ---- STDOUT ----
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] running 1 test
+[2026-09-20T21:22:08.032-04:00] test account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials ... FAILED
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] failures:
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] ---- account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials stdout ----
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] thread 'account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials' (72458809) panicked at backend/app/backend/app/tests/auth_rest.rs:4105:13:
+[2026-09-20T21:22:08.032-04:00] assertion `left == right` failed: BW31 HTTP contract not satisfied
+[2026-09-20T21:22:08.032-04:00]   left: 404
+[2026-09-20T21:22:08.032-04:00]  right: 201
+[2026-09-20T21:22:08.032-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] failures:
+[2026-09-20T21:22:08.032-04:00]     account_browser::deployment_operator_designation::company_setup::company_setup_commits_once_reopens_and_preserves_account_credentials
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 516 filtered out; finished in 8.06s
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.032-04:00] ---- STDERR ----
+[2026-09-20T21:22:08.032-04:00]
+[2026-09-20T21:22:08.060-04:00] Network: Up: 0B  Down: 0B
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//tools/buck:app-auth-rest-pg

@@ -1,0 +1,27 @@
+{
+  "kind": "immutable-component-evidence",
+  "implementation_commit": "fd267d6ed7e83871825eeef1a3e39fba0164b1f0",
+  "status": "Codec component verified locally; enclosing Company enrollment lane remains RED.",
+  "files": {
+    "console-legacy-topology-codec-final-verification-20260920.json": "c8d6e1a994966b25a41f440c9d21b96c748cbaaa61b789f923a9225d8983f1b9",
+    "console-legacy-topology-codec-final-security-review-20260920.json": "7551f5bf54dbc6f93f0eed3b77bb4896734798060129136e4db7039031e7e7a1",
+    "console-legacy-topology-codec-tests-security-review-20260920.json": "5c005b0b46540a6981ed66e2bb8b903feb6bfc3c8b4981a5aa5c358a3125e791",
+    "console-legacy-topology-codec-implementation-reference-review-20260920.json": "2d717caba2344aeaecae169fa84b4a60fe96b4b8348d34e7cc86337037c9116a",
+    "console-legacy-topology-codec-ci-test-reference-review-20260920.json": "a5cb5fe24e82c89a92f29f74cd475e2a377f942d7351a59567940d00e3a87774",
+    "console-legacy-topology-codec-ci-implementation-reference-review-20260920.json": "45f116d3c140a739c89115a1069a395767744ecf7d0018a4d298f594d6f08849",
+    "console-legacy-topology-codec-exact-artifact-test-20260920.log": "89aa6f1a448d896de34430875628d9b5aace49e4f0c0f32d196d228064f96443",
+    "console-legacy-topology-codec-native-unit-final-20260920.log": "d7568c172b6e1d035fa72713bf86d9b932eb35cae8d30d07e0f391807cd6b813",
+    "console-legacy-topology-codec-clippy-final-20260920.log": "ee9c7df87786750ee00dc128c253909f05b5a37ed6d1b9b0608e2fdea721edbe",
+    "console-legacy-topology-codec-format-final-20260920.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "console-legacy-topology-codec-generator-tests-staged-20260920.log": "3562ea47e1344486def76da75a80a9442fa28c0e4673d171b21756533e5533c7",
+    "console-legacy-topology-codec-ci-tests-final-20260920.log": "5943f983e6a3b787ec901866421cd38004e78d4d1fa2e9c7f23c59dfc4961d3a",
+    "console-legacy-topology-codec-gates-final-20260920.log": "7572c6e32603a0a8b3474aa273809d2171e6edd8789f170462ac3759feb303b3",
+    "console-legacy-topology-codec-enclosing-lane-20260920.json": "e8733bb333a51a0e601532340599f987ffc152521352407b9524ef3fd91a5ab4",
+    "console-legacy-topology-codec-enclosing-admit-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-native-company-legacy-topology-codec-enclosing-red-20260920.log": "e3466d08a1b58578758f9fa02ed15b600b562c105236f277862a244d646dbe65"
+  },
+  "limits": [
+    "Local component evidence; not protected dev merge, MVP completion, production qualification or exposure authority.",
+    "Original transient paths identify capture provenance; archived members are byte-exact copies."
+  ]
+}

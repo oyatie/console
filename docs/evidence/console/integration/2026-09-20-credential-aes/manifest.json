@@ -1,0 +1,40 @@
+{
+  "kind": "immutable-component-evidence",
+  "implementation_commit": "e92c7b7acad09241884bec45be80ef528083911f",
+  "status": "AES component source/integration accepted locally; production rollout and fleet key budget remain required.",
+  "files": {
+    "console-credential-aes-admit-20260920.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-credential-aes-application-native-20260920.log": "c5c6322d2d9cdada8e0803a9ef71490aeee5197ecfda9b73d50d84fe09811109",
+    "console-credential-aes-ci-final-20260920.log": "e0b18292fb494ab3f8eafe13bff430433f76863e0affbbd8d61297504e7b0d7b",
+    "console-credential-aes-ci-implementation-security-review-20260920.json": "3debceb1e385fcba1336ae3e917cd24e0138676d94b71aaf42476626a6922dbc",
+    "console-credential-aes-ci-owner-red-20260920.log": "bc83a1f7345956cd6b06c9633b5ba5dc96d8307f7c13407da4294907b6d9b625",
+    "console-credential-aes-ci-red-20260920.log": "d94e4e6c9f2913b1257edd939b275e77f403e23f038bc90aa5a1389762c972e0",
+    "console-credential-aes-ci-tests-security-review-20260920.json": "5e0afdfa5cc791174a8f365dd8d3079f5ea79b1613cf68cd2ec2e153347d3318",
+    "console-credential-aes-clippy-20260920.log": "31a5f9064d34389daa9e6839713b36f0173297515154f5a84536eafac0ca331c",
+    "console-credential-aes-design-reference-review-20260920.json": "d80dafa9e54d93a43642ba9be890b364360778c1dabb8cf5959149a2fca63888",
+    "console-credential-aes-exact-artifact-test-20260920.log": "04d16cf0b239fca30cc6085961c56f82cbd8bd91d476f4e7377e2df3c4107b8e",
+    "console-credential-aes-final-security-review-20260920.json": "c5ab5633d9eb2b398de4fb890cf3c6022f9466abaf55262bb136c8e284a70b78",
+    "console-credential-aes-final-verification-20260920.json": "672eddd92c56c69bb1e5c68a52ad603a0480c810dbc58cd29dbf0ddb59bef1a1",
+    "console-credential-aes-format-final-20260920.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "console-credential-aes-gates-final-20260920.log": "7dec59f4822b900624ed17b353122c3ccf85fb90e1538672c2b8c5be1691f8dc",
+    "console-credential-aes-generator-tests-final-20260920.log": "6bcfabdaae80b8aff0a036a336af9e2a9ec20ad60169627a3dc777e1aa176f82",
+    "console-credential-aes-implementation-security-review-20260920.json": "627180f03e0a7067aeda93c89e7f8a30276341fad5957d88840f6279e16bffde",
+    "console-credential-aes-lane-20260920.json": "3229fb99d2bfd414ce5c29b56be2c5259b9955daabfe4b4839c2c6a544e03f8c",
+    "console-credential-aes-migration-integration-tests-review-20260920.json": "1efc039ee706e435bb15e8effcae5a8f289086b145b66be2246a6cbdae853a02",
+    "console-credential-aes-migration-security-design-20260920.json": "ef1d2e12123f0519d24486ac7b0615f244c6b8385bf70e8e0b3e94d621e915c0",
+    "console-credential-aes-owner-probe-20260920.log": "fe60a0e04fefac2bf16e13e742a674259532736bab8fd4577d2495942fd8e01d",
+    "console-credential-aes-owner-red-20260920.log": "1ad9d7f1817c551ec4a63bce70298f4155bc06729c0e36c78e0d90da335f08ec",
+    "console-credential-aes-store-accepted-20260920.log": "2a2ccdbe532d096951e4d342b4f77a81012c58b5d2cff737004f120ec02c8053",
+    "console-credential-aes-store-clippy-20260920.log": "2f4d1cf0b897911eb9d2deac358315e291770fb2cb436bfc4351a696e80b5890",
+    "console-credential-aes-store-clippy-type-failure-20260920.log": "5f07bcfcc3c5b40c2c7bdc4e7fea8810ae14bff750a48b0c3b5910c8f23615a4",
+    "console-credential-aes-store-resource-failure-20260920.log": "20bf7d3cc2bb4832cf1074d51d32a3c04ecce90c9cef82e31f4ee97599dfa62a",
+    "console-credential-aes-tests-round1-security-review-20260920.json": "36730a43ff60445c491c2d11e791c9e7720a656b0f14b0fcb57cbd9e3b08ac79",
+    "console-credential-legacy-fixtures-20260920.log": "1b97ebf3a6b5528b99c72d301b7579f574caaa9ebde3a6e79c7acf140487e0f2",
+    "console-credential-legacy-fixtures-provenance-20260920.json": "34ecc35dffa37bbf933abc269a733f9aa77020d01226b79ed4c71f07de50ab54",
+    "console-mail-account-mixed-format-tests-round1-security-review-20260920.json": "dde5447dc73423adf6dcd642c389ec65019ac306a9a22e91843406da35f3d216"
+  },
+  "limits": [
+    "Local component evidence; not protected dev merge, MVP completion, production qualification or exposure authority.",
+    "Original transient paths identify capture provenance; archived members are byte-exact copies."
+  ]
+}

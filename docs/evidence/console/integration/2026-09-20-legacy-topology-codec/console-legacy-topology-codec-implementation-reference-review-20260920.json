@@ -1,0 +1,38 @@
+{
+  "reviewer": "/root/reference_inventory",
+  "decision": "APPROVE_BOUNDED_LEGACY_TOPOLOGY_CODEC_SOURCE",
+  "base": "7043494b394a4f57c9ddf272e67aed2984ba57a9",
+  "design_manifest_sha256": "cb85748f38e27874f0abd921c9f8ac6bcd6660e88ea15031edb19ec9f1e447de",
+  "approved_test_source_sha256": "9b21c76134b0d61eca030f2dc43c79ad46afdc2a86468c5aa7e784bcba4cac8a",
+  "candidate_source_locks": {
+    "backend/crates/platform/provisioning/src/legacy_topology.rs": "0bad0fba620c9c2fe026b87990f9422d30545b321636903d151225084e1fa9c5",
+    "backend/crates/platform/provisioning/src/legacy_topology_tests.rs": "9db142f764b308cb0fb064f2b59031307367ff36d71989226c3602226bb793d1",
+    "backend/crates/platform/provisioning/src/lib.rs": "d88e1626a02d5d3bab4920a0e8d3b3e64eec80f9793c1dfe0e93a4878a6716f9",
+    "backend/crates/platform/provisioning/BUCK": "25852059a31b44b5471623244daeeea71b7f6c8f9d9c2bbb9d0ef5051015e7c3",
+    "backend/crates/platform/provisioning/Cargo.toml": "92444c4305719ec0966bd4cfe48bb8a0b58b3f363525b8ec752a5e012b46c641",
+    "tools/buck/gen_first_party.py": "2da9cb839498d66e0bd3bbfd5663b30ab35aa0c47e3e097baf55b123e5e3f629",
+    ".github/workflows/ci.yml": "4f5734aa7c8a8f0f86cc4f7072e370c4f5c017707495e175f19d27a96aa4aef8",
+    "docs/program/executed-tests-baseline.json": "73518f4dcc1eb7ef67bcd35eb06b90d5695793f5b9de72cf1c91b81a22cf8b02"
+  },
+  "findings": [],
+  "checks": [
+    "All nine variants have explicit frozen tags and exact payload field order. No ordinal, JSON serializer or new dependency defines persisted bytes.",
+    "Decoder rejects over-4096 input before allocation, unknown version/kind/optional/role/status tags, trailing and truncated bytes, nil IDs, invalid UTF8 and bounded lengths. Revision is 1..i64MAX; private ExpectedGroupHead construction maintains its invariant.",
+    "Expected heads are at most two, strictly UUID-sorted and distinct. All nine cardinality branches match approved codec contract, including requested Group membership and single-head same-Group assign/revoke.",
+    "New construction alone trims text and reduces optional empty text to None; decoded stored text must already be canonical. Slug grammar, Unicode controls, UTF8 byte bounds and role 1..64/order/duplicates are preserved. Empty updates fail closed.",
+    "Decoded command retains original byte vector and SHA256; immutable read-only access exposes no mutation path. No current policy, source authority, actual Company membership or replay permission is inferred from actor/target/head fields.",
+    "Existing sha2/uuid/kernel dependencies reused. New sibling test module uses normal module path. Buck unit target uses generated native rust_test and normal mapped sources; generator resource requirement is none; CI adds this target while retaining authz target and prior execution condition.",
+    "All five test functions and nine independent golden vectors reviewed. Compared current test bytes to approved source: sole replacement is chunks_exact(2) to as_chunks::<2>().0.iter(). Both iterate complete ordered pairs and discard a possible one-byte remainder; u8 parse mapping is unchanged. Vectors/assertions remain byte-identical.",
+    "Executed-test baseline increases provisioning lib count by five; no prior floor decreases. git diff --check exited 0. HEAD and exact reviewed file hashes read back before receipt."
+  ],
+  "counts": {
+    "source_tests_reviewed": 5,
+    "golden_vectors_reviewed": 9,
+    "reviewer_runtime_tests_executed": 0
+  },
+  "limits": [
+    "Read-only source review plus private receipt; no build, test, SQL, browser, generator or network execution by reviewer. Root reported initial native five-test pass and owns exact final-candidate runtime/generator/clippy evidence.",
+    "This approves only codec implementation and bounded build/test wiring. Does not approve giant topology SQL, transport strict parsing/default conversion, receipt replay, live authority checks, current membership/Group locks, caller cutover, native Company integration, workflow acceptance or release qualification.",
+    "Any semantic candidate change requires renewed review; mechanical commit of exact source bytes may inherit this approval."
+  ]
+}
