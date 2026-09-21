@@ -2811,3 +2811,28 @@ describe("native browser evidence retention", () => {
     }
   });
 });
+
+// Machinery execution is additive to the unchanged actual browser/owner leaf.
+it("requires Company preview machinery execution in its protected browser step", () => {
+  const command = "node --test tools/browser/company-preview.test.cjs";
+  const line = `          ${command}\n`;
+  const step = yaml.load(workflow).jobs.backend.steps.find(
+    (entry) => entry.name === "Native Company preview browser",
+  );
+  assert.equal(step.run.split("\n")[0], command);
+  assert.equal(workflow.split(line).length - 1, 1);
+  assert.deepEqual(evaluateCiPreflight(workflow).failures, []);
+  for (const replacement of [
+    "",
+    `          # ${command}\n`,
+    `          ${command} || true\n`,
+    "          node --test tools/browser/company.test.cjs\n",
+  ]) {
+    const mutated = workflow.replace(line, replacement);
+    assert.notEqual(mutated, workflow);
+    expectFailure(
+      mutated,
+      "backend must preserve the locked fail-fast step multiset and failure semantics",
+    );
+  }
+});
