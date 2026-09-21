@@ -1,0 +1,32 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_PG_COMPANY_READ_ADAPTER_SOURCE_WITH_UNIMPLEMENTED_SQL_OWNER_ASSUMPTIONS_EXPLICIT",
+  "base": "e38d21d622ae707e11be1bebe12f2348035f122c",
+  "files": {
+    "backend/crates/identity/adapter-postgres/src/company_policy.rs": "520094fa680b6c624529f5b6c5d328b54ce086187d8526238b781d510d5396ee",
+    "backend/crates/identity/adapter-postgres/src/lib.rs": "447ffe9b8fe48eaa889d42e39bf755d56e75a695c1b3c8d98eafac2c0164dd97",
+    "backend/crates/identity/adapter-postgres/Cargo.toml": "b05ed890b9f14c4a84ad3331cb513dc9e1df0957375a8902a269a6d31f0414e6",
+    "backend/crates/identity/adapter-postgres/BUCK": "85ebffd4580b6b0970ef23ba9dfc3d37a0181cbbacf3a71923cc2ea5482cded5",
+    "backend/app/BUCK": "c617eb87444c8c07845483e90f1f8e720927de77af6674ede4658dc5c36ecb1a"
+  },
+  "findings": [],
+  "checks": [
+    "Extends existing PgOrgStore only. Private optional verifier/TTL config preserves legacy new(pool) with None and unchanged methods; missing/nonpositive TTL fails MaterialUnavailable before opening native transaction. No legacy fallback.",
+    "Scope owns transaction and checked material, borrows immutable raw credentials/config, avoids self-reference, and requires current Auth read before commit. Dropping SQLx transaction rolls back; no DTO escapes through this adapter itself.",
+    "READ COMMITTED with10second statement and1second lock timeouts. Signed namespace wrapper precedes SQL projection without Account locks, preserving mandatory Group-before-Account order. Current Auth read follows projection even with zero rows; subject/session correlation checked.",
+    "Projection fetch limited2 and rejects multiple rows. Exact nine-column material feeds already checked Application constructor with DB observation time. SQL errors/decoding/corrupt material fail closed, no partial name or false empty response.",
+    "Actual projection40001 causes explicit rollback and at most one complete transaction retry; never a retry on same aborted transaction or healthy absent result. Other errors discard transaction.",
+    "Enumeration performs current Auth read, exact single-row bounded candidates, final current Auth read then commits before return. Final generation check reuses this bounded Account-only owner and compares; no Group scope overlaps or extra repository/query authority.",
+    "Auth dependency moves from dev to normal adapter manifest; Cargo.lock unchanged. Adapter generated library gains only existing Auth dependency. App generated BUCK has69 identical source-list insertions of newly committed dormant native_company_policy_http_tests.rs and no other line changes."
+  ],
+  "trusted_target_requirements": [
+    "identity_company_projection_v1 must implement approved canonical Group/Account/family/Company lock plan, current role/assignment/birth checks and19 retained ontology base-row locks on this same transaction. Auth finish alone cannot substitute for those guards.",
+    "account_company_context_candidates_v1 must retain Account-only current source/provenance validation, generation1..257 precheck and256candidate bound with no unchecked scan/iteration.",
+    "Auth wrapper production/source/test candidate separately approved; its compilation and real restricted-login execution remain required."
+  ],
+  "scope_limits": [
+    "SQL projection/candidate owners currently unimplemented and no new SQL privilege, schema installation or route exposed by this source slice. No real PgStore current-source test, HTTP/SSR/browser or full Company acceptance claimed.",
+    "Parent owns final formatted hashes, production dependency generation, compilation and runtime evidence. Original complete Company probe remains the lane boundary.",
+    "Reviewer performed read-only source/diff/hash inspection and private receipt only; no product build/test/SQL/browser or repository changes."
+  ]
+}

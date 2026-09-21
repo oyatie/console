@@ -1,0 +1,27 @@
+{
+  "status": "PROPOSED_APPLICATION_ORCHESTRATION_TESTS_PENDING_INDEPENDENT_REVIEW",
+  "base": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "authored_pure_leaves": 5,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "repository_mutations": 0,
+  "private_formatter": "rustup run 1.98.1 rustfmt --edition 2024 native_company_read_usecase_tests.rs; exit0",
+  "files": [
+    {
+      "path": "DESIGN.md",
+      "sha256": "f413858f3fbbefbffdff4823c5b6c792da391023943d84259b9ef13ee3139d39"
+    },
+    {
+      "path": "INTERFACES.rs",
+      "sha256": "c66e397e7fcc11f546b7d80e9ab00eb6a80093e73948e8b816a5a90c88793a12"
+    },
+    {
+      "path": "native_company_read_usecase_tests.rs",
+      "sha256": "6da3156b481bc1d3eaa56db32d691380c5d5bbfed155eedef073b1f55c6d724c"
+    },
+    {
+      "path": "source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc"
+    }
+  ]
+}

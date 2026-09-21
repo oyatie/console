@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_AUTH_READ_WRAPPER_SOURCE_AND_FOUR_TEST_CANDIDATE",
+  "manifest_sha256": "a894677837dfeec7019765f6f553d0bce58e6de239c9e55c198c2b7f2c58dff8",
+  "base": "c7147150452f805f139edb24bbdabad17b20de11",
+  "verified_packet_members": 7,
+  "verified_exact_gitbase_locks": 4,
+  "production_source_sha256": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2",
+  "test_source_sha256": "684c176ebc67b16b62bb2ddd69080d9a6583ba9a99373e5d6dd23f52d0bd29b8",
+  "findings": [],
+  "checks": [
+    "Two additive methods only. session_ids_in_tx reuses bounded private captured access, positive TTL, existing strict signed verification and DB clock; no Account/family SQL or retained authority locks. Returned IDs are namespace, never grant.",
+    "read_session_in_tx delegates exact existing live_account_session_in_tx with private access and supplied verifier/TTL; retains current Account/family correlation, status/generation/expiry checks and shared locks. No new resolver/session writer or synthetic authority DTO.",
+    "Read resolver intentionally ignores captured mutation CSRF proof; namespace helper inherits verify_at proof validation if credentials were created for_mutation. Ordinary native reads must use existing for_read. No mutation API is changed or allowed to substitute this read check for its CSRF/current guard.",
+    "First test uses real Business login, exact namespace IDs, concurrent NOWAIT checks on actual Account-security/family rows, and positive current-reader blocker PID/query witnesses on the same rows. Cleanup releases retained transaction and drains or aborts waiter; complete snapshots unchanged.",
+    "Revocation comes from actual native logout. Foreign-family negative uses another genuinely enrolled Account family with original signed subject; no nonexistent-family shortcut or manufactured live session. Namespace positive deliberately precedes current-binding rejection.",
+    "Wrong signing key, CSRF-as-access, genuinely time-expired valid signed token and nonpositive TTL controls exercise both actual wrappers. Expiry control proves verifier classifies token Expired before asserting wrapper refusal.",
+    "Existing signed-credential test prefix is byte-exact; only four appended leaves. Existing resolver post-wait and generation tests remain distinct inherited evidence, not relabeled as executed wrapper tests."
+  ],
+  "counts": {
+    "new_sqlx_leaves_authored": 4,
+    "executed": 0
+  },
+  "limits": [
+    "Compilation and real SQLx/native execution pending; no missing-symbol/compiler failure is an owner RED.",
+    "No Company projection/store/HTTP/browser or enclosing workflow acceptance. Actual PostgreSQL current-owner source/lock behavior still requires runtime evidence.",
+    "Reviewer ran source/Git/hash inspection and wrote private receipt only; no repository edits, product build/test/SQL/browser."
+  ]
+}

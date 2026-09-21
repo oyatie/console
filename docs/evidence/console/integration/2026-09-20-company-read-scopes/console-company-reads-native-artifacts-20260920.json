@@ -1,0 +1,29 @@
+[
+  {
+    "target": "console-platform-authz-unit",
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/crates/platform/authz/__console-platform-authz-unit__/console_platform_authz",
+    "sha256": "9be3c5f97b42fd15be38465ab683ee2dd8fd4e3ef5c1bb5b705eb629a7a43eb4",
+    "bytes": 31837096,
+    "discovered": 127,
+    "listing_path": "/private/tmp/console-company-reads-console-platform-authz-unit-discovery-20260920.log",
+    "listing_sha256": "65bdf815930c85e1dc03ce887556bde838f28066b1db47fb770539e91c42cf10"
+  },
+  {
+    "target": "console-identity-application-unit",
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/crates/identity/application/__console-identity-application-unit__/console_identity_application",
+    "sha256": "f4785e9814b4ef53d7907d6ef428643919bcde996af438487e5269a2c32490e4",
+    "bytes": 2239472,
+    "discovered": 10,
+    "listing_path": "/private/tmp/console-company-reads-console-identity-application-unit-discovery-20260920.log",
+    "listing_sha256": "3e0ba49cec2bdf94326c4454c2fbc26b96d66cb31af8933f72fadff2695f68c9"
+  },
+  {
+    "target": "console-identity-domain-unit",
+    "path": "buck-out/v2/art/root/39893c7e49283da4/backend/crates/identity/domain/__console-identity-domain-unit__/console_identity_domain",
+    "sha256": "d18e6b2c7bd416d89be3f9a1ea4f57cea279344c8f4385ce2b2827ef9a77097e",
+    "bytes": 1128520,
+    "discovered": 7,
+    "listing_path": "/private/tmp/console-company-reads-console-identity-domain-unit-discovery-20260920.log",
+    "listing_sha256": "ec94e944e10251dbcb50151e0a7e655fafd3e9cb8003ef96659a67d2c9486b55"
+  }
+]

@@ -1,0 +1,37 @@
+{
+  "head": "42a87196d61b3947b177fcfa057b7e1f7289ea83",
+  "files": [
+    {
+      "path": "backend/crates/identity/application/src/company_policy.rs",
+      "sha256": "c8fce69ea68d656b7be3a1204db40f44767efed15d8ff3005f8455813e2ce313"
+    },
+    {
+      "path": "backend/crates/identity/application/src/company_policy/reads.rs",
+      "sha256": "8f94e55342364b8f652b88d02de0fbd791e6c359c82246eeb02e6f6beeeb7910"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/company_policy.rs",
+      "sha256": "2a430ad53dd7a963e8f1cb5fa29c0d0c5e12bf4f4fcddf967b983fb17eb119ba"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs",
+      "sha256": "217ecdd43b0f442c1c9cb439c814feb54e3850cd685344cebc55c855d52376e4"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "sha256": "3bd9276d4d2c3995a912a8fcaff6013ae26a80e8d90a2f64c78f4c5767e2f92c"
+    }
+  ],
+  "native_log": "/private/tmp/console-company-reads-first-0-20260920.log",
+  "native_cases": {
+    "authz": 126,
+    "identity_application": 10,
+    "identity_domain": 7
+  },
+  "full_company_probe": "HTTP404 vs201;1failed506filtered; remains open",
+  "remaining_holds": [
+    "Company SQL/store/HTTP/browser incomplete",
+    "five-workflow MVP incomplete",
+    "full-release/exposure/payment separate"
+  ]
+}

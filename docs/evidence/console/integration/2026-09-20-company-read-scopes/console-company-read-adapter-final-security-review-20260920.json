@@ -1,0 +1,74 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_AUTH_READ_WRAPPERS_AND_PGORGSTORE_ADAPTER_SOURCE_VERIFICATION",
+  "base": "203116497472dfb88d77998e4536771161bd9664",
+  "findings": [],
+  "files": [
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/company_policy.rs",
+      "sha256": "520094fa680b6c624529f5b6c5d328b54ce086187d8526238b781d510d5396ee"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/lib.rs",
+      "sha256": "447ffe9b8fe48eaa889d42e39bf755d56e75a695c1b3c8d98eafac2c0164dd97"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/Cargo.toml",
+      "sha256": "b05ed890b9f14c4a84ad3331cb513dc9e1df0957375a8902a269a6d31f0414e6"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/BUCK",
+      "sha256": "85ebffd4580b6b0970ef23ba9dfc3d37a0181cbbacf3a71923cc2ea5482cded5"
+    },
+    {
+      "path": "backend/crates/platform/auth/src/session/company_enrollment.rs",
+      "sha256": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_company_signed_credentials.rs",
+      "sha256": "684c176ebc67b16b62bb2ddd69080d9a6583ba9a99373e5d6dd23f52d0bd29b8"
+    },
+    {
+      "path": "backend/app/BUCK",
+      "sha256": "c617eb87444c8c07845483e90f1f8e720927de77af6674ede4658dc5c36ecb1a"
+    }
+  ],
+  "receipt_hashes": {
+    "/private/tmp/console-company-read-adapter-implementation-20260920.json": "4ca57d36551d1ea1f97519866f46ae10e7503c9062e9e0cd43bf3ca0d6b57a4d",
+    "/private/tmp/console-company-auth-read-native-verification-20260920.json": "5968f34ed9ba9c42859107e7749f5374433f006720e36fc9d028dbafa5fe84da",
+    "/private/tmp/console-company-read-adapter-final-verification-20260920.json": "7fe42d3db265d380134f11728bef56b999859ee73282fbb4aa2eba8eb4907565",
+    "/private/tmp/console-company-read-adapter-native-artifacts-20260920.json": "f9312fdc6a25e771966e7023332cd97ee445d6545c547a658c374d4ac81a0d67",
+    "/private/tmp/console-company-read-adapter-count-red-20260920.log": "ee89d727e9a39f798872e4db7d71433e40dbab21438be69683333b1e642004ce",
+    "/private/tmp/console-company-read-adapter-generator-tests-20260920.log": "22f30edeb387c988c82b38cd48407f33d2770308869e3aceb45522a0e824b39e",
+    "/private/tmp/console-company-read-adapter-generator-tests-round2-20260920.log": "3b131bf1c4e1e117cdab6a8b36238f37c52bdd522706775d1808954987e3d42b"
+  },
+  "verified_counts": {
+    "native_auth_rest_discovered": 511,
+    "native_auth_rest_new_exact_leaves_executed": 4,
+    "per_exact_run_passed": 1,
+    "per_exact_run_filtered": 510,
+    "native_auth_unit_discovered_and_executed": 13,
+    "distinct_product_cases_executed": 17,
+    "generator_original_executed": 68,
+    "generator_original_passed": 67,
+    "generator_original_failed": 1,
+    "generator_successor_executed_and_passed": 68,
+    "preflight_stages_passed": 16,
+    "static_reachable_source_attributes": 3121
+  },
+  "checks": [
+    "All seven implementation source hashes remain exactly previously approved; no formatting reconstruction needed. Test source is already committed and six source/generated paths remain candidate work.",
+    "All nine runtime/final log hashes verified. Four exact SQLx names each passed1 with510filtered; Auth unit run passed13. Native binary bytes/hash and direct listing hash/count verified for both artifacts.",
+    "Final recorded strict app auth_rest Clippy, workspace format,16stage preflight and diff check each exit0. These checks do not execute Company SQL/store/HTTP assertions.",
+    "Original generator failure is stale generated faces,67passed1failed of68. Successor68passed; original retained.",
+    "Static check log is GREEN despite count-red filename. Scanner countAttributes recursively counts src/lib.rs trees but reads integration roots only, not nested include files. No baseline update is warranted:3121 lexical attributes is a distinct metric from511 native discovered auth_rest leaves. Existing dark seaweedfs_worm remains explicit.",
+    "Source adapter review and Auth wrapper source/test review are reused exactly; current source bytes equal both prior approved sets."
+  ],
+  "limits": [
+    "SQL projection/candidate owners remain unimplemented; no new SQL privilege, schema installation or Company route acceptance is claimed.",
+    "Projection must still implement canonical Group-before-Account/family-before-Company retained source locks and19ontology row locks; candidate owner must enforce current provenance/generation1..257 and<=256 IDs.",
+    "Namespace IDs never establish current authority. Read helper must not replace mutation CSRF/current guards.",
+    "Original complete Company lane, all MVP business journeys and release remain open. No production qualification/exposure acceptance.",
+    "Reviewer only inspected source/Git/log/hash bytes and wrote this private receipt; no product tests/builds/SQL/browser or repository mutations."
+  ]
+}

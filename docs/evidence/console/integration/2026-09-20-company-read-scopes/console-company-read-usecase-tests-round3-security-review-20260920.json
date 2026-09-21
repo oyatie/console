@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_APPLICATION_READ_TESTS_AND_INTERFACES_ROUND3",
+  "base": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "manifest_sha256": "7d1570b5887609c3bf7863c9032bb527450d7fec800ddf60ed6730b1183ee1a9",
+  "original_manifest_sha256": "64f064b9f5a990cc460d94a44cf366c60bdab2081e2f94efe64f2093fc852e5e",
+  "test_source_sha256": "3bd9276d4d2c3995a912a8fcaff6013ae26a80e8d90a2f64c78f4c5767e2f92c",
+  "destination": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+  "verified_members": 6,
+  "verified_source_locks": 12,
+  "verified_gitbase_sources": 6,
+  "findings": [],
+  "resolved_composition_details": [
+    "All four policy generics add + ?Sized for approved Arc<dyn CompanyPolicyDecisionPort> composition; no forwarding adapter needed.",
+    "Single request getter/caller rename resource_object_id() to object_id() restores exact approved round3 name, with no semantic or alias change. Test source equals original five-leaf source except that one caller rename.",
+    "Ordinary cfg(test) child registration through supplied #[path] fragment; root confirms compiler path resolution, never include! or copied source tree. Application company_policy/reads.rs plus reexports is an ordinary permitted decomposition with no new public interfaces/dependencies."
+  ],
+  "conclusions": [
+    "Reuses actual checked material and Cedar for healthy decisions; scripted overrides used only for denial/fault. Fixture asserts exact resource/type/action/field requests and active retained scope.",
+    "Workspace requests ReadIdentity2 then ReadPolicy0 for navigation; policy inspection requests all8 fields. Finite ceiling DTO preserves existing roster, actual refs and false future/group flags without leaking Company names through policy output.",
+    "Property key roster and ref set are explicitly separate; no fabricated UUID-order mapping. Per-property labelled associations would require actual registry-owned map before later transport use.",
+    "Manual Pending finish plus12 fault histories prevents successful DTO return before final validation. Healthy absence/denial must finish; stale Auth cannot become healthy NotFound. Source/material/evaluator errors can roll back without disclosing a DTO.",
+    "Aggregate discovery discards all prepared labels on faults or generation conflict, retries only once, closes every Company scope before next scope/final generation check, and checks even empty enumeration. No global cross-Company policy snapshot claimed.",
+    "Foreign Company material fails before decision. Canonical bounded candidates carry only sorted IDs/generation, never authorization or labels."
+  ],
+  "counts": {
+    "pure_leaves_authored": 5,
+    "runtime_discovered": 0,
+    "runtime_executed": 0
+  },
+  "limits": [
+    "Pure scripted ports prove application orchestration only after execution; actual SQL/Auth locks, current-source validation, token expiry, HTTP/SSR/browser and full Company probe still required.",
+    "Root alone implements/registers/runs; compile failures or missing target symbols are not an independent RED lane. Existing complete Company enrollment probe remains acceptance boundary.",
+    "Reviewer performed read-only source/Git/hash comparison and private receipt only; no product build/test/SQL/browser or repository writes."
+  ]
+}

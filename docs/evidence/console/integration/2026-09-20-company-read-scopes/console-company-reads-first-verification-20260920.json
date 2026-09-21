@@ -1,0 +1,37 @@
+[
+  {
+    "command": [
+      "tools/buck2",
+      "test",
+      "//backend/crates/platform/authz:console-platform-authz-unit",
+      "//backend/crates/identity/application:console-identity-application-unit",
+      "//backend/crates/identity/domain:console-identity-domain-unit"
+    ],
+    "exit": 0,
+    "seconds": 14.55,
+    "log": "/private/tmp/console-company-reads-first-0-20260920.log",
+    "sha256": "e5dd75f41fb5b1b6be5d81d5b7e4c512f96538e05d2fcfae00a57e25065205ac"
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "backend/Cargo.toml",
+      "-p",
+      "console-identity-application",
+      "-p",
+      "console-platform-authz",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 13.37,
+    "log": "/private/tmp/console-company-reads-first-1-20260920.log",
+    "sha256": "9bfb97003358bdc966ef16ab7b916c654bb95c9179a123370636b412dcc00d2e"
+  }
+]

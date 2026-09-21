@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_BOUNDED_APPLICATION_READ_ORCHESTRATION_SOURCE_PENDING_FINAL_NATIVE_VERIFICATION",
+  "base": "42a87196d61b3947b177fcfa057b7e1f7289ea83",
+  "first_implementation_record_sha256": "462903f522e09b10fade586314c5b4211a1fbd0f66433865ae0d8af932339397",
+  "reviewed_current_files": {
+    "backend/crates/identity/application/src/company_policy.rs": "c8fce69ea68d656b7be3a1204db40f44767efed15d8ff3005f8455813e2ce313",
+    "backend/crates/identity/application/src/company_policy/reads.rs": "8f94e55342364b8f652b88d02de0fbd791e6c359c82246eeb02e6f6beeeb7910",
+    "backend/crates/platform/authz/src/company_policy.rs": "2a430ad53dd7a963e8f1cb5fa29c0d0c5e12bf4f4fcddf967b983fb17eb119ba",
+    "backend/crates/platform/authz/src/native_company_policy_unit_tests.rs": "217ecdd43b0f442c1c9cb439c814feb54e3850cd685344cebc55c855d52376e4",
+    "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs": "8f6d2cb933111eada7b742d15d532b1c3bf4a1d7b9ff267701413f9fdb797e2e"
+  },
+  "findings": [],
+  "checks": [
+    "New reads.rs retains application ownership and approved credentials-opaque Store/Scope ports. No SQL, Auth transport, App orchestration or new dependency introduced.",
+    "Shared private read_current checks requested Company and returned material correlation before decision. It awaits the same scope finish before every Ok or healthy NotFound and propagates final errors instead of releasing computed DTO. Unexpected foreign material and evaluator faults drop scope without successful disclosure.",
+    "Identity performs ReadIdentity with exact2fields; denial stops before navigation. Navigation ReadPolicy uses0fields; Deny hides link, error propagates and discards identity output. Policy inspection uses8fields and exposes only approved finite ceiling roster/refs.",
+    "Each request derives actual action/type/instance/property refs from checked material; no client authority flag or label fallback. All four public functions accept dyn policy through ?Sized. object_id getter/caller rename matches approved interface without semantic change.",
+    "Context candidates bound generation1..257, length<=256, sorted unique nonnil/nonplatform IDs. Constructor deliberately does not invent SQL generation provenance.",
+    "Aggregate discovery sequentially finishes each scope, omits only healthy NotFound, discards all accumulated views on any other fault, checks final generation even for empty enumeration, retries once on conflict then returns MaterialUnavailable. No partial result or overlapping Company locks.",
+    "Existing checked material/Cedar behavior unchanged except equivalent getter rename. Ordinary #[path] child registration reuses reviewed test fixture; no include! workaround. New module is a small finite shared helper, not universal screen/authorization machinery.",
+    "Current four implementation/registration hashes match first frozen implementation record. Current test source equals independently approved round4 hash8f6d2cb933111eada7b742d15d532b1c3bf4a1d7b9ff267701413f9fdb797e2e; first run used round3 source and is not represented as round4 execution."
+  ],
+  "limits": [
+    "Source approval only. Parent owns final round4 native counts, strict lint/format/generated/static-ratchet checks and immutable final source record.",
+    "No concrete persistence scope, current SQL/Auth ownership, HTTP/SSR/workspace/browser or full Company acceptance supplied here. Full Company probe still404versus201.",
+    "Future adapters must uphold finish/rollback/current authority and enumeration lock-order port semantics; pure scripted tests cannot establish those facts.",
+    "Reviewer ran no product build/test/SQL/browser/generator and changed no repository file; read-only source/diff/hash review and private receipt only."
+  ]
+}

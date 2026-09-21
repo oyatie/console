@@ -1,0 +1,54 @@
+[
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_read_signed_ids_take_no_authority_locks_and_read_retains_both",
+    "exit": 0,
+    "seconds": 169.41,
+    "log": "/private/tmp/console-company-auth-read-native-0-20260920.log",
+    "sha256": "70d9395a21d1ec14add25c5a370d2f78fd8b317085bfe61907d044faf92a9f0f"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_read_wrapper_rejects_real_revocation_and_signed_wrong_binding",
+    "exit": 0,
+    "seconds": 65.06,
+    "log": "/private/tmp/console-company-auth-read-native-1-20260920.log",
+    "sha256": "3ccd88cd8a8d10b4bee175da1292e44ea7a79bafaabcf4a098e74525c46a7a40"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_read_wrappers_reject_invalid_and_expired_signed_access",
+    "exit": 0,
+    "seconds": 64.6,
+    "log": "/private/tmp/console-company-auth-read-native-2-20260920.log",
+    "sha256": "294fe73f28264aae229fe75cad70d96831c07f5bf7ad982b8ecc3898f6068b12"
+  },
+  {
+    "command": [
+      "bash",
+      "tools/buck/test_needs_postgres.sh",
+      "--num-threads=1",
+      "//tools/buck:app-auth-rest-pg"
+    ],
+    "exact": "account_browser::deployment_operator_designation::company_setup::intake_owner::signed_credentials::company_read_wrappers_reject_nonpositive_ttl_without_effects",
+    "exit": 0,
+    "seconds": 72.26,
+    "log": "/private/tmp/console-company-auth-read-native-3-20260920.log",
+    "sha256": "cde257f24736adb6a9b9e7a1e92ce959b94ef63a8845239aeb0887ddad675def"
+  }
+]

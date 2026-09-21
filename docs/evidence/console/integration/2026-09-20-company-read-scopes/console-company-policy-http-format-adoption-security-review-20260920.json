@@ -1,0 +1,25 @@
+{
+  "reviewer": "/root/integration_security",
+  "decision": "APPROVE_EXACT_PINNED_FORMAT_ONLY_DORMANT_HTTP_TEST_ADOPTION",
+  "head": "c7147150452f805f139edb24bbdabad17b20de11",
+  "path": "backend/app/tests/auth_rest/native_company_policy_http_tests.rs",
+  "adoption_record_sha256": "3f12af605e4ac0b23d85ff52719d184ceb266015164c268d3594212ee922ac5f",
+  "original_sha256": "78ef4226318c026dfb046e3114dca76139cfbd1cac0215b6a7f76302ce7b198e",
+  "formatted_sha256": "b8aacd9edc190727e14c1b25b911c51f868b6a152671598ed0c428935068ba58",
+  "findings": [],
+  "verification": [
+    "Original SHA equals independently approved current-policy round3 source.",
+    "Reconstructed from original in isolated private directory with rustup run1.98.1 rustfmt --edition2024; exit0 and byte-exact equality to working formatted candidate.",
+    "Git index still equals approved original before parent restaging. No semantic assertion, fixture, SQL, helper, leaf or authorization change."
+  ],
+  "private_reconstruction_directory": "/private/tmp/console-company-http-format-security-7q96zdyt",
+  "counts": {
+    "authored_sqlx_leaves": 5,
+    "runtime_discovered": 0,
+    "runtime_executed": 0
+  },
+  "limits": [
+    "Dormant formatting adoption only; actual module registration/compilation/current SQL/Auth/HTTP runtime and complete Company acceptance remain pending.",
+    "Reviewer ran private formatter/hash/Git inspection only, no repository writes or product build/test/SQL/browser."
+  ]
+}

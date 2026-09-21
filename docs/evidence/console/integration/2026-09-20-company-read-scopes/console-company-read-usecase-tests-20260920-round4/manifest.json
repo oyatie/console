@@ -1,0 +1,50 @@
+{
+  "status": "PROPOSED_APPLICATION_ORCHESTRATION_TESTS_PENDING_INDEPENDENT_REVIEW",
+  "base": "6c775507f4b74ed44b67361d2f6b76109ed2ec95",
+  "authored_pure_leaves": 6,
+  "runtime_discovered": 0,
+  "runtime_executed": 0,
+  "repository_mutations": 0,
+  "private_formatter": "rustup run 1.98.1 rustfmt --edition 2024 native_company_read_usecase_tests.rs; exit0",
+  "files": [
+    {
+      "path": "DESIGN.md",
+      "sha256": "3aad4a2c651ff45e612662dd91f05711b5f2ddff47676bfc5067a164af24ac08"
+    },
+    {
+      "path": "INTERFACES.rs",
+      "sha256": "29395da96f42d0d1d0ba21895b28dae925cb423d7b664fe4c458ff04539b7306"
+    },
+    {
+      "path": "ROUND4.md",
+      "sha256": "3725694b79da47fa033e4efb73138a68f56a938487047b11cfee663a5c51d006"
+    },
+    {
+      "path": "SUCCESSOR.md",
+      "sha256": "54c012c03d18a891f013ee8f7130d9846cfa5924e3143cb6c374797065762b58"
+    },
+    {
+      "path": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "sha256": "8f6d2cb933111eada7b742d15d532b1c3bf4a1d7b9ff267701413f9fdb797e2e"
+    },
+    {
+      "path": "registration.rs.fragment",
+      "sha256": "6f6195ec19ad656f2207fc70ec43f0235b3b6b2de26843b751f80825e5bfb434"
+    },
+    {
+      "path": "round4.patch",
+      "sha256": "8e5ac750cbbd9fe2a460aed42f05bb5a97a00feb79036df39636b6c39bd1d74a"
+    },
+    {
+      "path": "source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc"
+    }
+  ],
+  "predecessor_manifest_sha256": "7d1570b5887609c3bf7863c9032bb527450d7fec800ddf60ed6730b1183ee1a9",
+  "successor": "One constructor bounds leaf plus explicit dyn policy at first existing workspace call; no assertion changes.",
+  "adoption_destination": "backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+  "predecessor_security_review": {
+    "path": "/private/tmp/console-company-read-usecase-tests-round3-security-review-20260920.json",
+    "sha256": "095985d90c071d21d1c74022e07dd76c6c50a0ccb5677d56279dd98471b68920"
+  }
+}

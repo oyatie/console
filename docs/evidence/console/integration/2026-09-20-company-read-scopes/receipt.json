@@ -1,0 +1,608 @@
+{
+  "status": "AUTH_AND_COMPANY_READ_COMPONENTS_VERIFIED_COMPANY_LANE_OPEN",
+  "head": "5c78ea28a93a97dabf0ac404c9f4a673023c9af2",
+  "members": [
+    {
+      "path": "console-company-auth-read-native-0-20260920.log.gz",
+      "sha256": "bf9586ac03e62599d2839e89d9453a837edf13f56dc2424a65f77f28767759b7",
+      "original_path": "/private/tmp/console-company-auth-read-native-0-20260920.log",
+      "original_sha256": "70d9395a21d1ec14add25c5a370d2f78fd8b317085bfe61907d044faf92a9f0f",
+      "original_bytes": 6423
+    },
+    {
+      "path": "console-company-auth-read-native-1-20260920.log.gz",
+      "sha256": "218909c3fe9345d1db2c54a3604c0499df9756bc94288722bb42cf928eeb3dd3",
+      "original_path": "/private/tmp/console-company-auth-read-native-1-20260920.log",
+      "original_sha256": "3ccd88cd8a8d10b4bee175da1292e44ea7a79bafaabcf4a098e74525c46a7a40",
+      "original_bytes": 2849
+    },
+    {
+      "path": "console-company-auth-read-native-2-20260920.log.gz",
+      "sha256": "a2a526f82ac59b9225d55040fe56b5a2d732a418868f96dc76bab5d78bbf6dca",
+      "original_path": "/private/tmp/console-company-auth-read-native-2-20260920.log",
+      "original_sha256": "294fe73f28264aae229fe75cad70d96831c07f5bf7ad982b8ecc3898f6068b12",
+      "original_bytes": 2819
+    },
+    {
+      "path": "console-company-auth-read-native-3-20260920.log.gz",
+      "sha256": "4fa567565a930d133ce2a2ce9043e0ddf56545132f0073b8560bbd6594efd053",
+      "original_path": "/private/tmp/console-company-auth-read-native-3-20260920.log",
+      "original_sha256": "cde257f24736adb6a9b9e7a1e92ce959b94ef63a8845239aeb0887ddad675def",
+      "original_bytes": 2886
+    },
+    {
+      "path": "console-company-auth-read-native-verification-20260920.json",
+      "sha256": "5968f34ed9ba9c42859107e7749f5374433f006720e36fc9d028dbafa5fe84da",
+      "original_path": "/private/tmp/console-company-auth-read-native-verification-20260920.json",
+      "original_sha256": "5968f34ed9ba9c42859107e7749f5374433f006720e36fc9d028dbafa5fe84da",
+      "original_bytes": 2111
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/ADDITIONS.rs.log.gz",
+      "sha256": "1eb415714dbb358790b8c4c2d8f1faabce7756f3070ccf7d8b717904013f120b",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/ADDITIONS.rs",
+      "original_sha256": "50da23d660375fbd706b2ab51abbe2e00449a9d6bd6e6caf4c00a7bb6c84938a",
+      "original_bytes": 1068
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/README.md.log.gz",
+      "sha256": "66bc4bdcab5400f96d8d15283fa634ff9479b3c945364ee905df8e0bc5e748b9",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/README.md",
+      "original_sha256": "cafa7453b34df31cfc28684b44b4252194e27c87e49fce83299c1677fc7ff45d",
+      "original_bytes": 2520
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/TEST_ADDITIONS.rs.log.gz",
+      "sha256": "9e74659fd14274c72bcddd1ce205b4cf5cd2bfaa4aa619c78cce184c0897c9b2",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/TEST_ADDITIONS.rs",
+      "original_sha256": "c01952c42b37ce92cded32629fb6adf59d14d83f6a0a8cfec4620646bb376874",
+      "original_bytes": 9114
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/company_enrollment.rs.log.gz",
+      "sha256": "2efdb589386b1c6c4cdac1b167664b034cf5efff0e211badf92c22205998c185",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/company_enrollment.rs",
+      "original_sha256": "e6b4106268bfe9254743abf34f2888c146300cb5cc28175734759cf0e286b1e2",
+      "original_bytes": 9857
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/company_enrollment.rs.patch.log.gz",
+      "sha256": "1f86384c51b0e0225f6bb40847736588b79c614f9ed2f6a9eb98f766c1f1a13b",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/company_enrollment.rs.patch",
+      "original_sha256": "76b38c8bc0c127f21115c16451f108d315d838fa7a3f6bd447c0c1d102028b36",
+      "original_bytes": 1460
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/manifest.json",
+      "sha256": "a894677837dfeec7019765f6f553d0bce58e6de239c9e55c198c2b7f2c58dff8",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/manifest.json",
+      "original_sha256": "a894677837dfeec7019765f6f553d0bce58e6de239c9e55c198c2b7f2c58dff8",
+      "original_bytes": 1377
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/native_company_signed_credentials.rs.log.gz",
+      "sha256": "b934b511dc23622a23c3c5be989278c95de585364f791ad092605ef62881ba00",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/native_company_signed_credentials.rs",
+      "original_sha256": "684c176ebc67b16b62bb2ddd69080d9a6583ba9a99373e5d6dd23f52d0bd29b8",
+      "original_bytes": 34019
+    },
+    {
+      "path": "console-company-auth-read-wrappers-20260920-round1/native_company_signed_credentials.rs.patch.log.gz",
+      "sha256": "45f09302ec2725672fc0745a0f741516d5d0668a2762437af16aebd7320032b5",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-20260920-round1/native_company_signed_credentials.rs.patch",
+      "original_sha256": "a8d5867d7c44d5030e5d3e6391d49de85ab36c00e701e45dca01f80513e8bd9d",
+      "original_bytes": 11308
+    },
+    {
+      "path": "console-company-auth-read-wrappers-round1-security-review-20260920.json",
+      "sha256": "b7776ae738402c9bf7d288e41386d79c6fbaba64fe8e43d1c912e6803fdfb780",
+      "original_path": "/private/tmp/console-company-auth-read-wrappers-round1-security-review-20260920.json",
+      "original_sha256": "b7776ae738402c9bf7d288e41386d79c6fbaba64fe8e43d1c912e6803fdfb780",
+      "original_bytes": 2938
+    },
+    {
+      "path": "console-company-pg-read-adapter-source-security-review-20260920.json",
+      "sha256": "82f87a95090ecb64c1cc9b08c48608a2909a5d7844a4af3c7348781adeb21e5b",
+      "original_path": "/private/tmp/console-company-pg-read-adapter-source-security-review-20260920.json",
+      "original_sha256": "82f87a95090ecb64c1cc9b08c48608a2909a5d7844a4af3c7348781adeb21e5b",
+      "original_bytes": 3890
+    },
+    {
+      "path": "console-company-policy-http-format-adoption-security-review-20260920.json",
+      "sha256": "8759ebab6a8568bea1418a9aee8474b0f17d9e544c1bdfea0e580c0e5eeb87ed",
+      "original_path": "/private/tmp/console-company-policy-http-format-adoption-security-review-20260920.json",
+      "original_sha256": "8759ebab6a8568bea1418a9aee8474b0f17d9e544c1bdfea0e580c0e5eeb87ed",
+      "original_bytes": 1473
+    },
+    {
+      "path": "console-company-read-adapter-console-app-itest-auth_rest-discovery-20260920.log.gz",
+      "sha256": "627b9bdca30f1dac88d28b05aec6a9143ffc0e058cc707dad5a1966ba538cd42",
+      "original_path": "/private/tmp/console-company-read-adapter-console-app-itest-auth_rest-discovery-20260920.log",
+      "original_sha256": "49525028a018a39024c71b75850aac4dce744ff5dd0f9dba020ca27f35eb2836",
+      "original_bytes": 58766
+    },
+    {
+      "path": "console-company-read-adapter-console-platform-auth-unit-discovery-20260920.log.gz",
+      "sha256": "4480e47586571b782be954743f2cb6597027245dddc3614f2f608df3e4755f4b",
+      "original_path": "/private/tmp/console-company-read-adapter-console-platform-auth-unit-discovery-20260920.log",
+      "original_sha256": "062e954d693d1204fdd8000ab33624c291a17509f659065cfd8d68ddea597058",
+      "original_bytes": 1349
+    },
+    {
+      "path": "console-company-read-adapter-count-red-20260920.log.gz",
+      "sha256": "d00b5ecb336f909443a5668ea2ae36453b93da99722fa492354978712d07d587",
+      "original_path": "/private/tmp/console-company-read-adapter-count-red-20260920.log",
+      "original_sha256": "ee89d727e9a39f798872e4db7d71433e40dbab21438be69683333b1e642004ce",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-company-read-adapter-final-0-20260920.log.gz",
+      "sha256": "bdaa2623a0d6b179c6e9e319939d3e5e40259f70fa97c81c105612b8a9e896a3",
+      "original_path": "/private/tmp/console-company-read-adapter-final-0-20260920.log",
+      "original_sha256": "b828a3cc9a23e1fb28ec83ac87a1473b3fca290819f01da8a25658a2e56a9a33",
+      "original_bytes": 3213
+    },
+    {
+      "path": "console-company-read-adapter-final-1-20260920.log.gz",
+      "sha256": "41edb3d31fa15734046e93b9b7876051523048caa1ee66d5424c15b1da69cad1",
+      "original_path": "/private/tmp/console-company-read-adapter-final-1-20260920.log",
+      "original_sha256": "9aeca39fea558d03086bdce420d1010714ebba9ae7cdfa474393932f24b03377",
+      "original_bytes": 10907
+    },
+    {
+      "path": "console-company-read-adapter-final-2-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-read-adapter-final-2-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-read-adapter-final-3-20260920.log.gz",
+      "sha256": "42b13a72c4af681618eadddab5bd2e8bf2a87ec59c7d8939ea84563c6508a4d2",
+      "original_path": "/private/tmp/console-company-read-adapter-final-3-20260920.log",
+      "original_sha256": "c2543f1316b390efaa82414caeb695e0d91d24ce6b549cf8844ea013835bcfc5",
+      "original_bytes": 627
+    },
+    {
+      "path": "console-company-read-adapter-final-4-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-read-adapter-final-4-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-read-adapter-final-record-20260920.json",
+      "sha256": "2b3380c2196d7c581f8dfce31c83f692d6ad2e7c2d319e8393906bc61f84e676",
+      "original_path": "/private/tmp/console-company-read-adapter-final-record-20260920.json",
+      "original_sha256": "2b3380c2196d7c581f8dfce31c83f692d6ad2e7c2d319e8393906bc61f84e676",
+      "original_bytes": 1500
+    },
+    {
+      "path": "console-company-read-adapter-final-security-review-20260920.json",
+      "sha256": "d566c7dfb8a3380421beaa09393148a966f9d0eeb8e9c49f7d0f6560ef313579",
+      "original_path": "/private/tmp/console-company-read-adapter-final-security-review-20260920.json",
+      "original_sha256": "d566c7dfb8a3380421beaa09393148a966f9d0eeb8e9c49f7d0f6560ef313579",
+      "original_bytes": 4964
+    },
+    {
+      "path": "console-company-read-adapter-final-verification-20260920.json",
+      "sha256": "7fe42d3db265d380134f11728bef56b999859ee73282fbb4aa2eba8eb4907565",
+      "original_path": "/private/tmp/console-company-read-adapter-final-verification-20260920.json",
+      "original_sha256": "7fe42d3db265d380134f11728bef56b999859ee73282fbb4aa2eba8eb4907565",
+      "original_bytes": 1673
+    },
+    {
+      "path": "console-company-read-adapter-first-clippy-20260920.log.gz",
+      "sha256": "a1a0843f0083c2017a48330f9ca24f1f58848f397a440f552b0a0b4eebfc2ba0",
+      "original_path": "/private/tmp/console-company-read-adapter-first-clippy-20260920.log",
+      "original_sha256": "ba9c7dac90f072f271ddab770f3be54bf9a5365ff128bb13e946fd0e68cc6009",
+      "original_bytes": 4765
+    },
+    {
+      "path": "console-company-read-adapter-generator-20260920.log.gz",
+      "sha256": "cf4891c81ee29390fb08d6a452802b0205da6115e4631035c0cec87dce7a69d9",
+      "original_path": "/private/tmp/console-company-read-adapter-generator-20260920.log",
+      "original_sha256": "c2dbc476e1d1e34e2167bafa00898b4fcabd04d0cabf3270904143c6a1e96e98",
+      "original_bytes": 37
+    },
+    {
+      "path": "console-company-read-adapter-generator-tests-20260920.log.gz",
+      "sha256": "589a06ce10bfbdf37d8c1f210a5c13ff408ab46f3ca1f9d2724b7930be0187d4",
+      "original_path": "/private/tmp/console-company-read-adapter-generator-tests-20260920.log",
+      "original_sha256": "22f30edeb387c988c82b38cd48407f33d2770308869e3aceb45522a0e824b39e",
+      "original_bytes": 901
+    },
+    {
+      "path": "console-company-read-adapter-generator-tests-round2-20260920.log.gz",
+      "sha256": "cbba11541989284bd5941f98e7f4850ba398e691b50408c3c3f98a1d40eaabc6",
+      "original_path": "/private/tmp/console-company-read-adapter-generator-tests-round2-20260920.log",
+      "original_sha256": "3b131bf1c4e1e117cdab6a8b36238f37c52bdd522706775d1808954987e3d42b",
+      "original_bytes": 167
+    },
+    {
+      "path": "console-company-read-adapter-implementation-20260920.json",
+      "sha256": "4ca57d36551d1ea1f97519866f46ae10e7503c9062e9e0cd43bf3ca0d6b57a4d",
+      "original_path": "/private/tmp/console-company-read-adapter-implementation-20260920.json",
+      "original_sha256": "4ca57d36551d1ea1f97519866f46ae10e7503c9062e9e0cd43bf3ca0d6b57a4d",
+      "original_bytes": 1563
+    },
+    {
+      "path": "console-company-read-adapter-native-artifacts-20260920.json",
+      "sha256": "f9312fdc6a25e771966e7023332cd97ee445d6545c547a658c374d4ac81a0d67",
+      "original_path": "/private/tmp/console-company-read-adapter-native-artifacts-20260920.json",
+      "original_sha256": "f9312fdc6a25e771966e7023332cd97ee445d6545c547a658c374d4ac81a0d67",
+      "original_bytes": 1017
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round1/DESIGN.md.log.gz",
+      "sha256": "2108079ce346dce5e416c6bdaffbec1063e3086262805f38f02407779bf011f3",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round1/DESIGN.md",
+      "original_sha256": "f413858f3fbbefbffdff4823c5b6c792da391023943d84259b9ef13ee3139d39",
+      "original_bytes": 6204
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round1/INTERFACES.rs.log.gz",
+      "sha256": "ab505ab5000d05fa660ae8c32cf2c9252d6489df65aea984aa2a4068063c7724",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round1/INTERFACES.rs",
+      "original_sha256": "c66e397e7fcc11f546b7d80e9ab00eb6a80093e73948e8b816a5a90c88793a12",
+      "original_bytes": 3712
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round1/manifest.json",
+      "sha256": "64f064b9f5a990cc460d94a44cf366c60bdab2081e2f94efe64f2093fc852e5e",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round1/manifest.json",
+      "original_sha256": "64f064b9f5a990cc460d94a44cf366c60bdab2081e2f94efe64f2093fc852e5e",
+      "original_bytes": 909
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round1/native_company_read_usecase_tests.rs.log.gz",
+      "sha256": "f05451a73d59498d50c1524a1917c8750438418c1c15e7ab67bf124d783e8db5",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round1/native_company_read_usecase_tests.rs",
+      "original_sha256": "6da3156b481bc1d3eaa56db32d691380c5d5bbfed155eedef073b1f55c6d724c",
+      "original_bytes": 21185
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round1/source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round1/source-locks.json",
+      "original_sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_bytes": 2497
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round2/DESIGN.md.log.gz",
+      "sha256": "2108079ce346dce5e416c6bdaffbec1063e3086262805f38f02407779bf011f3",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round2/DESIGN.md",
+      "original_sha256": "f413858f3fbbefbffdff4823c5b6c792da391023943d84259b9ef13ee3139d39",
+      "original_bytes": 6204
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round2/INTERFACES.rs.log.gz",
+      "sha256": "111ff17a583ffda15bc954e1282bd062c80719a60bdfd242675954daebc8143b",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round2/INTERFACES.rs",
+      "original_sha256": "29395da96f42d0d1d0ba21895b28dae925cb423d7b664fe4c458ff04539b7306",
+      "original_bytes": 3740
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round2/SUCCESSOR.md.log.gz",
+      "sha256": "372f6dea47c3cad8fb514d422901b5592980713cc4f5db8c1a1ef5ce67831c91",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round2/SUCCESSOR.md",
+      "original_sha256": "15a23b98834c0e03d84cdb3743b6aabbb4ededffde7cab84919eba338440be0b",
+      "original_bytes": 562
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round2/manifest.json",
+      "sha256": "381226dad04e972b7205b3f12b6d59d63d0ebd351fa5cb7baac9639d0e87400b",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round2/manifest.json",
+      "original_sha256": "381226dad04e972b7205b3f12b6d59d63d0ebd351fa5cb7baac9639d0e87400b",
+      "original_bytes": 1262
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round2/native_company_read_usecase_tests.rs.log.gz",
+      "sha256": "f05451a73d59498d50c1524a1917c8750438418c1c15e7ab67bf124d783e8db5",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round2/native_company_read_usecase_tests.rs",
+      "original_sha256": "6da3156b481bc1d3eaa56db32d691380c5d5bbfed155eedef073b1f55c6d724c",
+      "original_bytes": 21185
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round2/source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round2/source-locks.json",
+      "original_sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_bytes": 2497
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/DESIGN.md.log.gz",
+      "sha256": "6cfdda08b39b32e42f792a40383b45c8f437cc2175640e91f31305a22233f978",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/DESIGN.md",
+      "original_sha256": "c286cf26a7f507d9153ff7e66541f42466cbc8e750b7bfa6b4e026ab91728c64",
+      "original_bytes": 6059
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/INTERFACES.rs.log.gz",
+      "sha256": "111ff17a583ffda15bc954e1282bd062c80719a60bdfd242675954daebc8143b",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/INTERFACES.rs",
+      "original_sha256": "29395da96f42d0d1d0ba21895b28dae925cb423d7b664fe4c458ff04539b7306",
+      "original_bytes": 3740
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/SUCCESSOR.md.log.gz",
+      "sha256": "0cf5a0049dd88140fbeccfb6b7e3c856f59890ef360c025958619c86a525ccd3",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/SUCCESSOR.md",
+      "original_sha256": "54c012c03d18a891f013ee8f7130d9846cfa5924e3143cb6c374797065762b58",
+      "original_bytes": 675
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs.log.gz",
+      "sha256": "0c7218f2d402ea1e0c1cc7c08fd9af0c6e93c943ad74a0850aa6e373bceca414",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "original_sha256": "3bd9276d4d2c3995a912a8fcaff6013ae26a80e8d90a2f64c78f4c5767e2f92c",
+      "original_bytes": 21176
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/manifest.json",
+      "sha256": "7d1570b5887609c3bf7863c9032bb527450d7fec800ddf60ed6730b1183ee1a9",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/manifest.json",
+      "original_sha256": "7d1570b5887609c3bf7863c9032bb527450d7fec800ddf60ed6730b1183ee1a9",
+      "original_bytes": 1550
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/registration.rs.fragment.log.gz",
+      "sha256": "f9f148121d25a22ab83d26b37d7ca88fa1a77bfb56eeb0c3ea149f081aeb7453",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/registration.rs.fragment",
+      "original_sha256": "6f6195ec19ad656f2207fc70ec43f0235b3b6b2de26843b751f80825e5bfb434",
+      "original_bytes": 152
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round3/source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round3/source-locks.json",
+      "original_sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_bytes": 2497
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/DESIGN.md.log.gz",
+      "sha256": "92172e50e0f082bf40c786e1b604363bf773c5b3a135a4fe534fa47e8e5a9d72",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/DESIGN.md",
+      "original_sha256": "3aad4a2c651ff45e612662dd91f05711b5f2ddff47676bfc5067a164af24ac08",
+      "original_bytes": 6231
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/INTERFACES.rs.log.gz",
+      "sha256": "111ff17a583ffda15bc954e1282bd062c80719a60bdfd242675954daebc8143b",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/INTERFACES.rs",
+      "original_sha256": "29395da96f42d0d1d0ba21895b28dae925cb423d7b664fe4c458ff04539b7306",
+      "original_bytes": 3740
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/ROUND4.md.log.gz",
+      "sha256": "f3629043bef816eee0ee05108e3e714704d1f82789e9d182f0aa0e385f0c2ffa",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/ROUND4.md",
+      "original_sha256": "3725694b79da47fa033e4efb73138a68f56a938487047b11cfee663a5c51d006",
+      "original_bytes": 1003
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/SUCCESSOR.md.log.gz",
+      "sha256": "0cf5a0049dd88140fbeccfb6b7e3c856f59890ef360c025958619c86a525ccd3",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/SUCCESSOR.md",
+      "original_sha256": "54c012c03d18a891f013ee8f7130d9846cfa5924e3143cb6c374797065762b58",
+      "original_bytes": 675
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs.log.gz",
+      "sha256": "b91caaa6a6aff910791cd9a6df5ab7765b547859f4d2086c383d0354e468f60d",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/backend/crates/platform/authz/src/company_policy/read_usecases_tests.rs",
+      "original_sha256": "8f6d2cb933111eada7b742d15d532b1c3bf4a1d7b9ff267701413f9fdb797e2e",
+      "original_bytes": 22576
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/manifest.json",
+      "sha256": "7c16e30cbf9661e5155dea15b95596ab156df24333827ff7e72348adf6d0ae6c",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/manifest.json",
+      "original_sha256": "7c16e30cbf9661e5155dea15b95596ab156df24333827ff7e72348adf6d0ae6c",
+      "original_bytes": 2007
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/registration.rs.fragment.log.gz",
+      "sha256": "f9f148121d25a22ab83d26b37d7ca88fa1a77bfb56eeb0c3ea149f081aeb7453",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/registration.rs.fragment",
+      "original_sha256": "6f6195ec19ad656f2207fc70ec43f0235b3b6b2de26843b751f80825e5bfb434",
+      "original_bytes": 152
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/round4.patch.log.gz",
+      "sha256": "2fb3b70b5bcac2703b5d60297712f4cd234566530be24eeb598c1cb7de88ff2c",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/round4.patch",
+      "original_sha256": "8e5ac750cbbd9fe2a460aed42f05bb5a97a00feb79036df39636b6c39bd1d74a",
+      "original_bytes": 1847
+    },
+    {
+      "path": "console-company-read-usecase-tests-20260920-round4/source-locks.json",
+      "sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-20260920-round4/source-locks.json",
+      "original_sha256": "33784e50f1cd836ae2c3ae5ce00d6ae33178d3cf8b667fafca96969ca616e9bc",
+      "original_bytes": 2497
+    },
+    {
+      "path": "console-company-read-usecase-tests-round3-security-review-20260920.json",
+      "sha256": "095985d90c071d21d1c74022e07dd76c6c50a0ccb5677d56279dd98471b68920",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-round3-security-review-20260920.json",
+      "original_sha256": "095985d90c071d21d1c74022e07dd76c6c50a0ccb5677d56279dd98471b68920",
+      "original_bytes": 3364
+    },
+    {
+      "path": "console-company-read-usecase-tests-round4-security-review-20260920.json",
+      "sha256": "763bee380044f6b56f8257230b9f80d40201b19c74d4e4fbb6cd4c0e0c287762",
+      "original_path": "/private/tmp/console-company-read-usecase-tests-round4-security-review-20260920.json",
+      "original_sha256": "763bee380044f6b56f8257230b9f80d40201b19c74d4e4fbb6cd4c0e0c287762",
+      "original_bytes": 1402
+    },
+    {
+      "path": "console-company-reads-console-identity-application-unit-discovery-20260920.log.gz",
+      "sha256": "26b379d2505ba4b315475f0bdc0055483c7c16baf1ca4bc3e061851b569dca5c",
+      "original_path": "/private/tmp/console-company-reads-console-identity-application-unit-discovery-20260920.log",
+      "original_sha256": "3e0ba49cec2bdf94326c4454c2fbc26b96d66cb31af8933f72fadff2695f68c9",
+      "original_bytes": 789
+    },
+    {
+      "path": "console-company-reads-console-identity-domain-unit-discovery-20260920.log.gz",
+      "sha256": "ec309f85b054f9e70bacab1b5097efed23e62fdf73f4fd6041c44c130d3d4669",
+      "original_path": "/private/tmp/console-company-reads-console-identity-domain-unit-discovery-20260920.log",
+      "original_sha256": "ec94e944e10251dbcb50151e0a7e655fafd3e9cb8003ef96659a67d2c9486b55",
+      "original_bytes": 363
+    },
+    {
+      "path": "console-company-reads-console-platform-authz-unit-discovery-20260920.log.gz",
+      "sha256": "33be915ebb0621e31fa7faf6753a0b7c8b318aab7885b2362c54758856c9b572",
+      "original_path": "/private/tmp/console-company-reads-console-platform-authz-unit-discovery-20260920.log",
+      "original_sha256": "65bdf815930c85e1dc03ce887556bde838f28066b1db47fb770539e91c42cf10",
+      "original_bytes": 10822
+    },
+    {
+      "path": "console-company-reads-count-green-20260920.log.gz",
+      "sha256": "d00b5ecb336f909443a5668ea2ae36453b93da99722fa492354978712d07d587",
+      "original_path": "/private/tmp/console-company-reads-count-green-20260920.log",
+      "original_sha256": "ee89d727e9a39f798872e4db7d71433e40dbab21438be69683333b1e642004ce",
+      "original_bytes": 333
+    },
+    {
+      "path": "console-company-reads-count-red-20260920.log.gz",
+      "sha256": "29fd96169102f4ee049f1a39efe09b8cc7b4c3be89b696818de1e262ebdbb90c",
+      "original_path": "/private/tmp/console-company-reads-count-red-20260920.log",
+      "original_sha256": "51bb334d0d9af5ccf589f95f8fcb78ecec923fd349f96c5db99704e63941febb",
+      "original_bytes": 441
+    },
+    {
+      "path": "console-company-reads-count-update-20260920.log.gz",
+      "sha256": "fd8cf9ffef50f120306753fb095ab3bbc41719d49b7644c80c557ecad6e81bcd",
+      "original_path": "/private/tmp/console-company-reads-count-update-20260920.log",
+      "original_sha256": "291aad6e00f8c6c483cfaf34ec21f285fa9fd79c91100e1d6dde2ff4a35caac2",
+      "original_bytes": 525
+    },
+    {
+      "path": "console-company-reads-final-0-20260920.log.gz",
+      "sha256": "31218ad1b613905b2a451b89d7219ae1a7dccf15fecf5e969b936dc9bace94c0",
+      "original_path": "/private/tmp/console-company-reads-final-0-20260920.log",
+      "original_sha256": "58bd295bf420514b314dffea71fde8cd56bab16b7c6307ecb124f77eae0bea0a",
+      "original_bytes": 17459
+    },
+    {
+      "path": "console-company-reads-final-1-20260920.log.gz",
+      "sha256": "1986e2f645386eff94df13a903c101147a10caa68cd2c24fb2affa4bfe4ce362",
+      "original_path": "/private/tmp/console-company-reads-final-1-20260920.log",
+      "original_sha256": "046e02aa25c51fcaf9758dd0c4699302d67a6ac3f4900debff6101fab1d4ced8",
+      "original_bytes": 192
+    },
+    {
+      "path": "console-company-reads-final-2-20260920.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "original_path": "/private/tmp/console-company-reads-final-2-20260920.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0
+    },
+    {
+      "path": "console-company-reads-final-implementation-20260920.json",
+      "sha256": "6103e98a2192f9c89cf1ee59d17db1f007c0254898599ee41a3aa0a6b76e6ba5",
+      "original_path": "/private/tmp/console-company-reads-final-implementation-20260920.json",
+      "original_sha256": "6103e98a2192f9c89cf1ee59d17db1f007c0254898599ee41a3aa0a6b76e6ba5",
+      "original_bytes": 1430
+    },
+    {
+      "path": "console-company-reads-final-security-review-20260920.json",
+      "sha256": "4d336d9506975701de7233de0dc88e0b9b83ad5ea669f4f4ce892202f1532a53",
+      "original_path": "/private/tmp/console-company-reads-final-security-review-20260920.json",
+      "original_sha256": "4d336d9506975701de7233de0dc88e0b9b83ad5ea669f4f4ce892202f1532a53",
+      "original_bytes": 4088
+    },
+    {
+      "path": "console-company-reads-final-verification-20260920.json",
+      "sha256": "1bfb787b7a1dbe39400bd581b7532a7ac619c41a328ef2fbf2e49516fb906f0e",
+      "original_path": "/private/tmp/console-company-reads-final-verification-20260920.json",
+      "original_sha256": "1bfb787b7a1dbe39400bd581b7532a7ac619c41a328ef2fbf2e49516fb906f0e",
+      "original_bytes": 1158
+    },
+    {
+      "path": "console-company-reads-first-0-20260920.log.gz",
+      "sha256": "a8971e5e6568662ccea6b416cddb897da060ace2cb277065a0233491158e85a9",
+      "original_path": "/private/tmp/console-company-reads-first-0-20260920.log",
+      "original_sha256": "e5dd75f41fb5b1b6be5d81d5b7e4c512f96538e05d2fcfae00a57e25065205ac",
+      "original_bytes": 20081
+    },
+    {
+      "path": "console-company-reads-first-1-20260920.log.gz",
+      "sha256": "5de7c10379c86b0f4fb162459dd1641910800e9f609ec04b82aec90781a4c31a",
+      "original_path": "/private/tmp/console-company-reads-first-1-20260920.log",
+      "original_sha256": "9bfb97003358bdc966ef16ab7b916c654bb95c9179a123370636b412dcc00d2e",
+      "original_bytes": 325
+    },
+    {
+      "path": "console-company-reads-first-implementation-20260920.json",
+      "sha256": "462903f522e09b10fade586314c5b4211a1fbd0f66433865ae0d8af932339397",
+      "original_path": "/private/tmp/console-company-reads-first-implementation-20260920.json",
+      "original_sha256": "462903f522e09b10fade586314c5b4211a1fbd0f66433865ae0d8af932339397",
+      "original_bytes": 1362
+    },
+    {
+      "path": "console-company-reads-first-verification-20260920.json",
+      "sha256": "8d7df6e222c0ddabccb38104d6d563e95c0a0307d1faaac7d9ae10e2d79d4dff",
+      "original_path": "/private/tmp/console-company-reads-first-verification-20260920.json",
+      "original_sha256": "8d7df6e222c0ddabccb38104d6d563e95c0a0307d1faaac7d9ae10e2d79d4dff",
+      "original_bytes": 979
+    },
+    {
+      "path": "console-company-reads-implementation-security-review-20260920.json",
+      "sha256": "8e30120d6e39c6d6578c6ab564b962dbfca398d1ace84e936349b4546885daf0",
+      "original_path": "/private/tmp/console-company-reads-implementation-security-review-20260920.json",
+      "original_sha256": "8e30120d6e39c6d6578c6ab564b962dbfca398d1ace84e936349b4546885daf0",
+      "original_bytes": 3834
+    },
+    {
+      "path": "console-company-reads-native-artifacts-20260920.json",
+      "sha256": "bfa7ab6921e76fab27c9540f0f505c4c0c06869a09bc8a8d1ef0745a8c9cab4f",
+      "original_path": "/private/tmp/console-company-reads-native-artifacts-20260920.json",
+      "original_sha256": "bfa7ab6921e76fab27c9540f0f505c4c0c06869a09bc8a8d1ef0745a8c9cab4f",
+      "original_bytes": 1587
+    },
+    {
+      "path": "console-company-reads-preflight-20260920.log.gz",
+      "sha256": "195acb455785aac3bbee160aadcc6a118379dac5fa6c6cdab3b5a61aeb4780ae",
+      "original_path": "/private/tmp/console-company-reads-preflight-20260920.log",
+      "original_sha256": "263e62f7ff90139d1dbc73d1fab3c6b9d2380bee0a62cb1383f1308f3e0ea572",
+      "original_bytes": 629
+    },
+    {
+      "path": "console-native-company-read-enclosing-admit-20260920.log.gz",
+      "sha256": "3c90980213d9a7dc39e3871e34d89421f331b3c28e1c5c5ac2d2c057930ee3b5",
+      "original_path": "/private/tmp/console-native-company-read-enclosing-admit-20260920.log",
+      "original_sha256": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+      "original_bytes": 48
+    },
+    {
+      "path": "console-native-company-read-enclosing-lane-20260920.json",
+      "sha256": "48e0a2024700391783e0b9a06d5c6649edbe02e4fe49524e5dde261644e089a0",
+      "original_path": "/private/tmp/console-native-company-read-enclosing-lane-20260920.json",
+      "original_sha256": "48e0a2024700391783e0b9a06d5c6649edbe02e4fe49524e5dde261644e089a0",
+      "original_bytes": 11549
+    },
+    {
+      "path": "console-native-company-read-enclosing-red-20260920.log.gz",
+      "sha256": "b10c0cfc230d553c285f90a163da98e70399a966d8f21a6ec686e2bccc43217c",
+      "original_path": "/private/tmp/console-native-company-read-enclosing-red-20260920.log",
+      "original_sha256": "6f7202c7ff4a437879b13ae27b08a290c49db234d41878aa1a185038e9f4afe3",
+      "original_bytes": 7446
+    }
+  ],
+  "scope": [
+    "Application read use cases:144 distinct native unit passes.",
+    "Auth credential wrappers:4 exact native PostgreSQL cases plus13 Auth unit cases pass.",
+    "Auth REST binary discovers511 tests; only4 selected database cases executed for this change.",
+    "PgOrgStore source reviewed and linted; required SQL projection/candidate functions still absent.",
+    "Company creation remains HTTP404 versus expected201 on original complete probe.",
+    "No five-workflow MVP, SQL/store/HTTP, release or production qualification claim."
+  ],
+  "classification": "JSON receipts are inspected evidence; compressed source snapshots and command transcripts are byte-preserved raw evidence, not authority. No retired-reference scanner exemption added.",
+  "retained_failures": [
+    "Application initial test-count mismatch before reviewed positive update.",
+    "First generator regression67pass1fail before exact regenerated source mapping was staged; successor68pass."
+  ],
+  "count_note": "console-company-read-adapter-count-red-20260920.log.gz has a preselected filename but records a successful GREEN run; no static baseline change for Auth wrappers."
+}
