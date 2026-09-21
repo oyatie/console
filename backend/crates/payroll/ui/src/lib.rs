@@ -17,18 +17,9 @@ const PKG_WASM: &str = "/pkg/console_payroll_ui_bg.wasm";
 /// shell forbids it. Inlining also costs the authorized screens no extra
 /// round trip. No `>` in any selector: `<style>` content is emitted raw, and
 /// descendant selectors keep the sheet independent of that.
-const STYLE: &str = r#"
-:root{color-scheme:light;--bg:#f5f5f2;--surface:#fff;--line:#e1e3df;--ink:#202923;
---muted:#59645e;--accent:#815000;--accent-bg:#fff2cb;--chip:#edf1ed;--chip-ink:#405448;
---flag:#fff0eb;--flag-ink:#963c23}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
-font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
-a{color:var(--accent);text-underline-offset:3px}
-a:hover{text-decoration-thickness:2px}
-a,button,input,select,summary{touch-action:manipulation}
-:focus-visible{outline:3px solid #2364aa;outline-offset:4px}
+const STYLE: &str = concat!(
+    include_str!("theme.css"),
+    r#"
 .workspace{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100dvh}
 .skip-link{position:fixed;left:16px;top:12px;z-index:20;padding:12px 18px;background:var(--ink);
 color:#fff;border-radius:8px;transform:translateY(-160%)}
@@ -57,7 +48,7 @@ h2,h3,p,dd,a,summary{overflow-wrap:anywhere}
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}
 .fl{font-size:14px;font-weight:600;color:var(--muted)}
 select,input,textarea,button{font:inherit}
-select{min-height:44px;padding:8px 12px;border:1px solid #9da89f;border-radius:8px;background:var(--surface);color:var(--ink);max-width:100%}
+select{min-height:44px;padding:8px 12px;border:1px solid var(--control-border);border-radius:8px;background:var(--surface);color:var(--ink);max-width:100%}
 .row{display:flex;align-items:baseline;gap:14px;padding:17px 22px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
 .row:last-child{border-bottom:0}
 .row:hover{background:#fafbf8}
@@ -128,7 +119,8 @@ main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px
 .panel h2{padding:16px}.toolbar{padding:12px 16px}.row{flex-wrap:wrap;gap:8px 12px;padding:16px}
 .row .meta{flex:1 0 100%;order:3}.badge{margin-left:0}.state{padding:24px 16px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-"#;
+"#
+);
 
 const ISLAND_BOOTSTRAP: &str = concat!(
     include_str!("island_script.js"),
@@ -648,7 +640,10 @@ mod ssr {
                 (header::CACHE_CONTROL, "no-store"),
                 (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
             ],
-            include_str!("native_account.css"),
+            concat!(
+                include_str!("theme.css"),
+                include_str!("native_account.css")
+            ),
         )
     }
 

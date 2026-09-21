@@ -118,7 +118,7 @@ RESOURCE_CONFIG = {
         # `include_bytes!` so the SSR server can serve /pkg out of the binary.
         # All three live inside this Buck package, so a glob reaches them; a
         # `src/**/*.rs` glob alone leaves rustc unable to read any of them.
-        "srcs": ["src/**/*.js", "src/native_account.css", "pkg/*.js", "pkg/*.wasm"],
+        "srcs": ["src/**/*.js", "src/native_account.css", "src/theme.css", "pkg/*.js", "pkg/*.wasm"],
         # The unit tests `include_str!` two schema files from outside this
         # package: the payroll REST fragment they check contract keys against,
         # and the composed document.

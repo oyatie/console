@@ -15,7 +15,7 @@ export_file(
 
 rust_library(
     name = "console-payroll-ui",
-    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "pkg/*.js", "pkg/*.wasm"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "src/theme.css", "pkg/*.js", "pkg/*.wasm"]), external = {
         "//backend/crates/payroll/rest:crate-openapi-tree": "backend/crates/payroll/rest/openapi",
         "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
     }),
@@ -35,7 +35,7 @@ rust_library(
 
 rust_test(
     name = "console-payroll-ui-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "pkg/*.js", "pkg/*.wasm"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "src/theme.css", "pkg/*.js", "pkg/*.wasm"]), external = {
         "//backend/crates/payroll/rest:crate-openapi-tree": "backend/crates/payroll/rest/openapi",
         "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
     }),
