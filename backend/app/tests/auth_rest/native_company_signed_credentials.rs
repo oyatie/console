@@ -773,4 +773,111 @@ mod signed_credentials {
         f.business.close().await;
         f.startup.close().await;
     }
+
+    #[sqlx::test(migrations = false)]
+    async fn company_transport_capture_forwards_exact_signed_access_and_mutation_proof(
+        pool: PgPool,
+    ) {
+        let f = fixture(&pool, false).await;
+        let before = all_rows(&pool).await;
+        let state = console_platform_auth_rest::AuthRestState::new(
+            f.business.clone(),
+            console_platform_auth_rest::AuthRestConfig {
+                rp_id: "example.com".into(),
+                rp_origin: TEST_ORIGIN.into(),
+                rp_name: "Console".into(),
+                ceremony_ttl: time::Duration::minutes(5),
+                jwt_issuer: TEST_ISSUER.into(),
+                jwt_audience: TEST_AUDIENCE.into(),
+                jwt_private_key_pem: f.key.to_pkcs8_pem(LineEnding::LF).unwrap().to_string(),
+                jwt_public_key_pem: f
+                    .key
+                    .verifying_key()
+                    .to_public_key_pem(LineEnding::LF)
+                    .unwrap(),
+                refresh_token_ttl: time::Duration::days(30),
+                refresh_family_absolute_ttl: f.ttl,
+                cookie_secure: true,
+            },
+        )
+        .unwrap();
+        let mut headers = http::HeaderMap::new();
+        headers.insert(
+            http::header::COOKIE,
+            http::HeaderValue::from_str(&format!("{ACCESS}={}", f.access)).unwrap(),
+        );
+        let read = state.company_api_read_credentials(&headers).unwrap();
+        headers.insert("sec-fetch-site", http::HeaderValue::from_static("none"));
+        headers.insert("sec-fetch-mode", http::HeaderValue::from_static("navigate"));
+        headers.insert("sec-fetch-dest", http::HeaderValue::from_static("document"));
+        let document = state
+            .company_document_credentials(&headers)
+            .unwrap_or_else(|_| panic!("genuine document capture"));
+        headers.remove("sec-fetch-mode");
+        headers.remove("sec-fetch-dest");
+        headers.insert(
+            "sec-fetch-site",
+            http::HeaderValue::from_static("same-origin"),
+        );
+        headers.insert(
+            http::header::ORIGIN,
+            http::HeaderValue::from_static(TEST_ORIGIN),
+        );
+        headers.insert(
+            http::header::CONTENT_TYPE,
+            http::HeaderValue::from_static("application/json"),
+        );
+        headers.insert(
+            "x-console-csrf",
+            http::HeaderValue::from_str(&f.csrf).unwrap(),
+        );
+        let mutation = state.company_api_mutation_credentials(&headers).unwrap();
+        for credentials in [&read, &document, &mutation] {
+            let mut tx = f.business.begin().await.unwrap();
+            let runtime: bool = sqlx::query_scalar(
+                "SELECT session_user=current_user AND current_user='console_rt'",
+            )
+            .fetch_one(&mut *tx)
+            .await
+            .unwrap();
+            assert!(runtime);
+            assert_eq!(
+                credentials
+                    .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                    .await
+                    .unwrap(),
+                (f.account, f.session)
+            );
+            let current = credentials
+                .read_session_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await
+                .unwrap();
+            assert_eq!(
+                (current.account_id, current.session_id),
+                (f.account, f.session)
+            );
+            tx.rollback().await.unwrap();
+        }
+        // Transport captures bounded bytes; only the actual Auth owner rejects
+        // a genuine proof belonging to another current family of this Account.
+        headers.insert(
+            "x-console-csrf",
+            http::HeaderValue::from_str(&f.other_family_csrf).unwrap(),
+        );
+        let wrong_proof = state.company_api_mutation_credentials(&headers).unwrap();
+        let mut tx = f.business.begin().await.unwrap();
+        assert!(matches!(
+            wrong_proof
+                .session_ids_in_tx(&mut tx, &f.verifier, f.ttl)
+                .await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        assert!(
+            before == all_rows(&pool).await,
+            "capture/read/refusal changed complete owner history"
+        );
+        f.business.close().await;
+        f.startup.close().await;
+    }
 }

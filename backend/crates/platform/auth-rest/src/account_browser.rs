@@ -1394,3 +1394,7 @@ pub(super) async fn refresh(
     .await;
     complete_transaction(tx, response).await
 }
+
+#[cfg(test)]
+#[path = "company_credential_capture_tests.rs"]
+mod company_credential_capture_tests;
