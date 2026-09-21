@@ -1,0 +1,124 @@
+{
+  "status": "Shared Account/workspace visual foundation implemented and bounded native/Account-browser verification passed; full MVP/release incomplete",
+  "owner": "/root",
+  "reviewers": [
+    "/root/integration_tests",
+    "/root/integration_security"
+  ],
+  "test_base": "2d049f06c",
+  "implementation_head": "af0495c1a79fa378cda72d5db5fdba0c5b8360d9",
+  "source_hashes": "applied-source.json",
+  "design": "design.json",
+  "change": "Reuse one light palette, installed Korean/system font stack, focus and semantic colors in existing inline workspace and native Account stylesheet route; strengthen input/select borders and footer contrast",
+  "verification": [
+    {
+      "command": "tools/buck2 run //backend/crates/payroll/ui:console-payroll-ui-unit -- --exact ssr::theme_tests::native_account_asset_and_workspace_share_one_light_theme",
+      "red": "console-shared-theme-red-20260921.log",
+      "green": "console-shared-theme-probe-20260921.log",
+      "discovered": 29,
+      "executed": 1,
+      "passed": 1,
+      "ignored": 0,
+      "filtered": 28
+    },
+    {
+      "command": "tools/buck2 test //backend/crates/payroll/ui:console-payroll-ui-unit",
+      "log": "console-shared-theme-ui29-20260921.log",
+      "discovered": 29,
+      "executed": 29,
+      "passed": 29,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "python3 tools/buck/test_gen_first_party.py",
+      "log": "console-shared-theme-generator71-20260921.log",
+      "executed": 71,
+      "passed": 71,
+      "failed": 0
+    },
+    {
+      "command": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=account_browser::native_entry_real_browser_enroll_logout_login tools/buck/test_needs_postgres.sh //tools/buck:app-auth-rest-browser-pg --num-threads=1",
+      "log": "console-shared-theme-account-browser-20260921.log",
+      "environment": "Canonical account driver1ece7ccf and independently pinned browser/runtime in browser-prerequisites.json; fresh output directory; Buck2 product/test compilation",
+      "discovered": 523,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 522,
+      "real_account_created_through_UI": true,
+      "owner_checkpoints": [
+        "ENROLLED",
+        "LOGGED_OUT",
+        "LOGGED_IN"
+      ],
+      "observations": "Same Account after browser login, secure cookie/logout checks, keyboard navigation/terms/submit,320px reflow,0 external requests,0unexpectedPOSTs, complete Account effects/retained history and unchanged business rows. Synthetic WebAuthn device; test-only legal-terms publication fixture.",
+      "evidence": [
+        "browser/result.json",
+        "browser/owner-receipt.json"
+      ]
+    }
+  ],
+  "invariants": [
+    "Markup,auth handlers and JavaScript unchanged",
+    "Existing routes/CSP/cache/nosniff retained",
+    "No external font or additional hydration requested",
+    "Page layouts and all existing tests retained",
+    "No product seeded Account, invented business data or new route"
+  ],
+  "pre_mortem": "Global CSS can obscure focus or regress layout; exact SSR assets, unchanged selectors and real keyboard/browser checks bound the change",
+  "blast_radius": "Visual presentation and one declared native build input",
+  "rollback": "Revert bounded implementation; preserve review/test/browser evidence",
+  "stop_conditions": [
+    "Source identity drift",
+    "Unowned generator output",
+    "Changed auth/disclosure behavior",
+    "Disabled required tests"
+  ],
+  "remaining_holds": [
+    "No200percentzoom/screen-reader/representative-user acceptance established by this driver",
+    "No populated Company/business browser qualification",
+    "Native hydration patches await explicit approval",
+    "Full five-workflow MVP and full release inventory/qualification",
+    "Protected integration/exposure"
+  ],
+  "inventory_promotion": "None; bounded evidence does not accept any entire release leaf",
+  "evidence_sha256": {
+    "design.json": "e6fbe5050b04a4398966a79a8931663028313a2714cda1d8ac92b6420392c3e4",
+    "manifest.json": "0f7d13acbfee6be63fc959af82c4f32dd11f7b352c530e0e6c4a0dfeb4c888f4",
+    "applied-source.json": "935113dd79a6d9ab70283846f91d4685e1fd2dfa89c6d1fd796b594971308c0a",
+    "contrast.json": "bd15b4039c97e977b396e615f30fc658f60512f5bb5c5fbfdf6054315b8bf6fd",
+    "browser-prerequisites.json": "90e9612e4a8e115d0382e3cbafa582118e45e72413899d899be89ff289f7867e",
+    "lane.json": "4c6c1294f5ff22224392945a1670a58e5b6957053798c59cfed2b9ba1b567be9",
+    "console-shared-theme-design-test-integration-review-20260921.json": "df362e294f00ad8ab4e8c89798ea64e9e75aa7f1ba2388a97e2e0dd7a1f8177d",
+    "console-shared-theme-source-round4-integration-review-20260921.json": "1e439af3268ccb0012474074dd0e579e0f2e34d10150f6589c4c334bbfb82cbe",
+    "console-shared-theme-security-review-round3-20260921.json": "197b67ae9821b3b8fbd94e969e9d0ee759ff645b6f3504cd73655a819d5db622",
+    "console-shared-theme-mechanical-integration-review-20260921.json": "eb4688241584733dee169363db14e896f66ac14f4ef8b035b833a2763fa707d6",
+    "console-shared-theme-red-20260921.log": "94f76cf8ecb56dc83b143e1d74530b244e3957f1c85020d7a1370171eca84c7f",
+    "console-shared-theme-admission-20260921.log": "1b17e00a63157d432ce33e580048e9d2ff467b7d5caa7b51c5199c79ecf1d861",
+    "console-shared-theme-probe-20260921.log": "f03e22175ff458b1f1906ba915bbc58578008b48eb1a48f82c61347e8a333b5c",
+    "console-shared-theme-generation-20260921.log": "c2dbc476e1d1e34e2167bafa00898b4fcabd04d0cabf3270904143c6a1e96e98",
+    "console-shared-theme-ui29-20260921.log": "e49fe3365d9898ef32a93a693034e4de248c4f7cd207f8e50ebb7d98b6a21566",
+    "console-shared-theme-generator71-20260921.log": "eda2bf327fb607b66906a75966fe10c723792d74271e0411cf072a89ff79b907",
+    "console-shared-theme-account-browser-20260921.log": "0f9b8f928dbbe922ef5fefa863480e157fe47258231a496d322b671a994c8f7e",
+    "browser/04-sign-in.png": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e",
+    "browser/result.json": "462ebe03c54f2f313438c4041ca0f5c95d7c06aacc221e86029b3b8d0449359b",
+    "browser/03-account-enrolled.png": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+    "browser/owner-receipt.json": "c9bec887fa7498b125510733330b2b8b21f2841333c2f459fd1b024f2ba6031e",
+    "browser/05-account-returned.png": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e",
+    "browser/02-terms.png": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e",
+    "browser/01-public.png": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023",
+    "console-shared-theme-browser-integration-review-20260921.json": "889d79f477035f66f91f0bba770fa4aa949fe045491dddc92546439567ea3ed4",
+    "console-shared-theme-evidence-adrs-20260921.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995",
+    "console-shared-theme-evidence-integration-review-20260921.json": "a22733f1936b6c9e9fdbe2e7fc612318402315ca37df22385096d28e758a2914"
+  },
+  "visual_decision": {
+    "decision": "ADOPT bounded shared light theme",
+    "review": "console-shared-theme-browser-integration-review-20260921.json",
+    "evidence": "Independent review of all five fresh Account screenshots against original five captures; root also inspected screens and source.",
+    "limits": "Keyboard skip/discovery/terms/register verified. Logout/login were clicked; not complete keyboard-only workflow certification."
+  },
+  "evidence_review": "console-shared-theme-evidence-integration-review-20260921.json"
+}

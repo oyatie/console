@@ -1,0 +1,29 @@
+{
+  "reviewer": "integration_tests",
+  "verdict": "approved bounded evidence accuracy for commit",
+  "receipt_sha256": "5ace3345530d3141ecc7ab6dfb0545ac6da56089b446062d5b0d1fb4a9fabeda",
+  "implementation_head": "af0495c1a79fa378cda72d5db5fdba0c5b8360d9",
+  "checks": [
+    "All26 listed evidence file hashes verified; no unlisted payload files",
+    "All5 applied source hashes match current root and exact implementation commit",
+    "Canonical account driver and all4 runtime artifact hashes independently verified",
+    "Actual RED failure is missing--bg; same probe GREEN1/28filtered",
+    "Full native UI29pass/noignore/nofilter; generator71pass; actual browser1pass/522filtered",
+    "Allfive copied screenshot hashes match independently viewed captures;03and05 byte-identical",
+    "Browser result and DB owner checkpoint copies retain full limits and cleanup; actual Rust boundary checks complete Account effects/history and unchanged business snapshots",
+    "Explicit click limitation preserved for logout/login; no inventory promotion or full accessibility/business/release claim",
+    "No private keys, bearer/JWT tokens or credentialled database URLs detected in textual payload; inspected screenshot copy contains only synthetic/public Account UX"
+  ],
+  "remaining_holds": [
+    "No200percentzoom/screen-reader/representative-user acceptance established by this driver",
+    "No populated Company/business browser qualification",
+    "Native hydration patches await explicit approval",
+    "Full five-workflow MVP and full release inventory/qualification",
+    "Protected integration/exposure"
+  ],
+  "test_execution_by_reviewer": 0,
+  "notes": [
+    "Read-only evidence audit; root owns test execution and integration commit",
+    "Prerequisite file is intentionally pre-browser verification record; later actual browser artifacts establish current bounded browser pass"
+  ]
+}

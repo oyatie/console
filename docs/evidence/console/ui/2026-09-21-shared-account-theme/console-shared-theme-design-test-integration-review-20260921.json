@@ -1,0 +1,32 @@
+{
+  "reviewer": "integration_tests",
+  "design_sha256": "e6fbe5050b04a4398966a79a8931663028313a2714cda1d8ac92b6420392c3e4",
+  "test_sha256": "11ddea2793cfe9a00bb591fa8c6e0bdc771778ba5f6674a54114877ce75927a5",
+  "verdict": "approved_bounded_design_and_composition_test",
+  "scope": "Shared light CSS extraction/composition only; no implementation/browser acceptance",
+  "tests_discovered_new": 1,
+  "tests_executed": 0,
+  "evidence": [
+    "Prototype color/typography and current Account/workspace/SSR callers reviewed. Preserve current workspace palette and foreground --muted role; prototype --muted is a different background role.",
+    "Updated allowed scope includes canonical generator resource-list change plus generated UI BUCK, required by explicit native_account.css roster.",
+    "Only test addition is nested ssr::theme_tests. Uses actual native_account_css response and rendered shell style; checks shared unique tokens, light scheme, no external import, existing asset headers, no public hydration. No new dependency or exposed handler.",
+    "Adopt semantic palette roles/Korean-readable typography; adapt to installed Korean/system font stack; reject external font fetch and prototype tiny text/dark theme for this slice."
+  ],
+  "implementation_review_conditions": [
+    "Page-specific selectors/layout stay local; do not compose all workspace CSS into Account. Preserve existing route/cache/nosniff/CSP and controls/handlers.",
+    "Use dedicated visible control border token, not low-contrast decorative divider token. Current --line is1.29:1white and current #9da89f input border2.46:1white. Example #7c877f is3.73:1white/3.42:1canvas.",
+    "Review actual declarations and screenshots: shared token equality alone does not prove tokens are used or accessible rendered states.",
+    "Retain explicit hidden/focus/minimum-control-size/reflow rules and source-selector preservation."
+  ],
+  "browser_evidence_reuse": [
+    "Reuse tools/browser/account.cjs and actual parent-owned Account browser leaf: real enrollment/logout/login DB checkpoints, pinned browser, zero external requests, keyboard discovery/focus and320px geometry, original screenshot sequence.",
+    "Reuse existing Company invalid-input browser leaf only for active form/input-preservation visuals; it does not establish Company creation or populated workspace acceptance.",
+    "Capture fresh post-change screenshots and independent visual critique; older screenshots are comparison baselines only. Existing driver does not prove200percentzoom, screen-reader usability, all contrast states, or representative-user outcomes."
+  ],
+  "holds": [
+    "Exact implementation diff",
+    "Same semantic probeRED\u2192GREEN and retained UI/generator suites",
+    "Fresh browser evidence and independent visual review",
+    "Populated business/native Company and release qualification"
+  ]
+}

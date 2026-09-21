@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/integration_security",
+  "scope": "Exact frozen round3 shared light-theme design/source; not browser or release acceptance",
+  "decision": "APPROVE bounded implementation",
+  "manifest_sha256": "0f7d13acbfee6be63fc959af82c4f32dd11f7b352c530e0e6c4a0dfeb4c888f4",
+  "files": {
+    "design.json": "e6fbe5050b04a4398966a79a8931663028313a2714cda1d8ac92b6420392c3e4",
+    "lib-tests.rs": "37775cf90ad6f1995ae032a425b248c01ee06c0946eb5340486278022ae31309",
+    "lib-implementation.rs": "79704a7437dff4722de1337fcae87724041fb95a99561e272deddbd08be78872",
+    "native_account.css": "8c22211fbeed70b0b93af1c66d5294282a31b7adde77142d3cf3b55604418f26",
+    "theme.css": "a2f352cc6798b7d217711e4556394026fe754b3ad595bcfcac73ce5f7b5bf2d7"
+  },
+  "lenses": [
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "findings": [],
+  "observations": [
+    "Exact source diff preserves routes, CSP/cache/content-type headers, account handlers, native form markup, state hiding, responsive page-specific layouts and deny-by-omission hydration behavior.",
+    "Shared theme contains no external imports or URLs, preserves hidden!important, focus ring, Korean installed-font fallback and body layout. Account enabled button/text input heights remain46px and workspace selects44px.",
+    "Only shared palette/composition and enabled control border colors change; native-account CSS remains served separately from workspace layout.",
+    "Control boundary and footer contrast concerns from predecessor corrected. Existing terms checkbox20px and summary targets need browser accessibility qualification, not a regression introduced here.",
+    "Generator src/theme.css addition is required and must be checked separately after regeneration."
+  ],
+  "contrast_ratios": {
+    "ink/bg": 13.705,
+    "muted/bg": 5.639,
+    "accent/white": 6.816,
+    "control/white": 3.697,
+    "focus/bg": 5.533,
+    "flag": 6.374,
+    "info": 8.697,
+    "chip": 7.135
+  },
+  "executed_browser_tests": 0,
+  "executed_rust_tests": 0,
+  "remaining_holds": [
+    "Native test GREEN and retained suite evidence",
+    "Generated exact source declaration review",
+    "Real browser typography, reflow, keyboard, IME and screenshot critique",
+    "Complete workflow/release qualification"
+  ]
+}

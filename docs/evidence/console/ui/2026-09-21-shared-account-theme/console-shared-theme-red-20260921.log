@@ -1,0 +1,30 @@
+[2026-09-21T16:49:29.535-04:00] Build ID: a847eb44-0ba7-421b-9523-830c17a2ac97
+[2026-09-21T16:49:29.539-04:00] File changed: root//rustfmt.toml
+[2026-09-21T16:49:29.540-04:00] Directory changed: root//docs/evidence/console/build
+[2026-09-21T16:49:29.540-04:00] Directory changed: root//docs/evidence/console/build/2026-09-21-native-writer-gate
+[2026-09-21T16:49:29.540-04:00] 24 additional file change events
+[2026-09-21T16:49:36.637-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui-unit (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T16:49:37.346-04:00] Cache hits: 0%
+[2026-09-21T16:49:37.346-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T16:49:37.346-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+
+running 1 test
+test ssr::theme_tests::native_account_asset_and_workspace_share_one_light_theme ... FAILED
+
+failures:
+
+---- ssr::theme_tests::native_account_asset_and_workspace_share_one_light_theme stdout ----
+
+thread 'ssr::theme_tests::native_account_asset_and_workspace_share_one_light_theme' (80031901) panicked at backend/crates/payroll/ui/backend/crates/payroll/ui/src/lib.rs:691:13:
+assertion `left == right` failed: theme property --bg must have one definition
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    ssr::theme_tests::native_account_asset_and_workspace_share_one_light_theme
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.00s
+

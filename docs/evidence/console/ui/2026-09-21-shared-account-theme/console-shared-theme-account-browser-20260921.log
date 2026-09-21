@@ -1,0 +1,34 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T16:53:29.902-04:00] Build ID: 205d2c1b-a763-446a-8c19-3c8cae4992c8
+[2026-09-21T16:53:29.904-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:53:36.905-04:00] Waiting on root//third-party/rust:cpufeatures-0.3.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (write cpufeatures-0.3.0.crate_unpack.sh), and 675 other actions
+[2026-09-21T16:53:44.003-04:00] Waiting on root//third-party/rust:base64-0.23 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPL/base64-link-diag.args), and 434 other actions
+[2026-09-21T16:53:51.205-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T16:53:58.206-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T16:54:05.305-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T16:54:12.306-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T16:54:19.406-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic])
+[2026-09-21T16:54:19.450-04:00] Cache hits: 0%
+[2026-09-21T16:54:19.450-04:00] Commands: 5 (cached: 0, remote: 0, local: 5)
+[2026-09-21T16:54:19.450-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T16:54:19.468-04:00] Build ID: c6840069-7281-4ceb-a6ec-90eba40453ea
+[2026-09-21T16:54:19.468-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:54:26.569-04:00] Waiting on root//third-party/rust:time-macros-0.2.32.crate (prelude//platforms:default#11a256c53bf8083e) -- action (write time-macros-0.2.32.crate_unpack.sh), and 735 other actions
+[2026-09-21T16:54:34.342-04:00] Waiting on root//third-party/rust:simd-adler32-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 545 other actions
+[2026-09-21T16:54:42.070-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T16:54:49.169-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T16:54:52.103-04:00] ✓ Pass: root//tools/buck:app-auth-rest-browser-pg (10.9s)
+[2026-09-21T16:54:52.103-04:00] ---- STDOUT ----
+[2026-09-21T16:54:52.103-04:00]
+[2026-09-21T16:54:52.103-04:00] running 1 test
+[2026-09-21T16:54:52.103-04:00] test account_browser::native_entry_real_browser_enroll_logout_login ... ok
+[2026-09-21T16:54:52.103-04:00]
+[2026-09-21T16:54:52.103-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 522 filtered out; finished in 8.46s
+[2026-09-21T16:54:52.103-04:00]
+[2026-09-21T16:54:52.103-04:00]
+[2026-09-21T16:54:52.103-04:00] ---- STDERR ----
+[2026-09-21T16:54:52.103-04:00]
+[2026-09-21T16:54:52.113-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

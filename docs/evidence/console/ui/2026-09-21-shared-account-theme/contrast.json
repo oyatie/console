@@ -1,0 +1,62 @@
+{
+  "method": "WCAG relative sRGB luminance source-pair calculation; not rendered-state/accessibility qualification",
+  "source": "a2f352cc6798b7d217711e4556394026fe754b3ad595bcfcac73ce5f7b5bf2d7",
+  "checks": [
+    {
+      "name": "primary text",
+      "foreground": "#202923",
+      "background": "#f5f5f2",
+      "ratio": 13.705,
+      "minimum": 4.5
+    },
+    {
+      "name": "secondary text",
+      "foreground": "#59645e",
+      "background": "#f5f5f2",
+      "ratio": 5.639,
+      "minimum": 4.5
+    },
+    {
+      "name": "primary button",
+      "foreground": "#ffffff",
+      "background": "#815000",
+      "ratio": 6.816,
+      "minimum": 4.5
+    },
+    {
+      "name": "control border",
+      "foreground": "#7c887e",
+      "background": "#ffffff",
+      "ratio": 3.697,
+      "minimum": 3
+    },
+    {
+      "name": "focus on canvas",
+      "foreground": "#2364aa",
+      "background": "#f5f5f2",
+      "ratio": 5.533,
+      "minimum": 3
+    },
+    {
+      "name": "error text",
+      "foreground": "#963c23",
+      "background": "#fff0eb",
+      "ratio": 6.374,
+      "minimum": 4.5
+    },
+    {
+      "name": "information text",
+      "foreground": "#294379",
+      "background": "#eef3ff",
+      "ratio": 8.697,
+      "minimum": 4.5
+    },
+    {
+      "name": "state badge",
+      "foreground": "#405448",
+      "background": "#edf1ed",
+      "ratio": 7.135,
+      "minimum": 4.5
+    }
+  ]
+}
