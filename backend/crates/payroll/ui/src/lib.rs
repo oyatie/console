@@ -1,5 +1,6 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 pub mod native_account;
+mod people;
 
 use leptos::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -416,79 +417,6 @@ fn OrgUnits(units: Vec<OrgUnitView>) -> impl IntoView {
 }
 
 #[component]
-fn DirectoryPeople(people: Vec<PersonView>) -> impl IntoView {
-    people
-        .into_iter()
-        .map(|person| {
-            let href = format!("/api/v1/persons/{}", person.id);
-            let label = if !person.display_name.is_empty() {
-                person.display_name.clone()
-            } else if !person.legal_name.is_empty() {
-                person.legal_name.clone()
-            } else {
-                person.id.clone()
-            };
-            // Repeating the display name as its own subtitle is noise.
-            let meta = if person.legal_name == label {
-                String::new()
-            } else {
-                person.legal_name.clone()
-            };
-            let version = revision_label(&person.version);
-            view! {
-                <a class="row" href=href>
-                    <span
-                        class="name"
-                        data-person-id=person.id
-                        data-display-name=person.display_name
-                        data-legal-name=person.legal_name
-                        data-version=person.version
-                    >
-                        {label}
-                    </span>
-                    <span class="meta">{meta}</span>
-                    <span class="rev">{version}</span>
-                </a>
-            }
-        })
-        .collect_view()
-}
-
-#[component]
-fn Employments(employments: Vec<EmploymentView>) -> impl IntoView {
-    employments
-        .into_iter()
-        .map(|employment| {
-            let href = format!("/api/v1/employments/{}", employment.id);
-            let label = if employment.appointed_on.is_empty() {
-                employment.id.clone()
-            } else {
-                day_of(&employment.appointed_on)
-            };
-            let meta = employment.person_id.clone();
-            let version = revision_label(&employment.version);
-            view! {
-                <a class="row" href=href>
-                    <span
-                        class="name"
-                        data-employment-id=employment.id
-                        data-version=employment.version
-                        data-appointed-on=employment.appointed_on
-                        data-person-id=employment.person_id
-                        data-org-unit-id=employment.org_unit_id
-                        data-job-position-id=employment.job_position_id
-                    >
-                        {label}
-                    </span>
-                    <span class="meta">{meta}</span>
-                    <span class="rev">{version}</span>
-                </a>
-            }
-        })
-        .collect_view()
-}
-
-#[component]
 fn ShippingNav(has_org: bool, has_hr: bool, has_payroll: bool, focus: UiScreen) -> impl IntoView {
     view! {
         <header class="app">
@@ -582,48 +510,7 @@ fn hr_body(
     people: ScreenSection<PersonView>,
     employments: ScreenSection<EmploymentView>,
 ) -> impl IntoView {
-    if matches!(
-        (&people, &employments),
-        (ScreenSection::Omitted, ScreenSection::Omitted)
-    ) {
-        return ().into_any();
-    }
-    let failed =
-        matches!(&people, ScreenSection::Failure) || matches!(&employments, ScreenSection::Failure);
-    let person_rows = match people {
-        ScreenSection::Rows(rows) => rows,
-        _ => Vec::new(),
-    };
-    let employment_rows = match employments {
-        ScreenSection::Rows(rows) => rows,
-        _ => Vec::new(),
-    };
-    if person_rows.is_empty() && employment_rows.is_empty() {
-        if failed {
-            return view! {
-                <section class="panel" data-screen="hr" data-state="failure">
-                    <h2>"인사"</h2>
-                    <p class="state">"목록을 불러오지 못했습니다"</p>
-                </section>
-            }
-            .into_any();
-        }
-        return view! {
-            <section class="panel" data-screen="hr" data-state="empty">
-                <h2>"인사"</h2>
-                <p class="state">"표시할 사람이 없습니다"</p>
-            </section>
-        }
-        .into_any();
-    }
-    view! {
-        <section class="panel" data-screen="hr">
-            <h2>"인사"</h2>
-            <DirectoryPeople people=person_rows />
-            <Employments employments=employment_rows />
-        </section>
-    }
-    .into_any()
+    people::body(people, employments)
 }
 
 fn payroll_body(runs: ScreenSection<RunSummary>) -> impl IntoView {
