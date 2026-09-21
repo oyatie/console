@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/integration_tests",
+  "scope": "Read-only CI preflight failure diagnosis; no repository edits or native builds",
+  "head": "df95adccba46d0cb9728597e3b63f701a32edda9",
+  "original_failure_log": "/private/tmp/console-security-reconciliation-preflight-20260921.log",
+  "cause": "Filesystem sandbox denies git write-tree index.lock under original checkout .git/worktrees; checker caches null index source set and reports 37 misleading ownership mismatches.",
+  "exact_boundary": {
+    "source": "scripts/check-ci-preflight.mjs:1712",
+    "command": "git --no-replace-objects -C /private/tmp/console-mvp-dev-integrate-20260921 write-tree",
+    "environment": "gitFixtureEnvironment()",
+    "exit_status": 128,
+    "stderr": "fatal: Unable to create '/Users/jasonlee/Developer/console/.git/worktrees/console-mvp-dev-integrate-20260921/index.lock': Operation not permitted"
+  },
+  "independent_read_only_check": {
+    "method": "git ls-files --stage; require regular stage0 index entries, positive baseline count, regular canonical filesystem path, owning Cargo.toml package; compare each logged package/test",
+    "reported_ownership_failures": 37,
+    "resolved_exactly_once": 37,
+    "remaining_mismatches": 0
+  },
+  "unchanged_from_head": [
+    "scripts/check-ci-preflight.mjs",
+    "docs/program/executed-tests-baseline.json",
+    ".github/workflows/ci.yml"
+  ],
+  "authoritative_rerun": {
+    "command": "node scripts/check-ci-preflight.mjs",
+    "cwd": "/private/tmp/console-mvp-dev-integrate-20260921",
+    "sandbox_permissions": "require_escalated",
+    "exit_status": 0,
+    "stdout": "CI preflight contract passed.",
+    "stderr": "",
+    "test_count": "not applicable: static contract gate, not a test runner"
+  },
+  "decision": "Infrastructure restriction; not product RED or inherited inventory mismatch. No source repair needed. Preserve original failure and record successful unrestricted gate.",
+  "optional_future_repair": "If sandbox-only operation is required, independently admit a diagnostic/read-only index-source lane preserving regular-mode, no-replace-objects, sealed Git environment, stage conflict and canonical filesystem protections. Do not weaken source inventory or baseline.",
+  "final_status_porcelain": [
+    "A  docs/evidence/console/security/2026-09-21-scan-reconciliation/independent-source-review.json",
+    "A  docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json",
+    "A  docs/evidence/console/security/2026-09-21-scan-reconciliation/report.txt",
+    "M  docs/program/console-capability-registry.json"
+  ]
+}

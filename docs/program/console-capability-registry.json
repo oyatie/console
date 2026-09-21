@@ -61767,7 +61767,9 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-08: Activation/deactivation use any-overlap read visibility before a Company-wide user mutation; complete target scope and privileged-target policy are not enforced by the owner. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-09: Ordinary tenant resolution now checks active status and live roles; token generation comparison and precise alternate-context closure remain unproven. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -61794,7 +61796,10 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-02: Mounted legacy credential reset does not revoke preexisting refresh families or invalidate access sessions. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-03: Legacy verify-only code redemption serializes but still mints an independent normal refresh family on each redemption. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-09: Ordinary tenant resolution now checks active status and live roles; token generation comparison and precise alternate-context closure remain unproven. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -61848,7 +61853,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-04: Realtime connection registration and cursor replay task admission remain unbounded; idle sessions have no deadline. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -61995,7 +62001,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-04: Realtime connection registration and cursor replay task admission remain unbounded; idle sessions have no deadline. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62115,7 +62122,9 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-01: Organization approval step capacity is not enforced in the locked decision owner. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-06: Payroll has a locked natural-person decision guard; organization changes still compare only Account/User IDs. Native Account attribution and immutable person-history evidence remain open. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62295,7 +62304,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-05: HR and registry workbook parsing materializes dense ranges before business row limits; sparse coordinates can drive extreme allocation. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62325,7 +62335,9 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-01: Organization approval step capacity is not enforced in the locked decision owner. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-06: Payroll has a locked natural-person decision guard; organization changes still compare only Account/User IDs. Native Account attribution and immutable person-history evidence remain open. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62355,7 +62367,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-08: Activation/deactivation use any-overlap read visibility before a Company-wide user mutation; complete target scope and privileged-target policy are not enforced by the owner. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62385,7 +62398,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-05: HR and registry workbook parsing materializes dense ranges before business row limits; sparse coordinates can drive extreme allocation. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62652,7 +62666,10 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-02: Mounted legacy credential reset does not revoke preexisting refresh families or invalidate access sessions. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-03: Legacy verify-only code redemption serializes but still mints an independent normal refresh family on each redemption. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-07: Committed Traefik deployment omits trusted-proxy settings; runtime defaults to transport peer identity. Live topology/configuration is unverified. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62706,7 +62723,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-09: Ordinary tenant resolution now checks active status and live roles; token generation comparison and precise alternate-context closure remain unproven. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -62825,7 +62843,8 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-06: Payroll has a locked natural-person decision guard; organization changes still compare only Account/User IDs. Native Account attribution and immutable person-history evidence remain open. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -63010,7 +63029,10 @@
         },
         "evidence": {},
         "blockers": [
-          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound."
+          "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
+          "SCAN-20260921-04: Realtime connection registration and cursor replay task admission remain unbounded; idle sessions have no deadline. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-05: HR and registry workbook parsing materializes dense ranges before business row limits; sparse coordinates can drive extreme allocation. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+          "SCAN-20260921-07: Committed Traefik deployment omits trusted-proxy settings; runtime defaults to transport peer identity. Live topology/configuration is unverified. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -64757,7 +64779,8 @@
         "evidence": {},
         "blockers": [
           "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
-          "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled."
+          "Reference capability availability at the target UTC date is not independently established; source retrieval date/timezone must be reconciled.",
+          "SCAN-20260921-05: HR and registry workbook parsing materializes dense ranges before business row limits; sparse coordinates can drive extreme allocation. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -69916,7 +69939,8 @@
         "evidence": {},
         "blockers": [
           "Exact owning paths, reviewed design/test candidate and executable acceptance are not yet bound.",
-          "Public lifecycle, security, scale and runtime limitations require task-specific supported cases and independent oracles."
+          "Public lifecycle, security, scale and runtime limitations require task-specific supported cases and independent oracles.",
+          "SCAN-20260921-07: Committed Traefik deployment omits trusted-proxy settings; runtime defaults to transport peer identity. Live topology/configuration is unverified. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
         ],
         "dependency_status": "initial; exact owner/contract dependencies not bound for lane dispatch"
       },
@@ -72333,7 +72357,16 @@
       "Deployment-equivalent Korean-rule, UX, security, performance and recovery qualification remain pending.",
       "Dependencies are an initial graph, not an executable dispatch order; exact version-before-execution contracts and owner paths require binding.",
       "Detailed public-reference decomposition is additive and incomplete; 18 retained snapshots do not establish exhaustive capability or connector/runtime/SDK compatibility coverage.",
-      "Release inventory structural validation is implemented; source-byte custody, exhaustive preservation and stage-specific evidence verification remain required."
+      "Release inventory structural validation is implemented; source-byte custody, exhaustive preservation and stage-specific evidence verification remain required.",
+      "SCAN-20260921-01: Organization approval step capacity is not enforced in the locked decision owner. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-02: Mounted legacy credential reset does not revoke preexisting refresh families or invalidate access sessions. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-03: Legacy verify-only code redemption serializes but still mints an independent normal refresh family on each redemption. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-04: Realtime connection registration and cursor replay task admission remain unbounded; idle sessions have no deadline. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-05: HR and registry workbook parsing materializes dense ranges before business row limits; sparse coordinates can drive extreme allocation. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-06: Payroll has a locked natural-person decision guard; organization changes still compare only Account/User IDs. Native Account attribution and immutable person-history evidence remain open. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-07: Committed Traefik deployment omits trusted-proxy settings; runtime defaults to transport peer identity. Live topology/configuration is unverified. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-08: Activation/deactivation use any-overlap read visibility before a Company-wide user mutation; complete target scope and privileged-target policy are not enforced by the owner. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json.",
+      "SCAN-20260921-09: Ordinary tenant resolution now checks active status and live roles; token generation comparison and precise alternate-context closure remain unproven. Evidence: docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json."
     ]
   }
 }

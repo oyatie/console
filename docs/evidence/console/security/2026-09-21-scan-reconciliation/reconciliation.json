@@ -1,0 +1,241 @@
+{
+  "kind": "security_scan_reconciliation",
+  "candidate_sha": "df95adccba46d0cb9728597e3b63f701a32edda9",
+  "owner": "/root",
+  "review_lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Blast-radius / cell-based",
+    "Zero-trust / defense-in-depth"
+  ],
+  "source_report": {
+    "path": "/Users/jasonlee/.codex/state/plugins/codex-security/scans/console/codex-security-console-rLBoFU/report.md",
+    "retained_path": "docs/evidence/console/security/2026-09-21-scan-reconciliation/report.txt",
+    "sha256": "2d51a425650f528a9bf12676e3b10f83c0be98bccecc50f0373b563554ef98dd",
+    "revision": "05200e43af13b527ce031b04369e05852862f1d6",
+    "fully_reviewed_files": 16,
+    "estimated_in_scope_files": 6101,
+    "coverage": "partial"
+  },
+  "independent_review": {
+    "path": "docs/evidence/console/security/2026-09-21-scan-reconciliation/independent-source-review.json",
+    "sha256": "939ce9cf688bc54b8c94c71e57557276c60e6582b659c3777a15109f44a672bc"
+  },
+  "verification": {
+    "method": "Parent source inspection of current owner/caller paths and independent review hash verification; no new runtime exploit or production readback.",
+    "runtime_tests_executed": 0,
+    "builds_executed": 0,
+    "changes": "Evidence and existing release inventory only; no product fix or stage promotion.",
+    "prior_payroll_proof": "docs/evidence/console/integration/2026-09-21-payroll-person-independence/result.json"
+  },
+  "findings": [
+    {
+      "id": "SCAN-20260921-01",
+      "report_finding": 1,
+      "reported_severity": "high",
+      "disposition": "current",
+      "release_blocker": true,
+      "leaves": [
+        "F18.approvals",
+        "F19.organization"
+      ],
+      "summary": "Organization approval step capacity is not enforced in the locked decision owner.",
+      "source_trace": [
+        "backend/crates/orgchange/rest/src/lib.rs:595",
+        "backend/crates/orgchange/rest/src/lib.rs:742",
+        "backend/crates/orgchange/adapter-postgres/src/lib.rs:1851"
+      ],
+      "closure_required": "Prove current per-step policy in the decision transaction, including denial when an Executive lacks the requested capacity.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-02",
+      "report_finding": 2,
+      "reported_severity": "high",
+      "disposition": "current",
+      "release_blocker": true,
+      "leaves": [
+        "F16.identity",
+        "C01.registration"
+      ],
+      "summary": "Mounted legacy credential reset does not revoke preexisting refresh families or invalidate access sessions.",
+      "source_trace": [
+        "backend/crates/platform/provisioning/src/lib.rs:361",
+        "ops/generate-account-custody.py:1545"
+      ],
+      "closure_required": "Prove atomic reset/session retirement and old access/refresh refusal; preserve native Account fences and historical custody bytes.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-03",
+      "report_finding": 3,
+      "reported_severity": "high",
+      "disposition": "current",
+      "release_blocker": true,
+      "leaves": [
+        "F16.identity",
+        "C01.registration"
+      ],
+      "summary": "Legacy verify-only code redemption serializes but still mints an independent normal refresh family on each redemption.",
+      "source_trace": [
+        "backend/crates/platform/provisioning/src/lib.rs:562",
+        "backend/crates/platform/auth-rest/src/lib.rs:1297",
+        "backend/crates/platform/auth-rest/src/lib.rs:2683",
+        "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs:50"
+      ],
+      "closure_required": "Review a successor protocol and test contract before replacing the intentional replay expectation; prove exclusive redemption or restricted enrollment capability and interruption recovery.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-04",
+      "report_finding": 4,
+      "reported_severity": "medium",
+      "disposition": "current",
+      "release_blocker": true,
+      "leaves": [
+        "F18.messenger",
+        "F16.sharing",
+        "C03.load"
+      ],
+      "summary": "Realtime connection registration and cursor replay task admission remain unbounded; idle sessions have no deadline.",
+      "source_trace": [
+        "backend/crates/platform/realtime/src/lib.rs:495",
+        "backend/crates/platform/realtime/src/lib.rs:1197"
+      ],
+      "closure_required": "Exercise per-subject/Company/process admission and bounded replay/lifetime recovery with current-authority rechecks; per-connection queue bounds alone do not close this finding.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-05",
+      "report_finding": 5,
+      "reported_severity": "medium",
+      "disposition": "current",
+      "release_blocker": true,
+      "leaves": [
+        "F19.attendance",
+        "F19.onboarding",
+        "F03.manual-import-inference",
+        "C03.load"
+      ],
+      "summary": "HR and registry workbook parsing materializes dense ranges before business row limits; sparse coordinates can drive extreme allocation.",
+      "source_trace": [
+        "backend/app/src/hr.rs:4521",
+        "backend/app/src/hr.rs:4884",
+        "backend/app/src/hr.rs:4964",
+        "backend/crates/registry/adapter-postgres/src/lib.rs:3577",
+        "third-party/rust/vendor/calamine-0.35.0-quickxml41/src/lib.rs:854"
+      ],
+      "closure_required": "Reject excessive coordinates, cells, ZIP expansion/shared strings and sheet counts before dense materialization in every caller; demonstrate bounded memory without running an unbounded OOM payload.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-06",
+      "report_finding": 6,
+      "reported_severity": "medium",
+      "disposition": "partially_repaired",
+      "release_blocker": true,
+      "leaves": [
+        "F18.approvals",
+        "F19.organization",
+        "C02.review"
+      ],
+      "summary": "Payroll has a locked natural-person decision guard; organization changes still compare only Account/User IDs. Native Account attribution and immutable person-history evidence remain open.",
+      "source_trace": [
+        "backend/crates/payroll/adapter-postgres/src/lifecycle.rs:995",
+        "backend/crates/payroll/adapter-postgres/src/lifecycle.rs:1045",
+        "backend/crates/orgchange/adapter-postgres/src/lib.rs:1873"
+      ],
+      "closure_required": "Preserve payroll guard and its existing 29-test evidence; prove organization and native Account same-person denial, unbound denial, concurrency and durable attribution.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-07",
+      "report_finding": 7,
+      "reported_severity": "medium",
+      "disposition": "current_configuration_gap",
+      "release_blocker": true,
+      "leaves": [
+        "F17.network-ingress-policy",
+        "C03.load",
+        "C01.registration"
+      ],
+      "summary": "Committed Traefik deployment omits trusted-proxy settings; runtime defaults to transport peer identity. Live topology/configuration is unverified.",
+      "source_trace": [
+        "deploy/apps/console/base/ingress.yaml:8",
+        "deploy/apps/console/base/configmap.yaml:11",
+        "backend/app/src/lib.rs:1214",
+        "backend/crates/platform/request-context/src/lib.rs:97"
+      ],
+      "closure_required": "Bind explicit trust settings to verified actual hop count and proxy CIDRs; prove distinct client buckets and forged/malformed-chain refusal through the deployment-equivalent proxy. Do not guess trusted networks.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-08",
+      "report_finding": 8,
+      "reported_severity": "medium",
+      "disposition": "current",
+      "release_blocker": true,
+      "leaves": [
+        "F16.policy",
+        "F19.departure"
+      ],
+      "summary": "Activation/deactivation use any-overlap read visibility before a Company-wide user mutation; complete target scope and privileged-target policy are not enforced by the owner.",
+      "source_trace": [
+        "backend/crates/identity/rest/src/lib.rs:3221",
+        "backend/crates/identity/rest/src/lib.rs:3251",
+        "backend/crates/identity/rest/src/lib.rs:4125",
+        "backend/crates/identity/adapter-postgres/src/lib.rs:1859"
+      ],
+      "closure_required": "Prove full target authority in the mutation transaction, including branch-A versus A+B and privileged targets; preserve Account credential fencing and lifecycle replay.",
+      "runtime_reproduced_in_this_review": false
+    },
+    {
+      "id": "SCAN-20260921-09",
+      "report_finding": 9,
+      "reported_severity": "medium",
+      "disposition": "partially_repaired",
+      "release_blocker": true,
+      "leaves": [
+        "F16.identity",
+        "F16.policy",
+        "C01.context"
+      ],
+      "summary": "Ordinary tenant resolution now checks active status and live roles; token generation comparison and precise alternate-context closure remain unproven.",
+      "source_trace": [
+        "backend/crates/platform/request-context/src/lib.rs:352",
+        "backend/crates/platform/request-context/src/lib.rs:355",
+        "backend/crates/platform/request-context/src/lib.rs:394",
+        "backend/crates/platform/request-context/src/lib.rs:868",
+        "ops/generate-account-custody.py:1692"
+      ],
+      "closure_required": "Prove deactivation/reactivation, generation mismatch and downgrade histories across each reachable tenant/group/platform/realtime owner. Group grants already check active state and some platform owners already revalidate original credentials; do not claim blanket exploitation.",
+      "runtime_reproduced_in_this_review": false
+    }
+  ],
+  "limits": [
+    "This partial scan is not security qualification of the assembled release.",
+    "Reported severities are retained from the scan, not newly measured deployment risk.",
+    "No historical migrations, custody fingerprints, command bytes or tests are changed.",
+    "No exposure, payment execution or production credential-reset authority is granted."
+  ],
+  "parent_source_hashes": {
+    "backend/app/src/hr.rs": "ea322bf3fdb69828dd3d381b85e81b63f792438f288a569f0b06cad5caee210c",
+    "backend/app/src/lib.rs": "7b63de2c2e0781ff52c72f54d58544ec768b832c15183eaccfc1480739b1f390",
+    "backend/crates/identity/adapter-postgres/src/lib.rs": "f2daddea7cf41a72c8a8af44edd0ac6ddef282340e5dafac83187b99c6ed1a00",
+    "backend/crates/identity/rest/src/lib.rs": "06c2ececfb4d0c73a068ab8a773cd17eca50bff17615beb44c6e3f328a96342d",
+    "backend/crates/orgchange/adapter-postgres/src/lib.rs": "6b72842259ce32e1c758b599c035045d73c78f23285aa23805f12c93e856b247",
+    "backend/crates/orgchange/rest/src/lib.rs": "c1cc5ff421d3ec0dd8d25d23cb179be122f428a306f8c97d884fd0bc36984190",
+    "backend/crates/payroll/adapter-postgres/src/lifecycle.rs": "36d6c360c14cadb642ada5dc24861a86390397953a95910bb252469f0c4b357b",
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/provisioning/src/lib.rs": "d88e1626a02d5d3bab4920a0e8d3b3e64eec80f9793c1dfe0e93a4878a6716f9",
+    "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs": "e199aaebc186224cf2b25f59f676f09cc86280852df64809c1e114b6b85ce049",
+    "backend/crates/platform/realtime/src/lib.rs": "1dc53f638b34051cde03293bda1103b7664758cbe5828120c84c4322f3e1f734",
+    "backend/crates/platform/request-context/src/lib.rs": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+    "backend/crates/registry/adapter-postgres/src/lib.rs": "10b80de2a2a3f3abc8312b71a6451e0d85e5c03996d1a05aa11d7f2ddf5ac2de",
+    "deploy/apps/console/base/configmap.yaml": "6c3aaa7cdcfd614bda649ff662c302e9caad0cdbf11f789683d37412709adcc5",
+    "deploy/apps/console/base/ingress.yaml": "70edcb46ad00f9d90e88c96dce8eba57ecc737ce4a5e6e70d4ac287423796416",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "third-party/rust/vendor/calamine-0.35.0-quickxml41/src/lib.rs": "236593b4efe7b55eeb32e4c2e3971884d4ad3f21cb2da0ff8e30827c03c5e72c"
+  }
+}

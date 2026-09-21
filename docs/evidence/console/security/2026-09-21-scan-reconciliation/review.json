@@ -1,0 +1,282 @@
+{
+  "kind": "independent_security_reconciliation_review",
+  "reviewer": "/root/integration_security",
+  "reviewed_utc": "2026-09-21T18:09:02.657935+00:00",
+  "candidate_head": "df95adccba46d0cb9728597e3b63f701a32edda9",
+  "scope": "Read-only review of security evidence retention, current source reconciliation and release inventory blockers; no product acceptance.",
+  "lenses": [
+    "Cartesian doubt",
+    "Red Team",
+    "Operability / Day-2",
+    "Zero-trust / defense-in-depth"
+  ],
+  "verdict": "approved_evidence_and_blocker_recording",
+  "checks": {
+    "source_report_exact_bytes": true,
+    "source_report_sha256_matches": true,
+    "independent_review_exact_bytes": true,
+    "independent_review_sha256_matches": true,
+    "all_17_parent_source_hashes_match": true,
+    "all_nine_findings_remain_blockers": true,
+    "registry_only_appends_blockers": true,
+    "every_declared_leaf_exists_and_matches": true,
+    "no_stage_promotions_or_evidence_removals": true
+  },
+  "candidate_file_sha256": {
+    "docs/evidence/console/security/2026-09-21-scan-reconciliation/report.txt": "2d51a425650f528a9bf12676e3b10f83c0be98bccecc50f0373b563554ef98dd",
+    "docs/evidence/console/security/2026-09-21-scan-reconciliation/independent-source-review.json": "939ce9cf688bc54b8c94c71e57557276c60e6582b659c3777a15109f44a672bc",
+    "docs/evidence/console/security/2026-09-21-scan-reconciliation/reconciliation.json": "0866fe36e6d7fe5f855d03700cff0675b0acd39d253808f3fc51a1f9a039873a",
+    "docs/program/console-capability-registry.json": "efcdddbceff886d78dbc9a18ddead3ff701dfd4d349aa4d477c5c2d3035660a7"
+  },
+  "parent_source_hashes_verified": {
+    "backend/app/src/hr.rs": "ea322bf3fdb69828dd3d381b85e81b63f792438f288a569f0b06cad5caee210c",
+    "backend/app/src/lib.rs": "7b63de2c2e0781ff52c72f54d58544ec768b832c15183eaccfc1480739b1f390",
+    "backend/crates/identity/adapter-postgres/src/lib.rs": "f2daddea7cf41a72c8a8af44edd0ac6ddef282340e5dafac83187b99c6ed1a00",
+    "backend/crates/identity/rest/src/lib.rs": "06c2ececfb4d0c73a068ab8a773cd17eca50bff17615beb44c6e3f328a96342d",
+    "backend/crates/orgchange/adapter-postgres/src/lib.rs": "6b72842259ce32e1c758b599c035045d73c78f23285aa23805f12c93e856b247",
+    "backend/crates/orgchange/rest/src/lib.rs": "c1cc5ff421d3ec0dd8d25d23cb179be122f428a306f8c97d884fd0bc36984190",
+    "backend/crates/payroll/adapter-postgres/src/lifecycle.rs": "36d6c360c14cadb642ada5dc24861a86390397953a95910bb252469f0c4b357b",
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/provisioning/src/lib.rs": "d88e1626a02d5d3bab4920a0e8d3b3e64eec80f9793c1dfe0e93a4878a6716f9",
+    "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs": "e199aaebc186224cf2b25f59f676f09cc86280852df64809c1e114b6b85ce049",
+    "backend/crates/platform/realtime/src/lib.rs": "1dc53f638b34051cde03293bda1103b7664758cbe5828120c84c4322f3e1f734",
+    "backend/crates/platform/request-context/src/lib.rs": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+    "backend/crates/registry/adapter-postgres/src/lib.rs": "10b80de2a2a3f3abc8312b71a6451e0d85e5c03996d1a05aa11d7f2ddf5ac2de",
+    "deploy/apps/console/base/configmap.yaml": "6c3aaa7cdcfd614bda649ff662c302e9caad0cdbf11f789683d37412709adcc5",
+    "deploy/apps/console/base/ingress.yaml": "70edcb46ad00f9d90e88c96dce8eba57ecc737ce4a5e6e70d4ac287423796416",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "third-party/rust/vendor/calamine-0.35.0-quickxml41/src/lib.rs": "236593b4efe7b55eeb32e4c2e3971884d4ad3f21cb2da0ff8e30827c03c5e72c"
+  },
+  "source_hash_errors": [],
+  "registry_change_summary": [
+    {
+      "path": "/release_inventory/leaves/58/blockers",
+      "append_only": true,
+      "added_count": 2
+    },
+    {
+      "path": "/release_inventory/leaves/59/blockers",
+      "append_only": true,
+      "added_count": 3
+    },
+    {
+      "path": "/release_inventory/leaves/61/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/66/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/70/blockers",
+      "append_only": true,
+      "added_count": 2
+    },
+    {
+      "path": "/release_inventory/leaves/76/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/77/blockers",
+      "append_only": true,
+      "added_count": 2
+    },
+    {
+      "path": "/release_inventory/leaves/78/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/79/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/88/blockers",
+      "append_only": true,
+      "added_count": 3
+    },
+    {
+      "path": "/release_inventory/leaves/90/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/94/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/100/blockers",
+      "append_only": true,
+      "added_count": 3
+    },
+    {
+      "path": "/release_inventory/leaves/157/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/leaves/324/blockers",
+      "append_only": true,
+      "added_count": 1
+    },
+    {
+      "path": "/release_inventory/blockers",
+      "append_only": true,
+      "added_count": 9
+    }
+  ],
+  "finding_leaf_bindings": [
+    {
+      "id": "SCAN-20260921-01",
+      "expected_leaves": [
+        "F18.approvals",
+        "F19.organization"
+      ],
+      "actual_leaves": [
+        "F18.approvals",
+        "F19.organization"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-02",
+      "expected_leaves": [
+        "F16.identity",
+        "C01.registration"
+      ],
+      "actual_leaves": [
+        "F16.identity",
+        "C01.registration"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-03",
+      "expected_leaves": [
+        "F16.identity",
+        "C01.registration"
+      ],
+      "actual_leaves": [
+        "F16.identity",
+        "C01.registration"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-04",
+      "expected_leaves": [
+        "F18.messenger",
+        "F16.sharing",
+        "C03.load"
+      ],
+      "actual_leaves": [
+        "F16.sharing",
+        "F18.messenger",
+        "C03.load"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-05",
+      "expected_leaves": [
+        "F19.attendance",
+        "F19.onboarding",
+        "F03.manual-import-inference",
+        "C03.load"
+      ],
+      "actual_leaves": [
+        "F19.onboarding",
+        "F19.attendance",
+        "C03.load",
+        "F03.manual-import-inference"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-06",
+      "expected_leaves": [
+        "F18.approvals",
+        "F19.organization",
+        "C02.review"
+      ],
+      "actual_leaves": [
+        "F18.approvals",
+        "F19.organization",
+        "C02.review"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-07",
+      "expected_leaves": [
+        "F17.network-ingress-policy",
+        "C03.load",
+        "C01.registration"
+      ],
+      "actual_leaves": [
+        "C01.registration",
+        "C03.load",
+        "F17.network-ingress-policy"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-08",
+      "expected_leaves": [
+        "F16.policy",
+        "F19.departure"
+      ],
+      "actual_leaves": [
+        "F16.policy",
+        "F19.departure"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    },
+    {
+      "id": "SCAN-20260921-09",
+      "expected_leaves": [
+        "F16.identity",
+        "F16.policy",
+        "C01.context"
+      ],
+      "actual_leaves": [
+        "F16.policy",
+        "F16.identity",
+        "C01.context"
+      ],
+      "exact_match": true,
+      "global_blocker": true
+    }
+  ],
+  "source_conclusions": {
+    "01_02_03_08_09": "Reuses unchanged private independent source review bound by SHA256 939ce9cf688bc54b8c94c71e57557276c60e6582b659c3777a15109f44a672bc; no finding closed.",
+    "04": "PgRealtimeHub::connect inserts each connection and spawns cursor replay without admission bounds; websocket_session has no idle deadline. Existing per-event replay send timeout does not bound connection or task population.",
+    "05": "All three HR XLSX callers and registry path/bytes callers materialize worksheet_range before business limits; vendored Range::from_sparse allocates rows*columns. No hostile payload was executed.",
+    "06": "Payroll owner retains User and Person-binding FOR SHARE locks and rejects same/unbound persons; orgchange owner only compares drafted_by to UserId. Existing 29-test payroll result retained, not re-executed. Native Account and immutable history remain open.",
+    "07": "Committed console deployment contains no TRUSTED_PROXY setting; app defaults count to zero and request-context returns transport peer. Actual live proxy topology and deployment configuration unverified; no CIDRs inferred."
+  },
+  "tests_executed": 0,
+  "builds_executed": 0,
+  "browser_executed": 0,
+  "runtime_exploits_executed": 0,
+  "repository_edits": 0,
+  "limitations": [
+    "Original scan is partial: 16 of estimated 6101 fully reviewed files; severities remain original report classifications.",
+    "Evidence review is neither runtime reproduction nor security qualification.",
+    "All nine findings remain release blockers; no capability stage is promoted.",
+    "Product fixes, complete release qualification and exposure are outside this review."
+  ]
+}

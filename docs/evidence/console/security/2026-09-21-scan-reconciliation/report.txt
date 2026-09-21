@@ -1,0 +1,1288 @@
+# Security Review: console
+
+## Scope
+
+Standard static security scan of the entire repository, using an independent baseline audit, focused identity/tenant/input investigators, and parent validation.
+
+- Scan mode: repository
+- Target kind: git_worktree
+- Target ID: target_sha256_7fe348a7c8e0db9e49f1e5695c251387e2d556c9d7dc82070b1936bba851622a
+- Revision: 05200e43af13b527ce031b04369e05852862f1d6
+- Snapshot digest: codex-security-snapshot/v1:sha256:cdaa3cc430f74bf3dc15a823451d461165e68baf42d8efe40a600d01ea204ea8
+- Inventory strategy: repository
+- Included paths: .
+- Excluded paths: none
+- Artifacts reviewed: AGENTS.md, README.md, package.json, backend/app/src/main.rs, backend/crates/platform/auth/src/jwt.rs, backend/crates/platform/auth/src/refresh.rs, backend/crates/platform/auth/src/webauthn.rs, backend/crates/platform/request-context/src/lib.rs, backend/crates/comms/adapter-imap/src/ssrf.rs, backend/crates/comms/adapter-smtp/src/ssrf.rs, tools/lanes/fanout.py, backend/crates/platform/group/src/lib.rs, backend/crates/platform/db/migrations/0076_user_employee_link.sql, backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql, backend/crates/platform/db/migrations/0198_create_org_change.sql, backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql
+- Scan context: Whole-repository scan. Strict completed-file progress uses only files reported as fully reviewed; additional source snippets were traced for every retained finding.
+
+Limitations and exclusions:
+- Only 16 of the SDK-estimated 6101 in-scope files met the strict full-file-review counting rule.
+- The worktree contained pre-existing user changes; the scan was read-only with respect to the repository.
+- Runtime-only controls, out-of-band configuration, live CNI behavior, deployed image provenance, and current database assignments were not verified.
+
+### Scan Summary
+
+| Field | Value |
+| --- | --- |
+| Scan outcome | completed |
+| Reportable findings | 9 |
+| Severity mix | high: 3, medium: 6 |
+| Confidence mix | high: 9 |
+| Coverage | partial |
+| Validation mode | Independent search-guided source traces with parent-agent validation and deduplication. |
+
+Canonical artifacts: `scan-manifest.json`, `findings.json`, and `coverage.json`. This report is a deterministic projection of those files.
+
+## Threat Model
+
+Console is a Rust/Axum modular monolith for a multi-tenant company platform. Internet clients reach Traefik and public API/auth/realtime routes; verified JWTs are converted to tenant principals, transaction-local org context, and Postgres FORCE RLS. Separate platform, group-admin, and machine identities cross distinct boundaries. High-value assets include tenant HR/payroll/organization data, authentication credentials and sessions, evidence object storage, audit/governance records, database identities, and release artifacts.
+
+### Assets
+
+- Company-scoped HR, payroll, organization, workflow, finance, communications, and audit records
+- Passkeys, bootstrap/recovery codes, JWT keys, access tokens, refresh families, and role/grant state
+- Postgres runtime, migration-owner, and privileged command identities
+- Primary and replica evidence objects, database backups, mail credentials, and integration secrets
+- Governance approvals and natural-person four-eyes evidence
+
+### Trust Boundaries
+
+- Internet or native client -\> Traefik/TLS -\> console-app public API and realtime routes
+- JWT verification -\> live scope resolution -\> Principal -\> transaction-local app.current_org -\> Postgres RLS
+- Tenant, platform, group-admin, and machine-principal tiers
+- API/worker -\> Postgres, object storage, SMTP/mail, and optional audit custody
+- Repository release workflow -\> immutable container digest -\> Argo/Kubernetes desired state
+
+### Attacker Capabilities
+
+- Unauthenticated callers can reach public authentication, storefront, support, sales, and native-association routes.
+- A tenant user controls request data for routes allowed by their role, scope, and grants.
+- A privileged tenant user may hold import, payroll, user-management, or organization-change authority.
+- The model does not assume compromise of the host, cluster control plane, database owner, secret store, signing keys, or GitHub protected environment.
+
+### Security Objectives
+
+- Preserve tenant isolation and bind every data operation to the verified Company org.
+- Keep identity tiers non-interchangeable and make deactivation, role changes, and recovery immediately effective.
+- Require single-use authentication credentials and bounded untrusted work.
+- Enforce complete-scope authorization and natural-person maker-checker separation.
+- Keep role-bound approval steps executable as authorization policy, not descriptive metadata.
+
+### Assumptions
+
+- Repository desired state is not proof of current live deployment state.
+- The committed production ingress/configuration is evaluated without assuming undocumented out-of-band proxy variables.
+- The dark observability and on-prem stacks remain unactivated unless an operator explicitly enables them.
+- No dynamic exploit, external network request, or live secret inspection was performed.
+
+## Findings
+
+| Finding | Severity | Confidence | Detailed write-up |
+| --- | --- | --- | --- |
+| [One executive can approve every role-bound organization-change step](#finding-1) | high | high | inline below |
+| [Credential reset leaves existing access and refresh sessions usable](#finding-2) | high | high | inline below |
+| [One-time enrollment codes can mint multiple independent sessions](#finding-3) | high | high | inline below |
+| [Authenticated clients can allocate unlimited persistent WebSockets](#finding-4) | medium | high | inline below |
+| [Sparse XLSX uploads can trigger multi-billion-cell allocations](#finding-5) | medium | high | inline below |
+| [Payroll and organization changes enforce account-level rather than person-level four-eyes](#finding-6) | medium | high | inline below |
+| [Reverse-proxy traffic shares one client-IP rate-limit bucket](#finding-7) | medium | high | inline below |
+| [Any shared branch authorizes a global user activation change](#finding-8) | medium | high | inline below |
+| [Deactivated and downgraded users retain access-token authority](#finding-9) | medium | high | inline below |
+
+### Confidence Scale
+
+| Label | Meaning |
+| --- | --- |
+| high | Direct evidence supports the finding with no material unresolved blocker. |
+| medium | Evidence supports a plausible issue, but material runtime or reachability proof remains. |
+| low | Evidence is incomplete and the item is retained only for explicit follow-up. |
+
+<a id="finding-1"></a>
+
+### [1] One executive can approve every role-bound organization-change step
+
+| Field | Value |
+| --- | --- |
+| Severity | high |
+| Confidence | high |
+| Confidence rationale | The fixed role chain, coarse REST guard, unused role_key, and status transition are all explicit in the same source path. |
+| Category | authorization |
+| CWE | CWE-862 |
+| Affected lines | backend/crates/orgchange/domain/src/lib.rs:173-186, backend/crates/orgchange/rest/src/lib.rs:587-600, backend/crates/orgchange/rest/src/lib.rs:731-737, backend/crates/orgchange/adapter-postgres/src/lib.rs:1810-1820, backend/crates/orgchange/adapter-postgres/src/lib.rs:1879-1977, backend/crates/platform/db/migrations/0198_create_org_change.sql:48-65 |
+
+#### Summary
+
+Organization-change submission creates ordered HR, finance, legal, and executive approval steps, but the decision route permits any Executive or SuperAdmin for every step. The adapter loads role_key but never authorizes the actor against it; the same account can approve all four steps in order and move the request to APPROVED.
+
+#### Root Cause
+
+The workflow persists role-bound approval steps but implements only one coarse endpoint-level Executive/SuperAdmin check.
+
+**Every approval step uses the same role floor** — `backend/crates/orgchange/rest/src/lib.rs:731-737`
+
+The step's declared capacity is not part of route authorization.
+
+```rust
+fn allow_approve(p: &Principal) -> Result<(), RestError> {
+    role_floor(p, &[Role::Executive, Role::SuperAdmin], "role is not allowed to approve org changes")
+}
+```
+
+**role_key is loaded but only written into an event reason** — `backend/crates/orgchange/adapter-postgres/src/lib.rs:1879-1977`
+
+No live principal capacity or role mapping is compared with role_key before the decision commits.
+
+```rust
+let role_key: String = step.try_get("role_key")?;
+...
+UPDATE org_change_approval_steps SET decision = $2, decided_by = $3 ...
+...
+Some(&format!("{role_key}:{}", next_decision.as_db()))
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: End-to-end approval state-machine trace
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- Submission always creates HR, finance, legal, and executive steps.
+- Any Executive or SuperAdmin may call decide for each step.
+- The adapter enforces order and drafter inequality but not role_key.
+- After the last approval the request becomes APPROVED and can be effectuated.
+
+Counterevidence and remaining uncertainty:
+- Steps must be decided in order.
+- The drafter's same account cannot approve.
+- Decisions are row-locked and single-use.
+
+Limitations:
+- No runtime organization-change request was created; the static state transition is direct.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/orgchange/domain/src/lib.rs:173-186, backend/crates/orgchange/rest/src/lib.rs:587-600, backend/crates/orgchange/rest/src/lib.rs:731-737, backend/crates/orgchange/adapter-postgres/src/lib.rs:1810-1820, backend/crates/orgchange/adapter-postgres/src/lib.rs:1879-1977, backend/crates/platform/db/migrations/0198_create_org_change.sql:48-65, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Obtain the first pending step ID.
+- Approve it as an Executive.
+- Repeat for finance, legal, and executive steps in order.
+- The final decision changes request status to APPROVED.
+- Invoke or arrange effectuation after the effective date.
+
+#### Reachability
+
+One executive account sequentially approves all nominal capacity-specific steps.
+
+- **Attacker:** Executive or SuperAdmin distinct from the drafter
+
+- **Entry point:** Organization-change decision endpoint
+
+- **Sink:** Approval-step update without role_key authorization
+
+- **Outcome:** Request reaches APPROVED without HR, finance, or legal reviewers
+
+Preconditions:
+- A submitted organization-change request exists.
+
+Existing controls:
+- Ordered steps
+- Same-account drafter prohibition
+- Tenant RLS
+- Row locks
+
+#### Severity
+
+**High** — A single executive account can deterministically collapse a four-capacity approval chain and authorize consequential organization changes without HR, finance, or legal review.
+
+Severity decreases only if role_key is informational rather than an authorization requirement, contrary to domain and migration documentation.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Unilateral approval can lead to applied organizational and employment changes.
+
+Likelihood assessment:
+- **Level:** high
+- **Rationale:** No additional credential or capacity is required beyond the accepted executive bearer token.
+
+#### Remediation
+
+Define an explicit, live authorization policy for each ApprovalRoleKey and enforce it inside decide_step's locked transaction before recording the decision. Missing mappings or membership must deny. If distinct reviewers are also required across capacities, enforce canonical Person separation from prior deciders.
+
+Tests:
+- An Executive who lacks HR, finance, or legal capacity cannot decide those steps.
+- Each declared role can decide only its matching step.
+- A missing or unknown capacity mapping fails closed.
+- One actor cannot collapse the complete chain when distinct reviewers are required.
+
+Preventive controls:
+- Make role_key an executable policy input rather than display metadata, and centralize step authorization.
+
+<a id="finding-2"></a>
+
+### [2] Credential reset leaves existing access and refresh sessions usable
+
+| Field | Value |
+| --- | --- |
+| Severity | high |
+| Confidence | high |
+| Confidence rationale | The complete reset transaction contains passkey deletion and OTP issuance only, while the separate deactivation path demonstrates the available session-revocation primitive. |
+| Category | session-management |
+| CWE | CWE-613 |
+| Affected lines | backend/crates/platform/provisioning/src/lib.rs:292-395, backend/crates/platform/auth-rest/src/lib.rs:1355-1415, backend/crates/platform/auth/src/refresh.rs:175-213, backend/crates/identity/adapter-postgres/src/lib.rs:475-578 |
+
+#### Summary
+
+Administrative credential reset deletes the target's passkeys and issues a recovery OTP, but it does not revoke the target's refresh families or invalidate access tokens. An attacker with a stolen session can continue refreshing after the victim completes recovery.
+
+#### Root Cause
+
+Credential reset is implemented as authenticator replacement but presented as account recovery, without coupling recovery to session revocation.
+
+**Reset deletes passkeys and creates an OTP** — `backend/crates/platform/provisioning/src/lib.rs:321-370`
+
+No refresh-family revocation or session-generation bump occurs inside the reset transaction.
+
+```rust
+DELETE FROM auth_webauthn_credentials
+WHERE user_id = $1
+RETURNING id, credential_id
+...
+issue_bootstrap_if_needed_tx(..., IssueMode::ForceReset).await?
+```
+
+**Rotation accepts any unrevoked family** — `backend/crates/platform/auth/src/refresh.rs:175-213`
+
+A family untouched by reset continues through the normal rotation path.
+
+```rust
+SELECT ... t.used_at, t.revoked_at, f.revoked_at ...
+FROM auth_refresh_tokens t
+JOIN auth_refresh_token_families f ON f.id = t.family_id
+...
+if family_revoked_at.is_some() { ... }
+```
+
+**A stronger credential and session sweep already exists** — `backend/crates/identity/adapter-postgres/src/lib.rs:475-483`
+
+The repository already models session revocation as part of compromise-sensitive account lifecycle changes.
+
+```rust
+/// Soft-deactivate a user AND revoke every active credential + session.
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Static transaction and refresh-rotation trace
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- Reset never updates refresh-token tables or subject session generation.
+- The target remains active.
+- An unrevoked family can continue rotating and minting access tokens.
+
+Counterevidence and remaining uncertainty:
+- Old passkeys are removed.
+- Open bootstrap credentials are superseded.
+
+Limitations:
+- Already-issued access-token lifetime and configured refresh TTL determine the exact persistence window.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/platform/provisioning/src/lib.rs:292-395, backend/crates/platform/auth-rest/src/lib.rs:1355-1415, backend/crates/platform/auth/src/refresh.rs:175-213, backend/crates/identity/adapter-postgres/src/lib.rs:475-578, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Retain a target refresh token.
+- Allow an administrator to reset the target's passkeys and issue a replacement OTP.
+- Present the still-unrevoked refresh token.
+- Receive a replacement refresh token and new access token.
+
+#### Reachability
+
+A session thief survives the victim's recovery procedure.
+
+- **Attacker:** Holder of an existing target access or refresh token
+
+- **Entry point:** Normal refresh endpoint after administrator credential reset
+
+- **Sink:** Refresh-family rotation and new access-token issuance
+
+- **Outcome:** Continuing account control after recovery
+
+Preconditions:
+- The stolen family was valid before reset.
+
+Existing controls:
+- Absolute family TTL
+- Refresh reuse detection
+- Passkey deletion
+
+#### Severity
+
+**High** — The account-recovery operation fails to evict the threat it is intended to remediate, allowing continuing account takeover through an existing refresh family.
+
+Severity decreases if reset is explicitly documented as authenticator replacement rather than compromise recovery; repository comments describe it as account recovery.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Recovery does not terminate the compromised session.
+
+Likelihood assessment:
+- **Level:** high
+- **Rationale:** The omission is deterministic for every valid pre-reset family.
+
+#### Remediation
+
+Within the same credential-reset transaction, revoke every refresh family and token for the target and increment session_generation. Enforce session generation during request-context resolution so existing access JWTs stop immediately as well.
+
+Tests:
+- A pre-reset refresh token must fail after reset.
+- A pre-reset access token must fail on the next authenticated request.
+- Reset, revocation, session-generation increment, and OTP issuance must commit atomically.
+
+Preventive controls:
+- Centralize all compromise-recovery flows on one audited credential-and-session sweep primitive.
+
+<a id="finding-3"></a>
+
+### [3] One-time enrollment codes can mint multiple independent sessions
+
+| Field | Value |
+| --- | --- |
+| Severity | high |
+| Confidence | high |
+| Confidence rationale | Comments, SQL, the public handler, and a regression test explicitly confirm that concurrent redemptions both succeed and each handler invocation issues a token pair. |
+| Category | authentication |
+| CWE | CWE-294 |
+| Affected lines | backend/crates/platform/provisioning/src/lib.rs:480-548, backend/crates/platform/auth-rest/src/lib.rs:1126-1183, backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs:31-72 |
+
+#### Summary
+
+OTP redemption is intentionally verify-only: it leaves the credential open until passkey registration and issues a new access token and refresh family on every successful redemption. A captured bootstrap, recovery, or enrollment-handoff code can therefore be replayed before registration to retain an independent long-lived session after the intended user enrolls a passkey.
+
+#### Root Cause
+
+The design moves single-use enforcement from authentication to later passkey registration while granting full sessions at authentication time.
+
+**Redeem reads an open credential without consuming it** — `backend/crates/platform/provisioning/src/lib.rs:530-548`
+
+The redemption transaction performs no state transition that excludes a second caller.
+
+```rust
+SELECT id, user_id
+FROM auth_bootstrap_credentials
+WHERE token_hash = $1
+  AND consumed_at IS NULL
+  AND revoked_at IS NULL
+  AND expires_at > $2
+```
+
+**Every successful redemption issues a normal token pair** — `backend/crates/platform/auth-rest/src/lib.rs:1168-1183`
+
+Each replay produces an independent refresh family rather than a retry-only enrollment capability.
+
+```rust
+let user = load_user_auth_context_in_org(...).await?;
+let tokens = issue_token_pair(&state.pool, services, &user).await?;
+```
+
+**Regression test requires both concurrent replays to succeed** — `backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs:44-63`
+
+The exploitable replay window is an intentional tested behavior, not an ambiguous race.
+
+```rust
+assert!(
+    handle_a.await.unwrap().is_ok() && handle_b.await.unwrap().is_ok(),
+    "verify-only redeems must both succeed concurrently"
+);
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Independent source trace corroborated by repository regression test
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- The same open code can be redeemed more than once before registration.
+- Each redeem creates an independent refresh-token family.
+- Consuming the OTP during one passkey registration does not revoke already-issued sibling families.
+
+Counterevidence and remaining uncertainty:
+- Expiry, revocation, and per-client rate limits narrow the window.
+- Registration eventually consumes the credential.
+
+Limitations:
+- No dynamic replay was executed; the repository test already codifies the concurrent success condition.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/platform/provisioning/src/lib.rs:480-548, backend/crates/platform/auth-rest/src/lib.rs:1126-1183, backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs:31-72, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Obtain or observe the one-time code.
+- Redeem it before or concurrently with the intended user.
+- Receive an independent access token and refresh family.
+- Continue rotating that family after the intended user registers a passkey and consumes the code.
+
+#### Reachability
+
+A captured code is replayed to establish a session that survives the legitimate enrollment.
+
+- **Attacker:** Unauthenticated party with a disclosed bootstrap, reset, or handoff OTP
+
+- **Entry point:** POST OTP redemption endpoint
+
+- **Sink:** Normal access-token and refresh-family issuance
+
+- **Outcome:** Persistent access to the victim account
+
+Preconditions:
+- The code remains unexpired, unrevoked, and unconsumed at registration time.
+
+Existing controls:
+- OTP expiry and revocation
+- Rate limiting
+- Passkey registration consumes the open credential
+
+#### Severity
+
+**High** — A network attacker who obtains one nominally one-time credential can establish durable account access, including an independent refresh family that survives later OTP consumption.
+
+Severity decreases if all OTP delivery and display channels are guaranteed single-party and session issuance is narrowly scoped; it increases for administrator bootstrap codes with long TTLs.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Account takeover with a renewable session.
+
+Likelihood assessment:
+- **Level:** medium
+- **Rationale:** Requires disclosure of a bearer code, but replay itself is deterministic.
+
+#### Remediation
+
+Atomically consume the OTP on its first successful redemption. If interrupted onboarding must be resumable, return a narrowly scoped, short-lived enrollment capability rather than a normal access/refresh pair, and exchange it for a normal session only after passkey registration succeeds.
+
+Tests:
+- Two concurrent redemption attempts for one code must yield exactly one successful authentication result.
+- An enrollment capability must be unable to access ordinary tenant APIs or mint a refresh family.
+- Completing enrollment must revoke or invalidate every pre-enrollment capability.
+
+Preventive controls:
+- Represent authentication and enrollment capabilities as distinct token types with non-overlapping audiences.
+
+<a id="finding-4"></a>
+
+### [4] Authenticated clients can allocate unlimited persistent WebSockets
+
+| Field | Value |
+| --- | --- |
+| Severity | medium |
+| Confidence | high |
+| Confidence rationale | Two independent investigators confirmed the unbounded admission path, long-lived session loop, and lack of repository-backed ingress limits. |
+| Category | denial-of-service |
+| CWE | CWE-770 |
+| Affected lines | backend/crates/platform/realtime/src/lib.rs:381-392, backend/crates/platform/realtime/src/lib.rs:468-529, backend/crates/platform/realtime/src/lib.rs:668-772, backend/crates/platform/realtime/src/lib.rs:1147-1239, backend/app/src/lib.rs:3519-3536 |
+
+#### Summary
+
+The public WebSocket route accepts any valid tenant access token, unconditionally inserts each connection into an unbounded process-wide HashMap, and has no per-user, tenant, IP, global, or idle limit. A cursor also spawns an independent unbounded replay task. One low-privilege account can consume sockets, tasks, heap, and database work until shared API availability degrades.
+
+#### Root Cause
+
+Realtime bounds data per connection but has no admission or lifetime budget for the connection itself or its replay work.
+
+**Every connection is inserted without a quota** — `backend/crates/platform/realtime/src/lib.rs:494-529`
+
+connection_buffer bounds one queue, not the number of queues, map entries, sockets, or replay tasks.
+
+```rust
+let (events_tx, events_rx) = mpsc::channel(capacity);
+...
+self.connections.lock().await.insert(id, ConnectionSlot { ... });
+if let Some(last_message_id) = last_message_id {
+    tokio::spawn(async move { hub.run_replay(id, principal, last_message_id).await; });
+}
+```
+
+**Idle sessions remain open indefinitely** — `backend/crates/platform/realtime/src/lib.rs:1197-1239`
+
+There is no heartbeat or idle timer branch.
+
+```rust
+loop {
+    tokio::select! {
+        notice = disconnect_rx.recv() => { ... }
+        event = events_rx.recv() => { ... }
+        incoming = socket.recv() => { ... }
+    }
+}
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Independent route-to-hub source traces
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- connect never checks connection_count or acquires a semaphore.
+- Any authenticated tenant role can reach the upgrade.
+- Idle sockets have no application deadline.
+- Each cursor-bearing connection can create a replay task.
+
+Counterevidence and remaining uncertainty:
+- Authentication is required.
+- Per-connection event channels are bounded.
+- Lagging consumers are disconnected.
+- External infrastructure may impose unspecified ceilings.
+
+Limitations:
+- No live file-descriptor or ingress-limit readback was available.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/platform/realtime/src/lib.rs:381-392, backend/crates/platform/realtime/src/lib.rs:468-529, backend/crates/platform/realtime/src/lib.rs:668-772, backend/crates/platform/realtime/src/lib.rs:1147-1239, backend/app/src/lib.rs:3519-3536, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Open repeated authenticated WebSocket upgrades.
+- Keep each socket idle.
+- Optionally supply a valid old cursor to spawn replay.
+- Continue until process or infrastructure resources are exhausted.
+
+#### Reachability
+
+One tenant account opens many long-lived sockets and optionally multiplies replay work.
+
+- **Attacker:** Any authenticated tenant user
+
+- **Entry point:** GET /api/v1/ws
+
+- **Sink:** Unbounded connection map and per-connection replay task
+
+- **Outcome:** Exhausted file descriptors, heap, tasks, and database capacity
+
+Preconditions:
+- A valid access token and network reachability to the public API.
+
+Existing controls:
+- Bounded event queue
+- Lag disconnect
+- Authentication
+
+#### Severity
+
+**Medium** — Any authenticated tenant user can attack shared availability, but each individual event queue is bounded and external infrastructure may impose incidental limits.
+
+Severity increases if ingress and operating-system connection ceilings are high or replay history is large.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Shared API and realtime availability can be affected across tenants.
+
+Likelihood assessment:
+- **Level:** medium
+- **Rationale:** Requires an account but little per-connection cost.
+
+#### Remediation
+
+Acquire lifetime permits before upgrade and enforce global, per-tenant, per-user, and trusted-client-IP connection caps. Add upgrade-rate limits, heartbeat/idle deadlines, replay concurrency and total-record budgets, and matching versioned ingress in-flight limits.
+
+Tests:
+- Excess connections for one user and tenant receive 429 or 503 and do not enter the hub.
+- Idle connections close after the configured deadline and always release permits.
+- Replay tasks obey a global semaphore and total page/record/time limits.
+
+Preventive controls:
+- Expose quota, rejection, active-connection, and replay-concurrency metrics with alerts.
+
+<a id="finding-5"></a>
+
+### [5] Sparse XLSX uploads can trigger multi-billion-cell allocations
+
+| Field | Value |
+| --- | --- |
+| Severity | medium |
+| Confidence | high |
+| Confidence rationale | Two independent investigators found the same parser root cause; the allocation is explicit in vendored source and precedes application validation. |
+| Category | denial-of-service |
+| CWE | CWE-400, CWE-409 |
+| Affected lines | backend/app/src/hr.rs:144-170, backend/app/src/hr.rs:4171-4186, backend/app/src/hr.rs:4534-4546, backend/app/src/hr.rs:4612-4635, backend/crates/registry/adapter-postgres/src/lib.rs:3589-3602, third-party/rust/vendor/calamine-0.35.0-quickxml41/src/xlsx/mod.rs:1727-1794, third-party/rust/vendor/calamine-0.35.0-quickxml41/src/lib.rs:854-874 |
+
+#### Summary
+
+Equipment and HR import endpoints cap only the compressed multipart body. The vendored calamine parser collects sparse cells and expands the attacker-controlled bounding rectangle into a dense Vec before application row limits execute. A small valid workbook with cells at distant Excel coordinates can exhaust a 512 MiB API pod.
+
+#### Root Cause
+
+Upload admission constrains compressed transport bytes but not ZIP expansion, worksheet coordinates, total cells, or dense parser allocation.
+
+**Worksheet parsing hands sparse cells to dense Range construction** — `third-party/rust/vendor/calamine-0.35.0-quickxml41/src/xlsx/mod.rs:1727-1794`
+
+No application cell, coordinate, or expanded-size budget is applied before materialization.
+
+```rust
+let mut cells = Vec::new();
+...
+while let Ok(Some(cell)) = cell_reader.next_cell() { cells.push(cell); }
+...
+Ok(Range::from_sparse(cells))
+```
+
+**Extreme coordinates determine allocation size** — `third-party/rust/vendor/calamine-0.35.0-quickxml41/src/lib.rs:860-874`
+
+A few cells spanning A1 to XFD1048576 request roughly 17 billion default cells.
+
+```rust
+let cols = (col_end - col_start + 1) as usize;
+let rows = (row_end - row_start + 1) as usize;
+let len = cols.saturating_mul(rows);
+let mut v = vec![T::default(); len];
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Independent endpoint-to-vendored-parser source traces
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- Multiple reachable import routes call worksheet_range before row validation.
+- Range::from_sparse allocates rows multiplied by columns.
+- The 16 MiB request cap does not bound sparse worksheet dimensions or decompressed content.
+
+Counterevidence and remaining uncertainty:
+- Import routes require org-wide HR or master-list authority.
+- Compressed input is capped.
+- Some business row loops are later bounded.
+
+Limitations:
+- No malicious workbook was executed; the allocation behavior is explicit and deterministic in source.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/app/src/hr.rs:144-170, backend/app/src/hr.rs:4171-4186, backend/app/src/hr.rs:4534-4546, backend/app/src/hr.rs:4612-4635, backend/crates/registry/adapter-postgres/src/lib.rs:3589-3602, third-party/rust/vendor/calamine-0.35.0-quickxml41/src/xlsx/mod.rs:1727-1794, third-party/rust/vendor/calamine-0.35.0-quickxml41/src/lib.rs:854-874, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Create a valid compressed workbook with a few extreme-coordinate cells.
+- Upload under the 16 MiB body cap.
+- Application calls worksheet_range.
+- Calamine allocates the full bounding rectangle before application validation.
+
+#### Reachability
+
+A privileged tenant importer submits a small sparse workbook that expands into an enormous dense range.
+
+- **Attacker:** Authenticated principal with EmployeeDirectoryManage or MasterListImport
+
+- **Entry point:** Attendance, employee, or equipment XLSX import/preview endpoint
+
+- **Sink:** vec!\[T::default(); cols \* rows\] in vendored calamine
+
+- **Outcome:** API process OOM or severe memory pressure
+
+Preconditions:
+- The workbook is accepted as XLSX and contains distant valid cell coordinates.
+
+Existing controls:
+- Authentication and import authorization
+- Compressed body limit
+- Pod memory limit
+
+#### Severity
+
+**Medium** — The primitive can reliably exhaust process memory and affect other tenants, but exploitation requires an authenticated principal with elevated import authority.
+
+Severity increases if import privileges are broadly delegated or parsing runs in the same process as critical public APIs.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Pod termination can disrupt shared multi-tenant APIs.
+
+Likelihood assessment:
+- **Level:** medium
+- **Rationale:** Requires elevated tenant import permission.
+
+#### Remediation
+
+Before calling worksheet_range, bound ZIP entry count, aggregate uncompressed bytes, compression ratio, sheet count, maximum row/column coordinates, and total expanded cells. Prefer sparse or streaming parsing in a resource-limited worker. For fixed-format imports, reject any populated coordinate outside the narrow expected envelope.
+
+Tests:
+- Reject a workbook containing only A1 and XFD1048576 without attempting a dense allocation.
+- Reject excessive shared strings, sheets, cells, decompressed bytes, and compression ratio.
+- Exercise every attendance, employee, and equipment import and preview route against the shared hardened admission layer.
+
+Preventive controls:
+- Centralize untrusted workbook parsing and keep it outside the API process memory boundary.
+
+<a id="finding-6"></a>
+
+### [6] Payroll and organization changes enforce account-level rather than person-level four-eyes
+
+| Field | Value |
+| --- | --- |
+| Severity | medium |
+| Confidence | high |
+| Confidence rationale | The affected comparisons, canonical identity requirement, and correct sibling implementation are explicit in source and schema comments. |
+| Category | workflow-authorization |
+| CWE | CWE-841 |
+| Affected lines | backend/crates/payroll/adapter-postgres/src/lifecycle.rs:931-987, backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql:37-39, backend/crates/orgchange/adapter-postgres/src/lib.rs:1851-1922, backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql:90-101, backend/crates/governance/adapter-postgres/src/lib.rs:824-900 |
+
+#### Summary
+
+Payroll approval and organization-change approval reject only identical user UUIDs. The canonical identity model explicitly allows one natural Person to own several employee records and accounts, and a sibling governance implementation already resolves both actors to person_id. A single natural person controlling two authorized accounts can submit and approve payroll or organization changes.
+
+#### Root Cause
+
+Two domain-specific workflows implement four-eyes locally with user IDs rather than reusing the canonical natural-person resolver.
+
+**Payroll compares account UUIDs only** — `backend/crates/payroll/adapter-postgres/src/lifecycle.rs:965-973`
+
+Two accounts belonging to the same natural person pass the comparison.
+
+```rust
+if run.submitted_by == Some(actor) {
+    return Err(LifecycleError::SodViolation);
+}
+```
+
+**Organization change also compares account UUIDs only** — `backend/crates/orgchange/adapter-postgres/src/lib.rs:1866-1877`
+
+No users.employee_id to employee_person_bindings lookup occurs in this transaction.
+
+```rust
+if request.drafted_by == *actor.as_uuid() {
+    return Err(KernelError::conflict("drafter cannot approve"));
+}
+```
+
+**Canonical model requires catching multiple employments for one person** — `backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql:93-101`
+
+The repository itself defines account inequality as insufficient.
+
+```sql
+-- requester and approver are distinct natural persons
+...
+-- One person may still be bound to several employee records ...
+-- it is exactly the case the four-eyes bar has to catch.
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Workflow transaction trace against canonical identity model
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- Both workflows compare only user-account UUIDs.
+- The schema permits several employee records for one Person.
+- The shared governance adapter demonstrates a fail-closed person-level comparison.
+
+Counterevidence and remaining uncertainty:
+- The same user UUID is rejected.
+- All operations are tenant scoped.
+- Both accounts must hold elevated workflow authority.
+
+Limitations:
+- Actual duplicate-account assignments require runtime data and were not inspected.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/payroll/adapter-postgres/src/lifecycle.rs:931-987, backend/crates/platform/db/migrations/0186_payroll_run_lifecycle.sql:37-39, backend/crates/orgchange/adapter-postgres/src/lib.rs:1851-1922, backend/crates/platform/db/migrations/0213_create_canonical_person_tables.sql:90-101, backend/crates/governance/adapter-postgres/src/lib.rs:824-900, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Submit or draft with account A.
+- Switch to account B owned by the same person.
+- Approve with account B.
+- Account UUIDs differ, so the workflow advances.
+
+#### Reachability
+
+One natural person switches between two authorized accounts to satisfy an account-only maker-checker check.
+
+- **Attacker:** Natural person controlling two payroll-capable or org-change-capable accounts
+
+- **Entry point:** Payroll submit/decide or organization-change draft/decide routes
+
+- **Sink:** Account-UUID inequality check
+
+- **Outcome:** Self-approval of financial or organizational changes
+
+Preconditions:
+- Both accounts are tenant-authorized and map through separate employee records to the same Person.
+
+Existing controls:
+- Tenant RLS
+- Role/capability checks
+- Row locks and ordered state transitions
+
+#### Severity
+
+**Medium** — The flaw defeats a stated maker-checker control over high-impact financial and organizational actions, but exploitation requires control of two separately authorized accounts mapped to one person.
+
+Severity increases where regulatory or financial policy treats natural-person separation as a mandatory control.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Payroll and structural changes can bypass required independent human review.
+
+Likelihood assessment:
+- **Level:** low
+- **Rationale:** Requires control of two elevated accounts tied to one person.
+
+#### Remediation
+
+Inside each locked decision transaction, resolve submitter/drafter and decider through users.employee_id and employee_person_bindings, fail closed for unbound parties, and reject equal person_id values. Persist immutable person identifiers used for the decision or otherwise protect against later rebinding. Prefer the shared governance primitive.
+
+Tests:
+- Two different user IDs bound to one Person cannot submit and approve the same payroll run.
+- Two different user IDs bound to one Person cannot draft and approve one organization change.
+- Unbound approvers fail closed for workflows requiring natural-person four-eyes.
+
+Preventive controls:
+- Centralize natural-person separation in one transaction-safe approval primitive used by every governed workflow.
+
+<a id="finding-7"></a>
+
+### [7] Reverse-proxy traffic shares one client-IP rate-limit bucket
+
+| Field | Value |
+| --- | --- |
+| Severity | medium |
+| Confidence | high |
+| Confidence rationale | The ingress, deployment configuration, fail-closed resolver default, transport peer wiring, and per-IP bucket order form a direct static trace. |
+| Category | denial-of-service |
+| CWE | CWE-400 |
+| Affected lines | deploy/apps/console/base/ingress.yaml:8-29, deploy/apps/console/base/configmap.yaml:11-25, backend/app/src/lib.rs:1098-1107, backend/crates/platform/request-context/src/lib.rs:97-109, backend/crates/platform/auth-rest/src/lib.rs:3417-3431 |
+
+#### Summary
+
+The committed ingress sends public API traffic through Traefik, but the production application configuration omits both trusted-proxy settings. The resolver therefore ignores forwarding headers and treats the Traefik peer as every caller's client IP. An anonymous caller can consume the shared per-IP bucket and repeatedly deny authentication, support intake, and sales intake to other users routed through the same proxy.
+
+#### Root Cause
+
+The application safely distrusts forwarding headers by default, but the production reverse-proxy deployment does not supply the configuration needed to recover the external client identity. A control designed as per-client admission control is therefore keyed by a shared infrastructure identity.
+
+**Missing proxy configuration becomes zero trusted hops** — `backend/app/src/lib.rs:1098-1107`
+
+The committed production ConfigMap has no CONSOLE_TRUSTED_PROXY_COUNT or CONSOLE_TRUSTED_PROXY_CIDRS entry, so the runtime receives zero trusted hops.
+
+```rust
+fn parse_trusted_proxy_count(raw: Option<&String>) -> Result<usize, AppError> {
+    match raw {
+        Some(raw) => raw.parse::<usize>(),
+        None => Ok(0),
+    }
+}
+```
+
+**All proxied callers resolve to the transport peer** — `backend/crates/platform/request-context/src/lib.rs:103-109`
+
+Behind Traefik, peer.ip() identifies the proxy-side transport peer rather than the external caller.
+
+```rust
+if trusted_proxy_count == 0
+    || !trusted_proxy_cidrs.iter().any(|network| network.contains(&peer.ip()))
+{
+    return peer.ip();
+}
+```
+
+**The shared identity is enforced before the global bucket** — `backend/crates/platform/auth-rest/src/lib.rs:3417-3431`
+
+An attacker can exhaust the proxy-wide per-IP bucket before legitimate clients reach credential validation.
+
+```rust
+if let Some(ip) = trusted_client_ip {
+    buckets.push((format!("ip:{}", ip.get()), per_ip_cap));
+}
+...
+for (client_key, cap) in buckets {
+    let attempts = increment_rate_bucket(...).await?;
+    if attempts > cap { return Err(RestError::too_many_requests()); }
+}
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Static deployment-to-runtime source trace
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- Public /api requests are routed through Traefik to console-app.
+- No trusted-proxy variables are defined in the committed production configuration or documented secret contract.
+- The resolver returns the direct peer when trusted_proxy_count is zero.
+- Authentication and public intake limiters consume the resolved IP bucket before the global bucket.
+
+Counterevidence and remaining uncertainty:
+- Correct explicit proxy configuration would preserve spoof resistance and separate clients.
+- Global rate limits and multiple Traefik replicas provide partial containment.
+
+Limitations:
+- No live cluster or out-of-band secret/configuration readback was authorized.
+
+#### Dataflow
+
+The canonical finding records the affected path at deploy/apps/console/base/ingress.yaml:8-29, deploy/apps/console/base/configmap.yaml:11-25, backend/app/src/lib.rs:1098-1107, backend/crates/platform/request-context/src/lib.rs:97-109, backend/crates/platform/auth-rest/src/lib.rs:3417-3431, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Send the small number of requests needed to exceed the endpoint's per-IP cap.
+- Each request resolves to the shared proxy peer and increments the same database row.
+- Subsequent legitimate requests through that peer are rejected for the rest of the fixed window.
+- Repeat once per window to sustain the outage.
+
+#### Reachability
+
+An anonymous caller drains the per-IP bucket shared by every client behind one Traefik peer.
+
+- **Attacker:** Unauthenticated Internet client
+
+- **Entry point:** Public /api authentication, support, or sales intake endpoint
+
+- **Sink:** DB-backed per-IP rate-limit row keyed by the Traefik transport peer
+
+- **Outcome:** Legitimate requests through the same proxy receive HTTP 429
+
+Preconditions:
+- The committed Traefik deployment is used without out-of-band trusted-proxy variables.
+
+Assumptions:
+- Traefik performs ordinary HTTP reverse proxying to console-app.
+
+Existing controls:
+- Per-device and global buckets
+- Fail-closed forwarding-header parser
+
+#### Severity
+
+**Medium** — Exploitation is anonymous and inexpensive, but impact is limited to recurring denial of rate-limited public flows and may be distributed across multiple ingress replicas.
+
+Severity increases if a single proxy instance serves all clients or the affected endpoints are operationally critical; it decreases if deployment injects verified proxy settings outside the committed configuration.
+
+Impact assessment:
+- **Level:** medium
+- **Rationale:** Recurring denial of sign-in and public intake without credentials.
+
+Likelihood assessment:
+- **Level:** high
+- **Rationale:** The source-defined cap is small and the endpoint is public.
+
+#### Remediation
+
+Set CONSOLE_TRUSTED_PROXY_COUNT and CONSOLE_TRUSTED_PROXY_CIDRS explicitly for the actual Traefik hop topology, and fail deployment validation when a configured ingress lacks them. Keep malformed-chain fallback to the direct peer. If possible, have the edge attach a tamper-resistant client identity and key admission control to it.
+
+Tests:
+- Render the production overlay and assert both trusted-proxy variables are present.
+- Through Traefik, prove two distinct client addresses receive separate rate-limit buckets.
+- Prove forged, duplicate, malformed, and incomplete forwarding chains fall back without accepting attacker-controlled addresses.
+
+Preventive controls:
+- Add a deployment conformance check coupling ingressClassName=traefik with explicit proxy trust settings.
+- Alert when one client-IP key represents implausibly many devices or accounts.
+
+<a id="finding-8"></a>
+
+### [8] Any shared branch authorizes a global user activation change
+
+| Field | Value |
+| --- | --- |
+| Severity | medium |
+| Confidence | high |
+| Confidence rationale | The REST authorization, any-overlap query, and global credential/session sweep form a direct source trace. |
+| Category | authorization |
+| CWE | CWE-863 |
+| Affected lines | backend/crates/identity/rest/src/lib.rs:3204-3255, backend/crates/identity/adapter-postgres/src/lib.rs:1819-1856, backend/crates/identity/adapter-postgres/src/lib.rs:475-535 |
+
+#### Summary
+
+Activation and deactivation use get_user with the caller's branch scope as their decisive target check. That visibility predicate succeeds on any overlapping branch, but the resulting lifecycle mutation applies to the entire user and does not compare target privilege. A branch administrator can globally deactivate or reactivate a multi-branch user, including a higher-privilege target that retains one overlapping membership.
+
+#### Root Cause
+
+A read-visibility predicate based on any branch overlap is reused as authorization for an account-wide lifecycle transition.
+
+**Lifecycle handlers rely on visibility, not complete target authority** — `backend/crates/identity/rest/src/lib.rs:3214-3228`
+
+No all-branches or target-role dominance check occurs before the global mutation.
+
+```rust
+authorize_org_manage(&principal, Feature::UserManage)?;
+state.store.get_user(target_id, &principal.branch_scope).await?;
+state.store.deactivate_user(DeactivateUserCommand { user_id: target_id, ... }).await?
+```
+
+**Target scope succeeds on one shared membership** — `backend/crates/identity/adapter-postgres/src/lib.rs:1841-1855`
+
+A target assigned to both authorized and unauthorized branches is considered in scope.
+
+```rust
+SELECT user_id FROM user_branches
+WHERE user_id = $1 AND branch_id = ANY($2)
+LIMIT 1
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: REST-to-adapter authorization trace
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- The handlers never authorize every target branch.
+- They do not reject higher-privilege targets.
+- The adapter changes account state and deactivation sweeps all credentials and sessions globally.
+
+Counterevidence and remaining uncertainty:
+- Tenant RLS blocks cross-org targeting.
+- The caller must have UserManage and one overlapping branch.
+- Self-targeting is rejected.
+
+Limitations:
+- Exploitability against Executive or SuperAdmin depends on such accounts retaining a branch membership.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/identity/rest/src/lib.rs:3204-3255, backend/crates/identity/adapter-postgres/src/lib.rs:1819-1856, backend/crates/identity/adapter-postgres/src/lib.rs:475-535, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Select a multi-branch target with one overlapping branch.
+- Invoke deactivate or activate.
+- get_user passes on the overlap.
+- The global lifecycle mutation applies without complete-scope or privilege checks.
+
+#### Reachability
+
+A branch administrator uses one shared membership to control a target's tenant-wide account state.
+
+- **Attacker:** Branch-scoped ADMIN with UserManage
+
+- **Entry point:** User activation or deactivation endpoint
+
+- **Sink:** Global users.is_active transition and credential/session sweep
+
+- **Outcome:** Unauthorized account-wide deactivation or reactivation
+
+Preconditions:
+- The target shares at least one attacker-managed branch and also has wider scope or higher privilege.
+
+Existing controls:
+- Tenant RLS
+- UserManage feature check
+- Self-target denial
+
+#### Severity
+
+**Medium** — A tenant administrator can disrupt or restore accounts outside their full branch authority, but cross-tenant access is still blocked and an overlapping branch is required.
+
+Severity increases when privileged users retain branch memberships or when deactivation affects safety-critical operations.
+
+Impact assessment:
+- **Level:** medium
+- **Rationale:** Account-wide denial or restoration outside caller authority.
+
+Likelihood assessment:
+- **Level:** medium
+- **Rationale:** Requires tenant administration and an overlapping membership.
+
+#### Remediation
+
+Resolve the target's complete live branch set and roles before the transition. Require authority over every target branch and enforce role dominance for Executive and SuperAdmin targets. Repeat decisive checks in the mutation transaction.
+
+Tests:
+- A branch-A administrator cannot deactivate a user assigned to branches A and B.
+- An ADMIN cannot activate or deactivate an Executive or SuperAdmin target.
+- A fully authorized org-wide administrator can perform the transition.
+
+Preventive controls:
+- Separate read visibility helpers from write-authorization helpers and encode all-target-scope semantics in the latter.
+
+<a id="finding-9"></a>
+
+### [9] Deactivated and downgraded users retain access-token authority
+
+| Field | Value |
+| --- | --- |
+| Severity | medium |
+| Confidence | high |
+| Confidence rationale | Two independent review paths reached the same omission, and source comments explicitly state that no live authorization decision consumes the freshness snapshot. |
+| Category | session-management |
+| CWE | CWE-613 |
+| Affected lines | backend/crates/platform/request-context/src/lib.rs:310-380, backend/crates/platform/authz/src/lib.rs:1981-1992, backend/crates/identity/adapter-postgres/src/lib.rs:569-578, backend/crates/platform/auth-rest/src/lib.rs:45 |
+
+#### Summary
+
+Request-context verifies JWT cryptography and re-resolves selected scope data, but it does not check users.is_active, live system roles, subject_version, or session_generation. Previously issued JWTs therefore retain stale built-in privileges for up to the 15-minute access-token lifetime after deactivation or role reduction.
+
+#### Root Cause
+
+The JWT carries revocation and authorization-version snapshots, but request authorization currently treats them as metadata and trusts built-in role claims until exp.
+
+**Freshness claims are copied but not consulted** — `backend/crates/platform/request-context/src/lib.rs:341-350`
+
+The resolver does not compare the token snapshots with current database values.
+
+```rust
+// SLICE-2 only sources this onto the principal; no
+// live authorization decision consults it
+let authz_freshness = SubjectFreshness { ... };
+```
+
+**System roles come directly from JWT claims** — `backend/crates/platform/request-context/src/lib.rs:326-339`
+
+A downgrade does not alter the authority of an already-issued token.
+
+```rust
+let roles = claims.roles.iter().map(|role| Role::from_str(role)).collect::<Result<BTreeSet<_>, _>>()?;
+```
+
+**Stale elevated roles bypass live branch membership** — `backend/crates/platform/authz/src/lib.rs:1987-1992`
+
+A stale Executive or SuperAdmin claim gains all-branch scope before a database query.
+
+```rust
+if roles.iter().any(|role| matches!(role, Role::SuperAdmin | Role::Executive)) {
+    return Ok(BranchScope::All);
+}
+```
+
+#### Validation
+
+Validation outcomes are recorded below.
+
+Validation method: Independent JWT-to-principal source traces
+
+- **Status:** validated
+- **Disposition:** reported
+
+Assertions:
+- No active-user lookup or generation comparison precedes Principal construction.
+- System roles are accepted from verified claims.
+- Deactivation increments session generation but the resolver ignores it.
+
+Counterevidence and remaining uncertainty:
+- JWT signature, issuer, audience, expiry, and claim shape are validated.
+- Branch memberships and custom grants are live-resolved for non-global roles.
+- Refresh families are revoked on deactivation.
+
+Limitations:
+- Impact is bounded by the configured access-token TTL, which defaults to 15 minutes.
+
+#### Dataflow
+
+The canonical finding records the affected path at backend/crates/platform/request-context/src/lib.rs:310-380, backend/crates/platform/authz/src/lib.rs:1981-1992, backend/crates/identity/adapter-postgres/src/lib.rs:569-578, backend/crates/platform/auth-rest/src/lib.rs:45, but no expanded source-to-sink narrative was recorded.
+
+Attack steps:
+- Retain a valid access JWT.
+- Account is deactivated or roles are reduced.
+- Send authenticated requests before exp.
+- Resolver accepts token roles without live freshness enforcement.
+
+#### Reachability
+
+A recently offboarded or downgraded user continues using a pre-change JWT.
+
+- **Attacker:** User holding an access token issued before deactivation or role reduction
+
+- **Entry point:** Any tenant route protected by request-context
+
+- **Sink:** Principal construction and role-based authorization
+
+- **Outcome:** Continued stale read or mutation authority
+
+Preconditions:
+- The access token has not expired.
+
+Existing controls:
+- 15-minute default expiry
+- Live custom-grant and ordinary branch resolution
+- Refresh revocation
+
+#### Severity
+
+**Medium** — The stale-authority window is bounded to the short access-token lifetime, but it can preserve administrator rights after explicit offboarding or downgrade.
+
+Severity increases with longer configured access-token TTLs or highly privileged affected accounts.
+
+Impact assessment:
+- **Level:** high
+- **Rationale:** Former administrative authority may cover tenant PII, HR, payroll, and policy mutations.
+
+Likelihood assessment:
+- **Level:** medium
+- **Rationale:** Exploitation is deterministic but time-bounded.
+
+#### Remediation
+
+During principal resolution, arm the claimed tenant, require an active user, compare session_generation and subject_version with live values, and derive or verify built-in roles from current state before constructing Principal.
+
+Tests:
+- A token issued before deactivation must fail immediately afterward.
+- A token issued before removal of Executive or SuperAdmin must not retain BranchScope::All.
+- Generation mismatches must fail closed for tenant, group-admin, realtime, and platform contexts.
+
+Preventive controls:
+- Make one shared principal resolver authoritative for account status, role state, and token-generation freshness.
+
+## Reviewed Surfaces
+
+| Surface | Risk Area | Outcome | Notes |
+| --- | --- | --- | --- |
+| Authentication, OTP, passkeys, JWT, refresh, and recovery | identity | Reported | Reported reusable OTP sessions, reset session persistence, and stale access-token authority; rejected the claimed passkey-race takeover because finish still requires an open OTP. |
+| User roles, activation, deactivation, and branch scope | authorization | Reported | Reported any-overlap authorization for global activation state changes. |
+| Tenant request context, Group context, and Postgres RLS | tenant-isolation | No issue found | Representative tenant, group, machine, platform, and connection-helper paths failed closed; exhaustive domain SQL review remains deferred. |
+| Payroll and organization-change approvals | governance | Reported | Reported account-only natural-person separation and missing role_key authorization. |
+| Public authentication and intake rate limiting | availability | Reported | Reported shared reverse-proxy client-IP bucket. |
+| Spreadsheet uploads and parser resource bounds | input-processing | Reported | Reported unbounded sparse-to-dense XLSX expansion across HR and equipment import routes. |
+| WebSocket authentication, fanout, replay, and quotas | availability | Reported | Tenant filtering held, but connection and replay admission are unbounded. |
+| SSRF, subprocess, redirects, SMTP/IMAP, and workflow egress | egress | No issue found | Reviewed Office, mail, FFmpeg invocation, and workflow sinks; no concrete injection or SSRF path was retained. |
+| Evidence upload and FFmpeg processing | resource-management | Rejected | The unbounded stderr buffer is a hardening gap, but attacker-controlled diagnostic amplification was not established and existing input/time/output bounds materially constrain it. |
+| Ingress, secrets, NetworkPolicy, database roles, and active overlays | configuration | Reported | Proxy trust mismatch is reportable; command-DB, migration-policy, SMTP-policy, and mox discrepancies were retained as operational limitations without attacker paths. |
+| CI, release, image provenance, and deployment branch | supply-chain | Needs follow-up | No untrusted expression-to-privileged-shell path was validated; pinned console-web source/provenance remains unresolved. |
+| Staged observability stack | inactive-configuration | Not applicable | The stack is explicitly DARK, absent from the live app-of-apps, and requires manual operator activation. |
+
+## Open Questions And Follow Up
+
+- Are trusted-proxy variables injected out of band in the deployed console-app environment?
+  - Follow-up prompt: Read back the effective deployment environment and verify hop count/CIDRs against Traefik topology without disclosing secret values.
+- Which CNI and NetworkPolicy state are active in the live cluster?
+  - Follow-up prompt: Run the repository's deny-smoke checks and capture effective NetworkPolicy enforcement.
+- What source, release workflow, and signature produced the pinned console-web digest?
+  - Follow-up prompt: Resolve the digest to provenance/SBOM/signature and the exact reviewed source revision.
+- Do production identity records contain multiple privileged accounts bound to one canonical Person?
+  - Follow-up prompt: Run an authorized tenant-scoped audit for duplicate privileged user-to-person bindings.
+- The repository is much larger than the strict full-file review completed in this Standard pass. Search-guided review covered high-risk boundaries, but endpoint-by-endpoint authorization and SQL review remains incomplete.
+  - Follow-up prompt: Review deferred unit unreviewed-domain-files and close its stated proof gap. Paths: backend/app, backend/crates. Surfaces: tenant-rls, auth-session, identity-lifecycle.
+- Frontend/mobile clients, end-to-end suites, and most local tooling were not fully reviewed.
+  - Follow-up prompt: Review deferred unit tooling-and-clients and close its stated proof gap. Paths: frontend, mobile, e2e, tools, scripts. Surfaces: ci-release.
+- Vendored code was reviewed only along validated sinks such as calamine; generated, historical, and evidence materials were not exhaustively audited as executable source.
+  - Follow-up prompt: Review deferred unit vendored-and-generated and close its stated proof gap. Paths: third-party, docs/evidence, docs/archive. Surfaces: upload-parsers.
+- Live cluster, database, secret-store, registry, ingress, CNI, and out-of-band configuration state was unavailable to this static scan.
+  - Follow-up prompt: Review deferred unit runtime-state and close its stated proof gap. Paths: deploy, ops. Surfaces: deployment, ci-release, public-rate-limits.

@@ -1,0 +1,167 @@
+{
+  "reviewer": "/root/integration_security",
+  "reviewed_utc": "2026-09-21T18:02:22.680473+00:00",
+  "scan_report_path": "/Users/jasonlee/.codex/state/plugins/codex-security/scans/console/codex-security-console-rLBoFU/report.md",
+  "scan_report_sha256": "2d51a425650f528a9bf12676e3b10f83c0be98bccecc50f0373b563554ef98dd",
+  "scan_revision": "05200e43af13b527ce031b04369e05852862f1d6",
+  "current_head": "df95adccba46d0cb9728597e3b63f701a32edda9",
+  "requested_product_baseline": "df95adccb",
+  "scope": "Independent current-source trace findings1,2,3,8,9 only; parent reviews4,5,6,7",
+  "scan_limitations_preserved": "Original scan16/6101strictly fully reviewed files,partialcoverage; current review is bounded source trace,not full audit.",
+  "findings": [
+    {
+      "id": 1,
+      "severity_from_report": "high",
+      "classification": "current",
+      "summary": "Capacity-specific organization-change approval is still not enforced.",
+      "source_trace": [
+        "backend/crates/orgchange/domain/src/lib.rs:173: fixed ordered HR/Finance/Legal/Executive chain",
+        "backend/crates/orgchange/adapter-postgres/src/lib.rs:1810: submit persists all4role keys",
+        "backend/crates/orgchange/rest/src/lib.rs:595: decide resolves principal,allow_approve,then passes only user_id/id/step/decision/memo",
+        "backend/crates/orgchange/rest/src/lib.rs:742: every step admits Executive/SuperAdmin",
+        "backend/crates/orgchange/adapter-postgres/src/lib.rs:1851: locked decide checks status,drafter inequality,step order and pending state; role_key loaded1889 and only emitted in event1976,not matched against actor capacity; last approval sets Approved1941+"
+      ],
+      "counterevidence": [
+        "Ordered steps and row locks remain. Drafter same UserId is rejected. Tenant scope applies. These controls do not enforce step capacity."
+      ],
+      "existing_tests": [
+        "backend/crates/orgchange/adapter-postgres/tests/preflight_persists_nothing.rs:156,187 submit tests assert4steps; they do not prove per-capacity denial.",
+        "backend/crates/orgchange/domain/src/lib.rs:782 tests role order."
+      ],
+      "closure_needed": "Real owner-bound negative case: Executive without HR capacity cannot approve HR step; explicit current capacity policy inside retained transaction; accepted independent-review semantics must cover the chain.",
+      "runtime_reproduced": false
+    },
+    {
+      "id": 2,
+      "severity_from_report": "high",
+      "classification": "current",
+      "summary": "Legacy credential reset still leaves preexisting refresh families/access authority intact.",
+      "source_trace": [
+        "backend/crates/platform/auth-rest/src/lib.rs:391 mounts credential-reset; handler1483 validates current actor,target roles and all target branches then calls provisioning1535",
+        "backend/crates/platform/provisioning/src/lib.rs:361 calls auth_legacy_reset_credentials_v1 in audited transaction",
+        "ops/generate-account-custody.py:1545 (generated ops/postgres-finalize-account-credentials.sql:20557): fixed SQL owner checks Company/Account fence, deletes passkeys, revokes old bootstrap and inserts replacement; no refresh-family/token revocation or subject generation bump",
+        "backend/crates/platform/auth/src/refresh.rs:180: rotate checks current subject/family/token and revoked state; reset leaves those unchanged"
+      ],
+      "counterevidence": [
+        "Reset now uses fenced fixed SQL owner and current subject locking, replacing original direct DML. It still does not perform session revocation.",
+        "Privileged target/all-branch reset checks exist; unrelated authorization improvements do not evict stolen sessions.",
+        "Native Account security is fenced separately. This finding concerns remaining mounted legacy recovery route, not every native Account recovery path.",
+        "Production reset execution remains HOLD in authority; that is not source remediation."
+      ],
+      "existing_tests": [
+        "backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs:487 admin_credential_reset_revokes_passkey_and_issues_otp_as_runtime_role checks removed key/recovery enrollment,not existing family/access revocation",
+        "same file:686 admin_credential_reset_is_tenant_scoped_as_runtime_role",
+        "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:141 demonstrates separate deactivation sweep behavior"
+      ],
+      "closure_needed": "Approved owner transition that atomically retires old sessions while issuing recovery material; test pre-reset access/refresh refusal and rollback, preserving nativeAccount/Company separation and custody historical bytes.",
+      "runtime_reproduced": false
+    },
+    {
+      "id": 3,
+      "severity_from_report": "high",
+      "classification": "current",
+      "summary": "Legacy one-time code redemption remains replayable into independent normal sessions.",
+      "source_trace": [
+        "backend/crates/platform/auth-rest/src/lib.rs:389 mounts OTP_REDEEM_PATH; redeem_otp1243 invokes owner in Auth transaction",
+        "backend/crates/platform/provisioning/src/lib.rs:562: redeem_otp_in_tx guards current subject and SELECTs open bootstrap FOR UPDATE596; it audits and returns without consuming or binding a unique redeem outcome",
+        "backend/crates/platform/auth-rest/src/lib.rs:1297 issues token pair for each redemption; issue_token_pair_in_tx2683 creates new refresh family2690",
+        "backend/crates/platform/provisioning/src/lib.rs:631 onward consumes code only with later passkey registration"
+      ],
+      "counterevidence": [
+        "Same-transaction issuance and FOR UPDATE improve serialization/rollback; serial retries still see unconsumed code.",
+        "Expiry,revocation,current-subject/fence and passkey-registration consumption remain. Normal access tokens are not enrollment-only capabilities."
+      ],
+      "existing_tests": [
+        "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs:37 concurrent_consume_burns_the_otp_exactly_once explicitly asserts both verify-only redeems succeed69 and consumed_at remainsNone77; later registration consumes once."
+      ],
+      "closure_needed": "Independently approved credential protocol/test successor: unique redemption or narrowly scoped enrollment capability without independent long-lived normal sessions. Existing test intentionally requires replay and cannot be silently weakened.",
+      "runtime_reproduced": false
+    },
+    {
+      "id": 8,
+      "severity_from_report": "medium",
+      "classification": "current",
+      "summary": "One overlapping branch still authorizes a Company-wide user active-state change.",
+      "source_trace": [
+        "backend/crates/identity/rest/src/lib.rs:274–275 mounts activate/deactivate",
+        "same file:3221/3251 uses UserManage capability,self-target refusal,get_user(target,principal.branch_scope),then global command",
+        "same file:4125 authorize_org_manage uses authorize_capability,not org-wide or full-target scope",
+        "backend/crates/identity/adapter-postgres/src/lib.rs:724 get_user uses user_in_scope1859",
+        "same file:1884+ any matching branch_id=ANY caller branches LIMIT1 admits target",
+        "same file:505 deactivate and645activate accept target/actor command with no actor scope or role-dominance recheck; mutation changes target users.is_active globally within Company"
+      ],
+      "counterevidence": [
+        "Company RLS and self-target denial remain.",
+        "Deactivation now preserves native Account credential custody and only sweeps unfenced legacy credentials; this does not enforce full target branch authority.",
+        "ensure_branch_rewrite_in_scope1802 exists for branch assignment changes, but activate/deactivate does not invoke it."
+      ],
+      "existing_tests": [
+        "backend/crates/identity/adapter-postgres/tests/deactivate_revokes_credentials.rs:141 and Account custody submodule222 cover sweep/custody,not branch-A versus A+B mutation authorization",
+        "backend/crates/identity/adapter-postgres/tests/user_lifecycle_noop_replay.rs:172,254,294 cover replay behavior",
+        "adapter-postgres/src/lib.rs:2616 branch-rewrite tests target different mutation path"
+      ],
+      "closure_needed": "Owner-enforced complete target scope and policy for privileged targets, with all decisive reads retained through mutation; test A-admin vsA+Btarget and higher privilege.",
+      "runtime_reproduced": false
+    },
+    {
+      "id": 9,
+      "severity_from_report": "medium",
+      "classification": "partially_repaired",
+      "summary": "Ordinary tenant requests now check current active status and roles; old blanket finding no longer describes that path, but general token freshness is still incomplete.",
+      "source_trace": [
+        "backend/crates/platform/request-context/src/lib.rs:352 fences nativeAccount subjects; ordinary direct tenant path394–401 calls verifier.legacy_session_context and replaces claimed roles with current.roles",
+        "backend/crates/platform/auth/src/session.rs:50 performs context read through Auth pool in separate transaction",
+        "backend/crates/platform/auth/src/legacy.rs:302 invokes fixed auth_legacy_session_context_v1",
+        "ops/generate-account-custody.py:1692: fixed projection requires subject exists,is_active=true,nonempty live roles and not fenced; returns freshness versions",
+        "backend/crates/platform/request-context/src/lib.rs:355–364 still copies token freshness and never compares returned generation/subject version before Principal construction",
+        "same file:382–410 view-as and platform-home fallback check current home existence/roles but retain role set from claims; same file:868–871 platform resolver parses current roles but discards returned set before PlatformPrincipal",
+        "same file:480 group context checks liveGROUP_ADMIN grant; platform/group/src/lib.rs:77 invokes grants resolver,whose migration0060:99 joins users and requires active state"
+      ],
+      "counterevidence": [
+        "Original assertion that every ordinary tenant resolver ignores is_active and currentroles is contradicted by current source. A currently inactive ordinary tenant is rejected; downgraded ordinary tenant uses new roles.",
+        "Group grants resolver also checks active subject and current group role; do not claim missing group active check from outer resolver alone.",
+        "Some platform operations have stronger retained direct-source/family owners and explicit currentSUPER_ADMIN tests. Those do not establish all alternate route closure.",
+        "Native Account session guards use separate live security-generation/family checks; do not conflate with legacy SubjectFreshness."
+      ],
+      "existing_tests": [
+        "backend/crates/platform/request-context/src/lib.rs:1636 current_roles_reject_empty_and_partially_invalid_sets tests parser only",
+        "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs:234 proves mutation version/generation increments,not request rejection",
+        "backend/crates/platform/group/src/lib.rs:269–289 liveGROUP_ADMIN downgrade test",
+        "backend/app/tests/auth_rest/legacy_platform_list_credentials.rs:93 direct_list_owner_reverifies_original_credential_and_current_roles; group_credentials.rs:148 and ops_credentials.rs:152 similar stronger owner tests,source reviewed only",
+        "backend/app/tests/health_readiness.rs:417 uses actual restricted Auth context transport; not an immediate-revocation oracle by itself"
+      ],
+      "residuals": [
+        "Legacy session_generation/subject_version not compared generally: a deactivated then reactivated subject may regain access through an unexpired pre-deactivation accessJWT despite generation bump; needs exact executable history.",
+        "View-as/platform-home role retention and platform principal membership checks require precise caller-by-caller review; do not label all privileged operations exploitable because some already revalidate exact source in owner.",
+        "Request snapshot transaction commits before later business effect; current-source recheck at owning effect remains separate from read projection freshness."
+      ],
+      "closure_needed": "Exact native/legacy,tenant/group/platform/realtime histories with generation mismatch,deactivation/reactivation and role downgrade. Preserve already-correct live roles and stronger owner guards; do not regress to claim-only auth.",
+      "runtime_reproduced": false
+    }
+  ],
+  "source_hashes": {
+    "backend/crates/orgchange/domain/src/lib.rs": "e2656212870c48f008ab8fa133cf595f67101424c0ae77537b56b3ad61796fa1",
+    "backend/crates/orgchange/rest/src/lib.rs": "c1cc5ff421d3ec0dd8d25d23cb179be122f428a306f8c97d884fd0bc36984190",
+    "backend/crates/orgchange/adapter-postgres/src/lib.rs": "6b72842259ce32e1c758b599c035045d73c78f23285aa23805f12c93e856b247",
+    "backend/crates/platform/provisioning/src/lib.rs": "d88e1626a02d5d3bab4920a0e8d3b3e64eec80f9793c1dfe0e93a4878a6716f9",
+    "backend/crates/platform/auth-rest/src/lib.rs": "41690b1b6b1364c1cef21082e90c4740bfb8f984820339d31a08123757115ca8",
+    "backend/crates/platform/auth/src/refresh.rs": "4397171254a7437f40f7de54a8a0f183920a4e083da15edcce695d487d962d6c",
+    "backend/crates/platform/auth/src/session.rs": "e2a277d6dbbba53de3c9c68896a0c92aefe72ff7cf1468238914a8990a1e0db3",
+    "backend/crates/platform/auth/src/legacy.rs": "ec679e9c31cf242fe3d9da8d5d15153c9c956b5bb1d4530418a01060fd17eb6b",
+    "backend/crates/platform/request-context/src/lib.rs": "04a298b2bbc61043ff1eb37d7c913848ef8d8c0606182e2bd778086dffaf2bf6",
+    "backend/crates/identity/rest/src/lib.rs": "06c2ececfb4d0c73a068ab8a773cd17eca50bff17615beb44c6e3f328a96342d",
+    "backend/crates/identity/adapter-postgres/src/lib.rs": "f2daddea7cf41a72c8a8af44edd0ac6ddef282340e5dafac83187b99c6ed1a00",
+    "ops/generate-account-custody.py": "d54aa11bd5653368cbd53d455cff5b565778b17fdc8c16010aabac72eba212bc",
+    "ops/postgres-finalize-account-credentials.sql": "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9",
+    "backend/crates/platform/group/src/lib.rs": "260f3f3e1bb5c0837f6d7a7847e13db559fab30bfe2ec7ed623fb9a497aad636",
+    "backend/crates/platform/db/migrations/0060_create_groups_and_membership.sql": "96ba3f2dd50fcceaa76c0dde4d3809f98f2a0d81c3bb5d4f246d0498d947852c",
+    "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs": "e199aaebc186224cf2b25f59f676f09cc86280852df64809c1e114b6b85ce049",
+    "backend/crates/platform/provisioning/tests/rls_auth_chain_as_runtime_role.rs": "71f71965ef205c0a571ff5738b8570969207bcd2cb835e700c4443a693c99508",
+    "backend/crates/identity/adapter-postgres/tests/subject_authz_versions_freshness_rls.rs": "22f3d294be85c1a5f3f4e25d6003f4516af5ac05d7d387e97acbce6c3b15f25d"
+  },
+  "tests_executed": 0,
+  "builds_executed": 0,
+  "browser_executed": false,
+  "sensitive_runtime_read": false,
+  "repository_edits": false
+}
