@@ -330,6 +330,7 @@
     "backend/crates/platform/platform-rest/tests/platform_groups.rs": 1,
     "backend/crates/platform/platform-rest/tests/remove_tenant.rs": 9,
     "backend/crates/platform/platform-rest/tests/view_as.rs": 26,
+    "backend/crates/platform/provisioning/src/lib.rs": 5,
     "backend/crates/platform/provisioning/tests/account_historical_consent.rs": 1,
     "backend/crates/platform/provisioning/tests/bootstrap_passkey.rs": 7,
     "backend/crates/platform/provisioning/tests/bootstrap_passkey_replay.rs": 1,

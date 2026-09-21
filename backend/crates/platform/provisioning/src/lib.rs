@@ -3,6 +3,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 mod account;
+pub mod legacy_topology;
 pub use account::{
     AccountRegistrationFinishInput, AccountRegistrationIssued, AccountRegistrationStartInput,
     AccountTermsArtifacts, AccountTermsItem, finish_account_registration_in_tx,

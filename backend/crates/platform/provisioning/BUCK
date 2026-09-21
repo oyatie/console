@@ -37,6 +37,34 @@ rust_library(
 )
 
 rust_test(
+    name = "console-platform-provisioning-unit",
+    mapped_srcs = repo_mapped_srcs("backend/crates/platform/provisioning", glob(["src/**/*.rs"])),
+    crate = "console_platform_provisioning",
+    edition = "2024",
+    crate_root = "backend/crates/platform/provisioning/src/lib.rs",
+    visibility = ["PUBLIC"],
+    env = {"CARGO_MANIFEST_DIR": "backend/crates/platform/provisioning"},
+    labels = ["owner.backend.crates.platform.provisioning", "domain.platform", "test.unit", "resource.none"],
+    deps = [
+        "//backend/crates/kernel/core:console-kernel-core",
+        "//backend/crates/platform/auth:console-platform-auth",
+        "//backend/crates/platform/authz:console-platform-authz",
+        "//backend/crates/platform/db:console-platform-db",
+        "//backend/crates/platform/test-support:console-platform-test-support",
+        "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
+        "//third-party/rust:sha2",
+        "//third-party/rust:sqlx",
+        "//third-party/rust:thiserror",
+        "//third-party/rust:time",
+        "//third-party/rust:tokio",
+        "//third-party/rust:url",
+        "//third-party/rust:uuid",
+        "//third-party/rust:webauthn-authenticator-rs",
+    ],
+)
+
+rust_test(
     name = "console-platform-provisioning-itest-account_historical_consent",
     mapped_srcs = repo_mapped_srcs("backend/crates/platform/provisioning", ["tests/account_historical_consent.rs"]),
     crate = "account_historical_consent",

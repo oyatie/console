@@ -954,6 +954,7 @@ TEST_RESOURCE_REQUIREMENTS = {
         },
     },
     'console-platform-provisioning': {
+        'unit': 'none',
         'integration': {
             'tests/account_historical_consent.rs': 'none',
             'tests/bootstrap_passkey.rs': 'postgres',
