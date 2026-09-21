@@ -1,0 +1,128 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T15:48:05.223-04:00] Build ID: 47c397e8-bb6c-4ff2-bf68-a8ea1f08748d
+[2026-09-21T15:48:05.289-04:00] Directory changed (since mergebase): root//tools/buck/_probe_envmain
+[2026-09-21T15:48:05.289-04:00] Directory changed (since mergebase): root//tools/buck/_probe_envmain/src
+[2026-09-21T15:48:05.289-04:00] Directory changed (since mergebase): root//tools/buck/_probe_envmain/tests
+[2026-09-21T15:48:05.289-04:00] 275 additional file change events (since mergebase)
+[2026-09-21T15:48:05.289-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:48:12.318-04:00] Waiting on root//third-party/rust:serde_core-1 (prelude//platforms:default#39893c7e49283da4) -- running analysis [evaluate_rule], and 15 other actions
+[2026-09-21T15:48:19.418-04:00] Waiting on root//third-party/rust:zmij-1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 584 other actions
+[2026-09-21T15:48:27.218-04:00] Waiting on root//third-party/rust:sqlx-0.9 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 6 other actions
+[2026-09-21T15:48:29.711-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T15:48:29.804-04:00] Build ID: de9a79bc-11cb-49a1-98eb-e4e1be6da30b
+[2026-09-21T15:48:29.816-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:48:36.901-04:00] Waiting on buck2 daemon de9a79bc-11cb-49a1-98eb-e4e1be6da30b...
+[2026-09-21T15:48:36.901-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T15:48:36.901-04:00] Resource usage: CPU: 6%
+[2026-09-21T15:48:36.901-04:00] IO: Remove: 1
+[2026-09-21T15:48:44.000-04:00] Waiting on buck2 daemon de9a79bc-11cb-49a1-98eb-e4e1be6da30b...
+[2026-09-21T15:48:44.004-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T15:48:44.005-04:00] Resource usage: CPU: 3%
+[2026-09-21T15:48:44.005-04:00] IO: Write: 1
+[2026-09-21T15:48:51.101-04:00] Waiting on buck2 daemon de9a79bc-11cb-49a1-98eb-e4e1be6da30b...
+[2026-09-21T15:48:51.101-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T15:48:51.101-04:00] Resource usage: CPU: 0%
+[2026-09-21T15:48:51.101-04:00] IO: Write: 1
+[2026-09-21T15:48:58.201-04:00] Waiting on buck2 daemon de9a79bc-11cb-49a1-98eb-e4e1be6da30b...
+[2026-09-21T15:48:58.201-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T15:48:58.201-04:00] Resource usage: CPU: 23%
+[2026-09-21T15:48:58.201-04:00] IO: Write: 1
+[2026-09-21T15:49:05.201-04:00] Waiting on root//third-party/rust:quote-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (write __rustc_shim.sh), and 659 other actions
+[2026-09-21T15:49:12.400-04:00] Waiting on root//third-party/rust:portable-atomic-1-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __ar_shim.sh), and 475 other actions
+[2026-09-21T15:49:19.501-04:00] Waiting on root//third-party/rust:tinyvec_macros-0.1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 201 other actions
+[2026-09-21T15:49:27.601-04:00] Waiting on root//third-party/rust:typenum-1 (prelude//platforms:default#5732820ad45f622d) -- action (write LPPF/typenum-metadata-full-diag.args), and 195 other actions
+[2026-09-21T15:49:35.400-04:00] Waiting on root//third-party/rust:num-iter-0.1 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/num_iter-metadata-full-diag.args), and 129 other actions
+[2026-09-21T15:49:42.501-04:00] Waiting on Test payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg --  [local_execute], and 3 other actions
+[2026-09-21T15:49:49.600-04:00] Waiting on Test payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg --  [local_execute], and 3 other actions
+[2026-09-21T15:49:56.235-04:00] ✓ Pass: root//tools/buck:payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg (15.4s)
+[2026-09-21T15:49:56.235-04:00] ---- STDOUT ----
+[2026-09-21T15:49:56.235-04:00]
+[2026-09-21T15:49:56.235-04:00] running 4 tests
+[2026-09-21T15:49:56.235-04:00] test a_roster_line_with_attendance_material_still_closes ... ok
+[2026-09-21T15:49:56.235-04:00] test an_empty_roster_cannot_satisfy_the_attendance_gate ... ok
+[2026-09-21T15:49:56.235-04:00] test lifecycle_tables_are_org_isolated_and_write_checked ... ok
+[2026-09-21T15:49:56.235-04:00] test runtime_role_cannot_write_calculations_after_insert ... ok
+[2026-09-21T15:49:56.235-04:00]
+[2026-09-21T15:49:56.235-04:00] test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.38s
+[2026-09-21T15:49:56.235-04:00]
+[2026-09-21T15:49:56.235-04:00]
+[2026-09-21T15:49:56.235-04:00] ---- STDERR ----
+[2026-09-21T15:49:56.235-04:00]
+[2026-09-21T15:49:56.601-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:03.601-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:10.602-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:17.701-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:24.701-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:31.802-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:38.901-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:46.001-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:50:53.002-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:51:00.102-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:51:07.202-04:00] Waiting on Test payroll-rest-payslip-draft-api-pg --  [local_execute], and 2 other actions
+[2026-09-21T15:51:10.902-04:00] ✓ Pass: root//tools/buck:payroll-rest-payslip-draft-api-pg (1:14.7s)
+[2026-09-21T15:51:10.902-04:00] ---- STDOUT ----
+[2026-09-21T15:51:10.902-04:00]
+[2026-09-21T15:51:10.902-04:00] running 9 tests
+[2026-09-21T15:51:10.902-04:00] test a_partial_but_balanced_timesheet_blocks_although_every_punch_is_paired ... ok
+[2026-09-21T15:51:10.902-04:00] test a_period_with_no_attendance_records_blocks_instead_of_paying_a_full_month ... ok
+[2026-09-21T15:51:10.902-04:00] test a_rate_row_backdated_before_its_own_instrument_is_rejected ... ok
+[2026-09-21T15:51:10.902-04:00] test draft_is_gated_org_wide_and_blocks_rather_than_inventing_a_wage ... ok
+[2026-09-21T15:51:10.902-04:00] test empty_tenant_payslip_draft_sits_on_canonical_org_tree ... ok
+[2026-09-21T15:51:10.902-04:00] test golden_case_gc_2026_07_kr_monthly_a_over_http_matches_the_hand_calculation ... ok
+[2026-09-21T15:51:10.902-04:00] test seeded_statutory_rate_register_agrees_with_the_kernel_it_cites ... ok
+[2026-09-21T15:51:10.902-04:00] test the_migration_names_the_test_that_actually_guards_it ... ok
+[2026-09-21T15:51:10.902-04:00] test withholding_is_explicitly_deferred_and_never_a_silent_zero ... ok
+[2026-09-21T15:51:10.902-04:00]
+[2026-09-21T15:51:10.902-04:00] test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 73.38s
+[2026-09-21T15:51:10.902-04:00]
+[2026-09-21T15:51:10.902-04:00]
+[2026-09-21T15:51:10.902-04:00] ---- STDERR ----
+[2026-09-21T15:51:10.902-04:00]
+[2026-09-21T15:51:14.302-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:51:21.402-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:51:28.501-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:51:35.502-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:51:42.602-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:51:49.702-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:51:56.803-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:52:03.902-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:52:10.902-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:52:18.002-04:00] Waiting on Test payroll-rest-run-lifecycle-api-pg --  [local_execute], and 1 other actions
+[2026-09-21T15:52:20.876-04:00] ✓ Pass: root//tools/buck:payroll-rest-run-lifecycle-api-pg (1:10.0s)
+[2026-09-21T15:52:20.876-04:00] ---- STDOUT ----
+[2026-09-21T15:52:20.876-04:00]
+[2026-09-21T15:52:20.876-04:00] running 5 tests
+[2026-09-21T15:52:20.876-04:00] test close_preflight_persists_no_verdict_only_its_read_audit ... ok
+[2026-09-21T15:52:20.876-04:00] test close_recomputes_the_preflight_after_the_read_verdict_goes_stale ... ok
+[2026-09-21T15:52:20.876-04:00] test empty_tenant_run_close_preflight_sits_on_canonical_org_tree ... ok
+[2026-09-21T15:52:20.876-04:00] test executive_drives_full_lifecycle_with_audit_readback ... ok
+[2026-09-21T15:52:20.876-04:00] test lifecycle_writes_deny_without_leakage_and_cross_tenant_is_invisible ... ok
+[2026-09-21T15:52:20.876-04:00]
+[2026-09-21T15:52:20.876-04:00] test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 69.32s
+[2026-09-21T15:52:20.876-04:00]
+[2026-09-21T15:52:20.876-04:00]
+[2026-09-21T15:52:20.876-04:00] ---- STDERR ----
+[2026-09-21T15:52:20.876-04:00]
+[2026-09-21T15:52:25.002-04:00] Waiting on Test payroll-rest-api-pg --  [local_execute]
+[2026-09-21T15:52:32.101-04:00] Waiting on Test payroll-rest-api-pg --  [local_execute]
+[2026-09-21T15:52:39.103-04:00] Waiting on Test payroll-rest-api-pg --  [local_execute]
+[2026-09-21T15:52:46.202-04:00] Waiting on Test payroll-rest-api-pg --  [local_execute]
+[2026-09-21T15:52:53.202-04:00] Waiting on Test payroll-rest-api-pg --  [local_execute]
+[2026-09-21T15:52:56.555-04:00] ✓ Pass: root//tools/buck:payroll-rest-api-pg (35.7s)
+[2026-09-21T15:52:56.555-04:00] ---- STDOUT ----
+[2026-09-21T15:52:56.555-04:00]
+[2026-09-21T15:52:56.555-04:00] running 4 tests
+[2026-09-21T15:52:56.555-04:00] test empty_tenant_runs_list_sits_on_canonical_org_tree ... ok
+[2026-09-21T15:52:56.555-04:00] test payslips_me_is_self_scoped_never_a_coworkers ... ok
+[2026-09-21T15:52:56.555-04:00] test runs_admin_read_is_executive_and_super_admin_only ... ok
+[2026-09-21T15:52:56.555-04:00] test runs_are_org_isolated_over_http ... ok
+[2026-09-21T15:52:56.555-04:00]
+[2026-09-21T15:52:56.555-04:00] test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 35.03s
+[2026-09-21T15:52:56.555-04:00]
+[2026-09-21T15:52:56.555-04:00]
+[2026-09-21T15:52:56.555-04:00] ---- STDERR ----
+[2026-09-21T15:52:56.555-04:00]
+[2026-09-21T15:52:56.596-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 4[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

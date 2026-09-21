@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_payroll_application_declares_existing_manifest_input (__main__.FirstPartyBuckGeneratorTests.test_payroll_application_declares_existing_manifest_input)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-mvp-dev-integrate-20260921/tools/buck/test_gen_first_party.py", line 35, in test_payroll_application_declares_existing_manifest_input
+    self.assertIn((package / "Cargo.toml").resolve(), declared)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: PosixPath('/private/tmp/console-mvp-dev-integrate-20260921/backend/crates/payroll/application/Cargo.toml') not found in set()
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

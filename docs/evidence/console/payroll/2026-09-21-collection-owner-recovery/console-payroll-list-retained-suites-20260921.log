@@ -1,0 +1,50 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T15:46:28.294-04:00] Build ID: 05d1bd61-c33f-47b2-929c-717fc17cbfab
+[2026-09-21T15:46:28.299-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:46:35.392-04:00] Waiting on root//third-party/rust:serde-1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 664 other actions
+[2026-09-21T15:46:42.494-04:00] Waiting on root//backend/crates/payroll/application:console-payroll-application-unit (prelude//platforms:default#39893c7e49283da4) -- action (deps 0) [local_execute], and 6 other actions
+[2026-09-21T15:46:47.049-04:00] Action failed: root//backend/crates/payroll/application:console-payroll-application-unit (prelude//platforms:default#39893c7e49283da4) (rustc link [pic])
+[2026-09-21T15:46:47.049-04:00] Local command returned non-zero exit code 1
+[2026-09-21T15:46:47.049-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/f4083a986cdca130/rustc/_buck_c5a998e79d3a718a' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py @buck-out/v2/art/root/backend/crates/payroll/application/__console-payroll-application-unit__/6c78c6d4563ccc52/XIPL/console_payroll_application-link-diag.args
+[2026-09-21T15:46:47.049-04:00] Stdout: <empty>
+[2026-09-21T15:46:47.049-04:00] Stderr:
+error: couldn't read `buck-out/v2/art/root/backend/crates/payroll/application/__console-payroll-application-unit__/a5b29b1bb0a6b2ba/__srcs/backend/crates/payroll/application/src/../Cargo.toml`: No such file or directory (os error 2)
+   --> backend/crates/payroll/application/backend/crates/payroll/application/src/lib.rs:175:24
+    |
+175 |         let manifest = include_str!("../Cargo.toml");
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+error: aborting due to 1 previous error
+
+
+
+[2026-09-21T15:46:54.093-04:00] Waiting on root//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_lifecycle_rls_as_runtime_role (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute], and 3 other actions
+[2026-09-21T15:47:01.093-04:00] Waiting on root//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres-itest-payroll_lifecycle_rls_as_runtime_role (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute], and 3 other actions
+[2026-09-21T15:47:08.193-04:00] Waiting on root//backend/crates/payroll/rest:console-payroll-rest-itest-api (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute], and 2 other actions
+[2026-09-21T15:47:10.201-04:00] Cache hits: 0%
+[2026-09-21T15:47:10.201-04:00] Commands: 10 (cached: 0, remote: 0, local: 10)
+[2026-09-21T15:47:10.201-04:00] Network: Up: 0B  Down: 0B
+[2026-09-21T15:47:10.201-04:00]
+[2026-09-21T15:47:10.201-04:00] BUILD ERRORS (1)
+[2026-09-21T15:47:10.201-04:00] The following actions failed during the execution of this command:
+[2026-09-21T15:47:10.201-04:00] Action failed: root//backend/crates/payroll/application:console-payroll-application-unit (prelude//platforms:default#39893c7e49283da4) (rustc link [pic])
+[2026-09-21T15:47:10.201-04:00] Local command returned non-zero exit code 1
+[2026-09-21T15:47:10.201-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/f4083a986cdca130/rustc/_buck_c5a998e79d3a718a' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py @buck-out/v2/art/root/backend/crates/payroll/application/__console-payroll-application-unit__/6c78c6d4563ccc52/XIPL/console_payroll_application-link-diag.args
+[2026-09-21T15:47:10.201-04:00] Stdout: <empty>
+[2026-09-21T15:47:10.201-04:00] Stderr:
+error: couldn't read `buck-out/v2/art/root/backend/crates/payroll/application/__console-payroll-application-unit__/a5b29b1bb0a6b2ba/__srcs/backend/crates/payroll/application/src/../Cargo.toml`: No such file or directory (os error 2)
+   --> backend/crates/payroll/application/backend/crates/payroll/application/src/lib.rs:175:24
+    |
+175 |         let manifest = include_str!("../Cargo.toml");
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+error: aborting due to 1 previous error
+
+
+
+[2026-09-21T15:47:10.202-04:00]
+BUILD FAILED
+Failed to build 'root//backend/crates/payroll/application:console-payroll-application-unit (prelude//platforms:default#39893c7e49283da4)'

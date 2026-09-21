@@ -1,0 +1,33 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T16:01:48.239-04:00] Build ID: bdf680ef-6d33-4496-a666-58c0552a0c07
+[2026-09-21T16:01:48.295-04:00] File changed: root//backend/app/tests/health_readiness.rs
+[2026-09-21T16:01:55.340-04:00] Waiting on root//third-party/rust:rand_core-0.6.4.crate (prelude//platforms:default#39893c7e49283da4) -- action (write rand_core-0.6.4.crate_unpack.sh), and 620 other actions
+[2026-09-21T16:02:02.440-04:00] Waiting on root//backend/crates/ontology/application:console-ontology-application (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 519 other actions
+[2026-09-21T16:02:09.540-04:00] Waiting on root//backend/app:console-app-itest-health_readiness (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T16:02:16.541-04:00] Waiting on root//backend/app:console-app-itest-health_readiness (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T16:02:23.641-04:00] Waiting on root//backend/app:console-app-itest-health_readiness (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T16:02:26.928-04:00] Cache hits: 0%
+[2026-09-21T16:02:26.929-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T16:02:26.929-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T16:02:26.997-04:00] Build ID: 85a5f9c3-2cd4-41ac-8ae2-838c294b65d4
+[2026-09-21T16:02:27.008-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T16:02:34.097-04:00] Waiting on root//third-party/rust:aws-lc-sys-0.45-build-script-main (prelude//platforms:default#5732820ad45f622d) -- action (write linker_wrapper.sh), and 604 other actions
+[2026-09-21T16:02:41.196-04:00] Waiting on root//third-party/rust:openssl-sys-0.9.117.crate (prelude//platforms:default#5732820ad45f622d) -- action (write openssl-sys-0.9.117.crate_unpack.sh), and 374 other actions
+[2026-09-21T16:02:48.298-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:02:55.299-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:03:02.397-04:00] Waiting on Test app-health-readiness-pg --  [local_execute]
+[2026-09-21T16:03:05.619-04:00] ✓ Pass: root//tools/buck:app-health-readiness-pg (19.2s)
+[2026-09-21T16:03:05.619-04:00] ---- STDOUT ----
+[2026-09-21T16:03:05.619-04:00]
+[2026-09-21T16:03:05.619-04:00] running 1 test
+[2026-09-21T16:03:05.619-04:00] test authorized::ui_persona_e2e ... ok
+[2026-09-21T16:03:05.619-04:00]
+[2026-09-21T16:03:05.619-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 16.47s
+[2026-09-21T16:03:05.619-04:00]
+[2026-09-21T16:03:05.619-04:00]
+[2026-09-21T16:03:05.619-04:00] ---- STDERR ----
+[2026-09-21T16:03:05.619-04:00]
+[2026-09-21T16:03:05.640-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

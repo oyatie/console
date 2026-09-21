@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_semantic_test_successor_review",
+  "candidate": "/private/tmp/console-payroll-list-recovery-test-round2-20260921.rs",
+  "candidate_sha256": "cda15a1dbbf9e00b07705c81e1eab25c426f70b4513e05642d9d9ed6ab3ddc01",
+  "prior_review": "/private/tmp/console-payroll-list-recovery-test-round1-integration-review-20260921.json",
+  "prior_review_sha256": "d52bc70da50119ccc3b84f65588a1a035b899f1a5089890c2f582083616f684a",
+  "verdict": "APPROVED for test-only adoption/discovery and semantic RED",
+  "diff": "Only added exact serde_json equality against error.code=internal and error.message=internal server error for the injected audit failure. All fixture/order/denial/recovery assertions unchanged.",
+  "reason": "Prevents existing generic PgPayrollError\u2192KernelError raw DB-string conversion from leaking trigger/query detail through extraction; binds exact retained REST sanitization contract.",
+  "tests_executed": 0,
+  "new_leaf_count": 1,
+  "remaining_holds": [
+    "Actual1leaf discovery and functioning-prerequisite semantic RED",
+    "Independent implementation/security review and preserved API/UI regressions",
+    "This leaf does not prove current revocation or authority-service outage; reuse existing owner probes with source preservation and add payroll-specific assertions if needed"
+  ]
+}

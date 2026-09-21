@@ -1,0 +1,59 @@
+# Immediate payroll list owner and truthful failure candidate
+
+Round2 private design for review at `bcb2fcc2380df802155df51d08e1949f7f5b405e`. No product/test edits or admission. Scope is **collection read only**. Detail inspector, exceptions query, new UI controls, native identity bridge, migrations and WASM changes are excluded from this immediate lane and remain later required work.
+
+## Demonstrated defect and exact result semantics
+
+`PayrollRestState::visible_run_summaries` (rest/lib.rs133) converts every `list_runs_page` error into `Vec::new`. `app::compose_ui_screens` separately calculates `floors.payroll` and calls `ScreenSection::from_authorized_listing`, so a real authorized SQL/audit failure becomes an empty success. The already implemented Failure/retry presentation is unreachable from that path.
+
+Required outcomes come from **one owning read operation**, without trusting an independently calculated App floor:
+
+| Evidence from same path | Authorized projection |
+|---|---|
+| Missing/invalid credentials, denied policy, or inability to establish current authority | Omitted; no payroll section, existence/failure marker, row or payroll navigation |
+| Current authority established; successful committed read with0items | Empty |
+| Current authority established; successful committed read with items | Rows |
+| Current authority established; subsequent query/audit/commit failure | Failure, actual `/payroll` retry; no partially loaded rows or count |
+
+The compatible JSON route retains its existing authentication/denial/error status and envelope. Only the SSR helper maps inability to establish authority to omission. A render-time auth flag or an earlier listing-floor success cannot turn a later failed authorization into visible failure.
+
+## Smallest owning implementation
+
+1. Move existing `PayrollRunSummary` and `PayrollRunPage` pure DTO definitions into payroll/application read module and re-export their old adapter paths. Retain fields, serde representation, exact types and wire behavior; do not create a second summary model. The existing Detail may reference the re-exported Summary unchanged. Add only existing serde/serde_json/time dependencies needed by those definitions.
+2. Application owns `ListPayrollRuns { limit, offset }`, `PayrollRunsReadPort`, and `list_payroll_runs(port, query)`. The port has an authorization operation and an audited page-read operation. The use case calls them in that order and preserves error stage explicitly (for example, Authorization(KernelError) versus Read(KernelError)). Authorization errors retain the existing KernelError kind/message so REST preserves the exact current JSON status/code/message; do not collapse them into a generic error. Auth/session extraction errors also retain their existing JSON mapping. No user-provided actor/org/grant/boolean appears in the query. Query normalization preserves current compatible pagination clamps; this lane does not redesign validation or pagination.
+3. `PgPayrollRunsReadPort` in payroll adapter receives a freshly server-resolved `Principal` plus the existing pool. Its authorization operation invokes the exact current `authorize_org_wide(PayrollRunRead)` owner. Its read operation reuses **the existing `list_runs_in_tx` query**, tenant-bound audited transaction and exact `payroll_run.list_read` event. Preserve the current `with_audits` transaction helper and atomic read-audit behavior exactly. A repeatable-read upgrade changes snapshot semantics and is a separately reviewed dependency, not part of this ownership/error correction. Do not copy SQL into application/App/REST or add another policy evaluator.
+4. App composes a narrow read-port factory captured over the pool; REST receives it. Existing principal resolution remains in REST using `platform/request-context`, so it does not mint identity. Proposed concrete transport alias: `Arc<dyn Fn(Principal) -> Box<dyn PayrollRunsReadPort> + Send + Sync>`. This is factory composition for the application-owned port, not a new business authority. Add it as a required `PayrollRestState::new` argument, not an optional fallback to the old bypass. There are exactly5 current constructor callsites: two App compositions and three REST test router helpers. Test-helper constructor edits are mechanical and need independent review with the test packet.
+5. Existing JSON `list_runs_page` and SSR helper invoke the same application use case after principal resolution. The SSR helper returns an explicit closed result such as `Result<Option<PayrollRunPage>, VisiblePayrollReadFailure>`: `Ok(None)`=omitted; `Ok(Some(page))`=authorized committed page; `Err`=authorized read failure only. Missing/invalid/denied/authority-unavailable states must never reach Err. API preserves its error distinctions instead of using the SSR mapping.
+6. App maps that closed result to the existing `ScreenSection` and removes `UiListingFloors.payroll`/its inference for this collection. The remaining head-list floor is unrelated. Empty success uses `page.items.is_empty`; failure is not converted into empty. No renderer/test weakening or new UI view model is required.
+
+This closes the actual **list** REST→adapter use-case bypass while leaving other existing detail/lifecycle bypasses explicitly outstanding. It creates the small shared read owner that detail can extend next; it does not require implementing detail now. New adapter→application/platform edges are legal; no graph exception/source inclusion is needed. Generated BUCK/lock metadata remains root-serialized.
+
+## Exact proposed actual-boundary probe
+
+Root authored the private existing `health_readiness.rs::authorized` module leaf against `build_router`. Exact name: `authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty`. Round1 private test SHA a6c8a9e75a8ec1b771fbf9ab92d5804842b0aad68a9cebd5c20fda718402be66 has independent candidate review d52bc70d. No new callable leaf is claimed present/executed yet; final independent review, actual discovery and semanticRED precede implementation. Root is preparing a current-revocation addition after earlier success; that changed semantic candidate must return to independent review before adoption.
+
+Fixture: existing restricted Auth/Business login setup; canonical `seed_run` invokes real `PgPayRunPort::execute(CreateRun)`; legacy SUPER_ADMIN and MEMBER test sessions. These are internal compatibility fixtures, not native Account/browser completion.
+
+Probe sequence:
+
+1. Establish actual authorized JSON collection and `/payroll` SSR positives, real run ID and exactly expected audit rows. Establish denied/unknown caller omission while storage is healthy.
+2. Install a disposable test-database trigger rejecting **only** INSERT of action=`payroll_run.list_read`. All auth/session/policy reads and other owner queries remain functioning. This is an actual audit-transaction failure after authority, not a missing schema or bad-authRED.
+3. Same authorized caller GET `/payroll`: require existing failure section/actual retry, no `data-run-id`, no payroll Empty marker/text and no success count. Assert failed audit produced no row. JSON collection must still give its existing internal error and no payload, providing a positive control that fault injection reached the intended owner boundary.
+4. Denied and unknown caller requests under the same trigger remain nondisclosing omission, not a failure section. Include same-current-session revocation where the existing policy helper supports it; earlier successful floor is never sufficient authority.
+5. Remove trigger/function through test cleanup and reopen with authorized caller. Real run rows return, failure disappears and exactly one new successful list-read audit commits. No run/status/source business data changes.
+
+After reviewed patch/discovery, exact command:
+
+```
+CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg
+```
+
+All prior UI28 plus relevant existing payroll JSON/audit/auth isolation tests must execute unfiltered. Independent review must check the stage-aware mapping, injected audit oracle and forbidden App query/authority bypass, not just the manifest.
+
+## Risks, recovery and acceptance limits
+
+Pre-mortem: broad error mapping reveals resource existence before auth; stale App floor grants Failure; application port is decorative while API keeps direct SQL; failed audit still returns rows; JSON wire changes during type relocation. Detection: actual positive-controlled trigger test, denied/unknown/current-revocation probes, exact audit counts, wire comparison and independent source review. Blast radius: existing payroll collection read and its SSR state mapping; no command/history/migration/island change. Rollback: revert bounded implementation in a new commit, preserve tests/evidence/historical bytes, never hide the regression by modifying expected states. Stop on unresolved auth-stage distinction, missing functioning test prerequisites, review rejection or a competing root writer.
+
+This lane can deliver a real recovery improvement immediately. It does not authorize native Account payroll, make Bearer navigation a browser session, complete payroll input/review/correction, or qualify the release.
+
+Round2 response to root review: retain with_audits; exact API error mapping is part of the port error contract; require factory argument without fallback; use root exact probe name; remove only App payroll-floor inference; preserve head-floor behavior. Native identity/session bridge and stronger transaction isolation remain separate requirements.

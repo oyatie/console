@@ -1,0 +1,30 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_implementation_source_review",
+  "candidate_manifest": "/private/tmp/console-payroll-list-implementation-round1-20260921/manifest.json",
+  "candidate_manifest_sha256": "97b9dd4cbcd49f15a4a2690473a2536139bb57b15449a97385636712d3625114",
+  "base": "2445cacbf22cca2859dad9f5a04d50c010073e91",
+  "verdict": "APPROVED exact bounded source implementation; native GREEN and integration qualification pending",
+  "findings": [],
+  "checks": [
+    "Verified all14 copied source hashes against immutable manifest.",
+    "PayrollRunSummary/PayrollRunPage definitions compare byte-for-byte with prior adapter definitions, including serde derive, field ordering/types and Option semantics. Adapter reexports preserve original paths.",
+    "Both JSON list and SSR helper call the same list_runs_page\u2192list_payroll_runs\u2192application authorization/read port. REST no longer imports/calls list_runs_in_tx. Actual query/pagination/audit stay in adapter under existing with_audits.",
+    "Fresh principal is resolved per request before factory use. Required factory captures only same scoped pool clone; supplied Principal is an argument, not cached authority. Application authorization precedes audited read and typed error stage survives REST mapping.",
+    "Authorization/session errors produce SSR Omitted; query/audit/commit errors only after successful authorization produce Failed; only successful committed page produces Loaded. App removes only payroll-floor inference and preserves head-list floor. Successful0rows become existing Empty without conflating failure.",
+    "Adapter explicitly maps PgPayrollError::Db to KernelError::internal(internal server error), keeping diagnostics server-side. It avoids generic raw DB\u2192KernelError conversion. Domain/authorization KernelError maps through unchanged REST status/code/message; existing with_audits Db error envelope matches sanitization.",
+    "Factory is Arc<Fn+Send+Sync>, returning an owned Send port with owned Principal/PgPool. Async application holds &mut Send port across only the Send boxed read future; adapter captures &mut self with owned Send fields. No request-local references escape factory. Actual compiler remains final Send/lifetime oracle.",
+    "All3 REST helper files compare exactly with approved corrected constructor packet; factory is third PayrollRestState argument outside SessionVerification. HTTP regression/prior health file unchanged from admitted base. Calculate implementation/tests byte-identical apart from new read module declaration.",
+    "Parsed lockfiles have identical package count and all non-dependency metadata/checksums/versions. Only7 added local dependency edges across2first-party packages; no removals. Generated BUCK reflects those same application/adapter edges. No migration/UI/island/authority source change.",
+    "App new helper is dependency composition only. No new App SQL, transport response behavior or business mutation; page projection maps closed owner result into existing UI state."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "compiles_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Same exact admitted HTTP probe GREEN after working native prerequisites, plus unfiltered relevant retained suites",
+    "Independent security review and normal authenticated API role/isolation/wire and audit-failure evidence",
+    "Existing current-fence/authority-unavailable probes remain complementary resolver evidence; no unsupported payroll-specific race claim",
+    "Native Account payroll grants/resource binding, genuine UI workflow and complete first-client-release qualification remain required"
+  ],
+  "scope_limit": "Collection read/error recovery only; other detail/lifecycle bypasses remain explicit later work."
+}

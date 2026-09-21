@@ -1,0 +1,28 @@
+[
+  {
+    "lane": "payroll-manifest-resource-20260921",
+    "owner": "/root",
+    "base": "f9d00f12ca250b25565f54d0c345ed607be13c38",
+    "immutable_target": "Existing payroll application tests compile with declared Cargo.toml source input",
+    "probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_payroll_application_declares_existing_manifest_input",
+    "allow": [
+      "tools/buck/gen_first_party.py",
+      "backend/crates/payroll/application/BUCK"
+    ],
+    "mechanical_guide": "Reuse RESOURCE_CONFIG srcs Cargo.toml as console-intelligence-application. Regenerate graph; only application BUCK may change. No Rust/test/lock/SQL changes. Reviewed exact test5b072d59 and design.",
+    "pre_mortem": "Declaration passes but real rustc cannot consume file; native execution required",
+    "blast_radius": "One package native sources only",
+    "rollback": "Revert additive mapping; retain test/evidence",
+    "stop_conditions": [
+      "Other graph changes",
+      "Oracle change"
+    ],
+    "reviewers": [
+      "/root/integration_tests"
+    ],
+    "remaining_holds": [
+      "Full native suite execution",
+      "MVP browser/production qualification"
+    ]
+  }
+]

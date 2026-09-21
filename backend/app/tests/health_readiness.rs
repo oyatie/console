@@ -1242,7 +1242,7 @@ mod authorized {
                 && exec_home.contains("href=\"/hr\"")
                 && exec_home.contains("href=\"/payroll\"")
                 && exec_home.contains("조직")
-                && exec_home.contains("인사")
+                && exec_home.contains("사람과 고용")
                 && exec_home.contains("급여"),
             "EXECUTIVE nav must expose authorized screens: {exec_home}"
         );

@@ -1,0 +1,18 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_semantic_oracle_successor_review",
+  "candidate": "/private/tmp/console-payroll-persona-label-test-successor-20260921.rs",
+  "candidate_sha256": "6af6e89a5146d28fb9ee0f0df8cc01375f65ba0e2df404fc661dd33bd0fdaa14",
+  "verdict": "APPROVED exact one-label oracle successor for previously approved native navigation",
+  "checks": [
+    "Full diff is only exec_home.contains label from \uc778\uc0ac to \uc0ac\ub78c\uacfc \uace0\uc6a9; all3hrefs, other labels, authorization/IDs/audit/source assertions retained.",
+    "Current reviewed ShippingNav renders \uc0ac\ub78c\uacfc \uace0\uc6a9 at backend/crates/payroll/ui/src/lib.rs:366.",
+    "Actual unfiltered failure log shows correct3links/newlabel and sole failure at obsolete nav assertion;14passed1failed1inherited ignored.",
+    "No product alias, role widening, fixture mutation or test removal needed. Prior integrated shared navigation approval remains basis."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Execute exact ui_persona_e2e successor and unfiltered suite; retain original failure and inherited ignored count.",
+    "Route-level test is not actual browser qualification or complete MVP acceptance."
+  ]
+}

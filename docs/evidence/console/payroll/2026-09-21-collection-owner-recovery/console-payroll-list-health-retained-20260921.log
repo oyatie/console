@@ -1,0 +1,23 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T15:53:40.846-04:00] Build ID: b0fc9758-7738-4538-84e9-f3571e6135cd
+[2026-09-21T15:53:47.944-04:00] Waiting on root//third-party/rust:anyhow-1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 851 other actions
+[2026-09-21T15:53:55.944-04:00] Waiting on root//backend/crates/payroll/application:console-payroll-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_materialize_inputs], and 144 other actions
+[2026-09-21T15:54:02.945-04:00] Waiting on root//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T15:54:10.045-04:00] Waiting on root//backend/crates/payroll/adapter-postgres:console-payroll-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T15:54:17.045-04:00] Waiting on root//backend/crates/payroll/rest:console-payroll-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 1 other actions
+[2026-09-21T15:54:24.144-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:54:31.245-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:54:38.345-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:54:45.345-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:54:52.745-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:54:59.845-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:55:06.945-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:55:14.046-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:55:21.146-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:55:28.146-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:55:29.678-04:00] Cache hits: 0%
+[2026-09-21T15:55:29.678-04:00] Commands: 8 (cached: 0, remote: 0, local: 8)
+[2026-09-21T15:55:29.678-04:00] Network: Up: 0B  Down: 0B
+BUILD FAILED
+The evaluation of this key was cancelled: Rejected

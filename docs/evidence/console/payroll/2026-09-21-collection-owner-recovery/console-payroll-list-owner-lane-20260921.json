@@ -1,0 +1,46 @@
+[
+  {
+    "lane": "payroll-list-owner-recovery-20260921",
+    "owner": "/root",
+    "base": "2445cacbf22cca2859dad9f5a04d50c010073e91",
+    "immutable_target": "Actual authorized payroll list audit failure renders recoverable Failure; same owner preserves JSON and denies unauthenticated disclosure",
+    "probe": "env PATH=/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg > /private/tmp/console-payroll-list-recovery-probe-20260921.log 2>&1",
+    "allow": [
+      "backend/crates/payroll/application",
+      "backend/crates/payroll/adapter-postgres",
+      "backend/crates/payroll/rest",
+      "backend/app/src/lib.rs",
+      "backend/app/BUCK",
+      "backend/Cargo.lock"
+    ],
+    "mechanical_guide": "Exact reviewed design4c9ced74/testcda15a1d. Move Summary/Page inward, same authorization+SQL+atomic audit, stage-aware result, required root factory, sanitize DB errors. Serialized Cargo metadata/first-party BUCK generation only, no Cargo product builds. No migration/island/UI/authority edits.",
+    "reviewers": [
+      "/root/integration_tests",
+      "/root/integration_security"
+    ],
+    "pre_mortem": [
+      "Auth failure mistaken for authorized error",
+      "SQL details leak",
+      "Audit failure returns loaded rows",
+      "REST bypass remains"
+    ],
+    "blast_radius": "Payroll collection read and existing SSR state mapping; no business write/history change",
+    "detection": [
+      "Exact actual HTTP RED\u2192GREEN",
+      "Existing JSON/audit/auth isolation suite and native UI28",
+      "Independent source review"
+    ],
+    "rollback": "Revert implementation in new commit preserving tests and evidence",
+    "stop_conditions": [
+      "Nonsemantic RED or missing prerequisites",
+      "Unexpected schema/codec or authority change",
+      "Competing generated-root writer",
+      "Unreviewed semantic test change"
+    ],
+    "remaining_holds": [
+      "Native Account payroll grant/current scope",
+      "Genuine browser workflow/visual acceptance",
+      "Full payroll/people/employment/organization/approval MVP and release"
+    ]
+  }
+]

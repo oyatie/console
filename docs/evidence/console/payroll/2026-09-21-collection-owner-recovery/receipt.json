@@ -1,0 +1,132 @@
+{
+  "status": "Local implemented payroll collection owner/recovery and native prerequisite; integration/workflow/production qualification pending",
+  "implementation_commit": "49a667108",
+  "native_prerequisite_commit": "10239028d7bd43e6050e58c622550ce29e8ea370",
+  "test_base": "2445cacbf22cca2859dad9f5a04d50c010073e91",
+  "source_sha256": {
+    "backend/Cargo.lock": "ac377162699a97f7f0dedc5bed39ba86d7c053955621a87ff97ea5ecf4b1f2c6",
+    "backend/app/src/lib.rs": "8def6423800df683145dfca70b2a89b3426dddcf7e916e88d7e2c273314724f6",
+    "backend/crates/payroll/adapter-postgres/BUCK": "07d01714be19d60b6bc315ae284240a253c98d9fb7aa8f8e688f51e9c75b02bc",
+    "backend/crates/payroll/adapter-postgres/Cargo.toml": "256480daaa2a578873cc6f92494c9fdd042a581da79fd2a2efca874ebd056fa9",
+    "backend/crates/payroll/adapter-postgres/src/lib.rs": "881d91816775c45e57c0c5963ccaab215f798e16a1aecf5307bd921ce4abeb77",
+    "backend/crates/payroll/application/BUCK": "7b484b906f8ec2213f2d2765bb803e08aa959aceb8da548aab01e4ac80903b8b",
+    "backend/crates/payroll/application/Cargo.toml": "251d3da5ab9e3e2cae7eb3a492cd1cfeeeecbecac2d6ccc698a91eb2ea2b6a04",
+    "backend/crates/payroll/application/src/lib.rs": "30aed9d14e713a5b48a23bae3066e68317a7d246cca8d34a1e1985c9591c4961",
+    "backend/crates/payroll/rest/src/lib.rs": "78a9fb42e55dc204f9d1f6b57fdc1d305f291bb729f675a5eea36bf910462e26",
+    "backend/crates/payroll/rest/tests/api.rs": "38d8af09f11eb0860b4f13c243c31dfefabf21ddd2e02cd300b4b0c0a0970c47",
+    "backend/crates/payroll/rest/tests/payslip_draft_api.rs": "71bed42d0d8a0e12c0f5a5e2103019512954c1a39385a86b2e7198c128ad210c",
+    "backend/crates/payroll/rest/tests/run_lifecycle_api.rs": "271260801400b68ed38ed0dab7194fcbb02e4cfd8158f003a7713dd8b32c0ec8",
+    "backend/crates/payroll/application/src/read.rs": "7345225cdd8ca7e0dd9c4e5536dd4fccf44fe5cb2fda3812c92d13c2b5808020",
+    "backend/crates/payroll/adapter-postgres/src/read.rs": "ee83ee4830028a985361d2e0ed56b85b6f140f5256a5d3bdd477bef0ae3d1ae7",
+    "backend/app/tests/health_readiness.rs": "6af6e89a5146d28fb9ee0f0df8cc01375f65ba0e2df404fc661dd33bd0fdaa14",
+    "tools/buck/gen_first_party.py": "9cfd08745b84283cd2522af34b1918bff717c68772cf9c93c03e6a5e77212c6b",
+    "tools/buck/test_gen_first_party.py": "5b072d59ec0703077b502c4b3c3018fe5aa796baa3fd8d364cc2a832135fb697"
+  },
+  "reviews": [
+    "console-payroll-list-implementation-round1-integration-review-20260921.json",
+    "console-payroll-list-implementation-revalidation-integration-review-20260921.json",
+    "console-payroll-manifest-prerequisite-implementation-integration-review-20260921.json",
+    "console-payroll-persona-label-successor-integration-review-20260921.json"
+  ],
+  "verification": [
+    {
+      "command": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-browser-pg",
+      "red": "console-payroll-list-recovery-red-20260921.log",
+      "green": "console-payroll-list-recovery-probe-20260921.log",
+      "executed": 1,
+      "passed": 1,
+      "filtered": 16,
+      "ignored": 0
+    },
+    {
+      "command": "tools/buck/test_needs_postgres.sh //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-draft-api-pg //tools/buck:payroll-rest-run-lifecycle-api-pg //tools/buck:payroll-adapter-postgres-payroll-lifecycle-rls-as-runtime-role-pg --num-threads=1",
+      "log": "console-payroll-list-retained-http-green-20260921.log",
+      "executed": 22,
+      "passed": 22,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "tools/buck2 test //backend/crates/payroll/application:console-payroll-application-unit",
+      "log": "console-payroll-application-native-green-20260921.log",
+      "executed": 5,
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0
+    },
+    {
+      "command": "python3 tools/buck/test_gen_first_party.py",
+      "log": "console-payroll-manifest-generator70-20260921.log",
+      "executed": 70,
+      "passed": 70,
+      "failed": 0
+    },
+    {
+      "command": "CONSOLE_BUCK_NEEDS_POSTGRES_TEST_EXACT=authorized::ui_persona_e2e tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-pg --num-threads=1",
+      "log": "console-payroll-persona-label-green-20260921.log",
+      "executed": 1,
+      "passed": 1,
+      "ignored": 0,
+      "filtered": 15
+    },
+    {
+      "command": "tools/buck/test_needs_postgres.sh //tools/buck:app-health-readiness-pg --num-threads=1",
+      "log": "console-payroll-list-health-retained-green-20260921.log",
+      "discovered": 16,
+      "executed": 15,
+      "passed": 15,
+      "failed": 0,
+      "ignored": 1,
+      "filtered": 0,
+      "ignored_note": "Inherited proposed ADR-0042 cookie scenario unchanged; not acceptance evidence."
+    },
+    {
+      "command": "cd backend && ../tools/buck2 run //backend/ci/gates/layer-boundary:console-gate-layer-boundary",
+      "log": "console-payroll-list-layer-gate-20260921.log",
+      "crates_checked": 176,
+      "violations": 0
+    }
+  ],
+  "environment": {
+    "rust": "1.98.1",
+    "product_compilation": "Buck2 compiler/tool actions; no Cargo product build",
+    "database": "Disposable pinned PostgreSQL18.4 with existing restricted credentials",
+    "browser_sessions": 0,
+    "fixture_limit": "Real HTTP/owner compatibility fixtures, not native Account browser-created business data"
+  },
+  "preserved_failures": [
+    {
+      "log": "console-payroll-list-retained-suites-20260921.log",
+      "outcome": "Application unit target missing declared Cargo.toml,0tests; repaired by admitted native prerequisite."
+    },
+    {
+      "log": "console-payroll-list-generator-tests-20260921.log",
+      "outcome": "68passed1failed: unchanged cleanliness test saw unstaged reviewed BUCK generation. All69passed after staging; then additive resource test made70."
+    },
+    {
+      "log": "console-payroll-list-health-retained-20260921.log",
+      "outcome": "Buck evaluation cancelled,0tests; retained and retried."
+    },
+    {
+      "log": "console-payroll-list-health-retained-retry-20260921.log",
+      "outcome": "14passed1failed1inherited ignored; only obsolete nav label assertion. Exact successor independently approved, all active leaves now pass."
+    },
+    {
+      "log": "console-payroll-list-writer-gate-root-20260921.log",
+      "outcome": "Native gate runs but scans0mapped-build-tree files; failed stale shared permission. Not valid source-gate evidence. Runtime workspace-root correction separately reviewed, not yet implemented."
+    }
+  ],
+  "remaining_holds": [
+    "Native writer-ownership gate root repair and positive full source census",
+    "Native Account current business capability/field grants and retained scope",
+    "Typed Account audit and native business actor/receipt successor",
+    "Real browser UI-created payroll/people/employment/organization/approval workflows",
+    "Independent full visual/interaction/accessibility acceptance",
+    "Native hydration producer/consumer qualification",
+    "Full release inventory and production qualification; no exposure authorization"
+  ],
+  "historical_preservation": "No migrations, historical command bytes, audit hashes or WASM resealed; legacy DTO representation unchanged; initial payroll island untouched",
+  "state_promotion": "No release-inventory state advanced; no PR merged or release claimed"
+}

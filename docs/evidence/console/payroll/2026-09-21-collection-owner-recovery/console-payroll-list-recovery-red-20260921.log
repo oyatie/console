@@ -1,0 +1,169 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T15:29:26.006-04:00] Build ID: f9d05ea9-c113-433d-a8b5-a4eb9c75c283
+[2026-09-21T15:29:26.178-04:00] Directory changed (since mergebase): root//docs/evidence/console/ui
+[2026-09-21T15:29:26.178-04:00] Directory changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-native-workspace-integration
+[2026-09-21T15:29:26.178-04:00] File changed (since mergebase): root//docs/evidence/console/ui/2026-09-21-native-workspace-integration/console-workspace-ui-baseline-20260921.log
+[2026-09-21T15:29:26.178-04:00] 54 additional file change events (since mergebase)
+[2026-09-21T15:29:26.178-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:29:33.294-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 518 other actions
+[2026-09-21T15:29:41.895-04:00] Waiting on root//third-party/rust:icu_normalizer_data-2-build-script-run (prelude//platforms:default#39893c7e49283da4) -- action (write __ld_shim.sh), and 1085 other actions
+[2026-09-21T15:29:49.394-04:00] Waiting on root//third-party/rust:tracing-subscriber-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 349 other actions
+[2026-09-21T15:29:56.595-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 1 other actions
+[2026-09-21T15:30:03.695-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:30:10.795-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T15:30:17.795-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic])
+[2026-09-21T15:30:24.796-04:00] Waiting on root//backend/app:console-app-itest-health_readiness-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T15:30:31.807-04:00] Cache hits: 0%
+[2026-09-21T15:30:31.807-04:00] Commands: 5 (cached: 0, remote: 0, local: 5)
+[2026-09-21T15:30:31.807-04:00] Network: Up: 0B  Down: 0B
+[2026-09-21T15:30:31.809-04:00] Waiting on buck2 daemon f9d05ea9-c113-433d-a8b5-a4eb9c75c283...
+[2026-09-21T15:30:31.809-04:00] Network: Up:   0B             Down:   0B           
+[2026-09-21T15:30:31.809-04:00] Resource usage: CPU: 81%
+[2026-09-21T15:30:31.809-04:00] IO: none
+BUILD SUCCEEDED
+[2026-09-21T15:30:31.828-04:00] Build ID: 6563a5dc-e0b6-4793-9bcd-69cc3f770ea5
+[2026-09-21T15:30:31.830-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:30:38.930-04:00] Waiting on root//third-party/rust:reactive_stores-0.5.0-beta.crate (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 966 other actions
+[2026-09-21T15:30:46.629-04:00] Waiting on root//third-party/rust:aws-lc-sys-0.45-build-script-main (prelude//platforms:default#5732820ad45f622d) -- action (write XIPL/build_script_main-link-diag.args), and 189 other actions
+[2026-09-21T15:30:53.829-04:00] Waiting on Test app-health-readiness-browser-pg --  [local_execute]
+[2026-09-21T15:31:02.529-04:00] Waiting on Test app-health-readiness-browser-pg --  [local_execute]
+[2026-09-21T15:31:09.629-04:00] Waiting on Test app-health-readiness-browser-pg --  [local_execute]
+[2026-09-21T15:31:15.832-04:00] ✗ Fail: root//tools/buck:app-health-readiness-browser-pg (25.2s)
+[2026-09-21T15:31:15.832-04:00] ---- STDOUT ----
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] running 1 test
+[2026-09-21T15:31:15.832-04:00] test authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty ... FAILED
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] failures:
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] ---- authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty stdout ----
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] thread 'authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty' (79151137) panicked at backend/app/backend/app/tests/health_readiness.rs:1040:9:
+[2026-09-21T15:31:15.832-04:00] authorized read failure was swallowed: <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>급여 · Console</title><style>
+[2026-09-21T15:31:15.832-04:00] :root{color-scheme:light;--bg:#f5f5f2;--surface:#fff;--line:#e1e3df;--ink:#202923;
+[2026-09-21T15:31:15.832-04:00] --muted:#59645e;--accent:#815000;--accent-bg:#fff2cb;--chip:#edf1ed;--chip-ink:#405448;
+[2026-09-21T15:31:15.832-04:00] --flag:#fff0eb;--flag-ink:#963c23}
+[2026-09-21T15:31:15.832-04:00] *{box-sizing:border-box}
+[2026-09-21T15:31:15.832-04:00] [hidden]{display:none!important}
+[2026-09-21T15:31:15.832-04:00] body{margin:0;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;
+[2026-09-21T15:31:15.832-04:00] font:15px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+[2026-09-21T15:31:15.832-04:00] a{color:var(--accent);text-underline-offset:3px}
+[2026-09-21T15:31:15.832-04:00] a:hover{text-decoration-thickness:2px}
+[2026-09-21T15:31:15.832-04:00] a,button,input,select,summary{touch-action:manipulation}
+[2026-09-21T15:31:15.832-04:00] :focus-visible{outline:3px solid #2364aa;outline-offset:4px}
+[2026-09-21T15:31:15.832-04:00] .workspace{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:100dvh}
+[2026-09-21T15:31:15.832-04:00] .skip-link{position:fixed;left:16px;top:12px;z-index:20;padding:12px 18px;background:var(--ink);
+[2026-09-21T15:31:15.832-04:00] color:#fff;border-radius:8px;transform:translateY(-160%)}
+[2026-09-21T15:31:15.832-04:00] .skip-link:focus{transform:none}
+[2026-09-21T15:31:15.832-04:00] header.app{position:sticky;top:0;align-self:start;height:100dvh;padding:28px 16px;
+[2026-09-21T15:31:15.832-04:00] background:var(--surface);border-right:1px solid var(--line)}
+[2026-09-21T15:31:15.832-04:00] .brand{display:flex;align-items:center;gap:12px;padding:0 12px 30px;color:var(--ink);
+[2026-09-21T15:31:15.832-04:00] font-size:20px;font-weight:750;letter-spacing:-.04em;text-decoration:none}
+[2026-09-21T15:31:15.832-04:00] .brand-mark{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:9px;
+[2026-09-21T15:31:15.832-04:00] background:#eeb94b;color:#302714;font-size:20px;font-weight:800}
+[2026-09-21T15:31:15.832-04:00] .nav-group{margin:12px 12px 8px;color:var(--muted);font-size:12px;font-weight:650;letter-spacing:.04em}
+[2026-09-21T15:31:15.832-04:00] header.app nav{display:flex;flex-direction:column;gap:4px}
+[2026-09-21T15:31:15.832-04:00] header.app nav a{display:flex;align-items:center;gap:12px;min-height:46px;padding:10px 12px;
+[2026-09-21T15:31:15.832-04:00] border-radius:8px;color:var(--muted);font-weight:550;text-decoration:none}
+[2026-09-21T15:31:15.832-04:00] header.app nav a:hover{background:var(--bg);color:var(--ink)}
+[2026-09-21T15:31:15.832-04:00] header.app nav a[aria-current]{background:var(--accent-bg);color:#62410b;font-weight:700}
+[2026-09-21T15:31:15.832-04:00] .nav-symbol{font-size:18px;width:22px;text-align:center}
+[2026-09-21T15:31:15.832-04:00] main{min-width:0;width:100%;max-width:1440px;padding:36px 40px 80px;margin:0 auto}
+[2026-09-21T15:31:15.832-04:00] .page-heading{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+[2026-09-21T15:31:15.832-04:00] .page-eyebrow{margin:0 0 6px;font-size:12px;font-weight:650;letter-spacing:.08em;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] h1{margin:0;font-size:28px;line-height:1.35;letter-spacing:-.04em;font-weight:700}
+[2026-09-21T15:31:15.832-04:00] .page-description{margin:10px 0 0;color:var(--muted);max-width:65ch;word-break:keep-all;overflow-wrap:anywhere}
+[2026-09-21T15:31:15.832-04:00] h2,h3,p,dd,a,summary{overflow-wrap:anywhere}
+[2026-09-21T15:31:15.832-04:00] .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 0 24px;min-width:0}
+[2026-09-21T15:31:15.832-04:00] .panel h2{margin:0;padding:18px 22px;font-size:17px;line-height:1.45;font-weight:650;border-bottom:1px solid var(--line)}
+[2026-09-21T15:31:15.832-04:00] .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid var(--line)}
+[2026-09-21T15:31:15.832-04:00] .fl{font-size:14px;font-weight:600;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] select,input,textarea,button{font:inherit}
+[2026-09-21T15:31:15.832-04:00] select{min-height:44px;padding:8px 12px;border:1px solid #9da89f;border-radius:8px;background:var(--surface);color:var(--ink);max-width:100%}
+[2026-09-21T15:31:15.832-04:00] .row{display:flex;align-items:baseline;gap:14px;padding:17px 22px;border-bottom:1px solid var(--line);color:var(--ink);text-decoration:none}
+[2026-09-21T15:31:15.832-04:00] .row:last-child{border-bottom:0}
+[2026-09-21T15:31:15.832-04:00] .row:hover{background:#fafbf8}
+[2026-09-21T15:31:15.832-04:00] .row .name{font-weight:600;min-width:0}
+[2026-09-21T15:31:15.832-04:00] .row .meta{flex:1 1 16ch;min-width:0;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+[2026-09-21T15:31:15.832-04:00] .row .rev{flex:none;color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+[2026-09-21T15:31:15.832-04:00] .badge{flex:none;max-width:100%;margin-left:auto;padding:4px 10px;border-radius:6px;background:var(--chip);
+[2026-09-21T15:31:15.832-04:00] color:var(--chip-ink);font-size:12px;font-weight:650;overflow-wrap:anywhere}
+[2026-09-21T15:31:15.832-04:00] .badge[data-status*='BLOCK']{background:var(--flag);color:var(--flag-ink)}
+[2026-09-21T15:31:15.832-04:00] .state{margin:0;padding:32px 22px;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] .people-introduction{margin:0 0 20px}.people-introduction h2{margin:0 0 6px;font-size:18px;letter-spacing:-.02em}
+[2026-09-21T15:31:15.832-04:00] .people-introduction p{margin:0;color:var(--muted);max-width:70ch}
+[2026-09-21T15:31:15.832-04:00] .people-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:24px;align-items:start}
+[2026-09-21T15:31:15.832-04:00] .people-section h3{margin:0;padding:20px 22px 8px;font-size:17px;line-height:1.4}
+[2026-09-21T15:31:15.832-04:00] .people-count{margin:0;padding:0 22px 18px;color:var(--muted);font-size:13px}
+[2026-09-21T15:31:15.832-04:00] .person-inspector,.employment-inspector{min-width:0;border-top:1px solid var(--line);scroll-margin-top:24px}
+[2026-09-21T15:31:15.832-04:00] .person-summary,.employment-summary{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:12px;
+[2026-09-21T15:31:15.832-04:00] min-height:76px;padding:16px 20px;cursor:pointer;list-style:none}
+[2026-09-21T15:31:15.832-04:00] .person-summary::-webkit-details-marker,.employment-summary::-webkit-details-marker{display:none}
+[2026-09-21T15:31:15.832-04:00] .person-summary:hover,.employment-summary:hover{background:#fafbf8}
+[2026-09-21T15:31:15.832-04:00] .person-summary::after,.employment-summary::after{content:'⌄';font-size:18px;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] .person-inspector[open] .person-summary::after,.employment-inspector[open] .employment-summary::after{content:'⌃'}
+[2026-09-21T15:31:15.832-04:00] .person-inspector[open],.employment-inspector[open]{background:#fcfdfb}
+[2026-09-21T15:31:15.832-04:00] .person-glyph{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:12px;background:var(--accent-bg);color:#75521b;font-size:16px;font-weight:650}
+[2026-09-21T15:31:15.832-04:00] .person-heading,.employment-heading{display:flex;flex:1 1 110px;min-width:0;flex-direction:column;gap:3px}
+[2026-09-21T15:31:15.832-04:00] .person-secondary,.employment-heading span{font-size:14px;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] .person-revision{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+[2026-09-21T15:31:15.832-04:00] .person-disclosure{font-size:12px;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] .person-detail,.employment-detail{padding:4px 22px 22px}
+[2026-09-21T15:31:15.832-04:00] .people-facts{display:grid;grid-template-columns:minmax(80px,.65fr) minmax(0,1.5fr);column-gap:16px;row-gap:12px;margin:12px 0 20px;font-size:14px}
+[2026-09-21T15:31:15.832-04:00] .people-facts dt{color:var(--muted)}.people-facts dd{margin:0;overflow-wrap:anywhere;min-width:0}
+[2026-09-21T15:31:15.832-04:00] .people-identity{font-variant-numeric:tabular-nums;font-size:13px}
+[2026-09-21T15:31:15.832-04:00] .person-relationships{margin:18px 0;padding-top:16px;border-top:1px solid var(--line)}
+[2026-09-21T15:31:15.832-04:00] .person-relationships h4{margin:0 0 8px;font-size:14px}.person-relationships ul{margin:0;padding-left:20px}
+[2026-09-21T15:31:15.832-04:00] .person-relationships li{padding:6px 0}
+[2026-09-21T15:31:15.832-04:00] .people-source,.people-retry{display:inline-block;padding:10px 0;min-height:44px;font-size:14px;font-weight:600}
+[2026-09-21T15:31:15.832-04:00] .people-retry{margin:0 22px 18px}
+[2026-09-21T15:31:15.832-04:00] @media(max-width:1150px){.people-layout{grid-template-columns:minmax(0,1fr);gap:0}}
+[2026-09-21T15:31:15.832-04:00] @media(max-width:680px){.person-summary,.employment-summary{padding:16px}.person-detail,.employment-detail{padding:0 16px 16px}
+[2026-09-21T15:31:15.832-04:00] .people-section h3{padding:18px 16px 8px}.people-count{padding:0 16px 16px}.people-facts{grid-template-columns:minmax(70px,.7fr) minmax(0,1.3fr);gap:10px}}
+[2026-09-21T15:31:15.832-04:00] .workflow-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+[2026-09-21T15:31:15.832-04:00] .workflow-main,.workflow-guide{min-width:0}.workflow-guide .panel{background:#fdfefa}
+[2026-09-21T15:31:15.832-04:00] .section-intro{margin:0;padding:18px 22px;color:var(--muted);font-size:14px}
+[2026-09-21T15:31:15.832-04:00] .record-list{margin:0;padding:0 22px 0 42px}
+[2026-09-21T15:31:15.832-04:00] .record-card{padding:20px 0;border-bottom:1px solid var(--line)}.record-card:last-child{border-bottom:0}
+[2026-09-21T15:31:15.832-04:00] .record-card::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+[2026-09-21T15:31:15.832-04:00] .record-title{margin:0 0 12px;font-size:16px;line-height:1.5}.record-title a{color:var(--ink)}
+[2026-09-21T15:31:15.832-04:00] .record-meta{display:grid;grid-template-columns:90px minmax(0,1fr);gap:8px 16px;margin:0;font-size:14px}
+[2026-09-21T15:31:15.832-04:00] .record-meta dt{color:var(--muted)}.record-meta dd{margin:0;min-width:0;overflow-wrap:anywhere}
+[2026-09-21T15:31:15.832-04:00] .record-id,.record-revision{font-variant-numeric:tabular-nums}
+[2026-09-21T15:31:15.832-04:00] .recovery-link{display:inline-block;min-height:44px;margin:0 22px 18px;padding:10px 0;font-weight:600;font-size:14px}
+[2026-09-21T15:31:15.832-04:00] .hierarchy-note{margin:8px 22px 0;font-size:16px}.record-card .hierarchy-note{margin:0 0 14px;font-size:14px;color:var(--muted)}
+[2026-09-21T15:31:15.832-04:00] .conflict-note{margin:0 0 12px;padding:8px 12px;border-left:3px solid #b4681d;background:var(--flag);color:var(--flag-ink);font-size:14px}
+[2026-09-21T15:31:15.832-04:00] .guidance-list{margin:0;padding:10px 22px 22px 42px;color:var(--muted);font-size:14px}.guidance-list li{padding:6px 0}
+[2026-09-21T15:31:15.832-04:00] .process-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px 28px;margin:0;padding:4px 22px 22px 42px;font-size:14px;font-weight:600}
+[2026-09-21T15:31:15.832-04:00] .process-guide li{padding:10px 8px}.process-guide li::marker{color:var(--muted);font-variant-numeric:tabular-nums}
+[2026-09-21T15:31:15.832-04:00] .review-notice{margin:0 22px;padding:14px;border:1px solid #e5cc92;border-radius:8px;background:var(--accent-bg);color:#62410b;font-size:14px;font-weight:600}
+[2026-09-21T15:31:15.832-04:00] .person-detail,.employment-detail{scroll-margin-top:24px}
+[2026-09-21T15:31:15.832-04:00] @media(max-width:1150px){.workflow-layout{grid-template-columns:minmax(0,1fr);gap:0}.workflow-guide{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 24px}}
+[2026-09-21T15:31:15.832-04:00] @media(max-width:680px){.section-intro{padding:16px}.record-list{padding:0 16px 0 36px}.record-meta{grid-template-columns:72px minmax(0,1fr);gap:8px 12px}
+[2026-09-21T15:31:15.832-04:00] .guidance-list{padding:8px 16px 20px 36px}.process-guide{padding:0 16px 20px 36px}.review-notice{margin:0 16px}.workflow-guide{display:block}}
+[2026-09-21T15:31:15.832-04:00] @media(min-width:1600px){main{padding-top:48px}}
+[2026-09-21T15:31:15.832-04:00] @media(max-width:1000px){.workspace{grid-template-columns:188px minmax(0,1fr)}main{padding:28px 24px 64px}}
+[2026-09-21T15:31:15.832-04:00] @media(max-width:680px){.workspace{display:block}header.app{position:static;height:auto;padding:16px;border-right:0;border-bottom:1px solid var(--line)}
+[2026-09-21T15:31:15.832-04:00] .brand{padding:0 4px 12px;font-size:18px}.brand-mark{width:28px;height:28px}.nav-group{margin:0 4px 6px}
+[2026-09-21T15:31:15.832-04:00] header.app nav{flex-direction:row;flex-wrap:wrap;gap:4px}header.app nav a{padding:8px 12px;min-height:44px}
+[2026-09-21T15:31:15.832-04:00] main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px}h1{font-size:25px}
+[2026-09-21T15:31:15.832-04:00] .panel h2{padding:16px}.toolbar{padding:12px 16px}.row{flex-wrap:wrap;gap:8px 12px;padding:16px}
+[2026-09-21T15:31:15.832-04:00] .row .meta{flex:1 0 100%;order:3}.badge{margin-left:0}.state{padding:24px 16px}}
+[2026-09-21T15:31:15.832-04:00] @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+[2026-09-21T15:31:15.832-04:00] </style><!></head><body class="workspace"><a class="skip-link" href="#main-content">본문으로 건너뛰기</a><header class="app"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">C</span>Console</a><p class="nav-group">사람과 조직</p><nav aria-label="주요 탐색"><a href="/hr"><span class="nav-symbol" aria-hidden="true">◎</span>사람과 고용</a><a href="/organization"><span class="nav-symbol" aria-hidden="true">⊞</span>조직</a><a href="/payroll" aria-current="page"><span class="nav-symbol" aria-hidden="true">▤</span>급여</a></nav></header><main id="main-content" tabindex="-1"><div class="page-heading"><p class="page-eyebrow">CONSOLE WORKSPACE</p><h1>급여</h1><p class="page-description">급여 기간별 실행 기록과 검토할 자료를 확인하세요.</p></div><!><!--<() />--><!><!--<() />--><div data-screen="payroll"><section class="panel" aria-label="급여 처리 안내"><h2>급여 처리 안내</h2><p class="section-intro">각 실행 기록에서 원천 자료와 검토 결과를 확인하세요.</p><ol class="process-guide" aria-label="급여 처리 순서"><li>원천 확인</li><li>계산</li><li>예외 검토</li><li>독립 검토</li><li>명세서·지급 지시</li><li>지급 대사</li></ol></section><div class="workflow-layout"><div class="workflow-main"><section data-state="empty" aria-label="급여 실행 기록" class="panel"><h2>실행 기록</h2><p class="state">표시할 급여 이력이 없습니다</p></section></div><aside class="workflow-guide" aria-label="급여 검토 안내"><section class="panel"><h2>검토 전 확인</h2><ul class="guidance-list"><li>검토할 기간, 원천과 버전이 같은지 확인하세요.</li><li>원천의 불일치와 예외를 확인하고 처리 근거를 남기세요.</li><li>작성자와 독립된 검토자의 검토 기록을 확인하세요.</li></ul><p class="review-notice">승인은 지급 완료를 의미하지 않습니다</p><p class="section-intro">지급 지시를 내보내거나 내려받은 뒤에도 외부 지급 결과와 정산 증빙을 대사해야 합니다.</p></section><section class="panel"><h2>검토 자료</h2><p class="section-intro">실행 기록을 열어 다음 근거를 확인하세요.</p><ul class="guidance-list"><li>대상 기간과 원천 기록</li><li>계산에 사용된 버전과 적용 근거</li><li>예외, 보정 사유와 관련 증빙</li><li>검토 이력과 검토한 결과의 버전</li></ul></section></aside></div></div></main></body></html>
+[2026-09-21T15:31:15.832-04:00] note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] failures:
+[2026-09-21T15:31:15.832-04:00]     authorized::payroll_listing_audit_failure_is_recoverable_and_never_empty
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 16 filtered out; finished in 14.09s
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.832-04:00] ---- STDERR ----
+[2026-09-21T15:31:15.832-04:00]
+[2026-09-21T15:31:15.872-04:00] Network: Up: 0B  Down: 0B
+Tests finished: Pass 0. [mFail 1[m. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
+1 TESTS FAILED
+  ✗ root//tools/buck:app-health-readiness-browser-pg

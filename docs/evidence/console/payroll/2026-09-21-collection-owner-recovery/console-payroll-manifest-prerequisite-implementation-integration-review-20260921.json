@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_exact_implementation_and_evidence_review",
+  "base": "f9d00f12ca250b25565f54d0c345ed607be13c38",
+  "source_root": "/private/tmp/console-mvp-dev-integrate-20260921",
+  "files": {
+    "tools/buck/gen_first_party.py": "9cfd08745b84283cd2522af34b1918bff717c68772cf9c93c03e6a5e77212c6b",
+    "backend/crates/payroll/application/BUCK": "7b484b906f8ec2213f2d2765bb803e08aa959aceb8da548aab01e4ac80903b8b"
+  },
+  "verdict": "APPROVED exact bounded prerequisite implementation and inspected native verification",
+  "findings": [],
+  "checks": [
+    "Staged diff contains only 3-line existing RESOURCE_CONFIG Cargo.toml mapping plus Cargo.toml added to generated library/unit-test mapped_srcs. No unstaged changes observed.",
+    "No Rust source/tests/oracles, lockfiles, migrations or unrelated generated graph changed.",
+    "Inspected native application log: all5 tests passed,0failed/ignored/filtered; includes existing architecture manifest test.",
+    "Inspected full generator log:70tests OK.",
+    "Inspected retained four native HTTP/isolation suite logs:4+9+5+4=22passed,0failed/ignored/filtered.",
+    "Same semantic prerequisite probe GREEN1 reported by parent; original reviewed oracle unchanged."
+  ],
+  "logs": {
+    "/private/tmp/console-payroll-application-native-green-20260921.log": "4b1cdf2152dbb97a346d84059f9117363cb26f87ba07f5e8f7f28149a0cfed3f",
+    "/private/tmp/console-payroll-manifest-generator70-20260921.log": "d8742663c7948320e8f9aa9528f77e122466dc3e80bdf7a439df158d35a40d48",
+    "/private/tmp/console-payroll-list-retained-http-green-20260921.log": "a75a8756070a3a6414801ade3025258b3ac1344fba1cc6a466f99c6c0ac1fdfb"
+  },
+  "tests_executed_by_reviewer": 0,
+  "evidence_reviewed": {
+    "native_application": 5,
+    "generator": 70,
+    "retained_http_isolation": 22
+  },
+  "remaining_holds": [
+    "Full native Account payroll workflow and release qualification remain separate; bounded prerequisite and collection read recovery do not establish them."
+  ]
+}

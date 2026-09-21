@@ -1,0 +1,21 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_design_and_test_review",
+  "candidate": "/private/tmp/console-payroll-manifest-prerequisite-20260921/test_gen_first_party.py",
+  "candidate_sha256": "5b072d59ec0703077b502c4b3c3018fe5aa796baa3fd8d364cc2a832135fb697",
+  "verdict": "APPROVED additive exact test and bounded prerequisite design; RED and native verification pending",
+  "findings": [],
+  "checks": [
+    "Candidate differs by one additive test only; retained tests unchanged.",
+    "Actual existing Rust include_str!(../Cargo.toml) at application/src/lib.rs:175 requires mapped manifest.",
+    "Generator uses RESOURCE_CONFIG srcs to build lib_pats; same Cargo.toml pattern exists for console-intelligence-application.",
+    "Probe anchors actual include site and requires exact resolved manifest in configured source globs. Test detects missing prerequisite without changing Rust test semantics.",
+    "Design requires actual Buck application unit test execution; generator green alone does not prove compilation."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Establish named probe RED on clean committed test candidate then admit.",
+    "Source change restricted to existing resource mapping and mechanically generated application BUCK.",
+    "Native unit and retained integration tests must execute; prior zero-test batch is not acceptance."
+  ]
+}

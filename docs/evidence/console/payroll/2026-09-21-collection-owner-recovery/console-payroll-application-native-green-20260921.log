@@ -1,0 +1,38 @@
+[2026-09-21T15:51:52.676-04:00] Build ID: c3e86826-5c42-4dde-b62d-d47b7c6e3147
+[2026-09-21T15:51:52.676-04:00] File changed (since mergebase): root//rustfmt.toml
+[2026-09-21T15:51:52.676-04:00] File changed (since mergebase): root//tools/buck/test_gen_first_party.py
+[2026-09-21T15:51:52.676-04:00] File changed (since mergebase): root//tools/buck/gen_first_party.py
+[2026-09-21T15:51:52.676-04:00] 186 additional file change events (since mergebase)
+[2026-09-21T15:51:52.676-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T15:51:59.768-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:06.867-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:13.867-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:20.868-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:27.968-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:35.067-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:42.167-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:49.267-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:56.368-04:00] Waiting on Synchronizing buck2 internal state [Waiting for command [buck2 test --local-only //tools/buck:payroll-rest-api-pg //tools/buck:payroll-rest-payslip-dra<<omitted>>6/4qlvtbgn6r1gl9bvfttp6sww0000gn/T//console-buck-postgres-env.oMp9o2 --env RUST_TEST_THREADS=1] to finish]
+[2026-09-21T15:52:57.406-04:00] File changed: root//tools/buck/_probe_envmain/Cargo.toml
+[2026-09-21T15:52:57.406-04:00] File changed: root//tools/buck/_probe_envmain/BUCK
+[2026-09-21T15:52:57.406-04:00] File changed: root//tools/buck/_probe_envmain/src/lib.rs
+[2026-09-21T15:52:57.406-04:00] 275 additional file change events
+[2026-09-21T15:53:02.585-04:00] ✓ Pass: root//backend/crates/payroll/application:console-payroll-application-unit (0.2s)
+[2026-09-21T15:53:02.585-04:00] ---- STDOUT ----
+[2026-09-21T15:53:02.585-04:00]
+[2026-09-21T15:53:02.585-04:00] running 5 tests
+[2026-09-21T15:53:02.585-04:00] test tests::missing_run_is_not_found ... ok
+[2026-09-21T15:53:02.585-04:00] test tests::application_manifest_forbids_framework_deps ... ok
+[2026-09-21T15:53:02.585-04:00] test tests::other_status_is_invalid_state_and_does_not_persist ... ok
+[2026-09-21T15:53:02.585-04:00] test tests::calculate_persists_when_attendance_is_closed ... ok
+[2026-09-21T15:53:02.585-04:00] test tests::duplicate_calculate_on_same_version_does_not_persist ... ok
+[2026-09-21T15:53:02.585-04:00]
+[2026-09-21T15:53:02.585-04:00] test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+[2026-09-21T15:53:02.585-04:00]
+[2026-09-21T15:53:02.585-04:00]
+[2026-09-21T15:53:02.585-04:00] ---- STDERR ----
+[2026-09-21T15:53:02.585-04:00]
+[2026-09-21T15:53:02.595-04:00] Cache hits: 0%
+[2026-09-21T15:53:02.595-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T15:53:02.595-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0
