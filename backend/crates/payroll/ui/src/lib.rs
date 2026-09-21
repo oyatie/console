@@ -1,5 +1,7 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 pub mod native_account;
+mod organization;
+mod payroll_workspace;
 mod people;
 
 use leptos::prelude::*;
@@ -353,70 +355,6 @@ pub fn AuthorizedRuns(runs: Vec<RunSummary>) -> impl IntoView {
 }
 
 #[component]
-fn Companies(companies: Vec<CompanyView>) -> impl IntoView {
-    companies
-        .into_iter()
-        .map(|company| {
-            let href = format!("/api/v1/companies/{}", company.org_id);
-            let label = if company.legal_name.is_empty() {
-                company.org_id.clone()
-            } else {
-                company.legal_name.clone()
-            };
-            let meta = company.reg_no.clone();
-            let version = revision_label(&company.version);
-            view! {
-                <a class="row" href=href>
-                    <span
-                        class="name"
-                        data-org-id=company.org_id
-                        data-legal-name=company.legal_name
-                        data-reg-no=company.reg_no
-                        data-version=company.version
-                    >
-                        {label}
-                    </span>
-                    <span class="meta">{meta}</span>
-                    <span class="rev">{version}</span>
-                </a>
-            }
-        })
-        .collect_view()
-}
-
-#[component]
-fn OrgUnits(units: Vec<OrgUnitView>) -> impl IntoView {
-    units
-        .into_iter()
-        .map(|unit| {
-            let href = format!("/api/v1/org-units/{}", unit.id);
-            let label = if unit.name.is_empty() {
-                unit.id.clone()
-            } else {
-                unit.name.clone()
-            };
-            let meta = unit.parent_id.clone();
-            let version = revision_label(&unit.version);
-            view! {
-                <a class="row" href=href>
-                    <span
-                        class="name"
-                        data-org-unit-id=unit.id
-                        data-name=unit.name
-                        data-parent-id=unit.parent_id
-                        data-version=unit.version
-                    >
-                        {label}
-                    </span>
-                    <span class="meta">{meta}</span>
-                    <span class="rev">{version}</span>
-                </a>
-            }
-        })
-        .collect_view()
-}
-
-#[component]
 fn ShippingNav(has_org: bool, has_hr: bool, has_payroll: bool, focus: UiScreen) -> impl IntoView {
     view! {
         <header class="app">
@@ -462,48 +400,7 @@ fn org_body(
     companies: ScreenSection<CompanyView>,
     org_units: ScreenSection<OrgUnitView>,
 ) -> impl IntoView {
-    if matches!(
-        (&companies, &org_units),
-        (ScreenSection::Omitted, ScreenSection::Omitted)
-    ) {
-        return ().into_any();
-    }
-    let failed = matches!(&companies, ScreenSection::Failure)
-        || matches!(&org_units, ScreenSection::Failure);
-    let company_rows = match companies {
-        ScreenSection::Rows(rows) => rows,
-        _ => Vec::new(),
-    };
-    let unit_rows = match org_units {
-        ScreenSection::Rows(rows) => rows,
-        _ => Vec::new(),
-    };
-    if company_rows.is_empty() && unit_rows.is_empty() {
-        if failed {
-            return view! {
-                <section class="panel" data-screen="organization" data-state="failure">
-                    <h2>"조직"</h2>
-                    <p class="state">"목록을 불러오지 못했습니다"</p>
-                </section>
-            }
-            .into_any();
-        }
-        return view! {
-            <section class="panel" data-screen="organization" data-state="empty">
-                <h2>"조직"</h2>
-                <p class="state">"표시할 조직이 없습니다"</p>
-            </section>
-        }
-        .into_any();
-    }
-    view! {
-        <section class="panel" data-screen="organization">
-            <h2>"조직"</h2>
-            <Companies companies=company_rows />
-            <OrgUnits units=unit_rows />
-        </section>
-    }
-    .into_any()
+    organization::body(companies, org_units)
 }
 
 fn hr_body(
@@ -514,30 +411,7 @@ fn hr_body(
 }
 
 fn payroll_body(runs: ScreenSection<RunSummary>) -> impl IntoView {
-    match runs {
-        ScreenSection::Omitted => ().into_any(),
-        ScreenSection::Empty => view! {
-            <section class="panel" data-screen="payroll" data-state="empty">
-                <h2>"급여"</h2>
-                <p class="state">"표시할 급여 이력이 없습니다"</p>
-            </section>
-        }
-        .into_any(),
-        ScreenSection::Failure => view! {
-            <section class="panel" data-screen="payroll" data-state="failure">
-                <h2>"급여"</h2>
-                <p class="state">"목록을 불러오지 못했습니다"</p>
-            </section>
-        }
-        .into_any(),
-        ScreenSection::Rows(runs) => view! {
-            <section class="panel" data-screen="payroll">
-                <h2>"급여"</h2>
-                <AuthorizedRuns runs=runs />
-            </section>
-        }
-        .into_any(),
-    }
+    payroll_workspace::body(runs)
 }
 
 #[component]
