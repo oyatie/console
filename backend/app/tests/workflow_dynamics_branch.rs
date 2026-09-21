@@ -230,3 +230,327 @@ async fn condition_false_branch_runs_to_terminal_success(owner_pool: PgPool) {
     tx.commit().await.unwrap();
     assert_eq!(visible, 0, "runs must be RLS-isolated to their own tenant");
 }
+
+// Canonical process_node -> WorkflowRuntimePort::commit_node_step replay proof.
+// Reuse this binary's existing owner-only tenant seed and console_rt role pool.
+// This proves effective restricted-role behavior, not an authenticated LOGIN flow.
+async fn node_replay_rows(pool: &PgPool, org: OrgId) -> Vec<Vec<String>> {
+    let mut tx = pool.begin().await.unwrap();
+    arm_org(&mut tx, org).await;
+    let mut snapshot = Vec::new();
+    for query in [
+        "SELECT to_jsonb(r)::text FROM workflow_runs r ORDER BY id",
+        "SELECT to_jsonb(r)::text FROM workflow_node_runs r ORDER BY id",
+        "SELECT to_jsonb(r)::text FROM workflow_outbox_events r ORDER BY id",
+        "SELECT to_jsonb(r)::text FROM workflow_waiting_tasks r ORDER BY id",
+        "SELECT to_jsonb(r)::text FROM audit_events r ORDER BY id",
+    ] {
+        snapshot.push(sqlx::query_scalar(query).fetch_all(&mut *tx).await.unwrap());
+    }
+    tx.commit().await.unwrap();
+    snapshot
+}
+
+async fn assert_node_replay_preserves_all_effects(owner_pool: PgPool, node: Value) {
+    use console_kernel_core::ErrorKind;
+    use console_workflow_domain::{NodeStatus, RunStatus};
+    use console_workflow_runtime::{NodeSpec, ProcessNodeRequest, process_node, start_run};
+
+    let org = OrgId::from_uuid(BRANCH_TENANT);
+    seed_org(&owner_pool, org, "org-node-replay").await;
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let role: (String, bool, bool) = sqlx::query_as(
+        "SELECT current_user::text, rolsuper, rolbypassrls FROM pg_roles WHERE rolname=current_user",
+    ).fetch_one(&rt_pool).await.unwrap();
+    assert_eq!(role, ("console_rt".to_owned(), false, false));
+
+    // Seed an exact single-node executable definition. Effects below are written
+    // only by the actual engine/adapter, never fixture INSERTs into runtime tables.
+    let mut tx = rt_pool.begin().await.unwrap();
+    arm_org(&mut tx, org).await;
+    let definition_id: Uuid = sqlx::query_scalar(
+        "INSERT INTO workflow_definitions \
+         (org_id, workflow_key, display_name, object_type, status, latest_version, active_version) \
+         VALUES ($1, 'automation.node_replay', 'Node replay', 'work_order', 'ACTIVE', 1, 1) RETURNING id",
+    ).bind(*org.as_uuid()).fetch_one(&mut *tx).await.unwrap();
+    sqlx::query(
+        "INSERT INTO workflow_definition_versions \
+         (org_id, definition_id, version, status, definition, required_approval_line, required_payment_line) \
+         VALUES ($1, $2, 1, 'PUBLISHED', $3, FALSE, FALSE)",
+    ).bind(*org.as_uuid()).bind(definition_id)
+        .bind(json!({"schema_version": "wf.exec.v1", "nodes": [node.clone()], "edges": []}))
+        .execute(&mut *tx).await.unwrap();
+    tx.commit().await.unwrap();
+    let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
+    let run_id = start_run(
+        &store,
+        request(org, definition_id, "node-replay-0000000001", json!({})),
+        &audit(),
+    )
+    .await
+    .unwrap();
+    let parked = node["node_type"] == "human_task";
+    let job = node["node_type"] == "job";
+    let first_id = Uuid::new_v4();
+    let first = ProcessNodeRequest {
+        org_id: org,
+        run_id,
+        node_run_id: first_id,
+        current_run_status: RunStatus::Running,
+        run_target: if parked {
+            RunStatus::Waiting
+        } else {
+            RunStatus::Succeeded
+        },
+        spec: NodeSpec::from_execution_node(&node).unwrap(),
+        attempt: 1,
+        input_payload: json!({"amount": 123, "memo": "기록 보존"}),
+        guard_audits: Vec::new(),
+    };
+    let before = node_replay_rows(&rt_pool, org).await;
+    assert_eq!(
+        (
+            before[0].len(),
+            before[1].len(),
+            before[2].len(),
+            before[3].len()
+        ),
+        (1, 0, 0, 0)
+    );
+    let outcome = process_node(&store, first.clone(), &audit()).await.unwrap();
+    assert_eq!(
+        outcome.node_final_status,
+        if parked {
+            NodeStatus::Waiting
+        } else {
+            NodeStatus::Succeeded
+        }
+    );
+    assert_eq!(outcome.run_status, first.run_target);
+    let committed = node_replay_rows(&rt_pool, org).await;
+    assert_eq!((committed[0].len(), committed[1].len()), (1, 1));
+    assert_eq!(committed[2].len(), usize::from(job));
+    assert_eq!(committed[3].len(), usize::from(parked));
+    assert_eq!(
+        committed[4].len(),
+        before[4].len() + 1,
+        "first node adds its real commit audit"
+    );
+
+    // The graph walker allocates a new node UUID on re-drive. Attempt/key/input
+    // stay identical; neither fresh audit metadata nor UUID permits new effects.
+    let mut replay = first.clone();
+    replay.node_run_id = Uuid::new_v4();
+    assert_ne!(replay.node_run_id, first_id);
+    let result = process_node(&store, replay.clone(), &audit()).await;
+    assert_eq!(
+        node_replay_rows(&rt_pool, org).await,
+        committed,
+        "replay must preserve complete run/node/outbox/waiting/audit rows, including timestamps"
+    );
+    assert_eq!(
+        result.expect("same logical node must replay successfully"),
+        outcome
+    );
+
+    // Narrow immutable-input collision control: the same deterministic key
+    // cannot silently claim that a different supplied input was committed.
+    replay.node_run_id = Uuid::new_v4();
+    replay.input_payload["amount"] = json!(124);
+    let result = process_node(&store, replay, &audit()).await;
+    assert_eq!(
+        node_replay_rows(&rt_pool, org).await,
+        committed,
+        "a rejected input collision must leave every committed effect unchanged"
+    );
+    assert_eq!(
+        result
+            .expect_err("same key with different input must conflict")
+            .kind,
+        ErrorKind::Conflict
+    );
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn replayed_gate_preserves_every_row_and_rejects_changed_input(owner_pool: PgPool) {
+    assert_node_replay_preserves_all_effects(
+        owner_pool,
+        json!({
+            "node_key": "replay.step", "node_type": "object_gate"
+        }),
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn replayed_job_preserves_every_row_and_rejects_changed_input(owner_pool: PgPool) {
+    assert_node_replay_preserves_all_effects(
+        owner_pool,
+        json!({
+            "node_key": "replay.step", "node_type": "job",
+            "connector_key": "internal.jobs", "job": "replay_probe"
+        }),
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn replayed_human_task_preserves_every_row_and_rejects_changed_input(owner_pool: PgPool) {
+    assert_node_replay_preserves_all_effects(
+        owner_pool,
+        json!({
+            "node_key": "replay.step", "node_type": "human_task", "title": "승인 대기",
+            "assignee_role_key": "executive", "required_policy": "approval_decide"
+        }),
+    )
+    .await;
+}
+
+async fn assert_node_replay_rejects_changed_effect_material(
+    owner_pool: PgPool,
+    node: Value,
+    changes: Vec<(&'static str, Value)>,
+) {
+    use console_kernel_core::ErrorKind;
+    use console_workflow_domain::RunStatus;
+    use console_workflow_runtime::{
+        NodeOutcome, NodeSpec, ProcessNodeRequest, interpret_node, process_node,
+    };
+
+    // Retain the independently approved positive replay and changed-input proof
+    // unchanged, then exercise fields that do not change the stored node output.
+    assert_node_replay_preserves_all_effects(owner_pool.clone(), node.clone()).await;
+    let org = OrgId::from_uuid(BRANCH_TENANT);
+    let rt_pool = runtime_role_pool(&owner_pool).await;
+    let store = PgWorkflowRuntimeStore::new(rt_pool.clone());
+    let mut tx = rt_pool.begin().await.unwrap();
+    arm_org(&mut tx, org).await;
+    let (run_id, stored_node_id): (Uuid, Uuid) = sqlx::query_as(
+        "SELECT r.id,n.id FROM workflow_runs r JOIN workflow_node_runs n ON n.run_id=r.id AND n.org_id=r.org_id",
+    ).fetch_one(&mut *tx).await.unwrap();
+    tx.commit().await.unwrap();
+    let committed = node_replay_rows(&rt_pool, org).await;
+    let original_spec = NodeSpec::from_execution_node(&node).unwrap();
+    let original = ProcessNodeRequest {
+        org_id: org,
+        run_id,
+        node_run_id: Uuid::new_v4(),
+        current_run_status: RunStatus::Running,
+        run_target: if node["node_type"] == "human_task" {
+            RunStatus::Waiting
+        } else {
+            RunStatus::Succeeded
+        },
+        spec: original_spec.clone(),
+        attempt: 1,
+        input_payload: json!({"amount": 123, "memo": "기록 보존"}),
+        guard_audits: Vec::new(),
+    };
+    for (field, changed) in changes {
+        let mut changed_node = node.clone();
+        assert_ne!(
+            changed_node[field], changed,
+            "material mutation must change {field}"
+        );
+        changed_node[field] = changed;
+        let mut replay = original.clone();
+        replay.node_run_id = Uuid::new_v4();
+        assert_ne!(replay.node_run_id, stored_node_id);
+        replay.spec = NodeSpec::from_execution_node(&changed_node).unwrap();
+        assert_eq!(replay.spec.node_key, original.spec.node_key);
+        assert_eq!(replay.spec.node_type, original.spec.node_type);
+        assert_eq!(replay.input_payload, original.input_payload);
+        // Positive mutation control: the actual interpreter changes only the
+        // relevant effect material while the node's committed outcome stays equal.
+        match (
+            interpret_node(
+                &original_spec,
+                run_id,
+                replay.node_run_id,
+                &replay.input_payload,
+            ),
+            interpret_node(
+                &replay.spec,
+                run_id,
+                replay.node_run_id,
+                &replay.input_payload,
+            ),
+        ) {
+            (
+                NodeOutcome::Succeeded {
+                    output: before,
+                    emissions: a,
+                    ..
+                },
+                NodeOutcome::Succeeded {
+                    output: after,
+                    emissions: b,
+                    ..
+                },
+            ) => {
+                assert_eq!(before, after);
+                assert_eq!((a.len(), b.len()), (1, 1));
+                assert_ne!(a[0].payload, b[0].payload);
+                assert_eq!(a[0].idempotency_key, b[0].idempotency_key);
+            }
+            (NodeOutcome::Waiting { task: a, .. }, NodeOutcome::Waiting { task: b, .. }) => {
+                assert_eq!(a.form_payload, b.form_payload);
+                assert_eq!(a.waiting_key, b.waiting_key);
+                assert_ne!(
+                    (&a.title, &a.assignee_role_key, &a.required_policy),
+                    (&b.title, &b.assignee_role_key, &b.required_policy)
+                );
+            }
+            _ => panic!("material fixture must preserve the original node outcome"),
+        }
+        let result = process_node(&store, replay, &audit()).await;
+        assert_eq!(
+            node_replay_rows(&rt_pool, org).await,
+            committed,
+            "changed {field} must preserve all five tables exactly"
+        );
+        assert_eq!(
+            result
+                .expect_err("same-key effect material drift must conflict")
+                .kind,
+            ErrorKind::Conflict,
+            "{field}"
+        );
+    }
+    // Rejections must not poison a valid replay of the acknowledged material.
+    let outcome = process_node(&store, original.clone(), &audit())
+        .await
+        .unwrap();
+    assert_eq!(outcome.run_status, original.run_target);
+    assert_eq!(node_replay_rows(&rt_pool, org).await, committed);
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn replayed_job_rejects_changed_emits_status_with_identical_node_output(owner_pool: PgPool) {
+    assert_node_replay_rejects_changed_effect_material(
+        owner_pool,
+        json!({
+            "node_key": "replay.step", "node_type": "job",
+            "connector_key": "internal.jobs", "job": "replay_probe", "emits_status": "READY"
+        }),
+        vec![("emits_status", json!("CHANGED"))],
+    )
+    .await;
+}
+
+#[sqlx::test(migrations = "../crates/platform/db/migrations")]
+async fn replayed_human_task_rejects_changed_creation_material(owner_pool: PgPool) {
+    assert_node_replay_rejects_changed_effect_material(
+        owner_pool,
+        json!({
+            "node_key": "replay.step", "node_type": "human_task", "title": "승인 대기",
+            "assignee_role_key": "executive", "required_policy": "approval_decide"
+        }),
+        vec![
+            ("required_policy", json!("different_policy")),
+            ("title", json!("다른 승인 요청")),
+            ("assignee_role_key", json!("different_reviewer")),
+        ],
+    )
+    .await;
+}

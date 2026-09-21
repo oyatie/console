@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     PlatformFeature, Role,
-    cedar_pbac::engine::{CompiledBundle, compile_bundle_from_sources},
+    cedar_pbac::engine::{CEDAR_SDK_VERSION, CompiledBundle, compile_bundle_from_sources},
 };
 
 const POLICY_ID: &str = "legacy-platform-authority-v1";
@@ -145,9 +145,9 @@ impl PlatformPolicy {
         key.org_id == OrgId::platform()
             && key.policy_version == 1
             && key.schema_version == SCHEMA_ID
-            && key.cedar_sdk_version == "4.12.0"
+            && key.cedar_sdk_version == CEDAR_SDK_VERSION
             && key.cedar_language_version == "4.5"
-            && cedar_policy::get_sdk_version().to_string() == "4.12.0"
+            && cedar_policy::get_sdk_version().to_string() == CEDAR_SDK_VERSION
             && key.bundle_digest == hex::encode(digest.finalize())
     }
 

@@ -627,7 +627,7 @@ fn raw_sdk(
 fn finite_platform_linked_sdk_exact_sources_and_compiled_identity() {
     fn require_send_sync<T: Send + Sync>() {}
     require_send_sync::<PlatformPolicy>();
-    assert_eq!(cedar_policy::get_sdk_version().to_string(), "4.12.0");
+    assert_eq!(cedar_policy::get_sdk_version().to_string(), "4.13.0");
     assert_eq!(
         SCHEMA_SOURCE,
         include_str!("legacy-platform-v1.cedarschema")
@@ -646,7 +646,7 @@ fn finite_platform_linked_sdk_exact_sources_and_compiled_identity() {
     assert_eq!(key.org_id, platform());
     assert_eq!(key.policy_version, 1);
     assert_eq!(key.schema_version, SCHEMA_ID);
-    assert_eq!(key.cedar_sdk_version, "4.12.0");
+    assert_eq!(key.cedar_sdk_version, "4.13.0");
     assert_eq!(key.cedar_language_version, "4.5");
     let mut digest = Sha256::new();
     digest.update(SCHEMA_SOURCE.as_bytes());
@@ -829,7 +829,15 @@ fn finite_platform_invalid_historical_material_never_upgrades() {
 #[test]
 fn finite_platform_corrupted_compiled_identity_refuses_before_sdk_for_every_action() {
     for a in PlatformFeature::ALL.map(action) {
-        for fault in ["scope", "version", "schema", "digest", "sdk", "language"] {
+        for fault in [
+            "scope",
+            "version",
+            "schema",
+            "digest",
+            "sdk",
+            "previous_sdk",
+            "language",
+        ] {
             let mut p = compiled();
             match fault {
                 "scope" => p.bundle.key.org_id = org(COMPANY),
@@ -837,14 +845,17 @@ fn finite_platform_corrupted_compiled_identity_refuses_before_sdk_for_every_acti
                 "schema" => p.bundle.key.schema_version.push_str("-corrupt"),
                 "digest" => p.bundle.key.bundle_digest.push('0'),
                 "sdk" => p.bundle.key.cedar_sdk_version = "4.11.2".into(),
+                "previous_sdk" => p.bundle.key.cedar_sdk_version = "4.12.0".into(),
                 "language" => p.bundle.key.cedar_language_version = "4.4".into(),
                 _ => unreachable!(),
             }
+            let key_bytes = serde_json::to_vec(&p.bundle.key).unwrap();
             expect_reason(
                 p.evaluate_current(&base(a, true)),
                 PlatformPolicyDenyReason::InvalidMaterial,
             );
             assert!(p.test_sdk_modes.lock().unwrap().is_empty());
+            assert_eq!(serde_json::to_vec(&p.bundle.key).unwrap(), key_bytes);
         }
     }
 }
