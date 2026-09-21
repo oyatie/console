@@ -1,0 +1,34 @@
+{
+  "reviewer": "/root/integration_tests",
+  "review_kind": "exact renderer test/API successor",
+  "design_sha256": "e379f41e3c7b567aee182f35af5aba277906c0cee168c536bb78946ce55b2572",
+  "source_path": "/private/tmp/console-native-workspace-ui-tests-20260921/lib.rs",
+  "source_sha256": "69569dc7d9621575d36f82de73624bd5af26b41c1ce4ac3bbafcc82e975b9736",
+  "verdict": "APPROVED_RENDERER_TEST_API_BASELINE_FOR_EXECUTABLE_RED",
+  "material_findings": [],
+  "resolved": [
+    "UI-TEST-1: existing first test now requires Work subject/owner/deadline/payroll exception, Employment list row and exact record link, selected Organization unit/manager/Person and exact Person link, Person-to-Employment and Employment-to-Approval links. Three-leaf scope retained."
+  ],
+  "accepted": [
+    "Minimal presentation types and deliberately empty unmounted render_preview provide feasible semanticRED; no synthetic business success.",
+    "All six destinations participate in shared story assertions; separate comparison and search/missing-record tests retained.",
+    "GET form/comparison preserves entered context and explicitly denies save/submission acknowledgment; reason escaping asserted.",
+    "Root-supplied Cargo manifest uses installed dependencies and SSR-only Leptos; no existing payroll hydration inputs touched."
+  ],
+  "serialized_projection_allowlist_amendment": {
+    "path": "backend/ci/gates/layer-boundary/BUCK",
+    "approved_diff": "Only two generated mappings for //backend/crates/platform/ui:Cargo.toml and :crate-source-tree inside existing test resources. Independently inspected actual git diff; no gate logic/test changes.",
+    "reason": "Required canonical projection of the accepted new workspace member, explicitly requested by root; not a competing implementation lane."
+  },
+  "execution": {
+    "tests": 0,
+    "builds": 0,
+    "SQL": 0,
+    "browser": 0
+  },
+  "limits": [
+    "Root must commit exact baseline and execute named Buck probe; compilation alone does not establish RED.",
+    "Actual browser traversal, keyboard/reflow/zoom/screenshots and host outcome checks remain required.",
+    "No implementation, real owner workflow, or complete release acceptance."
+  ]
+}

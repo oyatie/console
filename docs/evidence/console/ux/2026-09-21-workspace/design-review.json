@@ -1,0 +1,35 @@
+{
+  "reviewer": "/root/integration_tests",
+  "round": 5,
+  "review_kind": "bounded build ownership amendment and final native build consensus",
+  "design_path": "/private/tmp/console-native-workspace-ui-design-20260921/design-round5.json",
+  "design_sha256": "e379f41e3c7b567aee182f35af5aba277906c0cee168c536bb78946ce55b2572",
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "superseded_design_sha256": "36a9d873430f294b78a6bbb668ebcbc21c8bafe9a80a66442cb7542a395fdf83",
+  "verdict": "APPROVED_FINAL_DESIGN_CONSENSUS_FOR_EXACT_TEST_API_AUTHORING",
+  "material_findings": [],
+  "resolved": [
+    {
+      "id": "UI-BUILD-1",
+      "resolution": "New shared cross-workflow SSR lives in console-platform-ui. Existing payroll UI source, Cargo manifest, bundle, source manifest and recipe remain byte-identical. Therefore inspected WASM input-set gate does not need a waiver, rehash or unsupported producer."
+    }
+  ],
+  "independent_source_checks": [
+    "backend/Cargo.toml:48 already includes crates/platform/*; no workspace member-list edit required.",
+    "backend/ci/gates/layer-boundary/src/lib.rs:202 classifies -ui suffix before platform path; its test at837 explicitly names console-platform-ui. Ui may depend on Contracts/Ui, permits Axum/Tokio, and forbids SQLx. No classifier exception is needed.",
+    "tools/buck/gen_first_party.py:1816 accepts explicit src/bin target with ordinary name/path; :2014 generates native binary linked to its package library. Default library/unit generation already exists. Only package CSS resource and no-Postgres test metadata need adding.",
+    "Existing payroll WASM provenance gate scopes inputs to backend/crates/payroll/ui/src plus that crates Cargo.toml and its recipe; this new package lies outside that boundary. No existing hydrate dependency or artifact changes are necessary."
+  ],
+  "retained_acceptance": [
+    "Original six-destination linked Company/Person/Employment/Organization/Approval/Payroll story and task-specific evidence/consequence remain unchanged.",
+    "Same minimal unmounted renderer contract plus actual semantic RED, separately reviewed exact test source, lane admission, same GREEN and relevant original checks.",
+    "Actual native preview executable browser traversal, comparison/search/decision disclosure,320px/200percent zoom, keyboard focus, screenshots and independent critique.",
+    "Fixture data only in preview/test module; no DB/auth/owner registration; fixed known route builders and entered query values only as escaped content.",
+    "All preview document outcomes explicitly synthetic/no-persistence; unsupported mutation405 and no fake success."
+  ],
+  "limits": [
+    "No test/API source or implementation approval yet.",
+    "No build, tests, SQL or browser executed in this review.",
+    "No native persisted workflow or full-release acceptance."
+  ]
+}

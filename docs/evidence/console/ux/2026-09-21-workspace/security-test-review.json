@@ -1,0 +1,40 @@
+{
+  "reviewer": "/root/integration_security",
+  "reviewed_utc": "2026-09-21T17:25:12.137924+00:00",
+  "baseline_source_path": "/private/tmp/console-native-workspace-ui-tests-20260921/lib.rs",
+  "baseline_source_sha256": "69569dc7d9621575d36f82de73624bd5af26b41c1ce4ac3bbafcc82e975b9736",
+  "design_sha256": "e379f41e3c7b567aee182f35af5aba277906c0cee168c536bb78946ce55b2572",
+  "base_sha": "85fe5377e721ba38e35098a27191069bac07b355",
+  "verdict": "APPROVE_UPDATED_EXACT_UNMOUNTED_PRESENTATION_API_AND_THREE_TEST_BASELINE; EXECUTED_RED_PENDING",
+  "scope": "Renderer-only synthetic preview regression contract; not host or real business execution proof",
+  "source_inspected": true,
+  "tests_identified": [
+    "tests::connected_workspace_exposes_task_context_and_all_five_workflows",
+    "tests::employment_preview_preserves_context_inputs_and_distinguishes_comparison_from_commit",
+    "tests::people_search_and_unknown_entities_have_truthful_results"
+  ],
+  "source_discovered_test_functions": 3,
+  "tests_executed": 0,
+  "findings": [],
+  "accepted": [
+    "Empty render_preview boundary returns no success or fake state; expected failure is semantic assertions once a native test executable runs.",
+    "Fixture is entirely inside cfg(test); presentation model has no persistence, policy or command implementation. No actual Person/Employment projection broadened.",
+    "Core regression checks connected main routes, Company scope, accessible navigation/skip link, persistent synthetic notice and no scripts/JSON API navigation.",
+    "Person/employment/approval/payroll assertions include concrete input-derived details, evidence before decision, exact illustrative totals, payroll exception-to-approval link and no simulated commit.",
+    "GET comparison tests distinguish preview from acknowledgement and require HTML escaping of user-entered reason; form remains context-prefilled.",
+    "Search and unknown entity regression avoids unrelated person email on missing views and preserves preview notice."
+  ],
+  "concrete_coverage_limits": [
+    "These tests do not start the host: literal loopback bind, Host421,404/405 response semantics/headers, rejecting POST and absence of real route/owner registration still require implementation inspection and browser/HTTP checks.",
+    "String assertions establish finite SSR contract only: focus, labels associated with controls, keyboard behavior, visual readability,320px/200percent reflow and exact link traversal need browser critique.",
+    "Fixture API is sample presentation data, not an authorized business contract. Future production reuse requires separately reviewed authorized projection mapping; ordinary UI status strings convey no authorization.",
+    "Only reason HTML content escaping is probed. Implementation must also keep ids/query values out of arbitrary href/src/action/rawHTML; fixed route construction is still required by design.",
+    "No conflict, unknown commit, independent reviewer authorization, legal calculation, settlement or durable history effects are proved; synthetic example must never be claimed as those workflows being accepted."
+  ],
+  "admission_next": "Place these exact reviewed bytes in new SSR-only console-platform-ui; independently review any semantic change. Execute the named canonical native regression command at the clean test-baseline commit; retain exact invocation, executable output and discovered/executed counts. Admit the same semantic RED through fanout.py only after that evidence exists.",
+  "no_product_edits": true,
+  "no_builds": true,
+  "supersedes_receipt_sha256": "8b6b0a6e6efbd017bf3a91290282971e136c7bf5b04b0034adb43c08837f4a8b",
+  "supersedes_baseline_source_sha256": "bcd9eaf90cbd85d2a35ca0d1241812b1d9e172bd2b6ce216c1a4b0be423918a2",
+  "amendment_review": "Read exact added Work subject/owner/deadline/issue, Employment list concrete row, selected Organization unit/manager/person link, Person-to-Employment and Employment-to-Approval assertions. All strengthen existing first test; no API/fixture/other test change. Removing only inspected additions reconstructs prior approved file hash exactly."
+}
