@@ -1,0 +1,266 @@
+//! Unit fixtures only. This module is never a product data source.
+use super::{EmploymentView, PersonView, ScreenSection, ShippingScreens, UiScreen, render_screens};
+
+const PERSON: &str = "00000000-0000-0000-0000-000000000011";
+const OTHER: &str = "00000000-0000-0000-0000-000000000012";
+const EMPLOYMENT: &str = "00000000-0000-0000-0000-000000000021";
+
+fn person(id: &str) -> PersonView {
+    PersonView {
+        id: id.to_owned(),
+        display_name: "김하늘".to_owned(),
+        legal_name: "김하늘 <검토>".to_owned(),
+        version: "3".to_owned(),
+    }
+}
+
+fn employment() -> EmploymentView {
+    EmploymentView {
+        id: EMPLOYMENT.to_owned(),
+        version: "7".to_owned(),
+        appointed_on: "2026-09-01T00:00:00+09:00".to_owned(),
+        person_id: PERSON.to_owned(),
+        org_unit_id: String::new(),
+        job_position_id: String::new(),
+    }
+}
+
+fn section<'a>(html: &'a str, name: &str) -> &'a str {
+    let marker = format!("data-section=\"{name}\"");
+    let start = html
+        .find(&marker)
+        .expect("independent labelled subsection must exist");
+    let tail = &html[start..];
+    let end = tail.find("</section>").expect("subsection must close");
+    &tail[..end]
+}
+
+// Find the real native disclosure, including nested disclosures, without a DOM dependency.
+fn inspector<'a>(html: &'a str, id: &str) -> &'a str {
+    let marker = format!("id=\"{id}\"");
+    let at = html.find(&marker).expect("record inspector id");
+    let start = html[..at]
+        .rfind("<details")
+        .expect("record is a native disclosure");
+    let mut tail = &html[start + "<details".len()..];
+    let mut depth = 1;
+    loop {
+        let close = tail.find("</details>").expect("balanced disclosure");
+        if let Some(open) = tail.find("<details") {
+            if open < close {
+                depth += 1;
+                tail = &tail[open + "<details".len()..];
+                continue;
+            }
+        }
+        depth -= 1;
+        let end = html.len() - tail.len() + close + "</details>".len();
+        if depth == 0 {
+            return &html[start..end];
+        }
+        tail = &tail[close + "</details>".len()..];
+    }
+}
+
+#[test]
+fn people_directory_preserves_independent_failure_next_to_authorized_rows() {
+    let html = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Rows(vec![person(PERSON)]),
+            employments: ScreenSection::Failure,
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert!(
+        html.contains("김하늘"),
+        "healthy Person projection must survive Employment failure"
+    );
+    let failed = section(&html, "employments");
+    assert!(
+        failed.contains("고용 기록을 불러오지 못했습니다"),
+        "Employment failure must remain visible even when Person rows exist: {html}"
+    );
+    assert!(
+        failed.contains("href=\"/hr\"") && failed.contains("다시 불러오기"),
+        "failed section needs a normal route to retry without a fake action: {html}"
+    );
+    assert!(
+        !html.contains("data-state=\"empty\""),
+        "failure is not authorized emptiness"
+    );
+    assert!(
+        !html.contains("/pkg/"),
+        "static Person/Employment collections need no island bundle"
+    );
+}
+
+#[test]
+fn people_directory_has_keyboard_inspectors_and_exact_identity_relationships() {
+    let html = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Rows(vec![person(PERSON), person(OTHER)]),
+            employments: ScreenSection::Rows(vec![employment()]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert!(
+        html.contains("<details") && html.contains("<summary"),
+        "native keyboard disclosures must open actual record inspectors: {html}"
+    );
+    for id in [PERSON, OTHER] {
+        assert!(
+            html.contains(&format!("id=\"person-{id}\"")),
+            "namesakes need separate stable record identities"
+        );
+        assert!(
+            html.contains(&format!("href=\"/api/v1/persons/{id}\"")),
+            "retain current published Person source link"
+        );
+    }
+    assert!(
+        html.contains(&format!("id=\"employment-{EMPLOYMENT}\"")),
+        "Employment has its own inspector identity"
+    );
+    assert!(
+        html.contains(&format!("href=\"#person-{PERSON}\"")),
+        "Employment relation must follow actual person_id"
+    );
+    let related = format!("href=\"#employment-{EMPLOYMENT}\"");
+    assert!(
+        inspector(&html, &format!("person-{PERSON}")).contains(&related),
+        "actual Person owns the Employment relationship"
+    );
+    assert!(
+        !inspector(&html, &format!("person-{OTHER}")).contains(&related),
+        "a namesake must not acquire another Person's Employment"
+    );
+    let detail = inspector(&html, &format!("employment-{EMPLOYMENT}"));
+    assert!(detail.contains(&format!("href=\"#person-{PERSON}\"")));
+    assert!(!detail.contains(&format!("href=\"#person-{OTHER}\"")));
+
+    assert!(
+        html.contains("data-version=\"7\"")
+            && html.contains("data-appointed-on=\"2026-09-01T00:00:00+09:00\""),
+        "presentation cannot replace original revision or instant"
+    );
+    assert!(
+        !html.contains("<검토>"),
+        "authorized names must remain escaped text"
+    );
+    assert!(
+        !html.contains("/pkg/") && !html.contains("href=\"#\""),
+        "directory controls must work without hydration or dummy actions"
+    );
+}
+
+#[test]
+fn people_directory_omits_denied_sections_without_denied_counts_or_actions() {
+    let html = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Omitted,
+            employments: ScreenSection::Rows(vec![employment()]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert!(
+        !html.contains("data-section=\"people\""),
+        "denial is not an empty directory"
+    );
+    assert!(
+        !html.contains(&format!("href=\"#person-{PERSON}\"")),
+        "no link to an undisclosed Person inspector"
+    );
+    assert!(
+        !html.contains("김하늘") && !html.contains("구성원 등록"),
+        "read listing never implies identity or mutation authority"
+    );
+    assert!(
+        html.contains(&format!("data-employment-id=\"{EMPLOYMENT}\"")),
+        "authorized Employment remains available"
+    );
+    assert!(!html.contains("salary") && !html.contains("phone") && !html.contains("bank_account"));
+    assert!(!html.contains("사람 목록을 불러오지 못했습니다") && !html.contains("다시 불러오기"));
+    let other = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Rows(vec![person(PERSON)]),
+            employments: ScreenSection::Omitted,
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert!(other.contains("김하늘"));
+    assert!(!other.contains("data-section=\"employments\""));
+    assert!(!other.contains("고용 기록을 불러오지 못했습니다") && !other.contains("다시 불러오기"));
+}
+
+#[test]
+fn people_directory_keeps_authorized_empty_states_separate() {
+    let html = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Empty,
+            employments: ScreenSection::Empty,
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert!(
+        html.contains("표시할 사람이 없습니다"),
+        "preserve current authorized Person empty copy"
+    );
+    assert!(
+        html.contains("표시할 고용 기록이 없습니다"),
+        "Employment emptiness must be its own accurate state: {html}"
+    );
+    assert!(!html.contains("href=\"#\"") && !html.contains("생성 완료") && !html.contains("/pkg/"));
+}
+
+#[test]
+fn employment_rows_preserve_people_failure_with_its_own_recovery() {
+    let html = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Failure,
+            employments: ScreenSection::Rows(vec![employment()]),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert!(html.contains(&format!("data-employment-id=\"{EMPLOYMENT}\"")));
+    let failed = section(&html, "people");
+    assert!(failed.contains("사람 목록을 불러오지 못했습니다"));
+    assert!(
+        failed.contains("href=\"/hr\"") && failed.contains("다시 불러오기"),
+        "recovery belongs to failed subsection, not only global navigation"
+    );
+    assert!(!failed.contains("data-state=\"empty\""));
+    assert!(!html.contains(&format!("href=\"#person-{PERSON}\"")));
+}
+
+#[test]
+fn empty_rows_normalize_to_authorized_empty_without_dummy_records() {
+    let explicit = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Empty,
+            employments: ScreenSection::Empty,
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    let rows = render_screens(
+        &ShippingScreens {
+            people: ScreenSection::Rows(Vec::new()),
+            employments: ScreenSection::Rows(Vec::new()),
+            ..ShippingScreens::default()
+        },
+        UiScreen::Hr,
+    );
+    assert_eq!(
+        rows, explicit,
+        "public Rows(empty) must keep authorized-empty semantics"
+    );
+    assert!(section(&rows, "people").contains("표시할 사람이 없습니다"));
+    assert!(section(&rows, "employments").contains("표시할 고용 기록이 없습니다"));
+    assert!(!rows.contains("data-person-id") && !rows.contains("data-employment-id"));
+}

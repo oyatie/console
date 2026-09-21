@@ -1791,3 +1791,11 @@ mod private_document_tests {
         assert!(!frame_policy_is_closed(&headers));
     }
 }
+
+#[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod people_tests;
+
+#[cfg(all(test, feature = "ssr"))]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod workspace_tests;
