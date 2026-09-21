@@ -1,0 +1,12 @@
+[2026-09-21T16:32:40.423-04:00] Build ID: c594f2ea-12b1-42c5-a148-b18bec2e77ae
+[2026-09-21T16:32:40.424-04:00] File changed: root//backend/ci/gates/writer-ownership/src/lib.rs
+[2026-09-21T16:32:41.149-04:00] Cache hits: 0%
+[2026-09-21T16:32:41.149-04:00] Commands: 2 (cached: 0, remote: 0, local: 2)
+[2026-09-21T16:32:41.149-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+
+running 1 test
+test linked_source_paths_keep_every_crate_owner ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 0.02s
+

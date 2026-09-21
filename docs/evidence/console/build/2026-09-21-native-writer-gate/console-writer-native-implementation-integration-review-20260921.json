@@ -1,0 +1,24 @@
+{
+  "reviewer": "/root/integration_tests",
+  "kind": "independent_exact_native_gate_prerequisite_implementation_review",
+  "manifest": "/private/tmp/console-writer-native-source-manifest-20260921.json",
+  "manifest_sha256": "c1a95b631e79b0d39d0fe6ff1278a62aaa044e08933be8763db44c905f734e9b",
+  "base": "f1895e62eb0af419f344440da3d526633ae48d00",
+  "verdict": "APPROVED exact four-file source implementation; native execution pending",
+  "findings": [],
+  "checks": [
+    "All4current source hashes match immutable manifest.",
+    "main.rs is byte-identical to reviewed5a8b6234 successor. Only runtime workspace-root lookup changes; scanner/report/refusal logic unchanged.",
+    "Generator broadens exact existing layer-boundary ratchet case to writer ratchet and adds only exact ops topology mapping for writer.",
+    "Generated writer integration external mapping parses to exactly existing layer-boundary resources plus one topology export:354entries. Other targets unchanged by diff.",
+    "ops/BUCK adds one export only; source topology script is unmodified.",
+    "Writer lib scanner/rules and existing gate_detects_violation.rs are byte-identical to admitted base; no test removal, parser weakening, exclusion or ratchet change.",
+    "Inspected admission log: every named probe red on tree. Parent reports same resource probeGREEN1; reviewer has not executed tests."
+  ],
+  "tests_executed_by_reviewer": 0,
+  "remaining_holds": [
+    "Same native gate must GREEN with positive actual checkout source census.",
+    "Retained native unit and injected-violation integration suites must execute unchanged.",
+    "Generator full suite and generated graph consistency verification required; source approval alone is not qualification."
+  ]
+}

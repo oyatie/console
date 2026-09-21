@@ -1,0 +1,60 @@
+[
+  {
+    "owner": "/root",
+    "base": "f1895e62eb0af419f344440da3d526633ae48d00",
+    "immutable_target": "Native writer gate examines actual workspace and all retained test fixtures",
+    "allow": [
+      "backend/ci/gates/writer-ownership/src/main.rs",
+      "backend/ci/gates/writer-ownership/BUCK",
+      "tools/buck/gen_first_party.py",
+      "ops/BUCK"
+    ],
+    "mechanical_guide": "Reviewed main5a8b6234 and additive testf7d7ab09. Reuse runtime current_dir like other gates; extend layer-boundary test resource mapping to writer+one topology export. Preserve all Rust tests/exclusions/ratchets/SQL/CI. Serial generation; only writer BUCK changes.",
+    "reviewers": [
+      "/root/integration_tests"
+    ],
+    "pre_mortem": "Wrong tree falsely passes; mapped fixture incomplete; require positive actual census and full injected-violation suite",
+    "blast_radius": "Writer verification tool runtime root and test inputs; no product writes",
+    "rollback": "Revert bounded source inputs/root selection, retain oracle and evidence",
+    "stop_conditions": [
+      "Unexpected generated files",
+      "Changed ratchets/tests",
+      "Infrastructure failure masquerading as semantic RED"
+    ],
+    "remaining_holds": [
+      "Actual native test suite and measured source census",
+      "Full MVP/release qualification"
+    ],
+    "lane": "writer-runtime-root-20260921",
+    "probe": "env PATH=/Users/jasonlee/.cargo/bin:/var/folders/66/4qlvtbgn6r1gl9bvfttp6sww0000gn/T/console-dotslash/bin:/opt/homebrew/bin:/usr/bin:/bin sh -c 'cd backend && ../tools/buck2 run //backend/ci/gates/writer-ownership:console-gate-writer-ownership' > /private/tmp/console-writer-runtime-admission-probe-20260921.log 2>&1"
+  },
+  {
+    "owner": "/root",
+    "base": "f1895e62eb0af419f344440da3d526633ae48d00",
+    "immutable_target": "Native writer gate examines actual workspace and all retained test fixtures",
+    "allow": [
+      "backend/ci/gates/writer-ownership/src/main.rs",
+      "backend/ci/gates/writer-ownership/BUCK",
+      "tools/buck/gen_first_party.py",
+      "ops/BUCK"
+    ],
+    "mechanical_guide": "Reviewed main5a8b6234 and additive testf7d7ab09. Reuse runtime current_dir like other gates; extend layer-boundary test resource mapping to writer+one topology export. Preserve all Rust tests/exclusions/ratchets/SQL/CI. Serial generation; only writer BUCK changes.",
+    "reviewers": [
+      "/root/integration_tests"
+    ],
+    "pre_mortem": "Wrong tree falsely passes; mapped fixture incomplete; require positive actual census and full injected-violation suite",
+    "blast_radius": "Writer verification tool runtime root and test inputs; no product writes",
+    "rollback": "Revert bounded source inputs/root selection, retain oracle and evidence",
+    "stop_conditions": [
+      "Unexpected generated files",
+      "Changed ratchets/tests",
+      "Infrastructure failure masquerading as semantic RED"
+    ],
+    "remaining_holds": [
+      "Actual native test suite and measured source census",
+      "Full MVP/release qualification"
+    ],
+    "lane": "writer-native-resources-20260921",
+    "probe": "python3 tools/buck/test_gen_first_party.py FirstPartyBuckGeneratorTests.test_writer_ratchet_receives_workspace_and_topology_resources > /private/tmp/console-writer-resources-admission-probe-20260921.log 2>&1"
+  }
+]

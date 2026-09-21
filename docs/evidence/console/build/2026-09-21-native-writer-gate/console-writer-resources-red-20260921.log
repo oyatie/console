@@ -1,0 +1,19 @@
+F
+======================================================================
+FAIL: test_writer_ratchet_receives_workspace_and_topology_resources (__main__.FirstPartyBuckGeneratorTests.test_writer_ratchet_receives_workspace_and_topology_resources)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/console-mvp-dev-integrate-20260921/tools/buck/test_gen_first_party.py", line 34, in test_writer_ratchet_receives_workspace_and_topology_resources
+    self.assertEqual(expected, GENERATOR.integration_external_resources(
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        "console-gate-writer-ownership", "tests/gate_detects_violation.rs", ""
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ))
+    ^^
+AssertionError: {'//backend:Cargo.toml': 'backend/Cargo.to[34545 chars].sh'} != {}
+Diff is 35659 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.065s
+
+FAILED (failures=1)

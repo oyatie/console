@@ -1,0 +1,27 @@
+[2026-09-21T16:31:03.581-04:00] Build ID: 6ab34c2e-2720-4bba-a844-b34edec42fff
+[2026-09-21T16:31:03.581-04:00] File changed: root//rustfmt.toml
+[2026-09-21T16:31:03.581-04:00] File changed: root//backend/ci/gates/writer-ownership/tests/gate_detects_violation.rs
+[2026-09-21T16:31:04.446-04:00] Cache hits: 0%
+[2026-09-21T16:31:04.446-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T16:31:04.446-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED - starting your binary
+
+running 1 test
+test linked_source_paths_keep_every_crate_owner ... FAILED
+
+failures:
+
+---- linked_source_paths_keep_every_crate_owner stdout ----
+
+thread 'linked_source_paths_keep_every_crate_owner' (79967864) panicked at backend/ci/gates/writer-ownership/backend/ci/gates/writer-ownership/tests/gate_detects_violation.rs:3071:5:
+assertion `left == right` failed: each logical source path must be examined
+  left: 3
+ right: 6
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    linked_source_paths_keep_every_crate_owner
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 57 filtered out; finished in 0.04s
+

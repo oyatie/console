@@ -1,0 +1,10 @@
+{
+  "base": "f1895e62eb0af419f344440da3d526633ae48d00",
+  "root": "/private/tmp/console-mvp-dev-integrate-20260921",
+  "files": {
+    "backend/ci/gates/writer-ownership/BUCK": "cfd52712390d04577d62a2b55257fdf2789d7836e4327ae5a680deae29a36e7a",
+    "backend/ci/gates/writer-ownership/src/main.rs": "5a8b6234a1932537e4acb92f97b7c18803c9f21cdc4606c75681531528e24409",
+    "ops/BUCK": "ec8db1169f588d01e86992898bd7f8cc2609e6471709ffe75eb090e9ff722749",
+    "tools/buck/gen_first_party.py": "d345b7b2ef87c63c83b494d5bf7ccfde4c9f399dcf5ed5eab20a5e76b2d74569"
+  }
+}
