@@ -1701,8 +1701,9 @@ def integration_resource_config(name, test_file):
 
 def integration_external_resources(name, test_file, contents):
     external = dict(integration_resource_config(name, test_file)["external"])
-    if (name, test_file) == (
-        "console-gate-layer-boundary", "tests/gate_detects_violation.rs"
+    if (name, test_file) in (
+        ("console-gate-layer-boundary", "tests/gate_detects_violation.rs"),
+        ("console-gate-writer-ownership", "tests/gate_detects_violation.rs"),
     ):
         # This ratchet reads the real workspace through cargo metadata --no-deps.
         # Buck's CARGO_MANIFEST_DIR is inside mapped_srcs, not the checkout.
@@ -1714,6 +1715,8 @@ def integration_external_resources(name, test_file, contents):
             package = os.path.relpath(directory, REPO).replace(os.sep, "/")
             external["//{}:Cargo.toml".format(package)] = package + "/Cargo.toml"
             external[source_tree_label(package)] = package + "/src"
+        if name == "console-gate-writer-ownership":
+            external["//ops:postgres-reconcile-topology.sh"] = "ops/postgres-reconcile-topology.sh"
     if "#[sqlx::test" in contents:
         external.update(MIGRATION_TREE)
     return external

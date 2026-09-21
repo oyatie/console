@@ -1,10 +1,15 @@
 //! Runs the writer-ownership gate over the backend crate tree.
 
-use std::path::PathBuf;
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../..");
+    let root = match std::env::current_dir() {
+        Ok(root) => root,
+        Err(error) => {
+            eprintln!("writer-ownership gate could not determine workspace directory: {error}");
+            return ExitCode::FAILURE;
+        }
+    };
     let report = match console_gate_writer_ownership::scan(&root) {
         Ok(report) => report,
         Err(error) => {

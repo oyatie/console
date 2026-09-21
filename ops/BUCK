@@ -1,5 +1,10 @@
 # Exact production SQL inputs used by Account custody tests.
 export_file(
+    name = "postgres-reconcile-topology.sh",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "postgres-finalize-account-custody.sql",
     visibility = ["PUBLIC"],
 )
