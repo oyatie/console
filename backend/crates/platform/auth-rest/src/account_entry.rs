@@ -34,7 +34,10 @@ pub enum NativeAccountEntry {
         can_logout: bool,
         company_setup: NativeCompanySetupEligibility,
     },
-    CompanySetup(NativeCompanySetupEligibility),
+    CompanySetup {
+        eligibility: NativeCompanySetupEligibility,
+        account_id: Uuid,
+    },
 }
 
 #[derive(Clone, Copy)]
@@ -291,7 +294,10 @@ async fn native_entry(
             };
         ensure_account_session_fresh_in_tx(&mut tx, &session).await?;
         if matches!(destination, Destination::CompanySetup) {
-            return Ok(Some(NativeAccountEntry::CompanySetup(company_setup)));
+            return Ok(Some(NativeAccountEntry::CompanySetup {
+                eligibility: company_setup,
+                account_id: projection.account_id,
+            }));
         }
         Ok(Some(NativeAccountEntry::Active {
             context,

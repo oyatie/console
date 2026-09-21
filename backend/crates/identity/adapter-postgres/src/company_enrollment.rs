@@ -3,10 +3,11 @@ use super::PgOrgStore;
 use console_identity_application::{
     CompanyEnrollmentV1,
     company_enrollment::{
-        CompanyEnrollmentError as Error, CompanyEnrollmentProjection,
+        CompanyEnrollmentError as Error, CompanyEnrollmentProjection, CompanyEnrollmentReceipt,
         CompanyEnrollmentStatus as Status, CompanyEnrollmentStore,
     },
 };
+use console_kernel_core::TraceContext;
 use console_platform_auth::account::{
     AccountEnrollmentCredentials, AccountOperationError, LockedAccountEnrollment,
 };
@@ -15,6 +16,84 @@ use uuid::Uuid;
 
 impl CompanyEnrollmentStore for PgOrgStore {
     type Credentials = AccountEnrollmentCredentials;
+
+    async fn execute(
+        &self,
+        credentials: &Self::Credentials,
+        input: &CompanyEnrollmentV1,
+        trace: &TraceContext,
+    ) -> Result<CompanyEnrollmentReceipt, Error> {
+        let config = self.native_read_config().map_err(|_| Error::Unavailable)?;
+        let mut tx = self
+            .native_read_transaction()
+            .await
+            .map_err(|_| Error::Unavailable)?;
+        let account = credentials
+            .account_id_in_tx(&mut tx, &config.verifier, config.absolute_ttl)
+            .await
+            .map_err(auth_error)?;
+        let bytes = input.encode(account).map_err(|_| Error::InvalidInput)?;
+        let command = input.command_id();
+        let mut guard = credentials
+            .lock_submit_in_tx(
+                &mut tx,
+                &config.verifier,
+                config.absolute_ttl,
+                command,
+                &bytes,
+            )
+            .await
+            .map_err(auth_error)?;
+        // Hash the exact actor-bound bytes supplied to this operation. A prior
+        // prepare is not authority to silently execute a different request.
+        let digest: Vec<u8> = sqlx::query_scalar("SELECT pg_catalog.sha256($1::bytea)")
+            .bind(&bytes)
+            .fetch_one(guard.connection())
+            .await
+            .map_err(sql_error)?;
+        if guard.planned_input_digest() != Some(digest.as_slice()) {
+            return Err(Error::Conflict);
+        }
+        let rows = sqlx::query(
+            "SELECT receipt_id,org_id,group_id,administrative_account_id,replayed \
+             FROM public.company_enrollment_execute_v1($1,$2,$3,$4,$5,$6) LIMIT 2",
+        )
+        .bind(guard.account_id())
+        .bind(guard.session_id())
+        .bind(command)
+        .bind(digest)
+        .bind(trace.trace_id())
+        .bind(trace.span_id())
+        .fetch_all(guard.connection())
+        .await
+        .map_err(sql_error)?;
+        let [row] = rows.as_slice() else {
+            return Err(Error::Unavailable);
+        };
+        let receipt = CompanyEnrollmentReceipt {
+            receipt_id: row.try_get("receipt_id").map_err(sql_error)?,
+            org_id: row.try_get("org_id").map_err(sql_error)?,
+            group_id: row.try_get("group_id").map_err(sql_error)?,
+            administrative_account_id: row
+                .try_get("administrative_account_id")
+                .map_err(sql_error)?,
+            replayed: row.try_get("replayed").map_err(sql_error)?,
+        };
+        if receipt.administrative_account_id != input.administrative_account_id()
+            || read_status(&mut guard, command).await?
+                != (Status::Committed {
+                    receipt_id: receipt.receipt_id,
+                    org_id: receipt.org_id,
+                    group_id: receipt.group_id,
+                    administrative_account_id: receipt.administrative_account_id,
+                })
+        {
+            return Err(Error::Unavailable);
+        }
+        guard.finish().await.map_err(auth_error)?;
+        commit(tx).await?;
+        Ok(receipt)
+    }
 
     async fn prepare(
         &self,
@@ -225,10 +304,8 @@ fn sql_error(error: sqlx::Error) -> Error {
         (Some("P0001"), "account.terms_acceptance_required" | "account.terms_changed") => {
             Error::Forbidden
         }
-        (
-            Some("P0001"),
-            "company_enrollment.forbidden" | "company_enrollment.group_unavailable",
-        ) => Error::Forbidden,
+        (Some("P0001"), "company_enrollment.forbidden") => Error::Forbidden,
+        (Some("P0001"), "company_enrollment.group_unavailable") => Error::GroupUnavailable,
         (Some("P0001"), "company_enrollment.conflict") => Error::Conflict,
         (Some("P0001"), "company_enrollment.capacity") => Error::Capacity,
         _ => Error::Unavailable,

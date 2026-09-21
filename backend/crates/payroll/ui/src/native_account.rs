@@ -31,7 +31,9 @@ pub enum Page {
         can_logout: bool,
         company_setup: CompanySetupEligibility,
     },
-    CompanySetup,
+    CompanySetup {
+        account_id: String,
+    },
     Refused,
     Unavailable,
 }
@@ -161,19 +163,32 @@ fn body(page: Page) -> AnyView {
                 </section>
             }.into_any()
         },
-        Page::CompanySetup => view! {
+        Page::CompanySetup { account_id } => view! {
             <section class="entry-card" data-company-setup="" aria-labelledby="company-setup-title">
                 <p class="eyebrow">"내 CONSOLE"</p>
                 <h1 id="company-setup-title">"회사 업무 공간 만들기"</h1>
                 <p class="lead">"기존 회사가 사용할 콘솔 업무 공간을 등록합니다."</p>
-                <fieldset>
-                    <legend>"회사 업무 공간 정보"</legend>
-                    <label for="company-name">"회사 이름"</label>
-                    <input id="company-name" name="name" type="text" autocomplete="organization"/>
-                    <label for="company-slug">"업무 공간 식별자"</label>
-                    <input id="company-slug" name="slug" type="text" autocomplete="off"/>
-                </fieldset>
-                <p class="supporting">"관리할 계정: 내 계정"</p>
+                <form data-company-enrollment="" data-account-id=account_id>
+                    <fieldset>
+                        <legend>"회사 업무 공간 정보"</legend>
+                        <label for="company-name">"회사 이름"</label>
+                        <input id="company-name" name="name" type="text" autocomplete="organization" required maxlength="256" aria-describedby="company-name-help"/>
+                        <p id="company-name-help" class="supporting">"업무에서 사용하는 회사 이름을 입력하세요."</p>
+                        <label for="company-slug">"업무 공간 식별자"</label>
+                        <input id="company-slug" name="slug" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" required maxlength="63" pattern=r"[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?" aria-describedby="company-slug-help"/>
+                        <p id="company-slug-help" class="supporting">"영문 소문자와 숫자, 하이픈(-)으로 입력하세요. 처음과 끝에는 하이픈을 사용할 수 없습니다."</p>
+                    </fieldset>
+                    <section class="workspace-state" aria-labelledby="company-recipient-title">
+                        <h2 id="company-recipient-title">"관리할 계정"</h2>
+                        <p>"내 계정"</p>
+                        <p>"이 계정에 이 회사의 정보 열람과 제한된 권한 관리 기능을 연결합니다. 급여·인사 권한은 포함되지 않습니다."</p>
+                    </section>
+                    <button class="button primary wide company-submit" type="submit" disabled>"회사 업무 공간 만들기"</button>
+                    <p id="company-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
+                    <p id="company-error" class="error" role="alert" hidden></p>
+                    <a id="company-result" class="text-link" hidden>"요청 결과 확인"</a>
+                    <noscript><p class="notice">"업무 공간을 등록하려면 이 브라우저에서 JavaScript를 허용해 주세요."</p></noscript>
+                </form>
                 <a href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
@@ -201,7 +216,7 @@ pub fn render(page: Page) -> String {
         Page::SignIn => "로그인 · Console",
         Page::Register { .. } => "계정 만들기 · Console",
         Page::Account { .. } => "내 계정 · Console",
-        Page::CompanySetup => "회사 업무 공간 만들기 · Console",
+        Page::CompanySetup { .. } => "회사 업무 공간 만들기 · Console",
         Page::Refused => "요청 확인 · Console",
         Page::Unavailable => "다시 시도 · Console",
     };

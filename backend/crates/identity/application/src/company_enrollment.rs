@@ -1,6 +1,6 @@
 //! Durable Company intake through the owning transaction, before Company birth.
 use crate::CompanyEnrollmentV1;
-use console_kernel_core::OrgId;
+use console_kernel_core::{OrgId, TraceContext};
 use std::future::Future;
 use uuid::Uuid;
 
@@ -12,6 +12,7 @@ pub enum CompanyEnrollmentError {
     Forbidden,
     Conflict,
     Capacity,
+    GroupUnavailable,
     Unavailable,
     /// Commit was not confirmed. Reconcile the same command before retrying.
     Unconfirmed,
@@ -29,6 +30,16 @@ pub enum CompanyEnrollmentStatus {
         group_id: Uuid,
         administrative_account_id: Uuid,
     },
+}
+
+/// Confirmed durable result. The owning adapter releases it only after commit.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CompanyEnrollmentReceipt {
+    pub receipt_id: Uuid,
+    pub org_id: Uuid,
+    pub group_id: Uuid,
+    pub administrative_account_id: Uuid,
+    pub replayed: bool,
 }
 
 /// Untrusted persistence projection; construction grants no authority.
@@ -121,6 +132,30 @@ pub trait CompanyEnrollmentStore {
         credentials: &Self::Credentials,
         command: Uuid,
     ) -> impl Future<Output = Result<CompanyEnrollmentStatus, CompanyEnrollmentError>> + Send;
+
+    fn execute(
+        &self,
+        credentials: &Self::Credentials,
+        input: &CompanyEnrollmentV1,
+        trace: &TraceContext,
+    ) -> impl Future<Output = Result<CompanyEnrollmentReceipt, CompanyEnrollmentError>> + Send;
+}
+
+/// Keep intake durable before the effect transaction. Recovery always uses the
+/// original command and bytes, including after an unconfirmed effect commit.
+pub async fn enroll_company<S: CompanyEnrollmentStore>(
+    store: &S,
+    credentials: &S::Credentials,
+    input: &[u8],
+    trace: &TraceContext,
+) -> Result<CompanyEnrollmentReceipt, CompanyEnrollmentError> {
+    let input = CompanyEnrollmentV1::from_json_slice(input)
+        .map_err(|_| CompanyEnrollmentError::InvalidInput)?;
+    if input.group_id().is_some() {
+        return Err(CompanyEnrollmentError::GroupUnavailable);
+    }
+    store.prepare(credentials, &input).await?;
+    store.execute(credentials, &input, trace).await
 }
 
 pub async fn prepare_company_enrollment<S: CompanyEnrollmentStore>(

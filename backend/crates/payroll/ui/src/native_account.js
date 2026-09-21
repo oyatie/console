@@ -226,3 +226,94 @@ if (form) {
   }
   void initialize().catch(() => { blocked = true; problem('브라우저의 계정 기능을 확인할 수 없습니다. 다른 최신 브라우저에서 다시 시도해 주세요.'); });
 }
+
+const companyForm = document.querySelector('form[data-company-enrollment]');
+if (companyForm) {
+  const nameInput = companyForm.elements.namedItem('name');
+  const slugInput = companyForm.elements.namedItem('slug');
+  const submit = companyForm.querySelector('button[type=submit]');
+  const status = document.getElementById('company-status');
+  const error = document.getElementById('company-error');
+  const resultLink = document.getElementById('company-result');
+  const account = companyForm.dataset.accountId;
+  const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) && value !== '00000000-0000-0000-0000-000000000000';
+  let pending = false;
+  let dispatched = false;
+  const problem = text => { error.hidden = false; error.textContent = text; };
+  const validateName = () => {
+    const value = nameInput.value;
+    nameInput.setCustomValidity(new TextEncoder().encode(value).length > 256 || /^\p{White_Space}*$/u.test(value) || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
+      ? '회사 이름을 확인해 주세요. 공백만 입력하거나 제어 문자를 사용할 수 없으며, 한글 기준 약 85자까지 입력할 수 있습니다.' : '');
+  };
+  nameInput.addEventListener('input', validateName);
+  if (window.isSecureContext && typeof crypto.randomUUID === 'function' && uuid(account)) {
+    submit.disabled = false;
+  } else {
+    problem('이 브라우저에서는 등록 요청을 준비할 수 없습니다. 보안 연결에서 다시 열어 주세요.');
+  }
+  companyForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (pending || dispatched) return;
+    validateName();
+    if (!companyForm.reportValidity()) return;
+    pending = true;
+    submit.disabled = true;
+    error.hidden = true;
+    error.textContent = '';
+    nameInput.readOnly = true;
+    slugInput.readOnly = true;
+    const command = crypto.randomUUID();
+    const resultPath = `/account/companies/requests/${command}`;
+    // The recovery anchor is application-owned and exists before dispatch.
+    // Once dispatched, reload also reopens this original request.
+    resultLink.href = resultPath;
+    const body = {command_id:command, group_id:null, administrative_account_id:account, name:nameInput.value, slug:slugInput.value};
+    status.textContent = '등록 요청을 준비하고 있습니다.';
+    try {
+      const csrfResponse = await fetch('/api/v2/auth/csrf', {
+        headers:{Accept:'application/json', 'X-Console-CSRF':'fetch'},
+        credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
+      });
+      if (!csrfResponse.ok) throw new Error('csrf_unavailable');
+      const csrf = await csrfResponse.json();
+      if (typeof csrf.csrf_proof !== 'string' || !csrf.csrf_proof) throw new Error('csrf_unavailable');
+      window.history.replaceState(null, '', resultPath);
+      dispatched = true;
+      status.textContent = '회사 업무 공간을 만들고 있습니다.';
+      const response = await fetch('/api/v2/companies/enroll', {
+        method:'POST', headers:{Accept:'application/json', 'Content-Type':'application/json', 'X-Console-CSRF':csrf.csrf_proof},
+        body:JSON.stringify(body), credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
+      });
+      if (!response.ok) {
+        // Intake can already be durable. Keep the original request regardless
+        // of the HTTP failure and let its current owner explain/recover it.
+        throw new Error('enrollment_unconfirmed');
+      }
+      const receipt = await response.json();
+      if (![200,201].includes(response.status) || receipt.outcome !== 'COMMITTED' || receipt.original_command_id !== command ||
+          receipt.administrative_account_id !== account || receipt.result_path !== resultPath ||
+          typeof receipt.replayed !== 'boolean' || ![receipt.org_id,receipt.group_id,receipt.receipt_id].every(uuid)) {
+        throw new Error('enrollment_unconfirmed');
+      }
+      status.textContent = '생성 완료. 요청 결과로 이동합니다.';
+      window.location.assign(resultPath);
+    } catch {
+      if (dispatched) {
+        status.textContent = '생성 결과를 확인할 수 없습니다. 원래 요청의 결과를 확인해 주세요.';
+        resultLink.hidden = false;
+        status.focus();
+      } else {
+        status.textContent = '';
+        problem('등록 요청을 준비하지 못했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.');
+      }
+    } finally {
+      pending = false;
+      if (!dispatched) {
+        submit.disabled = false;
+        nameInput.readOnly = false;
+        slugInput.readOnly = false;
+      }
+    }
+  });
+  window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+}

@@ -1740,7 +1740,12 @@ mod private_document_tests {
                 },
                 StatusCode::SERVICE_UNAVAILABLE,
             ),
-            (|| Page::CompanySetup, StatusCode::OK),
+            (
+                || Page::CompanySetup {
+                    account_id: "11111111-1111-4111-8111-111111111111".into(),
+                },
+                StatusCode::OK,
+            ),
             (|| Page::Refused, StatusCode::FORBIDDEN),
             (|| Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE),
         ];

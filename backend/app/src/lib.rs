@@ -3955,8 +3955,16 @@ async fn native_account_page(
             },
             StatusCode::OK,
         ),
-        Ok(NativeAccountEntry::CompanySetup(eligibility)) => match eligibility {
-            NativeCompanySetupEligibility::Eligible => document(Page::CompanySetup, StatusCode::OK),
+        Ok(NativeAccountEntry::CompanySetup {
+            eligibility,
+            account_id,
+        }) => match eligibility {
+            NativeCompanySetupEligibility::Eligible => document(
+                Page::CompanySetup {
+                    account_id: account_id.to_string(),
+                },
+                StatusCode::OK,
+            ),
             NativeCompanySetupEligibility::Ineligible => {
                 document(Page::Refused, StatusCode::NOT_FOUND)
             }
