@@ -88,8 +88,8 @@ bytes = "1.11.1"
 jsonwebtoken = { version = "11.0.0", default-features = false, features = ["rust_crypto", "use_pem"] }
 # apalis 1.0.0-rc.9, apalis-postgres 1.0.0-rc.8, apalis-sql 1.0.0-rc.9.
 # No stable apalis 1.0.0 release was available at verification time.
-apalis = { version = "=1.0.0-rc.10" }
-apalis-postgres = { version = "=1.0.0-rc.9" }
+apalis = { version = "=1.0.0-rc.9" }
+apalis-postgres = { version = "=1.0.0-rc.8" }
 apalis-sql = { version = "=1.0.0-rc.9" }
 # Version verified live against crates.io 2026-06-12: calamine 0.35.0
 calamine = { version = "0.35.0", features = ["dates"] }
@@ -148,7 +148,7 @@ lettre = { version = "0.11.22", default-features = false, features = [
 # for per-row DEK + nonce generation rather than adding the standalone `rand`
 # crate (rand 0.10 would pull a SECOND, incompatible `rand_core` major). No
 # async-imap / tokio-rustls is added in this batch (those land in B-mail-3).
-chacha20poly1305 = "0.11.0"
+chacha20poly1305 = "=0.10.1"
 secrecy = "0.10.3"
 zeroize = "1.9.0"
 base64 = "0.23.1"

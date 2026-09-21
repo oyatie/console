@@ -30,9 +30,9 @@ use sha2::{Digest, Sha256};
 use super::{AuthorizationRequest, CedarEvaluation, CompiledBundleCacheKey};
 use crate::{Feature, PermissionLevel, Role, permission_for};
 
-/// Cedar SDK version pinned in `authz/Cargo.toml` (`cedar-policy = "=4.11.2"`).
+/// Cedar SDK version pinned in `authz/Cargo.toml` (`cedar-policy = "=4.13.0"`).
 /// Recorded on the compiled-bundle cache key so a Cedar upgrade re-keys bundles.
-pub const CEDAR_SDK_VERSION: &str = "4.11.2";
+pub const CEDAR_SDK_VERSION: &str = "4.13.0";
 
 /// Cedar policy language version implemented by [`CEDAR_SDK_VERSION`].
 pub const CEDAR_LANGUAGE_VERSION: &str = "4.5";
