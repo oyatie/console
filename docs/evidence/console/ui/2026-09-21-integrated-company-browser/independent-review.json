@@ -1,0 +1,86 @@
+{
+  "verdict": "ACCEPT_INTEGRATED_COMPANY_CREATION_LEAF_AND_GENERATED_SUCCESSOR",
+  "source_base": "9f2fb85307b28911d4bdc17813496df5b195f26f",
+  "reviewer": "/root/company_scope_review",
+  "checks": {
+    "generated_files": 2,
+    "generated_changes": "Only canonical lock/input hashes and producer source snapshot hash; no output/toolchain/protocol changes.",
+    "independent_bundle_checker": "python3 tools/ui/wasm_bundle.py check exit0",
+    "native_build": "c4f2a421-eb07-45cb-b013-b8c8f5648ef5 BUILD SUCCEEDED;3 local actions; no compiler-action count inferred",
+    "js_wasm": "Byte-identical to immutable source_base",
+    "browser": "1passed/522filtered/0failed/0infra/0build10.42s;3actual DB checkpoints;9exact200documents;3expectedPOSTs;0unexpected mutations/externalrequests;allkeyboard+320px flags true;ownedbrowserPID1053exit/server/relayconfirmed",
+    "screenshots": "All5fresh images directly viewed; shared amber/neutral theme retained and long Company identifier wraps without clipping. No new visual regression observed in captured states.",
+    "generator_tests": "Original85-test invocation failed nonexistent-module import; preserved. Corrected actual modules84passed5.129s."
+  },
+  "limits": [
+    "Company creation/reopen prerequisite only; not completed policy administration, native business workflow, MVP or release qualification.",
+    "No creation form/policy page capture; screenshots do not establish human usability, screen-reader, desktop or200%zoom acceptance.",
+    "Current source identity established by immutable base plus exactly2working-tree generated changes; runtime is not asserted to validate future source."
+  ],
+  "inputs": [
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/run.log",
+      "sha256": "e0134aa8e5b4b55d604bf7f19d302f30672e4802010fb78068d1dd5f17670471"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/result.json",
+      "sha256": "1ac78afa560fdec9292fbc17edf12dbda505e2a7871cec84f51f82fd16a968a2"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/owner-receipt.json",
+      "sha256": "6b03c00a8b304db603b38d6b02825de858229fbc147f13e30a2339de47c9632c"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/stage-receipt.json",
+      "sha256": "714f7a08e43cdcf7e0d632c3b025c7876570f71cf2c4acba060d50b14703594a"
+    },
+    {
+      "path": "/private/tmp/console-company-integrated-verification-20260921/run-browser.sh",
+      "sha256": "a8376fd05277ae5ece0c4110d06e638cb3186df094e32290bdfcc785bae6baf9"
+    },
+    {
+      "path": "/private/tmp/console-company-integrated-verification-20260921/hydration-build.log",
+      "sha256": "f7648b13e7b5c8b5e685b66e862f278e8cfc5db559fc98cda27c13da57566f55"
+    },
+    {
+      "path": "/private/tmp/console-company-integrated-verification-20260921/hydration-source-snapshot.json",
+      "sha256": "0fca29c712999c68ca2b214a0901af721caeed39678299b229f1a3e6a39fa392"
+    },
+    {
+      "path": "/private/tmp/console-company-integrated-verification-20260921/generator-tests.log",
+      "sha256": "4164da638f98c38e6e6a195345ba385ef31ec6a62508ee41484a64da4ab78f28"
+    },
+    {
+      "path": "/private/tmp/console-company-integrated-verification-20260921/generator-tests-corrected.log",
+      "sha256": "327d483411a3646c5043b8a5c48025ce08ec82b13b84f00dbd2aee8ac6ba5894"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/04-company-created.png",
+      "sha256": "a03e7e9edd30c839e6458074b6e5f0dc655be463d73a1accbdcfdfe3f9319bfe"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/03-account-enrolled.png",
+      "sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/02-terms.png",
+      "sha256": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/01-public.png",
+      "sha256": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023"
+    },
+    {
+      "path": "/private/tmp/console-integrated-company-browser-20260921.rrRIPz/company/05-company-workspace.png",
+      "sha256": "08af352d2f61b70164c4d29ec6fba7b2e9b1e851551fe83b5b4c1f64de68e39a"
+    },
+    {
+      "path": "/private/tmp/console-mvp-dev-integrate-20260921/backend/crates/payroll/ui/bundle.lock.json",
+      "sha256": "4be57c0f6752bb5e16f473f813f74f4dec1a32a74c36e274a85d33faf5b622b7"
+    },
+    {
+      "path": "/private/tmp/console-mvp-dev-integrate-20260921/third-party/rust/hydrate/input-lock.json",
+      "sha256": "cc6da557f7ca1386e58667c024f3c0b490afc726f10ef568caca3ea42571e68f"
+    }
+  ]
+}
