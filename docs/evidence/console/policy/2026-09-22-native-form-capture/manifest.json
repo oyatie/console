@@ -1,0 +1,14 @@
+{
+  "base_sha": "d898cf6131eef3ea5f657d01fd1f663f1d9901d0",
+  "status": "private exact proposal; zero runtime tests",
+  "base_workflow_manifest_sha256": "a6c472c3f1673258c22b0ce3d2e37b9b6cf73afe3a58ab8235438bcbf47dd20e",
+  "new_capture_tests": 5,
+  "workflow_tests": 13,
+  "files": {
+    "API-with-actor.rs.txt": "67327be536501572c53b4147c498f29dbb126b149716ba8cf8f58a511be01cc0",
+    "DESIGN.md": "e82c309fece7cfc1aa4e7ea9106b3269ce576b2439f20f48e4875cea2fbf8a46",
+    "METHOD.rs.txt": "045e8a2e61b04ed43e3733296ffe2de27987411a602a1aed4562f154c7060b4b",
+    "form_credential_capture_addition.rs": "d4cd4d529c21f1094bb244189261a094b2a954c5e92948dc902767ded6c33f12",
+    "workflow_tests_with_actor.rs": "433909e53bcf80807b22df8199e615d62ecb7784a18ea735dc06f5db51d0f32e"
+  }
+}

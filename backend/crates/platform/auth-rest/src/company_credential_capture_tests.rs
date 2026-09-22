@@ -331,3 +331,298 @@ async fn company_capture_disabled_auth_fails_closed_without_storage_access() {
         StatusCode::SERVICE_UNAVAILABLE,
     );
 }
+
+// Append to existing company_credential_capture_tests.rs; all old tests retained.
+// Uses existing state()/headers()/document_error() fixture. No storage connection.
+fn form_mutation() -> HeaderMap {
+    let mut h = headers();
+    h.insert(header::ORIGIN, HeaderValue::from_static(ORIGIN));
+    h.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_static("application/x-www-form-urlencoded"),
+    );
+    h.insert("sec-fetch-site", HeaderValue::from_static("same-origin"));
+    h.insert("sec-fetch-mode", HeaderValue::from_static("navigate"));
+    h.insert("sec-fetch-dest", HeaderValue::from_static("document"));
+    h.insert("sec-fetch-user", HeaderValue::from_static("?1"));
+    h
+}
+#[tokio::test]
+async fn native_company_form_capture_accepts_real_navigation_and_complete_metadata_absence() {
+    let state = state();
+    let real = form_mutation();
+    assert!(
+        state
+            .company_form_mutation_credentials(
+                &axum::http::Method::POST,
+                &real,
+                "captured-form-proof"
+            )
+            .is_ok()
+    );
+    assert!(!real.contains_key(CSRF_HEADER));
+    let mut no_user = real.clone();
+    no_user.remove("sec-fetch-user");
+    assert!(
+        state
+            .company_form_mutation_credentials(
+                &axum::http::Method::POST,
+                &no_user,
+                "captured-form-proof"
+            )
+            .is_ok()
+    );
+    let mut compatible = real.clone();
+    for name in [
+        "sec-fetch-site",
+        "sec-fetch-mode",
+        "sec-fetch-dest",
+        "sec-fetch-user",
+    ] {
+        compatible.remove(name);
+    }
+    assert!(
+        state
+            .company_form_mutation_credentials(
+                &axum::http::Method::POST,
+                &compatible,
+                "captured-form-proof"
+            )
+            .is_ok()
+    );
+    // API grammar remains distinct: no synthetic JSON/CSRF request conversion.
+    api_error(
+        state.company_api_mutation_credentials(&real),
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "invalid_request",
+    )
+    .await;
+    assert!(state.company_api_mutation_credentials(&mutation()).is_ok());
+    for method in [
+        axum::http::Method::GET,
+        axum::http::Method::HEAD,
+        axum::http::Method::PUT,
+        axum::http::Method::DELETE,
+    ] {
+        document_error(
+            state.company_form_mutation_credentials(&method, &real, "captured-form-proof"),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+}
+#[tokio::test]
+async fn native_company_form_capture_requires_exact_origin_and_form_media() {
+    let state = state();
+    for origin in [
+        None,
+        Some("null"),
+        Some("http://auth.example.com"),
+        Some("https://other.example.com"),
+        Some("https://auth.example.com/"),
+    ] {
+        let mut h = form_mutation();
+        h.remove(header::ORIGIN);
+        if let Some(origin) = origin {
+            h.insert(header::ORIGIN, HeaderValue::from_static(origin));
+        }
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::FORBIDDEN,
+        );
+    }
+    for content_type in [
+        None,
+        Some("application/json"),
+        Some("text/plain"),
+        Some("multipart/form-data; boundary=hello"),
+        Some("application/x-www-form-urlencoded; charset=utf-8"),
+    ] {
+        let mut h = form_mutation();
+        h.remove(header::CONTENT_TYPE);
+        if let Some(value) = content_type {
+            h.insert(header::CONTENT_TYPE, HeaderValue::from_static(value));
+        }
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+    for name in [header::ORIGIN, header::CONTENT_TYPE] {
+        let mut h = form_mutation();
+        let value = h[&name].clone();
+        h.append(name, value);
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+    assert!(
+        state
+            .company_form_mutation_credentials(&axum::http::Method::POST, &form_mutation(), "proof")
+            .is_ok()
+    );
+}
+#[tokio::test]
+async fn native_company_form_capture_rejects_cross_site_fetch_partial_and_duplicate_metadata() {
+    let state = state();
+    for site in ["none", "same-site", "cross-site", "unknown"] {
+        let mut h = form_mutation();
+        h.insert("sec-fetch-site", HeaderValue::from_static(site));
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::FORBIDDEN,
+        );
+    }
+    for (mode, dest, status) in [
+        ("cors", "empty", StatusCode::FORBIDDEN),
+        ("navigate", "iframe", StatusCode::FORBIDDEN),
+        ("wrong", "document", StatusCode::BAD_REQUEST),
+        ("navigate", "wrong", StatusCode::BAD_REQUEST),
+    ] {
+        let mut h = form_mutation();
+        h.insert("sec-fetch-mode", HeaderValue::from_static(mode));
+        h.insert("sec-fetch-dest", HeaderValue::from_static(dest));
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            status,
+        );
+    }
+    for missing in ["sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest"] {
+        let mut h = form_mutation();
+        h.remove(missing);
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+    for duplicate in [
+        "sec-fetch-site",
+        "sec-fetch-mode",
+        "sec-fetch-dest",
+        "sec-fetch-user",
+    ] {
+        let mut h = form_mutation();
+        let value = h[duplicate].clone();
+        h.append(duplicate, value);
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+    let mut h = form_mutation();
+    h.insert("sec-fetch-user", HeaderValue::from_static("?0"));
+    document_error(
+        state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+        StatusCode::BAD_REQUEST,
+    );
+    let mut h = form_mutation();
+    for name in ["sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest"] {
+        h.remove(name);
+    }
+    document_error(
+        state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+        StatusCode::BAD_REQUEST,
+    );
+    // GET documents deliberately retain external-navigation compatibility.
+    let mut external = form_mutation();
+    external.remove(header::ORIGIN);
+    external.insert("sec-fetch-site", HeaderValue::from_static("cross-site"));
+    assert!(state.company_document_credentials(&external).is_ok());
+}
+#[tokio::test]
+async fn native_company_form_capture_has_one_proof_namespace_and_exact_byte_limit() {
+    let state = state();
+    let h = form_mutation();
+    for proof in ["p".repeat(4096), format!("{}p", "한".repeat(1365))] {
+        assert_eq!(proof.len(), 4096);
+        assert!(
+            state
+                .company_form_mutation_credentials(&axum::http::Method::POST, &h, &proof)
+                .is_ok()
+        );
+    }
+    for proof in ["p".repeat(4097), "한".repeat(1366)] {
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, &proof),
+            StatusCode::PAYLOAD_TOO_LARGE,
+        );
+    }
+    document_error(
+        state.company_form_mutation_credentials(&axum::http::Method::POST, &h, ""),
+        StatusCode::FORBIDDEN,
+    );
+    for header_proof in ["", "same-body-proof", "different-proof"] {
+        let mut ambiguous = h.clone();
+        ambiguous.insert(CSRF_HEADER, HeaderValue::from_static(header_proof));
+        document_error(
+            state.company_form_mutation_credentials(
+                &axum::http::Method::POST,
+                &ambiguous,
+                "same-body-proof",
+            ),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+}
+#[tokio::test]
+async fn native_company_form_capture_rejects_ambiguous_credentials_and_no_refresh_fallback() {
+    let state = state();
+    for cookie in [
+        None,
+        Some("__Host-console_account_refresh=present"),
+        Some("console_refresh=legacy"),
+    ] {
+        let mut h = form_mutation();
+        h.remove(header::COOKIE);
+        if let Some(cookie) = cookie {
+            h.insert(header::COOKIE, HeaderValue::from_static(cookie));
+        }
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::UNAUTHORIZED,
+        );
+    }
+    for extra in [
+        "__Host-console_account_session=other",
+        "__Host-console_account_refresh=",
+        "__Host-console_account_login=",
+        "__Host-console_account_enrollment=",
+    ] {
+        let mut h = form_mutation();
+        h.append(header::COOKIE, HeaderValue::from_static(extra));
+        document_error(
+            state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+            StatusCode::BAD_REQUEST,
+        );
+    }
+    let mut h = form_mutation();
+    h.insert(
+        header::AUTHORIZATION,
+        HeaderValue::from_static("Bearer forbidden"),
+    );
+    document_error(
+        state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+        StatusCode::BAD_REQUEST,
+    );
+    let mut h = form_mutation();
+    h.append(
+        header::COOKIE,
+        HeaderValue::from_str(&format!("unused={}", "x".repeat(16 * 1024))).unwrap(),
+    );
+    document_error(
+        state.company_form_mutation_credentials(&axum::http::Method::POST, &h, "proof"),
+        StatusCode::PAYLOAD_TOO_LARGE,
+    );
+    let pool = PgPoolOptions::new()
+        .connect_lazy("postgres://unused:unused@localhost/unused")
+        .unwrap();
+    let disabled = AuthRestState::disabled(pool);
+    document_error(
+        disabled.company_form_mutation_credentials(
+            &axum::http::Method::POST,
+            &form_mutation(),
+            "proof",
+        ),
+        StatusCode::SERVICE_UNAVAILABLE,
+    );
+}

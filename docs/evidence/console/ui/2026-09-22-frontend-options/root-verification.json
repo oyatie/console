@@ -1,0 +1,23 @@
+{
+  "reviewer": "/root",
+  "date": "2026-09-22",
+  "source_readback": {
+    "leptos-nested-routing.md": "d63927168dfa6ec73bf5265eb499a775ec3936fd674ef2b888eb2c512b2590fb",
+    "tauri-frontend.mdx": "c68d74f34a51880f3dbabda86b4b683a55004b0c59de6388c02ec8016ba2bffb",
+    "dioxus-renderers.md": "6ed631562f5bc0d24c538afb8c551998eb07502b81ab1f64a28e376d5cc75555"
+  },
+  "verified": [
+    "Leptos nested parent routes retain mounted state while child routes change",
+    "Tauri frontend is static hosting and does not natively serve SSR",
+    "Dioxus web, Wry desktop, and Blitz native are distinct renderer paths",
+    "Current product uses isolated hydration without a client-side router",
+    "Actual Company screenshot is an entry card, not an operational workspace"
+  ],
+  "recommendation": "Leptos SSR first document with a hydrated persistent workspace, subject to actual pinned-version Buck and workflow proof",
+  "not_proven": [
+    "cross-framework performance",
+    "desktop authentication compatibility",
+    "production qualification",
+    "implemented persistent workspace"
+  ]
+}

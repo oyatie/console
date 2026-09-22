@@ -1,0 +1,133 @@
+// Private proposed interface; not a product source/stub. No function bodies.
+// Target: identity/application/src/company_policy/workflow.rs; pub mod workflow.
+use super::{AccountId, CompanyPolicyDecisionPort, CurrentNativeBootstrapAuthority};
+use super::business::{NativeBusinessOperationV1, NativeCompanyBusinessCommandV1,
+    PolicyAssignmentExpectationV1};
+use console_kernel_core::{OrgId, TraceContext};
+use std::future::Future;
+use time::OffsetDateTime;
+use uuid::Uuid;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativePolicyWorkflowError {
+    InvalidInput, AuthenticationInvalid, CsrfInvalid, NotFound, Conflict,
+    Capacity, Unavailable, Unconfirmed,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct NativePolicyCommandRef {
+    // Constructor rejects nil/platform Company and nil command. No authority.
+    company: OrgId, command_id: Uuid, operation: NativeBusinessOperationV1,
+}
+impl NativePolicyCommandRef {
+    pub fn new(company: OrgId, command_id: Uuid, operation: NativeBusinessOperationV1)
+        -> Result<Self, NativePolicyWorkflowError>;
+    pub fn from_command(command: &NativeCompanyBusinessCommandV1) -> Self;
+    pub const fn company(&self) -> OrgId;
+    pub const fn command_id(&self) -> Uuid;
+    pub const fn operation(&self) -> NativeBusinessOperationV1;
+}
+// Exactly four native protocol modes, not a generic workflow engine.
+pub enum NativePolicyScopeRequest<'a> {
+    Form(NativePolicyCommandRef), Accept(&'a NativeCompanyBusinessCommandV1),
+    Execute(NativePolicyCommandRef), Status(NativePolicyCommandRef),
+}
+impl NativePolicyScopeRequest<'_> {
+    pub fn selector(&self) -> NativePolicyCommandRef;
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativePolicyAssignmentState { Active, Revoked }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NativePolicyAssignmentView {
+    pub expectation: PolicyAssignmentExpectationV1, pub role_id: Uuid,
+    pub state: NativePolicyAssignmentState,
+    pub valid_from: OffsetDateTime, pub valid_until: OffsetDateTime,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NativePolicyFormView {
+    pub selector: NativePolicyCommandRef, pub company_epoch: u64,
+    pub acting_account_id: AccountId,
+    pub administrative_account_id: AccountId,
+    pub installed_object_type_id: Option<Uuid>,
+    pub assignment: Option<NativePolicyAssignmentView>,
+}
+// F is Auth's existing opaque AccountFormProof in the adapter. No Debug/Clone/serde.
+pub struct NativePolicyForm<F> { pub view: NativePolicyFormView, pub proof: F }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NativePolicyAcceptedView {
+    pub input: NativeCompanyBusinessCommandV1, pub intake_receipt_id: Uuid,
+    pub accepted_at: OffsetDateTime, pub execution_not_after: OffsetDateTime,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NativePolicyRejection {
+    IntakeExpired, RevisionConflict, GrantExpiryInvalid, RecipientIneligible,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NativePolicyEffect {
+    Installed { object_type_id: Uuid },
+    Granted { recipient: AccountId, assignment: NativePolicyAssignmentView,
+        assignment_revision_before: Option<u64> },
+    Revoked { recipient: AccountId, assignment: NativePolicyAssignmentView,
+        assignment_revision_before: u64 },
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NativePolicyOutcome { Committed(NativePolicyEffect), Rejected(NativePolicyRejection) }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NativePolicyTerminalView {
+    pub accepted: NativePolicyAcceptedView, pub receipt_id: Uuid,
+    pub executed_at: OffsetDateTime, pub epoch_before: u64, pub epoch_after: u64,
+    pub outcome: NativePolicyOutcome,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NativePolicyStatus {
+    NotVisible, AcceptedPending(NativePolicyAcceptedView),
+    AcceptedExpired(NativePolicyAcceptedView), Terminal(NativePolicyTerminalView),
+}
+// confirmed after finish only; replay flag never authorizes another write/audit.
+pub struct NativePolicyAcceptance { pub inserted: bool, pub status: NativePolicyStatus }
+pub struct NativePolicyExecution { pub inserted: bool, pub terminal: NativePolicyTerminalView }
+
+pub trait NativePolicyWorkflowScope: Send {
+    type FormProof: Send + Sync;
+    fn authority(&self) -> &CurrentNativeBootstrapAuthority;
+    // These methods are mode-specific; wrong-mode use fails closed before SQL.
+    fn form(&mut self) -> impl Future<Output=Result<NativePolicyForm<Self::FormProof>,NativePolicyWorkflowError>> + Send;
+    fn accept(&mut self, trace: &TraceContext) -> impl Future<Output=Result<NativePolicyAcceptance,NativePolicyWorkflowError>> + Send;
+    fn execute(&mut self, trace: &TraceContext) -> impl Future<Output=Result<NativePolicyExecution,NativePolicyWorkflowError>> + Send;
+    fn status(&mut self) -> impl Future<Output=Result<NativePolicyStatus,NativePolicyWorkflowError>> + Send;
+    // Recheck original Auth/mutation credentials, current source/Cedar/time and
+    // (Form only) the exact already-issued proof after final wait; then commit.
+    // None is mandatory outside Form. A/B never issue a replacement proof.
+    fn finish<P: CompanyPolicyDecisionPort + ?Sized>(self, policy: &P,
+        proof: Option<&Self::FormProof>)
+        -> impl Future<Output=Result<(),NativePolicyWorkflowError>> + Send;
+}
+pub trait NativePolicyWorkflowStore {
+    type Credentials: Sync;
+    type FormProof: Send + Sync;
+    type Scope<'a>: NativePolicyWorkflowScope<FormProof=Self::FormProof> + Send where Self:'a;
+    fn lock<'a>(&'a self, credentials: &'a Self::Credentials,
+        request: NativePolicyScopeRequest<'a>)
+        -> impl Future<Output=Result<Self::Scope<'a>,NativePolicyWorkflowError>> + Send;
+}
+// Application functions use the real decision port before invoking any scope
+// operation. Request uses selected Company/operation, current source Group,
+// actual command recipient for Accept/Grant, otherwise source administrator.
+// Source Company must equal selector; no field/entity returned on deny/outage.
+pub async fn native_policy_form<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + ?Sized>(
+    store:&S, policy:&P, credentials:&S::Credentials, selector:NativePolicyCommandRef)
+    -> Result<NativePolicyForm<S::FormProof>,NativePolicyWorkflowError>;
+pub async fn accept_native_policy_command<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + ?Sized>(
+    store:&S, policy:&P, credentials:&S::Credentials, input:&NativeCompanyBusinessCommandV1, trace:&TraceContext)
+    -> Result<NativePolicyAcceptance,NativePolicyWorkflowError>;
+pub async fn execute_native_policy_command<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + ?Sized>(
+    store:&S, policy:&P, credentials:&S::Credentials, selector:NativePolicyCommandRef, trace:&TraceContext)
+    -> Result<NativePolicyExecution,NativePolicyWorkflowError>;
+pub async fn native_policy_command_status<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + ?Sized>(
+    store:&S, policy:&P, credentials:&S::Credentials, selector:NativePolicyCommandRef)
+    -> Result<NativePolicyStatus,NativePolicyWorkflowError>;
+// A then B, unless A replays a final terminal. B selector only, same credentials.
+// No retry/renewal after Unconfirmed. Recovery uses status and explicit original
+// selector execute; status never calls execute or creates a new command.
+pub async fn submit_native_policy_command<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + ?Sized>(
+    store:&S, policy:&P, credentials:&S::Credentials, input:&NativeCompanyBusinessCommandV1, trace:&TraceContext)
+    -> Result<NativePolicyExecution,NativePolicyWorkflowError>;
