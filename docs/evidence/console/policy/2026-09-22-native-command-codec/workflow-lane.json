@@ -1,0 +1,43 @@
+{
+  "lane": "native-company-policy-payroll-browser",
+  "owner": "/root",
+  "base": "4f50a432836dfc99998af93a822ff08591dcc72c",
+  "probe": "bash /private/tmp/console-policy-buck-prerequisite-20260922/run-browser.sh",
+  "admission": "fanout.py admit exit0; actual missing policy entry after three genuine UI/DB checkpoints",
+  "immutable_test_target": "//tools/buck:app-auth-rest-browser-pg",
+  "writer_root": "/private/tmp/console-mvp-dev-integrate-20260921",
+  "guide": "Existing Identity CompanyPolicyStore, Auth credentials, typed Account common audit, Payroll retained read; CODEC-round3 and reviewed eight test source immutable; broader SQL/Auth contracts require review before implementation",
+  "first_substep_paths": [
+    "backend/crates/identity/application/src/company_policy.rs",
+    "backend/crates/identity/application/src/company_policy/business.rs",
+    "backend/crates/identity/application/src/company_policy/business/tests.rs"
+  ],
+  "forbidden": [
+    "original checkout",
+    "historical migrations",
+    "historical protocol bytes",
+    "existing tests",
+    "lockfiles"
+  ],
+  "leases": [
+    "root owns product root, build/runtime, schema and generated writes; agents private reviews only"
+  ],
+  "pre_mortem": "Incorrect replay bytes or detached authorization permits duplicated or unauthorized effects",
+  "detection": "independent vectors plus actual browser and schema owner probes; no missing import as RED",
+  "rollback": "remove uncommitted additive source before persistent protocol use; preserve any accepted bytes thereafter",
+  "stop_conditions": [
+    "material contract mismatch",
+    "unreviewed semantic test change",
+    "missing source custody"
+  ],
+  "reviews": [
+    "codec independent recovery_review approval",
+    "browser source round3 review",
+    "browser actual RED independent policy_browser_tests"
+  ],
+  "remaining_holds": [
+    "workflow still RED",
+    "all five MVP workflows",
+    "full release and production exposure"
+  ]
+}

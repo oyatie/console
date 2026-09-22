@@ -1,0 +1,25 @@
+[2026-09-21T23:41:12.986-04:00] Build ID: 50a5fe18-2948-422b-9a03-ac228d867f34
+[2026-09-21T23:41:12.986-04:00] Directory changed (since mergebase): root//backend/crates/identity/application/src/company_policy/business
+[2026-09-21T23:41:12.986-04:00] File changed (since mergebase): root//backend/crates/identity/application/src/company_policy/business/tests.rs
+[2026-09-21T23:41:12.986-04:00] File changed (since mergebase): root//backend/crates/identity/application/src/company_policy.rs
+[2026-09-21T23:41:12.986-04:00] 1 additional file change events (since mergebase)
+[2026-09-21T23:41:12.986-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T23:41:13.043-04:00] Network: Up: 0B  Down: 0B
+Command failed: 
+Test executor exited unexpectedly with status 3.
+Stdout:
+
+Stderr:
+Command failed: Error parsing test runner arguments
+
+Caused by:
+    error: unexpected argument '--test-threads' found
+    
+      tip: a similar argument exists: '--test-arg'
+    
+    Usage: ignored --buck-test-info <BUCK_TEST_INFO> --test-arg <TEST_ARG>...
+    
+    For more information, try '--help'.
+    
+
+[2026-09-21T23:41:13.046-04:00] 2026-09-22T03:41:13.043237Z  WARN buck2_test::command: Test run was cancelled

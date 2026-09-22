@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/policy_owner_tests",
+  "verdict": "approve_exact_codec_implementation",
+  "base_sha": "4f50a432836dfc99998af93a822ff08591dcc72c",
+  "files_sha256": {
+    "company_policy.rs": "4b121495d8ed39adb5d75e4e9a82a6685f302fa86c9860e26af84bcc778842eb",
+    "company_policy/business.rs": "753ea89752811d06a00634a6c6ca3ce55f60a563b94a4df2da93bb450778b890",
+    "company_policy/business/tests.rs": "ec8df9b76bab0d5fdde4c0e7bd24552516adc2d4e75de4e79706eaccb384d32c"
+  },
+  "findings": [],
+  "independent_checks": [
+    "All three exact source hashes match frozen parent candidate.",
+    "All four embedded literal vectors equal frozen design vectors and independent struct/UUID reconstruction with exact lengths and SHA256.",
+    "Fixed manifest constant equals approved catalog digest.",
+    "Reviewed all constructor/decode/encode branches, UUID and platform scope checks, signed revision ceiling, role1, whole-minute and UTC range boundaries, no panic/rounding/now-dependent historical decode.",
+    "Existing initial Company module changes only by additive business module export.",
+    "Reviewed unchanged approved eight-test source; root-owned native Buck log lists20unique passes, all8new tests,0failed/ignored/filtered."
+  ],
+  "runtime_evidence": {
+    "log": "/private/tmp/console-policy-buck-prerequisite-20260922/identity-codec-test2.log",
+    "sha256": "ba8350986ef054d24d96737a2eff411ea09c8db54f2a4a75c611bb235036dfc6",
+    "producer": "root-owned Buck execution; reviewer inspected log, did not rerun",
+    "listed_passes": 20,
+    "new_codec_tests": 8
+  },
+  "limits": [
+    "Source and logged unit evidence only; no authentication, SQL, browser, durability or workflow acceptance claim.",
+    "No independent compiler/DB execution; root owns shared runtime lease.",
+    "Codec selectors never establish authority; retained owner must compare authenticated namespace and exact original bytes."
+  ]
+}

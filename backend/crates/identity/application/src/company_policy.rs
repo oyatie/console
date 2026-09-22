@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935";
 
+pub mod business;
 mod reads;
 pub use reads::{
     CompanyContextCandidates, CompanyContextView, CompanyIdentityView, CompanyInitialCeilingView,
