@@ -1,5 +1,7 @@
 // Pure source vectors only; never authenticated SQL/current-custody evidence.
 // Mount as a cfg(test) child of CompanyPolicy's actual module.
+#[path = "native_workflow_usecases_tests.rs"]
+mod workflow;
 use super::*;
 use console_identity_application::company_policy::business::NativeBusinessOperationV1;
 use console_identity_application::company_policy::{

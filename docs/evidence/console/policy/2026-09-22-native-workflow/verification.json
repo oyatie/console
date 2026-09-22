@@ -1,0 +1,28 @@
+{
+  "implementation_base": "0a2cac738",
+  "commands": {
+    "authz": "env PATH=\"<pinned-dotslash>:$PATH\" tools/buck2 test -j1 -c root//project.ignore=.git,backend/target //backend/crates/platform/authz:console-platform-authz-unit",
+    "identity": "env PATH=\"<pinned-dotslash>:$PATH\" tools/buck2 test -j1 -c root//project.ignore=.git,backend/target //backend/crates/identity/application:console-identity-application-unit"
+  },
+  "authz": {
+    "discovered": 155,
+    "executed": 155,
+    "passed": 155,
+    "new_workflow_tests": 13
+  },
+  "identity": {
+    "discovered": 20,
+    "executed": 20,
+    "passed": 20
+  },
+  "existing_browser_lane": "native-company-policy-payroll-browser",
+  "remaining_holds": [
+    "PostgreSQL adapter/owner integration",
+    "SQL runtime A/B audit/closure/corruption",
+    "Current policy browser journey",
+    "All five MVP workflows",
+    "Full release and production exposure"
+  ],
+  "generated_artifacts_changed": false,
+  "limitations": "Scripted retained scopes plus real Cedar verify application orchestration only; no SQL, auth-session, browser or production acceptance claimed."
+}

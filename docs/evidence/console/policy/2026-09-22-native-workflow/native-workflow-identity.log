@@ -1,0 +1,36 @@
+[2026-09-22T00:44:59.911-04:00] Build ID: 409426fa-292b-40e0-a7a1-7a51849241f2
+[2026-09-22T00:44:59.919-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:45:01.473-04:00] ✓ Pass: root//backend/crates/identity/application:console-identity-application-unit (0.2s)
+[2026-09-22T00:45:01.473-04:00] ---- STDOUT ----
+[2026-09-22T00:45:01.473-04:00]
+[2026-09-22T00:45:01.473-04:00] running 20 tests
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::korea_offset_normalizes_to_utc_without_losing_original_instant ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::every_changed_supplied_input_is_bound_and_namespace_swaps_do_not_authenticate ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::all_four_independent_vectors_match_constructor_decoder_and_supplied_accessors ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::input_parse_enforces_exact_4096_byte_budget_and_json_exhaustion ... ok
+[2026-09-22T00:45:01.473-04:00] test company_enrollment::enrollment_projection_tests::company_enrollment_projection_terminal_and_committed_rows_reject_mixed_or_nil_fields ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::accepted_vectors_match_exact_independent_bytes_and_decode ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::exact_time_range_whole_minutes_and_historical_decode_do_not_round_or_use_now ... ok
+[2026-09-22T00:45:01.473-04:00] test company_enrollment::enrollment_projection_tests::company_enrollment_projection_pending_preserves_exact_codec_namespace_and_shape ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::positive_signed_i64_limits_and_permanent_role_one_are_enforced ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::codec_refuses_invalid_header_discriminator_ids_lengths_utf8_and_fields ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::nil_identifiers_and_platform_company_reject_but_non_v4_ids_remain_valid ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::codec_refuses_every_truncation_and_any_trailing_bytes ... ok
+[2026-09-22T00:45:01.473-04:00] test org::tests::branch_audit_event_carries_branch_scope ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::slugs_use_exact_ascii_grammar_and_byte_limit ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::names_are_utf8_byte_bounded_nonblank_control_free_and_unmodified ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::json_shape_rejects_missing_duplicate_unknown_or_wrong_members ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::every_truncation_and_any_extra_suffix_is_rejected_with_fixed_error ... ok
+[2026-09-22T00:45:01.473-04:00] test org::tests::user_audit_event_is_org_global ... ok
+[2026-09-22T00:45:01.473-04:00] test company::tests::uuid_wire_is_canonical_non_nil_and_null_group_remains_distinct ... ok
+[2026-09-22T00:45:01.473-04:00] test company_policy::business::tests::fixed_prefix_version_manifest_operation_and_witness_are_closed ... ok
+[2026-09-22T00:45:01.473-04:00]
+[2026-09-22T00:45:01.473-04:00] test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+[2026-09-22T00:45:01.473-04:00]
+[2026-09-22T00:45:01.473-04:00]
+[2026-09-22T00:45:01.473-04:00] ---- STDERR ----
+[2026-09-22T00:45:01.473-04:00]
+[2026-09-22T00:45:01.476-04:00] Cache hits: 0%
+[2026-09-22T00:45:01.476-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-22T00:45:01.476-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

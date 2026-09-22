@@ -10,6 +10,7 @@ const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a
 
 pub mod business;
 mod native_business;
+pub mod workflow;
 pub use native_business::{
     CurrentNativeBootstrapAuthority, CurrentPayrollReadAuthority, NativeBootstrapProjectionRow,
     NativeBootstrapRequestV1, NativePayrollReadProjectionRow, NativePolicySourceBinding,
