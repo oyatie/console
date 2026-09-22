@@ -1,0 +1,14 @@
+{
+  "base": "d898cf6131eef3ea5f657d01fd1f663f1d9901d0",
+  "reviewer": "/root",
+  "manifest_sha256": "a6c472c3f1673258c22b0ce3d2e37b9b6cf73afe3a58ab8235438bcbf47dd20e",
+  "decision": "approve exact finite API and all13 test proposals with ROUND2 clarifications",
+  "independent_reviewer": "/root/policy_browser_tests",
+  "proof_limit": "13 proposed tests; zero execution before implementation. Existing browser semantic RED remains lane acceptance.",
+  "risks": [
+    "Current-source/Company and grant-recipient binding",
+    "Unknown COMMIT and cancellation must withhold provisional results",
+    "No B after failed/unconfirmed A",
+    "SQL/Auth/browser qualification pending"
+  ]
+}

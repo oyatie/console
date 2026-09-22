@@ -1,0 +1,14 @@
+{
+  "base_sha": "d898cf6131eef3ea5f657d01fd1f663f1d9901d0",
+  "status": "private additive test successor; source/rustfmt checked, zero runtime tests",
+  "original_manifest_sha256": "2aea34ff400915b1c6ddaab0978b4342d1e33078b292d82c1a4a9ff577f9c701",
+  "test_count": 13,
+  "original9_test_functions_byte_preserved": true,
+  "files": {
+    "API.rs.txt": "6df972c50abd0e84d7fbb339f2eb2ef5c1224925eca415e3d2353a62c25f2b61",
+    "DESIGN.md": "c19290608e5d14bd35253422f1793f4a72f6cf7fa00b353c01aad5fcdd244907",
+    "FORM-CONTRACT.md": "3a746c195e454e3e9c705653f7336938c81655821ae8bb25367cf1242c907aaf",
+    "native_workflow_usecases_tests.rs": "02c1627bc96f1b493a3b7c3328fa7c45819c7129c237faea9a9a3f9e1c3c4dfc",
+    "ROUND2.md": "652e42e84940575d1e547e9dc2c3abf99eeae266036df0d20e1eee20ca4b1159"
+  }
+}
