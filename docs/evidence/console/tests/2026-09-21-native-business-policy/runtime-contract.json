@@ -1,0 +1,86 @@
+{
+  "status": "concrete successor for independent test review; not implementation or acceptance evidence",
+  "design_source": "/private/tmp/console-native-policy-physical-root-decision-20260921/DECISIONS.md",
+  "design_sha256": "8fa16fc3206b349e0682e705eb5f72f435c4bed01d91f55c1e5ef1f1d214576b",
+  "routes": {
+    "native_payroll_ssr": "/companies/{org_id}/payroll",
+    "native_payroll_json": "/api/v1/companies/{org_id}/payroll/runs",
+    "authenticated_denial_status": 404,
+    "selector": "org_id selects the requested Company; current server-authenticated Account and retained policy determine authority",
+    "ownership": "Both adapters invoke the same Payroll application read use case and retained-transaction query/audit/final-current-authority boundary. Preserve existing PayrollRunPage and all 18 PayrollRunSummary fields. Preserve legacy routes through their owners."
+  },
+  "audit": {
+    "protocol": "COMPANY_BUSINESS_POLICY_V1",
+    "writer": "Existing common audit insertion with the reviewed typed Account actor successor; preserve legacy row encoding, columns, hashes and seals",
+    "actor": "actual authenticated Account of the corresponding input or terminal",
+    "org_id": "exact selected Company of that input or terminal",
+    "before_snap": null,
+    "before_snap_encoding": "SQL NULL, not JSON null",
+    "after_snap_encoding": "JSON object with every listed key present and no extra keys; use existing JSONB and audit row serialization, never introduce a new historical serializer",
+    "string_encoding": "UUIDs lowercase hyphenated; digests lowercase 64 hexadecimal characters; epochs canonical positive decimal strings; operations exact codec names",
+    "accept": {
+      "action": "policy.company_command.accept",
+      "target_type": "native_company_policy_inputs_v1",
+      "target_id": "actual intake_receipt_id as lowercase UUID string",
+      "occurred_at": "actual accepted_at",
+      "after_snap_fields": {
+        "protocol": "literal COMPANY_BUSINESS_POLICY_V1",
+        "command_id": "input.command_id",
+        "intake_receipt_id": "input.intake_receipt_id",
+        "operation": "InstallPayrollReadCatalogV1 | GrantPayrollReadV1 | RevokePayrollReadV1",
+        "input_digest": "input.input_digest encoded as lowercase hex",
+        "session_id": "input.accepting_session_id"
+      }
+    },
+    "complete": {
+      "action": "policy.company_command.complete",
+      "target_type": "native_company_policy_receipts_v1",
+      "target_id": "actual receipt_id as lowercase UUID string",
+      "occurred_at": "actual executed_at",
+      "after_snap_fields": {
+        "protocol": "literal COMPANY_BUSINESS_POLICY_V1",
+        "command_id": "terminal.command_id",
+        "intake_receipt_id": "terminal.intake_receipt_id",
+        "operation": "InstallPayrollReadCatalogV1 | GrantPayrollReadV1 | RevokePayrollReadV1",
+        "input_digest": "terminal.input_digest encoded as lowercase hex",
+        "session_id": "terminal.execution_session_id",
+        "receipt_id": "terminal.receipt_id",
+        "outcome": "terminal.outcome: COMMITTED | REJECTED",
+        "result_code": "terminal.result_code: installed | granted | revoked | intake_expired | revision_conflict | grant_expiry_invalid | recipient_ineligible",
+        "epoch_before": "terminal.epoch_before as decimal string",
+        "epoch_after": "terminal.epoch_after as decimal string",
+        "predecessor_receipt_id": "terminal.predecessor_receipt_id as UUID string, or explicit JSON null"
+      }
+    },
+    "closure": "Exactly one matching lifecycle audit per input/terminal in its actual transaction/backend; match actor, Company, target, operation, original input digest, relevant session, time and every payload value. Missing/extra/incorrect keys, string/null substitutions or duplicate lifecycle audits fail closure. Accepted input does not require a terminal. Business effect details remain in the immutable terminal and its checked participants, not duplicated into audit JSON. Existing ontology install and payroll read audits remain additionally required.",
+    "examples_are_test_vectors": true,
+    "accept_vector": {
+      "protocol": "COMPANY_BUSINESS_POLICY_V1",
+      "command_id": "00000000-0000-0000-0000-000000000011",
+      "intake_receipt_id": "00000000-0000-0000-0000-000000000012",
+      "operation": "InstallPayrollReadCatalogV1",
+      "input_digest": "0101010101010101010101010101010101010101010101010101010101010101",
+      "session_id": "00000000-0000-0000-0000-000000000013"
+    },
+    "complete_vector": {
+      "protocol": "COMPANY_BUSINESS_POLICY_V1",
+      "command_id": "00000000-0000-0000-0000-000000000011",
+      "intake_receipt_id": "00000000-0000-0000-0000-000000000012",
+      "operation": "InstallPayrollReadCatalogV1",
+      "input_digest": "0101010101010101010101010101010101010101010101010101010101010101",
+      "session_id": "00000000-0000-0000-0000-000000000014",
+      "receipt_id": "00000000-0000-0000-0000-000000000015",
+      "outcome": "COMMITTED",
+      "result_code": "installed",
+      "epoch_before": "1",
+      "epoch_after": "2",
+      "predecessor_receipt_id": null
+    }
+  },
+  "test_requirements": [
+    "Generate accepted and completed expectations from actual database row values independently of the writer helper; compare exact JSON object and SQL NULL separately.",
+    "Exercise a rejection and a later committed epoch with a nonnull predecessor using real owner transitions; never insert business setup rows as browser fixtures.",
+    "Mutation controls change or omit one audit field, substitute JSON null for SQL NULL, add an extra key, duplicate a matching event, or use a different session; each must fail the actual closure.",
+    "Historical audit bytes and seals remain unchanged while native Account records append and validate through the same chain."
+  ]
+}

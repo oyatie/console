@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root/policy_owner_tests",
+  "verdict": "approve_format_only_successor",
+  "manifest_sha256": "470ce043b633afbd84cb1dec95aeca242dafc197a8ff3398cd01c456179da35b",
+  "source_patch_sha256": "d480bea880213bee30864bcd5d2bb41e227a3c6ba4fbb9953e9077b7ef4924d3",
+  "rust_sha256": "09b689a66ca9d5a4e8c6176fa21aa0db261d5e939e17ee0b8d2a24c33c45c385",
+  "predecessor_review_sha256": "f3ebded83fd42df81d1762cbabc7df9d8ae1eb04ff774a09ecc65a73ab52f450",
+  "checks": {
+    "artifact_hashes": 12,
+    "base_hashes": 2,
+    "unchanged_companions": 6,
+    "independent_rustfmt_stdout_matches": true
+  },
+  "scope": "Deterministic formatting and source-base rebinding only; prior review limits remain. No Rust/Buck/DB/browser execution; unchanged JS suites not rerun unnecessarily."
+}

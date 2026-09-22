@@ -1,0 +1,31 @@
+{
+  "reviewer": "/root/policy_browser_tests",
+  "source": "/private/tmp/console-native-policy-owner-tests-round2-20260921/native_policy_physical_tests.rs",
+  "sha256": "de2d6b5b3edd9a58def0c1e879bd0fd885c4508abdbdf5a1032bcea330ff36d1",
+  "verdict": "approve bounded schema-shape/constraint-vector test source for compilation and RED qualification; not implementation admission or runtime acceptance",
+  "findings": [],
+  "checked": [
+    "Both sqlx tests use existing ready_designated; first actually enrolls Company through canonical HTTP owner before full schema/ACL and historical reopen checks.",
+    "Metadata keys require full NULL-distinct ordinary unique indexes and exact same-scope FK columns. deferred=false intentionally imposes no deferral requirement; true requires initially deferred.",
+    "Four rejection mappings match accepted root decision; CHECK expressions evaluated from actual installed schema against nonpersisted composite rows with PostgreSQL IS NOT FALSE semantics. Generated successful epoch is separately evaluated.",
+    "Serving LOGIN table/column access uses OR-of-privilege semantics followed by NOT; owner-membership checks are separate. No raw business rows inserted.",
+    "ALWAYS trigger metadata cannot establish function-body or actual mutation safety; source and manifest explicitly bound this limitation.",
+    "ready_designated and initial_ceiling exist in current fixture; child module can see parent private functions through use super::*; no new unavailable product API referenced."
+  ],
+  "verification": {
+    "rustfmt_check_exit": 0,
+    "rust_builds": 0,
+    "rust_tests": 0,
+    "database": 0
+  },
+  "remaining": [
+    "Actual Buck compile and database execution with accepted finalized Company prerequisites.",
+    "Actual owner transitions, current authority, frame guards, raw DML/function privilege failures, deferred closure and recovery tests remain separate.",
+    "Populated migration and old custody preservation cannot be proven by this freshly prepared database."
+  ],
+  "delta_review": [
+    "deferred parameter renamed must_be_deferred and prior intentional false semantics documented; behavior unchanged.",
+    "BEFORE UPDATE/DELETE coverage accepts row or statement guards, both still ALWAYS, no predicate/arguments/column list, nondeferrable. Unconditional statement guard is a valid complete refusal. INSERT still requires row guard and deferred row closure; TRUNCATE remains statement-only. Actual function behavior remains explicitly outside this metadata gate."
+  ],
+  "predecessor_review_sha256": "a7367383da7f9e5ae4193b44b94e8147e3b3e7bdaae921a5f6b3be0ff696fbd6"
+}
