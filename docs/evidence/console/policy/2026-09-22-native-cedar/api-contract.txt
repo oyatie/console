@@ -1,0 +1,137 @@
+# Finite native Company policy application API
+
+Private exact API/test proposal, not implementation or runtime proof. Keep the frozen four resource bytes from /private/tmp/console-native-policy-auth-cedar-freeze-20260921 unchanged. This narrows the previous interface sketch to actual SQL round2 material and existing CompanyPolicyDecision result conventions. No new generic policy framework, default allow/deny implementation, SQL table or historical resource change.
+
+Add `company_policy::native_business` in Identity application. Existing company_policy::business codec remains unchanged. Re-export the following names at company_policy root. Use existing AccountId, OrgId, ActionRef, PropertyRef, CompanyPolicyError and NativeBusinessOperationV1. The types below are not serde wire contracts; no derive Serialize/Deserialize. Raw projections can derive Clone for source-test mutations. Checked types have private fields and immutable access only.
+
+```rust
+pub struct NativePolicySourceBinding {
+    pub account: AccountId,
+    pub session_id: Uuid,
+    pub account_security_generation: i64,
+    pub source_xid: u64,
+    pub source_backend_pid: i32,
+    pub observed_at: OffsetDateTime,
+}
+// Exactly SQL round2's27 fields; xid8 decoded as canonical decimal String.
+pub struct NativeBootstrapProjectionRow {
+    pub actor_account_id: Uuid,
+    pub session_id: Uuid,
+    pub account_security_generation: i64,
+    pub designation_system_identifier: String,
+    pub designation_database_name: String,
+    pub designation_database_oid: i64,
+    pub designation_revision: i64,
+    pub designation_receipt_id: Uuid,
+    pub org_id: Uuid,
+    pub current_group_id: Uuid,
+    pub group_revision: i64,
+    pub group_incarnation: Uuid,
+    pub membership_id: Uuid,
+    pub membership_revision: i64,
+    pub membership_incarnation: Uuid,
+    pub company_epoch: i64,
+    pub current_policy_receipt_id: Option<Uuid>,
+    pub origin_account_id: Uuid,
+    pub origin_command_id: Uuid,
+    pub origin_receipt_id: Uuid,
+    pub administrative_account_id: Uuid,
+    pub company_actor_admission_receipt_id: Uuid,
+    pub birth_assignment_id: Uuid,
+    pub birth_role_id: Uuid,
+    pub observed_at: OffsetDateTime,
+    pub source_xid: String,
+    pub source_backend_pid: i32,
+}
+pub struct CurrentNativeBootstrapAuthority { /* private checked row */ }
+impl CurrentNativeBootstrapAuthority {
+    pub fn from_retained_projection(
+        source: &NativePolicySourceBinding,
+        row: NativeBootstrapProjectionRow,
+    ) -> Result<Self, CompanyPolicyError>;
+    pub fn source(&self) -> &NativeBootstrapProjectionRow;
+}
+pub struct NativeBootstrapRequestV1 { /* private syntactically checked selectors */ }
+impl NativeBootstrapRequestV1 {
+    pub fn new(company: OrgId, group: Uuid, recipient: AccountId,
+        operation: NativeBusinessOperationV1, manifest_digest: [u8;32])
+        -> Result<Self, CompanyPolicyError>;
+    pub fn company(&self) -> OrgId;
+    pub fn group(&self) -> Uuid;
+    pub fn recipient(&self) -> AccountId;
+    pub fn operation(&self) -> NativeBusinessOperationV1;
+    pub fn manifest_digest(&self) -> &[u8;32];
+}
+```
+
+NativePolicySourceBinding is constructed by the retained adapter from actual Auth session and actual same-transaction xid/PID/current DB clock. It never comes from HTTP fields, credentials claims alone or a previous transaction. Constructor checks all UUIDs nonnil, Company nonplatform; all signed revisions/generation positive; system identifier and source_xid canonical positive u64 decimal; database name nonempty/NUL-free and <=63bytes, OID1..=u32::MAX; PID positive; row actor/session/generation/xid/PID match independently supplied actual binding; row observed_at<=binding observed_at, both exact whole microseconds; CompanyActor admission receipt==origin receipt; current_policy_receipt_id NULL exactly at epoch1, otherwise nonnil. No equality between current actor and birth actor, current Group and birth Group, or administrative recipient and current operator. Invalid shape/correlation gives MaterialUnavailable, no fake authorization outcome. API syntax allows wrong-but-wellformed Company/Group/recipient/manifest selectors so real Cedar evaluation can deny them.
+
+SQL round2 returns only current owner-validated ACTIVE actor/native Company/Group/membership, current live designation and complete bound original-consent/custody material. This is an explicit trusted source precondition. The checked Rust row has no invented ACTIVE/authorized bool or latest-terms digest. `source()` exposes immutable application material to the Authz adapter; it is not a transport view or detached authorization. Raw row validity alone does NOT prove actual locks or current designation: SQL owner tests must exercise stale/revoked/corrupt sources. Pure Rust/Cedar tests cannot certify those database facts.
+
+```rust
+pub struct NativePayrollReadProjectionRow {
+    pub account_id: Uuid,
+    pub session_id: Uuid,
+    pub account_security_generation: i64,
+    pub org_id: Uuid,
+    pub company_epoch: i64,
+    pub current_policy_receipt_id: Uuid,
+    pub assignment_id: Uuid,
+    pub assignment_revision: i64,
+    pub assignment_state: String,
+    pub role_id: Uuid,
+    pub role_revision: i64,
+    pub role_state: String,
+    pub valid_from: OffsetDateTime,
+    pub valid_until: OffsetDateTime,
+    pub delegable: bool,
+    pub action: ActionRef,
+    pub properties: Vec<PropertyRef>,
+    pub observed_at: OffsetDateTime,
+    pub source_xid: String,
+    pub source_backend_pid: i32,
+}
+pub struct CurrentPayrollReadAuthority { /* private checked row */ }
+impl CurrentPayrollReadAuthority {
+    pub fn from_retained_projection(source: &NativePolicySourceBinding,
+        row: NativePayrollReadProjectionRow) -> Result<Self, CompanyPolicyError>;
+    pub fn source(&self) -> &NativePayrollReadProjectionRow;
+    pub fn observed_at(&self) -> OffsetDateTime; // newest independent binding clock
+}
+```
+
+Payroll projection checks corresponding actual Auth/transaction binding exactly as bootstrap; Company epoch>=2 with nonnil current policy receipt; exact nonnil assignment/role identities and positive revisions; role_revision==1; statuses exactly ACTIVE; delegable=false; valid_from<valid_until, interval<=30days, exact integer microseconds in i64 (checked conversion); current DB observed time can fall outside assignment interval so Cedar evaluates inclusive-start/exclusive-end denial honestly. Action Company matches selected Company, registration_revision1 and exact manifest digest. Properties contain exactly18 distinct PropertyRefs, same selected Company/object type and schema_revision1; partial/duplicate/cross-scope/stale-schema sets are rejected. The canonical SQL owner independently proves these are the complete exact installed manifest roster. Do not invent full property-key labels by assigning UUID-sorted references to catalog order: registered_clauses does not contain those labels. Return deterministic property-reference sorting for Cedar sets. The checked authority additionally retains source.observed_at from the independent same-transaction binding; observed_at() returns that latest clock, and Cedar context observed_at_us MUST use it rather than the older row.observed_at. An acquisition row preceding assignment expiry with independent binding time at/after expiry must deny. Role/permanent-clause/custody/current Group validation is still required by canonical retained SQL owner; not reimplemented through fabricated constructor flags. This Rust projection is the finite read material shape, not a SQL table change.
+
+Extend existing CompanyPolicyDecisionPort with required methods (no default bodies):
+
+```rust
+fn decide_native_bootstrap(&self, authority: &CurrentNativeBootstrapAuthority,
+    request: &NativeBootstrapRequestV1)
+    -> Result<CompanyPolicyDecision, CompanyPolicyError>;
+fn decide_native_payroll_collection(&self, authority: &CurrentPayrollReadAuthority)
+    -> Result<CompanyPolicyDecision, CompanyPolicyError>;
+```
+
+Implementation: CompanyPolicy::new strict-compiles both new fixed bundles in addition to old composition validation, using existing sdk_identity/compile_bundle_from_sources. Decisions map actual checked material to frozen entity/context bytes specified in prior CEDAR.md, compile/validate bundle metadata under actual Company/current epoch, and use the real Authorizer with diagnostic/panic fail-closed behavior. Existing cfg(test) sdk_calls/panic_at_authorizer must also observe both native methods, so tests prove actual SDK reachability and exception containment. Reuse existing quote/field_key/compiler; no manual role evaluator or allow fallback.
+
+Only3 implementations exist: production CompanyPolicy; test ObservedCompanyPolicy in native_company_policy_http_tests.rs; test Policy in read_usecases_tests.rs. Add explicit delegation for native methods in both test wrappers to their real CompanyPolicy (for Policy instantiate CompanyPolicy::new or add its actual field), preserving existing initial-action override behavior. Do not add a production or trait default to avoid compiler work. None of the existing initial methods/resources/parsers is widened.
+
+Constructor and SDK fixtures in the adjacent test file are deliberate pure test vectors, never authenticated database facts. Missing type imports before implementation are not semantic RED. Real owner-bound full policy browser already supplied that RED. Root must independently review and run the new exact tests plus real owner integration before accepting this dependency.
+
+## Round2 projection alignment
+
+The narrow successor in current-read-CONTRACT-round2.md appends actual assignment_valid_from and assignment_valid_until to the existing Payroll9-column owner projection, yielding11. The SQL agent agreed these must come from the selected current assignment revision, not the permanent role clause. Identity current10-column reader and catalog helper signatures are unchanged. No source-dependent acceptance claim is made until this actual owner mapping is implemented and verified.
+
+Source state strings ACTIVE, nondelegability and exact action/property roster may be copied/parsed only from the canonical validated native read projection contract; no independent UI flags. Session/generation and source xid/PID/latest DBtime come from the retained Auth/transaction binding. NativePayrollReadProjectionRow is an application material assembly, not a claim every field is a distinct SQL output column. Its row.observed_at is the actual clock captured for acquisition, while authority.observed_at() preserves the newest independent binding clock for evaluation/final checks.
+
+## Exact Payroll adapter mapping
+
+- company_epoch,current_policy_receipt_id,assignment_id,assignment_revision,role_id,role_revision map from same-named owner columns.
+- valid_from←assignment_valid_from; valid_until←assignment_valid_until, without rounding.
+- action and properties parse the sole registered_clauses entry using existing closed COMPANY_CAPABILITY_CLAUSE_V1 JSON vocabulary. Require exactly one nondelegable Company collection clause with exact fixed manifest/action registration and exactly18 same-Company/type/schema1 PropertyRefs. The owner already verifies actual catalog identities/content/backing; no key names are invented. Reuse existing strict Object/WireClause/canonical scalar helpers or a finite shared parser, leaving historical initial7clause parser limits unchanged.
+- assignment_state and role_state are ACTIVE only because the canonical projection returns a row solely for that current eligible source. delegable copies the actual parsed clause false.
+- org_id is the exact selected Company argument whose actual owner lookup produced the row. Account/session/security generation come from actual retained Auth binding.
+- source_xid/source_backend_pid and acquisition observed_at are actual database observations on that same retained transaction; newest source.observed_at is retained separately for Cedar decision time. These checks reject mixed assembly; they are not cryptographic evidence of SQL lock provenance. Same-transaction adapter ownership and final source checks remain required.
+- company_name/company_slug are returned authorized document fields, not discarded authority. They enter existing authorized page projection; the Cedar material itself does not require duplicating them.
+
+Mount native_business_policy_unit_tests.rs as a new cfg(test) child of platform/authz/src/company_policy.rs, alongside existing tests. Keep the four resource bytes at their exact src/company_policy paths. Add resource mappings through existing Buck generator input when needed; no hand-written generated BUCK. Existing test SDK instrumentation is reused. This packet contains11 tests after adding latest-independent-clock expiry denial.

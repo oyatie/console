@@ -1,0 +1,8 @@
+[2026-09-22T00:29:13.407-04:00] Build ID: 2e0a998d-9b5d-4aaf-8877-4da16234f678
+[2026-09-22T00:29:13.409-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4439067072
+[2026-09-22T00:29:13.409-04:00] Directory changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc.4439067072
+[2026-09-22T00:29:13.409-04:00] File changed (since mergebase): root//tools/buck/__pycache__/gen_first_party.cpython-314.pyc
+[2026-09-22T00:29:13.409-04:00] 287 additional file change events (since mergebase)
+[2026-09-22T00:29:13.409-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:29:18.147-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED

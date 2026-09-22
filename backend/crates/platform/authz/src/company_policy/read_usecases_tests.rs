@@ -216,6 +216,21 @@ impl Policy {
     }
 }
 impl CompanyPolicyDecisionPort for Policy {
+    fn decide_native_bootstrap(
+        &self,
+        authority: &console_identity_application::company_policy::CurrentNativeBootstrapAuthority,
+        request: &console_identity_application::company_policy::NativeBootstrapRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        self.real.decide_native_bootstrap(authority, request)
+    }
+
+    fn decide_native_payroll_collection(
+        &self,
+        authority: &console_identity_application::company_policy::CurrentPayrollReadAuthority,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        self.real.decide_native_payroll_collection(authority)
+    }
+
     fn decide(
         &self,
         a: &CurrentCompanyAuthority,

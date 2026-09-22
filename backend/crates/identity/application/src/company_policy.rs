@@ -9,6 +9,11 @@ use uuid::Uuid;
 const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a90880fc92a089935";
 
 pub mod business;
+mod native_business;
+pub use native_business::{
+    CurrentNativeBootstrapAuthority, CurrentPayrollReadAuthority, NativeBootstrapProjectionRow,
+    NativeBootstrapRequestV1, NativePayrollReadProjectionRow, NativePolicySourceBinding,
+};
 mod reads;
 pub use reads::{
     CompanyContextCandidates, CompanyContextView, CompanyIdentityView, CompanyInitialCeilingView,
@@ -463,6 +468,16 @@ impl CurrentCompanyAuthority {
 }
 
 pub trait CompanyPolicyDecisionPort: Send + Sync {
+    fn decide_native_bootstrap(
+        &self,
+        authority: &CurrentNativeBootstrapAuthority,
+        request: &NativeBootstrapRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError>;
+    fn decide_native_payroll_collection(
+        &self,
+        authority: &CurrentPayrollReadAuthority,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError>;
+
     fn decide(
         &self,
         authority: &CurrentCompanyAuthority,

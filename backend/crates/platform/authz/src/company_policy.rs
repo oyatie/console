@@ -2,7 +2,8 @@
 use cedar_policy::{Authorizer, Context, Decision, Entities, EntityUid, Request};
 use console_identity_application::company_policy::{
     CompanyPolicyDecision, CompanyPolicyDecisionPort, CompanyPolicyError, CompanyPolicyRequest,
-    CurrentCompanyAuthority, InitialCompanyAction, PropertyRef,
+    CurrentCompanyAuthority, CurrentNativeBootstrapAuthority, CurrentPayrollReadAuthority,
+    InitialCompanyAction, NativeBootstrapRequestV1, PropertyRef,
 };
 use console_kernel_core::OrgId;
 use serde_json::json;
@@ -15,6 +16,7 @@ use crate::cedar_pbac::engine::{
 
 const SCHEMA_ID: &str = "native-company-authorization-2026-09-19.1";
 const SCHEMA: &str = include_str!("company_policy/native-company-authorization.cedarschema");
+mod native_business;
 
 pub struct CompanyPolicy {
     #[cfg(test)]
@@ -27,6 +29,7 @@ impl CompanyPolicy {
     pub fn new() -> Result<Self, CompanyPolicyError> {
         std::panic::catch_unwind(|| {
             sdk_identity()?;
+            native_business::validate_bundles()?;
             // Validate the fixed schema at composition, before any request.
             compile_bundle_from_sources(
                 OrgId::platform(),
@@ -156,6 +159,16 @@ impl CompanyPolicy {
             Some(&bundle.schema),
         )
         .map_err(|_| EvaluatorUnavailable)?;
+        self.authorize(&request, &bundle, &entities)
+    }
+
+    fn authorize(
+        &self,
+        request: &Request,
+        bundle: &crate::cedar_pbac::engine::CompiledBundle,
+        entities: &Entities,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        use CompanyPolicyError::EvaluatorUnavailable;
         #[cfg(test)]
         {
             self.sdk_calls
@@ -165,7 +178,7 @@ impl CompanyPolicy {
                 panic!("test authorizer boundary");
             }
         }
-        let response = Authorizer::new().is_authorized(&request, &bundle.policies, &entities);
+        let response = Authorizer::new().is_authorized(request, &bundle.policies, entities);
         if response.diagnostics().errors().next().is_some() {
             return Err(EvaluatorUnavailable);
         }
@@ -178,6 +191,25 @@ impl CompanyPolicy {
 }
 
 impl CompanyPolicyDecisionPort for CompanyPolicy {
+    fn decide_native_bootstrap(
+        &self,
+        authority: &CurrentNativeBootstrapAuthority,
+        request: &NativeBootstrapRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        std::panic::catch_unwind(AssertUnwindSafe(|| {
+            self.evaluate_native_bootstrap(authority, request)
+        }))
+        .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+    }
+
+    fn decide_native_payroll_collection(
+        &self,
+        authority: &CurrentPayrollReadAuthority,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        std::panic::catch_unwind(AssertUnwindSafe(|| self.evaluate_native_payroll(authority)))
+            .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+    }
+
     fn decide(
         &self,
         authority: &CurrentCompanyAuthority,
@@ -213,3 +245,7 @@ fn field_key(field: &PropertyRef, digest: &[u8; 32]) -> String {
 #[cfg(test)]
 #[path = "native_company_policy_unit_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "native_business_policy_unit_tests.rs"]
+mod native_business_tests;

@@ -1,0 +1,34 @@
+entity Account = {
+    "account_id": String,
+    "state": String
+};
+entity PayrollCollection = {
+    "org_id": String,
+    "object_type_id": String,
+    "registered_action_id": String,
+    "registration_revision": String,
+    "manifest_digest": String,
+    "recipient_account_id": String,
+    "assignment_id": String,
+    "assignment_revision": String,
+    "assignment_state": String,
+    "valid_from_us": Long,
+    "valid_until_us": Long,
+    "role_id": String,
+    "role_revision": String,
+    "role_state": String,
+    "company_epoch": String,
+    "delegable": Bool,
+    "allowed_fields": Set<String>
+};
+action "payroll.collection.read" appliesTo {
+    principal: [Account],
+    resource: [PayrollCollection],
+    context: {
+        "requested_org_id": String,
+        "object_type_id": String,
+        "registered_action_id": String,
+        "requested_fields": Set<String>,
+        "observed_at_us": Long
+    }
+};
