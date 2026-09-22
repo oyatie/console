@@ -1860,6 +1860,7 @@ pub(crate) mod company_setup {
     include!("native_company_intake_owner.rs");
 
     include!("native_policy_store_smoke.rs");
+    include!("native_policy_store_projection_tests.rs");
 
     mod native_policy_startup_tests {
         include!("native_policy_startup_tests.rs");
