@@ -154,7 +154,7 @@
     "tools/buck/gen_hydrate.py": "af1b6651e50f394d9e7f72e2fc717eeb55dd836a68d4dbf182d7ca0bc304855c",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d281912382fa15c336023016a6cedf5fd811117221862b0a05505a6d4625a478",
-    "tools/ui/build-payroll-wasm.sh": "16c49e95592aa02f108f766de0c3e3c3ac597e20567402c8c59ab39adf10b221",
+    "tools/ui/build-payroll-wasm.sh": "248fc88f8c7b82bb6f090776aa33f43e4f6161c64abd156af4993256e6c4583b",
     "tools/ui/hydration.bzl": "f947db9b92e54e3e3fb6786aee48c28a8e639c135633c2ea3e861da0954b7442",
     "tools/ui/wasm_bundle.py": "2113298b59972a872070327071ed367acbc4eed37a09506f86d1a3e58d47f42f"
   },
@@ -166,7 +166,7 @@
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "1df0848291be7840bb14bfc97a96d5b1f64fe93dad45fa5ddc0c02289a1576cd",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "2ec580f1847fc1f9bc01d60717194d624458f9004098f77b6a19131a4831726d"
+    "source_snapshot_sha256": "7d10a0c86d38baab522fdcadb29bee5965049df0c10851ab9f70c7742c2c9d6f"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",

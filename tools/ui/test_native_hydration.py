@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Private review candidate: actual producer/SSR boundary, not yet executed.
+"""Actual native producer/SSR boundary with retained source and action evidence.
 
 Exit 0: requested oracle passed. Exit 1: semantic assertion failed.
 Exit 2: fixture/tool/positive-control prerequisite failed; never lane RED.
@@ -65,6 +65,27 @@ def fixture(args):
 def events(root):
     return set((root / 'buck-out/v2/log').glob('*_events.pb.zst'))
 
+def linked_compiler_outputs(root, argv, compiled):
+    """Bind the actual wrapper input to a witnessed compiler output by full hash.
+
+    Buck relocates output_artifacts into content-addressed paths. Path spelling
+    and a directory's digest prefix are not identities; require the complete
+    consumed file to match an already inspected actual compiler action.
+    """
+    if argv.count('--input') != 1 or argv.index('--input') + 1 == len(argv):
+        raise Prerequisite('bindgen action must expose exactly one actual --input')
+    consumed = argv[argv.index('--input') + 1]
+    module = root / consumed
+    if not module.is_file():
+        raise Prerequisite('actual bindgen input file unavailable')
+    if module.read_bytes()[:8] != b'\0asm\x01\0\0\0':
+        raise SemanticFailure('actual bindgen input is not a WASM module')
+    consumed_hash = digest(module)
+    linked = [item for item in compiled if item['output_sha256'] == consumed_hash]
+    if not linked:
+        raise SemanticFailure('actual bindgen input does not match a witnessed native compiler output')
+    return consumed, consumed_hash, linked
+
 def inspect_native_actions(root, evidence, logs):
     """Require actual new compiler and bindgen actions; a no-op cannot pass.
 
@@ -126,8 +147,8 @@ def inspect_native_actions(root, evidence, logs):
     for row in rows:
         argv = row.get('reproducer', {}).get('details', {}).get('command', [])
         executables = [x for x in argv if Path(x).name == 'wasm-bindgen' and (root / x).is_file()]
-        linked = [c for c in compiled if c['output'] in argv]
-        if executables and linked:
+        if executables:
+            consumed, consumed_hash, linked = linked_compiler_outputs(root, argv, compiled)
             if '--out-dir' not in argv or argv.index('--out-dir') + 1 == len(argv):
                 raise Prerequisite('bindgen action must expose its actual --out-dir for output binding')
             output_dir = root / argv[argv.index('--out-dir') + 1]
@@ -139,7 +160,9 @@ def inspect_native_actions(root, evidence, logs):
                 raise SemanticFailure('actual bindgen executable is not pinned 0.2.123')
             bindgen.append({'action': row, 'executable': executables[0],
                             'executable_sha256': digest(root / executables[0]),
-                            'linked_input_sha256': linked[0]['output_sha256'],
+                            'linked_input': consumed,
+                            'linked_input_sha256': consumed_hash,
+                            'compiler_output': linked[0]['output'],
                             'outputs': {p.name: digest(p) for p in output_pair}})
     record(evidence / 'native-bindgen-actions.json', bindgen)
     if not bindgen:
@@ -169,7 +192,7 @@ sys.exit(97)
     env['PATH'] = str(sentinel_dir) + os.pathsep + env['PATH']
     env['CONSOLE_ORACLE_CARGO_LOG'] = str(cargo_log)
     before = events(root)
-    proc = command(['bash', 'tools/ui/build-payroll-wasm.sh'], root, evidence, 'producer', env)
+    proc = command(['bash', 'tools/ui/build-payroll-wasm.sh', '-j2'], root, evidence, 'producer', env)
     calls = [json.loads(x) for x in cargo_log.read_text().splitlines()] if cargo_log.exists() else []
     product = [x for x in calls if any(a in ('build', 'check', 'test', 'run', 'rustc') for a in x)]
     if product:
@@ -195,7 +218,7 @@ def consumer(root, evidence):
     # Actual existing library and test resource consumers, no new missing label.
     baseline_check = command(['node', 'scripts/check-wasm-bundle-drift.mjs'], root, evidence, 'baseline-integrity')
     for index, label in enumerate(SSR):
-        baseline = command(['tools/buck2', 'build', label], root, evidence, f'consumer-positive-{index}')
+        baseline = command(['tools/buck2', 'build', '-j2', label], root, evidence, f'consumer-positive-{index}')
         if baseline.returncode:
             raise Prerequisite('existing native SSR/test positive build failed; no consumer RED')
     target = root / PAIR[0]
@@ -207,7 +230,7 @@ def consumer(root, evidence):
         # Separate commands ensure one validated consumer cannot hide another
         # consumer that still embeds unchecked source-tree resources.
         for index, label in enumerate(SSR):
-            corrupted_results.append(command(['tools/buck2', 'build', label], root, evidence, f'consumer-corrupted-{index}'))
+            corrupted_results.append(command(['tools/buck2', 'build', '-j2', label], root, evidence, f'consumer-corrupted-{index}'))
     finally:
         target.write_bytes(original)
     accepted = [label for label, result in zip(SSR, corrupted_results) if result.returncode == 0]
@@ -223,7 +246,7 @@ def consumer(root, evidence):
         if 'Committed hydration bundle is stale' not in failure or PAIR[0].name not in failure:
             raise Prerequisite('consumer failed without the expected bundle-validation diagnostic')
     for index, label in enumerate(SSR):
-        repaired = command(['tools/buck2', 'build', label], root, evidence, f'consumer-repaired-{index}')
+        repaired = command(['tools/buck2', 'build', '-j2', label], root, evidence, f'consumer-repaired-{index}')
         if repaired.returncode:
             raise Prerequisite('restored positive control failed')
 
