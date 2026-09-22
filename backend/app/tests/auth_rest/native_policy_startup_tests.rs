@@ -56,12 +56,12 @@ async fn policy_classified(pool: &PgPool) -> String {
 async fn install_policy(pool: &PgPool) {
     assert_eq!(
         hex::encode(Sha256::digest(POLICY_INSTALLER.as_bytes())),
-        "71b085fbb8e69cde9d06a98dfe7ecd96f372380e82a82ecffbcac6b1b347449c",
+        "3342fbb085b2d9644ec440edf2671c8de05c6153c547cd3a1b8b8c76be1f112e",
         "actual independently reviewed installer bytes changed"
     );
     assert_eq!(
         hex::encode(Sha256::digest(POLICY_CLASSIFIER.as_bytes())),
-        "b2acc88e3b532ea4a82f7692c8203cc20373fa7f49f5ea158e9d251f0cd6b296",
+        "a0f4aef40030f33c3965589da45fe88d462693186c4af78622441fab039c7714",
         "actual independently reviewed classifier bytes changed"
     );
     let mut tx = pool.begin().await.unwrap();

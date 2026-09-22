@@ -1861,6 +1861,7 @@ pub(crate) mod company_setup {
 
     include!("native_policy_store_smoke.rs");
     include!("native_policy_store_projection_tests.rs");
+    include!("native_policy_company_birth_guard.rs");
 
     mod native_policy_startup_tests {
         include!("native_policy_startup_tests.rs");
