@@ -30,8 +30,7 @@ async fn native_company_real_browser_create_reopen_and_workspace(pool: PgPool) {
         output.is_absolute() && !output.exists(),
         "browser output must be a fresh owned directory"
     );
-    prepare_http_database(&pool).await;
-    seed_terms(&pool).await;
+    prepare_ready_database(&pool).await;
     let artifacts = Artifacts::new();
     let key = SigningKey::random(&mut OsRng);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

@@ -308,6 +308,9 @@ fn sql_error(error: sqlx::Error) -> Error {
         (Some("P0001"), "company_enrollment.group_unavailable") => Error::GroupUnavailable,
         (Some("P0001"), "company_enrollment.conflict") => Error::Conflict,
         (Some("P0001"), "company_enrollment.capacity") => Error::Capacity,
+        // Only the owner's actual command fence emits this marker. A source,
+        // Account, or deployment-capacity lock timeout is not this outcome.
+        (Some("P0001"), "company_enrollment.outcome_unknown") => Error::Unconfirmed,
         _ => Error::Unavailable,
     }
 }

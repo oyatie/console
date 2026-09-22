@@ -1,0 +1,71 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T22:55:39.499-04:00] Build ID: 9e25e0c6-77ff-4950-a130-5cda74b40948
+[2026-09-21T22:55:39.581-04:00] File changed (since mergebase): root//ops/__pycache__/test_company_enrollment_input_generator.cpython-314.pyc.4452396336
+[2026-09-21T22:55:39.581-04:00] Directory changed (since mergebase): root//ops/__pycache__/test_company_enrollment_input_generator.cpython-314.pyc.4452396336
+[2026-09-21T22:55:39.581-04:00] File changed (since mergebase): root//ops/__pycache__/test_company_enrollment_input_generator.cpython-314.pyc
+[2026-09-21T22:55:39.581-04:00] 2 additional file change events (since mergebase)
+[2026-09-21T22:55:39.581-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T22:55:46.600-04:00] Waiting on buck2 daemon 9e25e0c6-77ff-4950-a130-5cda74b40948...
+[2026-09-21T22:55:46.600-04:00] Resource usage: CPU: 3%
+[2026-09-21T22:55:46.600-04:00] IO: Write: 1
+[2026-09-21T22:55:53.699-04:00] Waiting on buck2 daemon 9e25e0c6-77ff-4950-a130-5cda74b40948...
+[2026-09-21T22:55:53.699-04:00] Resource usage: CPU: 3%
+[2026-09-21T22:55:53.699-04:00] IO: Write: 1
+[2026-09-21T22:56:00.701-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:07.800-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:14.900-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:21.900-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:29.001-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:36.101-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:43.201-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:50.301-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:56:57.301-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:57:04.401-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:57:11.402-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:57:18.501-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:57:25.601-04:00] Waiting on root//third-party/rust:_strum_macros-0.27 (prelude//platforms:default#11a256c53bf8083e) -- action (write MPPL/__strum_macros-link_linker_args.txt), and 677 other actions
+[2026-09-21T22:57:33.201-04:00] Waiting on root//third-party/rust:or_poisoned-0.1 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 576 other actions
+[2026-09-21T22:57:40.300-04:00] Waiting on root//third-party/rust:prost-0.14 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/prost-metadata-full-diag.args), and 65 other actions
+[2026-09-21T22:57:47.401-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:57:54.502-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:01.502-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:08.602-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:15.702-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:22.802-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:29.903-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:37.002-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:44.102-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:51.103-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:58:58.202-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T22:59:03.653-04:00] Cache hits: 0%
+[2026-09-21T22:59:03.653-04:00] Commands: 2 (cached: 0, remote: 0, local: 2)
+BUILD SUCCEEDED
+[2026-09-21T22:59:03.697-04:00] Build ID: 1774c0dc-99e1-4b71-a5f3-057c55ec1d06
+[2026-09-21T22:59:03.701-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T22:59:10.797-04:00] Waiting on buck2 daemon 1774c0dc-99e1-4b71-a5f3-057c55ec1d06...
+[2026-09-21T22:59:10.830-04:00] Resource usage: CPU: 2%
+[2026-09-21T22:59:10.831-04:00] IO: Write: 1
+[2026-09-21T22:59:17.898-04:00] Waiting on buck2 daemon 1774c0dc-99e1-4b71-a5f3-057c55ec1d06...
+[2026-09-21T22:59:17.899-04:00] Resource usage: CPU: 7%
+[2026-09-21T22:59:17.899-04:00] IO: Stat: 1
+[2026-09-21T22:59:24.998-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:59:31.999-04:00] Waiting on root//backend -- loading package file tree
+[2026-09-21T22:59:39.097-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 699 other actions
+[2026-09-21T22:59:46.898-04:00] Waiting on root//third-party/rust:rustix-1-build-script-build (prelude//platforms:default#5732820ad45f622d) -- action (write_json XIPL-depslink-symlinked_dirs.json), and 601 other actions
+[2026-09-21T22:59:54.798-04:00] Waiting on root//third-party/rust:tokio-stream-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 180 other actions
+[2026-09-21T23:00:01.898-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-21T23:00:08.899-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-21T23:00:15.899-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-21T23:00:19.934-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (23.7s)
+[2026-09-21T23:00:19.934-04:00] ---- STDOUT ----
+[2026-09-21T23:00:19.934-04:00]
+[2026-09-21T23:00:19.934-04:00] running 1 test
+[2026-09-21T23:00:19.934-04:00] test account_browser::deployment_operator_designation::company_setup::selected_administrator_receives_only_company_ceiling_without_operator_inheritance ... ok
+[2026-09-21T23:00:19.934-04:00]
+[2026-09-21T23:00:19.934-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 516 filtered out; finished in 8.73s
+[2026-09-21T23:00:19.934-04:00]
+[2026-09-21T23:00:19.934-04:00]
+[2026-09-21T23:00:19.934-04:00] ---- STDERR ----
+[2026-09-21T23:00:19.934-04:00]
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

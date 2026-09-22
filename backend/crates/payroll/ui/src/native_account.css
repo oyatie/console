@@ -2,3 +2,5 @@ body{min-width:280px}button,a,input,summary{-webkit-tap-highlight-color:transpar
 @media(max-width:600px){.entry-header{padding:22px 20px}main{padding:14px 14px 32px}.entry-card,.entry-card.welcome{padding:28px 22px;border-radius:14px}.welcome h1{font-size:32px}h1{font-size:26px}.actions>.button{flex:1}.terms-item{padding:13px}.terms-item details{margin-left:0}.workspace-state{padding:18px}.lead{font-size:15px}}
 
 [data-company-enrollment] fieldset>label{display:block;font-weight:650;font-size:14px;margin:0 0 8px}.company-submit{margin-top:24px}
+
+.entry-card dd{margin-inline-start:0;overflow-wrap:anywhere}

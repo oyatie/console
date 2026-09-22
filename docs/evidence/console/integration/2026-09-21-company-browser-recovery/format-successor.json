@@ -1,0 +1,12 @@
+[
+  {
+    "path": "backend/app/tests/auth_rest/native_company_setup.rs",
+    "before": "96d38d49502c18db5abcada365a6a81c9e7c5a1e286aa085ee75327184b819d0",
+    "after": "8add8f23fbaa1266b670c97e62b6dedff5a754b8ea3735670a8005cb55b7b971"
+  },
+  {
+    "path": "backend/crates/identity/rest/src/lib.rs",
+    "before": "944074bc68e1cb6e604a94a137e5fadfbbd9e4c22825244f0e7b6458b5b68067",
+    "after": "a5f43e45577b165e3f4ffc583904b70a0ed03fe6ead701c76cf6c305da58752d"
+  }
+]

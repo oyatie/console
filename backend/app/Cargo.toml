@@ -82,6 +82,7 @@ console-financial-adapter-postgres = { workspace = true }
 console-financial-rest = { workspace = true }
 console-facilities-rest = { path = "../crates/facilities/rest" }
 console-identity-adapter-postgres = { workspace = true }
+console-identity-application = { workspace = true }
 console-identity-rest = { workspace = true }
 console-inspection-adapter-postgres = { workspace = true }
 console-inspection-rest = { workspace = true }
@@ -191,7 +192,6 @@ url = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]
-console-identity-application = { workspace = true }
 # Browser history oracle compares lossless PostgreSQL-rendered row JSON.
 serde_json = { workspace = true, features = ["raw_value"] }
 console-platform-test-support = { workspace = true }

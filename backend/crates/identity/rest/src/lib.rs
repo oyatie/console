@@ -18,6 +18,7 @@
 //! Self-profile edits are open to every authenticated user.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod company;
 mod openapi;
 pub use openapi::OPENAPI_FRAGMENT;
 

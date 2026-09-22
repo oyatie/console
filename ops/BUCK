@@ -44,3 +44,9 @@ export_file(
     name = "postgres-company-enrollment-guards.sql",
     visibility = ["PUBLIC"],
 )
+
+# Atomic upgrade following Account bootstrap, used by the native Company fixture.
+export_file(
+    name = "postgres-finalize-company-enrollment.sql",
+    visibility = ["PUBLIC"],
+)

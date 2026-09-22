@@ -1,0 +1,18 @@
+# Independent Company browser review
+
+Verdict: ACCEPT the exact Company creation/reopening browser leaf and CSS reflow correction; not MVP, policy workflow, usability or production qualification.
+
+Candidate: stage aE0ay4, 25 source pins. All product pins match current Company root. The sole subsequent change is approved native_company_setup.rs prerequisite successor 8af311e0→96d38d49 after execution; do not relabel the run as testing that successor.
+
+Execution: original browser test 1 passed / 522 filtered / 0 failed, ignored, infrastructure or build failures; 23.95 seconds. Three independent database checkpoints ENROLLED, COMPANY_COMMITTED, COMPANY_REOPENED. Nine exact document navigations returned 200; three expected POSTs each exactly once; no unexpected mutations/external requests. Browser PID 69679 observed alive then absent, server/relay shutdown confirmed. Both browser and owner results agree.
+
+Screenshots opened directly with view_image, from this run only:
+1. 01-public.png — readable 320px entry with clear login/register hierarchy.
+2. 02-terms.png — readable terms and visible checkbox keyboard focus. Test terms only, not production legal acceptance.
+3. 03-account-enrolled.png — truthful empty context before operator designation; no business task reachable yet at that point.
+4. 04-company-created.png — actual UI-created Company name rendered literally, explicit completion and reopen CTA.
+5. 05-company-workspace.png — Company identity heading visible and full long identifier wraps inside card. CSS removes dd indentation and wraps text; no clipping or ellipsis. Policy link and workspace-list return remain visible.
+
+Design gaps: Company screen remains identity plus a policy link, without persistent product navigation or an actionable business queue. Compared with Oyatie Console.dc.html scope/status/inspector/next-transition patterns, this is a working entry prerequisite, not a polished enterprise workspace. Creation form was exercised but not captured; no policy screen screenshot. Narrow-screen keyboard/reflow observations do not establish desktop density, 200% zoom, Korean IME, screen-reader usability, contrast or human discoverability.
+
+Remaining Company acceptance work before broader merge claim: four approved finalized-fixture recovery/security/input probes; actual cancellation/expiry/unknown-response and authority-revocation recovery evidence; integration checks preserving newer hydration/theme/policy owners. No additional concrete defect found in bounded transport review. Existing architecture/finalizer/source approvals should be reused, not treated as repeated here.

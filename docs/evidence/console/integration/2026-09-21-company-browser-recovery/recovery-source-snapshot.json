@@ -1,0 +1,105 @@
+{
+  "base": "85fe5377e721ba38e35098a27191069bac07b355",
+  "files": [
+    {
+      "path": "backend/Cargo.lock",
+      "sha256": "d0247e6e62c70564627ebb6810d64b6dece86ac19b8b301277246c0c60fdf3e8"
+    },
+    {
+      "path": "backend/app/BUCK",
+      "sha256": "b75fdb40724508ec7360e7a290b60637f04b37fe7808a0dbd567737b1ad77822"
+    },
+    {
+      "path": "backend/app/Cargo.toml",
+      "sha256": "73c7fe0d63f10d273951cd3d0bd84a5dba39246bda7472085e9e30ae709a9183"
+    },
+    {
+      "path": "backend/app/src/account_custody.rs",
+      "sha256": "2ff240283cc6c39263752679ba5b70e629bfd58a4564d034b22e9a42df4cde6c"
+    },
+    {
+      "path": "backend/app/src/company_enrollment_custody_state.sql",
+      "sha256": "fb2030a4d2891b206c41454ce8258d65920034e8ef817c5f7a812569aae614bd"
+    },
+    {
+      "path": "backend/app/src/lib.rs",
+      "sha256": "a6dc3e7cd0f87b7e5a537e0379923b480759b669552fa4771e62cf5491f21836"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_company_browser.rs",
+      "sha256": "9e0f3af148976a3dd10fb9fd99306eeb6ad46a05dbdefd41bac41e6b58fe1a84"
+    },
+    {
+      "path": "backend/app/tests/auth_rest/native_company_setup.rs",
+      "sha256": "96d38d49502c18db5abcada365a6a81c9e7c5a1e286aa085ee75327184b819d0"
+    },
+    {
+      "path": "backend/crates/identity/adapter-postgres/src/company_enrollment.rs",
+      "sha256": "9389fdfdabd748e9d07b0f53c6a22ff69da1e9b2de36d6276f1e88d30c8c1233"
+    },
+    {
+      "path": "backend/crates/identity/rest/BUCK",
+      "sha256": "db90db3e41c9a23c49eda33c26380e61f2b566458aabe68572976070e1142526"
+    },
+    {
+      "path": "backend/crates/identity/rest/Cargo.toml",
+      "sha256": "ce96d7e6e1cfa19b22dffd9506a7298e7ccf53cd42e51c93812dd370e0ee749d"
+    },
+    {
+      "path": "backend/crates/identity/rest/src/company.rs",
+      "sha256": "172f627e3c85e527017974d8fb48211e2378d5a88be279cf1424d7a164523c19"
+    },
+    {
+      "path": "backend/crates/identity/rest/src/lib.rs",
+      "sha256": "944074bc68e1cb6e604a94a137e5fadfbbd9e4c22825244f0e7b6458b5b68067"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/native_account.css",
+      "sha256": "d4f060899da3d1066609676e8e70d554c6668936fe4f5fbfb0c835fbdf197dcc"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/native_account.js",
+      "sha256": "8e024d85d3f3d691a568b1bc2da4c90827f91b68bfb47ef8d008635b39d32f2f"
+    },
+    {
+      "path": "backend/crates/payroll/ui/src/native_account.rs",
+      "sha256": "bbf1fecd31f494d849640ad72ee1e550f3a41e25fd3c1f1e4f8db88968f9d6fa"
+    },
+    {
+      "path": "ops/BUCK",
+      "sha256": "8f73c43d9ad2db2c03098ca355c3cbd0248c6d92b1ba93109200fc5eceae6bdc"
+    },
+    {
+      "path": "ops/company-enrollment/owner-v1.sql",
+      "sha256": "c6b7047727914d1d29fd77bd50355e7e2f5f918c9b6771658a0103475f5d8a44"
+    },
+    {
+      "path": "ops/generate-account-custody.py",
+      "sha256": "9c0c8feccdc9d988fbac5276338231698ab10998dee7d1146b230650e8a8ba06"
+    },
+    {
+      "path": "ops/postgres-capture-company-enrollment-custody.sql",
+      "sha256": "6ef7b2754176952da89a0b61a7ba999d64b4c12e70fc949add18c63171b0abb5"
+    },
+    {
+      "path": "ops/postgres-company-enrollment-owner.sql",
+      "sha256": "2a7fffb57eedff3c3ba5981015e22f53ea80972e3222c38ff1c6ace1f0858d2d"
+    },
+    {
+      "path": "ops/postgres-finalize-account-custody.sh",
+      "sha256": "5512485c9ec039ed31f375fe5752a98ebbe872965256e71cc3e5decd8e514eea"
+    },
+    {
+      "path": "ops/postgres-finalize-company-enrollment.sql",
+      "sha256": "bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f"
+    },
+    {
+      "path": "ops/test_company_enrollment_input_generator.py",
+      "sha256": "21d5086fc4b32365efee5d053304055e22032d5a9a619badf89079c0d65b4962"
+    },
+    {
+      "path": "tools/buck/gen_first_party.py",
+      "sha256": "8120545d6458b9650872a63e87d9d9fb55e70edb2b78992ecc1e9b0416d7423b"
+    }
+  ]
+}

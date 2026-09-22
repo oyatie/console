@@ -1,0 +1,157 @@
+{
+  "kind": "REAL_NATIVE_COMPANY_UI_BROWSER_LEAF",
+  "node_version": "v26.7.0",
+  "checkpoints": [
+    "ENROLLED",
+    "COMPANY_COMMITTED",
+    "COMPANY_REOPENED"
+  ],
+  "screenshots": [
+    "01-public.png",
+    "02-terms.png",
+    "03-account-enrolled.png",
+    "04-company-created.png",
+    "05-company-workspace.png"
+  ],
+  "documents": [
+    {
+      "ordinal": 1,
+      "method": "GET",
+      "path": "/",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 2,
+      "method": "GET",
+      "path": "/account/register",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 3,
+      "method": "GET",
+      "path": "/account",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 4,
+      "method": "GET",
+      "path": "/account",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 5,
+      "method": "GET",
+      "path": "/account/companies/new",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 6,
+      "method": "GET",
+      "path": "/account/companies/requests/21f2b75b-6a0a-4aca-b8a7-62e87d5bf5b2",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 7,
+      "method": "GET",
+      "path": "/account/companies/requests/21f2b75b-6a0a-4aca-b8a7-62e87d5bf5b2",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 8,
+      "method": "GET",
+      "path": "/companies/d1f43e83-6fef-41af-ba0c-c1ea184e3529",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    },
+    {
+      "ordinal": 9,
+      "method": "GET",
+      "path": "/account/companies/requests/21f2b75b-6a0a-4aca-b8a7-62e87d5bf5b2",
+      "redirected": false,
+      "status": 200,
+      "url_exact": true
+    }
+  ],
+  "document_failures": 0,
+  "posts": {
+    "/api/v2/auth/registration/start": 1,
+    "/api/v2/auth/registration/finish": 1,
+    "/api/v2/companies/enroll": 1
+  },
+  "external_requests": 0,
+  "unexpected_mutations": 0,
+  "mutations": [
+    {
+      "ordinal": 1,
+      "method": "POST",
+      "path": "/api/v2/auth/registration/start"
+    },
+    {
+      "ordinal": 2,
+      "method": "POST",
+      "path": "/api/v2/auth/registration/finish"
+    },
+    {
+      "ordinal": 3,
+      "method": "POST",
+      "path": "/api/v2/companies/enroll"
+    }
+  ],
+  "cleanup": {
+    "confirmed": true,
+    "browser_process_exited": true,
+    "relay_closed": true
+  },
+  "limits": [
+    "Chromium153 virtual resident authenticator and automatic presence only; no human or physical-device picker proof.",
+    "Ephemeral-SPKI localhost TLS termination and unencrypted owned loopback upstream are test topology, not production TLS/HA certification.",
+    "Mutation census observes BrowserContext HTTP request events for pages/popups/workers; service workers are blocked. GET/HEAD/OPTIONS, WebSocket messages and operating-system egress are not certified.",
+    "Three independent DB acknowledgements plus actual parent-owned designation are required; parent remains final acceptance owner. Grant/revoke and dropped-response recovery are separate acceptance leaves.",
+    "Keyboard discovery and320px geometric reflow are observed on mounted pages; this is not human usability, screen-reader, contrast or complete WCAG certification."
+  ],
+  "browser_pid": 69679,
+  "browser_version": "153.0.8010.12",
+  "root_status": 200,
+  "reflow_root_320": true,
+  "keyboard_skip": true,
+  "keyboard_registration": true,
+  "reflow_register_320": true,
+  "keyboard_terms": true,
+  "keyboard_registration_submit": true,
+  "registration_wire": true,
+  "reflow_account_320": true,
+  "resident": true,
+  "literal_secret_absent": true,
+  "cookie_security": true,
+  "keyboard_company_entry": true,
+  "recipient_consequence": true,
+  "reflow_setup_320": true,
+  "invalid_input_preserved": true,
+  "keyboard_company_submit": true,
+  "company_wire": true,
+  "command_id": "21f2b75b-6a0a-4aca-b8a7-62e87d5bf5b2",
+  "org_id": "d1f43e83-6fef-41af-ba0c-c1ea184e3529",
+  "company_result": true,
+  "reflow_result_320": true,
+  "company_reopen": true,
+  "company_workspace": true,
+  "reflow_company_320": true,
+  "company_back": true,
+  "business_input_not_stored": true,
+  "status": "BROWSER_LEAF_PASSED"
+}

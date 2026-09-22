@@ -236,18 +236,32 @@ if (companyForm) {
   const error = document.getElementById('company-error');
   const resultLink = document.getElementById('company-result');
   const account = companyForm.dataset.accountId;
+  const originalCommand = companyForm.dataset.commandId;
+  const originalReadOnly = [nameInput.readOnly, slugInput.readOnly];
+  const cancel = companyForm.querySelector('[data-company-cancel]');
   const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value) && value !== '00000000-0000-0000-0000-000000000000';
   let pending = false;
   let dispatched = false;
   const problem = text => { error.hidden = false; error.textContent = text; };
+  async function companyProof() {
+    const response = await fetch('/api/v2/auth/csrf', {
+      headers:{Accept:'application/json', 'X-Console-CSRF':'fetch'},
+      credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error('csrf_unavailable');
+    const value = await response.json();
+    if (typeof value.csrf_proof !== 'string' || !value.csrf_proof) throw new Error('csrf_unavailable');
+    return value.csrf_proof;
+  }
   const validateName = () => {
     const value = nameInput.value;
     nameInput.setCustomValidity(new TextEncoder().encode(value).length > 256 || /^\p{White_Space}*$/u.test(value) || /[\u0000-\u001f\u007f-\u009f]/u.test(value)
       ? '회사 이름을 확인해 주세요. 공백만 입력하거나 제어 문자를 사용할 수 없으며, 한글 기준 약 85자까지 입력할 수 있습니다.' : '');
   };
   nameInput.addEventListener('input', validateName);
-  if (window.isSecureContext && typeof crypto.randomUUID === 'function' && uuid(account)) {
+  if (window.isSecureContext && typeof crypto.randomUUID === 'function' && uuid(account) && (!originalCommand || uuid(originalCommand))) {
     submit.disabled = false;
+    if (cancel && uuid(originalCommand)) cancel.disabled = false;
   } else {
     problem('이 브라우저에서는 등록 요청을 준비할 수 없습니다. 보안 연결에서 다시 열어 주세요.');
   }
@@ -258,11 +272,12 @@ if (companyForm) {
     if (!companyForm.reportValidity()) return;
     pending = true;
     submit.disabled = true;
+    if (cancel) cancel.disabled = true;
     error.hidden = true;
     error.textContent = '';
     nameInput.readOnly = true;
     slugInput.readOnly = true;
-    const command = crypto.randomUUID();
+    const command = originalCommand || crypto.randomUUID();
     const resultPath = `/account/companies/requests/${command}`;
     // The recovery anchor is application-owned and exists before dispatch.
     // Once dispatched, reload also reopens this original request.
@@ -270,23 +285,36 @@ if (companyForm) {
     const body = {command_id:command, group_id:null, administrative_account_id:account, name:nameInput.value, slug:slugInput.value};
     status.textContent = '등록 요청을 준비하고 있습니다.';
     try {
-      const csrfResponse = await fetch('/api/v2/auth/csrf', {
-        headers:{Accept:'application/json', 'X-Console-CSRF':'fetch'},
-        credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
-      });
-      if (!csrfResponse.ok) throw new Error('csrf_unavailable');
-      const csrf = await csrfResponse.json();
-      if (typeof csrf.csrf_proof !== 'string' || !csrf.csrf_proof) throw new Error('csrf_unavailable');
+      const csrf = await companyProof();
       window.history.replaceState(null, '', resultPath);
       dispatched = true;
       status.textContent = '회사 업무 공간을 만들고 있습니다.';
       const response = await fetch('/api/v2/companies/enroll', {
-        method:'POST', headers:{Accept:'application/json', 'Content-Type':'application/json', 'X-Console-CSRF':csrf.csrf_proof},
+        method:'POST', headers:{Accept:'application/json', 'Content-Type':'application/json', 'X-Console-CSRF':csrf},
         body:JSON.stringify(body), credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
       });
       if (!response.ok) {
-        // Intake can already be durable. Keep the original request regardless
-        // of the HTTP failure and let its current owner explain/recover it.
+        // A known refusal describes this attempt, not the entire command's
+        // history. Keep the original locator even if a prior intake is durable.
+        const failure = await response.json().catch(() => null);
+        const code = failure?.error?.code;
+        const known = {
+          '409:command_conflict': '이 요청 번호에 이미 다른 내용이 저장되어 있습니다. 원래 요청 결과를 확인해 주세요.',
+          '401:authentication_invalid': '로그인이 만료되었습니다. 다시 로그인한 뒤 같은 요청 결과를 확인해 주세요.',
+          '401:auth_required': '로그인이 필요합니다. 다시 로그인한 뒤 같은 요청 결과를 확인해 주세요.',
+          '403:csrf_invalid': '요청 확인이 만료되었습니다. 같은 요청 결과를 다시 열어 확인해 주세요.',
+          '403:company_enrollment_forbidden': '현재 계정에는 회사 등록 권한이 없습니다. 관리자에게 권한을 확인해 주세요.',
+          '422:company_enrollment_invalid': '입력한 회사 정보를 처리할 수 없습니다. 저장된 요청 결과를 확인해 주세요.',
+          '422:group_enrollment_unavailable': '선택한 그룹으로는 회사를 등록할 수 없습니다. 요청 결과를 확인해 주세요.',
+          '429:company_enrollment_capacity': '진행 중인 등록 요청이 많습니다. 기존 요청을 확인한 뒤 같은 요청으로 다시 시도해 주세요.',
+          '413:company_enrollment_too_large': '등록 요청이 허용된 크기를 초과했습니다. 요청 결과를 확인해 주세요.',
+        }[`${response.status}:${code}`];
+        if (known) {
+          status.textContent = known;
+          resultLink.hidden = false;
+          status.focus();
+          return;
+        }
         throw new Error('enrollment_unconfirmed');
       }
       const receipt = await response.json();
@@ -310,9 +338,49 @@ if (companyForm) {
       pending = false;
       if (!dispatched) {
         submit.disabled = false;
-        nameInput.readOnly = false;
-        slugInput.readOnly = false;
+        if (cancel) cancel.disabled = false;
+        [nameInput.readOnly, slugInput.readOnly] = originalReadOnly;
       }
+    }
+  });
+  cancel?.addEventListener('click', async () => {
+    if (pending || dispatched || !uuid(originalCommand)) return;
+    pending = true;
+    submit.disabled = true;
+    cancel.disabled = true;
+    error.hidden = true;
+    resultLink.href = `/account/companies/requests/${originalCommand}`;
+    status.textContent = '취소 요청을 준비하고 있습니다.';
+    try {
+      const csrf = await companyProof();
+      dispatched = true;
+      const response = await fetch(`/api/v2/companies/enrollments/${originalCommand}/cancel`, {
+        method:'POST', headers:{Accept:'application/json', 'Content-Type':'application/json', 'X-Console-CSRF':csrf},
+        body:'{}', credentials:'same-origin', cache:'no-store', redirect:'error', signal:AbortSignal.timeout(15000),
+      });
+      const value = await response.json();
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          status.textContent = '취소 권한을 확인할 수 없습니다. 로그인 상태를 확인한 뒤 같은 요청 결과를 다시 열어 주세요.';
+          resultLink.hidden = false;
+          status.focus();
+          return;
+        }
+        throw new Error('cancel_unconfirmed');
+      }
+      if (value.original_command_id !== originalCommand || !['COMMITTED','CANCELLED','EXPIRED'].includes(value.outcome) ||
+          value.result_path !== `/account/companies/requests/${originalCommand}`) throw new Error('cancel_unconfirmed');
+      // The owner decides whether creation committed before cancellation.
+      window.location.assign(value.result_path);
+    } catch {
+      status.textContent = dispatched
+        ? '취소 결과를 확인할 수 없습니다. 같은 요청의 결과를 다시 확인해 주세요.'
+        : '취소 요청을 보내지 못했습니다. 로그인 상태를 확인하고 다시 시도해 주세요.';
+      resultLink.hidden = false;
+      status.focus();
+    } finally {
+      pending = false;
+      if (!dispatched) { submit.disabled = false; cancel.disabled = false; }
     }
   });
   window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });

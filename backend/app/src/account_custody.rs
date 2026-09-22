@@ -12,6 +12,17 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<(), AppError> {
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let company: String = sqlx::query_scalar(include_str!("company_enrollment_custody_state.sql"))
+        .fetch_one(&mut *transaction)
+        .await?;
+    if company == "company_enrollment.finalized" {
+        // This exact profile includes Account, credentials and Company custody.
+        transaction.commit().await?;
+        return Ok(());
+    }
+    if company != "company_enrollment.absent" {
+        return Err(AppError::Config(company));
+    }
     let state: String = sqlx::query_scalar(include_str!("account_custody_state.sql"))
         .fetch_one(&mut *transaction)
         .await?;

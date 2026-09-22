@@ -10,6 +10,7 @@ pub struct TermsItem {
 
 pub enum ContextState {
     Empty,
+    Companies(Vec<(String, String)>),
     Unavailable,
 }
 
@@ -33,6 +34,31 @@ pub enum Page {
     },
     CompanySetup {
         account_id: String,
+        command_id: Option<String>,
+    },
+    CompanyCreated {
+        company: Option<(String, String)>,
+    },
+    CompanyPending {
+        command_id: String,
+        name: String,
+        slug: String,
+        account_id: String,
+    },
+    CompanyTerminal {
+        expired: bool,
+    },
+    CompanyUncertain,
+    Company {
+        org_id: String,
+        name: String,
+        slug: String,
+        show_policy_navigation: bool,
+    },
+    CompanyPolicy {
+        org_id: String,
+        action_keys: Vec<&'static str>,
+        delegable_action_keys: Vec<&'static str>,
     },
     Refused,
     Unavailable,
@@ -131,6 +157,14 @@ fn body(page: Page) -> AnyView {
                 }.into_any(),
             };
             let workspace = match context {
+                ContextState::Companies(companies) => view! {
+                    <section class="workspace-state" data-context-state="populated">
+                        <h2>"내 업무 공간"</h2>
+                        <ul>{companies.into_iter().map(|(id, name)| view! {
+                            <li><a href=format!("/companies/{id}")>{name}</a></li>
+                        }).collect_view()}</ul>
+                    </section>
+                }.into_any(),
                 ContextState::Empty => view! {
                     <section class="workspace-state" data-context-state="empty">
                         <span class="state-label">"연결된 업무 공간 없음"</span>
@@ -163,12 +197,15 @@ fn body(page: Page) -> AnyView {
                 </section>
             }.into_any()
         },
-        Page::CompanySetup { account_id } => view! {
+        Page::CompanySetup { account_id, command_id } => view! {
             <section class="entry-card" data-company-setup="" aria-labelledby="company-setup-title">
                 <p class="eyebrow">"내 CONSOLE"</p>
                 <h1 id="company-setup-title">"회사 업무 공간 만들기"</h1>
                 <p class="lead">"기존 회사가 사용할 콘솔 업무 공간을 등록합니다."</p>
-                <form data-company-enrollment="" data-account-id=account_id>
+                {command_id.as_ref().map(|_| view! {
+                    <p class="notice">"이 계정에 저장된 요청을 찾지 못했습니다. 입력 내용을 다시 확인하고 제출하면 현재 주소의 같은 요청 번호를 사용합니다."</p>
+                })}
+                <form data-company-enrollment="" data-account-id=account_id data-command-id=command_id>
                     <fieldset>
                         <legend>"회사 업무 공간 정보"</legend>
                         <label for="company-name">"회사 이름"</label>
@@ -192,6 +229,77 @@ fn body(page: Page) -> AnyView {
                 <a href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
+        Page::CompanyCreated { company } => view! {
+            <section class="entry-card" data-company-outcome="committed">
+                <p class="eyebrow">"회사 업무 공간"</p>
+                <h1>"생성 완료"</h1>
+                <p class="lead">"요청이 처리되었습니다. 이 주소에서 결과를 다시 확인할 수 있습니다."</p>
+                {company.map(|(id, name)| view! {
+                    <section class="workspace-state"><h2>{name}</h2>
+                        <a class="button primary" href=format!("/companies/{id}")>"업무 공간 열기"</a>
+                    </section>
+                })}
+                <a href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyPending { command_id, name, slug, account_id } => view! {
+            <section class="entry-card" data-company-outcome="pending">
+                <p class="eyebrow">"저장된 등록 요청"</p><h1>"아직 생성이 완료되지 않았습니다"</h1>
+                <p class="lead">"입력한 내용이 저장되어 있습니다. 같은 요청으로 다시 시도하면 중복으로 만들지 않습니다."</p>
+                <form data-company-enrollment="" data-account-id=account_id data-command-id=command_id>
+                    <label for="company-name">"회사 이름"</label>
+                    <input id="company-name" name="name" value=name readonly/>
+                    <label for="company-slug">"업무 공간 식별자"</label>
+                    <input id="company-slug" name="slug" value=slug readonly/>
+                    <button class="button primary wide company-submit" type="submit" disabled>"같은 요청으로 다시 시도"</button>
+                    <p class="supporting">"등록 요청을 취소하면 다시 제출할 수 없습니다. 이미 생성이 완료된 업무 공간은 취소되지 않습니다."</p>
+                    <button class="button secondary" type="button" data-company-cancel disabled>"등록 요청 취소"</button>
+                    <p id="company-status" class="status" role="status" aria-live="polite" tabindex="-1"></p>
+                    <p id="company-error" class="error" role="alert" hidden></p>
+                    <a id="company-result" class="text-link" hidden>"요청 결과 확인"</a>
+                    <noscript><p class="notice">"다시 제출하려면 이 브라우저에서 JavaScript를 허용해 주세요."</p></noscript>
+                </form>
+                <a href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyUncertain => view! {
+            <section class="entry-card" data-company-outcome="uncertain">
+                <p class="eyebrow">"원래 요청 확인"</p><h1>"아직 결과를 확인할 수 없습니다"</h1>
+                <p class="lead">"요청이 처리 중일 수 있습니다. 새로 등록하지 말고 이 주소에서 같은 요청의 결과를 다시 확인해 주세요."</p>
+                <a class="button primary" href="">"같은 요청 결과 다시 확인"</a>
+                <a class="text-link" href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyTerminal { expired } => view! {
+            <section class="entry-card" data-company-outcome=if expired { "expired" } else { "cancelled" }>
+                <p class="eyebrow">"회사 등록 요청"</p>
+                <h1>{if expired { "요청이 만료되었습니다" } else { "요청이 취소되었습니다" }}</h1>
+                <p class="lead">"이 요청으로 생성된 회사 업무 공간은 없습니다."</p>
+                <a class="button primary" href="/account">"내 계정으로"</a>
+            </section>
+        }.into_any(),
+        Page::Company { org_id, name, slug, show_policy_navigation } => view! {
+            <section class="entry-card" data-company-id=org_id.clone()>
+                <p class="eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
+                <dl><dt>"업무 공간 식별자"</dt><dd>{slug}</dd></dl>
+                {show_policy_navigation.then(|| view! {
+                    <a class="button primary" href=format!("/companies/{org_id}/policy")>"권한 관리"</a>
+                })}
+                <a class="text-link" href="/account">"내 업무 공간 목록"</a>
+            </section>
+        }.into_any(),
+        Page::CompanyPolicy { org_id, action_keys, delegable_action_keys } => view! {
+            <section class="entry-card">
+                <p class="eyebrow">"회사 업무 공간"</p><h1>"권한 관리"</h1>
+                <p class="lead">"이 회사에서 현재 계정에 연결된 권한입니다."</p>
+                <h2>"사용할 수 있는 기능"</h2>
+                <ul>{action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
+                <h2>"다른 계정에 연결할 수 있는 범위"</h2>
+                <ul>{delegable_action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
+                <p>"회사 정보는 이름과 업무 공간 식별자만 포함됩니다. 급여·인사 정보와 다른 회사의 권한은 포함되지 않습니다."</p>
+                <a class="button secondary" href=format!("/companies/{org_id}")>"회사 업무 공간으로"</a>
+            </section>
+        }.into_any(),
         Page::Refused => view! {
             <section class="entry-card">
                 <p class="eyebrow">"요청 확인"</p><h1>"이 요청을 열 수 없습니다"</h1>
@@ -210,6 +318,17 @@ fn body(page: Page) -> AnyView {
     }
 }
 
+fn company_action_label(key: &str) -> &'static str {
+    match key {
+        "context.discover" => "업무 공간 찾기",
+        "company.identity.read" => "회사 이름과 식별자 열람",
+        "company.policy.read" => "회사 권한 열람",
+        "company.policy.assign" => "제한된 열람 권한 연결",
+        "company.policy.revoke" => "연결한 열람 권한 해제",
+        _ => "등록된 기능",
+    }
+}
+
 pub fn render(page: Page) -> String {
     let title = match &page {
         Page::Public => "Console · 업무의 연결",
@@ -217,6 +336,12 @@ pub fn render(page: Page) -> String {
         Page::Register { .. } => "계정 만들기 · Console",
         Page::Account { .. } => "내 계정 · Console",
         Page::CompanySetup { .. } => "회사 업무 공간 만들기 · Console",
+        Page::CompanyCreated { .. }
+        | Page::CompanyPending { .. }
+        | Page::CompanyTerminal { .. }
+        | Page::CompanyUncertain => "회사 등록 요청 · Console",
+        Page::Company { .. } => "회사 업무 공간 · Console",
+        Page::CompanyPolicy { .. } => "권한 관리 · Console",
         Page::Refused => "요청 확인 · Console",
         Page::Unavailable => "다시 시도 · Console",
     };

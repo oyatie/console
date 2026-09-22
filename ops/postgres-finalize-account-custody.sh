@@ -4,11 +4,13 @@ set +x
 set -euo pipefail
 umask 077
 
-# Account and credential custody always compose; observer installation is opt-in.
+# Account bootstrap and the subsequent Company upgrade share one transport.
 observer_profile=0
+company_profile=0
 case "$#:${1:-}" in
   0:) ;;
   1:--with-durability-observer) observer_profile=1 ;;
+  1:--with-company-enrollment) company_profile=1 ;;
   *) printf '%s\n' account_custody.invalid_profile >&2; exit 1 ;;
 esac
 
@@ -101,12 +103,20 @@ SELECT NOT EXISTS (
 \endif
 SQL
 
-installer_files=(--file "${script_dir}/postgres-finalize-account-custody.sql"
-  --file "${script_dir}/postgres-finalize-account-credentials.sql")
-if [[ "$observer_profile" == 1 ]]; then
-  installer_files+=(--file "${script_dir}/postgres-install-durability-observer.sql")
+if [[ "$company_profile" == 1 ]]; then
+  # Company SQL admits only exact finalized Account predecessors or its own
+  # exact replay; replaying Account bootstrap against Company metadata is invalid.
+  installer_files=(--file "${script_dir}/postgres-finalize-company-enrollment.sql")
+  final_state=company_enrollment.finalized
+else
+  installer_files=(--file "${script_dir}/postgres-finalize-account-custody.sql"
+    --file "${script_dir}/postgres-finalize-account-credentials.sql")
+  if [[ "$observer_profile" == 1 ]]; then
+    installer_files+=(--file "${script_dir}/postgres-install-durability-observer.sql")
+  fi
+  installer_files+=(--file "${script_dir}/postgres-verify-account-native.sql")
+  final_state=account_custody.native_finalized
 fi
-installer_files+=(--file "${script_dir}/postgres-verify-account-native.sql")
 
 # Clear all ambient libpq settings, service files, passwords and client keys.
 # These fixed options take effect before the DO begins; its own SET cannot
@@ -124,4 +134,4 @@ env -i LC_ALL=C \
   --set "expected_database_oid=${ACCOUNT_CUSTODY_EXPECTED_DATABASE_OID}" \
   --set "expected_system_identifier=${ACCOUNT_CUSTODY_EXPECTED_SYSTEM_IDENTIFIER}" \
   --file "${private_dir}/preflight.sql" "${installer_files[@]}"
-printf '%s\n' account_custody.native_finalized
+printf '%s\n' "${final_state}"

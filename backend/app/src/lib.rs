@@ -1536,6 +1536,7 @@ pub struct AppState {
     /// publish/rollback requests.
     policy_step_up: Option<PasskeyService>,
     auth_rest: Option<AuthRestState>,
+    company_rest: Option<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
     evidence_storage: Option<EvidenceService<SeaweedS3Storage>>,
     /// Object store + bucket backing the public storefront media-serve route.
     sales_media_storage: Option<(SeaweedS3Storage, String)>,
@@ -1632,6 +1633,7 @@ impl AppState {
 
         Ok(Self {
             platform_policy,
+            company_rest: None,
             config,
             database,
             leave_command_database: DatabaseDependency::NotConfigured,
@@ -3312,7 +3314,22 @@ fn tenant_config_seeder(store: PgOntologyStore) -> console_platform_rest::Tenant
     })
 }
 
-pub fn build_router(state: AppState) -> Router {
+pub fn build_router(mut state: AppState) -> Router {
+    state.company_rest = match (
+        &state.database,
+        &state.auth_rest,
+        &state.jwt_verifier,
+        &state.config.auth_rest,
+    ) {
+        (DatabaseDependency::Postgres(pool), Some(auth), Some(verifier), Some(config)) => {
+            Some(console_identity_rest::company::CompanyRestState::new(
+                PgOrgStore::new(pool.clone())
+                    .with_native_account_auth(verifier.clone(), config.refresh_family_absolute_ttl),
+                auth.clone(),
+            ))
+        }
+        _ => None,
+    };
     let session_verification = state.session_verification();
     // The base router carries NO cross-cutting layers here. Per axum's `merge`
     // semantics, any layer applied to a router *before* it is merged with the
@@ -3777,12 +3794,31 @@ pub fn build_router(state: AppState) -> Router {
                 None => platform_state,
             };
             let platform_router = console_platform_rest::router(platform_state);
+            let company_router = match state.company_rest.clone() {
+                Some(company) => console_identity_rest::company::router(company.clone()).merge(
+                    Router::new()
+                        .route(
+                            "/account/companies/requests/{command_id}",
+                            get(native_company_result_document),
+                        )
+                        .route("/companies/{org_id}", get(native_company_document))
+                        .route(
+                            "/companies/{org_id}/policy",
+                            get(native_company_policy_document),
+                        )
+                        .with_state(company),
+                ),
+                _ => Router::new(),
+            };
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
             // routes, the tenant domain routers, the platform tier, and the
             // pre-auth login/refresh endpoints. These are all short-lived
             // request/response cycles, so they carry the 30s request timeout.
             let timed = {
-                let timed = router.merge(domain_router).merge(platform_router);
+                let timed = router
+                    .merge(domain_router)
+                    .merge(platform_router)
+                    .merge(company_router);
                 let timed = match state.auth_rest.clone() {
                     Some(auth_rest) => {
                         // The auth-rest router carries authenticated tenant
@@ -3880,6 +3916,115 @@ async fn native_account_document(
     native_account_page(&state, &headers, method, NativeAccountPage::Account).await
 }
 
+async fn native_company_result_document(
+    State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::extract::Path(command): axum::extract::Path<String>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_identity_application::company_enrollment::CompanyEnrollmentStatus;
+    use console_payroll_ui::native_account::{Page, document};
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    match state.enrollment_document(&headers, &command).await {
+        Ok(result) => {
+            let page = match result.status {
+                CompanyEnrollmentStatus::Committed { .. } => Page::CompanyCreated {
+                    company: result.company.map(|c| (c.org_id.to_string(), c.name)),
+                },
+                CompanyEnrollmentStatus::Pending(input) => Page::CompanyPending {
+                    command_id: result.command.to_string(),
+                    name: input.name().to_owned(),
+                    slug: input.slug().to_owned(),
+                    account_id: input.administrative_account_id().to_string(),
+                },
+                CompanyEnrollmentStatus::Cancelled => Page::CompanyTerminal { expired: false },
+                CompanyEnrollmentStatus::Expired => Page::CompanyTerminal { expired: true },
+                CompanyEnrollmentStatus::Missing => {
+                    return document(
+                        match result.reentry_account {
+                            Some(account) => Page::CompanySetup {
+                                account_id: account.to_string(),
+                                command_id: Some(result.command.to_string()),
+                            },
+                            None => Page::Refused,
+                        },
+                        StatusCode::NOT_FOUND,
+                    );
+                }
+            };
+            document(page, StatusCode::OK)
+        }
+        Err(StatusCode::CONFLICT) => document(Page::CompanyUncertain, StatusCode::CONFLICT),
+        Err(status) => native_company_document_error(status),
+    }
+}
+
+async fn native_company_document(
+    State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::extract::Path(company): axum::extract::Path<String>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    match state.company_document(&headers, &company).await {
+        Ok(company) => document(
+            Page::Company {
+                org_id: company.org_id.to_string(),
+                name: company.name,
+                slug: company.slug,
+                show_policy_navigation: company.show_policy_navigation,
+            },
+            StatusCode::OK,
+        ),
+        Err(status) => native_company_document_error(status),
+    }
+}
+
+fn native_company_document_error(status: StatusCode) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    let response = document(
+        if status == StatusCode::SERVICE_UNAVAILABLE {
+            Page::Unavailable
+        } else {
+            Page::Refused
+        },
+        status,
+    );
+    if status == StatusCode::PAYLOAD_TOO_LARGE {
+        console_platform_request_context::preserve_native_html_error(response)
+    } else {
+        response
+    }
+}
+
+async fn native_company_policy_document(
+    State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::extract::Path(company): axum::extract::Path<String>,
+    headers: HeaderMap,
+    method: axum::http::Method,
+) -> axum::response::Response {
+    use console_payroll_ui::native_account::{Page, document};
+    if method != axum::http::Method::GET {
+        return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
+    }
+    match state.policy_document(&headers, &company).await {
+        Ok(view) => document(
+            Page::CompanyPolicy {
+                org_id: view.initial_ceiling.org_id.to_string(),
+                action_keys: view.initial_ceiling.action_keys,
+                delegable_action_keys: view.initial_ceiling.delegable_action_keys,
+            },
+            StatusCode::OK,
+        ),
+        Err(status) => native_company_document_error(status),
+    }
+}
+
 async fn native_account_registration_document(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -3963,6 +4108,7 @@ async fn native_account_page(
             NativeCompanySetupEligibility::Eligible => document(
                 Page::CompanySetup {
                     account_id: account_id.to_string(),
+                    command_id: None,
                 },
                 StatusCode::OK,
             ),
@@ -3978,12 +4124,41 @@ async fn native_account_page(
             can_logout,
             company_setup,
         }) => {
-            let (context, mut status) = match context {
+            let (mut context, mut status) = match context {
                 NativeAccountContext::Empty => (ContextState::Empty, StatusCode::OK),
                 NativeAccountContext::Unavailable => {
                     (ContextState::Unavailable, StatusCode::SERVICE_UNAVAILABLE)
                 }
             };
+            // Reuse the Auth owner's confirmed empty projection. Its legacy
+            // empty-only reader cannot resolve populated candidates; only that
+            // unresolved branch needs the current Company discovery owner.
+            if matches!(context, ContextState::Unavailable)
+                && let Some(company) = &state.company_rest
+            {
+                match company.context_documents(headers).await {
+                    Ok(views) => {
+                        context = if views.is_empty() {
+                            ContextState::Empty
+                        } else {
+                            ContextState::Companies(
+                                views
+                                    .into_iter()
+                                    .map(|view| (view.org_id.to_string(), view.name))
+                                    .collect(),
+                            )
+                        };
+                        status = StatusCode::OK;
+                    }
+                    Err(StatusCode::UNAUTHORIZED) => {
+                        return document(Page::Refused, StatusCode::UNAUTHORIZED);
+                    }
+                    Err(_) => {
+                        context = ContextState::Unavailable;
+                        status = StatusCode::SERVICE_UNAVAILABLE;
+                    }
+                }
+            }
             let company_setup = match company_setup {
                 NativeCompanySetupEligibility::Eligible => CompanySetupEligibility::Eligible,
                 NativeCompanySetupEligibility::Ineligible => CompanySetupEligibility::Ineligible,

@@ -2042,6 +2042,7 @@ dependencies = [
  "console-identity-domain",
  "console-kernel-core",
  "console-platform-auth",
+ "console-platform-auth-rest",
  "console-platform-authz",
  "console-platform-db",
  "console-platform-request-context",

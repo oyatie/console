@@ -326,7 +326,238 @@ $account_custody$;
             'ops/postgres-company-enrollment-schema.sql': company_enrollment_schema_sql(),
             'ops/postgres-company-enrollment-intake.sql': company_enrollment_intake_sql(),
             'ops/postgres-company-enrollment-guards.sql': company_enrollment_guards_sql(),
+            'ops/postgres-company-enrollment-owner.sql': company_enrollment_owner_sql(),
+            'ops/postgres-capture-company-enrollment-custody.sql': company_enrollment_snapshot_query()+';\n',
+            'backend/app/src/company_enrollment_custody_state.sql': company_enrollment_state_query()+';\n',
+            'ops/postgres-finalize-company-enrollment.sql': company_enrollment_finalizer_sql(),
             **credential_generated_files()}
+
+
+# Additive Company candidate; historical serializers and fingerprints retain
+# their exact meaning. This resource is not a finalized serving profile.
+COMPANY_OWNER_SOURCE_SHA256 = 'c6b7047727914d1d29fd77bd50355e7e2f5f918c9b6771658a0103475f5d8a44'
+COMPANY_CUSTODY_ADDITIONAL_RELATIONS = (
+    'cedar_policy_catalog_entries',
+    'company_authority_heads',
+    'company_enrollment_effect_bindings',
+    'company_enrollment_receipts',
+    'company_enrollment_request_events',
+    'company_enrollment_requests',
+    'group_authority_heads',
+    'group_membership_revisions',
+    'group_memberships',
+    'group_role_grants',
+    'groups',
+    'native_company_action_refs',
+    'native_company_catalog_installs',
+    'native_company_object_refs',
+    'native_company_property_refs',
+    'ont_action_types',
+    'ont_analytics',
+    'ont_builtin_catalog_allowlist',
+    'ont_builtin_catalog_installs',
+    'ont_link_types',
+    'ont_object_policies',
+    'ont_object_type_key_revisions',
+    'ont_object_types',
+    'ont_property_defs',
+    'organizations',
+    'platform_force_removal_effect_bindings',
+    'platform_force_removal_receipts',
+    'platform_legacy_catalog_effect_bindings',
+    'platform_legacy_membership_effect_bindings',
+    'platform_legacy_topology_effect_bindings',
+    'platform_legacy_topology_receipts',
+    'platform_legacy_user_birth_witnesses',
+    'policy_assignment_revisions',
+    'policy_capability_clause_fields',
+    'policy_capability_clauses',
+    'policy_role_conditions',
+    'policy_role_permissions',
+    'policy_role_revisions',
+    'policy_roles',
+    'user_role_assignments',
+    'users',
+)
+COMPANY_CUSTODY_ROUTINE_NAMES = (
+    'ont_policy_api.attach_object_policy_rows',
+    'ont_policy_api.attach_object_policy_rows_core_v1',
+    'ont_policy_api.install_native_company_policy_v1',
+    'ontology_api.insert_children',
+    'ontology_api.install_builtin_catalog',
+    'ontology_api.install_builtin_catalog_core_v1',
+    'ontology_api.install_native_company_catalog_v1',
+    'ontology_api.lock_native_company_catalog_current_v1',
+    'ontology_api.native_catalog_attribution_guard_v1',
+    'ontology_api.prepare_legacy_object_type_write',
+    'ontology_api.protected_audit_writer_guard',
+    'ontology_api.require_current_transaction_audit',
+    'public.account_company_context_candidates_v1',
+    'public.account_company_native_rows_present_v1',
+    'public.account_context_presence_v1',
+    'public.account_legacy_topology_roots_lock_v1',
+    'public.auth_legacy_bootstrap_issue_v1',
+    'public.auth_legacy_bootstrap_issued_v1',
+    'public.auth_legacy_bootstrap_receipt_matches_v1',
+    'public.company_actor_entitlement_shape_v2',
+    'public.company_effect_binding_guard_v1',
+    'public.company_enrollment_assert_closure_v1',
+    'public.company_enrollment_audit_guard_v1',
+    'public.company_enrollment_audit_v1',
+    'public.company_enrollment_binding_v1',
+    'public.company_enrollment_cancel_v1',
+    'public.company_enrollment_catalog_binding_v1',
+    'public.company_enrollment_event_guard_v1',
+    'public.company_enrollment_execute_v1',
+    'public.company_enrollment_intake_closure_v1',
+    'public.company_enrollment_ontology_audit_guard_v1',
+    'public.company_enrollment_ontology_audit_v1',
+    'public.company_enrollment_prepare_v1',
+    'public.company_enrollment_receipt_intake_guard_v1',
+    'public.company_enrollment_request_guard_v1',
+    'public.company_enrollment_status_v1',
+    'public.company_enrollment_topology_v1',
+    'public.company_native_topology_birth_closure_v1',
+    'public.company_topology_history_immutable_v1',
+    'public.company_topology_truncate_guard_v1',
+    'public.company_topology_write_guard_v1',
+    'public.group_authority_lock_exclusive_v1',
+    'public.group_authority_lock_shared_v1',
+    'public.identity_company_actor_birth_guard_v1',
+    'public.identity_company_candidate_birth_guard_v1',
+    'public.identity_company_context_generation_guard_v1',
+    'public.identity_company_existing_catalog_closure_v1',
+    'public.identity_company_projection_v1',
+    'public.identity_enroll_company_administration_v1',
+    'public.identity_native_any_origin_v1',
+    'public.identity_native_birth_closure_v1',
+    'public.identity_native_birth_row_guard_v1',
+    'public.identity_native_immutable_v1',
+    'public.identity_native_legacy_child_guard_v1',
+    'public.identity_native_root_guard_v1',
+    'public.identity_native_truncate_guard_v1',
+    'public.native_company_catalog_birth_closure_v1',
+    'public.native_company_catalog_birth_row_guard_v1',
+    'public.native_company_catalog_immutable_v1',
+    'public.platform_assign_org_to_group',
+    'public.platform_attach_membership',
+    'public.platform_company_removal_cohort_v1',
+    'public.platform_create_organization_core_v1',
+    'public.platform_force_effect_admit_v1',
+    'public.platform_force_effect_closed_v1',
+    'public.platform_force_frame_closed_v1',
+    'public.platform_force_frame_guard_v1',
+    'public.platform_force_receipt_guard_v1',
+    'public.platform_force_remove_command_v1',
+    'public.platform_force_remove_decode_input_v1',
+    'public.platform_force_remove_direct_org_children',
+    'public.platform_force_remove_lock_plan_v1',
+    'public.platform_force_remove_plan_v1',
+    'public.platform_legacy_catalog_binding_closed_v1',
+    'public.platform_legacy_catalog_binding_write_guard_v1',
+    'public.platform_legacy_catalog_live_audit_v1',
+    'public.platform_legacy_catalog_receipt_audit_v1',
+    'public.platform_legacy_command_frame_closed_v1',
+    'public.platform_legacy_command_frame_guard_v1',
+    'public.platform_legacy_entity_effect_closed_v1',
+    'public.platform_legacy_grant_effect_closed_v1',
+    'public.platform_legacy_grant_write_guard_v1',
+    'public.platform_legacy_head_effect_closed_v1',
+    'public.platform_legacy_membership_binding_closed_v1',
+    'public.platform_legacy_membership_binding_v1',
+    'public.platform_legacy_membership_binding_write_guard_v1',
+    'public.platform_legacy_receipt_closed_v1',
+    'public.platform_legacy_topology_command_v1',
+    'public.platform_legacy_topology_decode_input_v1',
+    'public.platform_legacy_topology_lock_plan_v1',
+    'public.platform_legacy_topology_plan_v1',
+    'public.platform_legacy_topology_receipts_immutable_v1',
+    'public.platform_legacy_user_birth_capture_v1',
+    'public.platform_legacy_user_birth_witness_closed_v1',
+    'public.platform_legacy_user_birth_witness_guard_v1',
+    'public.platform_legacy_user_delete_guard_v1',
+    'public.platform_legacy_user_update_guard_v1',
+    'public.platform_mint_group_row',
+)
+
+
+def company_enrollment_owner_sql():
+    source = (ROOT / 'ops/company-enrollment/owner-v1.sql').read_bytes()
+    if hashlib.sha256(source).hexdigest() != COMPANY_OWNER_SOURCE_SHA256:
+        raise SystemExit('Company owner source requires independent successor review')
+    sql = source.decode('utf-8')
+    # The operator fixes search_path to pg_catalog,pg_temp. Qualify the two
+    # legacy DDL references without touching the retained function body or wire.
+    for declaration in ('CREATE OR REPLACE FUNCTION ', 'REVOKE ALL ON FUNCTION '):
+        before = declaration + 'platform_force_remove_direct_org_children('
+        if sql.count(before) != 1:
+            raise ValueError('Company owner force-helper declaration drift')
+        sql = sql.replace(before, declaration + 'public.platform_force_remove_direct_org_children(')
+    return ('-- Generated by ops/generate-account-custody.py; uninstalled Company candidate.\n'
+            '-- Preserves the reviewed owner source; not a finalized custody profile.\n'
+            + sql)
+
+
+def company_enrollment_snapshot_query():
+    """Extend custody without changing historical scope or accepting live hashes.
+
+    Include every overload of a named routine so an additional granted overload
+    cannot evade the capture. New owner/command roles use the existing complete
+    role and membership serializer. Finalized profile admission is separate.
+    """
+    query = platform_source_snapshot_query()
+    relation_anchor = " ('audit_events')\n), relations AS ("
+    routine_anchor = " WHERE p.oid IN (SELECT tgfoid FROM pg_trigger WHERE tgrelid=to_regclass('public.audit_events') AND NOT tgisinternal) OR"
+    owner_anchor = " SELECT * FROM pg_roles WHERE rolname IN ('console_account_owner','console_terms_owner','console_credential_owner')\n), protected_roles AS ("
+    role_anchor = " SELECT * FROM pg_roles WHERE rolname IN ('console_account_owner','console_terms_owner','console_credential_owner','console_auth_rt','console_auth_startup')\n), related_fks AS ("
+    for label, anchor in (('relations', relation_anchor), ('routines', routine_anchor),
+                          ('owners', owner_anchor), ('roles', role_anchor)):
+        if query.count(anchor) != 1:
+            raise ValueError('Company custody snapshot anchor drift: ' + label)
+    relation_rows = ',\n'.join(" ('" + name + "')" for name in COMPANY_CUSTODY_ADDITIONAL_RELATIONS)
+    query = query.replace(relation_anchor,
+        " ('audit_events'),\n" + relation_rows + "\n), relations AS (")
+    routine_rows = ','.join("('" + name.replace('.', "','", 1) + "')"
+                            for name in COMPANY_CUSTODY_ROUTINE_NAMES)
+    query = query.replace(routine_anchor,
+        " WHERE (n.nspname,p.proname) IN (VALUES " + routine_rows + ") OR"
+        " p.proowner IN (SELECT oid FROM pg_roles WHERE rolname='console_ontology_writer') OR"
+        " p.oid IN (SELECT tgfoid FROM pg_trigger WHERE tgrelid IN"
+        " (SELECT oid FROM relations) AND NOT tgisinternal) OR")
+    query = query.replace(owner_anchor,
+        " SELECT * FROM pg_roles WHERE rolname IN ('console_account_owner','console_terms_owner',"
+        "'console_credential_owner','console_ontology_writer')\n), protected_roles AS (")
+    query = query.replace(role_anchor,
+        " SELECT * FROM pg_roles WHERE rolname IN ('console_account_owner','console_terms_owner',"
+        "'console_credential_owner','console_auth_rt','console_auth_startup',"
+        "'console_ontology_writer','console_ontology_cmd','console_platform_force_cmd','console_rt','console_app')\n"
+        "), related_fks AS (")
+    # Keep the historical serialized flag and all captured metadata bytes intact.
+    # The Company scope has 59 relations plus nine legacy-right entries (five
+    # overlap), so its validity uses 68 entries, 544 table checks and 63 distinct
+    # column-bearing relations. Reuse every existing ACL/role/function rule.
+    flag = "   'startup_final_rights_valid',\n"
+    boundary_end = "\n ) AS record\n), snapshots AS ("
+    output = "SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snapshot_sha256 FROM snapshots"
+    if any(query.count(anchor) != 1 for anchor in (flag, boundary_end, output)):
+        raise ValueError('Company startup-rights predicate anchor drift')
+    predicate = query.split(flag, 1)[1].split(boundary_end, 1)[0]
+    for before, after in (
+        ("count(*)=18 AND count(oid)=18", "count(*)=59 AND count(oid)=59"),
+        ("count(*)=27 AND count(oid)=27", "count(*)=68 AND count(oid)=68"),
+        ("count(*)=216 AND bool_and", "count(*)=544 AND bool_and"),
+        ("count(DISTINCT name)=27", "count(DISTINCT name)=63"),
+    ):
+        if predicate.count(before) != 1:
+            raise ValueError('Company startup-rights cardinality anchor drift')
+        predicate = predicate.replace(before, after)
+    query = query.replace(boundary_end,
+        "\n ) AS record\n), company_startup_rights AS (\n SELECT\n"
+        + predicate + " AS valid\n), snapshots AS (")
+    query = query.replace(output,
+        "SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snapshot_sha256,"
+        "(SELECT valid FROM company_startup_rights) AS company_startup_rights_valid FROM snapshots")
+    return query
 
 
 def company_enrollment_guards_sql():
@@ -5839,6 +6070,135 @@ def deployment228_snapshot_query() -> str:
   'legacy_root_boundary'"""
     return query.replace(snapshot, extra)
 
+
+# Additive, source-bound Company profiles. Historical Account serializers and
+# profile identifiers above remain unchanged and retain their original meaning.
+COMPANY_CUSTODY_PRIOR_SHA256 = (
+    '912c7a57f185790aa75665c9aade23f4cb45a81763a3be9e96b366d3672c686b',
+    'ce2204d8fda7a316b2f5fa9cce6ac30d454180569aaef873e385f0c381eca100',
+)
+COMPANY_CUSTODY_FINALIZED_SHA256 = (
+    '884e9a57e9ecfd9940b3c6e8e9a9a4a9c028ea62e43a10a6b11c64dada3fd62b',
+    '0b0e857e53ab1122a2879b972cd701732c5d0296c20f4693ab813894b0bc72dc',
+)
+
+COMPANY_CUSTODY_CREATED_RELATIONS = (
+    'company_authority_heads',
+    'company_enrollment_effect_bindings',
+    'company_enrollment_receipts',
+    'company_enrollment_request_events',
+    'company_enrollment_requests',
+    'group_authority_heads',
+    'group_membership_revisions',
+    'native_company_action_refs',
+    'native_company_catalog_installs',
+    'native_company_object_refs',
+    'native_company_property_refs',
+    'platform_force_removal_effect_bindings',
+    'platform_force_removal_receipts',
+    'platform_legacy_catalog_effect_bindings',
+    'platform_legacy_membership_effect_bindings',
+    'platform_legacy_topology_effect_bindings',
+    'platform_legacy_topology_receipts',
+    'platform_legacy_user_birth_witnesses',
+    'policy_assignment_revisions',
+    'policy_capability_clause_fields',
+    'policy_capability_clauses',
+    'policy_role_revisions',
+)
+
+
+def company_enrollment_state_query():
+    final = ','.join("'" + value + "'" for value in COMPANY_CUSTODY_FINALIZED_SHA256)
+    created = ','.join("'" + name + "'" for name in COMPANY_CUSTODY_CREATED_RELATIONS)
+    return f"""WITH company_profile AS (
+{company_enrollment_snapshot_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM company_profile) IN ({final})
+ AND (SELECT company_startup_rights_valid FROM company_profile) IS TRUE
+ THEN 'company_enrollment.finalized'
+ WHEN EXISTS(SELECT 1 FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+       WHERE n.nspname='public' AND c.relname IN ({created}))
+   OR EXISTS(SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace
+       WHERE n.nspname='public' AND p.proname='company_enrollment_execute_v1')
+ THEN 'company_enrollment.profile_mismatch'
+ ELSE 'company_enrollment.absent' END AS state"""
+
+
+def company_enrollment_finalizer_sql():
+    """One atomic upgrade of an already finalized Account, plain or observer.
+
+    Uses the existing operator transport. A finalized replay is read-only;
+    partial, unknown or populated dormant-intake state is never adopted.
+    """
+    profiles = (*COMPANY_CUSTODY_PRIOR_SHA256, *COMPANY_CUSTODY_FINALIZED_SHA256)
+    if (len(set(profiles)) != 4 or any(len(value) != 64
+            or any(c not in '0123456789abcdef' for c in value) for value in profiles)):
+        raise SystemExit('Company custody profiles require exact independent source/capture review')
+    final = ','.join("'" + value + "'" for value in COMPANY_CUSTODY_FINALIZED_SHA256)
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts',
+        'deployment_operator_head', 'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS))
+    if len(names) != 59 or len(set(names)) != len(names):
+        raise ValueError('Company custody relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    inspect = ('SELECT snapshot_sha256,company_startup_rights_valid INTO observed,rights_valid FROM (\n'
+               + company_enrollment_snapshot_query() + '\n) captured;')
+    return f"""-- Generated by ops/generate-account-custody.py; one atomic Company upgrade.
+-- Prerequisite: exact finalized Account/Platform plain or observer profile.
+-- Existing operator transport owns authentication/target/migration checks.
+DO $company_custody$
+DECLARE
+    observed text;
+    rights_valid boolean;
+    expected_final text;
+    relation_name text;
+BEGIN
+    IF session_user<>current_user OR NOT EXISTS(
+        SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+       OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+           'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+           'console_platform_force_cmd','console_account_owner','console_terms_owner',
+           'console_credential_owner','console_durability_observer') THEN
+        RAISE EXCEPTION 'company_custody.operator_identity_mismatch';
+    END IF;
+    IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+        RAISE EXCEPTION 'company_custody.unsupported_isolation';
+    END IF;
+    PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+    PERFORM pg_catalog.set_config('lock_timeout','1s',true);
+    -- Stable ordered locks precede the exact predecessor observation. Missing
+    -- future tables are expected; the complete metadata hash distinguishes them
+    -- from unknown or partially installed objects. Operator DDL is serialized.
+    FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c
+        JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+        WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relname IN ({literals})
+        ORDER BY c.relname COLLATE "C"
+    LOOP
+        EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+    END LOOP;
+    {inspect}
+    IF observed IN ({final}) AND rights_valid IS TRUE THEN RETURN; END IF;
+    expected_final := CASE observed
+        WHEN '{COMPANY_CUSTODY_PRIOR_SHA256[0]}' THEN '{COMPANY_CUSTODY_FINALIZED_SHA256[0]}'
+        WHEN '{COMPANY_CUSTODY_PRIOR_SHA256[1]}' THEN '{COMPANY_CUSTODY_FINALIZED_SHA256[1]}'
+        ELSE NULL END;
+    IF expected_final IS NULL THEN
+        RAISE EXCEPTION 'company_custody.predecessor_mismatch';
+    END IF;
+{company_enrollment_input_sql()}
+{company_enrollment_schema_sql()}
+{company_enrollment_intake_sql()}
+{company_enrollment_guards_sql()}
+{company_enrollment_owner_sql()}
+    SET CONSTRAINTS ALL IMMEDIATE;
+    {inspect}
+    IF observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
+        RAISE EXCEPTION 'company_custody.profile_mismatch';
+    END IF;
+END
+$company_custody$;
+"""
 
 def main():
     if sys.argv[1:] not in ([], ['--check']):

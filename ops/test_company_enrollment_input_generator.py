@@ -18,11 +18,24 @@ INTAKE_SHA256="2d8e5bc991e35ca1c8195d5ee9f0b5c2f367a96e4d77cf613945f9d533cc7532"
 NEW="ops/postgres-company-enrollment-guards.sql"
 EXPECTED={'backend/app/src/account_custody_state.sql': '5fb0a2608c5904fe0c1d58723290b9603afb9af08eef19c410d023a484230865', 'ops/postgres-finalize-account-custody.sql': 'fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8', 'ops/account-custody-migrations.sha384': '736d28bc7b3b5cf15ca4c341fd3622dc76521db9dbf974b75cef7e73eb68fbf5', 'ops/postgres-verify-account-native.sql': 'c4e30ee9560b4d443acad1813a63667cbab9a32aadfbd893542f4b054bf6b308', 'backend/app/src/account_credential_custody_state.sql': '0bc6fe6579414ebed546d076c0ec1b7f1cc5ba30f4fe5e135159f4e75c0416a2', 'ops/postgres-finalize-account-credentials.sql': '2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9'}
 
+COMPANY_PROFILE_OUTPUTS={'ops/postgres-company-enrollment-owner.sql': '2a7fffb57eedff3c3ba5981015e22f53ea80972e3222c38ff1c6ace1f0858d2d', 'ops/postgres-capture-company-enrollment-custody.sql': '6ef7b2754176952da89a0b61a7ba999d64b4c12e70fc949add18c63171b0abb5', 'backend/app/src/company_enrollment_custody_state.sql': 'fb2030a4d2891b206c41454ce8258d65920034e8ef817c5f7a812569aae614bd', 'ops/postgres-finalize-company-enrollment.sql': 'bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f'}
+
 class CompanyInputGeneratorTests(unittest.TestCase):
     def test_one_new_output_preserves_all_existing_generated_bytes(self):
         outputs=GENERATOR.generated_files()
-        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW})
+        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS))
         for path,digest in EXPECTED.items():
+            if path == "ops/account-custody-migrations.sha384":
+                # Reviewed9b9baed6a appended0229; retain exact historical228pin.
+                suffix = b'229\t08ece6d6edf558d06eff11297da18184e9a762ff4f5455fab135c84a1b34dbef449b6c957f3d7fce197af113f821a659\n'
+                ledger = outputs[path].encode()
+                self.assertTrue(ledger.endswith(suffix))
+                self.assertEqual(len(ledger.splitlines()),229)
+                self.assertEqual(hashlib.sha256(ledger[:-len(suffix)]).hexdigest(),digest,path)
+            else:
+                self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
+            self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
+        for path,digest in COMPANY_PROFILE_OUTPUTS.items():
             self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
         emitted=GENERATOR.company_enrollment_input_sql()

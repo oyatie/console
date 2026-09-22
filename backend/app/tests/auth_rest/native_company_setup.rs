@@ -164,8 +164,46 @@ pub(crate) mod company_setup {
         assert!(!complete(&duplicate, &rows));
     }
 
+    // Original Account-only prerequisite remains for historical intake controls.
     async fn designated(pool: &PgPool) -> (Fixture, Attempt, Cookies, PgPool, Designation) {
-        let app = fixture(pool).await;
+        designated_fixture(pool, fixture(pool).await).await
+    }
+
+    async fn prepare_ready_database(pool: &PgPool) {
+        prepare_http_database(pool).await;
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL search_path=pg_catalog,pg_temp")
+            .execute(tx.as_mut()).await.unwrap();
+        let source = include_str!("../../../../ops/postgres-finalize-company-enrollment.sql");
+        assert_eq!(
+            hex::encode(sha2::Sha256::digest(source.as_bytes())),
+            "bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f"
+        );
+        sqlx::raw_sql(source).execute(tx.as_mut()).await.unwrap();
+        tx.commit().await.unwrap();
+        seed_terms(pool).await;
+    }
+
+    async fn ready_fixture(pool: &PgPool) -> Fixture {
+        prepare_ready_database(pool).await;
+        let artifacts = Artifacts::new();
+        // Actual App startup verifies the Company profile before enrollment.
+        let service = router(pool, artifacts.root.clone()).await;
+        Fixture {
+            service,
+            _artifacts: artifacts,
+            pool: pool.clone(),
+        }
+    }
+
+    async fn ready_designated(pool: &PgPool) -> (Fixture, Attempt, Cookies, PgPool, Designation) {
+        designated_fixture(pool, ready_fixture(pool).await).await
+    }
+
+    async fn designated_fixture(
+        pool: &PgPool,
+        app: Fixture,
+    ) -> (Fixture, Attempt, Cookies, PgPool, Designation) {
         let (account, cookies) = enrolled(&app).await;
         let startup = startup(pool).await;
         let input = designation(pool, account.account).await;
@@ -195,8 +233,7 @@ pub(crate) mod company_setup {
         json!({"command_id":command,"group_id":null,"slug":format!("native-{}",command.simple()),"name":"연결된 업무 회사","administrative_account_id":administrator})
     }
 
-    async fn submit(app: &Fixture, cookies: &Cookies, input: &Value) -> Response {
-        let csrf = proof(app, cookies).await;
+    async fn submit(app: &Fixture, cookies: &Cookies, csrf: &str, input: &Value) -> Response {
         request(
             app,
             "POST",
@@ -208,10 +245,9 @@ pub(crate) mod company_setup {
         .await
     }
 
-    async fn submit_raw(app: &Fixture, cookies: &Cookies, body: String) -> Response {
-        let csrf = proof(app, cookies).await;
+    async fn submit_raw(app: &Fixture, cookies: &Cookies, csrf: &str, body: String) -> Response {
         let mut sent_secrets: Vec<_> = cookies.0.values().cloned().collect();
-        sent_secrets.push(csrf.clone());
+        sent_secrets.push(csrf.to_owned());
         let mut request = Request::builder()
             .method("POST")
             .uri(CREATE)
@@ -439,6 +475,7 @@ pub(crate) mod company_setup {
     async fn ordinary_account_cannot_get_or_submit_company_setup(pool: PgPool) {
         let app = fixture(&pool).await;
         let (account, cookies) = enrolled(&app).await;
+        let csrf = proof(&app, &cookies).await;
         let before = all_rows(&pool).await;
         let response = document(&app, "/account", &cookies).await;
         assert!(
@@ -450,7 +487,7 @@ pub(crate) mod company_setup {
             StatusCode::NOT_FOUND,
         );
         let attempted = enrollment(Uuid::new_v4(), account.account);
-        submit(&app, &cookies, &attempted)
+        submit(&app, &cookies, &csrf, &attempted)
             .await
             .error(StatusCode::FORBIDDEN, "company_enrollment_forbidden");
         assert!(
@@ -461,12 +498,13 @@ pub(crate) mod company_setup {
 
     #[sqlx::test(migrations = false)]
     async fn company_setup_commits_once_reopens_and_preserves_account_credentials(pool: PgPool) {
-        let (app, account, cookies, startup, designation) = designated(&pool).await;
+        let (app, account, cookies, startup, designation) = ready_designated(&pool).await;
+        let csrf = proof(&app, &cookies).await;
         let command = Uuid::new_v4();
         let input = enrollment(command, account.account);
         let prior = all_rows(&pool).await;
         let created = committed(
-            &submit(&app, &cookies, &input).await,
+            &submit(&app, &cookies, &csrf, &input).await,
             StatusCode::CREATED,
             command,
             account.account,
@@ -513,7 +551,7 @@ pub(crate) mod company_setup {
         let html = native_entry_html(&workspace, StatusCode::OK);
         assert!(html.contains("연결된 업무 회사") && html.contains("권한 관리"));
         let retried = committed(
-            &submit(&app, &cookies, &input).await,
+            &submit(&app, &cookies, &csrf, &input).await,
             StatusCode::OK,
             command,
             account.account,
@@ -530,7 +568,7 @@ pub(crate) mod company_setup {
         );
         let mut changed = input.clone();
         changed["name"] = json!("같은 명령의 다른 내용");
-        submit(&app, &cookies, &changed)
+        submit(&app, &cookies, &csrf, &changed)
             .await
             .error(StatusCode::CONFLICT, "command_conflict");
         assert!(after == all_rows(&pool).await);
@@ -545,16 +583,21 @@ pub(crate) mod company_setup {
         .unwrap();
         let revoked = all_rows(&pool).await;
         let historical = committed(
-            &submit(&app, &cookies, &input).await,
+            &submit(&app, &cookies, &csrf, &input).await,
             StatusCode::OK,
             command,
             account.account,
             true,
         );
         assert!(historical.receipt == created.receipt);
-        submit(&app, &cookies, &enrollment(Uuid::new_v4(), account.account))
-            .await
-            .error(StatusCode::FORBIDDEN, "company_enrollment_forbidden");
+        submit(
+            &app,
+            &cookies,
+            &csrf,
+            &enrollment(Uuid::new_v4(), account.account),
+        )
+        .await
+        .error(StatusCode::FORBIDDEN, "company_enrollment_forbidden");
         assert!(
             revoked == all_rows(&pool).await,
             "history reconciliation created new effect after designation revocation"
@@ -567,6 +610,7 @@ pub(crate) mod company_setup {
         pool: PgPool,
     ) {
         let (app, account, cookies, startup, _) = designated(&pool).await;
+        let csrf = proof(&app, &cookies).await;
         let before = all_rows(&pool).await;
         let input = enrollment(Uuid::new_v4(), account.account);
         request(&app, "POST", CREATE, &cookies, Some(input.clone()), &[])
@@ -574,7 +618,7 @@ pub(crate) mod company_setup {
             .error(StatusCode::FORBIDDEN, "csrf_invalid");
         let mut targeted = input.clone();
         targeted["group_id"] = json!(Uuid::new_v4());
-        submit(&app, &cookies, &targeted).await.error(
+        submit(&app, &cookies, &csrf, &targeted).await.error(
             StatusCode::UNPROCESSABLE_ENTITY,
             "group_enrollment_unavailable",
         );
@@ -583,7 +627,7 @@ pub(crate) mod company_setup {
             .await
             .expect("existing real migration-created Group prerequisite");
         targeted["group_id"] = json!(existing);
-        submit(&app, &cookies, &targeted).await.error(
+        submit(&app, &cookies, &csrf, &targeted).await.error(
             StatusCode::UNPROCESSABLE_ENTITY,
             "group_enrollment_unavailable",
         );
@@ -598,13 +642,15 @@ pub(crate) mod company_setup {
     async fn selected_administrator_receives_only_company_ceiling_without_operator_inheritance(
         pool: PgPool,
     ) {
-        let (app, operator, cookies, startup, _) = designated(&pool).await;
+        let (app, operator, cookies, startup, _) = ready_designated(&pool).await;
+        let csrf = proof(&app, &cookies).await;
         let (recipient, recipient_cookies) = enrolled(&app).await;
+        let recipient_csrf = proof(&app, &recipient_cookies).await;
         let input = enrollment(Uuid::new_v4(), recipient.account);
         let command: Uuid = input["command_id"].as_str().unwrap().parse().unwrap();
         let before = all_rows(&pool).await;
         let created = committed(
-            &submit(&app, &cookies, &input).await,
+            &submit(&app, &cookies, &csrf, &input).await,
             StatusCode::CREATED,
             command,
             recipient.account,
@@ -648,6 +694,7 @@ pub(crate) mod company_setup {
         submit(
             &app,
             &recipient_cookies,
+            &recipient_csrf,
             &enrollment(Uuid::new_v4(), recipient.account),
         )
         .await
@@ -663,7 +710,8 @@ pub(crate) mod company_setup {
     async fn failed_actor_admission_rolls_back_topology_and_same_command_retries_once(
         pool: PgPool,
     ) {
-        let (app, account, cookies, startup, _) = designated(&pool).await;
+        let (app, account, cookies, startup, _) = ready_designated(&pool).await;
+        let csrf = proof(&app, &cookies).await;
         let command = Uuid::new_v4();
         let input = enrollment(command, account.account);
         let before = all_rows(&pool).await;
@@ -681,7 +729,7 @@ pub(crate) mod company_setup {
           CREATE TRIGGER company_setup_actor_fault BEFORE INSERT ON public.company_actors
             FOR EACH ROW EXECUTE FUNCTION public.company_setup_actor_fault()"#)
             .execute(&pool).await.unwrap();
-        let response = submit(&app, &cookies, &input).await;
+        let response = submit(&app, &cookies, &csrf, &input).await;
         // Sequence advancement is deliberate nontransactional fault evidence:
         // the real trigger saw the real Company before refusing. A generic503
         // from unrelated admission failure cannot satisfy this witness.
@@ -832,7 +880,7 @@ pub(crate) mod company_setup {
             "pending read modified command or effects"
         );
         let created = committed(
-            &submit(&app, &cookies, &input).await,
+            &submit(&app, &cookies, &csrf, &input).await,
             StatusCode::CREATED,
             command,
             account.account,
@@ -841,7 +889,7 @@ pub(crate) mod company_setup {
         durable(&pool, &created, &input, account.account).await;
         let after = all_rows(&pool).await;
         let replay = committed(
-            &submit(&app, &cookies, &input).await,
+            &submit(&app, &cookies, &csrf, &input).await,
             StatusCode::OK,
             command,
             account.account,
@@ -858,7 +906,8 @@ pub(crate) mod company_setup {
 
     #[sqlx::test(migrations = false)]
     async fn company_input_is_closed_bounded_preserved_and_html_escaped(pool: PgPool) {
-        let (app, account, cookies, startup, _) = designated(&pool).await;
+        let (app, account, cookies, startup, _) = ready_designated(&pool).await;
+        let csrf = proof(&app, &cookies).await;
         let before = all_rows(&pool).await;
         let base = enrollment(Uuid::new_v4(), account.account);
         let mut invalid = Vec::new();
@@ -892,7 +941,7 @@ pub(crate) mod company_setup {
         nil["administrative_account_id"] = json!(Uuid::nil());
         invalid.push(nil);
         for value in invalid {
-            submit(&app, &cookies, &value).await.error(
+            submit(&app, &cookies, &csrf, &value).await.error(
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "company_enrollment_invalid",
             );
@@ -906,7 +955,7 @@ pub(crate) mod company_setup {
             "{},\"name\":\"duplicate field\"}}",
             encoded.trim_end_matches('}')
         );
-        submit_raw(&app, &cookies, duplicate).await.error(
+        submit_raw(&app, &cookies, &csrf, duplicate).await.error(
             StatusCode::UNPROCESSABLE_ENTITY,
             "company_enrollment_invalid",
         );
@@ -915,7 +964,7 @@ pub(crate) mod company_setup {
             "duplicate field input persisted an effect"
         );
         let oversized = format!("{}{}", encoded, " ".repeat(4097));
-        submit_raw(&app, &cookies, oversized).await.error(
+        submit_raw(&app, &cookies, &csrf, oversized).await.error(
             StatusCode::PAYLOAD_TOO_LARGE,
             "company_enrollment_too_large",
         );
@@ -929,7 +978,7 @@ pub(crate) mod company_setup {
         assert!(name.len() <= 256 && name.len() > 200);
         valid["name"] = json!(name);
         let created = committed(
-            &submit(&app, &cookies, &valid).await,
+            &submit(&app, &cookies, &csrf, &valid).await,
             StatusCode::CREATED,
             command,
             account.account,
@@ -950,13 +999,15 @@ pub(crate) mod company_setup {
 
     #[sqlx::test(migrations = false)]
     async fn concurrent_same_command_commits_once_and_foreign_account_cannot_reopen(pool: PgPool) {
-        let (app, account, cookies, startup, _) = designated(&pool).await;
+        let (app, account, cookies, startup, _) = ready_designated(&pool).await;
+        let csrf = proof(&app, &cookies).await;
         let (foreign, foreign_cookies) = enrolled(&app).await;
+        let foreign_csrf = proof(&app, &foreign_cookies).await;
         let command = Uuid::new_v4();
         let input = enrollment(command, account.account);
         let (left, right) = tokio::join!(
-            submit(&app, &cookies, &input),
-            submit(&app, &cookies, &input)
+            submit(&app, &cookies, &csrf, &input),
+            submit(&app, &cookies, &csrf, &input)
         );
         let (fresh, repeated) = if left.status == StatusCode::CREATED {
             (&left, &right)
@@ -992,6 +1043,7 @@ pub(crate) mod company_setup {
         submit(
             &app,
             &foreign_cookies,
+            &foreign_csrf,
             &enrollment(command, foreign.account),
         )
         .await
