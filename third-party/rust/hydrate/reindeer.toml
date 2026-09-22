@@ -1,0 +1,34 @@
+# @generated from canonical Reindeer configuration and the fixed hydrate platform.
+cargo_env = true
+include_workspace_dev_dependencies = false
+unresolved_fixup_error = true
+unresolved_fixup_error_message = "Every third-party build script needs an explicit reviewed fixup; do not downgrade this gate to warnings."
+include_top_level = false
+include_workspace_members = false
+
+[buck]
+file_name = "BUCK"
+buckfile_imports = "load(\"@prelude//rust:cargo_package.bzl\", \"cargo\")\nload(\"@prelude//rust:cargo_buildscript.bzl\", \"buildscript_run\")\n\n# Source-only exports for hydration integrity; dependency rules are unchanged.\n[\n    export_file(\n        name = \"hydration-\" + source,\n        src = source,\n        mode = \"reference\",\n        visibility = [\"PUBLIC\"],\n    )\n    for source in [\"reindeer.toml\", \"fixups\"]\n]\n\n[\n    export_file(\n        name = \"hydration-\" + source,\n        src = source,\n        mode = \"reference\",\n        visibility = [\"PUBLIC\"],\n    )\n    for source in [\"BUCK\", \"Cargo.toml\", \"Cargo.lock\", \"root-dependencies.json\", \"input-lock.json\"]\n]\n"
+rust_library = "cargo.rust_library"
+rust_binary = "cargo.rust_binary"
+buildscript_genrule = "buildscript_run"
+
+[platform.wasm32]
+target = "wasm32-unknown-unknown"
+execution-platform = false
+features = ["hydrate", "islands"]
+
+[platform.macos-arm64]
+target = "aarch64-apple-darwin"
+execution-platform = true
+features = []
+
+[platform.linux-arm64]
+target = "aarch64-unknown-linux-gnu"
+execution-platform = true
+features = []
+
+[platform.linux-x86_64]
+target = "x86_64-unknown-linux-gnu"
+execution-platform = true
+features = []

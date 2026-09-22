@@ -1,0 +1,4 @@
+# version_stamp hashes the invoking manifest path for its WASM section marker.
+# Use the declared crate's stable path so host checkout locations cannot alter it.
+['cfg(version = "=0.2.3")']
+env = { CARGO_MANIFEST_PATH = "wasm_split_helpers-0.2.3.crate/Cargo.toml" }

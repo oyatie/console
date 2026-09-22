@@ -1872,3 +1872,13 @@ sh_test(
     deps = ["//backend/app:console-app-itest-health_readiness-browser"],
     labels = ["test.integration", "resource.postgres", "needs-postgres"],
 )
+
+# Source-only integrity inputs; no compiler or toolchain selection.
+[
+    export_file(
+        name = "hydration-" + source,
+        src = source,
+        visibility = ["PUBLIC"],
+    )
+    for source in ["gen_hydrate.py", "gen_first_party.py", "BUCK"]
+]

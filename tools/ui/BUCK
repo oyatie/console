@@ -1,0 +1,8 @@
+[
+    export_file(
+        name = "hydration-" + source,
+        src = source,
+        visibility = ["PUBLIC"],
+    )
+    for source in ["build-payroll-wasm.sh", "wasm_bundle.py", "hydration.bzl", "BUCK"]
+]
