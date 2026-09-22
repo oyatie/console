@@ -1,0 +1,146 @@
+-- Atomic trigger handover preserves old branches and all original bodies.
+
+DROP TRIGGER policy_roles_native_guard_v1 ON public.policy_roles;
+CREATE TRIGGER policy_roles_native_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.policy_roles FOR EACH ROW EXECUTE FUNCTION public.identity_native_root_guard_v2();
+ALTER TABLE public.policy_roles ENABLE ALWAYS TRIGGER policy_roles_native_guard_v1;
+
+DROP TRIGGER policy_roles_native_birth_closure_v1 ON public.policy_roles;
+CREATE CONSTRAINT TRIGGER policy_roles_native_birth_closure_v1 AFTER INSERT ON public.policy_roles DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.policy_roles ENABLE ALWAYS TRIGGER policy_roles_native_birth_closure_v1;
+
+DROP TRIGGER user_role_assignments_native_guard_v1 ON public.user_role_assignments;
+CREATE TRIGGER user_role_assignments_native_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.user_role_assignments FOR EACH ROW EXECUTE FUNCTION public.identity_native_root_guard_v2();
+ALTER TABLE public.user_role_assignments ENABLE ALWAYS TRIGGER user_role_assignments_native_guard_v1;
+
+DROP TRIGGER user_role_assignments_native_birth_closure_v1 ON public.user_role_assignments;
+CREATE CONSTRAINT TRIGGER user_role_assignments_native_birth_closure_v1 AFTER INSERT ON public.user_role_assignments DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.user_role_assignments ENABLE ALWAYS TRIGGER user_role_assignments_native_birth_closure_v1;
+
+DROP TRIGGER policy_role_revisions_birth_row_v1 ON public.policy_role_revisions;
+CREATE TRIGGER policy_role_revisions_birth_row_v1 BEFORE INSERT ON public.policy_role_revisions FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_row_guard_v2();
+ALTER TABLE public.policy_role_revisions ENABLE ALWAYS TRIGGER policy_role_revisions_birth_row_v1;
+
+DROP TRIGGER policy_role_revisions_birth_closure_v1 ON public.policy_role_revisions;
+CREATE CONSTRAINT TRIGGER policy_role_revisions_birth_closure_v1 AFTER INSERT ON public.policy_role_revisions DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.policy_role_revisions ENABLE ALWAYS TRIGGER policy_role_revisions_birth_closure_v1;
+
+DROP TRIGGER policy_capability_clauses_birth_row_v1 ON public.policy_capability_clauses;
+CREATE TRIGGER policy_capability_clauses_birth_row_v1 BEFORE INSERT ON public.policy_capability_clauses FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_row_guard_v2();
+ALTER TABLE public.policy_capability_clauses ENABLE ALWAYS TRIGGER policy_capability_clauses_birth_row_v1;
+
+DROP TRIGGER policy_capability_clauses_birth_closure_v1 ON public.policy_capability_clauses;
+CREATE CONSTRAINT TRIGGER policy_capability_clauses_birth_closure_v1 AFTER INSERT ON public.policy_capability_clauses DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.policy_capability_clauses ENABLE ALWAYS TRIGGER policy_capability_clauses_birth_closure_v1;
+
+DROP TRIGGER policy_capability_clause_fields_birth_row_v1 ON public.policy_capability_clause_fields;
+CREATE TRIGGER policy_capability_clause_fields_birth_row_v1 BEFORE INSERT ON public.policy_capability_clause_fields FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_row_guard_v2();
+ALTER TABLE public.policy_capability_clause_fields ENABLE ALWAYS TRIGGER policy_capability_clause_fields_birth_row_v1;
+
+DROP TRIGGER policy_capability_clause_fields_birth_closure_v1 ON public.policy_capability_clause_fields;
+CREATE CONSTRAINT TRIGGER policy_capability_clause_fields_birth_closure_v1 AFTER INSERT ON public.policy_capability_clause_fields DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.policy_capability_clause_fields ENABLE ALWAYS TRIGGER policy_capability_clause_fields_birth_closure_v1;
+
+DROP TRIGGER policy_assignment_revisions_birth_row_v1 ON public.policy_assignment_revisions;
+CREATE TRIGGER policy_assignment_revisions_birth_row_v1 BEFORE INSERT ON public.policy_assignment_revisions FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_row_guard_v2();
+ALTER TABLE public.policy_assignment_revisions ENABLE ALWAYS TRIGGER policy_assignment_revisions_birth_row_v1;
+
+DROP TRIGGER policy_assignment_revisions_birth_closure_v1 ON public.policy_assignment_revisions;
+CREATE CONSTRAINT TRIGGER policy_assignment_revisions_birth_closure_v1 AFTER INSERT ON public.policy_assignment_revisions DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.policy_assignment_revisions ENABLE ALWAYS TRIGGER policy_assignment_revisions_birth_closure_v1;
+
+DROP TRIGGER company_authority_heads_birth_row_v1 ON public.company_authority_heads;
+CREATE TRIGGER company_authority_heads_birth_row_v1 BEFORE INSERT ON public.company_authority_heads FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_row_guard_v2();
+ALTER TABLE public.company_authority_heads ENABLE ALWAYS TRIGGER company_authority_heads_birth_row_v1;
+
+DROP TRIGGER company_authority_heads_birth_closure_v1 ON public.company_authority_heads;
+CREATE CONSTRAINT TRIGGER company_authority_heads_birth_closure_v1 AFTER INSERT ON public.company_authority_heads DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.identity_native_birth_closure_v2();
+ALTER TABLE public.company_authority_heads ENABLE ALWAYS TRIGGER company_authority_heads_birth_closure_v1;
+
+DROP TRIGGER native_company_catalog_installs_birth_row_v1 ON public.native_company_catalog_installs;
+CREATE TRIGGER native_company_catalog_installs_birth_row_v1 BEFORE INSERT ON public.native_company_catalog_installs FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_row_guard_v2();
+ALTER TABLE public.native_company_catalog_installs ENABLE ALWAYS TRIGGER native_company_catalog_installs_birth_row_v1;
+
+DROP TRIGGER native_company_catalog_installs_birth_closure_v1 ON public.native_company_catalog_installs;
+CREATE CONSTRAINT TRIGGER native_company_catalog_installs_birth_closure_v1 AFTER INSERT ON public.native_company_catalog_installs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_closure_v2();
+ALTER TABLE public.native_company_catalog_installs ENABLE ALWAYS TRIGGER native_company_catalog_installs_birth_closure_v1;
+
+DROP TRIGGER native_company_object_refs_birth_row_v1 ON public.native_company_object_refs;
+CREATE TRIGGER native_company_object_refs_birth_row_v1 BEFORE INSERT ON public.native_company_object_refs FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_row_guard_v2();
+ALTER TABLE public.native_company_object_refs ENABLE ALWAYS TRIGGER native_company_object_refs_birth_row_v1;
+
+DROP TRIGGER native_company_object_refs_birth_closure_v1 ON public.native_company_object_refs;
+CREATE CONSTRAINT TRIGGER native_company_object_refs_birth_closure_v1 AFTER INSERT ON public.native_company_object_refs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_closure_v2();
+ALTER TABLE public.native_company_object_refs ENABLE ALWAYS TRIGGER native_company_object_refs_birth_closure_v1;
+
+DROP TRIGGER native_company_action_refs_birth_row_v1 ON public.native_company_action_refs;
+CREATE TRIGGER native_company_action_refs_birth_row_v1 BEFORE INSERT ON public.native_company_action_refs FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_row_guard_v2();
+ALTER TABLE public.native_company_action_refs ENABLE ALWAYS TRIGGER native_company_action_refs_birth_row_v1;
+
+DROP TRIGGER native_company_action_refs_birth_closure_v1 ON public.native_company_action_refs;
+CREATE CONSTRAINT TRIGGER native_company_action_refs_birth_closure_v1 AFTER INSERT ON public.native_company_action_refs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_closure_v2();
+ALTER TABLE public.native_company_action_refs ENABLE ALWAYS TRIGGER native_company_action_refs_birth_closure_v1;
+
+DROP TRIGGER native_company_property_refs_birth_row_v1 ON public.native_company_property_refs;
+CREATE TRIGGER native_company_property_refs_birth_row_v1 BEFORE INSERT ON public.native_company_property_refs FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_row_guard_v2();
+ALTER TABLE public.native_company_property_refs ENABLE ALWAYS TRIGGER native_company_property_refs_birth_row_v1;
+
+DROP TRIGGER native_company_property_refs_birth_closure_v1 ON public.native_company_property_refs;
+CREATE CONSTRAINT TRIGGER native_company_property_refs_birth_closure_v1 AFTER INSERT ON public.native_company_property_refs DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION public.native_company_catalog_birth_closure_v2();
+ALTER TABLE public.native_company_property_refs ENABLE ALWAYS TRIGGER native_company_property_refs_birth_closure_v1;
+
+DROP TRIGGER company_enrollment_ontology_audit_guard_v1 ON public.audit_events;
+CREATE TRIGGER company_enrollment_ontology_audit_guard_v1 BEFORE INSERT ON public.audit_events
+ FOR EACH ROW EXECUTE FUNCTION public.company_enrollment_ontology_audit_guard_v2();
+ALTER TABLE public.audit_events ENABLE ALWAYS TRIGGER company_enrollment_ontology_audit_guard_v1;
+
+DROP TRIGGER native_catalog_attribution_guard_v1 ON public.ont_object_type_key_revisions;
+CREATE TRIGGER native_catalog_attribution_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.ont_object_type_key_revisions
+ FOR EACH ROW EXECUTE FUNCTION ontology_api.native_catalog_attribution_guard_v2();
+ALTER TABLE public.ont_object_type_key_revisions ENABLE ALWAYS TRIGGER native_catalog_attribution_guard_v1;
+
+DROP TRIGGER native_catalog_attribution_guard_v1 ON public.ont_object_types;
+CREATE TRIGGER native_catalog_attribution_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.ont_object_types
+ FOR EACH ROW EXECUTE FUNCTION ontology_api.native_catalog_attribution_guard_v2();
+ALTER TABLE public.ont_object_types ENABLE ALWAYS TRIGGER native_catalog_attribution_guard_v1;
+
+DROP TRIGGER native_catalog_attribution_guard_v1 ON public.ont_builtin_catalog_installs;
+CREATE TRIGGER native_catalog_attribution_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.ont_builtin_catalog_installs
+ FOR EACH ROW EXECUTE FUNCTION ontology_api.native_catalog_attribution_guard_v2();
+ALTER TABLE public.ont_builtin_catalog_installs ENABLE ALWAYS TRIGGER native_catalog_attribution_guard_v1;
+
+DROP TRIGGER native_catalog_attribution_guard_v1 ON public.ont_property_defs;
+CREATE TRIGGER native_catalog_attribution_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.ont_property_defs
+ FOR EACH ROW EXECUTE FUNCTION ontology_api.native_catalog_attribution_guard_v2();
+ALTER TABLE public.ont_property_defs ENABLE ALWAYS TRIGGER native_catalog_attribution_guard_v1;
+
+DROP TRIGGER native_catalog_attribution_guard_v1 ON public.ont_action_types;
+CREATE TRIGGER native_catalog_attribution_guard_v1 BEFORE INSERT OR UPDATE OR DELETE ON public.ont_action_types
+ FOR EACH ROW EXECUTE FUNCTION ontology_api.native_catalog_attribution_guard_v2();
+ALTER TABLE public.ont_action_types ENABLE ALWAYS TRIGGER native_catalog_attribution_guard_v1;
+
+DROP TRIGGER trg_audit_events_ontology_command_only ON public.audit_events;
+CREATE TRIGGER trg_audit_events_ontology_command_only
+    BEFORE INSERT ON public.audit_events
+    FOR EACH ROW EXECUTE FUNCTION ontology_api.protected_audit_writer_guard_v2();
+ALTER TABLE public.audit_events ENABLE ALWAYS TRIGGER trg_audit_events_ontology_command_only;
+
+DROP TRIGGER trg_ont_object_types_current_audit ON public.ont_object_types;
+CREATE CONSTRAINT TRIGGER trg_ont_object_types_current_audit
+    AFTER INSERT OR UPDATE ON public.ont_object_types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW EXECUTE FUNCTION ontology_api.require_current_transaction_audit_v2();
+ALTER TABLE public.ont_object_types ENABLE ALWAYS TRIGGER trg_ont_object_types_current_audit;
+
+DROP TRIGGER trg_ont_property_defs_current_audit ON public.ont_property_defs;
+CREATE CONSTRAINT TRIGGER trg_ont_property_defs_current_audit
+    AFTER INSERT ON public.ont_property_defs
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW EXECUTE FUNCTION ontology_api.require_current_transaction_audit_v2();
+ALTER TABLE public.ont_property_defs ENABLE ALWAYS TRIGGER trg_ont_property_defs_current_audit;
+
+DROP TRIGGER trg_ont_action_types_current_audit ON public.ont_action_types;
+CREATE CONSTRAINT TRIGGER trg_ont_action_types_current_audit
+    AFTER INSERT ON public.ont_action_types
+    DEFERRABLE INITIALLY DEFERRED
+    FOR EACH ROW EXECUTE FUNCTION ontology_api.require_current_transaction_audit_v2();
+ALTER TABLE public.ont_action_types ENABLE ALWAYS TRIGGER trg_ont_action_types_current_audit;

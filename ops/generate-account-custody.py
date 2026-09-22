@@ -330,7 +330,8 @@ $account_custody$;
             'ops/postgres-capture-company-enrollment-custody.sql': company_enrollment_snapshot_query()+';\n',
             'backend/app/src/company_enrollment_custody_state.sql': company_enrollment_state_query()+';\n',
             'ops/postgres-finalize-company-enrollment.sql': company_enrollment_finalizer_sql(),
-            **credential_generated_files()}
+            **credential_generated_files(),
+            **native_company_policy_generated_files()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6199,6 +6200,165 @@ BEGIN
 END
 $company_custody$;
 """
+
+# Additive native Company policy custody. This serializer extends the exact
+# Company profile; historical generators, command bytes and seals stay intact.
+NATIVE_POLICY_SOURCE_ORDER = (
+    'schema-v1.sql', 'shape-expansion-v1.sql', 'codec-v1.sql',
+    'registration-custody-v1.sql', 'material-v1.sql', 'commands-v1.sql',
+    'catalog-v1.sql', 'assignment-v1.sql', 'guards-v1.sql', 'closure-v1.sql',
+    'audit-v1.sql', 'current-read-v2.sql', 'legacy-branches-v2.sql',
+    'bindings-v1.sql', 'trigger-handover-v1.sql', 'acl-v1.sql',
+)
+NATIVE_POLICY_RELATIONS = ('native_company_policy_inputs_v1', 'native_company_policy_receipts_v1')
+# Exact hashes are populated only from independently reviewed declared sources.
+NATIVE_POLICY_SOURCE_SHA256 = {'acl-v1.sql': 'fa80183a6c018f123a41f969bce4fc81293f33132a22315b45b3110b0ef6a378', 'assignment-v1.sql': 'e26b560d2c8d0473525b738c4e7e9d7476289ef423b0fa195c2d0ce139ad0888', 'audit-v1.sql': '59c7e7f13df648b24e97dc931904c2a811394db0e066abb1d936833cd58295c3', 'bindings-v1.sql': '80f6b5dc382d3c082cd9cdc84818c7b3b3bce35a7c672826b7b3e012a008431e', 'catalog-v1.sql': '97d8a51894be8a03e2910fe55afa5f5da9c943f9a8d72b03ae2699d03165fc05', 'closure-v1.sql': '3f830d83c586b8eee14b2ae531561b830b6da66b3fcbdde6b41b0ab10aa0b381', 'codec-v1.sql': '011e0a92b4ef9c89d68444bae5214fb7da96ef096ab7c3c24a0938a27d4844c4', 'commands-v1.sql': '7067e4e958385fdc7e76022013fb39142ed23d1767c97e770ad82749fb84f851', 'current-read-v2.sql': '5995df8bbc8c402d90e55049309a3c3970131d8d6db1f93ceebc94ece4bd4879', 'guards-v1.sql': '95f6e331f1753dbe30aeb92cceca6c1de3c35071d2d2c4fbef204a8674e8e864', 'legacy-branches-v2.sql': '5fe8eb2784c66279374516075d162b0f0b9a89db238e0941de55de90de7b1a97', 'material-v1.sql': '7002e75b83e7057b7513e28d35ebbb06409e95e6d8b6722aeaf88a8bc1f1ed1d', 'registration-custody-v1.sql': '5d4847a8e9ad0ea69f5ce5f6b03a4d2971660e885aaf918bbcc0a8ebfb04e11a', 'schema-v1.sql': 'de2159505dc3e731ecd27b240f0587f27421768bb56fc02e12a7205dbcbd579d', 'shape-expansion-v1.sql': '944a7f31ac39486b57af769bbbc4bee69ce861473d532714a03a5e2cf1caff88', 'trigger-handover-v1.sql': '3e737ce2c0456023dfaa32cd5ba7f2e5ff11574eaa6c9c2b310559b0b3fa876c'}
+NATIVE_POLICY_FINALIZED_SHA256 = (
+    'ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2',
+    '5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005',
+)
+
+
+def native_company_policy_source_sql():
+    if set(NATIVE_POLICY_SOURCE_SHA256) != set(NATIVE_POLICY_SOURCE_ORDER):
+        raise SystemExit('Native policy sources require independent exact review')
+    parts = []
+    for name in NATIVE_POLICY_SOURCE_ORDER:
+        path = ROOT / 'ops/native-company-policy' / name
+        if not path.is_file() or path.is_symlink():
+            raise SystemExit('Native policy source must be an exact regular file: ' + name)
+        source = path.read_bytes()
+        if hashlib.sha256(source).hexdigest() != NATIVE_POLICY_SOURCE_SHA256[name]:
+            raise SystemExit('Native policy source requires independent successor review: ' + name)
+        parts.append('-- source: ' + name + '\n' + source.decode('utf-8'))
+    return '\n'.join(parts)
+
+
+def native_company_policy_snapshot_query():
+    source = native_company_policy_source_sql()
+    # Enumerate all overloads of every declared successor, including unused
+    # originals retained by trigger handover. No live function-name adoption.
+    import re
+    routine_names = sorted(set(re.findall(r'CREATE FUNCTION ([a-z_]+\.[a-z_0-9]+)\(', source)))
+    if not routine_names:
+        raise ValueError('Native policy routine roster is empty')
+    query = company_enrollment_snapshot_query()
+    relation_anchor = " ('audit_events'),\n"
+    routine_anchor = ' WHERE (n.nspname,p.proname) IN (VALUES '
+    if query.count(relation_anchor) != 1 or query.count(routine_anchor) != 1:
+        raise ValueError('Native policy snapshot anchor drift')
+    relation_rows = ',\n'.join(" ('" + name + "')" for name in NATIVE_POLICY_RELATIONS)
+    query = query.replace(relation_anchor, relation_anchor + relation_rows + ',\n')
+    routines = ','.join("('" + name.replace('.', "','", 1) + "')" for name in routine_names)
+    query = query.replace(routine_anchor, routine_anchor + routines + ',')
+    rights_start = '), company_startup_rights AS (\n SELECT\n'
+    rights_end = ' AS valid\n), snapshots AS ('
+    if query.count(rights_start) != 1 or query.count(rights_end) != 1:
+        raise ValueError('Native policy startup-rights boundary drift')
+    prefix, rest = query.split(rights_start, 1)
+    predicate, suffix = rest.split(rights_end, 1)
+    for before, after in (
+        ('count(*)=59 AND count(oid)=59', 'count(*)=61 AND count(oid)=61'),
+        ('count(*)=68 AND count(oid)=68', 'count(*)=70 AND count(oid)=70'),
+        ('count(*)=544 AND bool_and', 'count(*)=560 AND bool_and'),
+        ('count(DISTINCT name)=63', 'count(DISTINCT name)=65'),
+    ):
+        if predicate.count(before) != 1:
+            raise ValueError('Native policy startup-rights cardinality drift')
+        predicate = predicate.replace(before, after)
+    return (prefix + rights_start + predicate + rights_end + suffix).replace(
+        'AS company_startup_rights_valid FROM snapshots', 'AS native_policy_startup_rights_valid FROM snapshots')
+
+
+def native_company_policy_profiles():
+    profiles = (*COMPANY_CUSTODY_FINALIZED_SHA256, *NATIVE_POLICY_FINALIZED_SHA256)
+    if len(profiles) != 4 or len(set(profiles)) != 4 or any(
+            len(value) != 64 or any(c not in '0123456789abcdef' for c in value) for value in profiles):
+        raise SystemExit('Native policy profiles require independent declared-source capture review')
+    return profiles
+
+
+def native_company_policy_state_query():
+    native_company_policy_profiles()
+    final = ','.join("'" + value + "'" for value in NATIVE_POLICY_FINALIZED_SHA256)
+    import re
+    routine_names = sorted(set(re.findall(r'CREATE FUNCTION ([a-z_]+\.[a-z_0-9]+)\(', native_company_policy_source_sql())))
+    routines = ','.join("('" + name.replace('.', "','", 1) + "')" for name in routine_names)
+    return f"""WITH native_profile AS (
+{native_company_policy_snapshot_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM native_profile) IN ({final})
+ AND (SELECT native_policy_startup_rights_valid FROM native_profile) IS TRUE
+ THEN 'native_company_policy.finalized'
+ WHEN to_regclass('public.native_company_policy_inputs_v1') IS NULL
+ AND to_regclass('public.native_company_policy_receipts_v1') IS NULL
+ AND NOT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+  WHERE (n.nspname,p.proname) IN (VALUES {routines})
+    OR (n.nspname='public' AND p.proname LIKE 'native_company_policy_%'))
+ AND NOT EXISTS(SELECT 1 FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
+  JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'
+   AND a.attname IN ('policy_receipt_id','current_policy_receipt_id') AND a.attnum>0 AND NOT a.attisdropped)
+ THEN 'native_company_policy.absent'
+ ELSE 'native_company_policy.profile_mismatch' END AS state"""
+
+
+def native_company_policy_finalizer_sql():
+    native_company_policy_profiles()
+    final = ','.join("'" + value + "'" for value in NATIVE_POLICY_FINALIZED_SHA256)
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS))
+    if len(names) != 61 or len(set(names)) != len(names):
+        raise ValueError('Native policy custody relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    inspect = ('SELECT snapshot_sha256,native_policy_startup_rights_valid INTO observed,rights_valid FROM (\n'
+               + native_company_policy_snapshot_query() + '\n) captured;')
+    previous = ('SELECT snapshot_sha256,company_startup_rights_valid INTO predecessor,prior_rights_valid FROM (\n'
+                + company_enrollment_snapshot_query() + '\n) captured;')
+    return f"""-- Generated additive atomic native Company policy custody upgrade.
+-- Existing superuser operator transport owns target/authentication/drain checks.
+DO $native_policy_custody$
+DECLARE observed text; rights_valid boolean; predecessor text; prior_rights_valid boolean;
+ expected_final text; relation_name text;
+BEGIN
+ IF session_user<>current_user OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+  OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+   'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+   'console_platform_force_cmd','console_account_owner','console_terms_owner','console_credential_owner',
+   'console_durability_observer') THEN RAISE EXCEPTION 'native_company_policy.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+  RAISE EXCEPTION 'native_company_policy.unsupported_isolation'; END IF;
+ PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+ PERFORM pg_catalog.set_config('lock_timeout','1s',true);
+ FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relname IN ({literals}) ORDER BY c.relname COLLATE "C"
+ LOOP EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name); END LOOP;
+ {inspect}
+ IF observed IN ({final}) AND rights_valid IS TRUE THEN RETURN; END IF;
+ {previous}
+ expected_final:=CASE predecessor
+  WHEN '{COMPANY_CUSTODY_FINALIZED_SHA256[0]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[0]}'
+  WHEN '{COMPANY_CUSTODY_FINALIZED_SHA256[1]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[1]}' ELSE NULL END;
+ IF expected_final IS NULL OR prior_rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_company_policy.predecessor_mismatch'; END IF;
+{native_company_policy_source_sql()}
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_company_policy.profile_mismatch'; END IF;
+END
+$native_policy_custody$;
+"""
+
+
+def native_company_policy_generated_files():
+    return {
+        'ops/postgres-native-company-policy-owner.sql': native_company_policy_source_sql(),
+        'ops/postgres-capture-native-company-policy-custody.sql': native_company_policy_snapshot_query() + ';\n',
+        'ops/postgres-native-company-policy-custody-state.sql': native_company_policy_state_query() + ';\n',
+        'ops/postgres-finalize-native-company-policy.sql': native_company_policy_finalizer_sql(),
+    }
+
 
 def main():
     if sys.argv[1:] not in ([], ['--check']):
