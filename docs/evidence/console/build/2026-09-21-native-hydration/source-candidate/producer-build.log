@@ -1,0 +1,21 @@
+[2026-09-21T21:11:04.267-04:00] Starting new buck2 daemon...
+[2026-09-21T21:11:04.389-04:00] Connected to new buck2 daemon.
+[2026-09-21T21:11:04.390-04:00] Build ID: 5579bba8-a167-4167-a0c9-9fa5fec3ed8a
+[2026-09-21T21:11:11.491-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (http_archive cpython_archive) [local_execute], and 2 other actions
+[2026-09-21T21:11:18.487-04:00] Waiting on root//third-party/rust/hydrate:hashbrown-0.17 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc metadata [pic]) [local_execute], and 158 other actions
+[2026-09-21T21:11:25.583-04:00] Waiting on root//third-party/rust/hydrate:winnow-1 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]), and 95 other actions
+[2026-09-21T21:11:32.582-04:00] Waiting on root//third-party/rust/hydrate:camino-1-build-script-run (toolchains//:wasm32-platform#47b899467996b656) -- action (buildscript) [local_execute], and 42 other actions
+[2026-09-21T21:11:39.581-04:00] Waiting on root//third-party/rust/hydrate:serde_core-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (buildscript) [local_execute], and 27 other actions
+[2026-09-21T21:11:46.679-04:00] Waiting on root//third-party/rust/hydrate:syn-2 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 26 other actions
+[2026-09-21T21:11:53.679-04:00] Waiting on root//third-party/rust/hydrate:syn-2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc metadata [pic]) [local_execute], and 22 other actions
+[2026-09-21T21:12:00.679-04:00] Waiting on root//third-party/rust/hydrate:_derive-where-1 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute], and 43 other actions
+[2026-09-21T21:12:07.679-04:00] Waiting on root//third-party/rust/hydrate:wasm-bindgen-0.2 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 20 other actions
+[2026-09-21T21:12:14.779-04:00] Waiting on root//third-party/rust/hydrate:js-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 23 other actions
+[2026-09-21T21:12:21.779-04:00] Waiting on root//third-party/rust/hydrate:web-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 14 other actions
+[2026-09-21T21:12:28.779-04:00] Waiting on root//third-party/rust/hydrate:web-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 11 other actions
+[2026-09-21T21:12:35.878-04:00] Waiting on root//third-party/rust/hydrate:tachys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 5 other actions
+[2026-09-21T21:12:42.978-04:00] Waiting on root//third-party/rust/hydrate:server_fn-0.9 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute]
+[2026-09-21T21:12:46.133-04:00] Cache hits: 0%
+[2026-09-21T21:12:46.133-04:00] Commands: 1029 (cached: 0, remote: 0, local: 1029)
+[2026-09-21T21:12:46.133-04:00] Network: Up: 0B  Down: 134MiB
+BUILD SUCCEEDED

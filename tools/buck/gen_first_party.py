@@ -27,6 +27,7 @@ Test targets:
     hand-maintained exception table.
 """
 import ast
+import json
 import os
 import re
 import sys
@@ -113,16 +114,13 @@ RESOURCE_CONFIG = {
         },
     },
     "console-payroll-ui": {
-        # The crate compiles three non-Rust files in. `island_script.js` is
-        # `include_str!` from src/, and the committed bindgen pair under pkg/ is
-        # `include_bytes!` so the SSR server can serve /pkg out of the binary.
-        # All three live inside this Buck package, so a glob reaches them; a
-        # `src/**/*.rs` glob alone leaves rustc unable to read any of them.
-        "srcs": ["src/**/*.js", "src/native_account.css", "src/theme.css", "pkg/*.js", "pkg/*.wasm"],
+        # SSR may consume the committed pair only after the integrity action.
+        "srcs": ["src/**/*.js", "src/native_account.css", "src/theme.css"],
         # The unit tests `include_str!` two schema files from outside this
         # package: the payroll REST fragment they check contract keys against,
         # and the composed document.
         "external": {
+            ":console-payroll-ui-validated-bundle": "backend/crates/payroll/ui/pkg",
             "//backend/crates/payroll/rest:crate-openapi-tree":
                 "backend/crates/payroll/rest/openapi",
             "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
@@ -275,10 +273,9 @@ TEST_MARKERS = ("#[test]", "#[tokio::test", "#[sqlx::test", "#[rstest")
 
 # Manifest keys this generator does NOT read, recorded so the next reader does
 # not assume they are honoured:
-#   * `[lib] crate-type` -- every library is emitted as a plain `rust_library`.
-#     console-payroll-ui declares `["rlib", "cdylib"]`; the cdylib half is the
-#     wasm32 artifact, built by tools/ui/build-payroll-wasm.sh and not by Buck,
-#     so ignoring it is correct TODAY and wrong the day Buck builds the wasm.
+#   * `[lib] crate-type` -- ordinary libraries are emitted as `rust_library`.
+#     Console UI hydration has an explicit variant whose cdylib subtarget is
+#     compiled for wasm32 and published by tools/ui/build-payroll-wasm.sh.
 #   * dependency `optional = true` -- `map_deps` links an optional dependency
 #     unconditionally, so a Buck target can see a crate Cargo would have gated
 #     behind an off feature. Pre-existing; it makes the graph wider, not wrong.
@@ -1948,6 +1945,46 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
         ")",
         "",
     ]
+    if name == "console-payroll-ui":
+        out.insert(2, 'load("//tools/ui:hydration.bzl", "hydration_snapshot", "hydration_bundle", "hydration_validate", "hydration_inputs")')
+        with open(os.path.join(REPO, "third-party/rust/hydrate/root-dependencies.json")) as root_file:
+            hydrate_deps = json.load(root_file)
+        out += [
+            "hydration_snapshot(",
+            '    name = "console-payroll-ui-source-snapshot",',
+            '    inputs = hydration_inputs("backend/crates/payroll/ui", glob(["src/**"])),',
+            ")", "",
+            "configured_alias(",
+            '    name = "console-payroll-ui-wasm-snapshot",',
+            '    actual = ":console-payroll-ui-source-snapshot",',
+            '    platform = "toolchains//:wasm32-platform",',
+            ")", "",
+        ]
+        hydrate = _block("rust_library", name + "-hydrate", "[]", ident,
+                         hydrate_deps, {}, env, package=package,
+                         crate_root=package + "/src/lib.rs", features=["hydrate", "islands"])
+        hydrate[2] = '    srcs_filegroup = ":console-payroll-ui-source-snapshot",'
+        out += hydrate + ["",
+            "configured_alias(",
+            '    name = "console-payroll-ui-wasm",',
+            '    actual = ":console-payroll-ui-hydrate[cdylib]",',
+            '    platform = "toolchains//:wasm32-platform",',
+            ")", "",
+            "hydration_bundle(",
+            '    name = "console-payroll-ui-wasm-bundle",',
+            '    snapshot = ":console-payroll-ui-wasm-snapshot",',
+            '    wasm = ":console-payroll-ui-wasm",',
+            '    visibility = ["PUBLIC"],',
+            ")", "",
+            "hydration_validate(",
+            '    name = "console-payroll-ui-validated-bundle",',
+            '    inputs = hydration_inputs("backend/crates/payroll/ui", glob(["src/**"])),',
+            '    manifest = "bundle.lock.json",',
+            '    js = "pkg/console_payroll_ui.js",',
+            '    wasm = "pkg/console_payroll_ui_bg.wasm",',
+            '    native_candidate = ":console-payroll-ui-wasm-bundle",',
+            ")", "",
+        ]
     # Crates that carry OpenAPI fragments can export them so another package
     # can `include_str!` one. Emitted on OPT-IN, not on the existence of an
     # `openapi/` directory: 34 crates have one and exactly one is consumed, so

@@ -1673,5 +1673,64 @@ class BrowserIntegrationVariantsTests(unittest.TestCase):
         self.assertTrue(prerequisite.is_file(), "PINNED_BROWSER_PREREQUISITE_PRODUCER_REQUIRED")
 
 
+class NativeHydrationGenerationTests(unittest.TestCase):
+    """Exercise actual UI generation; capture only its final BUCK write."""
+
+    def test_ui_emits_isolated_hydration_and_validated_ssr_resources(self):
+        ui = Path(GENERATOR.REPO) / "backend/crates/payroll/ui"
+        manifest = GENERATOR.load(ui)
+        deps, named = GENERATOR.map_deps(manifest.get("dependencies"), {})
+        dev_deps, dev_named = GENERATOR.map_deps(manifest.get("dev-dependencies"), {})
+        written = []
+        class Capture:
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                return False
+            def write(self, value):
+                written.append(value)
+                return len(value)
+        builtin_open = open
+        def guarded_open(filename, mode="r", *args, **kwargs):
+            if any(flag in mode for flag in ("w", "a", "+", "x")):
+                self.assertEqual(ui / "BUCK", Path(filename))
+                self.assertEqual("w", mode)
+                return Capture()
+            return builtin_open(filename, mode, *args, **kwargs)
+        before = (ui / "BUCK").read_bytes()
+        with patch.object(GENERATOR, "open", guarded_open, create=True):
+            GENERATOR.emit(str(ui), "console-payroll-ui", sorted(deps), named,
+                           sorted(dev_deps), dev_named, version=manifest["package"].get("version"))
+        self.assertEqual(before, (ui / "BUCK").read_bytes())
+        self.assertEqual(1, len(written))
+        targets = BrowserIntegrationVariantsTests._target_nodes(written[0])
+        self.assertIn("console-payroll-ui-hydrate", targets,
+                      "NATIVE_HYDRATE_VARIANT_REQUIRED: actual generator omits hydration")
+        kind, fields, block = targets["console-payroll-ui-hydrate"]
+        self.assertEqual("rust_library", kind)
+        self.assertEqual(["hydrate", "islands"], ast.literal_eval(fields["features"]))
+        self.assertEqual("console_payroll_ui", ast.literal_eval(fields["crate"]))
+        self.assertEqual({"//third-party/rust/hydrate:leptos",
+                          "//third-party/rust/hydrate:serde",
+                          "//third-party/rust/hydrate:wasm-bindgen"},
+                         set(ast.literal_eval(fields["deps"])))
+        self.assertNotIn("validated", block, "producer must not depend on stale-bundle validator")
+        self.assertNotIn("pkg/", block, "producer must not compile committed output resources")
+        self.assertEqual("console-payroll-ui", ast.literal_eval(fields["env"])["CARGO_PKG_NAME"])
+        for name in ("console-payroll-ui", "console-payroll-ui-unit"):
+            _, ordinary, _ = targets[name]
+            self.assertEqual(["islands", "ssr"], ast.literal_eval(ordinary["features"]))
+            mapped = ordinary["mapped_srcs"]
+            self.assertIsInstance(mapped, ast.Call)
+            patterns = ast.literal_eval(mapped.args[1].args[0])
+            self.assertFalse(any(pattern.startswith("pkg/") for pattern in patterns),
+                             "SSR consumer still directly globs unchecked committed resources")
+            external = next(keyword.value for keyword in mapped.keywords if keyword.arg == "external")
+            self.assertEqual("backend/crates/payroll/ui/pkg",
+                             ast.literal_eval(external).get(":console-payroll-ui-validated-bundle"))
+        self.assertIn("console-payroll-ui-validated-bundle", targets)
+        self.assertIn("console-payroll-ui-wasm-bundle", targets)
+
+
 if __name__ == "__main__":
     unittest.main()

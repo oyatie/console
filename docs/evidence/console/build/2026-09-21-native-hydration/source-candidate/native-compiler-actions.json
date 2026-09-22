@@ -1,0 +1,31 @@
+[
+  {
+    "action": {
+      "reason": "build",
+      "identity": "root//backend/crates/payroll/ui:console-payroll-ui-hydrate (toolchains//:wasm32-platform#47b899467996b656) (rustc cdylib [pic])",
+      "reproducer": {
+        "executor": "Local",
+        "details": {
+          "command": [
+            "buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python",
+            "buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py",
+            "@buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/e231ae78609c2e9f/CPPL/console_payroll_ui-link-diag.args"
+          ],
+          "env": {
+            "TMPDIR": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root/buck-out/v2/tmp/root/2d77fd605bd1489b/rustc/_buck_73f6095665de83f8",
+            "BUCK_SCRATCH_PATH": "buck-out/v2/tmp/root/2d77fd605bd1489b/rustc/_buck_73f6095665de83f8",
+            "BUCK2_DAEMON_UUID": "ba108938-f860-4556-8c23-0fcc2e0681e5",
+            "BUCK_BUILD_ID": "5579bba8-a167-4167-a0c9-9fa5fec3ed8a"
+          }
+        }
+      },
+      "duration": "1.3s"
+    },
+    "response": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root/buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/e231ae78609c2e9f/CPPL/console_payroll_ui-link-diag.args",
+    "response_sha256": "e231ae78609c2e9fc2f46b51e9e516a2ad4743011e5cd1f19b5bb5094353ba40",
+    "output": "buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/output_artifacts/CPPL/libbackend_crates_payroll_ui_console-payroll-ui-hydrate.so",
+    "output_sha256": "1df0848291be7840bb14bfc97a96d5b1f64fe93dad45fa5ddc0c02289a1576cd",
+    "linker": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root/buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/1ea735db75389080/linker_wrapper.sh",
+    "linker_sha256": "1ea735db75389080168346713ab9c4b22decbd86a054cdfa678a64988f88f65a"
+  }
+]

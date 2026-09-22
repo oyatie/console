@@ -1,0 +1,8 @@
+{
+  "status": "incomplete; canceled after reviewed source successor invalidated initial candidate",
+  "initial_candidate": "d59e4d6a1bae6ae7a7ed6492c61516f6f49877ef",
+  "command": "npm run verify",
+  "exit_code": 143,
+  "log_sha256": "0ea55989546f93a619ac64f9a1cf7cc14e61793b63a8e0c614dec48be806e28a",
+  "not_qualification_evidence": true
+}

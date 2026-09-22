@@ -1,0 +1,10 @@
+{
+  "argv": [
+    "tools/buck2",
+    "build",
+    "-j2",
+    "//backend/crates/payroll/ui:console-payroll-ui"
+  ],
+  "cwd": "/private/tmp/console-native-hydration-consumer-4522eb42-20260921/root",
+  "returncode": 3
+}

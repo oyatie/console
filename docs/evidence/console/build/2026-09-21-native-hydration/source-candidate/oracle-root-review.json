@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root",
+  "verdict": "approve exact test and scheduling successor",
+  "manifest_sha256": "c2472a7424543792172363a0f8b463d5362957e34a86f29f74bed2e4e8558566",
+  "checks": [
+    "same actual compiler action required with WASM features/optimization/linker evidence",
+    "one actual --input, complete SHA-256 and WASM header; ignores path spelling and digest prefixes",
+    "mismatching consumed module and missing actions still fail",
+    "bound native outputs still compared with published bytes",
+    "all original consumer corruption/repair checks unchanged; scheduling only -j2",
+    "quoted argv forwarding; no shell evaluation of arguments",
+    "10 independently executed synthetic controls passed; not runtime evidence"
+  ],
+  "base": "d59e4d6a1bae6ae7a7ed6492c61516f6f49877ef"
+}

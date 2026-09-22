@@ -1,0 +1,42 @@
+{
+  "archive_sha256": "c66ddb6282341a9d245fc568b93322985005053bf05d44c4d3b3206b3832af1a",
+  "archive_matches_git_revision": true,
+  "tar_commit": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "archived_regular_files_equal_checkout": 8200,
+  "manifest_input_count_equal_source_and_snapshot": 156,
+  "snapshot_inputs_sha256": "7d10a0c86d38baab522fdcadb29bee5965049df0c10851ab9f70c7742c2c9d6f",
+  "action_count": 1029,
+  "cargo_action_count": 0,
+  "cargo_sentinel_requests": 0,
+  "producer_provenance": {
+    "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
+    "compiled_wasm_sha256": "1df0848291be7840bb14bfc97a96d5b1f64fe93dad45fa5ddc0c02289a1576cd",
+    "kind": "buck2-native-hydration-v1",
+    "source_snapshot_sha256": "7d10a0c86d38baab522fdcadb29bee5965049df0c10851ab9f70c7742c2c9d6f"
+  },
+  "outputs": {
+    "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "9e90572c893e7d4c4ec7f36ea38d1aa93ad28bdbc0320556bef0633679d17989"
+  },
+  "bundle_manifest_sha256": "364d92cd494bf718b643ed4ad516cad75264588c7bd884165b367c49ae41f7f9",
+  "exact_revision": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "source_pin_files": {
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/actions-0.command.json": "0bd28f71ef8d81c8dfa913eb67e5c1d37668a28d166714277e95a39e3ca5f593",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/actions-0.stderr": "404b5a97d6d93b2f6dbcf0a698c07a5b85a62e32e2f1b52a8a5c43c9433e4790",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/actions-0.stdout": "8beaf9d0ee17c0cda8c03d41429f870c9aee1c77987dd553f92dad5e05e52ecc",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/bindgen-version.command.json": "4e213f11487c5735fe5edd828d6695ad7cd4d8fa0f1f6e73b5ed270259e2bff0",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/bindgen-version.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/bindgen-version.stdout": "4887dbbb4467fb0cb649598a59d58adec621b21da0c0060cb752b6a8ed995c2c",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/fixture.json": "37967e4297749ee062e84af2eccd64501270202cbc94e659f713a1ac5d09bc26",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/native-bindgen-actions.json": "5ea9d8bd4b32a87ae1dffcfc7e606717202e96d37fa0c5c483ad7b832d618264",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/native-compiler-actions.json": "ac566618f8cfe1c34269eb7d351c633cc7e487aa879db74e1c25e109a3f12d43",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer-integrity.command.json": "81a1c2787411fe4f00a417814298762cc31e996c4f725218ec006b428133a1a3",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer-integrity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer-integrity.stdout": "dd91a6b5a977cc3cb74415da269408828f248fe19f3c43a9686b4397a46c1ba1",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer.command.json": "8a7516710ba3d71b37b5538b9780384a877641b89d974c28d25595f03e193326",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer.stderr": "ad478c508b7e39dd564fcb74ed9b64bd89209b7ed89f1a768e218090aef41a5f",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/producer.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/published-output-hashes.json": "524dd47cb96a5edc9b399506e6a149d7c76e08a8d41a49ec0b3ee1d52ce0545a",
+    "/private/tmp/console-native-hydration-producer-4522eb42-20260921/evidence/sentinel/cargo": "2d7248688c16b776ef4985082837464244b6ef2067795907e4f0e179d3ad8cf8"
+  }
+}

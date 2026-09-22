@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "bash",
+    "tools/ui/build-payroll-wasm.sh",
+    "-j2"
+  ],
+  "cwd": "/private/tmp/console-native-hydration-producer-4522eb42-20260921/root",
+  "returncode": 0
+}

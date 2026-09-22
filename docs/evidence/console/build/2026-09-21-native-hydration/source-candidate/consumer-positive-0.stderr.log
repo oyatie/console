@@ -1,0 +1,34 @@
+[2026-09-21T21:13:17.888-04:00] Starting new buck2 daemon...
+[2026-09-21T21:13:18.008-04:00] Connected to new buck2 daemon.
+[2026-09-21T21:13:18.010-04:00] Build ID: ab768f2e-ff18-42d8-b1da-1bc67d3ddabd
+[2026-09-21T21:13:25.109-04:00] Waiting on root//third-party/rust/hydrate:futures-task-0.3.34.crate (toolchains//:wasm32-platform#47b899467996b656) -- action (http_archive futures-task-0.3.34.crate) [local_execute], and 257 other actions
+[2026-09-21T21:13:32.210-04:00] Waiting on root//third-party/rust:unicode-ident-1 (prelude//platforms:default#11a256c53bf8083e) -- action (deps 6) [local_execute], and 370 other actions
+[2026-09-21T21:13:39.210-04:00] Waiting on root//third-party/rust:typenum-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc check) [local_execute], and 253 other actions
+[2026-09-21T21:13:46.310-04:00] Waiting on root//third-party/rust:libc-0.2-build-script-build (prelude//platforms:default#5732820ad45f622d) -- action (rustc link [pic]) [local_execute], and 182 other actions
+[2026-09-21T21:13:53.310-04:00] Waiting on root//third-party/rust/hydrate:toml_parser-1 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 144 other actions
+[2026-09-21T21:14:00.410-04:00] Waiting on root//third-party/rust/hydrate:itertools-0.14 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 94 other actions
+[2026-09-21T21:14:07.410-04:00] Waiting on root//third-party/rust:quote-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (buildscript) [local_execute], and 83 other actions
+[2026-09-21T21:14:14.510-04:00] Waiting on root//third-party/rust/hydrate:itertools-0.14 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 81 other actions
+[2026-09-21T21:14:21.610-04:00] Waiting on root//third-party/rust:anyhow-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (buildscript) [local_execute], and 58 other actions
+[2026-09-21T21:14:28.710-04:00] Waiting on root//third-party/rust/hydrate:serde_core-1-build-script-run (prelude//platforms:default#11a256c53bf8083e) -- action (buildscript) [local_execute], and 62 other actions
+[2026-09-21T21:14:35.810-04:00] Waiting on root//third-party/rust:either_of-0.1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc check) [local_execute], and 88 other actions
+[2026-09-21T21:14:42.810-04:00] Waiting on root//third-party/rust:syn-3 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 53 other actions
+[2026-09-21T21:14:49.811-04:00] Waiting on root//third-party/rust/hydrate:syn-2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 72 other actions
+[2026-09-21T21:14:56.910-04:00] Waiting on root//third-party/rust/hydrate:syn-3 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 67 other actions
+[2026-09-21T21:15:03.911-04:00] Waiting on root//third-party/rust:tokio-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc check) [local_execute], and 72 other actions
+[2026-09-21T21:15:11.010-04:00] Waiting on root//third-party/rust/hydrate:_thiserror-impl-2 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute], and 67 other actions
+[2026-09-21T21:15:18.010-04:00] Waiting on root//third-party/rust/hydrate:_yoke-derive-0.8 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc proc-macro) [local_execute], and 82 other actions
+[2026-09-21T21:15:25.110-04:00] Waiting on root//third-party/rust:js-sys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc check) [local_execute], and 44 other actions
+[2026-09-21T21:15:32.110-04:00] Waiting on root//third-party/rust:hyper-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc check) [local_execute], and 48 other actions
+[2026-09-21T21:15:39.210-04:00] Waiting on root//third-party/rust/hydrate:js-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 43 other actions
+[2026-09-21T21:15:46.310-04:00] Waiting on root//third-party/rust/hydrate:zerovec-0.11 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 38 other actions
+[2026-09-21T21:15:53.310-04:00] Waiting on root//third-party/rust/hydrate:web-sys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc metadata [pic]) [local_execute], and 37 other actions
+[2026-09-21T21:16:00.411-04:00] Waiting on root//third-party/rust:quote-use-0.8 (prelude//platforms:default#11a256c53bf8083e) -- action (rustc rlib [pic]) [local_execute], and 32 other actions
+[2026-09-21T21:16:07.510-04:00] Waiting on root//third-party/rust/hydrate:reactive_graph-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 18 other actions
+[2026-09-21T21:16:14.511-04:00] Waiting on root//third-party/rust:tachys-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc check) [local_execute], and 11 other actions
+[2026-09-21T21:16:21.511-04:00] Waiting on root//third-party/rust/hydrate:tachys-0.3 (toolchains//:wasm32-platform#47b899467996b656) -- action (rustc rlib [pic]) [local_execute], and 8 other actions
+[2026-09-21T21:16:28.511-04:00] Waiting on root//backend/crates/payroll/ui:console-payroll-ui-wasm-bundle (prelude//platforms:default#39893c7e49283da4) -- action (wasm_bindgen) [local_execute]
+[2026-09-21T21:16:29.191-04:00] Cache hits: 0%
+[2026-09-21T21:16:29.191-04:00] Commands: 2036 (cached: 0, remote: 0, local: 2036)
+[2026-09-21T21:16:29.191-04:00] Network: Up: 0B  Down: 153MiB
+BUILD SUCCEEDED
