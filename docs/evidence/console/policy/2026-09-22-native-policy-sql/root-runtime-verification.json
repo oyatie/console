@@ -1,0 +1,36 @@
+{
+  "reviewer": "/root",
+  "candidate": "e8dec7a8d",
+  "postgres": "18.4 disposable lane database",
+  "commands": [
+    "docker exec -i console-buck-postgres-jasonlee-68731 psql -X -v ON_ERROR_STOP=1 -U console_buck_admin -d <private fixture DB> < clean-predecessor-controls.sql",
+    "docker exec -i console-buck-postgres-jasonlee-68731 psql -X -v ON_ERROR_STOP=1 -U console_buck_admin -d <private fixture DB> < installer-output-rollback-control.sql"
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "control_scripts_executed": 2,
+  "rust_tests_executed": 0,
+  "verified_states": {
+    "root-native-policy-upgrade-rollback.log": [
+      "company_enrollment.finalized",
+      "native_company_policy.absent",
+      "native_company_policy.finalized",
+      "company_enrollment.finalized",
+      "native_company_policy.absent"
+    ],
+    "root-native-policy-corruption-rollback.log": [
+      "company_enrollment.finalized",
+      "native_company_policy.absent"
+    ]
+  },
+  "installer_sha256": "71b085fbb8e69cde9d06a98dfe7ecd96f372380e82a82ecffbcac6b1b347449c",
+  "boundary": "schema custody and atomic rollback only; no application business workflow claims",
+  "remaining": [
+    "Startup profile selection and successor fixture",
+    "Same admitted physical probe GREEN",
+    "Rust adapter/common audit A/B histories",
+    "Browser workflow and five required MVP modules"
+  ]
+}

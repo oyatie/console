@@ -1,0 +1,26 @@
+{
+  "owner": "/root/policy_owner_tests",
+  "base": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "status": "source reviewed; lane physical GREEN and common Rust/browser histories pending",
+  "independent_sql_review_sha256": "27c805ec67b4f2f8ca781deb28734f02a0db3d6bf4c4b194d3bc83ae62b1ccd6",
+  "independent_custody_review_sha256": "98b1ebc5578f64a9e91860cd395f2b1dbf53b03392ae351ab3bccb086c77008e",
+  "final_generated_matches_control_candidates": true,
+  "historical_generated_unchanged": 14,
+  "controls": {
+    "codec-controls.log": "66a46618d2ff90c5e56b9dd66ba63a16b1d7d42f50b5ad7ec55485c1133605fe",
+    "legacy-rollback-red.log": "36e44bfa1fc15597bb9b9d1c0fb4e9340b31f26c49651e9d6561baa4329510d4",
+    "legacy-rollback-green.log": "f3455a05120e40651ca454e767414925905d9b22d55478ad71e406b5f5612ee6",
+    "form8-uninstalled.log": "28efe0c5f4f762516efea4a075064dfdb92e004a767704acdec21c03ec968160",
+    "clean-predecessor-controls.log": "3ab6ad048d34c16a46b78bbe866d7d239ad32b88b069b62f389b06a5ed70e040",
+    "observer-predecessor-controls.log": "d4ec8d779be0f8291dad14a1df5bbf92fabbcfae726d850a8cefef16ca6e42a9",
+    "installer-output-rollback-control.log": "009142a38c9525025dc8e1ffa6c3c6dc636c59f392b2d5bb75932b285d6c66e8",
+    "installer-output-rollback-control-lock-timeout.log": "cd299e81ced9624d41fa54a8d3be5deaa7a56f18a2a1e934e093c5bbe4db81a3",
+    "installer-acl-drift-control.log": "013ea100589b09799c28eeb2d18851c1dfc9691969442530ad7d2329827ea6d4"
+  },
+  "holds": [
+    "physical probe integration",
+    "real common Rust A/B audit and closure histories",
+    "browser acceptance",
+    "full MVP and release qualification"
+  ]
+}

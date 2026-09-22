@@ -1,0 +1,45 @@
+{
+  "reviewer": "/root/policy_browser_tests",
+  "decision": "CHANGES REQUIRED: deterministic INVOKER/private-helper ACL regression",
+  "manifest": "/private/tmp/console-native-policy-sql-source-review-round1-20260922/manifest.json",
+  "manifest_sha256": "906784daa27210e174b3e0c651655d32407e41f1b8061a9b19398e93df3de371",
+  "base_sha": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "source_hashes_verified": 16,
+  "findings": [
+    {
+      "id": "R1",
+      "priority": "P1",
+      "locations": [
+        "legacy-branches-v2.sql:11",
+        "legacy-branches-v2.sql:203",
+        "legacy-branches-v2.sql:305",
+        "bindings-v1.sql:5",
+        "acl-v1.sql:179"
+      ],
+      "problem": "SECURITY INVOKER trigger successors call private SECURITY DEFINER validators unconditionally before the original legacy branch; only account_owner and ontology_writer receive EXECUTE. A console_rt legacy policy_roles/user_role_assignments INSERT, direct retained legacy Ontology write, and common Rust audit insertion can encounter permission denied before the preserved branch. The source-level failure is confirmed by SQL owner; runtime reproduction not yet reviewed.",
+      "evidence": "Existing Identity adapter-postgres src/lib.rs1133/1619 directly writes legacy roles/assignments. Original identity root guard returns normally for LEGACY_USER; successor first calls helper to which runtime has no grant. Common audit insert uses runtime role; public.company_enrollment_ontology_audit_guard_v2 is also INVOKER and unconditionally calls audit_admit.",
+      "required_fix": "Preserve exact original legacy execution path and caller semantics while handing only genuinely new native participants/events to independently enforced always-on guards. Do not grant private helper execution broadly or switch invoker guards to definer in a way that changes old current_user checks. Review frozen round2 and actual restricted-role legacy/audit positive controls."
+    }
+  ],
+  "verified_source_properties": [
+    "New input/terminal tables both ENABLE+FORCE RLS with same Company USING/WITH CHECK; no raw serving grants in closed ACL. Only private registration-integrity helper retains row_security=off from the original no-serving-execute Account verifier.",
+    "Two-commit protocol: A creates immutable accepted input; B requires different xid and original retained bytes; immutable guards cover UPDATE/DELETE/TRUNCATE. Already-terminal replay precedes expected-head/time operation checks.",
+    "Foreign uniqueness normalization inspects exact schema/table/PK diagnostics; quota excludes just-created candidate and maintains16/256 caps. Capacity traverses existing private enrollment roster without foreign authority locks and restores transaction-local GUC on normal/exception exit.",
+    "Source material obtains Group then sorted Account/family/designation/Company/catalog locks, binds actual actor/current session/deployment and original birth provenance, and rejects changed lock plan. It does not equate current operator to birth operator.",
+    "No INSERT INTO audit_events exists in the16-file successor. Audit validation binds actual actor/Company/session via input or terminal, exact payload, time and transaction/backend; deferred closure demands actual events, same-xid evidence, exact effects and rollback on missing proof.",
+    "Current Payroll reader appends actual selected assignment valid_from/valid_until and uses current clock; full18field roster derives from registered manifest/current clauses, not UUID ordering or permanent role interval.",
+    "All9 original guard fallback bodies mechanically compared byte-for-byte after stripping only new early branch/function naming. The ACL bug demonstrates that textual body preservation alone is insufficient behavior preservation.",
+    "Canonical decoder uses exact existing prefix, lengths, integer revisions and minute-aligned bounded signed microseconds; no historical input reinterpretation."
+  ],
+  "remaining_acceptance": [
+    "Frozen round2 R1 correction and independent rereview",
+    "Custody generator/finalizer and atomic installation review",
+    "Actual restricted-role A/B install/grant/revoke/regrant, receipt reopening, stale/duplicate/unknown commit histories",
+    "Actual common Rust audit success/omission/corruption/duplicate and rollback controls",
+    "Preserved legacy owner and native enrollment runtime positive controls",
+    "Adversarial source/participant corruption, source expiry/revocation and cross-Company controls",
+    "Browser journey remains RED until actual owner-wired route/form implementation and owner checkpoints pass"
+  ],
+  "runtime_tests_executed_by_reviewer": 0,
+  "proof_limit": "Owner-reported PG18 installation/read smoke is not business-history or browser acceptance; not independently rerun."
+}
