@@ -64,7 +64,11 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
         output.is_absolute() && !output.exists(),
         "browser output must be a fresh owned directory"
     );
-    prepare_ready_database(&pool).await;
+    if policy_entry {
+        native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
+    } else {
+        prepare_ready_database(&pool).await;
+    }
     let artifacts = Artifacts::new();
     let key = SigningKey::random(&mut OsRng);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

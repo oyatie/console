@@ -1859,6 +1859,10 @@ pub(crate) mod company_setup {
     include!("native_company_intake_schema.rs");
     include!("native_company_intake_owner.rs");
 
+    mod native_policy_startup_tests {
+        include!("native_policy_startup_tests.rs");
+    }
+
     mod native_policy_physical {
         include!("native_policy_physical_tests.rs");
     }
