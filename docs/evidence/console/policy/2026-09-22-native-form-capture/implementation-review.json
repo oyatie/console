@@ -1,0 +1,12 @@
+{
+  "status": "approved-source-only",
+  "base": "cbf26079a60537852029342c1485316e990a7223",
+  "method_sha256": "ee70ed90f3a7cd55eb1e75b53480fade642a80ed6193e766db142132f46e2550",
+  "checks": [
+    "Exact proposed method after whitespace normalization; new doc comments accurate.",
+    "admit_document body/API/GET semantics unchanged.",
+    "workflow diff only acting_account_id field.",
+    "Prior workflow module declaration ordering change is semantics-preserving; no workflow/test body change."
+  ],
+  "runtime_tests_executed_by_reviewer": 0
+}

@@ -1,4 +1,4 @@
-//! Read-only native Account document composition. API admission remains separate.
+//! Native Account documents and form credential capture. API admission stays separate.
 use super::*;
 use console_platform_auth::account::account_company_setup_eligible_in_tx;
 use sqlx::Acquire;
@@ -89,8 +89,8 @@ pub fn native_account_credentials_present(headers: &HeaderMap) -> Result<bool, N
     .any(|cookie| !matches!(cookie, CookieValue::Absent)))
 }
 
-// Only a mounted GET document handler calls this. Never strip headers or invoke
-// the stricter API owner with a fabricated same-origin request.
+// Shared document grammar. Form POST capture first applies its stricter origin
+// and media checks. Never fabricate headers to reuse API admission.
 fn admit_document<'a>(
     headers: &'a HeaderMap,
     origin: &Url,
@@ -169,6 +169,61 @@ fn admit_document<'a>(
 }
 
 impl AuthRestState {
+    /// Capture original native form credentials; current Auth and policy checks
+    /// still belong to the retained owning transaction. The caller must bound
+    /// and strictly parse the body, including duplicate fields, before calling.
+    pub fn company_form_mutation_credentials(
+        &self,
+        method: &axum::http::Method,
+        headers: &HeaderMap,
+        proof: &str,
+    ) -> Result<AccountEnrollmentCredentials, NativeEntryError> {
+        let services = configured(self)?;
+        if method != axum::http::Method::POST {
+            return Err(NativeEntryError::InvalidRequest);
+        }
+        let single = |name| {
+            one_header(headers, name, BrowserError::AmbiguousCredentials)
+                .map_err(NativeEntryError::from)
+        };
+        // Exact configured HTTPS origin is mandatory even without Fetch Metadata.
+        // admit_document below also validates configured origin shape.
+        if single("origin")? != Some(services.rp_origin.origin().ascii_serialization().as_str()) {
+            return Err(NativeEntryError::Forbidden);
+        }
+        if single("sec-fetch-site")?.is_some_and(|site| site != "same-origin") {
+            return Err(NativeEntryError::Forbidden);
+        }
+        if single("content-type")? != Some("application/x-www-form-urlencoded")
+            || headers.contains_key(CSRF_HEADER)
+        {
+            return Err(NativeEntryError::InvalidRequest);
+        }
+        // Real form navigation: full triple, with optional ?1 user indicator.
+        // Compatibility: all four fields absent, never a partial Metadata tuple.
+        if single("sec-fetch-user")?.is_some()
+            && ["sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest"]
+                .iter()
+                .all(|name| !headers.contains_key(*name))
+        {
+            return Err(NativeEntryError::InvalidRequest);
+        }
+        let cookies = admit_document(headers, &services.rp_origin)?;
+        if proof.len() > 4096 {
+            return Err(NativeEntryError::TooLarge);
+        }
+        if proof.is_empty() {
+            return Err(NativeEntryError::Forbidden);
+        }
+        let access = supplied(&cookies.session, BrowserError::AuthenticationInvalid)?
+            .ok_or(NativeEntryError::Unauthorized)?;
+        AccountEnrollmentCredentials::for_mutation(access, proof).map_err(|error| match error {
+            AccountOperationError::AuthenticationInvalid => NativeEntryError::Unauthorized,
+            AccountOperationError::CsrfInvalid => NativeEntryError::Forbidden,
+            _ => NativeEntryError::Unavailable,
+        })
+    }
+
     /// Capture credentials for a mounted GET document using document admission.
     /// No headers are fabricated and no authentication or policy is established.
     pub fn company_document_credentials(

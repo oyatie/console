@@ -104,6 +104,7 @@ pub struct NativePolicyAssignmentView {
 pub struct NativePolicyFormView {
     pub selector: NativePolicyCommandRef,
     pub company_epoch: u64,
+    pub acting_account_id: AccountId,
     pub administrative_account_id: AccountId,
     pub installed_object_type_id: Option<Uuid>,
     pub assignment: Option<NativePolicyAssignmentView>,
