@@ -169,7 +169,7 @@ mod native_policy_projection_corruption {
             1,
         );
         let outcome = AssertUnwindSafe(async {
-            sqlx::raw_sql(sqlx::AssertSqlSafe(&injected))
+            sqlx::raw_sql(sqlx::AssertSqlSafe(injected.as_str()))
                 .execute(pool)
                 .await
                 .unwrap();
@@ -211,7 +211,7 @@ mod native_policy_projection_corruption {
         .await;
         // Restore even when injection/query/assertion panics. CREATE OR REPLACE
         // keeps function identity and ACL; compare complete original metadata.
-        let restore = sqlx::raw_sql(sqlx::AssertSqlSafe(&original))
+        let restore = sqlx::raw_sql(sqlx::AssertSqlSafe(original.as_str()))
             .execute(pool)
             .await;
         assert!(
