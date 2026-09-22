@@ -1,0 +1,48 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "approve additive integrated evidence copy",
+  "candidate": "79d04ffbdb5c1a43a299b420101f0897d794d3ea",
+  "parents": [
+    "93382557f564d92ae62983af3a7d5a06cfc321ba",
+    "4522eb42f7cbc457532738ebd8c82ab80bb8e72f"
+  ],
+  "receipt_sha256": "49a5ca378c17b9cf6cbfd2de7413cda51c7a5221678416c2ef2548a374124489",
+  "exact_copied_original_files": 20,
+  "committed_candidate_hashes_verified": 65,
+  "claims_verified": [
+    "940 actual local producer actions with exact action/source/output bindings retained",
+    "157 inputs and29 native UI passes are the integrated candidate values",
+    "72 generator and19 bundle integrity tests supported by copied logs",
+    "source-candidate4522eb42 cold sentinel/corruption evidence remains explicitly parent-scoped",
+    "earlier failed stale-generation-lock attempt retained beside successful regenerated build",
+    "interrupted broad verifier is not represented as passing",
+    "browser/business/production qualification remains explicitly outstanding"
+  ],
+  "file_hashes": {
+    "review-REVIEW.txt": "fc9e79c435eed93610d1f6b30558f1959362d028be2c50342125c190a36d7512",
+    "review-manifest.json": "70bc8f62cd32393a1b25f6d208cffdbf597f336b2f8e153e1ef8ba52b947d9c6",
+    "review-source-checks.json": "453721086fa84682330df19e85eba128c2028516566f53a77aefdb6aa5c2cbe1",
+    "review-output-checks.json": "09cc4b4be9adc75ed2897b9c48ed01a9061790c23522a59f26b64b100cd494f1",
+    "action-actions-0.command.json": "9ef55d39c30f445ca2761a465da60ae21f003b67d9df67e08aec9eaec8e3e115",
+    "action-actions-0.stderr.log": "404b5a97d6d93b2f6dbcf0a698c07a5b85a62e32e2f1b52a8a5c43c9433e4790",
+    "action-actions-0.stdout.log": "1a521786a237161bcff873dfcf1b8254cd15fbc1b3d2f192b3efeb83edc85aec",
+    "action-bindgen-version.command.json": "ba7d6773680f45de49171ce3db614d5f31fd286b734336a33d1db7460d561544",
+    "action-bindgen-version.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "action-bindgen-version.stdout.log": "4887dbbb4467fb0cb649598a59d58adec621b21da0c0060cb752b6a8ed995c2c",
+    "action-native-bindgen-actions.json": "e422f4dfa01c4feaa6875a242bcfd88697421a6535fb04a53550bf52e6ef5d74",
+    "action-native-compiler-actions.json": "8466d708fed602a7068802eed7730e40199553841ae63e4c51afd9289b2888f6",
+    "integrated-native-bundle.log": "9b6dc5ae30d55c8b4d65025c2dc5f513a5b0d8f0eb67948ecac7a206492b6d4c",
+    "integrated-native-bundle-regenerated.log": "5e785b18f7f7973851bc0b9db513542ea972101446f77d291c3c4e2361cb05d9",
+    "integrated-hydrate-generation.log": "f2f4f026e285164646ae959c88bc728023a414a12ec5e43f3c6e3ccb4ed0e70e",
+    "integrated-evidence-adrs.log": "3b10a660c63b9b73f5e6b2f0ab4f05cd80385de88310fc2a6500752951869995",
+    "integrated-generator-tests.log": "e0e47dae0e6ac4e76737ef0e0a795a335ff5487f68aa182bd63549ec4552fb6d",
+    "integrated-checker-tests.log": "c17abf951a2c2216b908c076339645315307ea0b3c20bbceec26073f9627365e",
+    "integrated-native-ui-tests.log": "2b132409f7f666d6512c6f48d97d59dd41fe1d580fb8a1074a8d25cb56644506",
+    "integration-generation.log": "c2dbc476e1d1e34e2167bafa00898b4fcabd04d0cabf3270904143c6a1e96e98"
+  },
+  "new_builds": 0,
+  "new_tests": 0,
+  "postgres": 0,
+  "browser": 0,
+  "product_writes": false
+}

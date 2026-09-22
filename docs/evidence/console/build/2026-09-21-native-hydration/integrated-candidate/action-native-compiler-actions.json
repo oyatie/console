@@ -1,0 +1,31 @@
+[
+  {
+    "action": {
+      "reason": "build",
+      "identity": "root//backend/crates/payroll/ui:console-payroll-ui-hydrate (toolchains//:wasm32-platform#47b899467996b656) (rustc cdylib [pic])",
+      "reproducer": {
+        "executor": "Local",
+        "details": {
+          "command": [
+            "buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python",
+            "buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py",
+            "@buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/e231ae78609c2e9f/CPPL/console_payroll_ui-link-diag.args"
+          ],
+          "env": {
+            "TMPDIR": "/private/tmp/console-mvp-dev-integrate-20260921/buck-out/v2/tmp/root/2d77fd605bd1489b/rustc/_buck_73f6095665de83f8",
+            "BUCK_SCRATCH_PATH": "buck-out/v2/tmp/root/2d77fd605bd1489b/rustc/_buck_73f6095665de83f8",
+            "BUCK2_DAEMON_UUID": "b5f2aa11-0332-426a-8f0d-3e19fbecce06",
+            "BUCK_BUILD_ID": "87a9b219-6929-4972-810a-fe3202800d60"
+          }
+        }
+      },
+      "duration": "1.2s"
+    },
+    "response": "/private/tmp/console-mvp-dev-integrate-20260921/buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/e231ae78609c2e9f/CPPL/console_payroll_ui-link-diag.args",
+    "response_sha256": "e231ae78609c2e9fc2f46b51e9e516a2ad4743011e5cd1f19b5bb5094353ba40",
+    "output": "buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/output_artifacts/CPPL/libbackend_crates_payroll_ui_console-payroll-ui-hydrate.so",
+    "output_sha256": "675a0db4389742ec2945de217fe213c55f4f6194c07b42a937d7add4e5ac7574",
+    "linker": "/private/tmp/console-mvp-dev-integrate-20260921/buck-out/v2/art/root/backend/crates/payroll/ui/__console-payroll-ui-hydrate__/1ea735db75389080/linker_wrapper.sh",
+    "linker_sha256": "1ea735db75389080168346713ab9c4b22decbd86a054cdfa678a64988f88f65a"
+  }
+]

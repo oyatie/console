@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$1" == build ]]; then
+  shift
+  exec /private/tmp/console-mvp-dev-integrate-20260921/tools/buck2 build -j2 "$@"
+fi
+exec /private/tmp/console-mvp-dev-integrate-20260921/tools/buck2 "$@"

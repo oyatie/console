@@ -1,0 +1,15 @@
+{
+  "reviewer": "/root/integration_tests",
+  "verdict": "approve exact pending merge candidate",
+  "files": {
+    "REVIEW.md": "fc9e79c435eed93610d1f6b30558f1959362d028be2c50342125c190a36d7512",
+    "output-checks.json": "09cc4b4be9adc75ed2897b9c48ed01a9061790c23522a59f26b64b100cd494f1",
+    "source-checks.json": "453721086fa84682330df19e85eba128c2028516566f53a77aefdb6aa5c2cbe1"
+  },
+  "parent": "93382557f564d92ae62983af3a7d5a06cfc321ba",
+  "merge_parent": "4522eb42f7cbc457532738ebd8c82ab80bb8e72f",
+  "product_writes": false,
+  "reviewer_runtime": false,
+  "browser_acceptance": false,
+  "release_acceptance": false
+}

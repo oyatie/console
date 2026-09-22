@@ -1,0 +1,92 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T21:41:37.929-04:00] Build ID: 75093147-8c4c-4526-b1e6-1df781aba508
+[2026-09-21T21:41:37.934-04:00] File changed (since mergebase): root//tools/ui/__pycache__/test_native_hydration.cpython-314.pyc.4310425776
+[2026-09-21T21:41:37.934-04:00] Directory changed (since mergebase): root//tools/ui/__pycache__/test_native_hydration.cpython-314.pyc.4310425776
+[2026-09-21T21:41:37.934-04:00] File changed (since mergebase): root//tools/ui/__pycache__/test_native_hydration.cpython-314.pyc
+[2026-09-21T21:41:37.934-04:00] 27 additional file change events (since mergebase)
+[2026-09-21T21:41:37.934-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T21:41:45.029-04:00] Waiting on root//third-party/rust:crossbeam-epoch-0.9-build-script-build (prelude//platforms:default#5732820ad45f622d) -- action (write_json XIPL-depslink-symlinked_dirs.json), and 776 other actions
+[2026-09-21T21:41:52.329-04:00] Waiting on root//third-party/rust/hydrate:guardian-1 (toolchains//:wasm32-platform#47b899467996b656) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 952 other actions
+[2026-09-21T21:41:59.630-04:00] Waiting on prelude//rust/tools:rustc_cfg (prelude//platforms:default#5732820ad45f622d) -- action (rustc_cfg) [local_execute], and 465 other actions
+[2026-09-21T21:42:06.729-04:00] Waiting on root//third-party/rust:zlib-rs-0.6 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 258 other actions
+[2026-09-21T21:42:13.730-04:00] Waiting on root//third-party/rust:regex-syntax-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 218 other actions
+[2026-09-21T21:42:20.830-04:00] Waiting on root//third-party/rust:quanta-0.12 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 184 other actions
+[2026-09-21T21:42:27.930-04:00] Waiting on root//third-party/rust:serde_core-1-build-script-run (prelude//platforms:default#5732820ad45f622d) -- action (buildscript) [local_execute], and 144 other actions
+[2026-09-21T21:42:35.030-04:00] Waiting on root//third-party/rust:hashbrown-0.15 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 127 other actions
+[2026-09-21T21:42:42.130-04:00] Waiting on root//third-party/rust:crypto-common-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 107 other actions
+[2026-09-21T21:42:49.230-04:00] Waiting on root//third-party/rust:opentelemetry_sdk-0.32 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 100 other actions
+[2026-09-21T21:42:56.231-04:00] Waiting on root//third-party/rust:thiserror-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 93 other actions
+[2026-09-21T21:43:03.330-04:00] Waiting on root//third-party/rust:fancy-regex-0.14 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 63 other actions
+[2026-09-21T21:43:10.430-04:00] Waiting on root//third-party/rust:tonic-types-0.14 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 62 other actions
+[2026-09-21T21:43:17.430-04:00] Waiting on root//third-party/rust:libm-0.2 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 122 other actions
+[2026-09-21T21:43:24.531-04:00] Waiting on root//third-party/rust:zip-8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 108 other actions
+[2026-09-21T21:43:31.629-04:00] Waiting on root//backend/crates/reporting/domain:console-reporting-domain (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 87 other actions
+[2026-09-21T21:43:38.631-04:00] Waiting on root//third-party/rust:sec1-0.7 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 79 other actions
+[2026-09-21T21:43:45.730-04:00] Waiting on root//backend/crates/docs/application:console-docs-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 53 other actions
+[2026-09-21T21:43:52.731-04:00] Waiting on root//third-party/rust:chrono-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 40 other actions
+[2026-09-21T21:43:59.831-04:00] Waiting on root//third-party/rust:chrono-tz-0.10 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 33 other actions
+[2026-09-21T21:44:06.831-04:00] Waiting on root//third-party/rust:umya-spreadsheet-3 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 26 other actions
+[2026-09-21T21:44:13.931-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 22 other actions
+[2026-09-21T21:44:20.931-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 22 other actions
+[2026-09-21T21:44:28.030-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 22 other actions
+[2026-09-21T21:44:35.030-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 22 other actions
+[2026-09-21T21:44:42.031-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 22 other actions
+[2026-09-21T21:44:49.031-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 19 other actions
+[2026-09-21T21:44:56.131-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 16 other actions
+[2026-09-21T21:45:03.231-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 16 other actions
+[2026-09-21T21:45:10.331-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 16 other actions
+[2026-09-21T21:45:17.331-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 16 other actions
+[2026-09-21T21:45:24.430-04:00] Waiting on root//third-party/rust:openssl-sys-0.9-build-script-main-run (prelude//platforms:default#39893c7e49283da4) -- action (buildscript) [local_execute], and 16 other actions
+[2026-09-21T21:45:31.431-04:00] Waiting on root//third-party/rust:lalrpop-0.22 (prelude//platforms:default#5732820ad45f622d) -- action (rustc rlib [pic]) [local_execute], and 9 other actions
+[2026-09-21T21:45:38.530-04:00] Waiting on root//third-party/rust:openssl-0.10 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 8 other actions
+[2026-09-21T21:45:45.630-04:00] Waiting on root//third-party/rust:cedar-policy-core-4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 10 other actions
+[2026-09-21T21:45:52.631-04:00] Waiting on root//third-party/rust:cedar-policy-core-4 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 10 other actions
+[2026-09-21T21:45:59.731-04:00] Waiting on root//third-party/rust:webauthn-authenticator-rs-0.5 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 12 other actions
+[2026-09-21T21:46:06.831-04:00] Waiting on root//third-party/rust:sqlx-postgres-0.8 (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 9 other actions
+[2026-09-21T21:46:13.931-04:00] Waiting on root//third-party/rust:apalis-postgres-1 (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 17 other actions
+[2026-09-21T21:46:20.931-04:00] Waiting on root//backend/crates/platform/request-context:console-platform-request-context (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 85 other actions
+[2026-09-21T21:46:27.931-04:00] Waiting on root//backend/crates/platform/provisioning:console-platform-provisioning (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 139 other actions
+[2026-09-21T21:46:35.031-04:00] Waiting on root//backend/crates/financial/rest:console-financial-rest (prelude//platforms:default#39893c7e49283da4) -- action (deps 7) [local_execute], and 89 other actions
+[2026-09-21T21:46:42.031-04:00] Waiting on root//backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 70 other actions
+[2026-09-21T21:46:49.130-04:00] Waiting on root//backend/crates/recruiting/adapter-postgres:console-recruiting-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 65 other actions
+[2026-09-21T21:46:56.131-04:00] Waiting on root//backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 57 other actions
+[2026-09-21T21:47:03.131-04:00] Waiting on root//backend/crates/platform/authz-rest:console-platform-authz-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]), and 63 other actions
+[2026-09-21T21:47:10.131-04:00] Waiting on root//backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 63 other actions
+[2026-09-21T21:47:17.230-04:00] Waiting on root//backend/crates/platform/auth-rest:console-platform-auth-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 59 other actions
+[2026-09-21T21:47:24.231-04:00] Waiting on root//backend/crates/identity/rest:console-identity-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 50 other actions
+[2026-09-21T21:47:31.232-04:00] Waiting on root//backend/crates/leave/rest:console-leave-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 46 other actions
+[2026-09-21T21:47:38.331-04:00] Waiting on root//backend/crates/dispatch/worker:console-dispatch-worker (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 38 other actions
+[2026-09-21T21:47:45.431-04:00] Waiting on root//backend/crates/workorder/rest:console-workorder-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 31 other actions
+[2026-09-21T21:47:52.531-04:00] Waiting on root//backend/crates/financial/rest:console-financial-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 26 other actions
+[2026-09-21T21:47:59.532-04:00] Waiting on root//backend/crates/notices/rest:console-notices-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 17 other actions
+[2026-09-21T21:48:06.631-04:00] Waiting on root//backend/crates/registry/rest:console-registry-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 8 other actions
+[2026-09-21T21:48:13.631-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T21:48:20.632-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-21T21:48:27.632-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T21:48:34.731-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T21:48:41.732-04:00] Waiting on root//backend/app:console-app-itest-auth_rest-browser (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-21T21:48:46.521-04:00] Cache hits: 0%
+[2026-09-21T21:48:46.521-04:00] Commands: 1244 (cached: 0, remote: 0, local: 1244)
+[2026-09-21T21:48:46.521-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-21T21:48:46.553-04:00] Build ID: bf8d7a05-ee94-49cf-a327-4e34ecaddb25
+[2026-09-21T21:48:46.557-04:00] File changed (since mergebase): root//docs/evidence/console/build/2026-09-21-native-hydration/integrated-candidate/copy-review.json
+[2026-09-21T21:48:46.557-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-21T21:48:53.654-04:00] Waiting on root//third-party/rust:webauthn-authenticator-rs-0.5.5.crate (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 1041 other actions
+[2026-09-21T21:49:02.154-04:00] Waiting on root//third-party/rust:foldhash-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 622 other actions
+[2026-09-21T21:49:09.954-04:00] Waiting on root//third-party/rust:_server_fn_macro_default-0.9 (prelude//platforms:default#11a256c53bf8083e) -- action (write MPPL/server_fn_macro_default-link-diag.args), and 303 other actions
+[2026-09-21T21:49:17.254-04:00] Waiting on Test app-auth-rest-browser-pg --  [local_execute]
+[2026-09-21T21:49:23.510-04:00] ✓ Pass: root//tools/buck:app-auth-rest-browser-pg (10.8s)
+[2026-09-21T21:49:23.510-04:00] ---- STDOUT ----
+[2026-09-21T21:49:23.510-04:00]
+[2026-09-21T21:49:23.510-04:00] running 1 test
+[2026-09-21T21:49:23.510-04:00] test account_browser::native_entry_real_browser_enroll_logout_login ... ok
+[2026-09-21T21:49:23.510-04:00]
+[2026-09-21T21:49:23.510-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 522 filtered out; finished in 8.21s
+[2026-09-21T21:49:23.510-04:00]
+[2026-09-21T21:49:23.510-04:00]
+[2026-09-21T21:49:23.510-04:00] ---- STDERR ----
+[2026-09-21T21:49:23.510-04:00]
+[2026-09-21T21:49:23.522-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

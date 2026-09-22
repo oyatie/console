@@ -1,0 +1,44 @@
+{
+  "candidate": "79d04ffbdb5c1a43a299b420101f0897d794d3ea",
+  "runtime": "/private/tmp/console-native-browser-local-20260920-l1dn9ar1/runtime",
+  "runtime_sha256": {
+    "package.json": "8d57d95d41a1c2833b846f382610db55b8d193c20e3b2473c1e59f43e798a9b9",
+    "package-lock.json": "a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044",
+    "node_modules/playwright/package.json": "8bc2ddebe8d9b051b9ecb87d62c6c63877e59d08617f32c3215681ca8bb70998",
+    "node_modules/playwright-core/package.json": "f061c58427e47e843e26d201f0a57076c734e57c734ecbbd87d4a23b7a20db9b",
+    "node_modules/playwright-core/browsers.json": "545d52f8382c391e605562c330e9c1c534a16045898203037a49bb8bd769a946",
+    "browser/chrome-headless-shell-mac-arm64/chrome-headless-shell": "a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282"
+  },
+  "driver_sha256": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
+  "node": {
+    "path": "/Users/jasonlee/.local/state/fnm_multishells/4649_1789849320183/bin/node",
+    "version": "v26.7.0"
+  },
+  "openssl_path": "/usr/bin/openssl",
+  "tools": {
+    "bash": "/opt/homebrew/bin/bash",
+    "docker": "/opt/homebrew/bin/docker",
+    "git": "/opt/homebrew/bin/git",
+    "node": "/Users/jasonlee/.local/state/fnm_multishells/4649_1789849320183/bin/node",
+    "dotslash": null
+  },
+  "reviewed_sources": {
+    "/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
+    "/private/tmp/console-mvp-dev-integrate-20260921/tools/browser/prepare_native_browser.sh": "bb31d8aa628639066ac9015e2ac73ba4b1c1ebbb96213eb5f1c689e850973dcd",
+    "/private/tmp/console-mvp-dev-integrate-20260921/tools/buck/test_needs_postgres.sh": "7f8173acc6fbd05d0658336c3bf23fa02498ee2a6483da779be740deb8d32e74",
+    "/private/tmp/console-mvp-dev-integrate-20260921/tools/buck/run_test_with_postgres_env.sh": "7e4a53d254a3fc2a3583b235201d004b3615b6f8d991259dde47315c5a1f0805",
+    "/private/tmp/console-mvp-dev-integrate-20260921/tools/buck/BUCK": "c3d3430fcb35a2f86c62169c05c0d0e343305ab9b8ea547dacefba16423834ea",
+    "/private/tmp/console-mvp-dev-integrate-20260921/backend/app/tests/auth_rest/native_entry_browser.rs": "0540ddb5aac4aaa77d19125c1644498bdb5406d65424d967f0b96e4888fe31ff",
+    "/private/tmp/console-mvp-dev-integrate-20260921/backend/app/tests/auth_rest.rs": "a5f311db345793f852f57756e73b27154d7dab0c6175a9a2ea049de8a4e6ca7c"
+  },
+  "test": "account_browser::native_entry_real_browser_enroll_logout_login",
+  "wrapper": "//tools/buck:app-auth-rest-browser-pg",
+  "runtime_started": false,
+  "builds": 0,
+  "postgres": 0,
+  "limits": [
+    "Retained macOS runtime reused read-only through a fresh stage/runtime symlink; account.cjs itself is copied as a regular file.",
+    "The Linux-only prepare_native_browser.sh must not be run on Darwin.",
+    "Database readiness and exact test discovery are still execution prerequisites; no PostgreSQL or build was run by reviewer."
+  ]
+}

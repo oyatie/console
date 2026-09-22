@@ -1,0 +1,12 @@
+{
+  "reviewer": "/root/integration_tests",
+  "supersedes": "RUN.sh execution recipe only",
+  "candidate": "79d04ffbdb5c1a43a299b420101f0897d794d3ea",
+  "files": {
+    "RUN-round2.sh": "ef1f8f398f07fa481928c1d4b1cadae9b8e9b2399da6b2405750d54a5abb3458",
+    "README-round2.txt": "e634bf14bc9710ca910df44b720a8150bca32ca59ceda3b8d0a9454527d938f7",
+    "PREREQUISITES.json": "16ef2903286a6cfd2724f31153e8180fd2670f9c169b3b03dd50019fcb433fde"
+  },
+  "runtime_started": false,
+  "product_writes": false
+}

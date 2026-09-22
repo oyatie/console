@@ -1,0 +1,96 @@
+{
+  "candidate": "79d04ffbdb5c1a43a299b420101f0897d794d3ea",
+  "status": "real Account UI regression passed; complete MVP and release remain incomplete",
+  "command": "bash /private/tmp/console-integrated-account-browser-preflight-20260921/RUN-round2.sh",
+  "exact_test": "account_browser::native_entry_real_browser_enroll_logout_login",
+  "target": "//tools/buck:app-auth-rest-browser-pg",
+  "discovered": 523,
+  "executed": 1,
+  "passed": 1,
+  "failed": 0,
+  "ignored": 0,
+  "filtered": 522,
+  "infrastructure_failures": 0,
+  "build_failures": 0,
+  "account_created_through_UI": true,
+  "checkpoints": [
+    "ENROLLED",
+    "LOGGED_OUT",
+    "LOGGED_IN"
+  ],
+  "root_checks": [
+    "All reviewed harness source pins unchanged on79d04ffbd",
+    "Complete successful browser observations and owner acknowledgements",
+    "Exactly five expected POSTs; no unexpected POSTs or page external requests",
+    "Browser process and server shutdown confirmed"
+  ],
+  "files": {
+    "01-public.png": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/01-public.png",
+      "sha256": "5ac52b589591131faf69c41a24054b39d65b7f532901a1020081d4514d49a023"
+    },
+    "02-terms.png": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/02-terms.png",
+      "sha256": "98c10101be5cbbed7481f33835ca719bb0f7fadd66deaff6348d17516e27999e"
+    },
+    "03-account-enrolled.png": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/03-account-enrolled.png",
+      "sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e"
+    },
+    "04-sign-in.png": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/04-sign-in.png",
+      "sha256": "66a85216c81df1c7b9e7642cf75084e7ecfdde0b11210822704713399770b63e"
+    },
+    "05-account-returned.png": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/05-account-returned.png",
+      "sha256": "5c4a9ed32a65a642d71135dc32930802c6653d931ad6eacaab4d84cebc91255e"
+    },
+    "owner-receipt.json": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/owner-receipt.json",
+      "sha256": "36c0d944feac2fcb2368d036e9a72f2899e7cb131d25c3ef02cd277543970bf6"
+    },
+    "result.json": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/account/result.json",
+      "sha256": "1ca1793ac43754d6a65d95d763d6d4674a74eddba36ee424bea09ea8e87a79fc"
+    },
+    "run.log": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/run.log",
+      "sha256": "77e5fb39dc23017f911db1daea8e0095aa8b0d64ddbddd01896cd13818cef8c7"
+    },
+    "stage-receipt.json": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/stage-receipt.json",
+      "sha256": "9c03d4a48448e638e87f065428fbc38468d94a8c4c3ac47afc7634c4cd3b5671"
+    },
+    "buck2-bounded.txt": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.twc9Op/buck2-bounded",
+      "sha256": "2e57fe9d4012eabf3c1d442195a083253772db8332b7ae79e1f898c651ef461e"
+    },
+    "RUN-round2.sh.txt": {
+      "source": "/private/tmp/console-integrated-account-browser-preflight-20260921/RUN-round2.sh",
+      "sha256": "ef1f8f398f07fa481928c1d4b1cadae9b8e9b2399da6b2405750d54a5abb3458"
+    },
+    "PREREQUISITES.json": {
+      "source": "/private/tmp/console-integrated-account-browser-preflight-20260921/PREREQUISITES.json",
+      "sha256": "16ef2903286a6cfd2724f31153e8180fd2670f9c169b3b03dd50019fcb433fde"
+    },
+    "manifest-round2.json": {
+      "source": "/private/tmp/console-integrated-account-browser-preflight-20260921/manifest-round2.json",
+      "sha256": "98ace24d8479fd4e5ac62a212f904519b733d6827a0a3534267d4645b11e138f"
+    },
+    "sandbox-prerequisite-failure.log": {
+      "source": "/private/tmp/console-integrated-account-browser-79d04ffb.WSg15e/run.log",
+      "sha256": "e7b533ab83470090fe7802c1ee1ce5cc6a0c1697ee832dd98ee7135ecedfe8fb"
+    }
+  },
+  "limits": [
+    "Chromium153 virtual resident authenticator and automatic presence only; no human or physical-device picker proof.",
+    "Ephemeral-SPKI localhost TLS termination and unencrypted owned loopback upstream are test topology, not production TLS/HA certification.",
+    "Context routing controls page traffic, not operating-system egress.",
+    "Three independent DB acknowledgements are required; parent remains final acceptance owner.",
+    "Keyboard discovery and320px geometric reflow are observed on mounted pages; this is not human usability, screen-reader, contrast or complete WCAG certification.",
+    "Test-only legal-terms publication fixture; no seeded business rows.",
+    "Account browser proof, not Company/payroll/business hydration acceptance.",
+    "Initial sandbox run failed Docker socket access before any tests; preserved separately.",
+    "No hosted merge or release qualification."
+  ]
+}
