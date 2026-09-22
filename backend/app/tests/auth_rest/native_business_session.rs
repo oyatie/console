@@ -727,5 +727,222 @@ mod native_business_session {
         runtime.close().await;
     }
 
+    fn native_form_issuer(app: &Fixture, key: &SigningKey) -> console_platform_auth::JwtIssuer {
+        let config = account_browser_config(&app.pool, app._artifacts.root.clone(), key);
+        let jwt = config.jwt.unwrap();
+        console_platform_auth::JwtIssuer::from_es256_pem(
+            JwtSettings {
+                issuer: jwt.issuer,
+                audience: jwt.audience,
+                access_token_ttl: Duration::minutes(15),
+            },
+            key.to_pkcs8_pem(LineEnding::LF).unwrap().as_bytes(),
+            jwt.public_key_pem.as_bytes(),
+        )
+        .unwrap()
+    }
+
+    // Auth-helper coverage only: A/B below are two real retained transactions,
+    // not a claim that the Company policy command/effect workflow is complete.
+    #[sqlx::test(migrations = false)]
+    async fn native_form_helpers_issue_recheck_and_reuse_same_proof_across_transactions(
+        pool: PgPool,
+    ) {
+        use console_platform_auth::account::AccountEnrollmentCredentials;
+        let (app, key) = signed_fixture(&pool).await;
+        let (attempt, cookies) = enrolled(&app).await;
+        let (verifier, ttl) = verification(&app, &key);
+        let issuer = native_form_issuer(&app, &key);
+        let runtime = business(&pool).await;
+        let before = inventory(&pool, None).await;
+        let read = AccountEnrollmentCredentials::for_read(&cookies.0[ACCESS]).unwrap();
+        let mut tx = runtime.begin().await.unwrap();
+        let live = current(&mut tx, &verifier, &cookies.0[ACCESS], ttl).await;
+        let form = read
+            .issue_form_proof_in_tx(&mut tx, &verifier, &issuer, ttl)
+            .await
+            .unwrap();
+        let now = console_platform_auth::account::account_now_in_tx(&mut tx)
+            .await
+            .unwrap();
+        let claims = verifier
+            .verify_account_csrf_token(form.as_str(), now)
+            .unwrap();
+        assert_eq!(claims.sub, attempt.account);
+        assert_eq!(claims.sid, live.session_id);
+        assert_eq!(claims.security_generation, live.security_generation);
+        assert_eq!(form.expires_at().unix_timestamp(), claims.exp);
+        assert!(claims.exp > now.unix_timestamp());
+        assert!(claims.exp <= live.family_expires_at.unix_timestamp());
+        assert!(claims.exp - claims.iat <= 300);
+        read.recheck_form_proof_in_tx(&mut tx, &verifier, ttl, &form)
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        let mutation =
+            AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], form.as_str()).unwrap();
+        for _ in 0..2 {
+            let mut tx = runtime.begin().await.unwrap();
+            let actual = mutation
+                .validate_mutation_in_tx(&mut tx, &verifier, ttl)
+                .await
+                .unwrap();
+            assert_eq!(actual.account_id, attempt.account);
+            assert_eq!(actual.session_id, live.session_id);
+            assert_eq!(actual.security_generation, live.security_generation);
+            mutation
+                .validate_mutation_in_tx(&mut tx, &verifier, ttl)
+                .await
+                .unwrap();
+            tx.commit().await.unwrap();
+        }
+        assert!(
+            before == inventory(&pool, None).await,
+            "proof helpers must not persist or rotate credentials or write business history"
+        );
+        runtime.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs(
+        pool: PgPool,
+    ) {
+        use console_platform_auth::account::AccountEnrollmentCredentials;
+        let (app, key) = signed_fixture(&pool).await;
+        let (mut attempt, cookies) = enrolled(&app).await;
+        let original = proof(&app, &cookies).await;
+        let other_family = fresh_login(&app, &mut attempt).await;
+        let other_proof = proof(&app, &other_family).await;
+        let (_, foreign) = enrolled(&app).await;
+        let foreign_proof = proof(&app, &foreign).await;
+        let (verifier, ttl) = verification(&app, &key);
+        let issuer = native_form_issuer(&app, &key);
+        let runtime = business(&pool).await;
+        let before = inventory(&pool, None).await;
+        let read = AccountEnrollmentCredentials::for_read(&cookies.0[ACCESS]).unwrap();
+        let mut tx = runtime.begin().await.unwrap();
+        assert!(matches!(
+            read.validate_mutation_in_tx(&mut tx, &verifier, ttl).await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        for captured in [&other_proof, &foreign_proof] {
+            let wrong =
+                AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], captured).unwrap();
+            let mut tx = runtime.begin().await.unwrap();
+            assert!(matches!(
+                wrong.validate_mutation_in_tx(&mut tx, &verifier, ttl).await,
+                Err(AccountOperationError::CsrfInvalid)
+            ));
+            tx.rollback().await.unwrap();
+        }
+        let mutation =
+            AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], &original).unwrap();
+        let mut tx = runtime.begin().await.unwrap();
+        assert!(matches!(
+            mutation
+                .issue_form_proof_in_tx(&mut tx, &verifier, &issuer, ttl)
+                .await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        mutation
+            .validate_mutation_in_tx(&mut tx, &verifier, ttl)
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        assert!(before == inventory(&pool, None).await);
+        runtime.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_form_helpers_reject_expired_signed_proof_and_accept_current_control(
+        pool: PgPool,
+    ) {
+        use console_platform_auth::AccountCsrfTokenInput;
+        use console_platform_auth::account::AccountEnrollmentCredentials;
+        let (app, key) = signed_fixture(&pool).await;
+        let (_, cookies) = enrolled(&app).await;
+        let (verifier, ttl) = verification(&app, &key);
+        let issuer = native_form_issuer(&app, &key);
+        let runtime = business(&pool).await;
+        let before = inventory(&pool, None).await;
+        let mut tx = runtime.begin().await.unwrap();
+        let live = current(&mut tx, &verifier, &cookies.0[ACCESS], ttl).await;
+        let now = console_platform_auth::account::account_now_in_tx(&mut tx)
+            .await
+            .unwrap();
+        // Intentional negative crypto vector through the real issuer, bound to
+        // an actually enrolled Account/family. No persisted credentials are seeded.
+        let expired = issuer
+            .issue_account_csrf_token(AccountCsrfTokenInput {
+                account_id: live.account_id,
+                session_id: live.session_id,
+                security_generation: live.security_generation,
+                issued_at: now - Duration::minutes(10),
+                family_expires_at: live.family_expires_at,
+            })
+            .unwrap();
+        let independently_decoded = signed_claims(expired.as_str(), &key).unwrap();
+        assert!(independently_decoded["exp"].as_i64().unwrap() < now.unix_timestamp());
+        let bad = AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], expired.as_str())
+            .unwrap();
+        assert!(matches!(
+            bad.validate_mutation_in_tx(&mut tx, &verifier, ttl).await,
+            Err(AccountOperationError::CsrfInvalid)
+        ));
+        tx.rollback().await.unwrap();
+        let mut tx = runtime.begin().await.unwrap();
+        let read = AccountEnrollmentCredentials::for_read(&cookies.0[ACCESS]).unwrap();
+        let current_form = read
+            .issue_form_proof_in_tx(&mut tx, &verifier, &issuer, ttl)
+            .await
+            .unwrap();
+        read.recheck_form_proof_in_tx(&mut tx, &verifier, ttl, &current_form)
+            .await
+            .unwrap();
+        let good =
+            AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], current_form.as_str())
+                .unwrap();
+        good.validate_mutation_in_tx(&mut tx, &verifier, ttl)
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        assert!(before == inventory(&pool, None).await);
+        runtime.close().await;
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn native_form_issuer_verifier_mismatch_is_unavailable_without_effects(pool: PgPool) {
+        use console_platform_auth::account::AccountEnrollmentCredentials;
+        let (app, key) = signed_fixture(&pool).await;
+        let (_, cookies) = enrolled(&app).await;
+        let (verifier, ttl) = verification(&app, &key);
+        let wrong_key = SigningKey::random(&mut OsRng);
+        let wrong_issuer = native_form_issuer(&app, &wrong_key);
+        let right_issuer = native_form_issuer(&app, &key);
+        let runtime = business(&pool).await;
+        let before = inventory(&pool, None).await;
+        let read = AccountEnrollmentCredentials::for_read(&cookies.0[ACCESS]).unwrap();
+        let mut tx = runtime.begin().await.unwrap();
+        assert!(matches!(
+            read.issue_form_proof_in_tx(&mut tx, &verifier, &wrong_issuer, ttl)
+                .await,
+            Err(AccountOperationError::AuthorityUnavailable)
+        ));
+        tx.rollback().await.unwrap();
+        assert!(before == inventory(&pool, None).await);
+        let mut tx = runtime.begin().await.unwrap();
+        let proof = read
+            .issue_form_proof_in_tx(&mut tx, &verifier, &right_issuer, ttl)
+            .await
+            .unwrap();
+        read.recheck_form_proof_in_tx(&mut tx, &verifier, ttl, &proof)
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        assert!(before == inventory(&pool, None).await);
+        runtime.close().await;
+    }
+
     include!("native_business_session_catalog.rs");
 }

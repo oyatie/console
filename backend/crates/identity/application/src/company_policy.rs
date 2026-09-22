@@ -235,6 +235,7 @@ pub struct CurrentCompanyAuthority {
     account: AccountId,
     company: OrgId,
     company_epoch: u64,
+    current_policy_receipt_id: Option<Uuid>,
     context_generation: u64,
     assignment_id: Uuid,
     assignment_revision: u64,
@@ -255,12 +256,48 @@ impl CurrentCompanyAuthority {
         observed_at: OffsetDateTime,
         row: CompanyProjectionRow,
     ) -> Result<Self, CompanyPolicyError> {
+        if row.company_epoch != 1 {
+            return Err(CompanyPolicyError::MaterialUnavailable);
+        }
+        Self::from_current_projection(account, company, observed_at, row, None)
+    }
+
+    /// Preserve the current epoch and receipt while parsing the unchanged birth
+    /// assignment. The retained store must verify the receipt's actual custody.
+    pub fn from_current_projection(
+        account: AccountId,
+        company: OrgId,
+        observed_at: OffsetDateTime,
+        row: CompanyProjectionRow,
+        current_policy_receipt_id: Option<Uuid>,
+    ) -> Result<Self, CompanyPolicyError> {
+        if row.company_epoch < 1
+            || (row.company_epoch == 1) != current_policy_receipt_id.is_none()
+            || current_policy_receipt_id.is_some_and(|id| id.is_nil())
+        {
+            return Err(CompanyPolicyError::MaterialUnavailable);
+        }
+        Self::parse_birth_assignment(
+            account,
+            company,
+            observed_at,
+            row,
+            current_policy_receipt_id,
+        )
+    }
+
+    fn parse_birth_assignment(
+        account: AccountId,
+        company: OrgId,
+        observed_at: OffsetDateTime,
+        row: CompanyProjectionRow,
+        current_policy_receipt_id: Option<Uuid>,
+    ) -> Result<Self, CompanyPolicyError> {
         use CompanyPolicyError::MaterialUnavailable;
         company_id(company)?;
         nonnil(row.assignment_id)?;
         nonnil(row.role_id)?;
-        if row.company_epoch != 1
-            || row.assignment_revision != 1
+        if row.assignment_revision != 1
             || row.role_revision != 1
             || row.context_generation < 1
             || row.registered_clauses.len() > 32768
@@ -370,7 +407,8 @@ impl CurrentCompanyAuthority {
         Ok(Self {
             account,
             company,
-            company_epoch: 1,
+            company_epoch: u64::try_from(row.company_epoch).map_err(|_| MaterialUnavailable)?,
+            current_policy_receipt_id,
             context_generation: u64::try_from(row.context_generation)
                 .map_err(|_| MaterialUnavailable)?,
             assignment_id: row.assignment_id,
@@ -391,6 +429,9 @@ impl CurrentCompanyAuthority {
     }
     pub const fn epoch(&self) -> u64 {
         self.company_epoch
+    }
+    pub const fn current_policy_receipt_id(&self) -> Option<Uuid> {
+        self.current_policy_receipt_id
     }
     pub const fn context_generation(&self) -> u64 {
         self.context_generation

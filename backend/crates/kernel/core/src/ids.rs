@@ -2,6 +2,25 @@
 //! is expected; the type system carries the discipline the prior project kept
 //! in naming conventions.
 
+use crate::KernelError;
+
+/// Persistent Account identity, distinct from a legacy User or Employment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct AccountId(uuid::Uuid);
+
+impl AccountId {
+    pub fn from_uuid(value: uuid::Uuid) -> Result<Self, KernelError> {
+        if value.is_nil() {
+            return Err(KernelError::validation("invalid Account identity"));
+        }
+        Ok(Self(value))
+    }
+
+    pub const fn as_uuid(&self) -> &uuid::Uuid {
+        &self.0
+    }
+}
+
 /// Defines a UUID-backed ID newtype with serde, parsing, and display.
 macro_rules! typed_id {
     ($(#[$doc:meta])* $name:ident) => {

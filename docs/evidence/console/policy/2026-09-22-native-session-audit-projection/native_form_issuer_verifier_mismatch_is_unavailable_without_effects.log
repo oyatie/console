@@ -1,0 +1,29 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-22T00:18:31.169-04:00] Build ID: 4d46a30e-2450-4bdd-ab95-e230603fe759
+[2026-09-22T00:18:31.171-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:18:38.270-04:00] Waiting on root//third-party/rust:deranged-0.5.8.crate (prelude//platforms:default#39893c7e49283da4) -- action (write deranged-0.5.8.crate_unpack.sh), and 763 other actions
+[2026-09-22T00:18:45.370-04:00] Waiting on root//third-party/rust:any_spawner-0.3.0.crate (prelude//platforms:default#39893c7e49283da4) -- action (download_file archive.tar.gz), and 679 other actions
+[2026-09-22T00:18:52.571-04:00] Waiting on root//third-party/rust:unicode-properties-0.1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 615 other actions
+[2026-09-22T00:18:59.129-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-22T00:18:59.150-04:00] Build ID: 2c8ad9d6-588d-4687-813a-139ad67e2b59
+[2026-09-22T00:18:59.151-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:19:06.250-04:00] Waiting on root//third-party/rust:nom-7 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 760 other actions
+[2026-09-22T00:19:13.350-04:00] Waiting on root//third-party/rust:indexmap-2 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 817 other actions
+[2026-09-22T00:19:21.150-04:00] Waiting on root//third-party/rust/hydrate:wasm-bindgen-0.2.123.crate (toolchains//:wasm32-platform#47b899467996b656) -- action (write wasm-bindgen-0.2.123.crate_unpack.sh), and 646 other actions
+[2026-09-22T00:19:28.350-04:00] Waiting on root//third-party/rust:block-buffer-0.12 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPL-depsfull-symlinked_dirs.json), and 298 other actions
+[2026-09-22T00:19:35.451-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-22T00:19:39.110-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (7.0s)
+[2026-09-22T00:19:39.110-04:00] ---- STDOUT ----
+[2026-09-22T00:19:39.110-04:00]
+[2026-09-22T00:19:39.110-04:00] running 1 test
+[2026-09-22T00:19:39.110-04:00] test account_browser::native_business_session::native_form_issuer_verifier_mismatch_is_unavailable_without_effects ... ok
+[2026-09-22T00:19:39.110-04:00]
+[2026-09-22T00:19:39.110-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 523 filtered out; finished in 6.94s
+[2026-09-22T00:19:39.110-04:00]
+[2026-09-22T00:19:39.110-04:00]
+[2026-09-22T00:19:39.110-04:00] ---- STDERR ----
+[2026-09-22T00:19:39.110-04:00]
+[2026-09-22T00:19:39.123-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

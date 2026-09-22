@@ -7,10 +7,33 @@
 //! If the closure returns `Err`, the transaction is rolled back and NEITHER
 //! the mutation nor the audit row persists — atomicity is the hard contract.
 
-use console_kernel_core::{AuditEvent, OrgId, UserId};
+use console_kernel_core::{AccountId, AuditEvent, OrgId, UserId};
 use sqlx::{PgPool, Postgres, Row, Transaction};
 
 use crate::error::DbError;
+
+mod sealed {
+    pub trait Sealed {}
+    impl Sealed for console_kernel_core::UserId {}
+    impl Sealed for console_kernel_core::AccountId {}
+}
+
+/// Closed actor vocabulary for the common writer; not an authorization proof.
+pub trait AuditActorId: sealed::Sealed + Copy {
+    fn audit_actor_uuid(self) -> uuid::Uuid;
+}
+
+impl AuditActorId for UserId {
+    fn audit_actor_uuid(self) -> uuid::Uuid {
+        *self.as_uuid()
+    }
+}
+
+impl AuditActorId for AccountId {
+    fn audit_actor_uuid(self) -> uuid::Uuid {
+        *self.as_uuid()
+    }
+}
 
 /// Bind the tenant to the transaction-local `app.current_org` GUC.
 ///
@@ -174,12 +197,12 @@ where
 
 async fn insert_audit_event_tx(
     tx: &mut Transaction<'_, Postgres>,
-    event: &AuditEvent,
+    event: &AuditEvent<impl AuditActorId>,
 ) -> Result<(), DbError> {
     let before_json: Option<serde_json::Value> = event.before.clone();
     let after_json: Option<serde_json::Value> = event.after.clone();
 
-    let actor_uuid: Option<uuid::Uuid> = event.actor.map(|uid| *uid.as_uuid());
+    let actor_uuid: Option<uuid::Uuid> = event.actor.map(AuditActorId::audit_actor_uuid);
     let event_id_uuid: uuid::Uuid = *event.id.as_uuid();
     let branch_uuid: Option<uuid::Uuid> = event.branch_id.map(|bid| *bid.as_uuid());
     let org_uuid: Option<uuid::Uuid> = event.org_id.map(|oid| *oid.as_uuid());
@@ -241,7 +264,7 @@ async fn insert_audit_event_tx(
 /// checked insert used by `with_audit`/`with_audits`.
 pub async fn insert_audit_event(
     tx: &mut Transaction<'_, Postgres>,
-    event: &AuditEvent,
+    event: &AuditEvent<impl AuditActorId>,
 ) -> Result<(), DbError> {
     insert_audit_event_tx(tx, event).await
 }

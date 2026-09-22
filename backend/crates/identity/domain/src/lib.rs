@@ -10,22 +10,7 @@
 use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 
-/// Persistent Account identity, distinct from a legacy User or Employment.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct AccountId(uuid::Uuid);
-
-impl AccountId {
-    pub fn from_uuid(value: uuid::Uuid) -> Result<Self, KernelError> {
-        if value.is_nil() {
-            return Err(KernelError::validation("invalid Account identity"));
-        }
-        Ok(Self(value))
-    }
-
-    pub const fn as_uuid(&self) -> &uuid::Uuid {
-        &self.0
-    }
-}
+pub use console_kernel_core::AccountId;
 
 /// Maximum length (Unicode scalar values) of a user's display name.
 pub const MAX_DISPLAY_NAME_CHARS: usize = 200;
@@ -222,3 +207,6 @@ mod tests {
         assert!(normalize_directory_search(Some(&too_long)).is_err());
     }
 }
+
+#[cfg(test)]
+mod account_id_compatibility_tests;

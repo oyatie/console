@@ -1,0 +1,106 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-21T23:55:51.924-04:00] Build ID: 13111b49-9e91-49e5-a769-e735bbaf7f97
+[2026-09-21T23:55:51.927-04:00] File changed: root//backend/crates/platform/auth/src/session/company_enrollment.rs
+[2026-09-21T23:55:51.927-04:00] File changed: root//backend/app/tests/auth_rest/native_business_session.rs
+[2026-09-21T23:55:59.024-04:00] Waiting on root//backend/crates/kernel/core:console-kernel-core (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_materialize_inputs], and 825 other actions
+[2026-09-21T23:56:07.426-04:00] Waiting on root//backend/crates/kernel/core:console-kernel-core (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_materialize_inputs], and 664 other actions
+[2026-09-21T23:56:15.725-04:00] Waiting on root//backend/crates/kernel/core:console-kernel-core (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 1 other actions
+[2026-09-21T23:56:22.825-04:00] Waiting on root//backend/crates/platform/db:console-platform-db (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 119 other actions
+[2026-09-21T23:56:29.925-04:00] Waiting on root//backend/crates/platform/group:console-platform-group (prelude//platforms:default#39893c7e49283da4) -- action (deps 7) [local_prepare_outputs], and 89 other actions
+[2026-09-21T23:56:37.025-04:00] Waiting on root//backend/crates/compliance/domain:console-compliance-domain (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 84 other actions
+[2026-09-21T23:56:44.125-04:00] Waiting on root//backend/crates/platform/jobs:console-platform-jobs (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 71 other actions
+[2026-09-21T23:56:51.226-04:00] Waiting on root//backend/crates/inbox/application:console-inbox-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 61 other actions
+[2026-09-21T23:56:58.325-04:00] Waiting on root//backend/crates/registry/application:console-registry-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 48 other actions
+[2026-09-21T23:57:05.425-04:00] Waiting on root//backend/crates/governance/application:console-governance-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 41 other actions
+[2026-09-21T23:57:12.526-04:00] Waiting on root//backend/crates/messenger/application:console-messenger-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 31 other actions
+[2026-09-21T23:57:19.625-04:00] Waiting on root//backend/crates/recruiting/application:console-recruiting-application (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 26 other actions
+[2026-09-21T23:57:26.625-04:00] Waiting on root//backend/crates/platform/authz:console-platform-authz (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 10 other actions
+[2026-09-21T23:57:33.725-04:00] Waiting on root//backend/crates/workflow/runtime:console-workflow-runtime (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 87 other actions
+[2026-09-21T23:57:40.826-04:00] Waiting on root//backend/crates/ontology/adapter-postgres:console-ontology-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (deps 7) [local_execute], and 142 other actions
+[2026-09-21T23:57:47.925-04:00] Waiting on root//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (deps 7) [local_execute], and 141 other actions
+[2026-09-21T23:57:54.925-04:00] Waiting on root//backend/crates/attendance/rest:console-attendance-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 81 other actions
+[2026-09-21T23:58:01.926-04:00] Waiting on root//backend/crates/dispatch/adapter-postgres:console-dispatch-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 78 other actions
+[2026-09-21T23:58:09.025-04:00] Waiting on root//backend/crates/platform/auth-rest:console-platform-auth-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 74 other actions
+[2026-09-21T23:58:16.125-04:00] Waiting on root//backend/crates/messenger/adapter-postgres:console-messenger-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 71 other actions
+[2026-09-21T23:58:23.126-04:00] Waiting on root//backend/crates/benefit/adapter-postgres:console-benefit-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 66 other actions
+[2026-09-21T23:58:30.226-04:00] Waiting on root//backend/crates/notifications/adapter-postgres:console-notifications-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 61 other actions
+[2026-09-21T23:58:37.326-04:00] Waiting on root//backend/crates/platform/platform-rest:console-platform-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 59 other actions
+[2026-09-21T23:58:44.425-04:00] Waiting on root//backend/crates/financial/adapter-postgres:console-financial-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]), and 57 other actions
+[2026-09-21T23:58:51.426-04:00] Waiting on root//backend/crates/consulting/rest:console-consulting-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 61 other actions
+[2026-09-21T23:58:58.525-04:00] Waiting on root//backend/crates/production/rest:console-production-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 59 other actions
+[2026-09-21T23:59:05.625-04:00] Waiting on root//backend/crates/reporting/adapter-postgres:console-reporting-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 56 other actions
+[2026-09-21T23:59:12.625-04:00] Waiting on root//backend/crates/docs/adapter-postgres:console-docs-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 55 other actions
+[2026-09-21T23:59:19.626-04:00] Waiting on root//backend/crates/inventory/adapter-postgres:console-inventory-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 54 other actions
+[2026-09-21T23:59:26.725-04:00] Waiting on root//backend/crates/compliance/adapter-postgres:console-compliance-adapter-postgres (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 58 other actions
+[2026-09-21T23:59:33.726-04:00] Waiting on root//backend/crates/equipment/rest:console-equipment-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 55 other actions
+[2026-09-21T23:59:40.825-04:00] Waiting on root//backend/crates/registry/rest:console-registry-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 50 other actions
+[2026-09-21T23:59:47.826-04:00] Waiting on root//backend/crates/sales/rest:console-sales-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 48 other actions
+[2026-09-21T23:59:54.925-04:00] Waiting on root//backend/crates/financial/rest:console-financial-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 45 other actions
+[2026-09-22T00:00:01.926-04:00] Waiting on root//backend/crates/evaluation/rest:console-evaluation-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 41 other actions
+[2026-09-22T00:00:09.025-04:00] Waiting on root//backend/crates/orgchange/rest:console-orgchange-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 38 other actions
+[2026-09-22T00:00:16.026-04:00] Waiting on root//backend/crates/recruiting/rest:console-recruiting-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 35 other actions
+[2026-09-22T00:00:23.125-04:00] Waiting on root//backend/crates/workorder/rest:console-workorder-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 33 other actions
+[2026-09-22T00:00:30.226-04:00] Waiting on root//backend/crates/logistics/rest:console-logistics-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 31 other actions
+[2026-09-22T00:00:37.325-04:00] Waiting on root//backend/crates/reporting/rest:console-reporting-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 27 other actions
+[2026-09-22T00:00:44.425-04:00] Waiting on root//backend/crates/inventory/rest:console-inventory-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 23 other actions
+[2026-09-22T00:00:51.525-04:00] Waiting on root//backend/crates/leave/rest:console-leave-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 19 other actions
+[2026-09-22T00:00:58.625-04:00] Waiting on root//backend/crates/identity/rest:console-identity-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 16 other actions
+[2026-09-22T00:01:05.625-04:00] Waiting on root//backend/crates/identity/rest:console-identity-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 15 other actions
+[2026-09-22T00:01:12.725-04:00] Waiting on root//backend/crates/ontology/rest:console-ontology-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 12 other actions
+[2026-09-22T00:01:19.725-04:00] Waiting on root//backend/crates/benefit/rest:console-benefit-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute], and 9 other actions
+[2026-09-22T00:01:26.726-04:00] Waiting on root//backend/crates/compliance/rest:console-compliance-rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc metadata [pic]) [local_execute], and 2 other actions
+[2026-09-22T00:01:33.826-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-22T00:01:40.926-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-22T00:01:48.025-04:00] Waiting on root//backend/app:console-app-lib (prelude//platforms:default#39893c7e49283da4) -- action (rustc rlib [pic]) [local_execute]
+[2026-09-22T00:01:55.025-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-22T00:02:02.026-04:00] Waiting on root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) -- action (rustc link [pic]) [local_execute]
+[2026-09-22T00:02:04.016-04:00] Action failed: root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) (rustc link [pic])
+[2026-09-22T00:02:04.016-04:00] Local command returned non-zero exit code 1
+[2026-09-22T00:02:04.016-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/e831ffe155f2fe0a/rustc/_buck_c5a998e79d3a718a' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py @buck-out/v2/art/root/backend/app/__console-app-itest-auth_rest__/67c4a026793f775b/XIPL/auth_rest-link-diag.args
+[2026-09-22T00:02:04.016-04:00] Stdout: <empty>
+[2026-09-22T00:02:04.016-04:00] Stderr:
+error[E0609]: no field `private_key_pem` on type `JwtVerifierConfig`
+   --> backend/app/backend/app/tests/auth_rest/native_business_session.rs:739:17
+    |
+739 |             jwt.private_key_pem.as_bytes(),
+    |                 ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `issuer`, `audience`, `public_key_pem`
+
+
+error: aborting due to 1 previous error
+
+
+For more information about this error, try `rustc --explain E0609`.
+
+
+[2026-09-22T00:02:04.028-04:00] Cache hits: 0%
+[2026-09-22T00:02:04.028-04:00] Commands: 519 (cached: 0, remote: 0, local: 519)
+[2026-09-22T00:02:04.028-04:00] Network: Up: 0B  Down: 0B
+[2026-09-22T00:02:04.034-04:00]
+[2026-09-22T00:02:04.034-04:00] BUILD ERRORS (1)
+[2026-09-22T00:02:04.034-04:00] The following actions failed during the execution of this command:
+[2026-09-22T00:02:04.034-04:00] Action failed: root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4) (rustc link [pic])
+[2026-09-22T00:02:04.034-04:00] Local command returned non-zero exit code 1
+[2026-09-22T00:02:04.034-04:00] Local command: env -C "$(buck2 root --kind project)" -- 'BUCK_SCRATCH_PATH=buck-out/v2/tmp/root/e831ffe155f2fe0a/rustc/_buck_c5a998e79d3a718a' buck-out/v2/art/toolchains/11a256c53bf8083e/__cpython_archive__/cpython_archive/bin/python buck-out/v2/art/prelude/rust/tools/__rustc_action__/00cc8eff58bfacd6/__rustc_action__/rustc_action.py @buck-out/v2/art/root/backend/app/__console-app-itest-auth_rest__/67c4a026793f775b/XIPL/auth_rest-link-diag.args
+[2026-09-22T00:02:04.034-04:00] Stdout: <empty>
+[2026-09-22T00:02:04.034-04:00] Stderr:
+error[E0609]: no field `private_key_pem` on type `JwtVerifierConfig`
+   --> backend/app/backend/app/tests/auth_rest/native_business_session.rs:739:17
+    |
+739 |             jwt.private_key_pem.as_bytes(),
+    |                 ^^^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `issuer`, `audience`, `public_key_pem`
+
+
+error: aborting due to 1 previous error
+
+
+For more information about this error, try `rustc --explain E0609`.
+
+
+[2026-09-22T00:02:04.034-04:00]
+BUILD FAILED
+Failed to build 'root//backend/app:console-app-itest-auth_rest (prelude//platforms:default#39893c7e49283da4)'

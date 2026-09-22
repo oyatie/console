@@ -1,6 +1,8 @@
 mod company_enrollment;
 
-pub use company_enrollment::{AccountEnrollmentCredentials, LockedAccountEnrollment};
+pub use company_enrollment::{
+    AccountEnrollmentCredentials, AccountFormProof, LockedAccountEnrollment,
+};
 
 use std::fmt;
 

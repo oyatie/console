@@ -6,8 +6,9 @@ use time::OffsetDateTime;
 use uuid::Uuid;
 
 pub use crate::session::{
-    AccountEnrollmentCredentials, LockedAccountEnrollment, account_csrf_session_in_tx,
-    ensure_account_session_fresh_in_tx, live_account_session_in_tx, logout_account_session_in_tx,
+    AccountEnrollmentCredentials, AccountFormProof, LockedAccountEnrollment,
+    account_csrf_session_in_tx, ensure_account_session_fresh_in_tx, live_account_session_in_tx,
+    logout_account_session_in_tx,
 };
 use crate::{AccountAssurance, RefreshToken, RegistrationCeremony};
 

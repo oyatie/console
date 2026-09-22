@@ -8199,6 +8199,7 @@ mod account_browser {
     include!("auth_rest/native_startup_profile.rs");
     include!("auth_rest/native_group_attribution.rs");
     include!("auth_rest/audit_account_transition.rs");
+    include!("auth_rest/native_account_audit_typed_tests.rs");
     include!("auth_rest/native_business_session.rs");
 }
 

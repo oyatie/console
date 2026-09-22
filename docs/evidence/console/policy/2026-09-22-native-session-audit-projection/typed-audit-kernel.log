@@ -1,0 +1,66 @@
+[2026-09-21T23:52:20.634-04:00] Build ID: f3cad900-e658-4083-859e-a40a5c4647c8
+[2026-09-21T23:52:20.637-04:00] File changed: root//backend/crates/identity/domain/src/lib.rs
+[2026-09-21T23:52:20.637-04:00] File changed: root//backend/crates/kernel/core/src/ids.rs
+[2026-09-21T23:52:20.637-04:00] File changed: root//backend/crates/kernel/core/src/audit.rs
+[2026-09-21T23:52:20.637-04:00] 182 additional file change events
+[2026-09-21T23:52:22.108-04:00] ✓ Pass: root//backend/crates/kernel/core:console-kernel-core-unit (0.2s)
+[2026-09-21T23:52:22.108-04:00] ---- STDOUT ----
+[2026-09-21T23:52:22.108-04:00]
+[2026-09-21T23:52:22.108-04:00] running 47 tests
+[2026-09-21T23:52:22.108-04:00] test branch::tests::empty_scope_denies_everything ... ok
+[2026-09-21T23:52:22.108-04:00] test access_scope::tests::group_scope_projects_to_member_read_scope ... ok
+[2026-09-21T23:52:22.108-04:00] test branch::tests::all_scope_allows_any_branch ... ok
+[2026-09-21T23:52:22.108-04:00] test access_scope::tests::legacy_org_scope_projects_to_today_behavior ... ok
+[2026-09-21T23:52:22.108-04:00] test branch::tests::explicit_scope_allows_only_members ... ok
+[2026-09-21T23:52:22.108-04:00] test access_scope::tests::branch_scope_uses_matching_projection_only ... ok
+[2026-09-21T23:52:22.108-04:00] test branch::tests::disjoint_intersection_is_empty_explicit_scope ... ok
+[2026-09-21T23:52:22.108-04:00] test branch::tests::intersection_never_widens_scope ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::tests::invalid_actions_rejected ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::account_tests::native_account_constructor_keeps_typed_actor_and_all_builders ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::tests::valid_actions_accepted ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::tests::action_serde_enforces_validation ... ok
+[2026-09-21T23:52:22.108-04:00] test branch::tests::scope_serde_roundtrip ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::account_tests::native_account_identity_retains_nil_rejection ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::tests::audit_event_serde_roundtrip_with_snapshots ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::tests::audit_event_serde_roundtrip_with_request_context_and_classification ... ok
+[2026-09-21T23:52:22.108-04:00] test clock::tests::fixed_clock_returns_pinned_instant ... ok
+[2026-09-21T23:52:22.108-04:00] test clock::tests::system_clock_is_utc_and_monotonic_enough ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::legacy_wire_tests::legacy_system_actor_exact_serialized_bytes ... ok
+[2026-09-21T23:52:22.108-04:00] test error::tests::display_includes_kind_and_message ... ok
+[2026-09-21T23:52:22.108-04:00] test audit::legacy_wire_tests::legacy_user_actor_exact_serialized_bytes ... ok
+[2026-09-21T23:52:22.108-04:00] test error::tests::kind_serializes_snake_case ... ok
+[2026-09-21T23:52:22.108-04:00] test ids::tests::fresh_ids_are_unique ... ok
+[2026-09-21T23:52:22.108-04:00] test ids::tests::ids_are_distinct_types_and_roundtrip_serde ... ok
+[2026-09-21T23:52:22.108-04:00] test ids::tests::ids_parse_from_canonical_uuid_strings ... ok
+[2026-09-21T23:52:22.108-04:00] test price_intel::tests::confidence_tiers ... ok
+[2026-09-21T23:52:22.108-04:00] test ids::tests::invalid_uuid_string_is_rejected ... ok
+[2026-09-21T23:52:22.108-04:00] test price_intel::tests::high_suspicion_for_extreme_outlier ... ok
+[2026-09-21T23:52:22.108-04:00] test price_intel::tests::no_flag_for_below_mean ... ok
+[2026-09-21T23:52:22.108-04:00] test price_intel::tests::percentile_median_for_middle_value ... ok
+[2026-09-21T23:52:22.108-04:00] test price_intel::tests::uniform_distribution_no_mad_ratio ... ok
+[2026-09-21T23:52:22.108-04:00] test price_intel::tests::sparse_below_min_sample ... ok
+[2026-09-21T23:52:22.108-04:00] test redact::tests::display_masks_all_but_last_four_digits ... ok
+[2026-09-21T23:52:22.108-04:00] test redact::tests::debug_does_not_leak_raw_value ... ok
+[2026-09-21T23:52:22.108-04:00] test redact::tests::reveal_returns_unmasked_value ... ok
+[2026-09-21T23:52:22.108-04:00] test trace::tests::generated_context_is_valid_by_construction ... ok
+[2026-09-21T23:52:22.108-04:00] test trace::tests::rejects_wrong_lengths_and_uppercase ... ok
+[2026-09-21T23:52:22.108-04:00] test redact::tests::short_values_are_fully_masked_to_their_length ... ok
+[2026-09-21T23:52:22.108-04:00] test trace::tests::serde_roundtrip_validates ... ok
+[2026-09-21T23:52:22.108-04:00] test transition::tests::transition_error_maps_to_kernel_invalid_transition ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::accepts_in_range_coordinates ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::bounded_text_counts_code_points_not_bytes ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::coordinate_pair_must_be_complete ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::customer_site_name_bound_matches_db_check ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::haversine_meters_is_correct ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::rejects_non_finite_coordinates ... ok
+[2026-09-21T23:52:22.108-04:00] test validation::tests::rejects_out_of_range_coordinates ... ok
+[2026-09-21T23:52:22.108-04:00]
+[2026-09-21T23:52:22.108-04:00] test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+[2026-09-21T23:52:22.108-04:00]
+[2026-09-21T23:52:22.108-04:00]
+[2026-09-21T23:52:22.108-04:00] ---- STDERR ----
+[2026-09-21T23:52:22.108-04:00]
+[2026-09-21T23:52:22.110-04:00] Cache hits: 0%
+[2026-09-21T23:52:22.110-04:00] Commands: 1 (cached: 0, remote: 0, local: 1)
+[2026-09-21T23:52:22.110-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

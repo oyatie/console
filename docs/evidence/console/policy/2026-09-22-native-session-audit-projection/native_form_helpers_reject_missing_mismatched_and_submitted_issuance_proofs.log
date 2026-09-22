@@ -1,0 +1,32 @@
+NOTICE:  topology.canonical_enforcement: examined 0 canonical tables []
+topology: seven application roles reconciled and verified
+[2026-09-22T00:12:37.693-04:00] Build ID: 5901fb3f-b9e0-47ae-b3b1-c7d3011569d4
+[2026-09-22T00:12:37.694-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:12:44.694-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 826 other actions
+[2026-09-22T00:12:46.980-04:00] 2026-09-22T04:12:46.524697Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://release-assets.githubusercontent.com/github-production-release-asset/162334160/a0c495dc-2474-4ae3-bb0e-70526d359f46?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-09-22T04%3A53%3A48Z&rscd=attachment%3B+filename%3Dcpython-3.13.6%2B20250807-aarch64-apple-darwin-install_only_stripped.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-09-22T03%3A53%3A35Z&ske=2026-09-22T04%3A53%3A48Z&sks=b&skv=2018-11-09&sig=kJucTmRLO7vznKv0Y5cUMjRUhDCEcV4jyMzE1rTJA80%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5MDA1MjE1OCwibmJmIjoxNzkwMDUwMzU4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.eptQGbe_vWh44AFH-GwQHzhHw5Uy1rjk5XZNQlRwzKI&response-content-disposition=attachment%3B%20filename%3Dcpython-3.13.6%2B20250807-aarch64-apple-darwin-install_only_stripped.tar.gz&response-content-type=application%2Foctet-stream after 5 seconds.
+[2026-09-22T00:12:47.833-04:00] 2026-09-22T04:12:47.021027Z  WARN buck2_http::retries: Retrying a HTTP error after 2 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://release-assets.githubusercontent.com/github-production-release-asset/114685405/3ca5b3fa-c8fe-49f1-9ecc-32ede93f4848?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-09-22T05%3A08%3A40Z&rscd=attachment%3B+filename%3Dwasm-bindgen-0.2.123-aarch64-apple-darwin.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-09-22T04%3A08%3A28Z&ske=2026-09-22T05%3A08%3A40Z&sks=b&skv=2018-11-09&sig=PegpNfxvnwJ%2FzQuv4XGj9FXQIOWu2UFTKSIuD9ChWRA%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5MDA1MDY2MSwibmJmIjoxNzkwMDUwMzYxLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.1PEAax2jyHvYTu_YwE4-4rFCZe8iJ9C7jMKjNZXmVew&response-content-disposition=attachment%3B%20filename%3Dwasm-bindgen-0.2.123-aarch64-apple-darwin.tar.gz&response-content-type=application%2Foctet-stream after 5 seconds.
+[2026-09-22T00:12:54.995-04:00] Waiting on toolchains//:cpython_archive (prelude//platforms:default#11a256c53bf8083e) -- action (download_file archive.tar.gz), and 550 other actions
+[2026-09-22T00:12:55.614-04:00] 2026-09-22T04:12:55.421446Z  WARN buck2_http::retries: Retrying a HTTP error after 4 seconds: Error performing http_head request: HTTP: Timed out while making request to URI: https://release-assets.githubusercontent.com/github-production-release-asset/114685405/3ca5b3fa-c8fe-49f1-9ecc-32ede93f4848?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-09-22T05%3A08%3A40Z&rscd=attachment%3B+filename%3Dwasm-bindgen-0.2.123-aarch64-apple-darwin.tar.gz&rsct=application%2Foctet-stream&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-09-22T04%3A08%3A28Z&ske=2026-09-22T05%3A08%3A40Z&sks=b&skv=2018-11-09&sig=PegpNfxvnwJ%2FzQuv4XGj9FXQIOWu2UFTKSIuD9ChWRA%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5MDA1MDY2MSwibmJmIjoxNzkwMDUwMzYxLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.1PEAax2jyHvYTu_YwE4-4rFCZe8iJ9C7jMKjNZXmVew&response-content-disposition=attachment%3B%20filename%3Dwasm-bindgen-0.2.123-aarch64-apple-darwin.tar.gz&response-content-type=application%2Foctet-stream after 5 seconds.
+[2026-09-22T00:13:03.293-04:00] Waiting on root//backend/crates/reporting/domain:console-reporting-domain (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 230 other actions
+[2026-09-22T00:13:04.544-04:00] Network: Up: 0B  Down: 0B
+BUILD SUCCEEDED
+[2026-09-22T00:13:04.623-04:00] Build ID: dc4070a0-2fb1-466e-aa17-c4aaf3c18fc3
+[2026-09-22T00:13:04.630-04:00] File Watcher fresh instance: cleared graph state
+[2026-09-22T00:13:11.722-04:00] Waiting on root//third-party/rust:flagset-0.4 (prelude//platforms:default#39893c7e49283da4) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 799 other actions
+[2026-09-22T00:13:18.722-04:00] Waiting on root//third-party/rust:camino-1 (prelude//platforms:default#11a256c53bf8083e) -- action (write_json LPPF-depsfull-symlinked_dirs.json), and 773 other actions
+[2026-09-22T00:13:25.723-04:00] Waiting on root//third-party/rust:tower-service-0.3 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/tower_service-metadata-full-diag.args), and 541 other actions
+[2026-09-22T00:13:32.723-04:00] Waiting on root//third-party/rust:zerovec-0.11 (prelude//platforms:default#39893c7e49283da4) -- action (write LPPF/zerovec-metadata-full-diag.args), and 112 other actions
+[2026-09-22T00:13:39.823-04:00] Waiting on Test app-auth-rest-pg --  [local_execute]
+[2026-09-22T00:13:41.801-04:00] ✓ Pass: root//tools/buck:app-auth-rest-pg (8.0s)
+[2026-09-22T00:13:41.801-04:00] ---- STDOUT ----
+[2026-09-22T00:13:41.801-04:00]
+[2026-09-22T00:13:41.801-04:00] running 1 test
+[2026-09-22T00:13:41.801-04:00] test account_browser::native_business_session::native_form_helpers_reject_missing_mismatched_and_submitted_issuance_proofs ... ok
+[2026-09-22T00:13:41.801-04:00]
+[2026-09-22T00:13:41.801-04:00] test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 523 filtered out; finished in 7.87s
+[2026-09-22T00:13:41.801-04:00]
+[2026-09-22T00:13:41.801-04:00]
+[2026-09-22T00:13:41.801-04:00] ---- STDERR ----
+[2026-09-22T00:13:41.801-04:00]
+[2026-09-22T00:13:41.813-04:00] Network: Up: 0B  Down: 0B
+Tests finished: [mPass 1[m. Fail 0. Timeout 0. Fatal 0. Skip 0. Omit 0. Infra Failure 0. Build failure 0

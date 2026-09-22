@@ -399,5 +399,329 @@ fn checked_initial_projection_requires_closed_maps_canonical_scalars_and_bounded
         CurrentCompanyAuthority::from_initial_projection(account, company, observed, row).is_ok()
     );
 }
+#[test]
+fn current_projection_preserves_actual_epoch_receipt_and_initial_graph() {
+    let receipt = Uuid::from_u128(88);
+    for (epoch, pointer) in [(1, None), (2, Some(receipt)), (i64::MAX, Some(receipt))] {
+        let initial = authority();
+        let (account, company, observed, mut row) = input_row();
+        row.company_epoch = epoch;
+        let current = CurrentCompanyAuthority::from_current_projection(
+            account, company, observed, row, pointer,
+        )
+        .unwrap();
+        assert_eq!(current.epoch(), u64::try_from(epoch).unwrap());
+        assert_eq!(current.current_policy_receipt_id(), pointer);
+        assert_eq!(current.account(), initial.account());
+        assert_eq!(current.company(), initial.company());
+        assert_eq!(current.context_generation(), initial.context_generation());
+        assert_eq!(current.assignment_id(), initial.assignment_id());
+        assert_eq!(current.assignment_revision(), initial.assignment_revision());
+        assert_eq!(current.role_id(), initial.role_id());
+        assert_eq!(current.role_revision(), initial.role_revision());
+        assert_eq!(current.observed_at(), initial.observed_at());
+        assert_eq!(current.clauses(), initial.clauses());
+        assert_eq!(current.name(), initial.name());
+        assert_eq!(current.slug(), initial.slug());
+        if epoch == 1 {
+            assert_eq!(current, initial);
+        }
+    }
+}
+
+#[test]
+fn current_projection_rejects_invalid_epoch_receipt_pairs_without_widening_initial() {
+    let receipt = Uuid::from_u128(88);
+    for epoch in [i64::MIN, -1, 0, 2, i64::MAX] {
+        let (account, company, observed, mut row) = input_row();
+        row.company_epoch = epoch;
+        assert!(matches!(
+            CurrentCompanyAuthority::from_initial_projection(account, company, observed, row),
+            Err(CompanyPolicyError::MaterialUnavailable)
+        ));
+    }
+    for (epoch, pointer) in [
+        (i64::MIN, None),
+        (-1, Some(receipt)),
+        (0, None),
+        (1, Some(receipt)),
+        (1, Some(Uuid::nil())),
+        (2, None),
+        (2, Some(Uuid::nil())),
+        (i64::MAX, None),
+    ] {
+        let (account, company, observed, mut row) = input_row();
+        row.company_epoch = epoch;
+        assert!(
+            matches!(
+                CurrentCompanyAuthority::from_current_projection(
+                    account, company, observed, row, pointer
+                ),
+                Err(CompanyPolicyError::MaterialUnavailable)
+            ),
+            "accepted invalid epoch/receipt pair {epoch}/{pointer:?}"
+        );
+    }
+}
+
+#[test]
+fn checked_current_projection_rejects_invalid_revision_and_correlated_material() {
+    assert_eq!(authority().clauses().len(), 7);
+    for field in [
+        "role_revision",
+        "assignment_revision",
+        "company_epoch",
+        "context_generation",
+    ] {
+        let (a, c, t, mut row) = input_row();
+        row.company_epoch = 2;
+        match field {
+            "role_revision" => row.role_revision = 2,
+            "assignment_revision" => row.assignment_revision = 2,
+            "company_epoch" => row.company_epoch = 0,
+            "context_generation" => row.context_generation = 0,
+            _ => unreachable!(),
+        };
+        assert!(
+            matches!(
+                CurrentCompanyAuthority::from_current_projection(
+                    a,
+                    c,
+                    t,
+                    row,
+                    Some(Uuid::from_u128(88))
+                ),
+                Err(CompanyPolicyError::MaterialUnavailable)
+            ),
+            "bad {field}"
+        );
+    }
+    for corruption in [
+        "extra",
+        "missing_nullable",
+        "duplicate_field",
+        "wrong_company",
+        "wrong_type",
+        "wrong_manifest",
+        "wrong_registration",
+        "delegation_as_use",
+        "later_validity",
+        "wrong_action_alias",
+        "field_order",
+        "missing_clause",
+    ] {
+        let (a, c, t, mut row) = input_row();
+        row.company_epoch = 2;
+        let mut clauses: Value = serde_json::from_str(&row.registered_clauses).unwrap();
+        match corruption {
+            "extra" => clauses[0]["authorized"] = json!(true),
+            "missing_nullable" => {
+                clauses[0].as_object_mut().unwrap().remove("valid_until");
+            }
+            "duplicate_field" => clauses[0]["fields"][1] = clauses[0]["fields"][0].clone(),
+            "wrong_company" => clauses[0]["action"]["org_id"] = json!(Uuid::from_u128(99)),
+            "wrong_type" => clauses[0]["fields"][0]["object_type_id"] = json!(Uuid::from_u128(4)),
+            "wrong_manifest" => clauses[0]["action"]["manifest_digest"] = json!("0".repeat(64)),
+            "wrong_registration" => clauses[0]["action"]["registration_revision"] = json!("2"),
+            "delegation_as_use" => clauses[5]["delegable"] = json!(false),
+            "later_validity" => clauses[0]["valid_until"] = json!("2026-09-21T00:00:00.000000Z"),
+            "wrong_action_alias" => clauses[5]["action"] = clauses[2]["action"].clone(),
+            "field_order" => clauses[0]["fields"].as_array_mut().unwrap().reverse(),
+            "missing_clause" => {
+                clauses.as_array_mut().unwrap().pop();
+            }
+            _ => unreachable!(),
+        }
+        row.registered_clauses = serde_json::to_string(&clauses).unwrap();
+        assert!(
+            matches!(
+                CurrentCompanyAuthority::from_current_projection(
+                    a,
+                    c,
+                    t,
+                    row,
+                    Some(Uuid::from_u128(88))
+                ),
+                Err(CompanyPolicyError::MaterialUnavailable)
+            ),
+            "accepted {corruption}"
+        );
+    }
+    let (a, c, t, mut row) = input_row();
+    row.company_epoch = 2;
+    row.registered_clauses = row.registered_clauses.replacen(
+        "\"delegable\":false",
+        "\"delegable\":false,\"delegable\":false",
+        1,
+    );
+    assert!(
+        matches!(
+            CurrentCompanyAuthority::from_current_projection(
+                a,
+                c,
+                t,
+                row,
+                Some(Uuid::from_u128(88))
+            ),
+            Err(CompanyPolicyError::MaterialUnavailable)
+        ),
+        "duplicate input was collapsed before strict conversion"
+    );
+}
+
+#[test]
+fn checked_current_projection_requires_closed_maps_canonical_scalars_and_bounded_json() {
+    let (_, _, _, row) = input_row();
+    let original = row.registered_clauses;
+    let mut cases: Vec<(String, String)> = Vec::new();
+    for pointer in ["/0/action", "/0/resource", "/0/fields/0"] {
+        let value: Value = serde_json::from_str(&original).unwrap();
+        let object = value.pointer(pointer).unwrap().as_object().unwrap();
+        // Every required nested member, not just a selected representative.
+        for key in object.keys() {
+            let mut changed = value.clone();
+            changed
+                .pointer_mut(pointer)
+                .unwrap()
+                .as_object_mut()
+                .unwrap()
+                .remove(key);
+            cases.push((
+                format!("missing {pointer}/{key}"),
+                serde_json::to_string(&changed).unwrap(),
+            ));
+        }
+        let mut changed = value.clone();
+        changed
+            .pointer_mut(pointer)
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert("authorized".into(), json!(true));
+        cases.push((
+            format!("unknown key {pointer}"),
+            serde_json::to_string(&changed).unwrap(),
+        ));
+        // Same-value duplicates remain invalid. Construct raw bytes AFTER normal
+        // fixture serialization so no Value parser can collapse the control.
+        let encoded = serde_json::to_string(value.pointer(pointer).unwrap()).unwrap();
+        let (key, field) = object.iter().next().unwrap();
+        let duplicate = format!(
+            "{{{}:{},{}",
+            serde_json::to_string(key).unwrap(),
+            serde_json::to_string(field).unwrap(),
+            &encoded[1..]
+        );
+        let changed = original.replacen(&encoded, &duplicate, 1);
+        assert_ne!(
+            changed, original,
+            "nested duplicate control did not replace input"
+        );
+        cases.push((format!("duplicate key {pointer}/{key}"), changed));
+    }
+    // Resource has only two fields. Both declaration orders are tested, so a
+    // permissive serde struct sequence cannot escape via field-order mismatch.
+    for reversed in [false, true] {
+        let mut changed: Value = serde_json::from_str(&original).unwrap();
+        let resource = &changed[0]["resource"];
+        let mut values = vec![resource["kind"].clone(), resource["org_id"].clone()];
+        if reversed {
+            values.reverse();
+        }
+        changed[0]["resource"] = Value::Array(values);
+        cases.push((
+            format!("resource array reversed={reversed}"),
+            serde_json::to_string(&changed).unwrap(),
+        ));
+    }
+    for (name, old, new) in [
+        (
+            "registration leading zero",
+            "\"registration_revision\":\"1\"",
+            "\"registration_revision\":\"01\"",
+        ),
+        (
+            "schema leading zero",
+            "\"schema_revision\":\"1\"",
+            "\"schema_revision\":\"01\"",
+        ),
+        (
+            "registration number",
+            "\"registration_revision\":\"1\"",
+            "\"registration_revision\":1",
+        ),
+        (
+            "schema number",
+            "\"schema_revision\":\"1\"",
+            "\"schema_revision\":1",
+        ),
+        (
+            "timestamp offset alias",
+            "2026-09-20T00:00:00.000000Z",
+            "2026-09-20T00:00:00.000000+00:00",
+        ),
+        (
+            "timestamp fraction alias",
+            "2026-09-20T00:00:00.000000Z",
+            "2026-09-20T00:00:00Z",
+        ),
+        (
+            "uppercase UUID alias",
+            "00000000-0000-0000-0000-00000000000b",
+            "00000000-0000-0000-0000-00000000000B",
+        ),
+        (
+            "unhyphenated UUID alias",
+            "00000000-0000-0000-0000-00000000000b",
+            "0000000000000000000000000000000b",
+        ),
+    ] {
+        // Replace every occurrence, preserving semantic correlation. Denial
+        // must detect spelling/type rather than unequal alias/delegation pairs.
+        let changed = original.replace(old, new);
+        assert_ne!(changed, original, "canonical control did not replace input");
+        cases.push((name.into(), changed));
+    }
+    cases.push(("trailing JSON".into(), format!("{original} null")));
+    assert!(original.len() < 32768);
+    cases.push((
+        "32769-byte valid JSON".into(),
+        format!("{}{}", original, " ".repeat(32769 - original.len())),
+    ));
+    for (name, raw) in cases {
+        let (account, company, observed, mut row) = input_row();
+        row.company_epoch = 2;
+        row.registered_clauses = raw;
+        assert!(
+            matches!(
+                CurrentCompanyAuthority::from_current_projection(
+                    account,
+                    company,
+                    observed,
+                    row,
+                    Some(Uuid::from_u128(88))
+                ),
+                Err(CompanyPolicyError::MaterialUnavailable)
+            ),
+            "accepted {name}"
+        );
+    }
+    // Valid control at the admitted byte boundary. JSON trailing whitespace is
+    // permitted; bytes must be measured before trimming, so32769above differs.
+    let (account, company, observed, mut row) = input_row();
+    row.company_epoch = 2;
+    row.registered_clauses = format!("{}{}", original, " ".repeat(32768 - original.len()));
+    assert_eq!(row.registered_clauses.len(), 32768);
+    assert!(
+        CurrentCompanyAuthority::from_current_projection(
+            account,
+            company,
+            observed,
+            row,
+            Some(Uuid::from_u128(88))
+        )
+        .is_ok()
+    );
+}
 #[path = "company_policy/read_usecases_tests.rs"]
 mod read_usecases;

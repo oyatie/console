@@ -1,6 +1,23 @@
 //! Auth-owned credentials for the Company owner's exclusive lock plan.
 //! These values never substitute for current durable Account/family authority.
 use super::*;
+use crate::{AccountCsrfClaims, AccountCsrfTokenInput, JwtIssuer, SignedAccountToken};
+
+/// Ephemeral proof for one authorized form. Never log or persist this value.
+pub struct AccountFormProof {
+    token: SignedAccountToken,
+    expires_at: OffsetDateTime,
+}
+
+impl AccountFormProof {
+    pub fn as_str(&self) -> &str {
+        self.token.as_str()
+    }
+
+    pub const fn expires_at(&self) -> OffsetDateTime {
+        self.expires_at
+    }
+}
 
 /// Bounded immutable transport bytes. Construction performs no authentication.
 pub struct AccountEnrollmentCredentials {
@@ -77,6 +94,69 @@ impl AccountEnrollmentCredentials {
         absolute_ttl: Duration,
     ) -> Result<AccountLiveSession, AccountOperationError> {
         live_account_session_in_tx(tx, verifier, &self.access, absolute_ttl).await
+    }
+
+    /// Check the originally captured mutation proof in the retained owner scope.
+    /// Call only after the owner's Group-first lock plan, and again after waits.
+    pub async fn validate_mutation_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        absolute_ttl: Duration,
+    ) -> Result<AccountLiveSession, AccountOperationError> {
+        let proof = self
+            .csrf
+            .as_deref()
+            .ok_or(AccountOperationError::CsrfInvalid)?;
+        let session = self.read_session_in_tx(tx, verifier, absolute_ttl).await?;
+        let now = ensure_account_session_fresh_in_tx(tx, &session).await?;
+        verify_form_proof(verifier, proof, &session, now)?;
+        Ok(session)
+    }
+
+    /// Issue only for an already authorized, rate-limited form read. Mutation
+    /// credentials cannot mint a replacement proof during command execution.
+    pub async fn issue_form_proof_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        issuer: &JwtIssuer,
+        absolute_ttl: Duration,
+    ) -> Result<AccountFormProof, AccountOperationError> {
+        if self.csrf.is_some() {
+            return Err(AccountOperationError::CsrfInvalid);
+        }
+        let session = self.read_session_in_tx(tx, verifier, absolute_ttl).await?;
+        let issued_at = ensure_account_session_fresh_in_tx(tx, &session).await?;
+        let token = issuer
+            .issue_account_csrf_token(AccountCsrfTokenInput {
+                account_id: session.account_id,
+                session_id: session.session_id,
+                security_generation: session.security_generation,
+                issued_at,
+                family_expires_at: session.family_expires_at,
+            })
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let now = ensure_account_session_fresh_in_tx(tx, &session).await?;
+        let claims = verify_form_proof(verifier, token.as_str(), &session, now)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        let expires_at = OffsetDateTime::from_unix_timestamp(claims.exp)
+            .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
+        Ok(AccountFormProof { token, expires_at })
+    }
+
+    /// Recheck after the last owner wait; this never replaces the issued token.
+    pub async fn recheck_form_proof_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        absolute_ttl: Duration,
+        proof: &AccountFormProof,
+    ) -> Result<(), AccountOperationError> {
+        let session = self.read_session_in_tx(tx, verifier, absolute_ttl).await?;
+        let now = ensure_account_session_fresh_in_tx(tx, &session).await?;
+        verify_form_proof(verifier, proof.as_str(), &session, now)?;
+        Ok(())
     }
 
     pub async fn lock_submit_in_tx<'b, 'c>(
@@ -231,6 +311,25 @@ impl AccountEnrollmentCredentials {
         }
         Ok(())
     }
+}
+
+fn verify_form_proof(
+    verifier: &JwtVerifier,
+    proof: &str,
+    session: &AccountLiveSession,
+    now: OffsetDateTime,
+) -> Result<AccountCsrfClaims, AccountOperationError> {
+    let claims = verifier
+        .verify_account_csrf_token(proof, now)
+        .map_err(|_| AccountOperationError::CsrfInvalid)?;
+    if claims.sub != session.account_id
+        || claims.sid != session.session_id
+        || claims.security_generation != session.security_generation
+        || claims.exp > session.family_expires_at.unix_timestamp()
+    {
+        return Err(AccountOperationError::CsrfInvalid);
+    }
+    Ok(claims)
 }
 
 impl LockedAccountEnrollment<'_, '_> {

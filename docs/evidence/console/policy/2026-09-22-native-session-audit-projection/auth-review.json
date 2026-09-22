@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/company_scope_review",
+  "base": "ae9a91c7f66df2298663113b1196fb0b5f180618",
+  "verdict": "APPROVE_SOURCE_IMPLEMENTATION_PENDING_RUNTIME",
+  "sha256": {
+    "backend/crates/platform/auth/src/session/company_enrollment.rs": "8cb167b088bf6b3c3fefe068b8f7bc3c17e06ceaf5b7aa2ee23e1bd81dfabddd",
+    "backend/crates/platform/auth/src/account.rs": "7d47fa81d0d77b325180e5cf8bd3cd5d5446efce04e37128dc5c879c4fc1933a",
+    "backend/crates/platform/auth/src/session.rs": "8e202702ab9d92ebea4d8de18ccb8bcb5870bcdcfe1292fb30f523209e508b17",
+    "backend/app/tests/auth_rest/native_business_session.rs": "dcae929f4c8f9acd8269694248df377f673ebce221da5b158e36d26b0a769f07"
+  },
+  "preservation": "Removing only new import/type/method/helper spans reproduces original company_enrollment.rs bytes exactly. Other Auth files only add AccountFormProof reexports. Applied three-test source equals independently reviewed candidate exactly.",
+  "verified": [
+    "read_session_in_tx retains current Account/family source guards; no enrollment SQL or refresh fallback",
+    "validate_mutation requires captured CSRF, ensures fresh actual session, verifies ES256 proof sub/sid/security generation and actual family expiry",
+    "issue rejects submitted mutation proof, uses actual current session, existing bounded issuer, freshness before and after signing",
+    "issue-only server token verification errors map AuthorityUnavailable; captured/rechecked proof failures remain CsrfInvalid",
+    "recheck resolves current session and fresh DB time then validates original wrapper proof; no issuance",
+    "AccountFormProof fields private, no Debug/Serialize/Deserialize/Clone; token not persisted",
+    "historical credentials and enrollment methods unchanged"
+  ],
+  "limits": [
+    "Caller must retain Group-first source plan and compare actual session to SQL material; helpers alone authorize no Company action",
+    "Caller controls existing limiter/consent/current Cedar and final query/audit/closure commit boundary",
+    "No Rust compile/test/database/browser commands by reviewer; tests await root runtime lease",
+    "Separate additive issuer mismatch test awaits independent source review; no isolated-sub or wait-expiry acceptance claimed"
+  ],
+  "product_edits": 0,
+  "tests_executed": 0
+}
