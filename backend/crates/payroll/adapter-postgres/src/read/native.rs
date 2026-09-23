@@ -8,7 +8,8 @@ use console_identity_application::company_policy::{
 use console_kernel_core::{AuditAction, AuditEvent, KernelError, OrgId, TraceContext};
 use console_payroll_application::read::{
     ListPayrollRuns, PayrollAuthorizeFuture, PayrollCompanyContext, PayrollCompanyIdentity,
-    PayrollReadFuture, PayrollRunsReadError as Error, PayrollRunsReadPort, PayrollRunsReadResult,
+    PayrollNavigationFuture, PayrollReadFuture, PayrollRunsReadError as Error, PayrollRunsReadPort,
+    PayrollRunsReadResult,
 };
 use console_platform_auth::{
     JwtVerifier,
@@ -252,9 +253,56 @@ impl PgNativePayrollRunsReadPort {
             Err(_) => Err(Error::Unavailable),
         }
     }
+    async fn finish(&self, retained: Retained) -> Result<PayrollCompanyContext, Error> {
+        let Retained {
+            mut tx,
+            source,
+            identity_allowed,
+        } = retained;
+        // Reacquire current authority after all preceding waits.
+        let current = self
+            .source(
+                &mut tx,
+                *source.binding.account.as_uuid(),
+                source.binding.session_id,
+            )
+            .await?;
+        if source.payroll != current.payroll
+            || source.identity != current.identity
+            || source.binding.account != current.binding.account
+            || source.binding.session_id != current.binding.session_id
+            || source.binding.account_security_generation
+                != current.binding.account_security_generation
+            || source.binding.source_xid != current.binding.source_xid
+            || source.binding.source_backend_pid != current.binding.source_backend_pid
+            || current.binding.observed_at < source.binding.observed_at
+        {
+            return Err(Error::Unavailable);
+        }
+        self.authorize_payroll(&current)?;
+        let identity = self.identity(&current)?;
+        // An uncertain COMMIT never releases a projection; any list audit outcome is unknown.
+        tx.commit().await.map_err(unavailable)?;
+        Ok(PayrollCompanyContext {
+            id: self.company,
+            identity: if identity_allowed { identity } else { None },
+        })
+    }
 }
 
 impl PayrollRunsReadPort for PgNativePayrollRunsReadPort {
+    fn finish_navigation(&mut self) -> PayrollNavigationFuture<'_> {
+        // Consume before constructing the future: even an unpolled drop releases
+        // the retained transaction while the reader itself remains alive.
+        let prior = std::mem::replace(&mut self.state, State::Consumed);
+        Box::pin(async move {
+            let State::Authorized(retained) = prior else {
+                return Err(Error::Unavailable);
+            };
+            self.finish(*retained).await.map(|company| company.id)
+        })
+    }
+
     fn authorize(&mut self) -> PayrollAuthorizeFuture<'_> {
         // Consume before the first await; cancelling this future cannot leave an
         // apparently unused reader or a transaction retained in self.
@@ -324,36 +372,16 @@ impl PayrollRunsReadPort for PgNativePayrollRunsReadPort {
                 .execute(tx.as_mut())
                 .await
                 .map_err(unavailable)?;
-            // Reacquire from the canonical source only after query/audit waits.
-            let current = self
-                .source(
-                    &mut tx,
-                    *source.binding.account.as_uuid(),
-                    source.binding.session_id,
-                )
+            let company = self
+                .finish(Retained {
+                    tx,
+                    source,
+                    identity_allowed,
+                })
                 .await?;
-            if source.payroll != current.payroll
-                || source.identity != current.identity
-                || source.binding.account != current.binding.account
-                || source.binding.session_id != current.binding.session_id
-                || source.binding.account_security_generation
-                    != current.binding.account_security_generation
-                || source.binding.source_xid != current.binding.source_xid
-                || source.binding.source_backend_pid != current.binding.source_backend_pid
-                || current.binding.observed_at < source.binding.observed_at
-            {
-                return Err(Error::Unavailable);
-            }
-            self.authorize_payroll(&current)?;
-            let identity = self.identity(&current)?;
-            // An uncertain COMMIT never releases rows; its audit outcome is unknown.
-            tx.commit().await.map_err(unavailable)?;
             Ok(PayrollRunsReadResult {
                 page,
-                company: Some(PayrollCompanyContext {
-                    id: self.company,
-                    identity: if identity_allowed { identity } else { None },
-                }),
+                company: Some(company),
             })
         })
     }

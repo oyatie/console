@@ -65,10 +65,14 @@ pub type PayrollAuthorizeFuture<'a> =
     Pin<Box<dyn Future<Output = Result<(), PayrollRunsReadError>> + Send + 'a>>;
 pub type PayrollReadFuture<'a> =
     Pin<Box<dyn Future<Output = Result<PayrollRunsReadResult, PayrollRunsReadError>> + Send + 'a>>;
+pub type PayrollNavigationFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<OrgId, PayrollRunsReadError>> + Send + 'a>>;
 
 pub trait PayrollRunsReadPort: Send {
     fn authorize(&mut self) -> PayrollAuthorizeFuture<'_>;
     fn read_page(&mut self, query: ListPayrollRuns) -> PayrollReadFuture<'_>;
+    /// Finish current authorization without reading Payroll rows or auditing a list read.
+    fn finish_navigation(&mut self) -> PayrollNavigationFuture<'_>;
 }
 
 /// A failed attempt to establish authority must never disclose a read failure.
@@ -88,6 +92,18 @@ pub async fn list_payroll_runs<P: PayrollRunsReadPort + ?Sized>(
     port.read_page(query).await
 }
 
+/// Point-in-time navigation only; following the link must authorize again.
+pub async fn payroll_navigation<P: PayrollRunsReadPort + ?Sized>(
+    port: &mut P,
+) -> Result<OrgId, PayrollRunsReadError> {
+    port.authorize().await?;
+    port.finish_navigation().await
+}
+
 #[cfg(test)]
 #[path = "read_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "navigation_tests.rs"]
+mod navigation_tests;

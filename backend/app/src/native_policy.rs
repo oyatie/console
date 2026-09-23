@@ -62,6 +62,7 @@ async fn identity_context(
 fn scope(
     view: NativePolicyFormView,
     identity: Option<console_identity_application::company_policy::CompanyIdentityView>,
+    payroll_link: bool,
 ) -> ui::Scope {
     let company = view.selector.company().to_string();
     let now = OffsetDateTime::now_utc();
@@ -70,7 +71,7 @@ fn scope(
         group: view.group_id.to_string(),
         company_link: identity.is_some(),
         policy_link: identity.as_ref().is_some_and(|v| v.show_policy_navigation),
-        payroll_link: false,
+        payroll_link,
         company,
         operator: view.acting_account_id.as_uuid().to_string(),
         recipient: view.administrative_account_id.as_uuid().to_string(),
@@ -159,6 +160,7 @@ pub(super) fn error(status: StatusCode) -> Response {
 }
 pub(super) async fn preflight(
     State(state): State<CompanyState>,
+    Extension(payroll): Extension<crate::native_payroll::Navigation>,
     Path((company, op)): Path<(String, String)>,
     headers: HeaderMap,
     method: Method,
@@ -167,7 +169,7 @@ pub(super) async fn preflight(
     if method != Method::GET {
         return error(StatusCode::METHOD_NOT_ALLOWED);
     }
-    let identity = match identity_context(&state, &headers, &company).await {
+    let payroll_link = match payroll.visible(&headers, &company).await {
         Ok(value) => value,
         Err(status) => return error(status),
     };
@@ -178,10 +180,14 @@ pub(super) async fn preflight(
         Ok(value) => value,
         Err(status) => return error(status),
     };
+    let identity = match identity_context(&state, &headers, &company).await {
+        Ok(value) => value,
+        Err(status) => return error(status),
+    };
     let selector = form.view.selector;
     ui::document(
         ui::Page::Form(ui::Form {
-            scope: scope(form.view, identity),
+            scope: scope(form.view, identity, payroll_link),
             operation: operation(selector.operation()),
             command: selector.command_id().to_string(),
             proof: form.proof.as_str().to_owned(),
@@ -192,6 +198,7 @@ pub(super) async fn preflight(
 }
 pub(super) async fn request_document(
     State(state): State<CompanyState>,
+    Extension(payroll): Extension<crate::native_payroll::Navigation>,
     Path((company, op, command)): Path<(String, String, String)>,
     headers: HeaderMap,
     method: Method,
@@ -200,7 +207,7 @@ pub(super) async fn request_document(
     if method != Method::GET {
         return error(StatusCode::METHOD_NOT_ALLOWED);
     }
-    let identity = match identity_context(&state, &headers, &company).await {
+    let payroll_link = match payroll.visible(&headers, &company).await {
         Ok(value) => value,
         Err(status) => return error(status),
     };
@@ -224,6 +231,10 @@ pub(super) async fn request_document(
     } = result
     else {
         return ui::document(ui::Page::NotVisible, StatusCode::NOT_FOUND);
+    };
+    let identity = match identity_context(&state, &headers, &company).await {
+        Ok(value) => value,
+        Err(status) => return error(status),
     };
     let selector = current.selector;
     let (outcome, original) = match status {
@@ -307,7 +318,7 @@ pub(super) async fn request_document(
     };
     ui::document(
         ui::Page::Result {
-            scope: scope(current, identity),
+            scope: scope(current, identity, payroll_link),
             operation: operation(selector.operation()),
             command: selector.command_id().to_string(),
             outcome,
@@ -350,7 +361,7 @@ async fn submit(
             };
             ui::document(
                 ui::Page::Form(ui::Form {
-                    scope: scope(current.view, identity),
+                    scope: scope(current.view, identity, false),
                     operation: operation(draft.selector.operation()),
                     command: draft.selector.command_id().to_string(),
                     proof: current.proof.as_str().to_owned(),

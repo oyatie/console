@@ -10,7 +10,7 @@ use axum::{
 use console_kernel_core::{ErrorKind, OrgId};
 use console_payroll_application::read::{
     ListPayrollRuns, PayrollRunsReadError, PayrollRunsReadPort, PayrollRunsReadResult,
-    list_payroll_runs,
+    list_payroll_runs, payroll_navigation,
 };
 use console_platform_auth::account::AccountEnrollmentCredentials;
 use console_platform_auth_rest::AuthRestState;
@@ -53,6 +53,51 @@ impl PayrollRestState {
             .map_err(|error| error.status())?;
         native.listing(credentials, company, query).await
     }
+
+    pub async fn native_document_navigation(
+        &self,
+        headers: &HeaderMap,
+        company: &str,
+    ) -> Result<bool, StatusCode> {
+        let native = self
+            .native
+            .as_ref()
+            .ok_or(StatusCode::SERVICE_UNAVAILABLE)?;
+        let credentials = native
+            .auth
+            .company_document_credentials(headers)
+            .map_err(|error| error.status())?;
+        let company = company_id(company)?;
+        match payroll_navigation((native.reader)(credentials, company).as_mut()).await {
+            Ok(actual) if actual == company => Ok(true),
+            Ok(_) => Err(StatusCode::SERVICE_UNAVAILABLE),
+            Err(error) => match owner_status(error) {
+                StatusCode::NOT_FOUND => Ok(false),
+                status => Err(status),
+            },
+        }
+    }
+}
+
+fn company_id(company: &str) -> Result<OrgId, StatusCode> {
+    let id = Uuid::parse_str(company).map_err(|_| StatusCode::NOT_FOUND)?;
+    let company_id = OrgId::from_uuid(id);
+    if id.is_nil() || company_id == OrgId::platform() || id.to_string() != company {
+        return Err(StatusCode::NOT_FOUND);
+    }
+    Ok(company_id)
+}
+
+fn owner_status(error: PayrollRunsReadError) -> StatusCode {
+    match error {
+        PayrollRunsReadError::AuthenticationInvalid => StatusCode::UNAUTHORIZED,
+        PayrollRunsReadError::Authorization(error) if error.kind == ErrorKind::NotFound => {
+            StatusCode::NOT_FOUND
+        }
+        PayrollRunsReadError::Authorization(_)
+        | PayrollRunsReadError::Read(_)
+        | PayrollRunsReadError::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
+    }
 }
 
 impl NativeAccounts {
@@ -62,23 +107,11 @@ impl NativeAccounts {
         company: &str,
         query: Option<&str>,
     ) -> Result<PayrollRunsReadResult, StatusCode> {
-        let id = Uuid::parse_str(company).map_err(|_| StatusCode::NOT_FOUND)?;
-        let company_id = OrgId::from_uuid(id);
-        if id.is_nil() || company_id == OrgId::platform() || id.to_string() != company {
-            return Err(StatusCode::NOT_FOUND);
-        }
+        let company_id = company_id(company)?;
         let query = pagination(query)?;
         let result = list_payroll_runs((self.reader)(credentials, company_id).as_mut(), query)
             .await
-            .map_err(|error| match error {
-                PayrollRunsReadError::AuthenticationInvalid => StatusCode::UNAUTHORIZED,
-                PayrollRunsReadError::Authorization(error) if error.kind == ErrorKind::NotFound => {
-                    StatusCode::NOT_FOUND
-                }
-                PayrollRunsReadError::Authorization(_)
-                | PayrollRunsReadError::Read(_)
-                | PayrollRunsReadError::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
-            })?;
+            .map_err(owner_status)?;
         if result
             .company
             .as_ref()

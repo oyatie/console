@@ -794,4 +794,5 @@ mod native_payroll_read_owner_tests {
     }
     include!("native_payroll_transport_tests.rs");
     include!("native_payroll_navigation_tests.rs");
+    include!("native_payroll_navigation_owner_tests.rs");
 }

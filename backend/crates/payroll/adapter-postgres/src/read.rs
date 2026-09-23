@@ -1,8 +1,8 @@
 //! Authorized collection reads and their audit commit in the existing scoped transaction.
 use console_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext};
 use console_payroll_application::read::{
-    ListPayrollRuns, PayrollAuthorizeFuture, PayrollReadFuture, PayrollRunsReadError,
-    PayrollRunsReadPort, PayrollRunsReadResult,
+    ListPayrollRuns, PayrollAuthorizeFuture, PayrollNavigationFuture, PayrollReadFuture,
+    PayrollRunsReadError, PayrollRunsReadPort, PayrollRunsReadResult,
 };
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::with_audits;
@@ -23,6 +23,13 @@ impl PgPayrollRunsReadPort {
 }
 
 impl PayrollRunsReadPort for PgPayrollRunsReadPort {
+    fn finish_navigation(&mut self) -> PayrollNavigationFuture<'_> {
+        Box::pin(async move {
+            self.authorize().await?;
+            Ok(self.principal.org_id)
+        })
+    }
+
     fn authorize(&mut self) -> PayrollAuthorizeFuture<'_> {
         Box::pin(async move {
             authorize_org_wide(&self.principal, Action::new(Feature::PayrollRunRead))
@@ -53,14 +60,19 @@ impl PayrollRunsReadPort for PgPayrollRunsReadPort {
                 .await;
             // Preserve the established wire error contract. The generic store
             // conversion includes SQL diagnostics and must not cross this boundary.
-            let page = result.map_err(|error| match error {
-                PgPayrollError::Domain(error) => error,
-                PgPayrollError::Db(error) => {
-                    tracing::error!(error = %error, "payroll list read failed");
-                    KernelError::internal("internal server error")
-                }
-            }).map_err(PayrollRunsReadError::Read)?;
-            Ok(PayrollRunsReadResult { page, company: None })
+            let page = result
+                .map_err(|error| match error {
+                    PgPayrollError::Domain(error) => error,
+                    PgPayrollError::Db(error) => {
+                        tracing::error!(error = %error, "payroll list read failed");
+                        KernelError::internal("internal server error")
+                    }
+                })
+                .map_err(PayrollRunsReadError::Read)?;
+            Ok(PayrollRunsReadResult {
+                page,
+                company: None,
+            })
         })
     }
 }

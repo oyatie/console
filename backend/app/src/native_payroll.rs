@@ -60,7 +60,24 @@ async fn timeout_response(request: Request, next: Next) -> Response {
     response
 }
 
-pub(super) fn router(state: &AppState, pool: &PgPool) -> Router {
+/// Composition availability only; the Payroll owner decides each viewer's access.
+#[derive(Clone)]
+pub(super) struct Navigation(pub(super) Option<PayrollRestState>);
+
+impl Navigation {
+    pub(super) async fn visible(
+        &self,
+        headers: &HeaderMap,
+        company: &str,
+    ) -> Result<bool, StatusCode> {
+        match &self.0 {
+            Some(state) => state.native_document_navigation(headers, company).await,
+            None => Ok(false),
+        }
+    }
+}
+
+pub(super) fn state(state: &AppState, pool: &PgPool) -> PayrollRestState {
     let mut payroll = PayrollRestState::new(
         PgPayrollStore::new(pool.clone()),
         state.session_verification(),
@@ -93,6 +110,10 @@ pub(super) fn router(state: &AppState, pool: &PgPool) -> Router {
             }),
         );
     }
+    payroll
+}
+
+pub(super) fn router(payroll: PayrollRestState) -> Router {
     console_payroll_rest::native_router(payroll.clone()).merge(
         Router::new()
             .route(DOCUMENT_PATH, any(collection))

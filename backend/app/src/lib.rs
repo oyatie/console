@@ -5,8 +5,8 @@
 //! shutdown. Domain behavior lands in narrower crates and is composed here.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
-mod native_policy;
 mod native_payroll;
+mod native_policy;
 
 use std::collections::{BTreeSet, HashMap};
 use std::env;
@@ -3836,6 +3836,7 @@ pub fn build_router(mut state: AppState) -> Router {
                 None => platform_state,
             };
             let platform_router = console_platform_rest::router(platform_state);
+            let native_payroll_state = native_payroll::state(&state, pool);
             let company_router = match state.company_rest.clone() {
                 Some(company) => console_identity_rest::company::router(company.clone()).merge(
                     Router::new()
@@ -3855,6 +3856,11 @@ pub fn build_router(mut state: AppState) -> Router {
                         .route("/companies/{org_id}/policy/payroll-read/requests/{operation}/{command}", get(native_policy::request_document))
                         .route("/companies/{org_id}/policy/payroll-read/requests/{operation}/{command}/retry", axum::routing::post(native_policy::retry))
                         .with_state(company)
+                        .layer(axum::Extension(native_payroll::Navigation(
+                            (state.serving_custody_profile == Some(
+                                account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
+                            )).then(|| native_payroll_state.clone()),
+                        )))
                         .layer(axum::Extension(NativeCompanyPolicyNavigation(
                             state.serving_custody_profile == Some(
                                 account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
@@ -3863,7 +3869,7 @@ pub fn build_router(mut state: AppState) -> Router {
                 ),
                 _ => Router::new(),
             };
-            let native_payroll = native_payroll::router(&state, pool);
+            let native_payroll = native_payroll::router(native_payroll_state);
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
             // routes, the tenant domain routers, the platform tier, and the
             // pre-auth login/refresh endpoints. These are all short-lived
@@ -4025,6 +4031,7 @@ struct NativeCompanyPolicyNavigation(bool);
 async fn native_company_document(
     State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
     axum::Extension(native_policy): axum::Extension<NativeCompanyPolicyNavigation>,
+    axum::Extension(payroll): axum::Extension<native_payroll::Navigation>,
     axum::extract::Path(company): axum::extract::Path<String>,
     headers: HeaderMap,
     method: axum::http::Method,
@@ -4033,6 +4040,10 @@ async fn native_company_document(
     if method != axum::http::Method::GET {
         return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
     }
+    let show_payroll_navigation = match payroll.visible(&headers, &company).await {
+        Ok(visible) => visible,
+        Err(status) => return native_company_document_error(status),
+    };
     let show_payroll_policy_navigation = if native_policy.0 {
         match state
             .policy_current_document(&headers, &company, "install")
@@ -4055,6 +4066,7 @@ async fn native_company_document(
                 slug: company.slug,
                 show_policy_navigation: company.show_policy_navigation,
                 show_payroll_policy_navigation,
+                show_payroll_navigation,
             },
             StatusCode::OK,
         ),
