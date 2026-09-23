@@ -44,6 +44,9 @@ fn auth() -> AuthRestState {
     let pool = PgPoolOptions::new()
         .connect_lazy("postgres://unused:unused@localhost/unused")
         .unwrap();
+    auth_with_pool(pool)
+}
+fn auth_with_pool(pool: sqlx::PgPool) -> AuthRestState {
     let key = SigningKey::random(&mut OsRng);
     AuthRestState::new(
         pool,
@@ -493,3 +496,170 @@ fn durable_terminal_success_or_rejection_redirects_to_same_persistent_result() {
 }
 
 include!("expiry_validation_capture_tests.rs");
+
+
+// Scripted material tests production REST routing only, not live Auth or SQL
+// custody. The real Account/Company owner test covers those independently.
+mod read_routing {
+    use super::*;
+    use crate::company::CompanyRestState;
+    use console_identity_application::company_policy::{
+        AccountId, CompanyPolicyDecisionPort, CurrentNativeBootstrapAuthority,
+        NativeBootstrapProjectionRow, NativePolicySourceBinding, workflow::*,
+    };
+    use console_kernel_core::TraceContext;
+    use console_platform_auth::account::{AccountEnrollmentCredentials, AccountFormProof};
+    use console_platform_authz::company_policy::CompanyPolicy;
+    use console_platform_request_context::TrustedClientIp;
+    use std::sync::{Arc, Mutex};
+
+    #[derive(Default)]
+    struct Store { events: Mutex<Vec<&'static str>> }
+    struct Scope<'a> {
+        store: &'a Store,
+        current: bool,
+        authority: CurrentNativeBootstrapAuthority,
+    }
+    impl Store {
+        fn record(&self, event: &'static str) { self.events.lock().unwrap().push(event); }
+    }
+    impl NativePolicyWorkflowStore for Store {
+        type Credentials = AccountEnrollmentCredentials;
+        type FormProof = AccountFormProof;
+        type Scope<'a> = Scope<'a>;
+        async fn lock<'a>(&'a self, _: &'a Self::Credentials, request: NativePolicyScopeRequest<'a>)
+            -> Result<Scope<'a>, NativePolicyWorkflowError> {
+            assert_eq!(request.selector(), selector(NativeBusinessOperationV1::Install));
+            let current = match request {
+                NativePolicyScopeRequest::Status(_) => { self.record("lock:status"); false },
+                NativePolicyScopeRequest::Current(_) => { self.record("lock:current"); true },
+                _ => panic!("proof/workflow reached after refusal or on inert receipt"),
+            };
+            let at = OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap();
+            let uid = Uuid::from_u128;
+            let binding = NativePolicySourceBinding {
+                account: AccountId::from_uuid(uid(1)).unwrap(), session_id: uid(2),
+                account_security_generation: 1, source_xid: 9001, source_backend_pid: 123, observed_at: at,
+            };
+            let authority = CurrentNativeBootstrapAuthority::from_retained_projection(&binding,
+                NativeBootstrapProjectionRow {
+                    actor_account_id: uid(1), session_id: uid(2), account_security_generation: 1,
+                    designation_system_identifier: "7610000000000000001".into(),
+                    designation_database_name: "scripted_transport".into(), designation_database_oid: 16384,
+                    designation_revision: 3, designation_receipt_id: uid(4), org_id: id(COMPANY),
+                    current_group_id: uid(12), group_revision: 2, group_incarnation: uid(13),
+                    membership_id: uid(14), membership_revision: 2, membership_incarnation: uid(15),
+                    company_epoch: 1, current_policy_receipt_id: None,
+                    origin_account_id: uid(31), origin_command_id: uid(32), origin_receipt_id: uid(33),
+                    administrative_account_id: uid(34), company_actor_admission_receipt_id: uid(33),
+                    birth_assignment_id: uid(35), birth_role_id: uid(36), observed_at: at,
+                    source_xid: "9001".into(), source_backend_pid: 123,
+                }).unwrap();
+            Ok(Scope { store: self, current, authority })
+        }
+    }
+    impl Drop for Scope<'_> {
+        fn drop(&mut self) { self.store.record("release"); }
+    }
+    impl NativePolicyWorkflowScope for Scope<'_> {
+        type FormProof = AccountFormProof;
+        fn authority(&self) -> &CurrentNativeBootstrapAuthority { &self.authority }
+        async fn current(&mut self) -> Result<NativePolicyFormView, NativePolicyWorkflowError> {
+            assert!(self.current);
+            self.store.record("current");
+            Ok(NativePolicyFormView {
+                selector: selector(NativeBusinessOperationV1::Install), group_id: Uuid::from_u128(12),
+                company_epoch: 1, acting_account_id: AccountId::from_uuid(Uuid::from_u128(1)).unwrap(),
+                administrative_account_id: AccountId::from_uuid(Uuid::from_u128(34)).unwrap(),
+                installed_object_type_id: None, assignment: None,
+            })
+        }
+        async fn form(&mut self) -> Result<NativePolicyForm<AccountFormProof>, NativePolicyWorkflowError> {
+            panic!("inert receipt issued a proof")
+        }
+        async fn accept(&mut self, _: &TraceContext) -> Result<NativePolicyAcceptance, NativePolicyWorkflowError> {
+            panic!("read accepted a command")
+        }
+        async fn execute(&mut self, _: &TraceContext) -> Result<NativePolicyExecution, NativePolicyWorkflowError> {
+            panic!("read executed a command")
+        }
+        async fn status(&mut self) -> Result<NativePolicyStatus, NativePolicyWorkflowError> {
+            assert!(!self.current);
+            self.store.record("status:expired");
+            let at = self.authority.source().observed_at;
+            Ok(NativePolicyStatus::AcceptedExpired(NativePolicyAcceptedView {
+                input: NativeCompanyBusinessCommandV1::install(id(COMMAND), company(), 1).unwrap(),
+                intake_receipt_id: Uuid::from_u128(99),
+                accepted_at: at - Duration::days(7), execution_not_after: at,
+            }))
+        }
+        async fn finish<P: CompanyPolicyDecisionPort + ?Sized>(self, _: &P, proof: Option<&AccountFormProof>)
+            -> Result<(), NativePolicyWorkflowError> {
+            assert!(proof.is_none());
+            self.store.record("finish:none");
+            Ok(())
+        }
+    }
+    fn state(pool: sqlx::PgPool) -> CompanyRestState<Store> {
+        CompanyRestState { store: Store::default(), auth: auth_with_pool(pool),
+            policy: Some(Arc::new(CompanyPolicy::new().unwrap())) }
+    }
+    fn headers() -> axum::http::HeaderMap { request("install", "").headers().clone() }
+    fn client() -> Option<TrustedClientIp> { Some(TrustedClientIp::new("203.0.113.50".parse().unwrap())) }
+
+    #[tokio::test]
+    async fn expired_receipt_uses_current_without_proof_or_metering() {
+        let pool = PgPoolOptions::new().connect_lazy("postgres://unused:unused@localhost/unused").unwrap();
+        pool.close().await; // Any ordinary awaited limiter call must now fail.
+        let state = state(pool);
+        match state.policy_request_document(&headers(), client(), COMPANY, "install", COMMAND).await.unwrap() {
+            super::super::NativePolicyRequestDocument::Visible { status, current, proof } => {
+                assert!(matches!(status, NativePolicyStatus::AcceptedExpired(_)));
+                assert_eq!(current.selector, selector(NativeBusinessOperationV1::Install));
+                assert!(proof.is_none());
+            },
+            _ => panic!("scripted expired receipt lost its visible current context"),
+        }
+        assert_eq!(*state.store.events.lock().unwrap(), ["lock:status", "status:expired", "finish:none", "release",
+            "lock:current", "current", "finish:none", "release"]);
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn form_metering_refuses_before_owner_and_invalid_capture_preserves_quota(pool: sqlx::PgPool) {
+        let state = state(pool.clone());
+        // Explicit infrastructure saturation fault only, never business fixture data.
+        // Cover a possible minute rollover, with bounded wall-clock witnesses below.
+        let started = OffsetDateTime::now_utc();
+        let window = started.unix_timestamp().div_euclid(60) * 60;
+        for epoch in [window, window + 60] {
+            sqlx::query("INSERT INTO auth_rate_limit(client_key,endpoint,window_start,attempts) VALUES ('ip:203.0.113.50','account_csrf',$1,60)")
+                .bind(OffsetDateTime::from_unix_timestamp(epoch).unwrap()).execute(&pool).await.unwrap();
+        }
+        let mut invalid = headers();
+        invalid.remove(header::COOKIE);
+        assert!(matches!(state.policy_form_document(&invalid, client(), COMPANY, "install").await, Err(StatusCode::UNAUTHORIZED)));
+        let counts: Vec<i32> = sqlx::query_scalar("SELECT attempts FROM auth_rate_limit ORDER BY window_start")
+            .fetch_all(&pool).await.unwrap();
+        assert_eq!(counts, [60, 60], "invalid capture consumed quota");
+        let mut valid = headers();
+        valid.insert("x-forwarded-for", "198.51.100.99".parse().unwrap());
+        assert!(matches!(state.policy_form_document(&valid, client(), COMPANY, "install").await, Err(StatusCode::TOO_MANY_REQUESTS)));
+        let finished = OffsetDateTime::now_utc();
+        assert!(started <= finished && finished - started < Duration::seconds(30), "quota fixture interval invalid");
+        let rows: Vec<(String,String,OffsetDateTime,i32)> = sqlx::query_as("SELECT client_key,endpoint,window_start,attempts FROM auth_rate_limit ORDER BY window_start")
+            .fetch_all(&pool).await.unwrap();
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows.iter().map(|row| row.3).sum::<i32>(), 121);
+        for (i, row) in rows.iter().enumerate() {
+            assert_eq!((&*row.0, &*row.1), ("ip:203.0.113.50", "account_csrf"));
+            assert_eq!(row.2.unix_timestamp(), window + i as i64 * 60);
+            assert!([60,61].contains(&row.3));
+        }
+        assert!(state.store.events.lock().unwrap().is_empty());
+        let unavailable_pool = PgPoolOptions::new().connect_lazy("postgres://unused:unused@localhost/unused").unwrap();
+        unavailable_pool.close().await;
+        let unavailable = self::state(unavailable_pool);
+        assert!(matches!(unavailable.policy_form_document(&headers(), client(), COMPANY, "install").await, Err(StatusCode::SERVICE_UNAVAILABLE)));
+        assert!(unavailable.store.events.lock().unwrap().is_empty());
+    }
+}

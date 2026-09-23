@@ -140,3 +140,65 @@ async fn native_policy_validation_form_retains_original_proof_and_rechecks_expir
     }
     close_states(&[state], outcome).await;
 }
+
+
+#[sqlx::test(migrations = false)]
+async fn native_policy_current_does_not_issue_proof_and_receipt_reads_are_inert(pool: PgPool) {
+    use console_identity_application::company_policy::workflow::{
+        native_policy_current, accept_native_policy_command, execute_native_policy_command,
+    };
+    let (app, key, state) = configured_fixture(&pool, true).await;
+    let mut cleanup_runtime = None;
+    let outcome = AssertUnwindSafe(async {
+        let (app, cookies, created) = create_owned_company(&pool, app).await;
+        let config = account_browser_config(&pool, app._artifacts.root.clone(), &key);
+        let (verifier, issuer, ttl) = bindings(&config);
+        let wrong_key = SigningKey::random(&mut OsRng);
+        let wrong_config = account_browser_config(&pool, app._artifacts.root.clone(), &wrong_key);
+        let (_, wrong_issuer, _) = bindings(&wrong_config);
+        let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+        cleanup_runtime = Some(runtime.clone());
+        let store = PgOrgStore::new(runtime.clone()).with_native_account_policy(verifier.clone(), issuer, ttl);
+        let broken_signer = PgOrgStore::new(runtime.clone()).with_native_account_policy(verifier, wrong_issuer, ttl);
+        let policy = CompanyPolicy::new().unwrap();
+        let read = read_credentials(&cookies);
+        let company = OrgId::from_uuid(created.company);
+        let command = NativeCompanyBusinessCommandV1::install(Uuid::new_v4(), company, 1).unwrap();
+        let selector = NativePolicyCommandRef::from_command(&command);
+        let before = all_rows(&pool).await;
+        assert!(matches!(native_policy_form(&broken_signer, &policy, &read, selector).await,
+            Err(NativePolicyWorkflowError::Unavailable)), "no-mint fault control did not fail real proof issuance");
+        let view = native_policy_current(&broken_signer, &policy, &read, selector).await.unwrap();
+        assert_eq!(view.selector, selector);
+        assert_eq!(view.group_id, created.group);
+        assert_eq!(view.company_epoch, 1);
+        assert!(before == all_rows(&pool).await, "Current changed durable state");
+        let form = native_policy_form(&store, &policy, &read, selector).await.unwrap();
+        assert_eq!(form.view, view, "proof-free view changed owner projection");
+        let credentials = AccountEnrollmentCredentials::for_mutation(&cookies.0[ACCESS], form.proof.as_str()).unwrap();
+        let accepted = accept_native_policy_command(&store, &policy, &credentials, &command, &TraceContext::generate()).await.unwrap();
+        assert!(matches!(accepted.status, console_identity_application::company_policy::workflow::NativePolicyStatus::AcceptedPending(_)));
+        let receipt = format!("/companies/{}/policy/payroll-read/requests/install/{}", created.company, command.command_id());
+        let before_pending = all_rows(&pool).await;
+        let started = time::OffsetDateTime::now_utc();
+        let pending = document(&app, &receipt, &cookies).await;
+        let finished = time::OffsetDateTime::now_utc();
+        assert_eq!(pending.status, StatusCode::OK);
+        let html = String::from_utf8(pending.bytes).unwrap();
+        assert!(html.contains("data-policy-outcome=\"pending\"") && html.contains("name=\"csrf_proof\""));
+        let after_pending = all_rows(&pool).await;
+        assert!(policy_preflight_effects(&before_pending, &after_pending, started, finished),
+            "pending read must preserve every row except exactly one current-window increment per Auth bucket");
+        execute_native_policy_command(&store, &policy, &credentials, selector, &TraceContext::generate()).await.unwrap();
+        let before_terminal = all_rows(&pool).await;
+        for target in [&receipt, &format!("/companies/{}", created.company)] {
+            let response = document(&app, target, &cookies).await;
+            assert_eq!(response.status, StatusCode::OK);
+            let html = String::from_utf8(response.bytes).unwrap();
+            assert!(!html.contains("name=\"csrf_proof\""), "inert document exposed unused proof");
+            assert!(before_terminal == all_rows(&pool).await, "terminal/navigation GET changed rows");
+        }
+    }).catch_unwind().await;
+    if let Some(runtime) = cleanup_runtime { runtime.close().await; }
+    close_states(&[state], outcome).await;
+}

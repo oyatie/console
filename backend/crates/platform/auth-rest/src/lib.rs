@@ -3900,6 +3900,31 @@ mod tests {
         .expect("a new window must reset the per-IP bucket");
     }
 
+    #[sqlx::test(migrations = "../db/migrations")]
+    async fn account_csrf_limiter_uses_trusted_ip_and_fixed_cap_then_resets(pool: PgPool) {
+        let mut headers = HeaderMap::new();
+        headers.insert("x-forwarded-for", "198.51.100.99".parse().unwrap());
+        headers.insert("x-real-ip", "198.51.100.99".parse().unwrap());
+        let client = Some(TrustedClientIp::new("203.0.113.50".parse().unwrap()));
+        let at = OffsetDateTime::from_unix_timestamp(1_700_000_000).unwrap();
+        assert_eq!(RateLimitEndpoint::AccountCsrf.limits(), (60, 60, 1000));
+        for _ in 0..60 {
+            rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at).await.unwrap();
+        }
+        let denied = rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at).await.unwrap_err();
+        assert_eq!(denied.status, StatusCode::TOO_MANY_REQUESTS);
+        let rows: Vec<(String, i32)> = sqlx::query_as(
+            "SELECT client_key,attempts FROM auth_rate_limit WHERE endpoint='account_csrf' ORDER BY client_key")
+            .fetch_all(&pool).await.unwrap();
+        // IP increments first; refusal does not charge the unvisited global bucket.
+        assert_eq!(rows, vec![("global".into(),60),("ip:203.0.113.50".into(),61)]);
+        rate_limit(&pool, &headers, client, RateLimitEndpoint::AccountCsrf, at + RATE_LIMIT_WINDOW).await.unwrap();
+        let rows: Vec<(String, i32)> = sqlx::query_as(
+            "SELECT client_key,attempts FROM auth_rate_limit WHERE endpoint='account_csrf' AND window_start=$1 ORDER BY client_key")
+            .bind(super::floor_to_window(at + RATE_LIMIT_WINDOW)).fetch_all(&pool).await.unwrap();
+        assert_eq!(rows, vec![("global".into(),1),("ip:203.0.113.50".into(),1)]);
+    }
+
     const ORG_A: Uuid = Uuid::from_u128(0xA013_A013_A013_A013_A013_A013_A013_A013);
     const ORG_B: Uuid = Uuid::from_u128(0xB013_B013_B013_B013_B013_B013_B013_B013);
     const GROUP: Uuid = Uuid::from_u128(0x9013_9013_9013_9013_9013_9013_9013_9013);

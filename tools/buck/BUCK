@@ -1882,3 +1882,19 @@ sh_test(
     )
     for source in ["gen_hydrate.py", "gen_first_party.py", "BUCK"]
 ]
+
+sh_test(
+    name = "identity-rest-unit-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/identity/rest:console-identity-rest-unit)"],
+    deps = ["//backend/crates/identity/rest:console-identity-rest-unit"],
+    labels = ["test.unit", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "platform-auth-rest-unit-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/platform/auth-rest:console-platform-auth-rest-unit)"],
+    deps = ["//backend/crates/platform/auth-rest:console-platform-auth-rest-unit"],
+    labels = ["test.unit", "resource.postgres", "needs-postgres"],
+)
