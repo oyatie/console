@@ -28,6 +28,9 @@ use serde_json::Value;
 
 mod prepared;
 
+#[cfg(test)]
+mod people_tests;
+
 pub use prepared::{
     ActionDefinition, CommandInputs, PreparedCommand, PreparedDispatch, WritebackInputs,
 };
