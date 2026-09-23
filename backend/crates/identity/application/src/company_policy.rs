@@ -10,6 +10,8 @@ const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a
 
 pub mod business;
 mod native_business;
+#[cfg(test)]
+mod people_policy_tests;
 pub mod workflow;
 pub use native_business::{
     CurrentNativeBootstrapAuthority, CurrentPayrollReadAuthority, NativeBootstrapProjectionRow,
@@ -20,7 +22,8 @@ mod reads;
 pub use reads::{
     CompanyContextCandidates, CompanyContextView, CompanyIdentityView, CompanyInitialCeilingView,
     CompanyPolicyScope, CompanyPolicyStore, CompanyPolicyView, discover_company_context,
-    discover_company_contexts, project_company_identity, read_company_identity, read_company_policy,
+    discover_company_contexts, project_company_identity, read_company_identity,
+    read_company_policy,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
