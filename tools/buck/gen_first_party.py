@@ -103,6 +103,44 @@ OPENAPI_DRIFT_EXTERNAL["//backend/openapi:openapi.yaml"] = (
 # `cargo clippy --all-targets` and the whole backend job. Re-register the
 # equivalent mapping here when a Leptos-era client face exists.
 
+# Explicit resource producers consumed by the native OpenAPI generator.
+OPENAPI_GENERATOR_PACKAGES = (
+    ('console-analytics-quant-rest', 'backend/crates/analytics-quant/rest'),
+    ('console-attendance-rest', 'backend/crates/attendance/rest'),
+    ('console-benefit-rest', 'backend/crates/benefit/rest'),
+    ('console-comms-rest', 'backend/crates/comms/rest'),
+    ('console-compliance-rest', 'backend/crates/compliance/rest'),
+    ('console-consulting-rest', 'backend/crates/consulting/rest'),
+    ('console-dispatch-rest', 'backend/crates/dispatch/rest'),
+    ('console-docs-rest', 'backend/crates/docs/rest'),
+    ('console-equipment-rest', 'backend/crates/equipment/rest'),
+    ('console-evaluation-rest', 'backend/crates/evaluation/rest'),
+    ('console-facilities-rest', 'backend/crates/facilities/rest'),
+    ('console-finance-gl-rest', 'backend/crates/finance-gl/rest'),
+    ('console-financial-rest', 'backend/crates/financial/rest'),
+    ('console-governance-rest', 'backend/crates/governance/rest'),
+    ('console-identity-rest', 'backend/crates/identity/rest'),
+    ('console-inbox-rest', 'backend/crates/inbox/rest'),
+    ('console-inspection-rest', 'backend/crates/inspection/rest'),
+    ('console-inventory-rest', 'backend/crates/inventory/rest'),
+    ('console-leave-rest', 'backend/crates/leave/rest'),
+    ('console-logistics-rest', 'backend/crates/logistics/rest'),
+    ('console-messenger-rest', 'backend/crates/messenger/rest'),
+    ('console-notices-rest', 'backend/crates/notices/rest'),
+    ('console-notifications-rest', 'backend/crates/notifications/rest'),
+    ('console-ontology-rest', 'backend/crates/ontology/rest'),
+    ('console-orgchange-rest', 'backend/crates/orgchange/rest'),
+    ('console-payroll-rest', 'backend/crates/payroll/rest'),
+    ('console-production-rest', 'backend/crates/production/rest'),
+    ('console-recruiting-rest', 'backend/crates/recruiting/rest'),
+    ('console-registry-rest', 'backend/crates/registry/rest'),
+    ('console-reporting-rest', 'backend/crates/reporting/rest'),
+    ('console-sales-rest', 'backend/crates/sales/rest'),
+    ('console-support-rest', 'backend/crates/support/rest'),
+    ('console-todos-rest', 'backend/crates/todos/rest'),
+    ('console-workorder-rest', 'backend/crates/workorder/rest'),
+)
+
 # Compile-time and runtime fixture inputs outside a crate package. Labels expose
 # the authoritative bytes; mapped destinations preserve the checkout topology.
 RESOURCE_CONFIG = {
@@ -147,6 +185,11 @@ RESOURCE_CONFIG = {
     },
     "console-contracts": {
         "srcs": ["src/**/*.json"],
+        "external": {
+            "//backend/openapi:shared-tree": "backend/openapi/shared",
+            **{"//" + package + ":crate-openapi-tree": package + "/openapi"
+               for _, package in OPENAPI_GENERATOR_PACKAGES},
+        },
     },
     "console-app": {
         "srcs": ['src/account_custody_session.sql', 'src/account_custody_state.sql', 'src/account_credential_custody_state.sql', 'src/company_enrollment_custody_state.sql', 'src/native_company_policy_custody_state.sql'],
@@ -267,6 +310,10 @@ RESOURCE_CONFIG = {
         },
     },
 }
+
+# Pair each explicitly consumed tree with its producer export.
+for producer, _ in OPENAPI_GENERATOR_PACKAGES:
+    RESOURCE_CONFIG.setdefault(producer, {})["exports_openapi_tree"] = True
 
 SQLX_MACRO_MARKERS = ("query!", "query_as!", "query_scalar!")
 TEST_MARKERS = ("#[test]", "#[tokio::test", "#[sqlx::test", "#[rstest")
@@ -1987,8 +2034,8 @@ def emit(d, name, deps, named, dev_deps, dev_named, version=None):
         ]
     # Crates that carry OpenAPI fragments can export them so another package
     # can `include_str!` one. Emitted on OPT-IN, not on the existence of an
-    # `openapi/` directory: 34 crates have one and exactly one is consumed, so
-    # keying on the directory published 33 PUBLIC targets nothing referenced.
+    # `openapi/` directory. Only explicitly declared consumers justify exports;
+    # the native OpenAPI generator consumes its complete named face inventory.
     # An export is a promise to other packages; it is declared, not inferred.
     # This stays in the crate's OWN package on purpose: a BUCK file inside
     # `openapi/` would make it a separate package and the crate's own

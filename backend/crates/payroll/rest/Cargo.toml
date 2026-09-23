@@ -18,6 +18,7 @@ console-payroll-adapter-postgres = { workspace = true }
 console-payroll-application = { workspace = true }
 console-payroll-domain = { workspace = true }
 console-platform-auth = { path = "../../platform/auth" }
+console-platform-auth-rest = { path = "../../platform/auth-rest" }
 console-platform-authz = { path = "../../platform/authz" }
 console-platform-db = { workspace = true }
 console-platform-request-context = { workspace = true }

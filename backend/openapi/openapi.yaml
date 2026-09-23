@@ -2875,6 +2875,67 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/v1/companies/{org_id}/payroll/runs:
+    get:
+      tags:
+      - payroll
+      operationId: listNativeCompanyPayrollRuns
+      summary: Read the current Account's authorized Company payroll collection
+      security:
+      - nativeAccountSession: []
+      description: >-
+        Uses the native Account session cookie and current Company policy. Every successful
+        page commits one Account-attributed read audit before disclosure. The requested
+        Company UUID selects a resource and does not establish authority. Only GET is
+        supported; HEAD never reads or audits. Query keys are closed to limit and offset;
+        duplicate keys, percent aliases and malformed integers are rejected.
+      parameters:
+      - name: org_id
+        in: path
+        required: true
+        description: Canonical lowercase hyphenated Company UUID; nil and platform sentinel are refused.
+        schema:
+          type: string
+          format: uuid
+      - name: limit
+        in: query
+        required: false
+        description: Signed 64-bit decimal integer, clamped to 1 through 500 by the owner; default 100.
+        schema:
+          type: integer
+          format: int64
+      - name: offset
+        in: query
+        required: false
+        description: Signed 64-bit decimal integer, clamped to zero or greater by the owner; default zero.
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Committed authorized page; no Company identity labels are added to the legacy page shape.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayrollRunPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          description: Only GET is supported; no owner read is performed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorBody'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
   /api/v1/compliance/control-obligation-coverage:
     post:
       tags: [Compliance]

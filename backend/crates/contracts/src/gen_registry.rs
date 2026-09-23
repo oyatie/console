@@ -7747,6 +7747,15 @@ const PAYROLL_FRAGMENT_EXTERNAL: &[&str] = &["OntologyActionExecuteOutcome", "Ti
 
 const PAYROLL_FRAGMENT_PATHS: &[PathItem] = &[
     PathItem {
+        path: "/api/v1/companies/{org_id}/payroll/runs",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../../payroll/rest/openapi/paths/api__v1__companies__org_id__payroll__runs.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
         path: "/api/v1/payroll/employees/{employeeId}/contract-wages",
         operations: &[Operation {
             method: "post",

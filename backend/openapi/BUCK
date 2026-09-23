@@ -4,3 +4,10 @@ export_file(
     mode = "reference",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "shared-tree",
+    src = "shared",
+    mode = "reference",
+    visibility = ["PUBLIC"],
+)

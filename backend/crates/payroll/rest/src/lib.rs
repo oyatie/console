@@ -38,7 +38,9 @@ mod openapi;
 pub use openapi::OPENAPI_FRAGMENT;
 
 mod lifecycle;
+mod native;
 mod payslip_draft;
+pub use native::{NATIVE_PAYROLL_RUNS_PATH, NativePayrollRunsReaderFactory, native_router};
 
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
@@ -88,6 +90,7 @@ pub use payslip_draft::{
 };
 
 pub const PAYROLL_ROUTE_PATHS: &[&str] = &[
+    NATIVE_PAYROLL_RUNS_PATH,
     PAYROLL_RUNS_PATH,
     PAYROLL_RUN_PATH_TEMPLATE,
     PAYROLL_MY_PAYSLIPS_PATH,
@@ -122,6 +125,7 @@ pub struct PayrollRestState {
     store: PgPayrollStore,
     session_verification: Option<SessionVerification>,
     runs_reader: PayrollRunsReaderFactory,
+    native: Option<native::NativeAccounts>,
 }
 
 impl std::fmt::Debug for PayrollRestState {
@@ -131,6 +135,7 @@ impl std::fmt::Debug for PayrollRestState {
                 "has_session_verification",
                 &self.session_verification.is_some(),
             )
+            .field("has_native_accounts", &self.native.is_some())
             .finish()
     }
 }
@@ -146,6 +151,7 @@ impl PayrollRestState {
             store,
             session_verification,
             runs_reader,
+            native: None,
         }
     }
 

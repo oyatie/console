@@ -6,6 +6,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 mod native_policy;
+mod native_payroll;
 
 use std::collections::{BTreeSet, HashMap};
 use std::env;
@@ -3862,6 +3863,7 @@ pub fn build_router(mut state: AppState) -> Router {
                 ),
                 _ => Router::new(),
             };
+            let native_payroll = native_payroll::router(&state, pool);
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
             // routes, the tenant domain routers, the platform tier, and the
             // pre-auth login/refresh endpoints. These are all short-lived
@@ -3870,7 +3872,8 @@ pub fn build_router(mut state: AppState) -> Router {
                 let timed = router
                     .merge(domain_router)
                     .merge(platform_router)
-                    .merge(company_router);
+                    .merge(company_router)
+                    .merge(native_payroll);
                 let timed = match state.auth_rest.clone() {
                     Some(auth_rest) => {
                         // The auth-rest router carries authenticated tenant
@@ -3957,6 +3960,7 @@ pub fn build_router(mut state: AppState) -> Router {
     // Auth 401/403 mapping is unchanged (fail-closed).
     let router = console_platform_request_context::with_http_error_envelope(router);
     let router = console_platform_rest::with_platform_list_transport(router);
+    let router = native_payroll::with_transport(router);
     with_metrics(router, &state)
 }
 

@@ -2838,6 +2838,7 @@ dependencies = [
  "console-payroll-application",
  "console-payroll-domain",
  "console-platform-auth",
+ "console-platform-auth-rest",
  "console-platform-authz",
  "console-platform-db",
  "console-platform-request-context",

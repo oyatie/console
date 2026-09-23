@@ -353,6 +353,27 @@ class FirstPartyBuckGeneratorTests(unittest.TestCase):
 
         self.assertEqual([], unmapped, "openapi_drift has unmapped include_str resources")
 
+    def test_openapi_generator_maps_every_registry_input(self) -> None:
+        root = Path(GENERATOR.REPO)
+        source = root / "backend/crates/contracts/src/gen_registry.rs"
+        includes = re.findall(r'include_str!\(\s*"([^"]+)"', source.read_text())
+        resources = {(source.parent / name).resolve() for name in includes}
+        self.assertGreater(len(resources), 1700, "registry source census may not be empty")
+        self.assertTrue(all(path.is_file() for path in resources))
+        self.assertTrue(any(path.name.startswith(".") for path in resources), "hidden path inputs covered")
+        mappings = GENERATOR.RESOURCE_CONFIG["console-contracts"].get("external", {})
+        def missing(mapping):
+            roots = [(root / destination).resolve() for destination in mapping.values()]
+            return {path for path in resources if not any(path == base or path.is_relative_to(base) for base in roots)}
+        self.assertEqual(set(), missing(mappings), "native generator has unmapped registry inputs")
+        self.assertEqual(35, len(mappings), "shared plus all 34 face trees")
+        for target in ["//backend/openapi:shared-tree", "//backend/crates/payroll/rest:crate-openapi-tree"]:
+            reduced = {key: value for key, value in mappings.items() if key != target}
+            self.assertTrue(missing(reduced), f"omission of {target} must fail the oracle")
+        shared = (root / "backend/openapi/BUCK").read_text()
+        self.assertIn('name = "shared-tree"', shared)
+        self.assertIn('src = "shared"', shared)
+
     def test_openapi_fragment_globs_detect_tree_and_include_str(self) -> None:
         governance = Path(GENERATOR.REPO) / "backend/crates/governance/rest"
         src = governance / "src"
@@ -1426,6 +1447,14 @@ class ExplicitBinaryTargetTests(unittest.TestCase):
         self.assert_binary(binaries["console-openapi-gen"], package,
                            "src/bin/console_openapi_gen.rs", "console_openapi_gen",
                            ":console-contracts")
+        mapped = binaries["console-openapi-gen"]["mapped_srcs"]
+        external = next((keyword.value for keyword in mapped.keywords if keyword.arg == "external"), None)
+        self.assertIsNotNone(external, "native binary must receive its registry inputs")
+        actual = ast.literal_eval(external)
+        expected = GENERATOR.RESOURCE_CONFIG["console-contracts"].get("external", {})
+        self.assertTrue(expected, "missing input map cannot prove itself")
+        self.assertEqual(actual, expected)
+
 
     def test_explicit_default_main_is_not_duplicated(self):
         manifest = ('[package]\nname="fixture"\nversion="0.1.0"\n'
