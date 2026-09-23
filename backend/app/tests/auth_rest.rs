@@ -4788,6 +4788,58 @@ mod account_browser {
         }
     }
 
+    // Pre-change helper regression proposal. Append inside account_browser.
+    // Uses the actual issuer with a fixed independent database clock; creates
+    // no database identity and makes no product admission/security claim.
+    #[test]
+    fn actual_issuer_fixed_database_expiry_is_accepted_by_projection() {
+        use console_platform_auth::{
+            AccountAccessTokenInput, AccountAssurance, JwtIssuer, JwtSettings,
+        };
+        let key = SigningKey::random(&mut OsRng);
+        let private = key.to_pkcs8_pem(LineEnding::LF).unwrap();
+        let public = key
+            .verifying_key()
+            .to_public_key_pem(LineEnding::LF)
+            .unwrap();
+        let issuer = JwtIssuer::from_es256_pem(
+            JwtSettings {
+                issuer: TEST_ISSUER.to_owned(),
+                audience: TEST_AUDIENCE.to_owned(),
+                access_token_ttl: Duration::minutes(15),
+            },
+            private.as_bytes(),
+            public.as_bytes(),
+        )
+        .unwrap();
+        let account = Uuid::new_v4();
+        let issued =
+            OffsetDateTime::from_unix_timestamp(4_102_444_800).unwrap() + Duration::milliseconds(4);
+        let token = issuer
+            .issue_account_access_token(AccountAccessTokenInput {
+                account_id: account,
+                session_id: Uuid::new_v4(),
+                security_generation: 1,
+                auth_time: issued,
+                assurance: AccountAssurance::PasskeyPrimary,
+                issued_at: issued,
+                family_expires_at: issued + Duration::days(1),
+            })
+            .unwrap();
+        let claims = signed_claims(token.as_str(), &key).unwrap();
+        assert_eq!(claims["sub"], json!(account));
+        assert_eq!(
+            claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(),
+            900
+        );
+        let expiry = OffsetDateTime::from_unix_timestamp(claims["exp"].as_i64().unwrap()).unwrap();
+        assert!(expiry > issued && expiry <= issued + Duration::minutes(15));
+        let value = json!({"account_id":account,"session":{"assurance":"PASSKEY_PRIMARY","expires_at":expiry.format(&time::format_description::well_known::Rfc3339).unwrap()},"permitted_self_actions":[{"action_key":"account.session.logout","registration_revision":"1"}]});
+        // Existing helper reads the process clock and incorrectly rejects this
+        // database-valid issuer result. No ignored argument or invented seam.
+        projection(&value, account);
+    }
+
     fn projection(value: &Value, account: Uuid) {
         exact_keys(value, &["account_id", "session", "permitted_self_actions"]);
         assert_eq!(value["account_id"], account.to_string());
