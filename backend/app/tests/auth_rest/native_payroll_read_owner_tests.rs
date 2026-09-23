@@ -793,4 +793,5 @@ mod native_payroll_read_owner_tests {
         f.close(result).await;
     }
     include!("native_payroll_transport_tests.rs");
+    include!("native_payroll_navigation_tests.rs");
 }
