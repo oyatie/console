@@ -1,5 +1,8 @@
 //! Current-authorized policy workflows over retained owning transactions.
 //! Results remain provisional until final authentication and commit succeed.
+mod command;
+pub use command::NativePolicyCommand;
+
 use super::business::{
     MANIFEST, NativeBusinessOperationV1, NativeCompanyBusinessCommandV1,
     PolicyAssignmentExpectationV1,
