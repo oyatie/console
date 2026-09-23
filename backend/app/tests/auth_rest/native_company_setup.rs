@@ -1863,153 +1863,162 @@ pub(crate) mod company_setup {
     include!("native_policy_store_projection_tests.rs");
     include!("native_policy_company_birth_guard.rs");
 
-// Existing Auth proof issuance changes exactly one global and one IP bucket.
-// Compare the complete remaining census byte-for-byte; no business GET effects.
-fn policy_preflight_effects(
-    before: &BTreeMap<String, String>,
-    after: &BTreeMap<String, String>,
-    started: OffsetDateTime,
-    finished: OffsetDateTime,
-) -> bool {
-    let check = || -> Option<bool> {
-        if started > finished || (finished - started).whole_seconds() > 30 {
-            return Some(false);
-        }
-        let before_raw = before.get("auth_rate_limit")?;
-        let after_raw = after.get("auth_rate_limit")?;
-        let prior: Vec<Value> = serde_json::from_str(before_raw).ok()?;
-        let actual: Vec<Value> = serde_json::from_str(after_raw).ok()?;
-        let mut unaffected = before.clone();
-        unaffected.insert("auth_rate_limit".to_owned(), after_raw.clone());
-        if &unaffected != after {
-            return Some(false);
-        }
-        let first = started.unix_timestamp().div_euclid(60) * 60;
-        let last = finished.unix_timestamp().div_euclid(60) * 60;
-        'window: for window in (first..=last).step_by(60) {
-            let mut expected = prior.clone();
-            for client in ["global", "ip:127.0.0.1"] {
-                let matches = |row: &Value| -> bool {
-                    row["endpoint"] == "account_csrf"
-                        && row["client_key"] == client
-                        && row["window_start"]
-                            .as_str()
-                            .and_then(|s| {
-                                OffsetDateTime::parse(
-                                    s,
-                                    &time::format_description::well_known::Rfc3339,
-                                )
-                                .ok()
-                            })
-                            .is_some_and(|t| t.unix_timestamp() == window && t.nanosecond() == 0)
+    // Existing Auth proof issuance changes exactly one global and one IP bucket.
+    // Compare the complete remaining census byte-for-byte; no business GET effects.
+    fn policy_preflight_effects(
+        before: &BTreeMap<String, String>,
+        after: &BTreeMap<String, String>,
+        started: OffsetDateTime,
+        finished: OffsetDateTime,
+    ) -> bool {
+        let check = || -> Option<bool> {
+            if started > finished || (finished - started).whole_seconds() > 30 {
+                return Some(false);
+            }
+            let before_raw = before.get("auth_rate_limit")?;
+            let after_raw = after.get("auth_rate_limit")?;
+            let prior: Vec<Value> = serde_json::from_str(before_raw).ok()?;
+            let actual: Vec<Value> = serde_json::from_str(after_raw).ok()?;
+            let mut unaffected = before.clone();
+            unaffected.insert("auth_rate_limit".to_owned(), after_raw.clone());
+            if &unaffected != after {
+                return Some(false);
+            }
+            let first = started.unix_timestamp().div_euclid(60) * 60;
+            let last = finished.unix_timestamp().div_euclid(60) * 60;
+            'window: for window in (first..=last).step_by(60) {
+                let mut expected = prior.clone();
+                for client in ["global", "ip:127.0.0.1"] {
+                    let matches = |row: &Value| -> bool {
+                        row["endpoint"] == "account_csrf"
+                            && row["client_key"] == client
+                            && row["window_start"]
+                                .as_str()
+                                .and_then(|s| {
+                                    OffsetDateTime::parse(
+                                        s,
+                                        &time::format_description::well_known::Rfc3339,
+                                    )
+                                    .ok()
+                                })
+                                .is_some_and(|t| {
+                                    t.unix_timestamp() == window && t.nanosecond() == 0
+                                })
+                    };
+                    let indices: Vec<_> = expected
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(i, row)| matches(row).then_some(i))
+                        .collect();
+                    if indices.len() > 1 {
+                        return Some(false);
+                    }
+                    if let Some(&index) = indices.first() {
+                        let count = expected[index]["attempts"].as_i64()?.checked_add(1)?;
+                        expected[index]["attempts"] = json!(count);
+                    } else {
+                        let rows: Vec<_> = actual.iter().filter(|row| matches(row)).collect();
+                        if rows.is_empty() {
+                            continue 'window;
+                        }
+                        if rows.len() != 1 || rows[0]["attempts"] != 1 {
+                            return Some(false);
+                        }
+                        let row = rows[0];
+                        let keys: BTreeSet<_> =
+                            row.as_object()?.keys().map(String::as_str).collect();
+                        if keys
+                            != BTreeSet::from([
+                                "client_key",
+                                "endpoint",
+                                "window_start",
+                                "attempts",
+                            ])
+                        {
+                            return Some(false);
+                        }
+                        expected.push(row.clone());
+                    }
+                }
+                let canonical = |rows: Vec<Value>| {
+                    let mut rows: Vec<_> = rows.into_iter().map(|v| v.to_string()).collect();
+                    rows.sort();
+                    rows
                 };
-                let indices: Vec<_> = expected
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, row)| matches(row).then_some(i))
-                    .collect();
-                if indices.len() > 1 {
-                    return Some(false);
-                }
-                if let Some(&index) = indices.first() {
-                    let count = expected[index]["attempts"].as_i64()?.checked_add(1)?;
-                    expected[index]["attempts"] = json!(count);
-                } else {
-                    let rows: Vec<_> = actual.iter().filter(|row| matches(row)).collect();
-                    if rows.is_empty() {
-                        continue 'window;
-                    }
-                    if rows.len() != 1 || rows[0]["attempts"] != 1 {
-                        return Some(false);
-                    }
-                    let row = rows[0];
-                    let keys: BTreeSet<_> = row.as_object()?.keys().map(String::as_str).collect();
-                    if keys
-                        != BTreeSet::from(["client_key", "endpoint", "window_start", "attempts"])
-                    {
-                        return Some(false);
-                    }
-                    expected.push(row.clone());
+                if canonical(expected) == canonical(actual.clone()) {
+                    return Some(true);
                 }
             }
-            let canonical = |rows: Vec<Value>| {
-                let mut rows: Vec<_> = rows.into_iter().map(|v| v.to_string()).collect();
-                rows.sort();
-                rows
-            };
-            if canonical(expected) == canonical(actual.clone()) {
-                return Some(true);
-            }
-        }
-        Some(false)
-    };
-    check() == Some(true)
-}
+            Some(false)
+        };
+        check() == Some(true)
+    }
 
-#[test]
-fn policy_preflight_effect_oracle_preserves_business_and_exact_limiter_counts() {
-    let at = OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap();
-    let window = at
-        .format(&time::format_description::well_known::Rfc3339)
-        .unwrap();
-    let before = BTreeMap::from([
-        ("auth_rate_limit".into(), "[]".into()),
-        ("business".into(), "[]".into()),
-    ]);
-    let limits = json!([
-        {"client_key":"global","endpoint":"account_csrf","window_start":window,"attempts":1},
-        {"client_key":"ip:127.0.0.1","endpoint":"account_csrf","window_start":window,"attempts":1}
-    ]);
-    let mut after = before.clone();
-    after.insert("auth_rate_limit".into(), limits.to_string());
-    assert!(policy_preflight_effects(&before, &after, at, at));
-    assert!(!policy_preflight_effects(&before, &before, at, at));
-    let mut changed = after.clone();
-    changed.insert("business".into(), "[{}]".into());
-    assert!(!policy_preflight_effects(&before, &changed, at, at));
-    for index in 0..2 {
-        let mut corrupt = limits.clone();
-        corrupt[index]["attempts"] = json!(2);
+    #[test]
+    fn policy_preflight_effect_oracle_preserves_business_and_exact_limiter_counts() {
+        let at = OffsetDateTime::from_unix_timestamp(1_800_000_000).unwrap();
+        let window = at
+            .format(&time::format_description::well_known::Rfc3339)
+            .unwrap();
+        let before = BTreeMap::from([
+            ("auth_rate_limit".into(), "[]".into()),
+            ("business".into(), "[]".into()),
+        ]);
+        let limits = json!([
+            {"client_key":"global","endpoint":"account_csrf","window_start":window,"attempts":1},
+            {"client_key":"ip:127.0.0.1","endpoint":"account_csrf","window_start":window,"attempts":1}
+        ]);
+        let mut after = before.clone();
+        after.insert("auth_rate_limit".into(), limits.to_string());
+        assert!(policy_preflight_effects(&before, &after, at, at));
+        assert!(!policy_preflight_effects(&before, &before, at, at));
+        let mut changed = after.clone();
+        changed.insert("business".into(), "[{}]".into());
+        assert!(!policy_preflight_effects(&before, &changed, at, at));
+        for index in 0..2 {
+            let mut corrupt = limits.clone();
+            corrupt[index]["attempts"] = json!(2);
+            changed = after.clone();
+            changed.insert("auth_rate_limit".into(), corrupt.to_string());
+            assert!(!policy_preflight_effects(&before, &changed, at, at));
+        }
+        let mut incremented = limits.clone();
+        for row in incremented.as_array_mut().unwrap() {
+            row["attempts"] = json!(2);
+        }
         changed = after.clone();
-        changed.insert("auth_rate_limit".into(), corrupt.to_string());
+        changed.insert("auth_rate_limit".into(), incremented.to_string());
+        assert!(policy_preflight_effects(&after, &changed, at, at));
+        assert!(!policy_preflight_effects(&before, &changed, at, at));
+        for corrupt in [json!([limits[0]]), json!([limits[0], limits[0], limits[1]])] {
+            changed = after.clone();
+            changed.insert("auth_rate_limit".into(), corrupt.to_string());
+            assert!(!policy_preflight_effects(&before, &changed, at, at));
+        }
+        let next = at + time::Duration::minutes(1);
+        let next_text = next
+            .format(&time::format_description::well_known::Rfc3339)
+            .unwrap();
+        let mut crossed = limits.clone();
+        for row in crossed.as_array_mut().unwrap() {
+            row["window_start"] = json!(next_text);
+        }
+        changed = before.clone();
+        changed.insert("auth_rate_limit".into(), crossed.to_string());
+        assert!(policy_preflight_effects(
+            &before,
+            &changed,
+            next - time::Duration::seconds(1),
+            next
+        ));
         assert!(!policy_preflight_effects(&before, &changed, at, at));
     }
-    let mut incremented = limits.clone();
-    for row in incremented.as_array_mut().unwrap() {
-        row["attempts"] = json!(2);
-    }
-    changed = after.clone();
-    changed.insert("auth_rate_limit".into(), incremented.to_string());
-    assert!(policy_preflight_effects(&after, &changed, at, at));
-    assert!(!policy_preflight_effects(&before, &changed, at, at));
-    for corrupt in [json!([limits[0]]), json!([limits[0], limits[0], limits[1]])] {
-        changed = after.clone();
-        changed.insert("auth_rate_limit".into(), corrupt.to_string());
-        assert!(!policy_preflight_effects(&before, &changed, at, at));
-    }
-    let next = at + time::Duration::minutes(1);
-    let next_text = next
-        .format(&time::format_description::well_known::Rfc3339)
-        .unwrap();
-    let mut crossed = limits.clone();
-    for row in crossed.as_array_mut().unwrap() {
-        row["window_start"] = json!(next_text);
-    }
-    changed = before.clone();
-    changed.insert("auth_rate_limit".into(), crossed.to_string());
-    assert!(policy_preflight_effects(
-        &before,
-        &changed,
-        next - time::Duration::seconds(1),
-        next
-    ));
-    assert!(!policy_preflight_effects(&before, &changed, at, at));
-}
 
     mod native_policy_startup_tests {
         include!("native_policy_startup_tests.rs");
         include!("native_policy_system_acl_tests.rs");
         include!("native_policy_validation_owner_tests.rs");
+        include!("native_people_codec2_install_probe.rs");
         include!("native_payroll_read_owner_tests.rs");
     }
 
