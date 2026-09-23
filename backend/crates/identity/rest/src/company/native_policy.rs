@@ -11,6 +11,7 @@ use axum::{
 };
 use console_identity_application::company_policy::{
     business::NativeBusinessOperationV1,
+    people_business::DirectoryActionV1,
     workflow::{
         NativePolicyCommandRef, NativePolicyExecution, NativePolicyForm, NativePolicyFormView,
         NativePolicyStatus, NativePolicyWorkflowError, NativePolicyWorkflowStore,
@@ -23,6 +24,52 @@ use console_platform_auth::account::{AccountEnrollmentCredentials, AccountFormPr
 use console_platform_auth_rest::AuthRestState;
 use console_platform_request_context::TrustedClientIp;
 use uuid::Uuid;
+
+/// Closed route selection, never an authorization grant.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NativePolicySubject {
+    PayrollRead,
+    PeopleCatalog,
+    PeopleRead,
+    PeopleCreate,
+}
+impl NativePolicySubject {
+    pub fn people_action(value: &str) -> Result<Self, StatusCode> {
+        match value {
+            "read" => Ok(Self::PeopleRead),
+            "create" => Ok(Self::PeopleCreate),
+            _ => Err(StatusCode::NOT_FOUND),
+        }
+    }
+    fn action(self) -> Option<DirectoryActionV1> {
+        match self {
+            Self::PeopleRead => Some(DirectoryActionV1::Read),
+            Self::PeopleCreate => Some(DirectoryActionV1::Create),
+            _ => None,
+        }
+    }
+    fn select(
+        self,
+        company: OrgId,
+        command: Uuid,
+        operation: NativeBusinessOperationV1,
+        recovery: bool,
+    ) -> Result<NativePolicyCommandRef, StatusCode> {
+        let result = match self {
+            Self::PayrollRead => NativePolicyCommandRef::new(company, command, operation),
+            Self::PeopleCatalog if operation == NativeBusinessOperationV1::Install || recovery => {
+                NativePolicyCommandRef::new_people(company, command, operation, None)
+            }
+            Self::PeopleRead | Self::PeopleCreate
+                if operation != NativeBusinessOperationV1::Install =>
+            {
+                NativePolicyCommandRef::new_people(company, command, operation, self.action())
+            }
+            _ => return Err(StatusCode::NOT_FOUND),
+        };
+        result.map_err(|_| StatusCode::NOT_FOUND)
+    }
+}
 
 pub enum NativePolicySubmission {
     Validation {
@@ -74,7 +121,25 @@ where
         company: &str,
         operation: &str,
     ) -> Result<NativePolicyForm<AccountFormProof>, StatusCode> {
-        let selector = selector(company, operation, Uuid::new_v4())?;
+        self.policy_form_for(
+            headers,
+            client,
+            company,
+            operation,
+            NativePolicySubject::PayrollRead,
+        )
+        .await
+    }
+
+    pub async fn policy_form_for(
+        &self,
+        headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
+        company: &str,
+        operation: &str,
+        subject: NativePolicySubject,
+    ) -> Result<NativePolicyForm<AccountFormProof>, StatusCode> {
+        let selector = selector(subject, company, operation, Uuid::new_v4(), false)?;
         let credentials = self
             .auth
             .company_document_credentials(headers)
@@ -98,7 +163,23 @@ where
         company: &str,
         operation: &str,
     ) -> Result<NativePolicyFormView, StatusCode> {
-        let selector = selector(company, operation, Uuid::new_v4())?;
+        self.policy_current_for(
+            headers,
+            company,
+            operation,
+            NativePolicySubject::PayrollRead,
+        )
+        .await
+    }
+
+    pub async fn policy_current_for(
+        &self,
+        headers: &HeaderMap,
+        company: &str,
+        operation: &str,
+        subject: NativePolicySubject,
+    ) -> Result<NativePolicyFormView, StatusCode> {
+        let selector = selector(subject, company, operation, Uuid::new_v4(), false)?;
         let credentials = self
             .auth
             .company_document_credentials(headers)
@@ -120,7 +201,27 @@ where
         operation: &str,
         command: &str,
     ) -> Result<NativePolicyRequestDocument, StatusCode> {
-        let selector = selector(company, operation, route_id(command)?)?;
+        self.policy_request_for(
+            headers,
+            client,
+            company,
+            operation,
+            command,
+            NativePolicySubject::PayrollRead,
+        )
+        .await
+    }
+
+    pub async fn policy_request_for(
+        &self,
+        headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
+        company: &str,
+        operation: &str,
+        command: &str,
+        subject: NativePolicySubject,
+    ) -> Result<NativePolicyRequestDocument, StatusCode> {
+        let selector = selector(subject, company, operation, route_id(command)?, true)?;
         let credentials = self
             .auth
             .company_document_credentials(headers)
@@ -136,6 +237,15 @@ where
         if matches!(status, NativePolicyStatus::NotVisible) {
             return Ok(NativePolicyRequestDocument::NotVisible);
         }
+        let original = match &status {
+            NativePolicyStatus::AcceptedPending(value)
+            | NativePolicyStatus::AcceptedExpired(value) => &value.input,
+            NativePolicyStatus::Terminal(value) => &value.accepted.input,
+            NativePolicyStatus::NotVisible => return Ok(NativePolicyRequestDocument::NotVisible),
+        };
+        let selector = selector
+            .resolve(NativePolicyCommandRef::from_command(original))
+            .map_err(workflow_status)?;
         let (current, proof) = if matches!(status, NativePolicyStatus::AcceptedPending(_)) {
             self.auth
                 .limit_company_form(headers, client)
@@ -166,6 +276,17 @@ where
         company: &str,
         target: NativePolicyPostTarget<'_>,
     ) -> Result<NativePolicySubmission, StatusCode> {
+        self.policy_submit_for(request, company, target, NativePolicySubject::PayrollRead)
+            .await
+    }
+
+    pub async fn policy_submit_for(
+        &self,
+        request: Request,
+        company: &str,
+        target: NativePolicyPostTarget<'_>,
+        subject: NativePolicySubject,
+    ) -> Result<NativePolicySubmission, StatusCode> {
         let company = OrgId::from_uuid(route_id(company)?);
         if company == OrgId::platform() {
             return Err(StatusCode::NOT_FOUND);
@@ -181,7 +302,8 @@ where
                 command_id: route_id(command)?,
             },
         };
-        let (credentials, input) = capture_post(&self.auth, request, company, target).await?;
+        let (credentials, input) =
+            capture_post_for(&self.auth, request, company, target, subject).await?;
         let policy = self
             .policy
             .as_ref()
@@ -239,32 +361,52 @@ fn operation_kind(value: &str) -> Result<NativeBusinessOperationV1, StatusCode> 
     }
 }
 fn selector(
+    subject: NativePolicySubject,
     company: &str,
     operation: &str,
     command: Uuid,
+    recovery: bool,
 ) -> Result<NativePolicyCommandRef, StatusCode> {
-    NativePolicyCommandRef::new(
+    subject.select(
         OrgId::from_uuid(route_id(company)?),
         command,
         operation_kind(operation)?,
+        recovery,
     )
-    .map_err(|_| StatusCode::NOT_FOUND)
 }
 
+#[cfg(test)]
 async fn capture_post(
     auth: &AuthRestState,
     request: Request,
     company: OrgId,
     target: form::Target,
 ) -> Result<(AccountEnrollmentCredentials, form::DocumentInput), StatusCode> {
+    capture_post_for(
+        auth,
+        request,
+        company,
+        target,
+        NativePolicySubject::PayrollRead,
+    )
+    .await
+}
+async fn capture_post_for(
+    auth: &AuthRestState,
+    request: Request,
+    company: OrgId,
+    target: form::Target,
+    subject: NativePolicySubject,
+) -> Result<(AccountEnrollmentCredentials, form::DocumentInput), StatusCode> {
     let (parts, body) = request.into_parts();
     let body = to_bytes(body, form::MAX_BODY_BYTES)
         .await
         .map_err(|_| StatusCode::PAYLOAD_TOO_LARGE)?;
-    let parsed = form::parse_document(company, target, &body).map_err(|error| match error {
-        form::FormError::Invalid => StatusCode::BAD_REQUEST,
-        form::FormError::TooLarge => StatusCode::PAYLOAD_TOO_LARGE,
-    })?;
+    let parsed =
+        form::parse_document_for(company, target, &body, subject).map_err(|error| match error {
+            form::FormError::Invalid => StatusCode::BAD_REQUEST,
+            form::FormError::TooLarge => StatusCode::PAYLOAD_TOO_LARGE,
+        })?;
     let credentials = auth
         .company_form_mutation_credentials(&parts.method, &parts.headers, &parsed.proof)
         .map_err(|e| e.status())?;

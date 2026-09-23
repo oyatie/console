@@ -89,7 +89,10 @@ fn set(fields: &mut [(String, String)], key: &str, value: &str) {
 fn parsed_command(target: Target, pairs: &[(String, String)]) -> NativeCompanyBusinessCommandV1 {
     match parse(company(), target, &encode(pairs)) {
         Ok(parsed) => match parsed.input {
-            Input::Command(command) => command,
+            Input::Command(NativePolicyCommand::Payroll(command)) => command,
+            Input::Command(NativePolicyCommand::People(_)) => {
+                panic!("Payroll parser admitted a People command")
+            }
             Input::Retry(_) => panic!("command unexpectedly became retry"),
         },
         Err(_) => panic!("valid command form rejected"),
@@ -534,3 +537,5 @@ fn invalid_internal_scope_and_nil_route_targets_cannot_bypass_typed_guards() {
 }
 
 include!("expiry_validation_tests.rs");
+
+include!("people_subject_tests.rs");

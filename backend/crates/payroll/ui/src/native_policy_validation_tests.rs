@@ -11,6 +11,8 @@ const INVALID_EXPIRY: &str = "<img src=x onerror=alert(1)>&입력";
 
 fn scope(with_assignment: bool) -> Scope {
     Scope {
+        subject: super::native_policy::Subject::PayrollRead,
+        people_actions: Vec::new(),
         company_name: Some("검토 회사".to_owned()),
         group: "00000000-0000-0000-0000-000000000106".to_owned(),
         company_link: true,
@@ -361,3 +363,5 @@ fn native_policy_documents_preserve_post_origin_and_private_security_headers() {
         }
     }
 }
+
+include!("native_people_policy_tests.rs");

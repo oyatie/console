@@ -83,8 +83,9 @@ pub(super) fn state(state: &AppState, pool: &PgPool) -> PayrollRestState {
         state.session_verification(),
         payroll_runs_reader(pool),
     );
-    if state.serving_custody_profile
-        == Some(account_custody::VerifiedCustodyProfile::NativeCompanyPolicy)
+    if state
+        .serving_custody_profile
+        .is_some_and(account_custody::VerifiedCustodyProfile::supports_policy)
         && let (Some(auth), Some(verifier), Some(config), Ok(policy)) = (
             &state.auth_rest,
             &state.jwt_verifier,

@@ -1,6 +1,98 @@
 //! Server-rendered policy tasks. Every value is a currently authorized projection.
 use leptos::prelude::*;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Subject {
+    PayrollRead,
+    PeopleCatalog,
+    PeopleRead,
+    PeopleCreate,
+}
+impl Subject {
+    pub fn base(self, company: &str) -> String {
+        let catalog = if self == Self::PayrollRead {
+            "payroll-read"
+        } else {
+            "people-directory"
+        };
+        format!("/companies/{company}/policy/{catalog}")
+    }
+    fn action_base(self, company: &str) -> String {
+        let base = self.base(company);
+        match self {
+            Self::PeopleRead => format!("{base}/read"),
+            Self::PeopleCreate => format!("{base}/create"),
+            _ => base,
+        }
+    }
+    fn title(self) -> &'static str {
+        match self {
+            Self::PayrollRead => "급여 목록 열람 권한",
+            Self::PeopleCatalog => "사람 등록·열람 권한",
+            Self::PeopleRead => "사람 열람 권한",
+            Self::PeopleCreate => "사람 등록 권한",
+        }
+    }
+    pub fn label(self, op: Operation) -> &'static str {
+        match (self, op) {
+            (Self::PayrollRead, op) => op.label(),
+            (_, Operation::Install) => "권한 설정 준비",
+            (Self::PeopleRead, Operation::Grant) => "사람 열람 권한 연결",
+            (Self::PeopleRead, Operation::Revoke) => "사람 열람 권한 회수",
+            (Self::PeopleCreate, Operation::Grant) => "사람 등록 권한 연결",
+            (Self::PeopleCreate, Operation::Revoke) => "사람 등록 권한 회수",
+            (Self::PeopleCatalog, _) => "권한 설정 준비",
+        }
+    }
+    fn key(self, op: Operation) -> &'static str {
+        if self == Self::PayrollRead {
+            return op.key();
+        }
+        match op {
+            Operation::Install => "InstallPeopleDirectoryCatalogV1",
+            Operation::Grant => "GrantPeopleDirectoryV1",
+            Operation::Revoke => "RevokePeopleDirectoryV1",
+        }
+    }
+    fn instruction(self, op: Operation) -> &'static str {
+        match (self, op) {
+            (Self::PayrollRead, Operation::Install) => {
+                "급여 목록 열람 기능을 이 회사에 준비합니다. 준비가 끝난 뒤 대상 계정과 종료 시각을 확인하고 권한을 연결하세요."
+            }
+            (Self::PayrollRead, Operation::Grant) => {
+                "대상 계정과 공개되는 정보를 확인한 뒤, 필요한 기간만 열람 권한을 연결하세요."
+            }
+            (Self::PayrollRead, Operation::Revoke) => {
+                "이 연결을 회수하면 대상 계정은 이 권한으로 회사의 급여 목록을 열 수 없습니다. 이전 처리 기록은 보존됩니다."
+            }
+            (_, Operation::Install) => {
+                "사람 등록과 열람 권한을 각각 관리할 수 있도록 준비합니다. 준비만으로 어떤 계정에도 권한이 연결되지 않습니다."
+            }
+            (Self::PeopleCreate, Operation::Grant) => {
+                "대상 계정과 등록 범위를 확인한 뒤, 필요한 기간만 사람 등록 권한을 연결하세요."
+            }
+            (Self::PeopleCreate, Operation::Revoke) => {
+                "이 권한으로 새 사람을 등록하거나 본인의 등록 요청을 확인할 수 없게 됩니다. 확정된 등록과 처리 기록은 보존됩니다."
+            }
+            (_, Operation::Grant) => {
+                "대상 계정과 공개되는 정보를 확인한 뒤, 필요한 기간만 사람 열람 권한을 연결하세요."
+            }
+            (_, Operation::Revoke) => {
+                "이 권한으로 사람 목록과 상세 정보를 열 수 없게 됩니다. 등록 권한은 별도로 관리하며, 이전 처리 기록은 보존됩니다."
+            }
+        }
+    }
+}
+pub struct PolicyAction {
+    pub subject: Subject,
+    pub operation: Operation,
+}
+pub fn people_action_links(company: &str, actions: &[PolicyAction]) -> AnyView {
+    actions.iter().map(|a| view! {
+        <a class="policy-button secondary" href=format!("{}/{}", a.subject.action_base(company), a.operation.path())>{a.subject.label(a.operation)}</a>
+    }).collect_view().into_any()
+}
+
 #[derive(Clone, Copy)]
 pub enum Operation {
     Install,
@@ -42,6 +134,8 @@ pub struct Assignment {
     pub can_revoke: bool,
 }
 pub struct Scope {
+    pub subject: Subject,
+    pub people_actions: Vec<PolicyAction>,
     pub company_name: Option<String>,
     pub group: String,
     pub company_link: bool,
@@ -131,23 +225,47 @@ impl Scope {
         )
     }
 }
-fn base(company: &str) -> String {
-    format!("/companies/{company}/policy/payroll-read")
-}
-
 #[component]
-fn Consequences() -> impl IntoView {
+fn Consequences(subject: Subject) -> impl IntoView {
+    let (heading, detail, limit) = match subject {
+        Subject::PayrollRead => (
+            "이 권한으로 볼 수 있는 정보",
+            "이 계정은 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 볼 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다.",
+            "급여의 상세 내역·수정·지급·내보내기 권한은 연결되지 않습니다. 다른 회사에는 적용되지 않습니다.",
+        ),
+        Subject::PeopleCatalog => (
+            "등록과 열람을 각각 관리합니다",
+            "이 회사의 사람 등록과 열람 기능을 준비합니다. 각 권한은 대상 계정과 기간을 확인한 뒤 따로 연결합니다.",
+            "설정 준비만으로 사람 정보가 공개되거나 등록 권한이 연결되지는 않습니다.",
+        ),
+        Subject::PeopleRead => (
+            "이 권한으로 볼 수 있는 정보",
+            "이 회사에 등록된 사람의 이름, 사번, 식별자와 등록 기록을 확인할 수 있습니다.",
+            "등록·고용 변경·급여 권한은 포함되지 않습니다. 다른 회사에는 적용되지 않습니다.",
+        ),
+        Subject::PeopleCreate => (
+            "이 권한으로 할 수 있는 일",
+            "이 회사에 이름과 사번으로 사람을 등록하고 본인이 접수한 등록 요청의 처리 결과를 확인할 수 있습니다.",
+            "사람 목록 열람이나 고용·급여 권한은 별도입니다. 다른 회사에는 적용되지 않습니다.",
+        ),
+    };
     view! {
         <section class="panel policy-consequences" aria-labelledby="disclosure-heading">
-            <h2 id="disclosure-heading">"이 권한으로 볼 수 있는 정보"</h2>
-            <div class="policy-panel-body">
-                <p>"이 계정은 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 볼 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다."</p>
-                <p class="policy-limit">"급여의 상세 내역·수정·지급·내보내기 권한은 연결되지 않습니다. 다른 회사에는 적용되지 않습니다."</p>
+            <h2 id="disclosure-heading">{heading}</h2><div class="policy-panel-body">
+                <p>{detail}</p><p class="policy-limit">{limit}</p>
             </div>
         </section>
     }
 }
 fn current(scope: &Scope) -> AnyView {
+    if scope.subject == Subject::PeopleCatalog {
+        return view! {
+            <section class="panel"><h2>"현재 권한 설정"</h2><div class="policy-panel-body">
+                <p>{if scope.installed { "사람 등록·열람 기능이 준비되었습니다. 각 권한의 현재 상태를 열어 확인하세요." } else { "사람 등록·열람 기능을 준비해야 합니다." }}</p>
+                <ul>{scope.people_actions.iter().map(|action| view! { <li>{action.subject.title()}": "{if matches!(action.operation, Operation::Revoke) { "연결됨" } else { "연결 가능" }}</li> }).collect_view()}</ul>
+            </div></section>
+        }.into_any();
+    }
     let assignment = match &scope.assignment {
         Some(a) => view! {
             <div data-policy-current-state=a.state>
@@ -158,7 +276,7 @@ fn current(scope: &Scope) -> AnyView {
                 </details>
             </div>
         }.into_any(),
-        None => view! { <p class="policy-state" data-policy-current-state="NONE">"연결된 열람 권한 없음"</p> }.into_any(),
+        None => view! { <p class="policy-state" data-policy-current-state="NONE">"연결된 권한 없음"</p> }.into_any(),
     };
     view! {
         <section class="panel"><h2>"현재 권한 상태"</h2><div class="policy-panel-body">
@@ -181,17 +299,24 @@ fn identities(scope: &Scope) -> AnyView {
     }.into_any()
 }
 fn next_action(scope: &Scope) -> AnyView {
-    let root = base(&scope.company);
-    let (path, label) = if !scope.installed {
-        ("install", "열람 권한 설정 준비")
-    } else if scope.assignment.as_ref().is_none_or(|a| a.can_grant) {
-        ("grant", "열람 권한 연결")
+    if scope.subject != Subject::PayrollRead && scope.installed {
+        return people_action_links(&scope.company, &scope.people_actions);
+    }
+    let root = if scope.installed {
+        scope.subject.action_base(&scope.company)
     } else {
-        ("revoke", "열람 권한 회수")
+        scope.subject.base(&scope.company)
     };
-    view! { <a class="policy-button secondary" href=format!("{root}/{path}")>{label}</a> }
-        .into_any()
+    let operation = if !scope.installed {
+        Operation::Install
+    } else if scope.assignment.as_ref().is_none_or(|a| a.can_grant) {
+        Operation::Grant
+    } else {
+        Operation::Revoke
+    };
+    view! { <a class="policy-button secondary" href=format!("{root}/{}", operation.path())>{scope.subject.label(operation)}</a> }.into_any()
 }
+
 fn form_body(form: Form) -> AnyView {
     let Form {
         scope,
@@ -200,7 +325,8 @@ fn form_body(form: Form) -> AnyView {
         proof,
         validation,
     } = form;
-    let root = base(&scope.company);
+    let root = scope.subject.action_base(&scope.company);
+    let subject = scope.subject;
     let ready = match operation {
         Operation::Install => !scope.installed,
         Operation::Grant => {
@@ -274,25 +400,15 @@ fn form_body(form: Form) -> AnyView {
                 .unwrap_or_default()
         ),
     };
-    let instruction = match operation {
-        Operation::Install => {
-            "급여 목록 열람 기능을 이 회사에 준비합니다. 준비가 끝난 뒤 대상 계정과 종료 시각을 확인하고 권한을 연결하세요."
-        }
-        Operation::Grant => {
-            "대상 계정과 공개되는 정보를 확인한 뒤, 필요한 기간만 열람 권한을 연결하세요."
-        }
-        Operation::Revoke => {
-            "이 연결을 회수하면 대상 계정은 이 권한으로 회사의 급여 목록을 열 수 없습니다. 이전 처리 기록은 보존됩니다."
-        }
-    };
+    let instruction = subject.instruction(operation);
     let task = if ready {
         view! {
-            <form method="post" action=action data-policy-operation=operation.key()>
+            <form method="post" action=action data-policy-operation=subject.key(operation)>
                 <input type="hidden" name="command_id" value=command/>
                 <input type="hidden" name="expected_company_epoch" value=expected_epoch/>
                 <input type="hidden" name="csrf_proof" value=proof/>
                 {fields}
-                <div class="policy-actions"><button class=if matches!(operation,Operation::Revoke) {"policy-button danger"} else {"policy-button"} type="submit">{operation.label()}</button>
+                <div class="policy-actions"><button class=if matches!(operation,Operation::Revoke) {"policy-button danger"} else {"policy-button"} type="submit">{subject.label(operation)}</button>
                     {scope.policy_link.then(|| view! {<a href=format!("/companies/{}/policy",scope.company)>"권한 관리로 돌아가기"</a>})}
                 </div>
             </form>
@@ -304,8 +420,8 @@ fn form_body(form: Form) -> AnyView {
         <div data-policy-preflight-operation=operation.path() class="workflow-layout">
             <aside class="workflow-guide" aria-label="권한 대상과 현재 상태">{identities(&scope)}{current(&scope)}</aside>
             <div class="workflow-main">
-                <Consequences/>
-                <section class="panel"><h2>{operation.label()}</h2><div class="policy-panel-body"><p>{instruction}</p>{matches!(operation, Operation::Install).then(|| view! { <p>"설정을 준비해도 계정에 열람 권한이 연결되지는 않습니다."</p> })}{error}{task}</div></section>
+                <Consequences subject=scope.subject/>
+                <section class="panel"><h2>{subject.label(operation)}</h2><div class="policy-panel-body"><p>{instruction}</p>{matches!(operation, Operation::Install).then(|| view! { <p>{if subject == Subject::PayrollRead { "설정을 준비해도 계정에 열람 권한이 연결되지는 않습니다." } else { "설정을 준비해도 계정에 권한이 연결되지는 않습니다." }}</p> })}{error}{task}</div></section>
             </div>
         </div>
     }.into_any()
@@ -319,7 +435,7 @@ fn result_body(
 ) -> AnyView {
     let path = format!(
         "{}/requests/{}/{command}",
-        base(&scope.company),
+        scope.subject.base(&scope.company),
         operation.path()
     );
     let (state,title,description,receipt,at,extra) = match outcome {
@@ -349,7 +465,7 @@ fn result_body(
         <div class="workflow-layout" data-policy-result-layout>
             <aside class="workflow-guide" aria-label="권한 대상과 현재 상태">{identities(&scope)}{current(&scope)}</aside>
             <div class="workflow-main">
-                <Consequences/>
+                <Consequences subject=scope.subject/>
                 <section class="panel policy-result" data-policy-outcome=state data-policy-command=command.clone()>
                     <h2>{title}</h2><div class="policy-panel-body"><p>{description}</p>
                         {original.effect_period.map(|(from,until)| view! {<dl class="record-meta"><dt>"확정된 시작"</dt><dd>{from}</dd><dt>"확정된 종료"</dt><dd>{until}</dd></dl>})}
@@ -363,6 +479,19 @@ fn result_body(
     }.into_any()
 }
 pub fn render(page: Page) -> String {
+    let subject = match &page {
+        Page::Form(f) => Some(f.scope.subject),
+        Page::Result { scope, .. } => Some(scope.subject),
+        _ => None,
+    };
+    let title = subject.map(Subject::title).unwrap_or("권한 관리");
+    let eyebrow = if subject == Some(Subject::PayrollRead) {
+        "권한 관리 / 급여"
+    } else if subject.is_some() {
+        "권한 관리 / 사람"
+    } else {
+        "권한 관리"
+    };
     let company = match &page {
         Page::Form(f) => Some(f.scope.navigation()),
         Page::Result { scope, .. } => Some(scope.navigation()),
@@ -386,14 +515,14 @@ pub fn render(page: Page) -> String {
     });
     let html=view! {
         <html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-            <title>"급여 목록 열람 권한 · Console"</title><link rel="stylesheet" href="/assets/workspace.css"/>
+            <title>{format!("{title} · Console")}</title><link rel="stylesheet" href="/assets/workspace.css"/>
         </head><body class="workspace policy-workspace">
             <a class="skip-link" href="#main-content">"본문 바로가기"</a>
             <header class="app"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>{nav}
                 <nav class="policy-account-nav" aria-label="계정 탐색"><a href="/account">"내 계정 · 업무 공간 선택"</a></nav>
             </header>
-            <main id="main-content" tabindex="-1"><div class="page-heading"><p class="page-eyebrow">"권한 관리 / 급여"</p><h1>"급여 목록 열람 권한"</h1>
-                <p class="page-description">"누가, 어떤 정보를, 언제까지 볼 수 있는지 확인하고 관리하세요."</p>
+            <main id="main-content" tabindex="-1"><div class="page-heading"><p class="page-eyebrow">{eyebrow}</p><h1>{title}</h1>
+                <p class="page-description">"대상 계정과 업무 범위, 권한이 적용되는 기간을 확인하고 관리하세요."</p>
             </div>{content}</main>
         </body></html>
     }.to_html();

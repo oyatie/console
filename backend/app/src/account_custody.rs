@@ -7,6 +7,19 @@ pub(crate) enum VerifiedCustodyProfile {
     NativeAccount,
     CompanyEnrollment,
     NativeCompanyPolicy,
+    NativeCompanyPolicyV2,
+}
+
+impl VerifiedCustodyProfile {
+    pub(crate) fn supports_policy(self) -> bool {
+        matches!(
+            self,
+            Self::NativeCompanyPolicy | Self::NativeCompanyPolicyV2
+        )
+    }
+    pub(crate) fn supports_people(self) -> bool {
+        self == Self::NativeCompanyPolicyV2
+    }
 }
 
 pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppError> {
@@ -25,7 +38,7 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
             .await?;
     if successor == "native_company_policy_v2.finalized" {
         transaction.commit().await?;
-        return Ok(VerifiedCustodyProfile::NativeCompanyPolicy);
+        return Ok(VerifiedCustodyProfile::NativeCompanyPolicyV2);
     }
     if successor != "native_company_policy_v2.absent" {
         return Err(AppError::Config(successor));

@@ -115,6 +115,7 @@ fn page(flags: u8) -> Page {
         show_payroll_navigation: flags & 1 != 0,
         show_policy_navigation: flags & 2 != 0,
         show_payroll_policy_navigation: flags & 4 != 0,
+        people_policy: None,
     }
 }
 fn links(html: &str) -> Vec<(&str, &str)> {

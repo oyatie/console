@@ -1824,7 +1824,7 @@ impl AppState {
         let mut state = Self::new(config.clone(), database)?;
         state.serving_custody_profile = serving_custody_profile;
         if serving_custody_profile
-            == Some(account_custody::VerifiedCustodyProfile::NativeCompanyPolicy)
+            .is_some_and(account_custody::VerifiedCustodyProfile::supports_policy)
         {
             state.native_policy_issuer = config
                 .auth_rest
@@ -3352,7 +3352,7 @@ pub fn build_router(mut state: AppState) -> Router {
         (DatabaseDependency::Postgres(pool), Some(auth), Some(verifier), Some(config)) => {
             let store = PgOrgStore::new(pool.clone());
             let store = match state.serving_custody_profile {
-                Some(account_custody::VerifiedCustodyProfile::NativeCompanyPolicy) => {
+                Some(profile) if profile.supports_policy() => {
                     state.native_policy_issuer.as_ref().map(|issuer| {
                         store.with_native_account_policy(
                             verifier.clone(),
@@ -3849,21 +3849,26 @@ pub fn build_router(mut state: AppState) -> Router {
                             "/companies/{org_id}/policy",
                             get(native_company_policy_document),
                         )
-                        .route("/companies/{org_id}/policy/payroll-read/{operation}", get(native_policy::preflight))
-                        .route("/companies/{org_id}/policy/payroll-read/catalog", axum::routing::post(native_policy::install))
-                        .route("/companies/{org_id}/policy/payroll-read/grants", axum::routing::post(native_policy::grant))
-                        .route("/companies/{org_id}/policy/payroll-read/grants/{assignment}/revoke", axum::routing::post(native_policy::revoke))
-                        .route("/companies/{org_id}/policy/payroll-read/requests/{operation}/{command}", get(native_policy::request_document))
-                        .route("/companies/{org_id}/policy/payroll-read/requests/{operation}/{command}/retry", axum::routing::post(native_policy::retry))
+                        .merge(native_policy::router(
+                            state.serving_custody_profile.is_some_and(
+                                account_custody::VerifiedCustodyProfile::supports_people,
+                            ),
+                        ))
                         .with_state(company)
                         .layer(axum::Extension(native_payroll::Navigation(
-                            (state.serving_custody_profile == Some(
-                                account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
-                            )).then(|| native_payroll_state.clone()),
+                            state
+                                .serving_custody_profile
+                                .is_some_and(
+                                    account_custody::VerifiedCustodyProfile::supports_policy,
+                                )
+                                .then(|| native_payroll_state.clone()),
                         )))
                         .layer(axum::Extension(NativeCompanyPolicyNavigation(
-                            state.serving_custody_profile == Some(
-                                account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
+                            state.serving_custody_profile.is_some_and(
+                                account_custody::VerifiedCustodyProfile::supports_policy,
+                            ),
+                            state.serving_custody_profile.is_some_and(
+                                account_custody::VerifiedCustodyProfile::supports_people,
                             ),
                         ))),
                 ),
@@ -4026,7 +4031,7 @@ async fn native_company_result_document(
 // Composition selects only the verified native policy runtime. This flag is
 // capability availability, never Account authorization.
 #[derive(Clone, Copy)]
-struct NativeCompanyPolicyNavigation(bool);
+struct NativeCompanyPolicyNavigation(bool, bool);
 
 async fn native_company_document(
     State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
@@ -4056,6 +4061,14 @@ async fn native_company_document(
     } else {
         false
     };
+    let people_policy = if native_policy.1 {
+        match native_policy::people_actions(&state, &headers, &company).await {
+            Ok(actions) => actions,
+            Err(status) => return native_company_document_error(status),
+        }
+    } else {
+        None
+    };
     // Read the displayed Company projection last; do not retain its name/slug
     // across the additional authorization wait. The linked route rechecks.
     match state.company_document(&headers, &company).await {
@@ -4067,6 +4080,7 @@ async fn native_company_document(
                 show_policy_navigation: company.show_policy_navigation,
                 show_payroll_policy_navigation,
                 show_payroll_navigation,
+                people_policy,
             },
             StatusCode::OK,
         ),
@@ -4592,7 +4606,7 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
         DatabaseDependency::Postgres(pool) => match account_custody::verify(pool).await {
             Ok(current) => match state.serving_custody_profile {
                 Some(startup) => current == startup,
-                None => current != account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
+                None => !current.supports_policy(),
             },
             Err(_) => false,
         },

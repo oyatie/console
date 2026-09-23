@@ -2,7 +2,8 @@
 //! application use cases and their retained owning transactions.
 mod native_policy;
 pub use native_policy::{
-    NativePolicyPostTarget, NativePolicyRequestDocument, NativePolicySubmission,
+    NativePolicyPostTarget, NativePolicyRequestDocument, NativePolicySubject,
+    NativePolicySubmission,
 };
 
 use std::sync::Arc;

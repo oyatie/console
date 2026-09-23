@@ -65,7 +65,7 @@ fn document_valid_grant_preserves_the_existing_command_bytes() {
         let expected = parsed_command(Target::Grant, &pairs);
         let parsed = super::parse_document(company(), Target::Grant, &encode(&pairs)).unwrap();
         match parsed.input {
-            super::DocumentInput::Ready(Input::Command(actual)) => {
+            super::DocumentInput::Ready(Input::Command(NativePolicyCommand::Payroll(actual))) => {
                 assert_eq!(actual, expected);
                 assert_eq!(actual.encode(recipient()), expected.encode(recipient()));
             }

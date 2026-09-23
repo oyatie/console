@@ -1,11 +1,13 @@
 //! Bounded native HTML form grammar; authority and execution-time validation
 //! remain with Auth and the owning application command.
+use super::NativePolicySubject;
 use console_identity_application::company_policy::{
     AccountId,
     business::{
         NativeBusinessOperationV1, NativeCompanyBusinessCommandV1, PolicyAssignmentExpectationV1,
     },
-    workflow::NativePolicyCommandRef,
+    people_business::NativePeoplePolicyCommandV1,
+    workflow::{NativePolicyCommand, NativePolicyCommandRef},
 };
 use console_kernel_core::OrgId;
 use std::collections::BTreeMap;
@@ -27,7 +29,7 @@ pub(super) enum Target {
     },
 }
 pub(super) enum Input {
-    Command(NativeCompanyBusinessCommandV1),
+    Command(NativePolicyCommand),
     Retry(NativePolicyCommandRef),
 }
 pub struct NativePolicyGrantDraft {
@@ -68,10 +70,19 @@ pub(super) fn parse(company: OrgId, target: Target, body: &[u8]) -> Result<Parse
         DocumentInput::GrantValidation(_) => Err(FormError::Invalid),
     }
 }
+#[cfg(test)]
 pub(super) fn parse_document(
     company: OrgId,
     target: Target,
     body: &[u8],
+) -> Result<ParsedDocument, FormError> {
+    parse_document_for(company, target, body, NativePolicySubject::PayrollRead)
+}
+pub(super) fn parse_document_for(
+    company: OrgId,
+    target: Target,
+    body: &[u8],
+    subject: NativePolicySubject,
 ) -> Result<ParsedDocument, FormError> {
     use FormError::{Invalid, TooLarge};
     if body.len() > MAX_BODY_BYTES {
@@ -127,13 +138,30 @@ pub(super) fn parse_document(
     } = target
     {
         Input::Retry(
-            NativePolicyCommandRef::new(company, command_id, operation).map_err(|_| Invalid)?,
+            subject
+                .select(company, command_id, operation, true)
+                .map_err(|_| Invalid)?,
         )
     } else {
         let command = canonical_uuid(field("command_id")?)?;
         let epoch = revision(field("expected_company_epoch")?)?;
+        let operation = match target {
+            Target::Install => NativeBusinessOperationV1::Install,
+            Target::Grant => NativeBusinessOperationV1::Grant,
+            Target::Revoke { .. } => NativeBusinessOperationV1::Revoke,
+            Target::Retry { .. } => return Err(Invalid),
+        };
+        let selected = subject
+            .select(company, command, operation, false)
+            .map_err(|_| Invalid)?;
         let command = match target {
-            Target::Install => NativeCompanyBusinessCommandV1::install(command, company, epoch),
+            Target::Install => {
+                if subject == NativePolicySubject::PayrollRead {
+                    NativeCompanyBusinessCommandV1::install(command, company, epoch).map(Into::into)
+                } else {
+                    NativePeoplePolicyCommandV1::install(command, company, epoch).map(Into::into)
+                }
+            }
             Target::Grant => {
                 let recipient =
                     AccountId::from_uuid(canonical_uuid(field("recipient_account_id")?)?)
@@ -150,9 +178,7 @@ pub(super) fn parse_document(
                         assignment_revision: revision(current)?,
                     })
                 };
-                let selector =
-                    NativePolicyCommandRef::new(company, command, NativeBusinessOperationV1::Grant)
-                        .map_err(|_| Invalid)?;
+                let selector = selected;
                 if expected.is_some_and(|a| a.role_revision != 1) {
                     return Err(Invalid);
                 }
@@ -166,10 +192,25 @@ pub(super) fn parse_document(
                 // All non-expiry invariants were checked above. The constructor
                 // also bounds the exact historical timestamp codec.
                 let result = korean_instant(expiry).and_then(|at| {
-                    NativeCompanyBusinessCommandV1::grant(
-                        command, company, epoch, recipient, expected, at,
-                    )
-                    .map_err(|_| Invalid)
+                    if subject == NativePolicySubject::PayrollRead {
+                        NativeCompanyBusinessCommandV1::grant(
+                            command, company, epoch, recipient, expected, at,
+                        )
+                        .map(Into::into)
+                        .map_err(|_| Invalid)
+                    } else {
+                        NativePeoplePolicyCommandV1::grant(
+                            command,
+                            company,
+                            epoch,
+                            subject.action().ok_or(Invalid)?,
+                            recipient,
+                            expected,
+                            at,
+                        )
+                        .map(Into::into)
+                        .map_err(|_| Invalid)
+                    }
                 });
                 match result {
                     Ok(command) => Ok(command),
@@ -187,16 +228,26 @@ pub(super) fn parse_document(
                     }
                 }
             }
-            Target::Revoke { assignment } => NativeCompanyBusinessCommandV1::revoke(
-                command,
-                company,
-                epoch,
-                PolicyAssignmentExpectationV1 {
+            Target::Revoke { assignment } => {
+                let expected = PolicyAssignmentExpectationV1 {
                     role_revision: revision(field("expected_role_revision")?)?,
                     assignment_id: assignment,
                     assignment_revision: revision(field("expected_assignment_revision")?)?,
-                },
-            ),
+                };
+                if subject == NativePolicySubject::PayrollRead {
+                    NativeCompanyBusinessCommandV1::revoke(command, company, epoch, expected)
+                        .map(Into::into)
+                } else {
+                    NativePeoplePolicyCommandV1::revoke(
+                        command,
+                        company,
+                        epoch,
+                        subject.action().ok_or(Invalid)?,
+                        expected,
+                    )
+                    .map(Into::into)
+                }
+            }
             Target::Retry { .. } => return Err(Invalid),
         }
         .map_err(|_| Invalid)?;
