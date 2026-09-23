@@ -9,6 +9,9 @@ use console_identity_application::company_policy::{
 const BOOT_ID: &str = "native-business-bootstrap-v1";
 const BOOT_SCHEMA: &str = include_str!("native-business-bootstrap-v1.cedarschema");
 const BOOT_POLICY: &str = include_str!("native-business-bootstrap-v1.cedar");
+const PEOPLE_BOOT_ID: &str = "native-people-directory-bootstrap-v1";
+const PEOPLE_BOOT_SCHEMA: &str = include_str!("native-people-directory-bootstrap-v1.cedarschema");
+const PEOPLE_BOOT_POLICY: &str = include_str!("native-people-directory-bootstrap-v1.cedar");
 const READ_ID: &str = "native-payroll-collection-read-v1";
 const READ_SCHEMA: &str = include_str!("native-payroll-collection-read-v1.cedarschema");
 const READ_POLICY: &str = include_str!("native-payroll-collection-read-v1.cedar");
@@ -17,6 +20,7 @@ const MANIFEST: &str = "07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd6
 pub(super) fn validate_bundles() -> Result<(), CompanyPolicyError> {
     for (id, schema, policy) in [
         (BOOT_ID, BOOT_SCHEMA, BOOT_POLICY),
+        (PEOPLE_BOOT_ID, PEOPLE_BOOT_SCHEMA, PEOPLE_BOOT_POLICY),
         (READ_ID, READ_SCHEMA, READ_POLICY),
     ] {
         compile(OrgId::platform(), 1, id, schema, policy)?;
@@ -57,19 +61,38 @@ impl CompanyPolicy {
         requested: &NativeBootstrapRequestV1,
     ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
         let row = authority.source();
+        // Only this exact catalog identity selects People maintenance.
+        // Unknown manifests retain the existing Cedar manifest-mismatch denial.
+        let people = requested.manifest_digest()
+            == &console_identity_application::company_policy::people_business::MANIFEST;
+        let (bundle_id, schema, policy, manifest) = if people {
+            (
+                PEOPLE_BOOT_ID,
+                PEOPLE_BOOT_SCHEMA,
+                PEOPLE_BOOT_POLICY,
+                hex::encode(
+                    console_identity_application::company_policy::people_business::MANIFEST,
+                ),
+            )
+        } else {
+            (BOOT_ID, BOOT_SCHEMA, BOOT_POLICY, MANIFEST.to_owned())
+        };
         let bundle = compile(
             OrgId::from_uuid(row.org_id),
             row.company_epoch as u64,
-            BOOT_ID,
-            BOOT_SCHEMA,
-            BOOT_POLICY,
+            bundle_id,
+            schema,
+            policy,
         )?;
         let account = row.actor_account_id.to_string();
         let company = row.org_id.to_string();
-        let operation = match requested.operation() {
-            NativeBusinessOperationV1::Install => "InstallPayrollReadCatalogV1",
-            NativeBusinessOperationV1::Grant => "GrantPayrollReadV1",
-            NativeBusinessOperationV1::Revoke => "RevokePayrollReadV1",
+        let operation = match (people, requested.operation()) {
+            (true, NativeBusinessOperationV1::Install) => "InstallPeopleDirectoryCatalogV1",
+            (true, NativeBusinessOperationV1::Grant) => "GrantPeopleDirectoryV1",
+            (true, NativeBusinessOperationV1::Revoke) => "RevokePeopleDirectoryV1",
+            (false, NativeBusinessOperationV1::Install) => "InstallPayrollReadCatalogV1",
+            (false, NativeBusinessOperationV1::Grant) => "GrantPayrollReadV1",
+            (false, NativeBusinessOperationV1::Revoke) => "RevokePayrollReadV1",
         };
         // ACTIVE values come only from the canonical current-source contract;
         // HTTP selectors never supply entity attributes or source state.
@@ -96,7 +119,7 @@ impl CompanyPolicy {
                 "administrative_account_id":row.administrative_account_id.to_string(),
                 "company_actor_admission_receipt_id":row.company_actor_admission_receipt_id.to_string(),
                 "birth_assignment_id":row.birth_assignment_id.to_string(),"birth_role_id":row.birth_role_id.to_string(),
-                "manifest_digest":MANIFEST}}
+                "manifest_digest":manifest}}
         ]);
         let context = json!({"requested_org_id":requested.company().to_string(),
             "requested_group_id":requested.group().to_string(),
