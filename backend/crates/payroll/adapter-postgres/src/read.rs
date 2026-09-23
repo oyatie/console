@@ -1,6 +1,9 @@
 //! Authorized collection reads and their audit commit in the existing scoped transaction.
 use console_kernel_core::{AuditAction, AuditEvent, KernelError, TraceContext};
-use console_payroll_application::read::{ListPayrollRuns, PayrollReadFuture, PayrollRunsReadPort};
+use console_payroll_application::read::{
+    ListPayrollRuns, PayrollAuthorizeFuture, PayrollReadFuture, PayrollRunsReadError,
+    PayrollRunsReadPort, PayrollRunsReadResult,
+};
 use console_platform_authz::{Action, Feature, Principal, authorize_org_wide};
 use console_platform_db::with_audits;
 use sqlx::PgPool;
@@ -20,8 +23,11 @@ impl PgPayrollRunsReadPort {
 }
 
 impl PayrollRunsReadPort for PgPayrollRunsReadPort {
-    fn authorize(&self) -> Result<(), KernelError> {
-        authorize_org_wide(&self.principal, Action::new(Feature::PayrollRunRead))
+    fn authorize(&mut self) -> PayrollAuthorizeFuture<'_> {
+        Box::pin(async move {
+            authorize_org_wide(&self.principal, Action::new(Feature::PayrollRunRead))
+                .map_err(PayrollRunsReadError::Authorization)
+        })
     }
 
     fn read_page(&mut self, query: ListPayrollRuns) -> PayrollReadFuture<'_> {
@@ -47,13 +53,14 @@ impl PayrollRunsReadPort for PgPayrollRunsReadPort {
                 .await;
             // Preserve the established wire error contract. The generic store
             // conversion includes SQL diagnostics and must not cross this boundary.
-            result.map_err(|error| match error {
+            let page = result.map_err(|error| match error {
                 PgPayrollError::Domain(error) => error,
                 PgPayrollError::Db(error) => {
                     tracing::error!(error = %error, "payroll list read failed");
                     KernelError::internal("internal server error")
                 }
-            })
+            }).map_err(PayrollRunsReadError::Read)?;
+            Ok(PayrollRunsReadResult { page, company: None })
         })
     }
 }

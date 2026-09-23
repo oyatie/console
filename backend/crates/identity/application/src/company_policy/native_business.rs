@@ -5,6 +5,72 @@ use console_kernel_core::OrgId;
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
+/// Decode the single registered business clause; retained SQL still owns custody
+/// and the assignment's effective interval, which is distinct from clause dates.
+pub fn decode_native_payroll_read_clause(
+    company: OrgId,
+    registered: &str,
+) -> Result<(ActionRef, Vec<PropertyRef>), CompanyPolicyError> {
+    use super::{Object, WireClause, canonical_revision, canonical_time, canonical_uuid};
+    use CompanyPolicyError::MaterialUnavailable;
+    company_id(company)?;
+    if registered.len() > 32768 {
+        return Err(MaterialUnavailable);
+    }
+    let mut clauses: Vec<Object<WireClause>> =
+        serde_json::from_str(registered).map_err(|_| MaterialUnavailable)?;
+    if clauses.len() != 1 {
+        return Err(MaterialUnavailable);
+    }
+    let Object(clause) = clauses.pop().ok_or(MaterialUnavailable)?;
+    let Object(action) = clause.action;
+    let manifest: String = super::business::MANIFEST
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    if clause.kind != "COMPANY_CAPABILITY_CLAUSE_V1"
+        || clause.resource.0.kind != "COMPANY"
+        || canonical_uuid(&clause.resource.0.org_id)? != *company.as_uuid()
+        || canonical_uuid(&action.org_id)? != *company.as_uuid()
+        || canonical_revision(&action.registration_revision)? != 1
+        || action.manifest_digest != manifest
+        || clause.delegable
+        || clause.valid_until.is_some()
+        || clause.fields.len() != 18
+    {
+        return Err(MaterialUnavailable);
+    }
+    canonical_time(&clause.valid_from)?;
+    let action = ActionRef::new(
+        company,
+        canonical_uuid(&action.action_type_id)?,
+        canonical_uuid(&action.object_type_id)?,
+        1,
+        super::business::MANIFEST,
+    )?;
+    let mut fields = Vec::with_capacity(18);
+    for Object(field) in clause.fields {
+        let field = PropertyRef::new(
+            OrgId::from_uuid(canonical_uuid(&field.org_id)?),
+            canonical_uuid(&field.object_type_id)?,
+            canonical_uuid(&field.property_id)?,
+            canonical_revision(&field.schema_revision)?,
+        )?;
+        if field.org_id() != company
+            || field.object_type_id() != action.object_type_id()
+            || field.schema_revision() != 1
+        {
+            return Err(MaterialUnavailable);
+        }
+        fields.push(field);
+    }
+    fields.sort();
+    if !super::sorted_unique(&fields) {
+        return Err(MaterialUnavailable);
+    }
+    Ok((action, fields))
+}
+
 pub struct NativePolicySourceBinding {
     pub account: AccountId,
     pub session_id: Uuid,

@@ -1,5 +1,5 @@
 //! Payroll collection read ownership; no persistence or transport dependency.
-use console_kernel_core::KernelError;
+use console_kernel_core::{KernelError, OrgId};
 use serde::Serialize;
 use std::{future::Future, pin::Pin};
 use time::{Date, OffsetDateTime};
@@ -42,11 +42,32 @@ pub struct ListPayrollRuns {
     pub offset: Option<i64>,
 }
 
+/// Committed scope accompanies the page without changing its public JSON shape.
+#[derive(Debug)]
+pub struct PayrollRunsReadResult {
+    pub page: PayrollRunPage,
+    pub company: Option<PayrollCompanyContext>,
+}
+
+#[derive(Debug)]
+pub struct PayrollCompanyContext {
+    pub id: OrgId,
+    pub identity: Option<PayrollCompanyIdentity>,
+}
+
+#[derive(Debug)]
+pub struct PayrollCompanyIdentity {
+    pub name: String,
+    pub slug: String,
+}
+
+pub type PayrollAuthorizeFuture<'a> =
+    Pin<Box<dyn Future<Output = Result<(), PayrollRunsReadError>> + Send + 'a>>;
 pub type PayrollReadFuture<'a> =
-    Pin<Box<dyn Future<Output = Result<PayrollRunPage, KernelError>> + Send + 'a>>;
+    Pin<Box<dyn Future<Output = Result<PayrollRunsReadResult, PayrollRunsReadError>> + Send + 'a>>;
 
 pub trait PayrollRunsReadPort: Send {
-    fn authorize(&self) -> Result<(), KernelError>;
+    fn authorize(&mut self) -> PayrollAuthorizeFuture<'_>;
     fn read_page(&mut self, query: ListPayrollRuns) -> PayrollReadFuture<'_>;
 }
 
@@ -55,17 +76,16 @@ pub trait PayrollRunsReadPort: Send {
 pub enum PayrollRunsReadError {
     Authorization(KernelError),
     Read(KernelError),
+    AuthenticationInvalid,
+    Unavailable,
 }
 
 pub async fn list_payroll_runs<P: PayrollRunsReadPort + ?Sized>(
     port: &mut P,
     query: ListPayrollRuns,
-) -> Result<PayrollRunPage, PayrollRunsReadError> {
-    port.authorize()
-        .map_err(PayrollRunsReadError::Authorization)?;
-    port.read_page(query)
-        .await
-        .map_err(PayrollRunsReadError::Read)
+) -> Result<PayrollRunsReadResult, PayrollRunsReadError> {
+    port.authorize().await?;
+    port.read_page(query).await
 }
 
 #[cfg(test)]

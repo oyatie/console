@@ -155,6 +155,23 @@ fn decide<P: CompanyPolicyDecisionPort + ?Sized>(
     policy.decide(authority, &request)
 }
 
+/// Project the identity pair only after its own field-level policy decision.
+pub fn project_company_identity<P: CompanyPolicyDecisionPort + ?Sized>(
+    policy: &P,
+    authority: &CurrentCompanyAuthority,
+) -> Result<CompanyContextView, CompanyPolicyError> {
+    if decide(policy, authority, InitialCompanyAction::ReadIdentity, false)?
+        == CompanyPolicyDecision::Deny
+    {
+        return Err(CompanyPolicyError::NotFound);
+    }
+    Ok(CompanyContextView {
+        org_id: authority.company(),
+        name: authority.name().to_owned(),
+        slug: authority.slug().to_owned(),
+    })
+}
+
 pub async fn read_company_identity<S: CompanyPolicyStore, P: CompanyPolicyDecisionPort + ?Sized>(
     store: &S,
     policy: &P,
@@ -162,17 +179,13 @@ pub async fn read_company_identity<S: CompanyPolicyStore, P: CompanyPolicyDecisi
     company: OrgId,
 ) -> Result<CompanyIdentityView, CompanyPolicyError> {
     read_current(store, credentials, company, |a| {
-        if decide(policy, a, InitialCompanyAction::ReadIdentity, false)?
-            == CompanyPolicyDecision::Deny
-        {
-            return Err(CompanyPolicyError::NotFound);
-        }
+        let identity = project_company_identity(policy, a)?;
         let show_policy_navigation = decide(policy, a, InitialCompanyAction::ReadPolicy, true)?
             == CompanyPolicyDecision::Allow;
         Ok(CompanyIdentityView {
-            org_id: a.company(),
-            name: a.name().to_owned(),
-            slug: a.slug().to_owned(),
+            org_id: identity.org_id,
+            name: identity.name,
+            slug: identity.slug,
             show_policy_navigation,
         })
     })

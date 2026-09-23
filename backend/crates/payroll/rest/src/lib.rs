@@ -265,12 +265,19 @@ async fn list_runs_page(
         },
     )
     .await
+    .map(|result| result.page)
     .map_err(|error| match error {
         PayrollRunsReadError::Authorization(error) => {
             ListRunsRequestError::Authority(RestError::from_kernel(error))
         }
         PayrollRunsReadError::Read(error) => {
             ListRunsRequestError::Read(RestError::from_kernel(error))
+        }
+        PayrollRunsReadError::AuthenticationInvalid => {
+            ListRunsRequestError::Authority(RestError::unauthorized("authentication invalid"))
+        }
+        PayrollRunsReadError::Unavailable => {
+            ListRunsRequestError::Read(RestError::unavailable("payroll unavailable"))
         }
     })
 }
