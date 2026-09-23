@@ -71,8 +71,19 @@ function completePolicyPlan(r){try{
  return JSON.stringify(r.policy_documents)===JSON.stringify(expected)&&JSON.stringify(r.policy_expected_mutations)===JSON.stringify(mutationPaths);
  }catch{return false;}}
 async function exactVisibleLink(link,href){return await link.count()===1&&await link.isVisible()&&await link.getAttribute('href')===href;}
+function validCompanyLayout(value,expectedCount,viewport){
+ if(!Number.isInteger(expectedCount)||expectedCount<1||![320,1440].includes(viewport)||!value||value.workspace!==true||value.stylesheet!==true||value.display!==(viewport===320?'block':'grid')||value.viewport!==viewport||!Number.isFinite(value.scrollWidth)||value.scrollWidth>viewport+1||value.scrollWidth<viewport||!Array.isArray(value.rects)||value.rects.length!==expectedCount)return false;
+ const rects=value.rects;
+ if(!rects.every(r=>r&&['x','y','width','height'].every(k=>Number.isFinite(r[k]))&&r.x>=0&&r.y>=0&&r.width>=44&&r.height>=44&&r.x+r.width<=viewport+1))return false;
+ for(let i=0;i<rects.length;i++)for(let j=i+1;j<rects.length;j++){
+  const a=rects[i],b=rects[j];
+  if(Math.max(a.x-b.x-b.width,b.x-a.x-a.width,a.y-b.y-b.height,b.y-a.y-a.height)<8)return false;
+ }
+ return true;
+}
+function completeCompanyWorkspace(r){return ['company_layout_320','company_layout_desktop'].every(key=>r[key]===true)&&(r.policy_entry!==true||['payroll_company_layout_320','payroll_company_layout_desktop'].every(key=>r[key]===true));}
 function completeNavigation(r){return ['payroll_nav_before_grant_absent','payroll_receipt_link','payroll_workspace_link','keyboard_payroll_navigation','reflow_payroll_workspace_320','payroll_nav_after_revoke_absent'].every(key=>r[key]===true);}
-function completeObservations(r){return completeDocuments(r)&&completeMutations(r)&&r.browser_version==='153.0.8010.12'&&r.unexpected_mutations===0&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')===(r.policy_entry===true?'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED,POLICY_ENTRY_READY,POLICY_PREFLIGHT,CATALOG_INSTALLED,GRANT_COMMITTED,GRANT_REOPENED,PAYROLL_READ,PAYROLL_REOPENED,PAYROLL_JSON,REVOKE_COMMITTED,REVOKE_REOPENED,PAYROLL_DENIED,PAYROLL_JSON_DENIED,ADMIN_REOPENED':'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED')&&(r.policy_entry!==true||(require('./policy_journey.cjs').validEvidence(r.policy)&&completePolicyPlan(r)&&completeNavigation(r)&&['current_context','policy_entry_link','policy_preflight','reflow_policy_320','keyboard_policy_entry','keyboard_policy_submit','full_policy_journey','payroll_ssr','payroll_reopened','payroll_json','payroll_denied','payroll_json_denied','administration_reopened'].every(key=>r[key]===true)))&&MUTATION_PATHS.every(p=>r.posts?.[p]===1)&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','reflow_result_320','reflow_company_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','keyboard_company_submit','company_wire','company_result','company_reopen','company_workspace','company_back','invalid_input_preserved','recipient_consequence','business_input_not_stored'].every(key=>r[key]===true);}
+function completeObservations(r){return completeCompanyWorkspace(r)&&completeDocuments(r)&&completeMutations(r)&&r.browser_version==='153.0.8010.12'&&r.unexpected_mutations===0&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')===(r.policy_entry===true?'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED,POLICY_ENTRY_READY,POLICY_PREFLIGHT,CATALOG_INSTALLED,GRANT_COMMITTED,GRANT_REOPENED,PAYROLL_READ,PAYROLL_REOPENED,PAYROLL_JSON,REVOKE_COMMITTED,REVOKE_REOPENED,PAYROLL_DENIED,PAYROLL_JSON_DENIED,ADMIN_REOPENED':'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED')&&(r.policy_entry!==true||(require('./policy_journey.cjs').validEvidence(r.policy)&&completePolicyPlan(r)&&completeNavigation(r)&&['current_context','policy_entry_link','policy_preflight','reflow_policy_320','keyboard_policy_entry','keyboard_policy_submit','full_policy_journey','payroll_ssr','payroll_reopened','payroll_json','payroll_denied','payroll_json_denied','administration_reopened'].every(key=>r[key]===true)))&&MUTATION_PATHS.every(p=>r.posts?.[p]===1)&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','reflow_result_320','reflow_company_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','keyboard_company_submit','company_wire','company_result','company_reopen','company_workspace','company_back','invalid_input_preserved','recipient_consequence','business_input_not_stored'].every(key=>r[key]===true);}
 function leafStatus(r){return !r.failure&&completeObservations(r)&&r.cleanup?.confirmed===true?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';}
 function publicError(error){const allowed=new Set(['TIMEOUT','OWNER_PROTOCOL','OWNER_EOF','OWNER_REFUSED','PREREQUISITE','TLS_RELAY_FAILED','UI_PUBLIC_ENTRY_MISSING','UI_LINK_MISSING','TERMS_CONTROL','REGISTRATION_WIRE','REGISTRATION_EFFECT','RESIDENT','COOKIE_SECURITY','SECRET_DISCLOSURE','ACCOUNT_SSR','LOGOUT_EFFECT','LOGIN_WIRE','LOGIN_EFFECT','EXTERNAL_REQUEST','OBSERVATION_INCOMPLETE','REFLOW_320','KEYBOARD_FOCUS','KEYBOARD_DISCOVERY','KEYBOARD_SKIP','KEYBOARD_TERMS','COMPANY_ENTRY','COMPANY_FORM','COMPANY_WIRE','COMPANY_RESULT','COMPANY_WORKSPACE','COMPANY_REOPEN','INPUT_PRESERVATION','BUSINESS_STORAGE','CURRENT_CONTEXT','POLICY_ENTRY','POLICY_PREFLIGHT']);if(allowed.has(error?.code))return error.code;const network=String(error?.message??'').match(/\bnet::(ERR_[A-Z0-9_]{1,76})\b/);if(network)return network[1];if(error?.name==='TimeoutError')return 'BROWSER_TIMEOUT';if(error?.name==='SyntaxError')return 'INVALID_JSON';if(error?.name==='TypeError')return 'BROWSER_TYPE_ERROR';if(/No (?:resource with given identifier found|data found for resource with given identifier)/.test(String(error?.message??'')))return 'RESPONSE_BODY_UNAVAILABLE';if(String(error?.message??'').includes('Execution context was destroyed'))return 'BROWSER_CONTEXT_DESTROYED';return 'UNCLASSIFIED_FAILURE';}
 
@@ -163,6 +174,24 @@ async function main(backendPort,out,mode){
   const auth=await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}});
   const api=(method,p)=>page.waitForResponse(r=>r.url()===origin+p&&r.request().method()===method,{timeout:10000}).catch(()=>null);
   async function reflow320(){return page.evaluate(()=>document.documentElement.clientWidth===320&&Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)<=321);}
+  async function companyLayout(viewport,withPayroll){
+   await page.setViewportSize({width:viewport,height:900});
+   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const company=`/companies/${result.org_id}`;
+   const expected=[['권한 관리',company+'/policy']];
+   if(result.policy_entry)expected.push(['급여 목록 열람 권한',company+'/policy/payroll-read/install']);
+   if(withPayroll)expected.unshift(['급여',company+'/payroll']);
+   const rects=[];
+   for(const [name,href] of expected){
+    const link=page.getByRole('link',{name,exact:true});
+    if(!await exactVisibleLink(link,href))return false;
+    rects.push(await link.boundingBox());
+   }
+   const value=await page.evaluate(()=>({workspace:document.body.classList.contains('workspace')&&document.body.classList.contains('company-workspace'),stylesheet:[...document.styleSheets].some(sheet=>sheet.href===location.origin+'/assets/workspace.css'&&sheet.cssRules.length>0),display:getComputedStyle(document.body).display,viewport:document.documentElement.clientWidth,scrollWidth:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)}));
+   value.rects=rects;
+   result.company_layout_observations??=[];result.company_layout_observations.push({withPayroll,...value});
+   return validCompanyLayout(value,expected.length,viewport);
+  }
   async function focusVisible(locator){return locator.evaluate(element=>{
    const rect=element.getBoundingClientRect(),style=getComputedStyle(element);
    return document.activeElement===element&&element.matches(':focus-visible')&&rect.width>0&&rect.height>0&&rect.left>=0&&rect.right<=innerWidth+1&&rect.top>=0&&rect.bottom<=innerHeight+1&&style.outlineStyle!=='none'&&parseFloat(style.outlineWidth)>=2&&style.outlineColor!=='transparent'&&!/rgba\([^)]*,\s*0\)/.test(style.outlineColor);
@@ -228,7 +257,7 @@ async function main(backendPort,out,mode){
   stage='company_reopen';await page.reload({waitUntil:'domcontentloaded'});result.company_reopen=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1&&await committedCompanyResult();requireFact(result.company_reopen,'COMPANY_REOPEN');
   await openCompany.click();await page.waitForURL(origin+`/companies/${body.org_id}`);
   result.company_workspace=await page.getByRole('heading',{name:companyName,exact:true}).count()===1&&await page.getByRole('link',{name:'권한 관리',exact:true}).count()===1;requireFact(result.company_workspace,'COMPANY_WORKSPACE');
-  result.reflow_company_320=await reflow320();requireFact(result.reflow_company_320,'REFLOW_320');await secretFree();await capture('05-company-workspace.png');
+  result.reflow_company_320=await reflow320();requireFact(result.reflow_company_320,'REFLOW_320');result.company_layout_320=await companyLayout(320,false);result.company_layout_desktop=await companyLayout(1440,false);await secretFree();await capture('company-workspace-desktop.png');await page.setViewportSize({width:320,height:900});await capture('05-company-workspace.png');requireFact(result.company_layout_320&&result.company_layout_desktop,'COMPANY_WORKSPACE');
   // A fresh real document read of the stable result URL models reopening; no back-forward cache is accepted as server evidence.
   await page.goto(origin+body.result_path,{waitUntil:'domcontentloaded'});result.company_back=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1&&await committedCompanyResult();requireFact(result.company_back,'COMPANY_REOPEN');
   result.business_input_not_stored=await page.evaluate(({name,slug})=>!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(name)&&!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(slug),{name:companyName,slug});requireFact(result.business_input_not_stored,'BUSINESS_STORAGE');
@@ -299,7 +328,7 @@ async function main(backendPort,out,mode){
      const payrollLink=page.getByRole('link',{name:'급여',exact:true});
      result.payroll_workspace_link=await exactVisibleLink(payrollLink,payroll);
      requireFact(result.payroll_workspace_link,'POLICY_ENTRY');result.reflow_payroll_workspace_320=await reflow320();requireFact(result.reflow_payroll_workspace_320,'REFLOW_320');
-     await secretFree();await capture('payroll-navigation-workspace-320.png');await page.setViewportSize({width:1440,height:960});await capture('payroll-navigation-workspace-desktop.png');await page.setViewportSize({width:320,height:900});
+     result.payroll_company_layout_320=await companyLayout(320,true);await secretFree();await capture('payroll-navigation-workspace-320.png');result.payroll_company_layout_desktop=await companyLayout(1440,true);await capture('payroll-navigation-workspace-desktop.png');await page.setViewportSize({width:320,height:900});requireFact(result.payroll_company_layout_320&&result.payroll_company_layout_desktop,'COMPANY_WORKSPACE');
      await readPhase('PAYROLL_READ',200,false,async()=>{await tabTo(payrollLink,32);const opened=page.waitForResponse(r=>r.url()===origin+payroll&&r.request().isNavigationRequest());await page.keyboard.press('Enter');const response=await opened;await page.waitForURL(origin+payroll);result.keyboard_payroll_navigation=true;return response;});result.payroll_ssr=true;await readPhase('PAYROLL_REOPENED',200,true);result.payroll_reopened=true;await jsonPhase('PAYROLL_JSON',200);result.payroll_json=true;expectDocument('GET',receiptPath,200,false);const back=await page.goto(origin+receiptPath);requireFact(back.status()===200,'POLICY_PREFLIGHT');}
    });
    result.full_policy_journey=true;
@@ -318,5 +347,5 @@ async function main(backendPort,out,mode){
  }catch(error){result.failure??={stage,code:publicError(error)};}
  finally{clearTimeout(watchdog);await finish();}
 }
-module.exports={exactVisibleLink,completeNavigation,completePolicyPlan,expectedDocumentRows,completeDocumentsOriginal,completeMutationsOriginal,installFormControlsSafe,completeMutations,observeMutations,completeDocuments,observeDocuments,validOrigin,validCheckpointCommand,completeObservations,leafStatus,scrub,watchOwner,closeOwnedBrowser,certificateArgs,publicError,configureResponseRetention};
+module.exports={validCompanyLayout,completeCompanyWorkspace,exactVisibleLink,completeNavigation,completePolicyPlan,expectedDocumentRows,completeDocumentsOriginal,completeMutationsOriginal,installFormControlsSafe,completeMutations,observeMutations,completeDocuments,observeDocuments,validOrigin,validCheckpointCommand,completeObservations,leafStatus,scrub,watchOwner,closeOwnedBrowser,certificateArgs,publicError,configureResponseRetention};
 if(require.main===module)main(process.argv[2],process.argv[3],process.argv[4]).catch(()=>{process.stderr.write('Company UI browser producer initialization failed; no acceptance result.\n');process.exitCode=2;});

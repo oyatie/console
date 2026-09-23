@@ -29,3 +29,23 @@ const link=(count=1,visible=true,href='/payroll')=>({count:async()=>count,isVisi
 test('link guard positive control',async()=>assert.equal(await exactVisibleLink(link(),'/payroll'),true));
 for(const [label,value] of [['absent',link(0)],['duplicated',link(2)],['hidden',link(1,false)],['wrong target',link(1,true,'/wrong')]])test(`link guard rejects ${label}`,async()=>assert.equal(await exactVisibleLink(value,'/payroll'),false));
 test('reordered navigation documents refused',()=>{const r=history();[r.policy_documents[6],r.policy_documents[7]]=[r.policy_documents[7],r.policy_documents[6]];assert.equal(completePolicyPlan(r),false);});
+
+// Company layout evidence must observe actual, nonempty, separated controls.
+const {validCompanyLayout,completeCompanyWorkspace}=require(process.env.CONSOLE_NAVIGATION_DRIVER||'./company.cjs');
+function layout(){return {workspace:true,stylesheet:true,display:'block',viewport:320,scrollWidth:320,rects:[{x:16,y:200,width:120,height:44},{x:16,y:256,width:120,height:44}]};}
+test('Company geometry positive control',()=>assert.equal(validCompanyLayout(layout(),2,320),true));
+test('Company desktop geometry positive control',()=>assert.equal(validCompanyLayout({...layout(),display:'grid',viewport:1440,scrollWidth:1440},2,1440),true));
+for(const key of ['workspace','stylesheet','display','viewport','scrollWidth','rects'])test(`Company geometry missing ${key} refused`,()=>{const v=layout();delete v[key];assert.equal(validCompanyLayout(v,2,320),false);});
+for(const [key,values] of [['workspace',[false,'true']],['stylesheet',[false,'true']],['display',['none','flex','grid']],['viewport',[319,1440]],['scrollWidth',[NaN,Infinity,319,322]],['rects',[[],null]]])for(const value of values)test(`Company invalid ${key}:${JSON.stringify(value)} refused`,()=>assert.equal(validCompanyLayout({...layout(),[key]:value},2,320),false));
+for(const key of ['x','y','width','height'])for(const value of [undefined,NaN,Infinity,-1])test(`Company invalid rectangle ${key}:${String(value)} refused`,()=>{const v=layout();v.rects[0][key]=value;assert.equal(validCompanyLayout(v,2,320),false);});
+for(const [key,value] of [['width',0],['height',0],['width',43],['height',43],['x',250]])test(`Company undersized/offpage ${key}:${value} refused`,()=>{const v=layout();v.rects[0][key]=value;assert.equal(validCompanyLayout(v,2,320),false);});
+for(const y of [200,220,244,251])test(`Company overlapping/touching/close targets ${y} refused`,()=>{const v=layout();v.rects[1].y=y;assert.equal(validCompanyLayout(v,2,320),false);});
+test('Company exact8px target gap accepted',()=>{const v=layout();v.rects[1].y=252;assert.equal(validCompanyLayout(v,2,320),true);});
+test('Company horizontal target gap accepted',()=>{const v=layout();v.rects[1]={...v.rects[0],x:144};assert.equal(validCompanyLayout(v,2,320),true);});
+for(const count of [0,1,3,NaN])test(`Company wrong cardinality ${count} refused`,()=>assert.equal(validCompanyLayout(layout(),count,320),false));
+const companyPositive=()=>({policy_entry:true,company_layout_320:true,company_layout_desktop:true,payroll_company_layout_320:true,payroll_company_layout_desktop:true});
+test('Company completion positive control',()=>assert.equal(completeCompanyWorkspace(companyPositive()),true));
+for(const key of ['company_layout_320','company_layout_desktop','payroll_company_layout_320','payroll_company_layout_desktop']){
+ test(`Company missing observation ${key} refused`,()=>{const v=companyPositive();delete v[key];assert.equal(completeCompanyWorkspace(v),false);});
+ for(const value of [false,null,1,'true'])test(`Company false observation ${key}:${value} refused`,()=>assert.equal(completeCompanyWorkspace({...companyPositive(),[key]:value}),false));
+}
