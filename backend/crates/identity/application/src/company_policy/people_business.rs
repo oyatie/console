@@ -1,51 +1,78 @@
-//! Immutable Company business-policy command bytes. Selectors are not authority.
-use super::AccountId;
+//! Closed native People policy commands. Selectors never establish authority.
+//! The local wire version is 1; the shared policy store discriminates it as codec 2.
+use super::{
+    AccountId,
+    business::{
+        NativeBusinessOperationV1, PolicyAssignmentExpectationV1, invalid, read_assignment,
+        read_revision, read_uuid, take, validate_assignment, validate_expiry, validate_revision,
+        write_assignment,
+    },
+};
 use console_kernel_core::{KernelError, OrgId};
 use time::{OffsetDateTime, UtcOffset};
 use uuid::Uuid;
 
-const PREFIX: &[u8] = b"console.company.business-policy\0\0\x01";
+const PREFIX: &[u8] = b"console.company.people-policy\0\0\x01";
+/// SHA-256 of the exact `native-people-directory-v1` PostgreSQL JSONB manifest.
 pub const MANIFEST: [u8; 32] = [
-    0x07, 0x78, 0x15, 0x14, 0x02, 0x9d, 0x5f, 0x8f, 0x7e, 0x96, 0x22, 0x1d, 0x65, 0x04, 0x38, 0x73,
-    0x24, 0xc8, 0xc0, 0xf2, 0x51, 0x3d, 0xed, 0x2b, 0x21, 0x4d, 0x0b, 0xd6, 0x83, 0xce, 0x3d, 0xdd,
+    0x59, 0x1e, 0x8f, 0xe6, 0x26, 0xa1, 0x1c, 0xe7, 0x24, 0xc8, 0x13, 0x30, 0xf0, 0x35, 0x8f, 0x6f,
+    0x4f, 0xb3, 0xdf, 0x4f, 0xa1, 0x53, 0x2f, 0xa3, 0x29, 0xee, 0x28, 0xd7, 0xc5, 0xb3, 0x8e, 0x5e,
 ];
-const MIN_EXPIRY_MICROS: i64 = -62_135_596_800_000_000;
-const MAX_EXPIRY_MICROS: i64 = 253_402_268_340_000_000;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct PolicyAssignmentExpectationV1 {
-    pub role_revision: u64,
-    pub assignment_id: Uuid,
-    pub assignment_revision: u64,
+pub enum DirectoryActionV1 {
+    Read,
+    Create,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeBusinessOperationV1 {
-    Install,
-    Grant,
-    Revoke,
+impl DirectoryActionV1 {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Read => "people.directory.read",
+            Self::Create => "people.directory.create",
+        }
+    }
+
+    const fn byte(self) -> u8 {
+        match self {
+            Self::Read => 1,
+            Self::Create => 2,
+        }
+    }
+
+    fn decode(bytes: &mut &[u8]) -> Result<Self, KernelError> {
+        match take(bytes, 1)? {
+            [1] => Ok(Self::Read),
+            [2] => Ok(Self::Create),
+            _ => Err(invalid()),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Input {
     Install,
     Grant {
+        action: DirectoryActionV1,
         recipient: AccountId,
         assignment: Option<PolicyAssignmentExpectationV1>,
         expires_at: OffsetDateTime,
     },
-    Revoke(PolicyAssignmentExpectationV1),
+    Revoke {
+        action: DirectoryActionV1,
+        assignment: PolicyAssignmentExpectationV1,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct NativeCompanyBusinessCommandV1 {
+pub struct NativePeoplePolicyCommandV1 {
     command_id: Uuid,
     company: OrgId,
     expected_company_epoch: u64,
     input: Input,
 }
 
-impl NativeCompanyBusinessCommandV1 {
+impl NativePeoplePolicyCommandV1 {
     pub fn install(
         command_id: Uuid,
         company: OrgId,
@@ -58,6 +85,7 @@ impl NativeCompanyBusinessCommandV1 {
         command_id: Uuid,
         company: OrgId,
         expected_company_epoch: u64,
+        action: DirectoryActionV1,
         recipient: AccountId,
         expected_assignment: Option<PolicyAssignmentExpectationV1>,
         expires_at: OffsetDateTime,
@@ -71,6 +99,7 @@ impl NativeCompanyBusinessCommandV1 {
             company,
             expected_company_epoch,
             Input::Grant {
+                action,
                 recipient,
                 assignment: expected_assignment,
                 expires_at: expires_at.to_offset(UtcOffset::UTC),
@@ -82,6 +111,7 @@ impl NativeCompanyBusinessCommandV1 {
         command_id: Uuid,
         company: OrgId,
         expected_company_epoch: u64,
+        action: DirectoryActionV1,
         expected_assignment: PolicyAssignmentExpectationV1,
     ) -> Result<Self, KernelError> {
         validate_assignment(expected_assignment)?;
@@ -89,7 +119,10 @@ impl NativeCompanyBusinessCommandV1 {
             command_id,
             company,
             expected_company_epoch,
-            Input::Revoke(expected_assignment),
+            Input::Revoke {
+                action,
+                assignment: expected_assignment,
+            },
         )
     }
 
@@ -120,26 +153,37 @@ impl NativeCompanyBusinessCommandV1 {
     pub const fn expected_company_epoch(&self) -> u64 {
         self.expected_company_epoch
     }
+
     pub const fn operation(&self) -> NativeBusinessOperationV1 {
         match self.input {
             Input::Install => NativeBusinessOperationV1::Install,
             Input::Grant { .. } => NativeBusinessOperationV1::Grant,
-            Input::Revoke(_) => NativeBusinessOperationV1::Revoke,
+            Input::Revoke { .. } => NativeBusinessOperationV1::Revoke,
         }
     }
+
+    pub const fn action(&self) -> Option<DirectoryActionV1> {
+        match self.input {
+            Input::Install => None,
+            Input::Grant { action, .. } | Input::Revoke { action, .. } => Some(action),
+        }
+    }
+
     pub const fn recipient_account_id(&self) -> Option<AccountId> {
         match self.input {
             Input::Grant { recipient, .. } => Some(recipient),
             _ => None,
         }
     }
+
     pub const fn assignment_expectation(&self) -> Option<PolicyAssignmentExpectationV1> {
         match self.input {
             Input::Install => None,
             Input::Grant { assignment, .. } => assignment,
-            Input::Revoke(assignment) => Some(assignment),
+            Input::Revoke { assignment, .. } => Some(assignment),
         }
     }
+
     pub const fn expires_at(&self) -> Option<OffsetDateTime> {
         match self.input {
             Input::Grant { expires_at, .. } => Some(expires_at),
@@ -148,7 +192,7 @@ impl NativeCompanyBusinessCommandV1 {
     }
 
     pub fn encode(&self, actor: AccountId) -> Vec<u8> {
-        let mut bytes = Vec::with_capacity(180);
+        let mut bytes = Vec::with_capacity(179);
         bytes.extend_from_slice(PREFIX);
         bytes.extend_from_slice(actor.as_uuid().as_bytes());
         bytes.extend_from_slice(self.company.as_uuid().as_bytes());
@@ -158,22 +202,24 @@ impl NativeCompanyBusinessCommandV1 {
         match self.input {
             Input::Install => bytes.push(1),
             Input::Grant {
+                action,
                 recipient,
                 assignment,
                 expires_at,
             } => {
-                bytes.push(2);
+                bytes.extend_from_slice(&[2, action.byte()]);
                 bytes.extend_from_slice(recipient.as_uuid().as_bytes());
                 bytes.push(u8::from(assignment.is_some()));
                 if let Some(assignment) = assignment {
                     write_assignment(&mut bytes, assignment);
                 }
-                // Constructor bounds make this exact signed conversion safe.
-                let micros = (expires_at.unix_timestamp_nanos() / 1_000) as i64;
-                bytes.extend_from_slice(&micros.to_be_bytes());
+                // The constructor proves exact whole minutes in the signed range.
+                bytes.extend_from_slice(
+                    &((expires_at.unix_timestamp_nanos() / 1_000) as i64).to_be_bytes(),
+                );
             }
-            Input::Revoke(assignment) => {
-                bytes.push(3);
+            Input::Revoke { action, assignment } => {
+                bytes.extend_from_slice(&[3, action.byte()]);
                 write_assignment(&mut bytes, assignment);
             }
         }
@@ -194,6 +240,7 @@ impl NativeCompanyBusinessCommandV1 {
         let result = match take(&mut bytes, 1)? {
             [1] => Self::install(command, company, epoch)?,
             [2] => {
+                let action = DirectoryActionV1::decode(&mut bytes)?;
                 let recipient =
                     AccountId::from_uuid(read_uuid(&mut bytes)?).map_err(|_| invalid())?;
                 let assignment = match take(&mut bytes, 1)? {
@@ -205,9 +252,20 @@ impl NativeCompanyBusinessCommandV1 {
                     i64::from_be_bytes(take(&mut bytes, 8)?.try_into().map_err(|_| invalid())?);
                 let expires = OffsetDateTime::from_unix_timestamp_nanos(i128::from(micros) * 1_000)
                     .map_err(|_| invalid())?;
-                Self::grant(command, company, epoch, recipient, assignment, expires)?
+                Self::grant(
+                    command, company, epoch, action, recipient, assignment, expires,
+                )?
             }
-            [3] => Self::revoke(command, company, epoch, read_assignment(&mut bytes)?)?,
+            [3] => {
+                let action = DirectoryActionV1::decode(&mut bytes)?;
+                Self::revoke(
+                    command,
+                    company,
+                    epoch,
+                    action,
+                    read_assignment(&mut bytes)?,
+                )?
+            }
             _ => return Err(invalid()),
         };
         if !bytes.is_empty() {
@@ -216,77 +274,3 @@ impl NativeCompanyBusinessCommandV1 {
         Ok((actor, result))
     }
 }
-
-pub(super) fn invalid() -> KernelError {
-    KernelError::validation("invalid Company business policy input")
-}
-
-pub(super) fn validate_expiry(expires_at: OffsetDateTime) -> Result<(), KernelError> {
-    // Whole-minute instants only; never round historical command input.
-    let nanos = expires_at.unix_timestamp_nanos();
-    if nanos % 60_000_000_000 != 0
-        || !(i128::from(MIN_EXPIRY_MICROS) * 1_000..=i128::from(MAX_EXPIRY_MICROS) * 1_000)
-            .contains(&nanos)
-    {
-        Err(invalid())
-    } else {
-        Ok(())
-    }
-}
-
-pub(super) fn validate_revision(value: u64) -> Result<(), KernelError> {
-    if value == 0 || value > i64::MAX as u64 {
-        Err(invalid())
-    } else {
-        Ok(())
-    }
-}
-
-pub(super) fn validate_assignment(value: PolicyAssignmentExpectationV1) -> Result<(), KernelError> {
-    if value.role_revision != 1 || value.assignment_id.is_nil() {
-        return Err(invalid());
-    }
-    validate_revision(value.assignment_revision)
-}
-
-pub(super) fn take<'a>(input: &mut &'a [u8], len: usize) -> Result<&'a [u8], KernelError> {
-    let (value, rest) = input.split_at_checked(len).ok_or_else(invalid)?;
-    *input = rest;
-    Ok(value)
-}
-
-pub(super) fn read_uuid(input: &mut &[u8]) -> Result<Uuid, KernelError> {
-    let value = Uuid::from_slice(take(input, 16)?).map_err(|_| invalid())?;
-    if value.is_nil() {
-        Err(invalid())
-    } else {
-        Ok(value)
-    }
-}
-
-pub(super) fn read_revision(input: &mut &[u8]) -> Result<u64, KernelError> {
-    let value = u64::from_be_bytes(take(input, 8)?.try_into().map_err(|_| invalid())?);
-    validate_revision(value)?;
-    Ok(value)
-}
-
-pub(super) fn read_assignment(
-    input: &mut &[u8],
-) -> Result<PolicyAssignmentExpectationV1, KernelError> {
-    let value = PolicyAssignmentExpectationV1 {
-        role_revision: read_revision(input)?,
-        assignment_id: read_uuid(input)?,
-        assignment_revision: read_revision(input)?,
-    };
-    validate_assignment(value)?;
-    Ok(value)
-}
-
-pub(super) fn write_assignment(bytes: &mut Vec<u8>, value: PolicyAssignmentExpectationV1) {
-    bytes.extend_from_slice(&value.role_revision.to_be_bytes());
-    bytes.extend_from_slice(value.assignment_id.as_bytes());
-    bytes.extend_from_slice(&value.assignment_revision.to_be_bytes());
-}
-
-#[cfg(test)]
-mod tests;
