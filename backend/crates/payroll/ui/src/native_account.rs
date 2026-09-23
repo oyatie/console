@@ -281,20 +281,49 @@ fn body(page: Page) -> AnyView {
             </section>
         }.into_any(),
         Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation } => view! {
-            <section class="entry-card" data-company-id=org_id.clone()>
-                <p class="eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
-                <dl><dt>"업무 공간 식별자"</dt><dd>{slug}</dd></dl>
+            <div class="company-home" data-company-id=org_id.clone()>
+                <div class="page-heading">
+                    <p class="page-eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
+                    <p class="page-description">"현재 계정으로 열 수 있는 회사 업무를 선택하세요."</p>
+                    <details class="company-identifier"><summary>"업무 공간 식별자"</summary><p>{slug}</p></details>
+                </div>
                 {show_payroll_navigation.then(|| view! {
-                    <nav aria-label="사람과 조직"><a class="button primary" href=format!("/companies/{org_id}/payroll")>"급여"</a></nav>
+                    <section class="company-group" aria-labelledby="company-people-title">
+                        <h2 id="company-people-title">"사람과 조직"</h2>
+                        <nav class="company-destinations" aria-label="사람과 조직">
+                            <article class="company-destination company-payroll" data-company-destination="payroll">
+                                <h3><a href=format!("/companies/{org_id}/payroll")>"급여"</a></h3>
+                                <p>"산정 기간별 급여 회차와 준비 상태, 증빙과 검토 이력을 확인하세요."</p>
+                            </article>
+                        </nav>
+                    </section>
                 })}
-                {show_policy_navigation.then(|| view! {
-                    <a class="button primary" href=format!("/companies/{org_id}/policy")>"권한 관리"</a>
+                {(show_policy_navigation || show_payroll_policy_navigation).then(|| view! {
+                    <section class="company-group" aria-labelledby="company-admin-title">
+                        <h2 id="company-admin-title">"관리"</h2>
+                        <nav class="company-destinations" aria-label="회사 관리">
+                            {show_policy_navigation.then(|| view! {
+                                <article class="company-destination" data-company-destination="policy">
+                                    <h3><a href=format!("/companies/{org_id}/policy")>"권한 관리"</a></h3>
+                                    <p>"이 회사에서 현재 계정에 연결된 권한과 위임할 수 있는 기능을 확인하세요."</p>
+                                </article>
+                            })}
+                            {show_payroll_policy_navigation.then(|| view! {
+                                <article class="company-destination" data-company-destination="payroll-policy">
+                                    <h3><a href=format!("/companies/{org_id}/policy/payroll-read/install")>"급여 목록 열람 권한"</a></h3>
+                                    <p>"급여 목록을 볼 수 있는 계정과 기간을 확인하고, 열람 권한을 연결하거나 회수하세요."</p>
+                                </article>
+                            })}
+                        </nav>
+                    </section>
                 })}
-                {show_payroll_policy_navigation.then(|| view! {
-                    <a class="button secondary" href=format!("/companies/{org_id}/policy/payroll-read/install")>"급여 목록 열람 권한"</a>
+                {(!show_payroll_navigation && !show_policy_navigation && !show_payroll_policy_navigation).then(|| view! {
+                    <section class="panel company-empty" data-company-destinations="empty">
+                        <h2>"이 화면에서 열 수 있는 업무가 없습니다"</h2>
+                        <p>"내 업무 공간 목록에서 다른 회사를 선택하거나 담당자에게 업무 권한을 확인해 주세요."</p>
+                    </section>
                 })}
-                <a class="text-link" href="/account">"내 업무 공간 목록"</a>
-            </section>
+            </div>
         }.into_any(),
         Page::CompanyPolicy { org_id, action_keys, delegable_action_keys } => view! {
             <section class="entry-card">
@@ -338,6 +367,7 @@ fn company_action_label(key: &str) -> &'static str {
 }
 
 pub fn render(page: Page) -> String {
+    let company_workspace = matches!(&page, Page::Company { .. });
     let title = match &page {
         Page::Public => "Console · 업무의 연결",
         Page::SignIn => "로그인 · Console",
@@ -354,6 +384,24 @@ pub fn render(page: Page) -> String {
         Page::Unavailable => "다시 시도 · Console",
     };
     let content = body(page);
+    if company_workspace {
+        let html = view! {
+            <html lang="ko"><head><meta charset="utf-8"/>
+                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <title>{title}</title><link rel="stylesheet" href="/assets/workspace.css"/>
+            </head><body class="workspace company-workspace">
+                <a class="skip-link" href="#main-content">"본문 바로가기"</a>
+                <header class="app">
+                    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>
+                    <p class="nav-group">"업무 공간"</p>
+                    <p class="company-current" aria-current="page">"회사 업무 공간"</p>
+                    <nav class="company-account-nav" aria-label="계정 탐색"><a href="/account">"내 업무 공간 목록"</a></nav>
+                </header>
+                <main id="main-content" tabindex="-1">{content}</main>
+            </body></html>
+        }.to_html();
+        return format!("<!DOCTYPE html>{html}");
+    }
     let html = view! {
         <html lang="ko">
             <head>
@@ -376,9 +424,10 @@ pub fn render(page: Page) -> String {
 
 #[cfg(feature = "ssr")]
 pub fn document(page: Page, status: axum::http::StatusCode) -> axum::response::Response {
-    super::ssr::private_document(
-        render(page),
-        status,
-        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
-    )
+    let policy = if matches!(&page, Page::Company { .. }) {
+        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    } else {
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    };
+    super::ssr::private_document(render(page), status, policy)
 }

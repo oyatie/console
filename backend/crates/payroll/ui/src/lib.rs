@@ -1,8 +1,8 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 pub mod native_account;
-pub mod native_policy;
 #[cfg(feature = "ssr")]
 pub mod native_payroll;
+pub mod native_policy;
 mod organization;
 mod payroll_workspace;
 mod people;
@@ -40,6 +40,24 @@ border-radius:8px;color:var(--muted);font-weight:550;text-decoration:none}
 header.app nav a:hover{background:var(--bg);color:var(--ink)}
 header.app nav a[aria-current]{background:var(--accent-bg);color:#62410b;font-weight:700}
 .nav-symbol{font-size:18px;width:22px;text-align:center}
+.company-workspace .company-current{margin:0;padding:10px 12px;border-radius:8px;background:var(--accent-bg);color:var(--accent-hover);font-weight:650}
+.company-workspace .company-account-nav{margin-top:32px}
+.company-workspace h1{word-break:keep-all;overflow-wrap:anywhere}
+.company-workspace .company-identifier{margin-top:16px;font-size:13px;color:var(--muted)}
+.company-workspace .company-identifier summary{display:list-item;min-height:44px;padding:10px 0;cursor:pointer}
+.company-workspace .company-identifier p{margin:0;padding:8px 0;font-variant-numeric:tabular-nums}
+.company-workspace .company-group{margin:0 0 32px}
+.company-workspace .company-group h2{margin:0 0 12px;font-size:15px;font-weight:650;color:var(--muted)}
+.company-workspace .company-destinations{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
+.company-workspace .company-destination{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 6px #20292304}
+.company-workspace .company-payroll{border-top:3px solid var(--accent)}
+.company-workspace .company-destination h3{margin:0;font-size:19px;line-height:1.45}
+.company-workspace .company-destination a{display:block;min-height:56px;padding:18px 22px 10px;color:var(--ink);text-decoration:none;border-radius:11px 11px 0 0}
+.company-workspace .company-destination a:hover{color:var(--accent);background:var(--surface-subtle)}
+.company-workspace .company-destination p{margin:0;padding:0 22px 22px;color:var(--muted);font-size:14px;word-break:keep-all;overflow-wrap:anywhere}
+.company-workspace .company-empty p{padding:0 22px 16px;color:var(--muted)}
+@media(max-width:680px){.company-workspace .company-account-nav{margin-top:12px}.company-workspace .company-current{display:inline-block}.company-workspace .company-destination a{padding:16px 18px 10px}.company-workspace .company-destination p{padding:0 18px 18px}}
+
 main{min-width:0;width:100%;max-width:1440px;padding:36px 40px 80px;margin:0 auto}
 .page-heading{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
 .page-eyebrow{margin:0 0 6px;font-size:12px;font-weight:650;letter-spacing:.08em;color:var(--muted)}
