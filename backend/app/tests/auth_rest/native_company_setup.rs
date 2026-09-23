@@ -2020,6 +2020,7 @@ pub(crate) mod company_setup {
         include!("native_policy_validation_owner_tests.rs");
         include!("native_people_codec2_install_probe.rs");
         include!("native_people_policy_mixed_owner.rs");
+        include!("native_people_policy_http_owner.rs");
         include!("native_policy_declared_successor_capture.rs");
         include!("native_policy_declared_successor_schema_usage.rs");
         include!("native_policy_successor_contract.rs");
