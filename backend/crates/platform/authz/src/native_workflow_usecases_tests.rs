@@ -1,7 +1,7 @@
 // Proposed ordinary child of native_business_policy_unit_tests.rs.
 // Reuses real CompanyPolicy and its existing strict source fixtures. Scripted
 // scopes test orchestration/withholding only, never SQL/Auth/browser acceptance.
-use super::{CompanyPolicy, at, binding, bootstrap_row, digest, id};
+use super::{CompanyPolicy, at, binding, bootstrap_row, id};
 use console_identity_application::company_policy::{
     AccountId, CompanyPolicyDecision, CompanyPolicyDecisionPort, CompanyPolicyError,
     CompanyPolicyRequest, CurrentCompanyAuthority, CurrentNativeBootstrapAuthority,
@@ -46,7 +46,7 @@ fn selector() -> NativePolicyCommandRef {
 }
 fn accepted() -> NativePolicyAcceptedView {
     NativePolicyAcceptedView {
-        input: input(),
+        input: input().into(),
         intake_receipt_id: id(1001),
         accepted_at: at(),
         execution_not_after: at() + Duration::days(7),
@@ -74,6 +74,9 @@ struct Plan {
     operation_error: Option<NativePolicyWorkflowError>,
     finish_error: Option<NativePolicyWorkflowError>,
     pending_finish: bool,
+    resolved_selector: Option<NativePolicyCommandRef>,
+    returned_selector: Option<NativePolicyCommandRef>,
+    terminal: Option<NativePolicyTerminalView>,
 }
 impl Plan {
     fn new(mode: Mode) -> Self {
@@ -84,6 +87,9 @@ impl Plan {
             operation_error: None,
             finish_error: None,
             pending_finish: false,
+            resolved_selector: None,
+            returned_selector: None,
+            terminal: None,
         }
     }
 }
@@ -171,7 +177,7 @@ impl NativePolicyWorkflowStore for Store {
             id(12),
             recipient,
             selected.operation(),
-            digest(),
+            *plan.resolved_selector.unwrap_or(selected).manifest_digest(),
         )
         .unwrap();
         Ok(Scope {
@@ -199,10 +205,15 @@ impl NativePolicyWorkflowScope for Scope<'_> {
     fn authority(&self) -> &CurrentNativeBootstrapAuthority {
         &self.authority
     }
+    fn selector(&self) -> NativePolicyCommandRef {
+        self.plan
+            .resolved_selector
+            .unwrap_or(self.store.expected_selector)
+    }
     async fn current(&mut self) -> Result<NativePolicyFormView, NativePolicyWorkflowError> {
         self.operation(Mode::Current)?;
         Ok(NativePolicyFormView {
-            selector: selector(),
+            selector: self.plan.returned_selector.unwrap_or_else(selector),
             group_id: self.authority.source().current_group_id,
             company_epoch: 1,
             acting_account_id: AccountId::from_uuid(self.authority.source().actor_account_id)
@@ -221,7 +232,7 @@ impl NativePolicyWorkflowScope for Scope<'_> {
         }
         Ok(NativePolicyForm {
             view: NativePolicyFormView {
-                selector: selector(),
+                selector: self.plan.returned_selector.unwrap_or_else(selector),
                 group_id: self.authority.source().current_group_id,
                 company_epoch: 1,
                 acting_account_id: AccountId::from_uuid(self.authority.source().actor_account_id)
@@ -250,7 +261,7 @@ impl NativePolicyWorkflowScope for Scope<'_> {
         self.operation(Mode::Execute)?;
         Ok(NativePolicyExecution {
             inserted: self.plan.inserted,
-            terminal: terminal(),
+            terminal: self.plan.terminal.clone().unwrap_or_else(terminal),
         })
     }
     async fn status(&mut self) -> Result<NativePolicyStatus, NativePolicyWorkflowError> {
@@ -306,6 +317,7 @@ impl Drop for Scope<'_> {
     }
 }
 struct Policy {
+    expected_manifest: [u8; 32],
     real: CompanyPolicy,
     history: Arc<Mutex<History>>,
     overrides: Mutex<VecDeque<Result<CompanyPolicyDecision, CompanyPolicyError>>>,
@@ -313,6 +325,7 @@ struct Policy {
 impl Policy {
     fn new(store: &Store) -> Self {
         Self {
+            expected_manifest: *store.expected_selector.manifest_digest(),
             real: CompanyPolicy::new().unwrap(),
             history: store.history.clone(),
             overrides: Mutex::new(VecDeque::new()),
@@ -326,6 +339,11 @@ impl CompanyPolicyDecisionPort for Policy {
         r: &NativeBootstrapRequestV1,
     ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
         self.history.lock().unwrap().events.push("decision".into());
+        assert_eq!(
+            r.manifest_digest(),
+            &self.expected_manifest,
+            "workflow selected wrong policy family"
+        );
         let actual = self.real.decide_native_bootstrap(a, r)?;
         assert_eq!(
             actual,
@@ -731,7 +749,7 @@ fn workflow_grant_uses_original_recipient_and_actual_cedar_denies_mismatch() {
         )
         .unwrap();
         let mut accepted_value = accepted();
-        accepted_value.input = command.clone();
+        accepted_value.input = command.clone().into();
         let mut a = Plan::new(Mode::Accept);
         a.status = NativePolicyStatus::AcceptedPending(accepted_value);
         let mut s = Store::new(vec![a]);
@@ -906,3 +924,6 @@ fn workflow_current_finishes_without_proof_and_cancellation_withholds_view() {
 
 #[path = "native_workflow_binding_tests.rs"]
 mod binding_contract;
+
+#[path = "native_people_workflow_tests.rs"]
+mod people_contract;

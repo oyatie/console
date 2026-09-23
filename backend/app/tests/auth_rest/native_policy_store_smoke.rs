@@ -178,7 +178,7 @@ mod native_policy_store_smoke {
             NativePolicyStatus::AcceptedPending(view) => view,
             _ => panic!("new acceptance did not remain pending"),
         };
-        assert_eq!(pending.input, command);
+        assert_eq!(pending.input, command.clone().into());
         let after_a = all_rows(&pool).await;
         let a = additions(
             &before,
