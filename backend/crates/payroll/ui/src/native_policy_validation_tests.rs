@@ -243,3 +243,79 @@ fn native_policy_stale_validation_preserves_original_context_without_resubmit() 
         assert!(!html.contains("href=\"#\"") && !html.contains("disabled"));
     }
 }
+
+#[test]
+fn native_policy_documents_preserve_post_origin_and_private_security_headers() {
+    use super::native_policy::{document, OriginalRecord, Outcome};
+    use axum::http::{header, StatusCode};
+    let mut pages = vec![];
+    for operation in [Operation::Install, Operation::Grant, Operation::Revoke] {
+        let mut current = scope(true);
+        let action = match operation {
+            Operation::Install => {
+                current.installed = false;
+                current.assignment = None;
+                format!("/companies/{COMPANY}/policy/payroll-read/catalog")
+            }
+            Operation::Grant => format!("/companies/{COMPANY}/policy/payroll-read/grants"),
+            Operation::Revoke => {
+                let assignment = current.assignment.as_mut().unwrap();
+                assignment.state = "ACTIVE";
+                assignment.label = "연결됨";
+                assignment.can_revoke = true;
+                assignment.can_grant = false;
+                format!("/companies/{COMPANY}/policy/payroll-read/grants/{ASSIGNMENT}/revoke")
+            }
+        };
+        pages.push((Page::Form(Form {
+            scope: current, operation, command: COMMAND.into(), proof: PROOF.into(), validation: None,
+        }), StatusCode::OK, Some(action)));
+    }
+    pages.push((Page::Form(Form {
+        scope: scope(true), operation: Operation::Grant, command: COMMAND.into(), proof: PROOF.into(),
+        validation: Some(validation(true, true)),
+    }), StatusCode::UNPROCESSABLE_ENTITY, Some(format!("/companies/{COMPANY}/policy/payroll-read/grants"))));
+    pages.push((Page::Result {
+        scope: scope(true), operation: Operation::Grant, command: COMMAND.into(),
+        outcome: Outcome::Pending { accepted_at: "2026-09-23 09:00 KST".into(),
+            deadline: "2026-09-30 09:00 KST".into(), proof: PROOF.into() },
+        original: OriginalRecord { accepted_at: "2026-09-23 09:00 KST".into(),
+            deadline: "2026-09-30 09:00 KST".into(), intake_receipt: COMMAND.into(),
+            expected_company_epoch: "9".into(), expected_assignment: None, requested_until: None,
+            effect_period: None, effect_epochs: None },
+    }, StatusCode::OK, Some(format!("/companies/{COMPANY}/policy/payroll-read/requests/grant/{COMMAND}/retry"))));
+    pages.push((Page::Unavailable, StatusCode::SERVICE_UNAVAILABLE, None));
+    for (page, status, action) in pages {
+        let response = document(page, status);
+        assert_eq!(response.status(), status);
+        let headers = response.headers();
+        for (name, value) in [
+            (header::REFERRER_POLICY, "same-origin"),
+            (header::CACHE_CONTROL, "no-store"),
+            (header::PRAGMA, "no-cache"),
+            (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            (header::VARY, "Authorization, Cookie, Origin"),
+            (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+            (header::CONTENT_SECURITY_POLICY, "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"),
+        ] {
+            let values: Vec<_> = headers.get_all(name.clone()).iter().collect();
+            assert_eq!(values.len(), 1, "missing or duplicate {name}");
+            assert_eq!(values[0], value, "unexpected {name}");
+        }
+        assert!(!headers.contains_key(header::SET_COOKIE));
+        use std::{future::Future, task::{Context, Poll, Waker}};
+        let mut body = std::pin::pin!(axum::body::to_bytes(response.into_body(), 256 * 1024));
+        let Poll::Ready(bytes) = body.as_mut().poll(&mut Context::from_waker(Waker::noop())) else {
+            panic!("buffered native policy response unexpectedly pending");
+        };
+        let html = String::from_utf8(bytes.unwrap().to_vec()).unwrap();
+        let forms: Vec<_> = html.split("<form").skip(1).map(|s| s.split('>').next().unwrap()).collect();
+        if let Some(action) = action {
+            assert_eq!(forms.len(), 1, "fixture must expose a real POST form");
+            assert!(forms[0].contains("method=\"post\""));
+            assert!(forms[0].contains(&format!("action=\"{action}\"")));
+        } else {
+            assert!(forms.is_empty(), "error document exposed a mutation form");
+        }
+    }
+}

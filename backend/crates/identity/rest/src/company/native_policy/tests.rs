@@ -199,6 +199,7 @@ async fn original_method_origin_media_metadata_and_proof_namespace_are_not_rewri
             "https://attacker.example.com",
             StatusCode::FORBIDDEN,
         ),
+        ("origin", "null", StatusCode::FORBIDDEN),
         ("content-type", "application/json", StatusCode::BAD_REQUEST),
         (
             "content-type",
