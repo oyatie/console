@@ -332,7 +332,8 @@ $account_custody$;
             'ops/postgres-finalize-company-enrollment.sql': company_enrollment_finalizer_sql(),
             **credential_generated_files(),
             **native_company_policy_generated_files(),
-            **native_company_policy_v2_capture_files()}
+            **native_company_policy_v2_capture_files(),
+            **native_company_policy_v2_finalized_files()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6503,6 +6504,124 @@ def native_company_policy_v2_capture_files():
     return {
         'ops/postgres-native-company-policy-v2-owner.sql': native_company_policy_v2_source_sql(),
         'ops/postgres-capture-native-company-policy-v2-custody.sql': native_company_policy_v2_snapshot_query() + ';\n',
+    }
+
+
+# Independently captured profiles; historical serializers remain unchanged.
+NATIVE_POLICY_V2_FINALIZED_SHA256 = (
+    'e94251d48fdee392d7632709b19d80cc04d53ea6742e0f2d6538d68391ab8bf2',
+    'f132054a56641dcb0cc5875d6485846df2091e631d0d902a18356d2202343fd9',
+)
+
+
+def native_company_policy_v2_profiles():
+    profiles = (*NATIVE_POLICY_FINALIZED_SHA256, *NATIVE_POLICY_V2_FINALIZED_SHA256)
+    if len(profiles) != 4 or len(set(profiles)) != 4 or any(
+            len(value) != 64 or any(c not in '0123456789abcdef' for c in value) for value in profiles):
+        raise SystemExit('Native policy v2 profiles require independent declared-source capture review')
+    return profiles
+
+
+def native_company_policy_v2_presence_query():
+    import re
+    prior = sorted(set(re.findall(r'CREATE FUNCTION ([a-z_]+\.[a-z_0-9]+)\(',
+                                 native_company_policy_source_sql())))
+    if not prior:
+        raise ValueError('Native policy predecessor routine roster empty')
+    routines = ','.join("('" + name.replace('.', "','", 1) + "')" for name in prior)
+    return f"""SELECT EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+ WHERE ({NATIVE_POLICY_V2_NAMESPACE_PREDICATE})
+ AND (n.nspname,p.proname) NOT IN (VALUES {routines}))
+ OR EXISTS(SELECT 1 FROM pg_constraint c WHERE c.conrelid IN
+   (to_regclass('public.native_company_policy_inputs_v1'),to_regclass('public.native_company_policy_receipts_v1'),
+    to_regclass('public.native_company_catalog_installs'),to_regclass('public.native_company_object_refs'),
+    to_regclass('public.native_company_action_refs'),to_regclass('public.native_company_property_refs'))
+  AND c.conname IN ('native_company_policy_inputs_v1_codec_shape_v2',
+   'native_company_policy_receipts_v1_codec_shape_v2','native_company_catalog_installs_catalog_policy_shape_v2',
+   'native_company_object_refs_object_key_v3','native_company_action_refs_action_key_v3',
+   'native_company_property_refs_property_key_v3')) AS present"""
+
+
+def native_company_policy_v2_state_query():
+    native_company_policy_v2_profiles()
+    final = ','.join("'" + value + "'" for value in NATIVE_POLICY_V2_FINALIZED_SHA256)
+    return f"""WITH native_profile AS (
+{native_company_policy_v2_snapshot_query()}
+), successor_presence AS (
+{native_company_policy_v2_presence_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM native_profile) IN ({final})
+ AND (SELECT native_policy_startup_rights_valid FROM native_profile) IS TRUE
+ THEN 'native_company_policy_v2.finalized'
+ WHEN (SELECT present FROM successor_presence) IS FALSE
+ THEN 'native_company_policy_v2.absent'
+ ELSE 'native_company_policy_v2.profile_mismatch' END AS state"""
+
+
+def native_company_policy_v2_finalizer_sql():
+    native_company_policy_v2_profiles()
+    source = native_company_policy_v2_source_sql()
+    marker = '-- Immutable People reference; no grants or business records are created.\n'
+    if source.count(marker) != 1:
+        raise ValueError('Native policy successor reference boundary drift')
+    reference = source[source.index(marker):]
+    final = ','.join("'" + value + "'" for value in NATIVE_POLICY_V2_FINALIZED_SHA256)
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS))
+    if len(names) != 61 or len(set(names)) != len(names):
+        raise ValueError('Native policy custody relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    inspect = ('SELECT snapshot_sha256,native_policy_startup_rights_valid INTO observed,rights_valid FROM (\n'
+               + native_company_policy_v2_snapshot_query() + '\n) captured;')
+    previous = ('SELECT snapshot_sha256,native_policy_startup_rights_valid INTO predecessor,prior_rights_valid FROM (\n'
+                + native_company_policy_snapshot_query() + '\n) captured;')
+    return f"""-- Generated atomic native Company policy dual-codec custody upgrade.
+-- Requires compatible readers before this separately operated database change.
+DO $native_policy_v2_custody$
+DECLARE observed text; rights_valid boolean; predecessor text; prior_rights_valid boolean;
+ expected_final text; relation_name text;
+BEGIN
+ IF session_user<>current_user OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+  OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+   'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+   'console_platform_force_cmd','console_account_owner','console_terms_owner','console_credential_owner',
+   'console_durability_observer') THEN RAISE EXCEPTION 'native_company_policy_v2.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+  RAISE EXCEPTION 'native_company_policy_v2.unsupported_isolation'; END IF;
+ PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+ PERFORM pg_catalog.set_config('lock_timeout','1s',true);
+ FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relname IN ({literals}) ORDER BY c.relname COLLATE "C"
+ LOOP EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name); END LOOP;
+ {inspect}
+ IF observed IN ({final}) AND rights_valid IS TRUE THEN
+{reference}
+  RETURN;
+ END IF;
+ IF ({native_company_policy_v2_presence_query()}) THEN
+  RAISE EXCEPTION 'native_company_policy_v2.profile_mismatch'; END IF;
+ {previous}
+ expected_final:=CASE predecessor
+  WHEN '{NATIVE_POLICY_FINALIZED_SHA256[0]}' THEN '{NATIVE_POLICY_V2_FINALIZED_SHA256[0]}'
+  WHEN '{NATIVE_POLICY_FINALIZED_SHA256[1]}' THEN '{NATIVE_POLICY_V2_FINALIZED_SHA256[1]}' ELSE NULL END;
+ IF expected_final IS NULL OR prior_rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_company_policy_v2.predecessor_mismatch'; END IF;
+{source}
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_company_policy_v2.profile_mismatch'; END IF;
+END
+$native_policy_v2_custody$;
+"""
+
+
+def native_company_policy_v2_finalized_files():
+    return {
+        'ops/postgres-native-company-policy-v2-custody-state.sql': native_company_policy_v2_state_query() + ';\n',
+        'backend/app/src/native_company_policy_v2_custody_state.sql': native_company_policy_v2_state_query() + ';\n',
+        'ops/postgres-finalize-native-company-policy-v2.sql': native_company_policy_v2_finalizer_sql(),
     }
 
 

@@ -2021,6 +2021,7 @@ pub(crate) mod company_setup {
         include!("native_people_codec2_install_probe.rs");
         include!("native_policy_declared_successor_capture.rs");
         include!("native_policy_declared_successor_schema_usage.rs");
+        include!("native_policy_successor_contract.rs");
         include!("native_payroll_read_owner_tests.rs");
     }
 

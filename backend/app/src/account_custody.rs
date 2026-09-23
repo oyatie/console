@@ -19,6 +19,17 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let successor: String =
+        sqlx::query_scalar(include_str!("native_company_policy_v2_custody_state.sql"))
+            .fetch_one(&mut *transaction)
+            .await?;
+    if successor == "native_company_policy_v2.finalized" {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativeCompanyPolicy);
+    }
+    if successor != "native_company_policy_v2.absent" {
+        return Err(AppError::Config(successor));
+    }
     let policy: String =
         sqlx::query_scalar(include_str!("native_company_policy_custody_state.sql"))
             .fetch_one(&mut *transaction)

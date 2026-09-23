@@ -75,3 +75,13 @@ export_file(
     name = "postgres-capture-native-company-policy-custody.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "postgres-finalize-native-company-policy-v2.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-company-policy-v2-custody-state.sql",
+    visibility = ["PUBLIC"],
+)

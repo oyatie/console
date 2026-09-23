@@ -37,10 +37,17 @@ POLICY_CAPTURE_OUTPUTS={
     'ops/postgres-capture-native-company-policy-v2-custody.sql': '7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4',
 }
 
+# Separately reviewed exact dual-codec finalizer and reader-first classifier.
+POLICY_FINALIZER_OUTPUTS={
+    'ops/postgres-finalize-native-company-policy-v2.sql': 'ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e',
+    'ops/postgres-native-company-policy-v2-custody-state.sql': 'e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc',
+    'backend/app/src/native_company_policy_v2_custody_state.sql': 'e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc',
+}
+
 class CompanyInputGeneratorTests(unittest.TestCase):
     def test_one_new_output_preserves_all_existing_generated_bytes(self):
         outputs=GENERATOR.generated_files()
-        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS))
+        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS)|set(POLICY_FINALIZER_OUTPUTS))
         for path,digest in EXPECTED.items():
             if path == "ops/account-custody-migrations.sha384":
                 # Reviewed9b9baed6a appended0229; retain exact historical228pin.
@@ -52,7 +59,7 @@ class CompanyInputGeneratorTests(unittest.TestCase):
             else:
                 self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
-        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS}.items():
+        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS,**POLICY_FINALIZER_OUTPUTS}.items():
             self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
         emitted=GENERATOR.company_enrollment_input_sql()
