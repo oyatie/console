@@ -401,9 +401,15 @@ pub fn render(page: Page) -> String {
 }
 #[cfg(feature = "ssr")]
 pub fn document(page: Page, status: axum::http::StatusCode) -> axum::response::Response {
-    super::ssr::private_document(
+    let mut response = super::ssr::private_document(
         render(page),
         status,
         "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
-    )
+    );
+    // Native form POSTs need their same-origin Origin; no-referrer makes it null.
+    response.headers_mut().insert(
+        axum::http::header::REFERRER_POLICY,
+        axum::http::HeaderValue::from_static("same-origin"),
+    );
+    response
 }
