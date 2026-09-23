@@ -184,6 +184,18 @@ pub enum NativePolicyStatus {
     Terminal(NativePolicyTerminalView),
 }
 
+impl NativePolicyStatus {
+    fn input(&self) -> Option<&NativeCompanyBusinessCommandV1> {
+        match self {
+            Self::NotVisible => None,
+            Self::AcceptedPending(accepted) | Self::AcceptedExpired(accepted) => {
+                Some(&accepted.input)
+            }
+            Self::Terminal(terminal) => Some(&terminal.accepted.input),
+        }
+    }
+}
+
 pub struct NativePolicyAcceptance {
     pub inserted: bool,
     pub status: NativePolicyStatus,
@@ -288,6 +300,9 @@ pub async fn native_policy_current<
         .await?;
     authorize(policy, scope.authority(), selector, None)?;
     let view = scope.current().await?;
+    if view.selector != selector {
+        return Err(NativePolicyWorkflowError::Unavailable);
+    }
     scope.finish(policy, None).await?;
     Ok(view)
 }
@@ -339,6 +354,9 @@ async fn read_form<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + 
     let mut scope = store.lock(credentials, request).await?;
     authorize(policy, scope.authority(), selector, None)?;
     let form = scope.form().await?;
+    if form.view.selector != selector {
+        return Err(NativePolicyWorkflowError::Unavailable);
+    }
     scope.finish(policy, Some(&form.proof)).await?;
     Ok(form)
 }
@@ -363,7 +381,7 @@ pub async fn accept_native_policy_command<
         input.recipient_account_id(),
     )?;
     let accepted = scope.accept(trace).await?;
-    if matches!(accepted.status, NativePolicyStatus::NotVisible) {
+    if accepted.status.input() != Some(input) {
         return Err(NativePolicyWorkflowError::Unavailable);
     }
     scope.finish(policy, None).await?;
@@ -385,6 +403,9 @@ pub async fn execute_native_policy_command<
         .await?;
     authorize(policy, scope.authority(), selector, None)?;
     let executed = scope.execute(trace).await?;
+    if NativePolicyCommandRef::from_command(&executed.terminal.accepted.input) != selector {
+        return Err(NativePolicyWorkflowError::Unavailable);
+    }
     scope.finish(policy, None).await?;
     Ok(executed)
 }
@@ -403,6 +424,12 @@ pub async fn native_policy_command_status<
         .await?;
     authorize(policy, scope.authority(), selector, None)?;
     let status = scope.status().await?;
+    if status
+        .input()
+        .is_some_and(|input| NativePolicyCommandRef::from_command(input) != selector)
+    {
+        return Err(NativePolicyWorkflowError::Unavailable);
+    }
     scope.finish(policy, None).await?;
     Ok(status)
 }
