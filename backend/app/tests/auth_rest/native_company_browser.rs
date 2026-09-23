@@ -329,6 +329,23 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
                 .bind(result.company).fetch_one(&pool).await.unwrap();
             assert_eq!(preflight["expected_company_epoch"], json!(epoch.to_string()));
             let after = all_rows(&pool).await;
+            if !policy_preflight_effects(&committed_state, &after, started, finished) {
+                let changed: Vec<_> = committed_state.keys().chain(after.keys())
+                    .filter(|key| committed_state.get(*key) != after.get(*key))
+                    .collect::<BTreeSet<_>>().into_iter().collect();
+                let counters = |rows: &BTreeMap<String, String>| {
+                    serde_json::from_str::<Vec<Value>>(&rows["auth_rate_limit"]).unwrap()
+                        .into_iter().filter(|row| row["endpoint"] == "account_csrf"
+                            && ["global", "ip:127.0.0.1"].iter().any(|key| row["client_key"] == *key))
+                        .map(|row| json!({"global":row["client_key"]=="global",
+                            "attempts":row["attempts"].as_i64(),
+                            "window_epoch":row["window_start"].as_str().and_then(|s|
+                                OffsetDateTime::parse(s, &time::format_description::well_known::Rfc3339).ok())
+                                .map(|at| at.unix_timestamp())})).collect::<Vec<_>>()
+                };
+                eprintln!("preflight census: changed_tables={changed:?}; start={}; finish={}; before={:?}; after={:?}",
+                    started.unix_timestamp(), finished.unix_timestamp(), counters(&committed_state), counters(&after));
+            }
             assert!(policy_preflight_effects(&committed_state, &after, started, finished),
                 "install preflight changed business state or exceeded exact Auth proof limiter effects");
             checkpoint_receipts.push("POLICY_PREFLIGHT");

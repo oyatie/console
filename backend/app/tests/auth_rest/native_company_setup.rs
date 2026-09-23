@@ -1865,6 +1865,8 @@ pub(crate) mod company_setup {
 
     mod native_policy_startup_tests {
         include!("native_policy_startup_tests.rs");
+        include!("native_policy_system_acl_tests.rs");
+        include!("native_policy_validation_owner_tests.rs");
     }
 
     mod native_policy_physical {

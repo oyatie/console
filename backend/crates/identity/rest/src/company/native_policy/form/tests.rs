@@ -532,3 +532,5 @@ fn invalid_internal_scope_and_nil_route_targets_cannot_bypass_typed_guards() {
         );
     }
 }
+
+include!("expiry_validation_tests.rs");

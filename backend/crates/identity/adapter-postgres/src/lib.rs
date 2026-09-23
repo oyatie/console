@@ -38,6 +38,7 @@ const MAX_USER_LIMIT: i64 = 200;
 
 mod company_enrollment;
 mod company_policy;
+mod native_policy;
 
 #[derive(Debug, thiserror::Error)]
 pub enum PgOrgError {
@@ -108,6 +109,23 @@ impl PgOrgStore {
         self.native_account_read = Some(company_policy::NativeAccountReadConfig {
             verifier,
             absolute_ttl,
+            mode: company_policy::NativeAccountMode::Initial,
+        });
+        self
+    }
+
+    /// Select the verified current-policy reader and its Auth-owned form signer together.
+    #[must_use]
+    pub fn with_native_account_policy(
+        mut self,
+        verifier: console_platform_auth::JwtVerifier,
+        issuer: console_platform_auth::JwtIssuer,
+        absolute_ttl: time::Duration,
+    ) -> Self {
+        self.native_account_read = Some(company_policy::NativeAccountReadConfig {
+            verifier,
+            absolute_ttl,
+            mode: company_policy::NativeAccountMode::Policy { issuer },
         });
         self
     }

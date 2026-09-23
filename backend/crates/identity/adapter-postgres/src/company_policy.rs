@@ -6,7 +6,7 @@ use console_identity_application::company_policy::{
 };
 use console_kernel_core::OrgId;
 use console_platform_auth::{
-    JwtVerifier,
+    JwtIssuer, JwtVerifier,
     account::{AccountEnrollmentCredentials, AccountOperationError, account_now_in_tx},
 };
 use sqlx::{Postgres, Row, Transaction};
@@ -17,6 +17,22 @@ use uuid::Uuid;
 pub(super) struct NativeAccountReadConfig {
     pub verifier: JwtVerifier,
     pub absolute_ttl: Duration,
+    pub mode: NativeAccountMode,
+}
+
+#[derive(Clone)]
+pub(super) enum NativeAccountMode {
+    Initial,
+    Policy { issuer: JwtIssuer },
+}
+
+impl std::fmt::Debug for NativeAccountMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::Initial => "Initial",
+            Self::Policy { .. } => "Policy { issuer: [REDACTED] }",
+        })
+    }
 }
 
 pub struct PgCompanyPolicyScope<'a> {
@@ -90,17 +106,26 @@ impl CompanyPolicyStore for PgOrgStore {
                 .session_ids_in_tx(&mut tx, &config.verifier, config.absolute_ttl)
                 .await
                 .map_err(auth_error)?;
-            let rows = sqlx::query(
-                "SELECT company_epoch,context_generation,assignment_id,assignment_revision,\
-                 role_id,role_revision,registered_clauses::text AS registered_clauses,\
-                 company_name,company_slug \
-                 FROM public.identity_company_projection_v1($1,$2,$3) LIMIT 2",
-            )
-            .bind(account)
-            .bind(family)
-            .bind(*company.as_uuid())
-            .fetch_all(tx.as_mut())
-            .await;
+            let query = match &config.mode {
+                NativeAccountMode::Initial => {
+                    "SELECT company_epoch,context_generation,assignment_id,assignment_revision,\
+                     role_id,role_revision,registered_clauses::text AS registered_clauses,\
+                     company_name,company_slug \
+                     FROM public.identity_company_projection_v1($1,$2,$3) LIMIT 2"
+                }
+                NativeAccountMode::Policy { .. } => {
+                    "SELECT company_epoch,context_generation,assignment_id,assignment_revision,\
+                     role_id,role_revision,registered_clauses::text AS registered_clauses,\
+                     company_name,company_slug,current_policy_receipt_id \
+                     FROM public.identity_company_projection_v2($1,$2,$3) LIMIT 2"
+                }
+            };
+            let rows = sqlx::query(sqlx::AssertSqlSafe(query))
+                .bind(account)
+                .bind(family)
+                .bind(*company.as_uuid())
+                .fetch_all(tx.as_mut())
+                .await;
             let rows = match rows {
                 Ok(rows) => rows,
                 Err(error) => {
@@ -123,25 +148,37 @@ impl CompanyPolicyStore for PgOrgStore {
             }
             let authority = if let Some(row) = rows.first() {
                 let observed_at = account_now_in_tx(&mut tx).await.map_err(auth_error)?;
-                Some(CurrentCompanyAuthority::from_initial_projection(
-                    AccountId::from_uuid(account)
-                        .map_err(|_| CompanyPolicyError::MaterialUnavailable)?,
-                    company,
-                    observed_at,
-                    CompanyProjectionRow {
-                        company_epoch: row.try_get("company_epoch").map_err(sql_error)?,
-                        context_generation: row.try_get("context_generation").map_err(sql_error)?,
-                        assignment_id: row.try_get("assignment_id").map_err(sql_error)?,
-                        assignment_revision: row
-                            .try_get("assignment_revision")
-                            .map_err(sql_error)?,
-                        role_id: row.try_get("role_id").map_err(sql_error)?,
-                        role_revision: row.try_get("role_revision").map_err(sql_error)?,
-                        registered_clauses: row.try_get("registered_clauses").map_err(sql_error)?,
-                        company_name: row.try_get("company_name").map_err(sql_error)?,
-                        company_slug: row.try_get("company_slug").map_err(sql_error)?,
-                    },
-                )?)
+                let projection = CompanyProjectionRow {
+                    company_epoch: row.try_get("company_epoch").map_err(sql_error)?,
+                    context_generation: row.try_get("context_generation").map_err(sql_error)?,
+                    assignment_id: row.try_get("assignment_id").map_err(sql_error)?,
+                    assignment_revision: row.try_get("assignment_revision").map_err(sql_error)?,
+                    role_id: row.try_get("role_id").map_err(sql_error)?,
+                    role_revision: row.try_get("role_revision").map_err(sql_error)?,
+                    registered_clauses: row.try_get("registered_clauses").map_err(sql_error)?,
+                    company_name: row.try_get("company_name").map_err(sql_error)?,
+                    company_slug: row.try_get("company_slug").map_err(sql_error)?,
+                };
+                let account = AccountId::from_uuid(account)
+                    .map_err(|_| CompanyPolicyError::MaterialUnavailable)?;
+                Some(match &config.mode {
+                    NativeAccountMode::Initial => CurrentCompanyAuthority::from_initial_projection(
+                        account,
+                        company,
+                        observed_at,
+                        projection,
+                    )?,
+                    NativeAccountMode::Policy { .. } => {
+                        CurrentCompanyAuthority::from_current_projection(
+                            account,
+                            company,
+                            observed_at,
+                            projection,
+                            row.try_get("current_policy_receipt_id")
+                                .map_err(sql_error)?,
+                        )?
+                    }
+                })
             } else {
                 None
             };

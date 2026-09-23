@@ -54,6 +54,7 @@ pub enum Page {
         name: String,
         slug: String,
         show_policy_navigation: bool,
+        show_payroll_policy_navigation: bool,
     },
     CompanyPolicy {
         org_id: String,
@@ -278,12 +279,15 @@ fn body(page: Page) -> AnyView {
                 <a class="button primary" href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::Company { org_id, name, slug, show_policy_navigation } => view! {
+        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation } => view! {
             <section class="entry-card" data-company-id=org_id.clone()>
                 <p class="eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
                 <dl><dt>"업무 공간 식별자"</dt><dd>{slug}</dd></dl>
                 {show_policy_navigation.then(|| view! {
                     <a class="button primary" href=format!("/companies/{org_id}/policy")>"권한 관리"</a>
+                })}
+                {show_payroll_policy_navigation.then(|| view! {
+                    <a class="button secondary" href=format!("/companies/{org_id}/policy/payroll-read/install")>"급여 목록 열람 권한"</a>
                 })}
                 <a class="text-link" href="/account">"내 업무 공간 목록"</a>
             </section>

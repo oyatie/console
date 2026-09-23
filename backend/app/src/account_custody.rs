@@ -2,7 +2,14 @@
 use crate::AppError;
 use sqlx::PgPool;
 
-pub(crate) async fn verify(pool: &PgPool) -> Result<(), AppError> {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum VerifiedCustodyProfile {
+    NativeAccount,
+    CompanyEnrollment,
+    NativeCompanyPolicy,
+}
+
+pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppError> {
     let mut transaction = pool.begin().await?;
     sqlx::query("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY")
         .execute(&mut *transaction)
@@ -12,13 +19,24 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<(), AppError> {
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let policy: String =
+        sqlx::query_scalar(include_str!("native_company_policy_custody_state.sql"))
+            .fetch_one(&mut *transaction)
+            .await?;
+    if policy == "native_company_policy.finalized" {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativeCompanyPolicy);
+    }
+    if policy != "native_company_policy.absent" {
+        return Err(AppError::Config(policy));
+    }
     let company: String = sqlx::query_scalar(include_str!("company_enrollment_custody_state.sql"))
         .fetch_one(&mut *transaction)
         .await?;
     if company == "company_enrollment.finalized" {
         // This exact profile includes Account, credentials and Company custody.
         transaction.commit().await?;
-        return Ok(());
+        return Ok(VerifiedCustodyProfile::CompanyEnrollment);
     }
     if company != "company_enrollment.absent" {
         return Err(AppError::Config(company));
@@ -34,7 +52,7 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<(), AppError> {
     if state == "account_custody.native_finalized"
         && credentials == "account_credentials.native_finalized"
     {
-        Ok(())
+        Ok(VerifiedCustodyProfile::NativeAccount)
     } else if state == "account_custody.finalized"
         && matches!(
             credentials.as_str(),

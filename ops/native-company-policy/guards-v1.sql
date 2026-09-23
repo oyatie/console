@@ -113,7 +113,8 @@ BEGIN
  ELSIF p_table IN ('ont_property_defs','ont_action_types') THEN
   SELECT o.policy_receipt_id INTO receipt FROM public.ont_object_types o
    WHERE o.org_id=company AND o.id=(p_row->>'object_type_id')::uuid;
- ELSIF p_table='ont_object_type_key_revisions' AND p_row->>'stable_key'='pay_run' THEN
+ ELSIF p_table='ont_object_type_key_revisions' THEN
+  IF p_row->>'stable_key' IS DISTINCT FROM 'pay_run' THEN RETURN NULL; END IF;
   IF NOT EXISTS(SELECT 1 FROM public.company_authority_heads h WHERE h.org_id=company) THEN RETURN NULL; END IF;
   SELECT r.receipt_id INTO STRICT receipt FROM public.native_company_policy_receipts_v1 r WHERE r.org_id=company
    AND r.operation=1 AND r.outcome='COMMITTED' AND r.effect_xid=pg_current_xact_id() AND r.effect_backend_pid=pg_backend_pid();

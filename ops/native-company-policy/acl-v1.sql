@@ -425,3 +425,6 @@ GRANT REFERENCES ON public.native_company_policy_receipts_v1 TO console_ontology
 GRANT INSERT(policy_receipt_id) ON public.policy_roles,public.user_role_assignments TO console_account_owner;
 GRANT INSERT(policy_receipt_id) ON public.ont_object_types,public.ont_builtin_catalog_installs TO console_ontology_writer;
 GRANT UPDATE(current_policy_receipt_id) ON public.company_authority_heads TO console_account_owner;
+
+-- Deferred audit closure verifies the current transaction without broad table reads.
+GRANT SELECT(xmin) ON public.audit_events TO console_account_owner;

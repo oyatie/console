@@ -1219,7 +1219,8 @@ BEGIN
  ELSIF p_table IN ('ont_property_defs','ont_action_types') THEN
   SELECT o.policy_receipt_id INTO receipt FROM public.ont_object_types o
    WHERE o.org_id=company AND o.id=(p_row->>'object_type_id')::uuid;
- ELSIF p_table='ont_object_type_key_revisions' AND p_row->>'stable_key'='pay_run' THEN
+ ELSIF p_table='ont_object_type_key_revisions' THEN
+  IF p_row->>'stable_key' IS DISTINCT FROM 'pay_run' THEN RETURN NULL; END IF;
   IF NOT EXISTS(SELECT 1 FROM public.company_authority_heads h WHERE h.org_id=company) THEN RETURN NULL; END IF;
   SELECT r.receipt_id INTO STRICT receipt FROM public.native_company_policy_receipts_v1 r WHERE r.org_id=company
    AND r.operation=1 AND r.outcome='COMMITTED' AND r.effect_xid=pg_current_xact_id() AND r.effect_backend_pid=pg_backend_pid();
@@ -3146,3 +3147,21 @@ GRANT REFERENCES ON public.native_company_policy_receipts_v1 TO console_ontology
 GRANT INSERT(policy_receipt_id) ON public.policy_roles,public.user_role_assignments TO console_account_owner;
 GRANT INSERT(policy_receipt_id) ON public.ont_object_types,public.ont_builtin_catalog_installs TO console_ontology_writer;
 GRANT UPDATE(current_policy_receipt_id) ON public.company_authority_heads TO console_account_owner;
+
+-- Deferred audit closure verifies the current transaction without broad table reads.
+GRANT SELECT(xmin) ON public.audit_events TO console_account_owner;
+
+-- Immutable product catalogue reference, installed only by the verified operator upgrade.
+-- Existing rows must match; replay never replaces their digest or timestamp.
+DO $native_policy_catalog_reference$
+BEGIN
+ INSERT INTO public.ont_builtin_catalog_allowlist(catalog_version,manifest_digest)
+ VALUES('native-payroll-collection-read-v1',decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex'))
+ ON CONFLICT(catalog_version) DO NOTHING;
+ IF (SELECT manifest_digest FROM public.ont_builtin_catalog_allowlist
+     WHERE catalog_version='native-payroll-collection-read-v1') IS DISTINCT FROM
+     decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex') THEN
+  RAISE EXCEPTION 'native_company_policy.catalog_reference_mismatch';
+ END IF;
+END
+$native_policy_catalog_reference$;

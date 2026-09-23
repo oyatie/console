@@ -71,6 +71,7 @@ impl NativePolicyCommandRef {
 
 pub enum NativePolicyScopeRequest<'a> {
     Form(NativePolicyCommandRef),
+    ValidationForm(NativePolicyCommandRef),
     Accept(&'a NativeCompanyBusinessCommandV1),
     Execute(NativePolicyCommandRef),
     Status(NativePolicyCommandRef),
@@ -79,7 +80,10 @@ pub enum NativePolicyScopeRequest<'a> {
 impl NativePolicyScopeRequest<'_> {
     pub fn selector(&self) -> NativePolicyCommandRef {
         match self {
-            Self::Form(selector) | Self::Execute(selector) | Self::Status(selector) => *selector,
+            Self::Form(selector)
+            | Self::ValidationForm(selector)
+            | Self::Execute(selector)
+            | Self::Status(selector) => *selector,
             Self::Accept(command) => NativePolicyCommandRef::from_command(command),
         }
     }
@@ -103,6 +107,7 @@ pub struct NativePolicyAssignmentView {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NativePolicyFormView {
     pub selector: NativePolicyCommandRef,
+    pub group_id: Uuid,
     pub company_epoch: u64,
     pub acting_account_id: AccountId,
     pub administrative_account_id: AccountId,
@@ -269,9 +274,42 @@ pub async fn native_policy_form<
     credentials: &S::Credentials,
     selector: NativePolicyCommandRef,
 ) -> Result<NativePolicyForm<S::FormProof>, NativePolicyWorkflowError> {
-    let mut scope = store
-        .lock(credentials, NativePolicyScopeRequest::Form(selector))
-        .await?;
+    read_form(
+        store,
+        policy,
+        credentials,
+        NativePolicyScopeRequest::Form(selector),
+    )
+    .await
+}
+
+/// Redisplay invalid input only after validating the original mutation proof.
+pub async fn native_policy_validation_form<
+    S: NativePolicyWorkflowStore,
+    P: CompanyPolicyDecisionPort + ?Sized,
+>(
+    store: &S,
+    policy: &P,
+    credentials: &S::Credentials,
+    selector: NativePolicyCommandRef,
+) -> Result<NativePolicyForm<S::FormProof>, NativePolicyWorkflowError> {
+    read_form(
+        store,
+        policy,
+        credentials,
+        NativePolicyScopeRequest::ValidationForm(selector),
+    )
+    .await
+}
+
+async fn read_form<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + ?Sized>(
+    store: &S,
+    policy: &P,
+    credentials: &S::Credentials,
+    request: NativePolicyScopeRequest<'_>,
+) -> Result<NativePolicyForm<S::FormProof>, NativePolicyWorkflowError> {
+    let selector = request.selector();
+    let mut scope = store.lock(credentials, request).await?;
     authorize(policy, scope.authority(), selector, None)?;
     let form = scope.form().await?;
     scope.finish(policy, Some(&form.proof)).await?;

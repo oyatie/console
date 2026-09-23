@@ -150,7 +150,12 @@ async fn original_real_form_requests_capture_all_four_typed_shapes() {
         // Credentials remain opaque and are not inspected, logged or treated as
         // current authority. Existing owners must authenticate them later.
         let (_credentials, input) = prepared;
-        match input {
+        match match input {
+            super::form::DocumentInput::Ready(input) => input,
+            super::form::DocumentInput::GrantValidation(_) => {
+                panic!("valid input became validation")
+            }
+        } {
             Input::Command(command) => {
                 assert_ne!(operation, "retry");
                 assert_eq!(command.command_id(), id(COMMAND));
@@ -380,7 +385,10 @@ async fn retry_body_cannot_replace_original_input_or_typed_route_selector() {
     )
     .await
     .unwrap_or_else(|_| panic!("valid typed original selector rejected"));
-    match input {
+    match match input {
+        super::form::DocumentInput::Ready(input) => input,
+        super::form::DocumentInput::GrantValidation(_) => panic!("valid input became validation"),
+    } {
         Input::Retry(actual) => assert_eq!(
             actual,
             NativePolicyCommandRef::new(company(), other_command, NativeBusinessOperationV1::Grant)
@@ -483,3 +491,5 @@ fn durable_terminal_success_or_rejection_redirects_to_same_persistent_result() {
         }
     }
 }
+
+include!("expiry_validation_capture_tests.rs");

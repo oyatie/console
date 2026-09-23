@@ -1,5 +1,6 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 pub mod native_account;
+pub mod native_policy;
 mod organization;
 mod payroll_workspace;
 mod people;
@@ -119,7 +120,8 @@ main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px
 .panel h2{padding:16px}.toolbar{padding:12px 16px}.row{flex-wrap:wrap;gap:8px 12px;padding:16px}
 .row .meta{flex:1 0 100%;order:3}.badge{margin-left:0}.state{padding:24px 16px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-"#
+"#,
+    include_str!("native_policy.css")
 );
 
 const ISLAND_BOOTSTRAP: &str = concat!(
@@ -633,6 +635,17 @@ mod ssr {
         )
     }
 
+    async fn workspace_css() -> impl IntoResponse {
+        (
+            [
+                (header::CONTENT_TYPE, "text/css; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-store"),
+                (header::X_CONTENT_TYPE_OPTIONS, "nosniff"),
+            ],
+            super::STYLE,
+        )
+    }
+
     async fn native_account_css() -> impl IntoResponse {
         (
             [
@@ -654,6 +667,7 @@ mod ssr {
         Router::new()
             .route("/assets/native-account.js", get(native_account_js))
             .route("/assets/native-account.css", get(native_account_css))
+            .route("/assets/workspace.css", get(workspace_css))
             .route("/pkg/console_payroll_ui.js", get(pkg_js))
             .route("/pkg/console_payroll_ui_bg.wasm", get(pkg_wasm))
     }
@@ -1673,6 +1687,7 @@ mod private_document_tests {
             (
                 || Page::CompanySetup {
                     account_id: "11111111-1111-4111-8111-111111111111".into(),
+                    command_id: None,
                 },
                 StatusCode::OK,
             ),
@@ -1733,3 +1748,6 @@ mod workspace_tests;
 #[cfg(all(test, feature = "ssr"))]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod workflow_presentation_tests;
+
+#[cfg(all(test, feature = "ssr"))]
+mod native_policy_validation_tests;

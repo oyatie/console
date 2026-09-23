@@ -6212,11 +6212,25 @@ NATIVE_POLICY_SOURCE_ORDER = (
 )
 NATIVE_POLICY_RELATIONS = ('native_company_policy_inputs_v1', 'native_company_policy_receipts_v1')
 # Exact hashes are populated only from independently reviewed declared sources.
-NATIVE_POLICY_SOURCE_SHA256 = {'acl-v1.sql': 'fa80183a6c018f123a41f969bce4fc81293f33132a22315b45b3110b0ef6a378', 'assignment-v1.sql': 'e26b560d2c8d0473525b738c4e7e9d7476289ef423b0fa195c2d0ce139ad0888', 'audit-v1.sql': '59c7e7f13df648b24e97dc931904c2a811394db0e066abb1d936833cd58295c3', 'bindings-v1.sql': '80f6b5dc382d3c082cd9cdc84818c7b3b3bce35a7c672826b7b3e012a008431e', 'catalog-v1.sql': '97d8a51894be8a03e2910fe55afa5f5da9c943f9a8d72b03ae2699d03165fc05', 'closure-v1.sql': '3f830d83c586b8eee14b2ae531561b830b6da66b3fcbdde6b41b0ab10aa0b381', 'codec-v1.sql': '011e0a92b4ef9c89d68444bae5214fb7da96ef096ab7c3c24a0938a27d4844c4', 'commands-v1.sql': '7067e4e958385fdc7e76022013fb39142ed23d1767c97e770ad82749fb84f851', 'current-read-v2.sql': '5995df8bbc8c402d90e55049309a3c3970131d8d6db1f93ceebc94ece4bd4879', 'guards-v1.sql': '95f6e331f1753dbe30aeb92cceca6c1de3c35071d2d2c4fbef204a8674e8e864', 'legacy-branches-v2.sql': '5fe8eb2784c66279374516075d162b0f0b9a89db238e0941de55de90de7b1a97', 'material-v1.sql': '7002e75b83e7057b7513e28d35ebbb06409e95e6d8b6722aeaf88a8bc1f1ed1d', 'registration-custody-v1.sql': '5d4847a8e9ad0ea69f5ce5f6b03a4d2971660e885aaf918bbcc0a8ebfb04e11a', 'schema-v1.sql': 'de2159505dc3e731ecd27b240f0587f27421768bb56fc02e12a7205dbcbd579d', 'shape-expansion-v1.sql': '944a7f31ac39486b57af769bbbc4bee69ce861473d532714a03a5e2cf1caff88', 'trigger-handover-v1.sql': '3e737ce2c0456023dfaa32cd5ba7f2e5ff11574eaa6c9c2b310559b0b3fa876c'}
-NATIVE_POLICY_FINALIZED_SHA256 = (
+NATIVE_POLICY_SOURCE_SHA256 = {'acl-v1.sql': '45e09f61e7a9e9b5d4486824f7a262e91c086f696666fe5ea42fb284e3500f84', 'assignment-v1.sql': 'e26b560d2c8d0473525b738c4e7e9d7476289ef423b0fa195c2d0ce139ad0888', 'audit-v1.sql': '59c7e7f13df648b24e97dc931904c2a811394db0e066abb1d936833cd58295c3', 'bindings-v1.sql': '80f6b5dc382d3c082cd9cdc84818c7b3b3bce35a7c672826b7b3e012a008431e', 'catalog-v1.sql': '97d8a51894be8a03e2910fe55afa5f5da9c943f9a8d72b03ae2699d03165fc05', 'closure-v1.sql': '3f830d83c586b8eee14b2ae531561b830b6da66b3fcbdde6b41b0ab10aa0b381', 'codec-v1.sql': '011e0a92b4ef9c89d68444bae5214fb7da96ef096ab7c3c24a0938a27d4844c4', 'commands-v1.sql': '7067e4e958385fdc7e76022013fb39142ed23d1767c97e770ad82749fb84f851', 'current-read-v2.sql': '5995df8bbc8c402d90e55049309a3c3970131d8d6db1f93ceebc94ece4bd4879', 'guards-v1.sql': 'd7856e06a8695155d34a588b3eaf305f22c1b495207822e3621dc61f853ae91d', 'legacy-branches-v2.sql': '5fe8eb2784c66279374516075d162b0f0b9a89db238e0941de55de90de7b1a97', 'material-v1.sql': '7002e75b83e7057b7513e28d35ebbb06409e95e6d8b6722aeaf88a8bc1f1ed1d', 'registration-custody-v1.sql': '5d4847a8e9ad0ea69f5ce5f6b03a4d2971660e885aaf918bbcc0a8ebfb04e11a', 'schema-v1.sql': 'de2159505dc3e731ecd27b240f0587f27421768bb56fc02e12a7205dbcbd579d', 'shape-expansion-v1.sql': '944a7f31ac39486b57af769bbbc4bee69ce861473d532714a03a5e2cf1caff88', 'trigger-handover-v1.sql': '3e737ce2c0456023dfaa32cd5ba7f2e5ff11574eaa6c9c2b310559b0b3fa876c'}
+# Retained exact predecessor profiles: never accepted as corrected runtime custody.
+NATIVE_POLICY_PREVIOUS_SHA256 = (
     'ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2',
     '5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005',
 )
+
+NATIVE_POLICY_GUARD_ONLY_SHA256 = (
+    '8ef3574e68d4ebfc89d8f80dda4c5dac89fa4206230b3c664433ad0902b74aa0',
+    'adfbb054c68208ece4bb4ddd1a97c154d053af51c6e9bd82db3a8ab42735ad0a',
+)
+
+NATIVE_POLICY_FINALIZED_SHA256 = (
+    '3755792f52a4f78236a70e509f4f1546588049daa53f7545d8a101c74684d843',
+    '9bde6410d51f8b665e5ca4400820e6d8a549a6c19b7b4d84feb26ef32c4bd604',
+)
+
+
+NATIVE_POLICY_CATALOG_REFERENCE_SQL = "-- Immutable product catalogue reference, installed only by the verified operator upgrade.\n-- Existing rows must match; replay never replaces their digest or timestamp.\nDO $native_policy_catalog_reference$\nBEGIN\n INSERT INTO public.ont_builtin_catalog_allowlist(catalog_version,manifest_digest)\n VALUES('native-payroll-collection-read-v1',decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex'))\n ON CONFLICT(catalog_version) DO NOTHING;\n IF (SELECT manifest_digest FROM public.ont_builtin_catalog_allowlist\n     WHERE catalog_version='native-payroll-collection-read-v1') IS DISTINCT FROM\n     decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex') THEN\n  RAISE EXCEPTION 'native_company_policy.catalog_reference_mismatch';\n END IF;\nEND\n$native_policy_catalog_reference$;\n"
 
 
 def native_company_policy_source_sql():
@@ -6231,6 +6245,7 @@ def native_company_policy_source_sql():
         if hashlib.sha256(source).hexdigest() != NATIVE_POLICY_SOURCE_SHA256[name]:
             raise SystemExit('Native policy source requires independent successor review: ' + name)
         parts.append('-- source: ' + name + '\n' + source.decode('utf-8'))
+    parts.append(NATIVE_POLICY_CATALOG_REFERENCE_SQL)
     return '\n'.join(parts)
 
 
@@ -6243,6 +6258,13 @@ def native_company_policy_snapshot_query():
     if not routine_names:
         raise ValueError('Native policy routine roster is empty')
     query = company_enrollment_snapshot_query()
+    # Capture nonnull system-column grants as well as every ordinary column.
+    # Historical Account/Company snapshots retain their original grammar.
+    column_anchor = 'FROM pg_attribute a WHERE a.attrelid=r.oid AND a.attnum>0 AND NOT a.attisdropped'
+    if query.count(column_anchor) != 1:
+        raise ValueError('Native policy column ACL boundary drift')
+    query = query.replace(column_anchor,
+        'FROM pg_attribute a WHERE a.attrelid=r.oid AND (a.attnum>0 OR (a.attnum<0 AND a.attacl IS NOT NULL)) AND NOT a.attisdropped')
     relation_anchor = " ('audit_events'),\n"
     routine_anchor = ' WHERE (n.nspname,p.proname) IN (VALUES '
     if query.count(relation_anchor) != 1 or query.count(routine_anchor) != 1:
@@ -6271,8 +6293,8 @@ def native_company_policy_snapshot_query():
 
 
 def native_company_policy_profiles():
-    profiles = (*COMPANY_CUSTODY_FINALIZED_SHA256, *NATIVE_POLICY_FINALIZED_SHA256)
-    if len(profiles) != 4 or len(set(profiles)) != 4 or any(
+    profiles = (*COMPANY_CUSTODY_FINALIZED_SHA256, *NATIVE_POLICY_PREVIOUS_SHA256, *NATIVE_POLICY_GUARD_ONLY_SHA256, *NATIVE_POLICY_FINALIZED_SHA256)
+    if len(profiles) != 8 or len(set(profiles)) != 8 or any(
             len(value) != 64 or any(c not in '0123456789abcdef' for c in value) for value in profiles):
         raise SystemExit('Native policy profiles require independent declared-source capture review')
     return profiles
@@ -6304,6 +6326,13 @@ SELECT CASE WHEN (SELECT snapshot_sha256 FROM native_profile) IN ({final})
 
 def native_company_policy_finalizer_sql():
     native_company_policy_profiles()
+    source = native_company_policy_source_sql()
+    # Exact declared correction; CREATE OR REPLACE preserves the existing
+    # routine identity, owner and grants. No live function body is adopted.
+    start = source.index('CREATE FUNCTION public.native_company_policy_participant_receipt_v1(')
+    end = source.index('$body$;', start) + len('$body$;')
+    correction = source[start:end].replace('CREATE FUNCTION', 'CREATE OR REPLACE FUNCTION', 1)
+    prior = ','.join("'" + value + "'" for value in (*NATIVE_POLICY_PREVIOUS_SHA256, *NATIVE_POLICY_GUARD_ONLY_SHA256))
     final = ','.join("'" + value + "'" for value in NATIVE_POLICY_FINALIZED_SHA256)
     names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
         'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
@@ -6334,14 +6363,28 @@ BEGIN
   WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relname IN ({literals}) ORDER BY c.relname COLLATE "C"
  LOOP EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name); END LOOP;
  {inspect}
- IF observed IN ({final}) AND rights_valid IS TRUE THEN RETURN; END IF;
+ IF observed IN ({final}) AND rights_valid IS TRUE THEN
+{NATIVE_POLICY_CATALOG_REFERENCE_SQL}
+  RETURN;
+ END IF;
+ IF observed IN ({prior}) AND rights_valid IS TRUE THEN
+  expected_final:=CASE observed
+   WHEN '{NATIVE_POLICY_PREVIOUS_SHA256[0]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[0]}'
+   WHEN '{NATIVE_POLICY_PREVIOUS_SHA256[1]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[1]}'
+   WHEN '{NATIVE_POLICY_GUARD_ONLY_SHA256[0]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[0]}'
+   WHEN '{NATIVE_POLICY_GUARD_ONLY_SHA256[1]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[1]}' END;
+{correction}
+ GRANT SELECT(xmin) ON public.audit_events TO console_account_owner;
+{NATIVE_POLICY_CATALOG_REFERENCE_SQL}
+ ELSE
  {previous}
  expected_final:=CASE predecessor
   WHEN '{COMPANY_CUSTODY_FINALIZED_SHA256[0]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[0]}'
   WHEN '{COMPANY_CUSTODY_FINALIZED_SHA256[1]}' THEN '{NATIVE_POLICY_FINALIZED_SHA256[1]}' ELSE NULL END;
  IF expected_final IS NULL OR prior_rights_valid IS NOT TRUE THEN
   RAISE EXCEPTION 'native_company_policy.predecessor_mismatch'; END IF;
-{native_company_policy_source_sql()}
+{source}
+ END IF;
  SET CONSTRAINTS ALL IMMEDIATE;
  {inspect}
  IF observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
@@ -6356,6 +6399,7 @@ def native_company_policy_generated_files():
         'ops/postgres-native-company-policy-owner.sql': native_company_policy_source_sql(),
         'ops/postgres-capture-native-company-policy-custody.sql': native_company_policy_snapshot_query() + ';\n',
         'ops/postgres-native-company-policy-custody-state.sql': native_company_policy_state_query() + ';\n',
+        'backend/app/src/native_company_policy_custody_state.sql': native_company_policy_state_query() + ';\n',
         'ops/postgres-finalize-native-company-policy.sql': native_company_policy_finalizer_sql(),
     }
 

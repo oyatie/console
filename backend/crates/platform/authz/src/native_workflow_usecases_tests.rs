@@ -22,6 +22,7 @@ use time::Duration;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Mode {
     Form,
+    ValidationForm,
     Accept,
     Execute,
     Status,
@@ -29,6 +30,7 @@ enum Mode {
 fn mode(request: &NativePolicyScopeRequest<'_>) -> Mode {
     match request {
         NativePolicyScopeRequest::Form(_) => Mode::Form,
+        NativePolicyScopeRequest::ValidationForm(_) => Mode::ValidationForm,
         NativePolicyScopeRequest::Accept(_) => Mode::Accept,
         NativePolicyScopeRequest::Execute(_) => Mode::Execute,
         NativePolicyScopeRequest::Status(_) => Mode::Status,
@@ -196,10 +198,16 @@ impl NativePolicyWorkflowScope for Scope<'_> {
         &self.authority
     }
     async fn form(&mut self) -> Result<NativePolicyForm<u64>, NativePolicyWorkflowError> {
-        self.operation(Mode::Form)?;
+        match self.plan.mode {
+            Mode::Form | Mode::ValidationForm => self.operation(self.plan.mode)?,
+            Mode::Accept | Mode::Execute | Mode::Status => {
+                return Err(NativePolicyWorkflowError::Unavailable);
+            }
+        }
         Ok(NativePolicyForm {
             view: NativePolicyFormView {
                 selector: selector(),
+                group_id: self.authority.source().current_group_id,
                 company_epoch: 1,
                 acting_account_id: AccountId::from_uuid(self.authority.source().actor_account_id)
                     .unwrap(),
@@ -242,10 +250,9 @@ impl NativePolicyWorkflowScope for Scope<'_> {
         self.store.record(format!("finish:{:?}", self.plan.mode));
         assert_eq!(
             proof.copied(),
-            if self.plan.mode == Mode::Form {
-                Some(77)
-            } else {
-                None
+            match self.plan.mode {
+                Mode::Form | Mode::ValidationForm => Some(77),
+                Mode::Accept | Mode::Execute | Mode::Status => None,
             }
         );
         if self.plan.pending_finish {
@@ -372,7 +379,13 @@ fn workflow_denied_or_unavailable_policy_never_reads_or_mutates() {
         Ok(CompanyPolicyDecision::Deny),
         Err(CompanyPolicyError::EvaluatorUnavailable),
     ] {
-        for mode in [Mode::Form, Mode::Accept, Mode::Execute, Mode::Status] {
+        for mode in [
+            Mode::Form,
+            Mode::ValidationForm,
+            Mode::Accept,
+            Mode::Execute,
+            Mode::Status,
+        ] {
             let s = Store::new(vec![Plan::new(mode)]);
             let p = Policy::new(&s);
             p.overrides.lock().unwrap().push_back(outcome);
@@ -380,6 +393,9 @@ fn workflow_denied_or_unavailable_policy_never_reads_or_mutates() {
             let trace = TraceContext::generate();
             let result = match mode {
                 Mode::Form => ready(native_policy_form(&s, &p, &(), selector())).map(|_| ()),
+                Mode::ValidationForm => {
+                    ready(native_policy_validation_form(&s, &p, &(), selector())).map(|_| ())
+                }
                 Mode::Accept => {
                     ready(accept_native_policy_command(&s, &p, &(), &input, &trace)).map(|_| ())
                 }
@@ -642,7 +658,13 @@ fn workflow_impossible_acceptance_not_visible_is_unavailable_and_never_starts_b(
 
 #[test]
 fn workflow_foreign_source_company_fails_before_any_scope_operation() {
-    for mode in [Mode::Form, Mode::Accept, Mode::Execute, Mode::Status] {
+    for mode in [
+        Mode::Form,
+        Mode::ValidationForm,
+        Mode::Accept,
+        Mode::Execute,
+        Mode::Status,
+    ] {
         let mut s = Store::new(vec![Plan::new(mode)]);
         s.source_company = OrgId::from_uuid(id(9000));
         let p = CompanyPolicy::new().unwrap();
@@ -650,6 +672,9 @@ fn workflow_foreign_source_company_fails_before_any_scope_operation() {
         let trace = TraceContext::generate();
         let actual = match mode {
             Mode::Form => ready(native_policy_form(&s, &p, &(), selector())).map(|_| ()),
+            Mode::ValidationForm => {
+                ready(native_policy_validation_form(&s, &p, &(), selector())).map(|_| ())
+            }
             Mode::Accept => {
                 ready(accept_native_policy_command(&s, &p, &(), &input, &trace)).map(|_| ())
             }
@@ -751,6 +776,49 @@ fn workflow_form_finish_failure_withholds_view_and_exact_proof() {
                 "release:Form:false"
             ]
         );
+        s.drained();
+    }
+}
+
+#[test]
+fn workflow_validation_form_preserves_mode_and_withholds_view_until_final_checks() {
+    let s = Store::new(vec![Plan::new(Mode::ValidationForm)]);
+    let p = Policy::new(&s);
+    let form = ready(native_policy_validation_form(&s, &p, &(), selector())).unwrap();
+    assert_eq!(form.proof, 77);
+    assert_eq!(form.view.selector, selector());
+    assert_eq!(form.view.acting_account_id, binding().account);
+    assert_eq!(form.view.company_epoch, 1);
+    assert_eq!(s.events(), history(Mode::ValidationForm));
+    assert!(s.history.lock().unwrap().input_bytes.is_empty());
+    s.drained();
+
+    for error in [
+        NativePolicyWorkflowError::CsrfInvalid,
+        NativePolicyWorkflowError::NotFound,
+        NativePolicyWorkflowError::Unavailable,
+        NativePolicyWorkflowError::Unconfirmed,
+    ] {
+        let mut plan = Plan::new(Mode::ValidationForm);
+        plan.finish_error = Some(error);
+        let s = Store::new(vec![plan]);
+        let p = Policy::new(&s);
+        assert_eq!(
+            ready(native_policy_validation_form(&s, &p, &(), selector())).map(|_| ()),
+            Err(error)
+        );
+        assert_eq!(
+            s.events(),
+            [
+                "open:ValidationForm",
+                "decision",
+                "operation:ValidationForm",
+                "finish:ValidationForm",
+                "decision",
+                "release:ValidationForm:false"
+            ]
+        );
+        assert!(s.history.lock().unwrap().input_bytes.is_empty());
         s.drained();
     }
 }

@@ -1,11 +1,11 @@
 //! Auth-owned credentials for the Company owner's exclusive lock plan.
 //! These values never substitute for current durable Account/family authority.
 use super::*;
-use crate::{AccountCsrfClaims, AccountCsrfTokenInput, JwtIssuer, SignedAccountToken};
+use crate::{AccountCsrfClaims, AccountCsrfTokenInput, JwtIssuer};
 
 /// Ephemeral proof for one authorized form. Never log or persist this value.
 pub struct AccountFormProof {
-    token: SignedAccountToken,
+    token: String,
     expires_at: OffsetDateTime,
 }
 
@@ -142,7 +142,33 @@ impl AccountEnrollmentCredentials {
             .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
         let expires_at = OffsetDateTime::from_unix_timestamp(claims.exp)
             .map_err(|_| AccountOperationError::AuthorityUnavailable)?;
-        Ok(AccountFormProof { token, expires_at })
+        Ok(AccountFormProof {
+            token: token.as_str().to_owned(),
+            expires_at,
+        })
+    }
+
+    /// Return the original submitted proof only after current verification.
+    /// Validation redisplay cannot mint or substitute a new credential.
+    pub async fn retain_submitted_form_proof_in_tx(
+        &self,
+        tx: &mut Transaction<'_, Postgres>,
+        verifier: &JwtVerifier,
+        absolute_ttl: Duration,
+    ) -> Result<AccountFormProof, AccountOperationError> {
+        let proof = self
+            .csrf
+            .as_deref()
+            .ok_or(AccountOperationError::CsrfInvalid)?;
+        let session = self.read_session_in_tx(tx, verifier, absolute_ttl).await?;
+        let now = ensure_account_session_fresh_in_tx(tx, &session).await?;
+        let claims = verify_form_proof(verifier, proof, &session, now)?;
+        let expires_at = OffsetDateTime::from_unix_timestamp(claims.exp)
+            .map_err(|_| AccountOperationError::CsrfInvalid)?;
+        Ok(AccountFormProof {
+            token: proof.to_owned(),
+            expires_at,
+        })
     }
 
     /// Recheck after the last owner wait; this never replaces the issued token.

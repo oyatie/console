@@ -6,13 +6,16 @@
     "backend/BUCK": "132ca739f056cd8618838a6b68a9b007d308d677a8ead50cfee9ef656760b083",
     "backend/Cargo.lock": "5c43d5243616c71e861d442d82b746e924cd038d95b6a74a17a678b843b86df6",
     "backend/Cargo.toml": "12a620f5c37e0e4195c19dc2976143a8d03813950219f6ad6be38335d48dcd2a",
-    "backend/crates/payroll/ui/BUCK": "cd05ff0b14a19c645033851e25f45d5759ecde37eed4e3ad746ed5aaa9ed4cdc",
+    "backend/crates/payroll/ui/BUCK": "59a2cbe956eeabb49556f2ea678252653f983cec86d55eb9850782c6cbcf9718",
     "backend/crates/payroll/ui/Cargo.toml": "1d70d2049d05b82bd5bdbc2b17dd0a99c2990ca5339379d916ea1d6ad1e3dbee",
     "backend/crates/payroll/ui/src/island_script.js": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d",
-    "backend/crates/payroll/ui/src/lib.rs": "79704a7437dff4722de1337fcae87724041fb95a99561e272deddbd08be78872",
+    "backend/crates/payroll/ui/src/lib.rs": "d36884787d0a89b3e6d0bf4789a94bc9b96fef9d8abda98d152298c8168f0d82",
     "backend/crates/payroll/ui/src/native_account.css": "49962ceed3f2a80fc8b0849d076767479fe7d806a1022dc4a3681ecdc2e33348",
     "backend/crates/payroll/ui/src/native_account.js": "8e024d85d3f3d691a568b1bc2da4c90827f91b68bfb47ef8d008635b39d32f2f",
-    "backend/crates/payroll/ui/src/native_account.rs": "bbf1fecd31f494d849640ad72ee1e550f3a41e25fd3c1f1e4f8db88968f9d6fa",
+    "backend/crates/payroll/ui/src/native_account.rs": "0bf237a7c233d67df61cd88cea51745e6641c2067b28c16a54a9d9446ca2d241",
+    "backend/crates/payroll/ui/src/native_policy.css": "6009a91315d65142fd22c0556c002c8c0d479986cc0281a4d96202d7d7936701",
+    "backend/crates/payroll/ui/src/native_policy.rs": "495f9e62b733f4fdf427daa0d8dde13708786e3dadd2d23ea7a1ba002362ddc4",
+    "backend/crates/payroll/ui/src/native_policy_validation_tests.rs": "5f62757a790edfc696e9dfa2118d641582c9440ca15dc781a135506e94b3c77b",
     "backend/crates/payroll/ui/src/organization.rs": "25b4b0bd6ecd6f3e7323e171f8a2d1505649697d7b20f66d9aae19278de76f5b",
     "backend/crates/payroll/ui/src/payroll_workspace.rs": "d43635588577347cb7284cec1c9a5c1d0bd4fa1e152c9a1d2e1620a8fb3fbbc9",
     "backend/crates/payroll/ui/src/people.rs": "cf0bf8e1d22c9dc63e06217e7cd7391f80552f52e4c3b7f2b10167b3988f59fd",
@@ -151,7 +154,7 @@
     "toolchains/rust/sysroot.bzl": "a1ea4bce4948b707454336706c426af9c4d4307abf01f31746eef01fd9895f20",
     "toolchains/rust/wasm.bzl": "c7b6f21a453724a892e76e0b2b57e6f8c34b699fd6adc15f379948de977c3c10",
     "tools/buck/BUCK": "c3d3430fcb35a2f86c62169c05c0d0e343305ab9b8ea547dacefba16423834ea",
-    "tools/buck/gen_first_party.py": "bce19475cc1aaa126abfa3d9f58f9b9e9704cca289e33e96aff5e93058d1e00f",
+    "tools/buck/gen_first_party.py": "c8086dab6999c163424216dd6a90906f687806c36920573d1b084697b62674d4",
     "tools/buck/gen_hydrate.py": "af1b6651e50f394d9e7f72e2fc717eeb55dd836a68d4dbf182d7ca0bc304855c",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d281912382fa15c336023016a6cedf5fd811117221862b0a05505a6d4625a478",
@@ -161,13 +164,13 @@
   },
   "outputs": {
     "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
-    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "b9068d7a4a94dbe87485d01fb7d0f25e4cf316b4febdc60c0b2bea0c069f90aa"
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "ade691fd848c571c0c9e8d5a3eed53789ee1800c210f0b7be7e0cf789d666352"
   },
   "producer": {
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
-    "compiled_wasm_sha256": "675a0db4389742ec2945de217fe213c55f4f6194c07b42a937d7add4e5ac7574",
+    "compiled_wasm_sha256": "7825dde48ed6680efe30255d8b92e96dcc9bd593af366dfa3acf18021025cb99",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "43c509b7dc161ac6a123e69f4d28b609fa3958af5484dd70984351e9deefe995"
+    "source_snapshot_sha256": "3b6a4306b6fb65775ea82eec7e26d98f5b56a9f7f069829ddfd439ff35658b5f"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",

@@ -50,3 +50,18 @@ export_file(
     name = "postgres-finalize-company-enrollment.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "postgres-finalize-native-company-policy.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-company-policy-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-company-policy-custody.sql",
+    visibility = ["PUBLIC"],
+)

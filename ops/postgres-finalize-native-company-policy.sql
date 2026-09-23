@@ -113,7 +113,7 @@ WITH wanted(name) AS (VALUES
   'column_security',(SELECT jsonb_agg(jsonb_build_object('number',a.attnum,'name',a.attname,'acl_is_null',a.attacl IS NULL,
     'acl',(SELECT jsonb_agg(jsonb_build_array(pg_get_userbyid(x.grantor),CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,x.privilege_type,x.is_grantable)
        ORDER BY pg_get_userbyid(x.grantor),CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,x.privilege_type) FROM aclexplode(a.attacl) x)) ORDER BY a.attnum)
-    FROM pg_attribute a WHERE a.attrelid=r.oid AND a.attnum>0 AND NOT a.attisdropped),
+    FROM pg_attribute a WHERE a.attrelid=r.oid AND (a.attnum>0 OR (a.attnum<0 AND a.attacl IS NOT NULL)) AND NOT a.attisdropped),
   'policies',COALESCE((SELECT jsonb_agg(jsonb_build_object('name',p.polname,'permissive',p.polpermissive,'command',p.polcmd,
    'roles',(SELECT jsonb_agg(CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE pg_get_userbyid(role_oid) END ORDER BY CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE pg_get_userbyid(role_oid) END) FROM unnest(p.polroles) role_oid),
    'using',pg_get_expr(p.polqual,p.polrelid),'check',pg_get_expr(p.polwithcheck,p.polrelid)) ORDER BY p.polname)
@@ -970,7 +970,77 @@ SELECT jsonb_build_object('root_profile',(SELECT valid FROM root_profile),'proje
 )
 SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snapshot_sha256,(SELECT valid FROM company_startup_rights) AS native_policy_startup_rights_valid FROM snapshots
 ) captured;
- IF observed IN ('ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2','5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005') AND rights_valid IS TRUE THEN RETURN; END IF;
+ IF observed IN ('3755792f52a4f78236a70e509f4f1546588049daa53f7545d8a101c74684d843','9bde6410d51f8b665e5ca4400820e6d8a549a6c19b7b4d84feb26ef32c4bd604') AND rights_valid IS TRUE THEN
+-- Immutable product catalogue reference, installed only by the verified operator upgrade.
+-- Existing rows must match; replay never replaces their digest or timestamp.
+DO $native_policy_catalog_reference$
+BEGIN
+ INSERT INTO public.ont_builtin_catalog_allowlist(catalog_version,manifest_digest)
+ VALUES('native-payroll-collection-read-v1',decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex'))
+ ON CONFLICT(catalog_version) DO NOTHING;
+ IF (SELECT manifest_digest FROM public.ont_builtin_catalog_allowlist
+     WHERE catalog_version='native-payroll-collection-read-v1') IS DISTINCT FROM
+     decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex') THEN
+  RAISE EXCEPTION 'native_company_policy.catalog_reference_mismatch';
+ END IF;
+END
+$native_policy_catalog_reference$;
+
+  RETURN;
+ END IF;
+ IF observed IN ('ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2','5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005','8ef3574e68d4ebfc89d8f80dda4c5dac89fa4206230b3c664433ad0902b74aa0','adfbb054c68208ece4bb4ddd1a97c154d053af51c6e9bd82db3a8ab42735ad0a') AND rights_valid IS TRUE THEN
+  expected_final:=CASE observed
+   WHEN 'ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2' THEN '3755792f52a4f78236a70e509f4f1546588049daa53f7545d8a101c74684d843'
+   WHEN '5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005' THEN '9bde6410d51f8b665e5ca4400820e6d8a549a6c19b7b4d84feb26ef32c4bd604'
+   WHEN '8ef3574e68d4ebfc89d8f80dda4c5dac89fa4206230b3c664433ad0902b74aa0' THEN '3755792f52a4f78236a70e509f4f1546588049daa53f7545d8a101c74684d843'
+   WHEN 'adfbb054c68208ece4bb4ddd1a97c154d053af51c6e9bd82db3a8ab42735ad0a' THEN '9bde6410d51f8b665e5ca4400820e6d8a549a6c19b7b4d84feb26ef32c4bd604' END;
+CREATE OR REPLACE FUNCTION public.native_company_policy_participant_receipt_v1(p_table text,p_row jsonb) RETURNS uuid
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp SET row_security=on
+AS $body$
+DECLARE receipt uuid; company uuid:=(p_row->>'org_id')::uuid;
+BEGIN
+ IF p_table IN ('policy_roles','policy_role_revisions','user_role_assignments','policy_assignment_revisions',
+   'native_company_catalog_installs','ont_builtin_catalog_installs','ont_object_types') THEN
+  receipt:=(p_row->>'policy_receipt_id')::uuid;
+ ELSIF p_table='company_authority_heads' THEN receipt:=(p_row->>'current_policy_receipt_id')::uuid;
+ ELSIF p_table IN ('policy_capability_clauses','policy_capability_clause_fields') THEN
+  SELECT r.policy_receipt_id INTO receipt FROM public.policy_role_revisions r WHERE r.org_id=company
+   AND r.role_id=(p_row->>'role_id')::uuid AND r.revision=(p_row->>'role_revision')::bigint;
+ ELSIF p_table IN ('native_company_object_refs','native_company_action_refs','native_company_property_refs') THEN
+  SELECT i.policy_receipt_id INTO receipt FROM public.native_company_catalog_installs i
+   WHERE i.org_id=company AND i.catalog_version=p_row->>'catalog_version';
+ ELSIF p_table IN ('ont_property_defs','ont_action_types') THEN
+  SELECT o.policy_receipt_id INTO receipt FROM public.ont_object_types o
+   WHERE o.org_id=company AND o.id=(p_row->>'object_type_id')::uuid;
+ ELSIF p_table='ont_object_type_key_revisions' THEN
+  IF p_row->>'stable_key' IS DISTINCT FROM 'pay_run' THEN RETURN NULL; END IF;
+  IF NOT EXISTS(SELECT 1 FROM public.company_authority_heads h WHERE h.org_id=company) THEN RETURN NULL; END IF;
+  SELECT r.receipt_id INTO STRICT receipt FROM public.native_company_policy_receipts_v1 r WHERE r.org_id=company
+   AND r.operation=1 AND r.outcome='COMMITTED' AND r.effect_xid=pg_current_xact_id() AND r.effect_backend_pid=pg_backend_pid();
+ ELSIF p_table NOT IN ('ont_link_types','ont_analytics','cedar_policy_catalog_entries','ont_object_policies') THEN
+  RAISE EXCEPTION 'native_company_policy.participant_unavailable';
+ END IF;
+ RETURN receipt;
+END
+$body$;
+ GRANT SELECT(xmin) ON public.audit_events TO console_account_owner;
+-- Immutable product catalogue reference, installed only by the verified operator upgrade.
+-- Existing rows must match; replay never replaces their digest or timestamp.
+DO $native_policy_catalog_reference$
+BEGIN
+ INSERT INTO public.ont_builtin_catalog_allowlist(catalog_version,manifest_digest)
+ VALUES('native-payroll-collection-read-v1',decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex'))
+ ON CONFLICT(catalog_version) DO NOTHING;
+ IF (SELECT manifest_digest FROM public.ont_builtin_catalog_allowlist
+     WHERE catalog_version='native-payroll-collection-read-v1') IS DISTINCT FROM
+     decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex') THEN
+  RAISE EXCEPTION 'native_company_policy.catalog_reference_mismatch';
+ END IF;
+END
+$native_policy_catalog_reference$;
+
+ ELSE
  SELECT snapshot_sha256,company_startup_rights_valid INTO predecessor,prior_rights_valid FROM (
 -- READ-ONLY disposable capture. Freeze only after independent declared-source comparison.
 WITH wanted(name) AS (VALUES
@@ -1924,8 +1994,8 @@ SELECT jsonb_build_object('root_profile',(SELECT valid FROM root_profile),'proje
 SELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snapshot_sha256,(SELECT valid FROM company_startup_rights) AS company_startup_rights_valid FROM snapshots
 ) captured;
  expected_final:=CASE predecessor
-  WHEN '884e9a57e9ecfd9940b3c6e8e9a9a4a9c028ea62e43a10a6b11c64dada3fd62b' THEN 'ea8096dd2574571567c2d1d791798d30c9c3d10a2b6065c3f698e618564c53d2'
-  WHEN '0b0e857e53ab1122a2879b972cd701732c5d0296c20f4693ab813894b0bc72dc' THEN '5166d303ad07aea9cc179e9f56dc51cb788f4fa743dbf4c89aaa82b5d915f005' ELSE NULL END;
+  WHEN '884e9a57e9ecfd9940b3c6e8e9a9a4a9c028ea62e43a10a6b11c64dada3fd62b' THEN '3755792f52a4f78236a70e509f4f1546588049daa53f7545d8a101c74684d843'
+  WHEN '0b0e857e53ab1122a2879b972cd701732c5d0296c20f4693ab813894b0bc72dc' THEN '9bde6410d51f8b665e5ca4400820e6d8a549a6c19b7b4d84feb26ef32c4bd604' ELSE NULL END;
  IF expected_final IS NULL OR prior_rights_valid IS NOT TRUE THEN
   RAISE EXCEPTION 'native_company_policy.predecessor_mismatch'; END IF;
 -- source: schema-v1.sql
@@ -3149,7 +3219,8 @@ BEGIN
  ELSIF p_table IN ('ont_property_defs','ont_action_types') THEN
   SELECT o.policy_receipt_id INTO receipt FROM public.ont_object_types o
    WHERE o.org_id=company AND o.id=(p_row->>'object_type_id')::uuid;
- ELSIF p_table='ont_object_type_key_revisions' AND p_row->>'stable_key'='pay_run' THEN
+ ELSIF p_table='ont_object_type_key_revisions' THEN
+  IF p_row->>'stable_key' IS DISTINCT FROM 'pay_run' THEN RETURN NULL; END IF;
   IF NOT EXISTS(SELECT 1 FROM public.company_authority_heads h WHERE h.org_id=company) THEN RETURN NULL; END IF;
   SELECT r.receipt_id INTO STRICT receipt FROM public.native_company_policy_receipts_v1 r WHERE r.org_id=company
    AND r.operation=1 AND r.outcome='COMMITTED' AND r.effect_xid=pg_current_xact_id() AND r.effect_backend_pid=pg_backend_pid();
@@ -5077,6 +5148,25 @@ GRANT INSERT(policy_receipt_id) ON public.policy_roles,public.user_role_assignme
 GRANT INSERT(policy_receipt_id) ON public.ont_object_types,public.ont_builtin_catalog_installs TO console_ontology_writer;
 GRANT UPDATE(current_policy_receipt_id) ON public.company_authority_heads TO console_account_owner;
 
+-- Deferred audit closure verifies the current transaction without broad table reads.
+GRANT SELECT(xmin) ON public.audit_events TO console_account_owner;
+
+-- Immutable product catalogue reference, installed only by the verified operator upgrade.
+-- Existing rows must match; replay never replaces their digest or timestamp.
+DO $native_policy_catalog_reference$
+BEGIN
+ INSERT INTO public.ont_builtin_catalog_allowlist(catalog_version,manifest_digest)
+ VALUES('native-payroll-collection-read-v1',decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex'))
+ ON CONFLICT(catalog_version) DO NOTHING;
+ IF (SELECT manifest_digest FROM public.ont_builtin_catalog_allowlist
+     WHERE catalog_version='native-payroll-collection-read-v1') IS DISTINCT FROM
+     decode('07781514029d5f8f7e96221d6504387324c8c0f2513ded2b214d0bd683ce3ddd','hex') THEN
+  RAISE EXCEPTION 'native_company_policy.catalog_reference_mismatch';
+ END IF;
+END
+$native_policy_catalog_reference$;
+
+ END IF;
  SET CONSTRAINTS ALL IMMEDIATE;
  SELECT snapshot_sha256,native_policy_startup_rights_valid INTO observed,rights_valid FROM (
 -- READ-ONLY disposable capture. Freeze only after independent declared-source comparison.
@@ -5175,7 +5265,7 @@ WITH wanted(name) AS (VALUES
   'column_security',(SELECT jsonb_agg(jsonb_build_object('number',a.attnum,'name',a.attname,'acl_is_null',a.attacl IS NULL,
     'acl',(SELECT jsonb_agg(jsonb_build_array(pg_get_userbyid(x.grantor),CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,x.privilege_type,x.is_grantable)
        ORDER BY pg_get_userbyid(x.grantor),CASE WHEN x.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(x.grantee) END,x.privilege_type) FROM aclexplode(a.attacl) x)) ORDER BY a.attnum)
-    FROM pg_attribute a WHERE a.attrelid=r.oid AND a.attnum>0 AND NOT a.attisdropped),
+    FROM pg_attribute a WHERE a.attrelid=r.oid AND (a.attnum>0 OR (a.attnum<0 AND a.attacl IS NOT NULL)) AND NOT a.attisdropped),
   'policies',COALESCE((SELECT jsonb_agg(jsonb_build_object('name',p.polname,'permissive',p.polpermissive,'command',p.polcmd,
    'roles',(SELECT jsonb_agg(CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE pg_get_userbyid(role_oid) END ORDER BY CASE WHEN role_oid=0 THEN 'PUBLIC' ELSE pg_get_userbyid(role_oid) END) FROM unnest(p.polroles) role_oid),
    'using',pg_get_expr(p.polqual,p.polrelid),'check',pg_get_expr(p.polwithcheck,p.polrelid)) ORDER BY p.polname)

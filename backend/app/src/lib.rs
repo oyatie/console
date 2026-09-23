@@ -5,6 +5,8 @@
 //! shutdown. Domain behavior lands in narrower crates and is composed here.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+mod native_policy;
+
 use std::collections::{BTreeSet, HashMap};
 use std::env;
 use std::fmt::{Display, Formatter};
@@ -1537,6 +1539,8 @@ pub struct AppState {
     policy_step_up: Option<PasskeyService>,
     auth_rest: Option<AuthRestState>,
     company_rest: Option<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    serving_custody_profile: Option<account_custody::VerifiedCustodyProfile>,
+    native_policy_issuer: Option<JwtIssuer>,
     evidence_storage: Option<EvidenceService<SeaweedS3Storage>>,
     /// Object store + bucket backing the public storefront media-serve route.
     sales_media_storage: Option<(SeaweedS3Storage, String)>,
@@ -1634,6 +1638,8 @@ impl AppState {
         Ok(Self {
             platform_policy,
             company_rest: None,
+            serving_custody_profile: None,
+            native_policy_issuer: None,
             config,
             database,
             leave_command_database: DatabaseDependency::NotConfigured,
@@ -1695,7 +1701,7 @@ impl AppState {
         if config.database_url.is_some() {
             config.require_database_durability()?;
         }
-        let database = match config.database_url.as_deref() {
+        let (database, serving_custody_profile) = match config.database_url.as_deref() {
             Some(url) => {
                 let after_connect_role = "console_rt".to_owned();
                 let pool = PgPoolOptions::new()
@@ -1732,15 +1738,15 @@ impl AppState {
                     .await
                     .map_err(AppError::Database)?;
                 validate_database_pool_identity(&pool, "DATABASE_URL", "console_rt").await?;
-                account_custody::verify(&pool).await?;
+                let profile = account_custody::verify(&pool).await?;
                 config
                     .require_database_durability()?
                     .validate(&pool)
                     .await
                     .map_err(|error| AppError::Config(error.to_string()))?;
-                DatabaseDependency::Postgres(pool)
+                (DatabaseDependency::Postgres(pool), Some(profile))
             }
-            None => DatabaseDependency::NotConfigured,
+            None => (DatabaseDependency::NotConfigured, None),
         };
 
         let leave_command_database = match (
@@ -1815,6 +1821,27 @@ impl AppState {
         };
 
         let mut state = Self::new(config.clone(), database)?;
+        state.serving_custody_profile = serving_custody_profile;
+        if serving_custody_profile
+            == Some(account_custody::VerifiedCustodyProfile::NativeCompanyPolicy)
+        {
+            state.native_policy_issuer = config
+                .auth_rest
+                .as_ref()
+                .map(|auth| {
+                    JwtIssuer::from_es256_pem(
+                        JwtSettings {
+                            issuer: auth.jwt_issuer.clone(),
+                            audience: auth.jwt_audience.clone(),
+                            access_token_ttl: time::Duration::minutes(15),
+                        },
+                        auth.jwt_private_key_pem.as_bytes(),
+                        auth.jwt_public_key_pem.as_bytes(),
+                    )
+                    .map_err(|_| AppError::Config("invalid native policy issuer".into()))
+                })
+                .transpose()?;
+        }
         state.leave_command_database = leave_command_database;
         state.ontology_command_database = ontology_command_database;
         state.platform_force_command_database = platform_force_command_database;
@@ -3322,11 +3349,25 @@ pub fn build_router(mut state: AppState) -> Router {
         &state.config.auth_rest,
     ) {
         (DatabaseDependency::Postgres(pool), Some(auth), Some(verifier), Some(config)) => {
-            Some(console_identity_rest::company::CompanyRestState::new(
-                PgOrgStore::new(pool.clone())
-                    .with_native_account_auth(verifier.clone(), config.refresh_family_absolute_ttl),
-                auth.clone(),
-            ))
+            let store = PgOrgStore::new(pool.clone());
+            let store = match state.serving_custody_profile {
+                Some(account_custody::VerifiedCustodyProfile::NativeCompanyPolicy) => {
+                    state.native_policy_issuer.as_ref().map(|issuer| {
+                        store.with_native_account_policy(
+                            verifier.clone(),
+                            issuer.clone(),
+                            config.refresh_family_absolute_ttl,
+                        )
+                    })
+                }
+                _ => Some(store.with_native_account_auth(
+                    verifier.clone(),
+                    config.refresh_family_absolute_ttl,
+                )),
+            };
+            store.map(|store| {
+                console_identity_rest::company::CompanyRestState::new(store, auth.clone())
+            })
         }
         _ => None,
     };
@@ -3806,7 +3847,18 @@ pub fn build_router(mut state: AppState) -> Router {
                             "/companies/{org_id}/policy",
                             get(native_company_policy_document),
                         )
-                        .with_state(company),
+                        .route("/companies/{org_id}/policy/payroll-read/{operation}", get(native_policy::preflight))
+                        .route("/companies/{org_id}/policy/payroll-read/catalog", axum::routing::post(native_policy::install))
+                        .route("/companies/{org_id}/policy/payroll-read/grants", axum::routing::post(native_policy::grant))
+                        .route("/companies/{org_id}/policy/payroll-read/grants/{assignment}/revoke", axum::routing::post(native_policy::revoke))
+                        .route("/companies/{org_id}/policy/payroll-read/requests/{operation}/{command}", get(native_policy::request_document))
+                        .route("/companies/{org_id}/policy/payroll-read/requests/{operation}/{command}/retry", axum::routing::post(native_policy::retry))
+                        .with_state(company)
+                        .layer(axum::Extension(NativeCompanyPolicyNavigation(
+                            state.serving_custody_profile == Some(
+                                account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
+                            ),
+                        ))),
                 ),
                 _ => Router::new(),
             };
@@ -3961,8 +4013,14 @@ async fn native_company_result_document(
     }
 }
 
+// Composition selects only the verified native policy runtime. This flag is
+// capability availability, never Account authorization.
+#[derive(Clone, Copy)]
+struct NativeCompanyPolicyNavigation(bool);
+
 async fn native_company_document(
     State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::Extension(native_policy): axum::Extension<NativeCompanyPolicyNavigation>,
     axum::extract::Path(company): axum::extract::Path<String>,
     headers: HeaderMap,
     method: axum::http::Method,
@@ -3971,6 +4029,20 @@ async fn native_company_document(
     if method != axum::http::Method::GET {
         return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
     }
+    let show_payroll_policy_navigation = if native_policy.0 {
+        match state
+            .policy_form_document(&headers, &company, "install")
+            .await
+        {
+            Ok(_) => true,
+            Err(StatusCode::NOT_FOUND) => false,
+            Err(status) => return native_company_document_error(status),
+        }
+    } else {
+        false
+    };
+    // Read the displayed Company projection last; do not retain its name/slug
+    // across the additional authorization wait. The linked route rechecks.
     match state.company_document(&headers, &company).await {
         Ok(company) => document(
             Page::Company {
@@ -3978,6 +4050,7 @@ async fn native_company_document(
                 name: company.name,
                 slug: company.slug,
                 show_policy_navigation: company.show_policy_navigation,
+                show_payroll_policy_navigation,
             },
             StatusCode::OK,
         ),
@@ -4500,7 +4573,13 @@ async fn readyz(State(state): State<AppState>) -> impl IntoResponse {
     .await;
 
     let custody_ready = match &state.database {
-        DatabaseDependency::Postgres(pool) => account_custody::verify(pool).await.is_ok(),
+        DatabaseDependency::Postgres(pool) => match account_custody::verify(pool).await {
+            Ok(current) => match state.serving_custody_profile {
+                Some(startup) => current == startup,
+                None => current != account_custody::VerifiedCustodyProfile::NativeCompanyPolicy,
+            },
+            Err(_) => false,
+        },
         DatabaseDependency::NotConfigured => true,
     };
     let ready = database.healthy()
