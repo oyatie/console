@@ -18,6 +18,36 @@ pub enum NativePolicyCommand {
     People(NativePeoplePolicyCommandV1),
 }
 
+impl From<NativeCompanyBusinessCommandV1> for NativePolicyCommand {
+    fn from(input: NativeCompanyBusinessCommandV1) -> Self {
+        Self::Payroll(input)
+    }
+}
+
+impl From<NativePeoplePolicyCommandV1> for NativePolicyCommand {
+    fn from(input: NativePeoplePolicyCommandV1) -> Self {
+        Self::People(input)
+    }
+}
+
+impl From<&NativeCompanyBusinessCommandV1> for NativePolicyCommand {
+    fn from(input: &NativeCompanyBusinessCommandV1) -> Self {
+        Self::Payroll(input.clone())
+    }
+}
+
+impl From<&NativePeoplePolicyCommandV1> for NativePolicyCommand {
+    fn from(input: &NativePeoplePolicyCommandV1) -> Self {
+        Self::People(input.clone())
+    }
+}
+
+impl From<&NativePolicyCommand> for NativePolicyCommand {
+    fn from(input: &NativePolicyCommand) -> Self {
+        input.clone()
+    }
+}
+
 impl NativePolicyCommand {
     pub const fn codec_version(&self) -> i16 {
         match self {

@@ -33,6 +33,8 @@ FROM public.identity_native_policy_material_v1($1::uuid,$2::uuid,$3::uuid,$4::uu
 
 pub(super) const OPERATOR8: &str = r#"SELECT installed_object_type_id,role_id,role_revision,assignment_id,assignment_revision,assignment_state,assignment_valid_from,assignment_valid_until FROM public.native_company_policy_form_v1($1::uuid,$2::uuid,$3::uuid,$4::uuid,$5::smallint) LIMIT 2"#;
 
+pub(super) const OPERATOR8_PEOPLE: &str = r#"SELECT installed_object_type_id,role_id,role_revision,assignment_id,assignment_revision,assignment_state,assignment_valid_from,assignment_valid_until FROM public.native_company_policy_form_v2($1::uuid,$2::uuid,$3::uuid,$4::uuid,$5::smallint,$6::smallint,$7::text) LIMIT 2"#;
+
 pub(super) const PREPARE: &str = r#"SELECT q.inserted,
  (q.accepted_input).actor_account_id AS input_actor_account_id,
  (q.accepted_input).command_id AS input_command_id,
@@ -248,13 +250,13 @@ pub(super) fn accepted(
         };
     }
     let bytes: Vec<u8> = r!("input_bytes");
-    let (decoded_actor, input) =
-        NativeCompanyBusinessCommandV1::decode(&bytes).map_err(|_| Error::Unavailable)?;
     let stored_actor: Uuid = r!("actor_account_id");
     let company: Uuid = r!("org_id");
     let command: Uuid = r!("command_id");
     let operation: i16 = r!("operation");
     let codec: i16 = r!("codec_version");
+    let (decoded_actor, input) =
+        NativePolicyCommand::decode(codec, &bytes).map_err(|_| Error::Unavailable)?;
     let digest: Vec<u8> = r!("input_digest");
     let receipt: Uuid = r!("intake_receipt_id");
     let family: Uuid = r!("accepting_session_id");
@@ -266,9 +268,11 @@ pub(super) fn accepted(
         || stored_actor != *actor.as_uuid()
         || company != *selector.company().as_uuid()
         || command != selector.command_id()
-        || NativePolicyCommandRef::from_command(&input) != selector
+        || selector
+            .resolve(NativePolicyCommandRef::from_command(&input))
+            .is_err()
         || operation != operation_number(selector.operation())
-        || codec != 1
+        || codec != selector.codec_version()
         || input.encode(actor) != bytes
         || digest.len() != 32
         || receipt.is_nil()
@@ -341,7 +345,7 @@ pub(super) fn terminal(
         || command != input.command_id()
         || company != *input.company().as_uuid()
         || operation != operation_number(input.operation())
-        || codec != 1
+        || codec != input.codec_version()
         || intake != accepted.view.intake_receipt_id
         || digest != accepted.digest
         || receipt.is_nil()
@@ -350,8 +354,8 @@ pub(super) fn terminal(
         || executed_at < accepted.view.accepted_at
         || before < 1
         || after < 1
-        || catalog != CATALOG
-        || manifest != MANIFEST
+        || catalog != input.catalog_version()
+        || manifest != *input.manifest_digest()
         || (before == 1) != predecessor.is_none()
         || predecessor.is_some_and(|id| id.is_nil())
     {

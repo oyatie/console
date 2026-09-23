@@ -3,10 +3,8 @@
 mod command;
 pub use command::NativePolicyCommand;
 
-use super::business::{
-    MANIFEST, NativeBusinessOperationV1, NativeCompanyBusinessCommandV1,
-    PolicyAssignmentExpectationV1,
-};
+use super::business::{NativeBusinessOperationV1, PolicyAssignmentExpectationV1};
+use super::people_business::{DirectoryActionV1, NativePeoplePolicyCommandV1};
 use super::{
     AccountId, CompanyPolicyDecision, CompanyPolicyDecisionPort, CurrentNativeBootstrapAuthority,
     NativeBootstrapRequestV1,
@@ -30,10 +28,18 @@ pub enum NativePolicyWorkflowError {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NativePolicyFamily {
+    Payroll,
+    People,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct NativePolicyCommandRef {
     company: OrgId,
     command_id: Uuid,
     operation: NativeBusinessOperationV1,
+    family: NativePolicyFamily,
+    action: Option<DirectoryActionV1>,
 }
 
 impl NativePolicyCommandRef {
@@ -50,15 +56,90 @@ impl NativePolicyCommandRef {
             company,
             command_id,
             operation,
+            family: NativePolicyFamily::Payroll,
+            action: None,
         })
     }
 
-    pub fn from_command(command: &NativeCompanyBusinessCommandV1) -> Self {
+    /// Only recovery may omit a People grant/revoke action. The retained owner
+    /// must resolve it from the original command before any operation proceeds.
+    pub fn new_people(
+        company: OrgId,
+        command_id: Uuid,
+        operation: NativeBusinessOperationV1,
+        action: Option<DirectoryActionV1>,
+    ) -> Result<Self, NativePolicyWorkflowError> {
+        let mut selected = Self::new(company, command_id, operation)?;
+        if operation == NativeBusinessOperationV1::Install && action.is_some() {
+            return Err(NativePolicyWorkflowError::InvalidInput);
+        }
+        selected.family = NativePolicyFamily::People;
+        selected.action = action;
+        Ok(selected)
+    }
+
+    pub fn from_command(command: impl Into<NativePolicyCommand>) -> Self {
+        match command.into() {
+            NativePolicyCommand::Payroll(command) => Self {
+                company: command.company(),
+                command_id: command.command_id(),
+                operation: command.operation(),
+                family: NativePolicyFamily::Payroll,
+                action: None,
+            },
+            NativePolicyCommand::People(command) => Self::from_people_command(&command),
+        }
+    }
+
+    pub fn from_people_command(command: &NativePeoplePolicyCommandV1) -> Self {
         Self {
             company: command.company(),
             command_id: command.command_id(),
             operation: command.operation(),
+            family: NativePolicyFamily::People,
+            action: command.action(),
         }
+    }
+
+    pub const fn codec_version(&self) -> i16 {
+        match self.family {
+            NativePolicyFamily::Payroll => 1,
+            NativePolicyFamily::People => 2,
+        }
+    }
+
+    pub const fn manifest_digest(&self) -> &'static [u8; 32] {
+        match self.family {
+            NativePolicyFamily::Payroll => &super::business::MANIFEST,
+            NativePolicyFamily::People => &super::people_business::MANIFEST,
+        }
+    }
+
+    pub const fn directory_action(&self) -> Option<DirectoryActionV1> {
+        self.action
+    }
+
+    fn action_resolved(&self) -> bool {
+        self.family == NativePolicyFamily::Payroll
+            || self.operation == NativeBusinessOperationV1::Install
+            || self.action.is_some()
+    }
+
+    /// Match a requested locator to locked original material. This is identity
+    /// validation only; it does not confer any authorization.
+    pub fn resolve(self, original: Self) -> Result<Self, NativePolicyWorkflowError> {
+        if self.company != original.company
+            || self.command_id != original.command_id
+            || self.operation != original.operation
+            || self.family != original.family
+            || self
+                .action
+                .is_some_and(|action| Some(action) != original.action)
+            || !original.action_resolved()
+        {
+            return Err(NativePolicyWorkflowError::Unavailable);
+        }
+        Ok(original)
     }
 
     pub const fn company(&self) -> OrgId {
@@ -76,7 +157,7 @@ pub enum NativePolicyScopeRequest<'a> {
     Current(NativePolicyCommandRef),
     Form(NativePolicyCommandRef),
     ValidationForm(NativePolicyCommandRef),
-    Accept(&'a NativeCompanyBusinessCommandV1),
+    Accept(&'a NativePolicyCommand),
     Execute(NativePolicyCommandRef),
     Status(NativePolicyCommandRef),
 }
@@ -89,7 +170,7 @@ impl NativePolicyScopeRequest<'_> {
             | Self::ValidationForm(selector)
             | Self::Execute(selector)
             | Self::Status(selector) => *selector,
-            Self::Accept(command) => NativePolicyCommandRef::from_command(command),
+            Self::Accept(command) => NativePolicyCommandRef::from_command(*command),
         }
     }
 }
@@ -128,7 +209,7 @@ pub struct NativePolicyForm<F> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NativePolicyAcceptedView {
-    pub input: NativeCompanyBusinessCommandV1,
+    pub input: NativePolicyCommand,
     pub intake_receipt_id: Uuid,
     pub accepted_at: OffsetDateTime,
     pub execution_not_after: OffsetDateTime,
@@ -185,7 +266,7 @@ pub enum NativePolicyStatus {
 }
 
 impl NativePolicyStatus {
-    fn input(&self) -> Option<&NativeCompanyBusinessCommandV1> {
+    fn input(&self) -> Option<&NativePolicyCommand> {
         match self {
             Self::NotVisible => None,
             Self::AcceptedPending(accepted) | Self::AcceptedExpired(accepted) => {
@@ -209,6 +290,8 @@ pub struct NativePolicyExecution {
 pub trait NativePolicyWorkflowScope: Send {
     type FormProof: Send + Sync;
     fn authority(&self) -> &CurrentNativeBootstrapAuthority;
+    /// The exact family/action resolved under the retained owner's locks.
+    fn selector(&self) -> NativePolicyCommandRef;
     /// Each operation must reject the wrong scope mode before invoking SQL.
     fn current(
         &mut self,
@@ -273,7 +356,7 @@ fn authorize<P: CompanyPolicyDecisionPort + ?Sized>(
         source.current_group_id,
         recipient,
         selector.operation(),
-        MANIFEST,
+        *selector.manifest_digest(),
     )
     .map_err(|_| Unavailable)?;
     match policy
@@ -295,9 +378,13 @@ pub async fn native_policy_current<
     credentials: &S::Credentials,
     selector: NativePolicyCommandRef,
 ) -> Result<NativePolicyFormView, NativePolicyWorkflowError> {
+    if !selector.action_resolved() {
+        return Err(NativePolicyWorkflowError::InvalidInput);
+    }
     let mut scope = store
         .lock(credentials, NativePolicyScopeRequest::Current(selector))
         .await?;
+    let selector = selector.resolve(scope.selector())?;
     authorize(policy, scope.authority(), selector, None)?;
     let view = scope.current().await?;
     if view.selector != selector {
@@ -351,7 +438,11 @@ async fn read_form<S: NativePolicyWorkflowStore, P: CompanyPolicyDecisionPort + 
     request: NativePolicyScopeRequest<'_>,
 ) -> Result<NativePolicyForm<S::FormProof>, NativePolicyWorkflowError> {
     let selector = request.selector();
+    if !selector.action_resolved() {
+        return Err(NativePolicyWorkflowError::InvalidInput);
+    }
     let mut scope = store.lock(credentials, request).await?;
+    let selector = selector.resolve(scope.selector())?;
     authorize(policy, scope.authority(), selector, None)?;
     let form = scope.form().await?;
     if form.view.selector != selector {
@@ -368,20 +459,23 @@ pub async fn accept_native_policy_command<
     store: &S,
     policy: &P,
     credentials: &S::Credentials,
-    input: &NativeCompanyBusinessCommandV1,
+    input: impl Into<NativePolicyCommand>,
     trace: &TraceContext,
 ) -> Result<NativePolicyAcceptance, NativePolicyWorkflowError> {
+    let input = input.into();
+    let selector = NativePolicyCommandRef::from_command(&input);
     let mut scope = store
-        .lock(credentials, NativePolicyScopeRequest::Accept(input))
+        .lock(credentials, NativePolicyScopeRequest::Accept(&input))
         .await?;
+    let selector = selector.resolve(scope.selector())?;
     authorize(
         policy,
         scope.authority(),
-        NativePolicyCommandRef::from_command(input),
+        selector,
         input.recipient_account_id(),
     )?;
     let accepted = scope.accept(trace).await?;
-    if accepted.status.input() != Some(input) {
+    if accepted.status.input() != Some(&input) {
         return Err(NativePolicyWorkflowError::Unavailable);
     }
     scope.finish(policy, None).await?;
@@ -401,6 +495,7 @@ pub async fn execute_native_policy_command<
     let mut scope = store
         .lock(credentials, NativePolicyScopeRequest::Execute(selector))
         .await?;
+    let selector = selector.resolve(scope.selector())?;
     authorize(policy, scope.authority(), selector, None)?;
     let executed = scope.execute(trace).await?;
     if NativePolicyCommandRef::from_command(&executed.terminal.accepted.input) != selector {
@@ -422,6 +517,7 @@ pub async fn native_policy_command_status<
     let mut scope = store
         .lock(credentials, NativePolicyScopeRequest::Status(selector))
         .await?;
+    let selector = selector.resolve(scope.selector())?;
     authorize(policy, scope.authority(), selector, None)?;
     let status = scope.status().await?;
     if status
@@ -441,10 +537,11 @@ pub async fn submit_native_policy_command<
     store: &S,
     policy: &P,
     credentials: &S::Credentials,
-    input: &NativeCompanyBusinessCommandV1,
+    input: impl Into<NativePolicyCommand>,
     trace: &TraceContext,
 ) -> Result<NativePolicyExecution, NativePolicyWorkflowError> {
-    let accepted = accept_native_policy_command(store, policy, credentials, input, trace).await?;
+    let input = input.into();
+    let accepted = accept_native_policy_command(store, policy, credentials, &input, trace).await?;
     match accepted.status {
         NativePolicyStatus::Terminal(terminal) => Ok(NativePolicyExecution {
             inserted: false,
@@ -457,7 +554,7 @@ pub async fn submit_native_policy_command<
                 store,
                 policy,
                 credentials,
-                NativePolicyCommandRef::from_command(input),
+                NativePolicyCommandRef::from_command(&input),
                 trace,
             )
             .await

@@ -7,10 +7,7 @@ use super::{
 use console_identity_application::company_policy::{
     AccountId, CompanyPolicyDecision, CompanyPolicyDecisionPort, CurrentNativeBootstrapAuthority,
     NativeBootstrapProjectionRow, NativeBootstrapRequestV1, NativePolicySourceBinding,
-    business::{
-        MANIFEST, NativeBusinessOperationV1, NativeCompanyBusinessCommandV1,
-        PolicyAssignmentExpectationV1,
-    },
+    business::{NativeBusinessOperationV1, PolicyAssignmentExpectationV1},
     workflow::*,
 };
 use console_kernel_core::{AuditAction, AuditEvent, TraceContext};
@@ -26,13 +23,13 @@ use uuid::Uuid;
 
 mod rows;
 use NativePolicyWorkflowError as Error;
-const CATALOG: &str = "native-payroll-collection-read-v1";
 
 pub struct PgNativePolicyScope<'a> {
     tx: Transaction<'static, Postgres>,
     config: &'a NativeAccountReadConfig,
     credentials: &'a AccountEnrollmentCredentials,
     request: NativePolicyScopeRequest<'a>,
+    selector: NativePolicyCommandRef,
     authority: CurrentNativeBootstrapAuthority,
     binding: NativePolicySourceBinding,
     completed: bool,
@@ -65,18 +62,45 @@ impl NativePolicyWorkflowStore for PgOrgStore {
             .map_err(auth_error)?;
         let (authority, binding) =
             current_source(&mut tx, config, credentials, &request, actor, family).await?;
-        Ok(PgNativePolicyScope {
+        let selector = request.selector();
+        let mut scope = PgNativePolicyScope {
             tx,
             config,
             credentials,
             request,
+            selector,
             authority,
             binding,
             completed: false,
             head_effect: None,
             pending_until: None,
             grant_until: None,
-        })
+        };
+        if selector.codec_version() == 2
+            && selector.operation() != NativeBusinessOperationV1::Install
+            && selector.directory_action().is_none()
+        {
+            if !matches!(
+                scope.request,
+                NativePolicyScopeRequest::Status(_) | NativePolicyScopeRequest::Execute(_)
+            ) {
+                return Err(Error::InvalidInput);
+            }
+            let result = scope.query(rows::STATUS, None).await?;
+            let [row] = result.as_slice() else {
+                return Err(Error::Unavailable);
+            };
+            if rows::absent(row, "input_")? {
+                if !rows::absent(row, "terminal_")? {
+                    return Err(Error::Unavailable);
+                }
+                return Err(Error::NotFound);
+            }
+            let original = scope.accepted(row).await?;
+            scope.selector =
+                selector.resolve(NativePolicyCommandRef::from_command(&original.view.input))?;
+        }
+        Ok(scope)
     }
 }
 
@@ -152,7 +176,12 @@ async fn current_source(
 
 impl PgNativePolicyScope<'_> {
     async fn current_view(&mut self) -> Result<NativePolicyFormView, Error> {
-        let result = self.query(rows::OPERATOR8, None).await?;
+        let query = if self.selector.codec_version() == 2 {
+            rows::OPERATOR8_PEOPLE
+        } else {
+            rows::OPERATOR8
+        };
+        let result = self.query(query, None).await?;
         let [row] = result.as_slice() else {
             return Err(Error::Unavailable);
         };
@@ -173,7 +202,7 @@ impl PgNativePolicyScope<'_> {
             return Err(Error::Unavailable);
         }
         Ok(NativePolicyFormView {
-            selector: self.request.selector(),
+            selector: self.selector,
             group_id: self.authority.source().current_group_id,
             company_epoch: positive(self.authority.source().company_epoch)?,
             acting_account_id: self.binding.account,
@@ -194,7 +223,7 @@ impl PgNativePolicyScope<'_> {
         sql: &'static str,
         input: Option<Vec<u8>>,
     ) -> Result<Vec<PgRow>, Error> {
-        let s = self.request.selector();
+        let s = self.selector;
         let query = sqlx::query(sqlx::AssertSqlSafe(sql))
             .bind(*self.binding.account.as_uuid())
             .bind(self.binding.session_id)
@@ -203,13 +232,17 @@ impl PgNativePolicyScope<'_> {
             .bind(operation_number(s.operation()));
         let query = if sql == rows::PREPARE {
             query.bind(input)
+        } else if sql == rows::OPERATOR8_PEOPLE {
+            query
+                .bind(s.codec_version())
+                .bind(s.directory_action().map(|action| action.as_str()))
         } else {
             query
         };
         query.fetch_all(self.tx.as_mut()).await.map_err(sql_error)
     }
     async fn accepted(&mut self, row: &PgRow) -> Result<rows::Accepted, Error> {
-        let accepted = rows::accepted(row, self.binding.account, self.request.selector())?;
+        let accepted = rows::accepted(row, self.binding.account, self.selector)?;
         let correct: bool = sqlx::query_scalar("SELECT pg_catalog.sha256($1::bytea)=$2::bytea")
             .bind(accepted.view.input.encode(accepted.actor))
             .bind(&accepted.digest)
@@ -282,6 +315,9 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
     type FormProof = AccountFormProof;
     fn authority(&self) -> &CurrentNativeBootstrapAuthority {
         &self.authority
+    }
+    fn selector(&self) -> NativePolicyCommandRef {
+        self.selector
     }
 
     async fn current(&mut self) -> Result<NativePolicyFormView, Error> {
@@ -425,11 +461,16 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
             .await?;
             if let NativePolicyOutcome::Committed(effect) = &terminal.view.outcome {
                 self.head_effect = Some((terminal.view.epoch_after, terminal.view.receipt_id));
+                let input = &terminal.view.accepted.input;
+                let stable_key = match input {
+                    NativePolicyCommand::Payroll(_) => "pay_run",
+                    NativePolicyCommand::People(_) => "person",
+                };
                 match effect {
                     NativePolicyEffect::Installed { object_type_id } => self.append_audit(trace,
                         "ontology.object_type.builtin_install", "ont_object_types", *object_type_id,
-                        terminal.view.executed_at, json!({ "stable_key": "pay_run", "schema_version": 1,
-                            "lifecycle_state": "published", "catalog_version": CATALOG, "manifest_digest": hex(&MANIFEST) })).await?,
+                        terminal.view.executed_at, json!({ "stable_key": stable_key, "schema_version": 1,
+                            "lifecycle_state": "published", "catalog_version": input.catalog_version(), "manifest_digest": hex(input.manifest_digest()) })).await?,
                     NativePolicyEffect::Granted { assignment, .. } => self.grant_until = Some(assignment.valid_until),
                     NativePolicyEffect::Revoked { .. } => {},
                 }
@@ -526,7 +567,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
         {
             return Err(Error::Unavailable);
         }
-        let selector = self.request.selector();
+        let selector = self.selector;
         let recipient = match &self.request {
             NativePolicyScopeRequest::Accept(command) => command.recipient_account_id(),
             _ => None,
@@ -537,7 +578,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
             current.source().current_group_id,
             recipient,
             selector.operation(),
-            MANIFEST,
+            *selector.manifest_digest(),
         )
         .map_err(|_| Error::Unavailable)?;
         match policy
@@ -587,11 +628,32 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
 }
 
 fn accept_payload(accepted: &rows::Accepted, session: Uuid) -> Value {
-    json!({ "protocol": "COMPANY_BUSINESS_POLICY_V1", "command_id": accepted.view.input.command_id(),
-        "intake_receipt_id": accepted.view.intake_receipt_id, "operation": match accepted.view.input.operation() {
-            NativeBusinessOperationV1::Install => "InstallPayrollReadCatalogV1",
-            NativeBusinessOperationV1::Grant => "GrantPayrollReadV1", NativeBusinessOperationV1::Revoke => "RevokePayrollReadV1",
-        }, "input_digest": hex(&accepted.digest), "session_id": session })
+    let input = &accepted.view.input;
+    let (protocol, operation) = match input {
+        NativePolicyCommand::Payroll(command) => (
+            "COMPANY_BUSINESS_POLICY_V1",
+            match command.operation() {
+                NativeBusinessOperationV1::Install => "InstallPayrollReadCatalogV1",
+                NativeBusinessOperationV1::Grant => "GrantPayrollReadV1",
+                NativeBusinessOperationV1::Revoke => "RevokePayrollReadV1",
+            },
+        ),
+        NativePolicyCommand::People(command) => (
+            "COMPANY_PEOPLE_POLICY_V1",
+            match command.operation() {
+                NativeBusinessOperationV1::Install => "InstallPeopleDirectoryCatalogV1",
+                NativeBusinessOperationV1::Grant => "GrantPeopleDirectoryV1",
+                NativeBusinessOperationV1::Revoke => "RevokePeopleDirectoryV1",
+            },
+        ),
+    };
+    let mut payload = json!({ "protocol": protocol, "command_id": input.command_id(),
+        "intake_receipt_id": accepted.view.intake_receipt_id, "operation": operation,
+        "input_digest": hex(&accepted.digest), "session_id": session });
+    if let NativePolicyCommand::People(command) = input {
+        payload["action"] = json!(command.action().map(|action| action.as_str()));
+    }
+    payload
 }
 fn operation_number(op: NativeBusinessOperationV1) -> i16 {
     match op {
