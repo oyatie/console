@@ -64,3 +64,6 @@ impl PayrollRunsReadPort for PgPayrollRunsReadPort {
         })
     }
 }
+
+mod native;
+pub use native::PgNativePayrollRunsReadPort;

@@ -1012,6 +1012,7 @@ dependencies = [
  "console-orgchange-adapter-postgres",
  "console-orgchange-rest",
  "console-payroll-adapter-postgres",
+ "console-payroll-application",
  "console-payroll-domain",
  "console-payroll-rest",
  "console-payroll-ui",
@@ -2778,11 +2779,13 @@ dependencies = [
 name = "console-payroll-adapter-postgres"
 version = "0.1.0"
 dependencies = [
+ "console-identity-application",
  "console-kernel-core",
  "console-ontology-canonical-adapter-postgres",
  "console-ontology-canonical-domain",
  "console-payroll-application",
  "console-payroll-domain",
+ "console-platform-auth",
  "console-platform-authz",
  "console-platform-db",
  "console-platform-request-context",

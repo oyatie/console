@@ -11,7 +11,7 @@
 
 pub mod lifecycle;
 mod read;
-pub use read::PgPayrollRunsReadPort;
+pub use read::{PgNativePayrollRunsReadPort, PgPayrollRunsReadPort};
 /// `ObjectKey::PayRun`'s canonical write port, plus the one
 /// `payroll_draft_runs` statement that used to live in
 /// `console-workflow-runtime-adapter-postgres`.
