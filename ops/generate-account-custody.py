@@ -331,7 +331,8 @@ $account_custody$;
             'backend/app/src/company_enrollment_custody_state.sql': company_enrollment_state_query()+';\n',
             'ops/postgres-finalize-company-enrollment.sql': company_enrollment_finalizer_sql(),
             **credential_generated_files(),
-            **native_company_policy_generated_files()}
+            **native_company_policy_generated_files(),
+            **native_company_policy_v2_capture_files()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6401,6 +6402,63 @@ def native_company_policy_generated_files():
         'ops/postgres-native-company-policy-custody-state.sql': native_company_policy_state_query() + ';\n',
         'backend/app/src/native_company_policy_custody_state.sql': native_company_policy_state_query() + ';\n',
         'ops/postgres-finalize-native-company-policy.sql': native_company_policy_finalizer_sql(),
+    }
+
+
+NATIVE_POLICY_V2_SOURCE_SHA256 = {
+    'schema-v2.sql': '6377f9bac8e28fc2b4e4160f747e39fc1e8e6c50de15c27a06d8d389ee5e4aa8',
+    'codec-v2.sql': '5aa8c474e02e40fcfa7e3174b2eb3d1cbb9d1c897088f8a02710d0e24241a496',
+    'material-v2.sql': '0ebd2c9b5b566bc14b81f8d0224a0e2b6dca0fa2a1a2c457e7385cd989f2c05a',
+    'catalog-v2.sql': '61d7da2866e366050682709d950369d5b9ab622d49bf5880652086b50ca8d367',
+    'assignment-v2.sql': '3ebd08957a582e0904703c8796c504d24e2a4e907d4e3ac0e7d9521ab4d2f482',
+    'guards-v2.sql': '4a30121ecefddd640caecbffd6b02ae1a7bf44f894707813892679e8f079a5af',
+    'closure-v2.sql': '8c405dd8dcdb785d03ded26b5574b2294b327b85644a6707e5749fa09ab6cb69',
+    'audit-v2.sql': 'd78aac42e2b00fe90a8ca6e174f8ea9f709bd925de025579f589ffcb32c6c30e',
+    'current-read-v3.sql': 'd3fe94fbb9a6db4b2d6d22f789f092f6f136c49a35831ab425135a25d8873a9d',
+    'commands-v2.sql': '264f41bc4b8a2c11cef08931fd3fe6455b93b08ca43a9d62706e555e171a52f2',
+    'acl-v2.sql': '6f941ac9b29d0628d430bc5dee7cb6add59497d97200b2dc8c4c7441341b323f',
+}
+
+
+def native_company_policy_v2_source_sql():
+    """Declared successor for isolated capture; not a custody finalizer."""
+    parts = ['-- Generated declared-source candidate. Not a finalized custody installer.']
+    for name, expected in NATIVE_POLICY_V2_SOURCE_SHA256.items():
+        path = ROOT / 'ops/native-company-policy' / name
+        if not path.is_file() or path.is_symlink():
+            raise SystemExit('Native policy successor source must be a regular file: ' + name)
+        source = path.read_bytes()
+        if hashlib.sha256(source).hexdigest() != expected:
+            raise SystemExit('Native policy successor source differs from reviewed bytes: ' + name)
+        parts.append('-- source: ' + name + '\n' + source.decode('utf-8'))
+    parts.append("-- Immutable People reference; no grants or business records are created.\nDO $people_reference$\nBEGIN\n INSERT INTO public.ont_builtin_catalog_allowlist(catalog_version,manifest_digest)\n VALUES('native-people-directory-v1',decode('591e8fe626a11ce724c81330f0358f6f4fb3df4fa1532fa329ee28d7c5b38e5e','hex'))\n ON CONFLICT(catalog_version) DO NOTHING;\n IF (SELECT manifest_digest FROM public.ont_builtin_catalog_allowlist\n     WHERE catalog_version='native-people-directory-v1') IS DISTINCT FROM\n     decode('591e8fe626a11ce724c81330f0358f6f4fb3df4fa1532fa329ee28d7c5b38e5e','hex') THEN\n  RAISE EXCEPTION 'native_company_policy.catalog_reference_mismatch';\n END IF;\nEND\n$people_reference$;\n")
+    return '\n'.join(parts)
+
+
+def native_company_policy_v2_snapshot_query():
+    """Preserve historical serialization and capture all declared new routines."""
+    import re
+    names = set(re.findall(r'CREATE(?: OR REPLACE)? FUNCTION ([a-z_]+\.[a-z_0-9]+)\(',
+                          native_company_policy_v2_source_sql()))
+    prior = set(re.findall(r'CREATE FUNCTION ([a-z_]+\.[a-z_0-9]+)\(',
+                          native_company_policy_source_sql()))
+    added = sorted(names - prior)
+    if len(added) != 7:
+        raise ValueError('Native policy successor new routine roster drift')
+    query = native_company_policy_snapshot_query()
+    anchor = ' WHERE (n.nspname,p.proname) IN (VALUES '
+    if query.count(anchor) != 1:
+        raise ValueError('Native policy successor routine capture boundary drift')
+    rows = ','.join("('" + name.replace('.', "','", 1) + "')" for name in added)
+    return query.replace(anchor, anchor + rows + ',')
+
+
+def native_company_policy_v2_capture_files():
+    # Capture precedes a reviewed finalizer. Existing serving profile admission
+    # and operator entrypoints remain unchanged until that successor is proven.
+    return {
+        'ops/postgres-native-company-policy-v2-owner.sql': native_company_policy_v2_source_sql(),
+        'ops/postgres-capture-native-company-policy-v2-custody.sql': native_company_policy_v2_snapshot_query() + ';\n',
     }
 
 

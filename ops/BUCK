@@ -1,5 +1,15 @@
 # Exact production SQL inputs used by Account custody tests.
 export_file(
+    name = "postgres-native-company-policy-v2-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-company-policy-v2-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
     name = "postgres-reconcile-topology.sh",
     visibility = ["PUBLIC"],
 )

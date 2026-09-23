@@ -2019,6 +2019,7 @@ pub(crate) mod company_setup {
         include!("native_policy_system_acl_tests.rs");
         include!("native_policy_validation_owner_tests.rs");
         include!("native_people_codec2_install_probe.rs");
+        include!("native_policy_declared_successor_capture.rs");
         include!("native_payroll_read_owner_tests.rs");
     }
 
