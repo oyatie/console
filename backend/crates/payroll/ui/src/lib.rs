@@ -2,6 +2,8 @@
 pub mod native_account;
 #[cfg(feature = "ssr")]
 pub mod native_payroll;
+#[cfg(feature = "ssr")]
+pub mod native_people;
 pub mod native_policy;
 mod organization;
 mod payroll_workspace;
@@ -142,6 +144,7 @@ main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 "#,
     include_str!("native_policy.css"),
+    include_str!("native_people.css"),
     include_str!("native_payroll.css")
 );
 
@@ -1775,3 +1778,6 @@ mod native_policy_validation_tests;
 
 #[cfg(all(test, feature = "ssr"))]
 mod native_payroll_tests;
+
+#[cfg(all(test, feature = "ssr"))]
+mod native_people_tests;

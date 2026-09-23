@@ -6,16 +6,19 @@
     "backend/BUCK": "132ca739f056cd8618838a6b68a9b007d308d677a8ead50cfee9ef656760b083",
     "backend/Cargo.lock": "7cbc1c3e8902c7f95936d16dab5032a0cc11a0c1238d7ba7e8215108dd01ea77",
     "backend/Cargo.toml": "12a620f5c37e0e4195c19dc2976143a8d03813950219f6ad6be38335d48dcd2a",
-    "backend/crates/payroll/ui/BUCK": "ff94dd41f7b388f32f97fe7aea1e15123f22fe7ec0076479bea8de504323a8bc",
+    "backend/crates/payroll/ui/BUCK": "1e051b1bd08dae834281f8b76c851bec01fc766ade8accb375c0c765752c641d",
     "backend/crates/payroll/ui/Cargo.toml": "29478f482fc9c30194b9bc74a8d17bf92e38359b4294b8dd79f41960f4043b68",
     "backend/crates/payroll/ui/src/island_script.js": "ceb71195c4a8aad1f390f5798aa7163f8e976c49b6fc8414458f265b31e9293d",
-    "backend/crates/payroll/ui/src/lib.rs": "19fd67e7f17325e0cd8f48a4f5e4e5265e337600f637152135cb74f552cac3c5",
+    "backend/crates/payroll/ui/src/lib.rs": "f68dd01edf98f1784fbbf065785443fc39a744a9b4bac21a8b07fa7e7f7e2c73",
     "backend/crates/payroll/ui/src/native_account.css": "49962ceed3f2a80fc8b0849d076767479fe7d806a1022dc4a3681ecdc2e33348",
     "backend/crates/payroll/ui/src/native_account.js": "8e024d85d3f3d691a568b1bc2da4c90827f91b68bfb47ef8d008635b39d32f2f",
     "backend/crates/payroll/ui/src/native_account.rs": "d727097b5e02773a75f836a1ff8c1b838f651cc341a95ec4eba11dec25f747c7",
     "backend/crates/payroll/ui/src/native_payroll.css": "e8d6648d516db9e26632a7482387c29a6350e2dd3f34541e7d2193827ed6fbfc",
     "backend/crates/payroll/ui/src/native_payroll.rs": "1524a195d63cc7eb593cb681b1e52e31cb9a28f209b4214ff745c56f260ad745",
     "backend/crates/payroll/ui/src/native_payroll_tests.rs": "42d5bd78baedf16a4195e862fc0a0f82f210e7b6065579f90527a763cff7326a",
+    "backend/crates/payroll/ui/src/native_people.css": "50179b4f289a5d6e317ca40a084160619da6b44f4cd082bd0a50ac42334346ad",
+    "backend/crates/payroll/ui/src/native_people.rs": "73bcbb250470cf0e89117078794a05424c30acdefaf1b679724bc1d6952c7178",
+    "backend/crates/payroll/ui/src/native_people_tests.rs": "642719dc1736e9ecf23ce09583e723dad4c2f2eba8a15c03d2e6a5c934aaf60b",
     "backend/crates/payroll/ui/src/native_policy.css": "6009a91315d65142fd22c0556c002c8c0d479986cc0281a4d96202d7d7936701",
     "backend/crates/payroll/ui/src/native_policy.rs": "a271078bf83f8b2f70700d892f2ce8f9eef7ec94f23d69ce4fa0ceeb1d40935b",
     "backend/crates/payroll/ui/src/native_policy_validation_tests.rs": "1d9f1c75e2ce3628d14c99cadad0157beb2fc83e90f46c8819f0b54319348b65",
@@ -157,7 +160,7 @@
     "toolchains/rust/sysroot.bzl": "a1ea4bce4948b707454336706c426af9c4d4307abf01f31746eef01fd9895f20",
     "toolchains/rust/wasm.bzl": "c7b6f21a453724a892e76e0b2b57e6f8c34b699fd6adc15f379948de977c3c10",
     "tools/buck/BUCK": "2df00764a4cebca811ee236794ae5446635b322f195b6d4376305079a800e0bf",
-    "tools/buck/gen_first_party.py": "4b45a5e6cda81ed35d725a801f03c15749ed8004a3d23c9a18630de4946b1371",
+    "tools/buck/gen_first_party.py": "b6cb1b23bebe7b3d3105a46ced625f69bf96a904bce9419a61290272b1c6ef4f",
     "tools/buck/gen_hydrate.py": "af1b6651e50f394d9e7f72e2fc717eeb55dd836a68d4dbf182d7ca0bc304855c",
     "tools/buck2": "863d066c235d8c0b722a7e5a6e1f9e022bfd09ea5ebb851662d1c172bea46177",
     "tools/ui/BUCK": "d281912382fa15c336023016a6cedf5fd811117221862b0a05505a6d4625a478",
@@ -167,13 +170,13 @@
   },
   "outputs": {
     "backend/crates/payroll/ui/pkg/console_payroll_ui.js": "39f92b0cd74d1ad27797316fb357d20137646b4320ae150e75fb8a9c8cfe9429",
-    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "88fd5afefbc1d011b8cd6bdc8ce733108bd090fbcdc97e9de807ef5c558ef31f"
+    "backend/crates/payroll/ui/pkg/console_payroll_ui_bg.wasm": "65c7b3d1a2b6c9ab1bb49776342121084723b828c78998a8010664aae56d7e70"
   },
   "producer": {
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
-    "compiled_wasm_sha256": "f35438d81f30ef5c43592705fec87b4488e90958ccf85f3007a5ad50d699dafe",
+    "compiled_wasm_sha256": "0ab0c9cf25490dabdeee86ec94bdce3f8db68194424273d83d17b0d912885b9a",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "b512a763fc4d1b1941c09a3bde64c16742917aaa8db1598cf1299fbfce361ae9"
+    "source_snapshot_sha256": "e46bb8e936494c15c80151f6826bb171aee2abfc48f63727e6f4bda535389653"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",
