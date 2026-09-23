@@ -13,6 +13,8 @@ mod native_business;
 pub mod people_business;
 #[cfg(test)]
 mod people_policy_tests;
+#[cfg(test)]
+mod policy_command_tests;
 pub mod workflow;
 pub use native_business::{
     CurrentNativeBootstrapAuthority, CurrentPayrollReadAuthority, NativeBootstrapProjectionRow,
