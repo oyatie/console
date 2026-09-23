@@ -12,7 +12,9 @@ mod native_people_codec2_install_probe {
 
     // Extend only this probe's prerequisite. The inherited v1 installer and
     // configured_fixture(true) remain unchanged for predecessor/upgrade tests.
-    async fn configured_successor_fixture(pool: &PgPool) -> (Fixture, SigningKey, AppState) {
+    pub(super) async fn configured_successor_fixture(
+        pool: &PgPool,
+    ) -> (Fixture, SigningKey, AppState) {
         const FINALIZER: &str =
             include_str!("../../../../ops/postgres-finalize-native-company-policy-v2.sql");
         const CLASSIFIER: &str =
