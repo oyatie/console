@@ -34,7 +34,7 @@ POLICY_PROFILE_OUTPUTS={
 # requires independent review before updating its exact artifact pin.
 POLICY_CAPTURE_OUTPUTS={
     'ops/postgres-native-company-policy-v2-owner.sql': 'f2050f21ef8151339289b2f013abdd543e90f8803fb6f6d4b9f004abf4409602',
-    'ops/postgres-capture-native-company-policy-v2-custody.sql': '0fd751b1f9e7e2aa4639c1269622e0d17bf3460bfe79cb11fbc36788ba7dc3c7',
+    'ops/postgres-capture-native-company-policy-v2-custody.sql': '7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4',
 }
 
 class CompanyInputGeneratorTests(unittest.TestCase):

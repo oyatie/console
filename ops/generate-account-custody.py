@@ -6405,6 +6405,11 @@ def native_company_policy_generated_files():
     }
 
 
+NATIVE_POLICY_V2_NAMESPACE_PREDICATE = """(n.nspname='public' AND
+ (starts_with(p.proname,'native_company_policy_') OR starts_with(p.proname,'native_company_people_')))
+ OR (n.nspname='ontology_api' AND starts_with(p.proname,'install_native_company_people_'))"""
+
+
 NATIVE_POLICY_V2_SOURCE_SHA256 = {
     'schema-v2.sql': '6377f9bac8e28fc2b4e4160f747e39fc1e8e6c50de15c27a06d8d389ee5e4aa8',
     'codec-v2.sql': '5aa8c474e02e40fcfa7e3174b2eb3d1cbb9d1c897088f8a02710d0e24241a496',
@@ -6451,6 +6456,11 @@ def native_company_policy_v2_snapshot_query():
         raise ValueError('Native policy successor routine capture boundary drift')
     rows = ','.join("('" + name.replace('.', "','", 1) + "')" for name in added)
     query = query.replace(anchor, anchor + rows + ',')
+    # Include unexpected routines regardless of their owner or security mode.
+    boundary = '), owner_roles AS ('
+    if query.count(boundary) != 1:
+        raise ValueError('Native policy successor namespace capture boundary drift')
+    query = query.replace(boundary, ' OR (' + NATIVE_POLICY_V2_NAMESPACE_PREDICATE + ')\n' + boundary)
     # Namespace lookup is an independent prerequisite to function EXECUTE.
     # Freeze all declared application namespaces, including missing-schema rows.
     schema_anchor = "  'deployment_operator_boundary',(SELECT record FROM deployment_boundary),"

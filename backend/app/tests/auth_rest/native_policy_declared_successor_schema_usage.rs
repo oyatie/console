@@ -54,7 +54,7 @@ mod native_policy_declared_successor_schema_usage_regression {
             (
                 "capture",
                 CAPTURE,
-                "0fd751b1f9e7e2aa4639c1269622e0d17bf3460bfe79cb11fbc36788ba7dc3c7",
+                "7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4",
             ),
             (
                 "old capture",
