@@ -192,8 +192,41 @@ mod native_policy_declared_successor_schema_usage_regression {
                             "NATIVE_POLICY_SCHEMA_CREATE_RED: effective startup CREATE grant did not change snapshot and digest for {schema}");
                     }
 
+                    // Reserved namespace names must be visible even when owned
+                    // by the operator rather than any protected application role.
+                    for (signature, declaration) in [
+                        ("public.native_company_policy_probe_v2()", "CREATE FUNCTION public.native_company_policy_probe_v2() RETURNS integer LANGUAGE sql AS 'SELECT 1'"),
+                        ("public.native_company_people_probe_v1()", "CREATE FUNCTION public.native_company_people_probe_v1() RETURNS integer LANGUAGE sql AS 'SELECT 1'"),
+                        ("ontology_api.install_native_company_people_probe_v1()", "CREATE FUNCTION ontology_api.install_native_company_people_probe_v1() RETURNS integer LANGUAGE sql AS 'SELECT 1'"),
+                    ] {
+                        let absent: bool = sqlx::query_scalar("SELECT to_regprocedure($1::text) IS NULL")
+                            .bind(signature).fetch_one(tx.as_mut()).await.unwrap();
+                        assert!(absent,"unknown-routine fixture already exists: {signature}");
+                        let clean_capture = capture(&mut tx,CAPTURE).await;
+                        assert_eq!(clean_capture,observed,"unknown-routine baseline drift: {signature}");
+                        sqlx::raw_sql("SAVEPOINT declared_capture_unknown_routine_fault")
+                            .execute(tx.as_mut()).await.unwrap();
+                        sqlx::raw_sql(declaration).execute(tx.as_mut()).await.unwrap();
+                        let operator_owned: bool = sqlx::query_scalar(
+                            "SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p WHERE p.oid=to_regprocedure($1::text) AND pg_get_userbyid(p.proowner)=session_user)")
+                            .bind(signature).fetch_one(tx.as_mut()).await.unwrap();
+                        assert!(operator_owned,"unknown routine not created under session owner: {signature}");
+                        let fault_capture = capture(&mut tx,CAPTURE).await;
+                        let routine_detected = fault_capture.0 != clean_capture.0 && fault_capture.1 != clean_capture.1;
+                        sqlx::raw_sql("ROLLBACK TO SAVEPOINT declared_capture_unknown_routine_fault; RELEASE SAVEPOINT declared_capture_unknown_routine_fault")
+                            .execute(tx.as_mut()).await.unwrap();
+                        let absent: bool = sqlx::query_scalar("SELECT to_regprocedure($1::text) IS NULL")
+                            .bind(signature).fetch_one(tx.as_mut()).await.unwrap();
+                        assert!(absent,"savepoint failed to remove unknown routine: {signature}");
+                        assert_eq!(capture(&mut tx,CAPTURE).await,clean_capture,
+                            "savepoint failed to restore complete capture: {signature}");
+                        assert!(routine_detected,
+                            "NATIVE_POLICY_UNKNOWN_ROUTINE_RED: operator-owned reserved routine did not change snapshot and digest: {signature}");
+                    }
+
                     json!({"variant":if variant==0 {"plain"} else {"observer"},
                         "namespace_usage_fault_detected":true,"namespace_create_faults_detected":5,
+                        "unknown_routine_faults_detected":3,
                         "schema_rights_before":clean_rights,"schema_rights_fault":fault_rights,
                         "schema_rights_restored":restored_rights,
                         "predecessor_sha256":old.1,"successor_sha256":observed.1,
@@ -217,7 +250,7 @@ mod native_policy_declared_successor_schema_usage_regression {
             assert_eq!(captures.len(),2);
             assert_ne!(captures[0]["successor_sha256"],captures[1]["successor_sha256"]);
             for value in &captures { eprintln!("NATIVE_POLICY_SCHEMA_USAGE_REGRESSION {value}"); }
-            eprintln!("NATIVE_POLICY_SCHEMA_USAGE_REGRESSION_COMPLETE variants=2 rollback=verified fault_detected=true create_namespaces=5 acceptance=not_claimed");
+            eprintln!("NATIVE_POLICY_SCHEMA_USAGE_REGRESSION_COMPLETE variants=2 rollback=verified fault_detected=true create_namespaces=5 unknown_routines=3 acceptance=not_claimed");
         }).catch_unwind().await;
         runtime.close().await;
         if let Err(panic) = result {
