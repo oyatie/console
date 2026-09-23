@@ -903,3 +903,6 @@ fn workflow_current_finishes_without_proof_and_cancellation_withholds_view() {
     );
     s.drained();
 }
+
+#[path = "native_workflow_binding_tests.rs"]
+mod binding_contract;
