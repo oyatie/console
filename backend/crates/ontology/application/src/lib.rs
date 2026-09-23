@@ -26,6 +26,7 @@ use console_kernel_core::KernelError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub mod people;
 mod prepared;
 
 #[cfg(test)]
