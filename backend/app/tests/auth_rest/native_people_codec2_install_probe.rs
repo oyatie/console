@@ -10,6 +10,70 @@ mod native_people_codec2_install_probe {
         },
     };
 
+    // Extend only this probe's prerequisite. The inherited v1 installer and
+    // configured_fixture(true) remain unchanged for predecessor/upgrade tests.
+    async fn configured_successor_fixture(pool: &PgPool) -> (Fixture, SigningKey, AppState) {
+        const FINALIZER: &str =
+            include_str!("../../../../ops/postgres-finalize-native-company-policy-v2.sql");
+        const CLASSIFIER: &str =
+            include_str!("../../../../ops/postgres-native-company-policy-v2-custody-state.sql");
+        assert_eq!(
+            hex::encode(Sha256::digest(FINALIZER.as_bytes())),
+            "ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e",
+            "actual reviewed successor finalizer changed"
+        );
+        assert_eq!(
+            hex::encode(Sha256::digest(CLASSIFIER.as_bytes())),
+            "e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc",
+            "actual reviewed successor classifier changed"
+        );
+        assert_eq!(
+            CLASSIFIER,
+            include_str!("../../src/native_company_policy_v2_custody_state.sql"),
+            "successor serving classifier copies drifted"
+        );
+        prepare_policy_ready_database(pool).await;
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='120s'")
+            .execute(tx.as_mut()).await.unwrap();
+        sqlx::raw_sql(FINALIZER)
+            .execute(tx.as_mut())
+            .await
+            .expect("actual reviewed successor finalizer prerequisite");
+        sqlx::raw_sql("SET CONSTRAINTS ALL IMMEDIATE")
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        let runtime = login_test_pool(pool, TestDatabaseLogin::Business).await;
+        let checked = AssertUnwindSafe(async {
+            assert_eq!(
+                classified(&runtime, CLASSIFIER).await,
+                "native_company_policy_v2.finalized"
+            );
+        })
+        .catch_unwind()
+        .await;
+        runtime.close().await;
+        if let Err(panic) = checked {
+            std::panic::resume_unwind(panic);
+        }
+        // AppState must verify successor custody on a fresh startup before any
+        // actual Account/Company/Payroll/People workflow runs.
+        let artifacts = Artifacts::new();
+        let key = SigningKey::random(&mut OsRng);
+        let state =
+            AppState::from_config(account_browser_config(pool, artifacts.root.clone(), &key))
+                .await
+                .unwrap();
+        let app = Fixture {
+            service: build_router(state.clone()),
+            _artifacts: artifacts,
+            pool: pool.clone(),
+        };
+        (app, key, state)
+    }
+
     fn delta(
         before: &BTreeMap<String, String>,
         after: &BTreeMap<String, String>,
@@ -166,8 +230,8 @@ mod native_people_codec2_install_probe {
 
     #[sqlx::test(migrations = false)]
     async fn valid_people_codec2_install_commits_after_real_payroll_control(pool: PgPool) {
-        // Existing exact production installer and App startup, with unchanged pins.
-        let (app, key, state) = configured_fixture(&pool, true).await;
+        // Exact v1 prerequisite, reviewed v2 finalizer, then verified App startup.
+        let (app, key, state) = configured_successor_fixture(&pool).await;
         let (app, operator, cookies, startup, _) = designated_fixture(&pool, app).await;
         let (verifier, issuer, ttl) = bindings(&account_browser_config(
             &pool,
