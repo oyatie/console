@@ -1064,7 +1064,7 @@ async fn policy_committed_witness(
     let roles: Vec<_> = policy_rows(after, "policy_roles")
         .into_iter()
         .filter(|r| {
-            r["org_id"] == json!(org) && r["role_key"] == "native_payroll_collection_read_v1"
+            r["org_id"] == json!(org) && r["role_key"] == "native_payroll_collection_read"
         })
         .collect();
     if op == 1 {
@@ -1274,7 +1274,7 @@ fn policy_expected_bytes(request: &Value, account: Uuid, org: Uuid, recipient: U
                 "assignment_id",
                 "expected_assignment_revision",
             ] {
-                assert_eq!(values[key], "none");
+                assert_eq!(values[key], "");
             }
             bytes.push(0);
             let text = format!("{}:00+09:00", values["expires_at_local"]);
@@ -1476,7 +1476,7 @@ async fn assert_policy_catalog_and_grant(
     }
     assert!(policy_fields_match(
         &role,
-        &json!({"org_id":org,"role_key":"native_payroll_collection_read_v1","native_current_revision":1,"status":"ACTIVE","created_by":null,"updated_by":null,"created_by_account_id":account,"updated_by_account_id":account})
+        &json!({"org_id":org,"role_key":"native_payroll_collection_read","native_current_revision":1,"status":"ACTIVE","created_by":null,"updated_by":null,"created_by_account_id":account,"updated_by_account_id":account})
     ));
     assert!(policy_fields_match(
         &revision,
@@ -1649,9 +1649,9 @@ fn policy_browser_wire_expectation_matches_independent_frozen_vectors() {
         if name == "initial_grant" {
             fields.extend([
                 json!(["recipient_account_id", v["recipient"]]),
-                json!(["expected_role_revision", "none"]),
-                json!(["assignment_id", "none"]),
-                json!(["expected_assignment_revision", "none"]),
+                json!(["expected_role_revision", ""]),
+                json!(["assignment_id", ""]),
+                json!(["expected_assignment_revision", ""]),
                 json!(["expires_at_local", "2026-09-29T00:00"]),
             ]);
         }

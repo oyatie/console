@@ -598,3 +598,71 @@ fn literal_collection_requires_exact18field_set_and_denies_unsupported_actions()
     delegated[1]["attrs"]["delegable"] = json!(true);
     assert_eq!(run(delegated, read_context()), Ok(Decision::Deny));
 }
+
+// Pure registered-clause decoding only; SQL owns actual registration custody.
+fn registered_payroll_clause() -> Value {
+    serde_json::json!([{
+        "kind": "COMPANY_CAPABILITY_CLAUSE_V1",
+        "action": {"org_id": id(11), "object_type_id": id(20), "action_type_id": id(21),
+            "registration_revision": "1", "manifest_digest": DIGEST},
+        "resource": {"kind": "COMPANY", "org_id": id(11)},
+        "fields": (100..118).map(|n| serde_json::json!({"org_id": id(11),
+            "object_type_id": id(20), "property_id": id(n), "schema_revision": "1"})).collect::<Vec<_>>(),
+        "valid_from": "2026-09-21T00:00:00.000000Z", "valid_until": null, "delegable": false
+    }])
+}
+#[test]
+fn native_payroll_registered_clause_decodes_exact_source_refs_and_closed_grammar() {
+    use console_identity_application::company_policy::decode_native_payroll_read_clause as decode;
+    let company = OrgId::from_uuid(id(11));
+    let valid = registered_payroll_clause();
+    let (action, properties) = decode(company, &valid.to_string()).unwrap();
+    let expected = payroll_row();
+    assert_eq!(action, expected.action);
+    assert_eq!(properties, expected.properties);
+    let mut row = payroll_row(); row.action = action; row.properties = properties;
+    let authority = CurrentPayrollReadAuthority::from_retained_projection(&binding(), row).unwrap();
+    assert_eq!(CompanyPolicy::new().unwrap().decide_native_payroll_collection(&authority).unwrap(), CompanyPolicyDecision::Allow);
+    let rejected = |raw: &str| assert!(matches!(decode(company, raw), Err(CompanyPolicyError::MaterialUnavailable)));
+    for (path, value) in [
+        ("/0/kind", serde_json::json!("other")),
+        ("/0/resource/kind", serde_json::json!("GROUP")),
+        ("/0/resource/org_id", serde_json::json!(id(12))),
+        ("/0/action/org_id", serde_json::json!(id(12))),
+        ("/0/action/action_type_id", serde_json::json!(Uuid::nil())),
+        ("/0/action/registration_revision", serde_json::json!("01")),
+        ("/0/action/registration_revision", serde_json::json!("2")),
+        ("/0/action/registration_revision", serde_json::json!(1)),
+        ("/0/action/manifest_digest", serde_json::json!(DIGEST.to_uppercase())),
+        ("/0/fields/0/org_id", serde_json::json!(id(12))),
+        ("/0/fields/0/object_type_id", serde_json::json!(id(19))),
+        ("/0/fields/0/property_id", serde_json::json!(Uuid::nil())),
+        ("/0/fields/0/schema_revision", serde_json::json!("2")),
+        ("/0/valid_from", serde_json::json!("2026-09-21T00:00:00Z")),
+        ("/0/valid_from", serde_json::json!("2026-09-21T09:00:00.000000+09:00")),
+        ("/0/valid_until", serde_json::json!("2026-09-22T00:00:00.000000Z")),
+        ("/0/delegable", serde_json::json!(true)),
+    ] {
+        let mut bad = valid.clone(); *bad.pointer_mut(path).unwrap() = value; rejected(&bad.to_string());
+    }
+    for path in ["/0", "/0/action", "/0/resource", "/0/fields/0"] {
+        let mut bad = valid.clone(); bad.pointer_mut(path).unwrap().as_object_mut().unwrap().insert("unexpected".into(), Value::Bool(true)); rejected(&bad.to_string());
+        let mut bad = valid.clone(); let object = bad.pointer_mut(path).unwrap();
+        *object = Value::Array(object.as_object().unwrap().values().cloned().collect()); rejected(&bad.to_string());
+    }
+    for key in valid[0].as_object().unwrap().keys() {
+        let mut bad = valid.clone(); bad[0].as_object_mut().unwrap().remove(key); rejected(&bad.to_string());
+    }
+    let mut duplicate = valid.clone(); duplicate[0]["fields"][1] = duplicate[0]["fields"][0].clone(); rejected(&duplicate.to_string());
+    let mut short = valid.clone(); short[0]["fields"].as_array_mut().unwrap().pop(); rejected(&short.to_string());
+    let mut extra = valid.clone(); extra[0]["fields"].as_array_mut().unwrap().push(valid[0]["fields"][0].clone()); rejected(&extra.to_string());
+    rejected("[]"); rejected(&valid[0].to_string()); rejected(&serde_json::json!([valid[0], valid[0]]).to_string());
+    rejected(&valid.to_string().replacen("\"delegable\":false", "\"delegable\":false,\"delegable\":false", 1));
+    let raw = valid.to_string();
+    assert!(raw.len() < 32768);
+    let boundary = format!("{}{}", " ".repeat(32768 - raw.len()), raw);
+    assert_eq!(boundary.len(), 32768);
+    assert!(decode(company, &boundary).is_ok());
+    rejected(&(" ".to_owned() + &boundary));
+    assert!(decode(OrgId::from_uuid(id(12)), &valid.to_string()).is_err());
+}

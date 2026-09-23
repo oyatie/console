@@ -67,3 +67,7 @@ pub async fn list_payroll_runs<P: PayrollRunsReadPort + ?Sized>(
         .await
         .map_err(PayrollRunsReadError::Read)
 }
+
+#[cfg(test)]
+#[path = "read_tests.rs"]
+mod tests;

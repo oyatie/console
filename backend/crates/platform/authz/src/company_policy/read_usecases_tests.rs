@@ -695,3 +695,28 @@ fn company_context_candidates_validate_bounds_without_inventing_generation_prove
         );
     }
 }
+
+#[test]
+fn pure_company_identity_projection_requires_exact_independent_field_decision() {
+    use console_identity_application::company_policy::project_company_identity;
+    for decision in [Ok(CompanyPolicyDecision::Allow), Ok(CompanyPolicyDecision::Deny),
+        Err(CompanyPolicyError::EvaluatorUnavailable)] {
+        let store = Store::new(vec![]);
+        // Pure decision fixture: no real transaction or database authority claim.
+        store.trace.lock().unwrap().active = Some(company(1));
+        let policy = Policy::new(&store).override_decision(company(1), InitialCompanyAction::ReadIdentity, decision);
+        let authority = material(1, 2, "허가된 회사 <이름>");
+        let actual = project_company_identity(&policy, &authority);
+        match decision {
+            Ok(CompanyPolicyDecision::Allow) => {
+                let view = actual.unwrap();
+                assert_eq!(view.org_id, company(1));
+                assert_eq!(view.name, "허가된 회사 <이름>");
+                assert_eq!(view.slug, "company-1");
+            }
+            Ok(CompanyPolicyDecision::Deny) => assert_eq!(actual, Err(CompanyPolicyError::NotFound)),
+            Err(error) => assert_eq!(actual, Err(error)),
+        }
+        assert_eq!(store.events(), [Event::Decision(company(1), InitialCompanyAction::ReadIdentity, 2)]);
+    }
+}
