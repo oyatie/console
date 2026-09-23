@@ -91,7 +91,9 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
         output.is_absolute() && !output.exists(),
         "browser output must be a fresh owned directory"
     );
-    if policy_entry {
+    if people_entry {
+        native_policy_startup_tests::native_people_codec2_install_probe::prepare_successor_ready_database(&pool).await;
+    } else if policy_entry {
         native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
     } else {
         prepare_ready_database(&pool).await;

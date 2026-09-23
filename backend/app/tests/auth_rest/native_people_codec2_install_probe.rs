@@ -1,5 +1,5 @@
 // Additive proposal: real application/store/SQL boundary. No People form dependency.
-mod native_people_codec2_install_probe {
+pub(super) mod native_people_codec2_install_probe {
     use super::*;
     use console_identity_application::company_policy::{
         AccountId,
@@ -12,9 +12,7 @@ mod native_people_codec2_install_probe {
 
     // Extend only this probe's prerequisite. The inherited v1 installer and
     // configured_fixture(true) remain unchanged for predecessor/upgrade tests.
-    pub(super) async fn configured_successor_fixture(
-        pool: &PgPool,
-    ) -> (Fixture, SigningKey, AppState) {
+    pub(in super::super) async fn prepare_successor_ready_database(pool: &PgPool) {
         const FINALIZER: &str =
             include_str!("../../../../ops/postgres-finalize-native-company-policy-v2.sql");
         const CLASSIFIER: &str =
@@ -60,6 +58,12 @@ mod native_people_codec2_install_probe {
         if let Err(panic) = checked {
             std::panic::resume_unwind(panic);
         }
+    }
+
+    pub(super) async fn configured_successor_fixture(
+        pool: &PgPool,
+    ) -> (Fixture, SigningKey, AppState) {
+        prepare_successor_ready_database(pool).await;
         // AppState must verify successor custody on a fresh startup before any
         // actual Account/Company/Payroll/People workflow runs.
         let artifacts = Artifacts::new();
