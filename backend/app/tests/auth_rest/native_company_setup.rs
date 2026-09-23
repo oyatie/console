@@ -2010,6 +2010,7 @@ fn policy_preflight_effect_oracle_preserves_business_and_exact_limiter_counts() 
         include!("native_policy_startup_tests.rs");
         include!("native_policy_system_acl_tests.rs");
         include!("native_policy_validation_owner_tests.rs");
+        include!("native_payroll_read_owner_tests.rs");
     }
 
     mod native_policy_physical {
