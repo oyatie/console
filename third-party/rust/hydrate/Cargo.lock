@@ -232,6 +232,7 @@ dependencies = [
  "axum",
  "leptos",
  "serde",
+ "serde_json",
  "wasm-bindgen",
 ]
 

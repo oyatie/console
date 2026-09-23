@@ -1,5 +1,5 @@
 {
-  "canonical_lock_sha256": "d8bc4986e8b39381e75745a315ba592bca25a4e9a9e75a6f0afd545ff2091221",
+  "canonical_lock_sha256": "3bb8a5fb7785447ea8019907ab9dcd15d03cfffb7be4d88302bcd96a95dcfa3e",
   "fixups": {
     "third-party/rust/fixups/anyhow/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e",
     "third-party/rust/fixups/camino/fixups.toml": "86a2443ac17d0056347193da7f751f4e88ce3e6152d2f167c21ac2e795225895",
@@ -35,9 +35,9 @@
     "third-party/rust/fixups/zmij/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e"
   },
   "inputs": {
-    "backend/Cargo.lock": "d8bc4986e8b39381e75745a315ba592bca25a4e9a9e75a6f0afd545ff2091221",
+    "backend/Cargo.lock": "3bb8a5fb7785447ea8019907ab9dcd15d03cfffb7be4d88302bcd96a95dcfa3e",
     "backend/Cargo.toml": "12a620f5c37e0e4195c19dc2976143a8d03813950219f6ad6be38335d48dcd2a",
-    "backend/crates/payroll/ui/Cargo.toml": "1d70d2049d05b82bd5bdbc2b17dd0a99c2990ca5339379d916ea1d6ad1e3dbee",
+    "backend/crates/payroll/ui/Cargo.toml": "29478f482fc9c30194b9bc74a8d17bf92e38359b4294b8dd79f41960f4043b68",
     "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
     "third-party/rust/fixups/anyhow/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e",
     "third-party/rust/fixups/apalis-postgres/fixups.toml": "65ff94a5601fca57b17157ae2ecdf9d3762887c872208bd35dea40ba44ffc84d",

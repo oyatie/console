@@ -1,6 +1,8 @@
 //! Payroll `Layer::Ui` surface. SSR HTML for `/`; no payroll math.
 pub mod native_account;
 pub mod native_policy;
+#[cfg(feature = "ssr")]
+pub mod native_payroll;
 mod organization;
 mod payroll_workspace;
 mod people;
@@ -121,7 +123,8 @@ main{padding:24px 16px 56px}.page-heading{margin-bottom:22px;padding-bottom:20px
 .row .meta{flex:1 0 100%;order:3}.badge{margin-left:0}.state{padding:24px 16px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 "#,
-    include_str!("native_policy.css")
+    include_str!("native_policy.css"),
+    include_str!("native_payroll.css")
 );
 
 const ISLAND_BOOTSTRAP: &str = concat!(

@@ -37,6 +37,7 @@ rust_library(
     deps = [
         "//third-party/rust/hydrate:leptos",
         "//third-party/rust/hydrate:serde",
+        "//third-party/rust/hydrate:serde_json",
         "//third-party/rust/hydrate:wasm-bindgen",
     ],
 )
@@ -65,7 +66,7 @@ hydration_validate(
 
 rust_library(
     name = "console-payroll-ui",
-    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css", "src/native_payroll.css"]), external = {
         "//backend/crates/payroll/rest:crate-openapi-tree": "backend/crates/payroll/rest/openapi",
         "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
         ":console-payroll-ui-validated-bundle": "backend/crates/payroll/ui/pkg",
@@ -80,13 +81,14 @@ rust_library(
         "//third-party/rust:axum",
         "//third-party/rust:leptos",
         "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
         "//third-party/rust:wasm-bindgen",
     ],
 )
 
 rust_test(
     name = "console-payroll-ui-unit",
-    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css"]), external = {
+    mapped_srcs = repo_mapped_srcs("backend/crates/payroll/ui", glob(["src/**/*.rs", "src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css", "src/native_payroll.css"]), external = {
         "//backend/crates/payroll/rest:crate-openapi-tree": "backend/crates/payroll/rest/openapi",
         "//backend/openapi:openapi.yaml": "backend/openapi/openapi.yaml",
         ":console-payroll-ui-validated-bundle": "backend/crates/payroll/ui/pkg",
@@ -102,6 +104,7 @@ rust_test(
         "//third-party/rust:axum",
         "//third-party/rust:leptos",
         "//third-party/rust:serde",
+        "//third-party/rust:serde_json",
         "//third-party/rust:wasm-bindgen",
     ],
 )

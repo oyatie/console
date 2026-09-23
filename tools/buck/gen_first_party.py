@@ -115,7 +115,7 @@ RESOURCE_CONFIG = {
     },
     "console-payroll-ui": {
         # SSR may consume the committed pair only after the integrity action.
-        "srcs": ["src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css"],
+        "srcs": ["src/**/*.js", "src/native_account.css", "src/theme.css", "src/native_policy.css", "src/native_payroll.css"],
         # The unit tests `include_str!` two schema files from outside this
         # package: the payroll REST fragment they check contract keys against,
         # and the composed document.

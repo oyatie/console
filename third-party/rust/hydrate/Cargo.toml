@@ -24,12 +24,13 @@ crate-type = ["rlib", "cdylib"]
 "default" = ["ssr", "islands"]
 "hydrate" = ["dep:wasm-bindgen", "leptos/hydrate"]
 "islands" = ["leptos/islands"]
-"ssr" = ["dep:axum", "leptos/ssr"]
+"ssr" = ["dep:axum", "dep:serde_json", "leptos/ssr"]
 
 [dependencies]
 "axum" = { "version" = "^0.8.9", "default-features" = true, "optional" = true, "features" = [] }
 "leptos" = { "version" = "^0.9.0-beta", "default-features" = false, "optional" = false, "features" = [] }
 "serde" = { "version" = "^1", "default-features" = true, "optional" = false, "features" = ["derive"] }
+"serde_json" = { "version" = "^1", "default-features" = true, "optional" = true, "features" = [] }
 "wasm-bindgen" = { "version" = "^0.2.123", "default-features" = true, "optional" = true, "features" = [] }
 
 [patch."crates-io"]
