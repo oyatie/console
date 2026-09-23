@@ -205,7 +205,8 @@ impl NativePolicyWorkflowScope for Scope<'_> {
             selector: selector(),
             group_id: self.authority.source().current_group_id,
             company_epoch: 1,
-            acting_account_id: AccountId::from_uuid(self.authority.source().actor_account_id).unwrap(),
+            acting_account_id: AccountId::from_uuid(self.authority.source().actor_account_id)
+                .unwrap(),
             administrative_account_id: AccountId::from_uuid(id(34)).unwrap(),
             installed_object_type_id: None,
             assignment: None,
@@ -851,15 +852,31 @@ fn workflow_current_finishes_without_proof_and_cancellation_withholds_view() {
     assert_eq!(s.events(), history(Mode::Current));
     s.drained();
 
-    for error in [NativePolicyWorkflowError::AuthenticationInvalid,
-        NativePolicyWorkflowError::NotFound, NativePolicyWorkflowError::Unavailable,
-        NativePolicyWorkflowError::Unconfirmed] {
+    for error in [
+        NativePolicyWorkflowError::AuthenticationInvalid,
+        NativePolicyWorkflowError::NotFound,
+        NativePolicyWorkflowError::Unavailable,
+        NativePolicyWorkflowError::Unconfirmed,
+    ] {
         let mut plan = Plan::new(Mode::Current);
         plan.finish_error = Some(error);
         let s = Store::new(vec![plan]);
         let p = Policy::new(&s);
-        assert_eq!(ready(native_policy_current(&s, &p, &(), selector())).map(|_| ()), Err(error));
-        assert_eq!(s.events(), ["open:Current", "decision", "operation:Current", "finish:Current", "decision", "release:Current:false"]);
+        assert_eq!(
+            ready(native_policy_current(&s, &p, &(), selector())).map(|_| ()),
+            Err(error)
+        );
+        assert_eq!(
+            s.events(),
+            [
+                "open:Current",
+                "decision",
+                "operation:Current",
+                "finish:Current",
+                "decision",
+                "release:Current:false"
+            ]
+        );
         s.drained();
     }
     let mut plan = Plan::new(Mode::Current);
@@ -867,8 +884,22 @@ fn workflow_current_finishes_without_proof_and_cancellation_withholds_view() {
     let s = Store::new(vec![plan]);
     let p = Policy::new(&s);
     let mut pending = Box::pin(native_policy_current(&s, &p, &(), selector()));
-    assert!(pending.as_mut().poll(&mut Context::from_waker(Waker::noop())).is_pending());
+    assert!(
+        pending
+            .as_mut()
+            .poll(&mut Context::from_waker(Waker::noop()))
+            .is_pending()
+    );
     drop(pending);
-    assert_eq!(s.events(), ["open:Current", "decision", "operation:Current", "finish:Current", "release:Current:false"]);
+    assert_eq!(
+        s.events(),
+        [
+            "open:Current",
+            "decision",
+            "operation:Current",
+            "finish:Current",
+            "release:Current:false"
+        ]
+    );
     s.drained();
 }
