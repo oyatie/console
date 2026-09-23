@@ -1,0 +1,251 @@
+'use strict';
+// Actual browser continuation. Account, Company and Payroll prerequisites are
+// supplied by company.cjs. Database checkpoints are independently acknowledged.
+const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
+const PHASES = Object.freeze(['PEOPLE_INSTALLED', 'PEOPLE_READ_GRANTED', 'PEOPLE_READ_ONLY',
+  'PEOPLE_CREATE_GRANTED', 'PEOPLE_PREPARED', 'PEOPLE_PENDING_REOPENED', 'PEOPLE_COMMITTED',
+  'PEOPLE_RECEIPT_REOPENED', 'PEOPLE_DETAIL', 'PEOPLE_DETAIL_REOPENED', 'PEOPLE_LIST',
+  'PEOPLE_READ_REVOKED', 'PEOPLE_READ_DENIED', 'PEOPLE_OWN_RECEIPT',
+  'PEOPLE_CREATE_REVOKED', 'PEOPLE_RECEIPT_DENIED']);
+const LEGAL_NAME = '김하늘 <연구 & 운영>';
+const EMPLOYEE_NUMBER = 'UI-사람-001';
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+function id(value) {
+  assert.equal(typeof value, 'string'); assert.match(value, UUID);
+  assert.notEqual(value, '00000000-0000-0000-0000-000000000000'); return value;
+}
+function deniedProjectionSafe(material, forbidden) {
+  if (!material || !Array.isArray(forbidden) || forbidden.length === 0 ||
+    forbidden.some(value => typeof value !== 'string' || value.length === 0)) return false;
+  if (!['html', 'visible', 'text'].every(key => typeof material[key] === 'string') ||
+    !Array.isArray(material.attributes) || !material.attributes.every(x => typeof x === 'string')) return false;
+  const escape = value => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+  return forbidden.every(value => ![material.html, material.visible, material.text, ...material.attributes]
+    .some(text => text.includes(value) || text.includes(escape(value))));
+}
+function validEvidence(r) {
+  try {
+    id(r.company); id(r.account); id(r.command); id(r.employee); id(r.person);
+    assert.equal(r.employee, r.person);
+    assert.deepEqual(r.checkpoints.map(x => x.phase), PHASES);
+    assert.equal(r.mutations.length, 7);
+    assert.equal(new Set(r.mutations.map(x => x.command)).size, 6);
+    const policy = `/companies/${r.company}/policy/people-directory`;
+    const directory = `/companies/${r.company}/people`;
+    assert.deepEqual(r.mutations.map(x => x.path), [policy + '/catalog', policy + '/read/grants',
+      policy + '/create/grants', directory + '/requests', directory + `/requests/${r.command}/execute`,
+      policy + `/read/grants/${id(r.read_assignment)}/revoke`,
+      policy + `/create/grants/${id(r.create_assignment)}/revoke`]);
+    for (const m of r.mutations) {
+      id(m.command); assert.equal(m.status, 303); assert.match(m.body_sha256, /^[0-9a-f]{64}$/);
+    }
+    assert.equal(r.mutations[3].command, r.command); assert.equal(r.mutations[4].command, r.command);
+    for (const c of r.checkpoints) {
+      assert.equal(c.company, r.company); assert.equal(c.account, r.account);
+      assert.equal(c.owner_effects_verified, true);
+    }
+    for (const flag of ['keyboard', 'reflow_320', 'read_only', 'pending_reopened', 'receipt_reopened',
+      'detail_reopened', 'read_revoked', 'create_only_receipt', 'create_revoked', 'no_local_business_storage']) {
+      assert.equal(r[flag], true);
+    }
+    for (const name of ['people-directory-320.png', 'people-registration-desktop.png',
+      'people-pending-320.png', 'people-detail-desktop.png', 'people-detail-320.png']) {
+      assert.equal(r.screenshots.filter(x => x === name).length, 1);
+    }
+    return true;
+  } catch { return false; }
+}
+
+function expectedDocuments(r) {
+  const p = `/companies/${r.company}/policy/people-directory`, d = `/companies/${r.company}/people`;
+  const w = `/companies/${r.company}`, request = d + `/requests/${r.command}`, detail = d + '/' + r.employee;
+  const get = (path, status = 200) => ({method: 'GET', path, status, redirected: false});
+  const action = (index, destination) => [{method: 'POST', path: r.mutations[index].path, status: 303, redirected: false},
+    {method: 'GET', path: destination, status: 200, redirected: true}];
+  const receipt = (kind, index) => p + `/requests/${kind}/${r.mutations[index].command}`;
+  return [get(p + '/install'), ...action(0, receipt('install', 0)), get(p + '/read/grant'),
+    ...action(1, receipt('grant', 1)), get(d), get(d + '/new', 404), get(w), get(p + '/create/grant'),
+    ...action(2, receipt('grant', 2)), get(d), get(d + '/new'), ...action(3, request), get(request),
+    ...action(4, request), get(request), get(detail), get(detail), get(d), get(w), get(p + '/read/revoke'),
+    ...action(5, receipt('revoke', 5)), get(d, 404), get(detail, 404), get(request), get(w), get(p + '/create/revoke'),
+    ...action(6, receipt('revoke', 6)), get(request, 404)];
+}
+
+async function runPeopleJourney({page, company, companyName, account, exchange, capture, tabTo,
+  expectDocument, expectMutation, secretFree}) {
+  id(company); id(account);
+  const origin = new URL(page.url()).origin;
+  const workspace = `/companies/${company}`;
+  const directory = workspace + '/people';
+  const policy = workspace + '/policy/people-directory';
+  const result = {company, account, checkpoints: [], mutations: [], screenshots: []};
+  let pendingPath, detailPath;
+  async function noBusinessStorage() {
+    assert.equal(await page.evaluate(({name, number}) => {
+      const data = JSON.stringify({local: Object.entries(localStorage), session: Object.entries(sessionStorage)});
+      return !data.includes(name) && !data.includes(number);
+    }, {name: LEGAL_NAME, number: EMPLOYEE_NUMBER}), true);
+  }
+  async function witness(phase, values = {}) {
+    const reply = await exchange({phase, ...values});
+    assert.equal(reply.phase, phase); assert.equal(reply.company, company); assert.equal(reply.account, account);
+    assert.equal(reply.owner_effects_verified, true);
+    result.checkpoints.push(reply); return reply;
+  }
+  async function open(path, status = 200, link) {
+    expectDocument('GET', path, status, false);
+    let response;
+    if (link) {
+      if (await link.count() !== 1 || !(await link.isVisible())) {
+        const error = new Error('PEOPLE_ENTRY'); error.code = 'PEOPLE_ENTRY'; throw error;
+      }
+      assert.equal(await link.getAttribute('href'), path);
+      await tabTo(link, 48);
+      const waiting = page.waitForResponse(r => r.url() === origin + path && r.request().isNavigationRequest());
+      await page.keyboard.press('Enter'); response = await waiting;
+    } else { response = await page.goto(origin + path); }
+    await page.waitForURL(origin + path);
+    assert.equal(response.status(), status); assert.equal(response.request().redirectedFrom(), null);
+    if (status === 404) {
+      const material = await page.evaluate(() => ({visible: document.body.innerText, text: document.documentElement.textContent,
+        attributes: [...document.querySelectorAll('*')].flatMap(e => [...e.attributes].map(a => a.value))}));
+      material.html = await response.text();
+      assert.equal(deniedProjectionSafe(material, [company, companyName, account, LEGAL_NAME, EMPLOYEE_NUMBER,
+        result.command, result.employee, result.person].filter(Boolean)), true);
+      assert.equal(await page.locator('form,[data-people-record],[data-people-command]').count(), 0);
+    }
+    return response;
+  }
+  async function requestView(outcome) {
+    await noBusinessStorage();
+    const panel = page.locator(`[data-people-outcome="${outcome}"]`);
+    assert.equal(await panel.count(), 1); assert.equal(await panel.isVisible(), true);
+    assert.equal(await panel.getAttribute('data-people-command'), result.command);
+    assert.equal(await panel.getByText(LEGAL_NAME, {exact: true}).isVisible(), true);
+    assert.equal(await panel.getByText(EMPLOYEE_NUMBER, {exact: true}).isVisible(), true);
+    if (outcome === 'committed') {
+      assert.equal(await panel.getAttribute('data-people-employee'), result.employee);
+      assert.equal(await panel.getAttribute('data-people-person'), result.person);
+      assert.equal(await panel.getByText('사람 목록에 등록했습니다. 이 등록으로 고용이나 발령이 생성되지는 않았습니다.', {exact: true}).isVisible(), true);
+    } else {
+      assert.equal(await panel.locator('form[data-people-operation="execute"] input[name="command_id"]').inputValue(), result.command);
+    }
+  }
+  async function detailView() {
+    await noBusinessStorage();
+    const record = page.locator('[data-people-record]');
+    assert.equal(await record.count(), 1); assert.equal(await record.isVisible(), true);
+    assert.equal(await record.getAttribute('data-people-record'), result.employee);
+    assert.equal(await record.getAttribute('data-people-person'), result.person);
+    assert.equal(await page.getByRole('heading', {name: LEGAL_NAME, exact: true, level: 1}).isVisible(), true);
+    assert.equal(await record.getByText(EMPLOYEE_NUMBER, {exact: true}).isVisible(), true);
+  }
+  async function shot(name, width) {
+    await page.setViewportSize({width, height: 900}); await secretFree();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
+    await capture(name); result.screenshots.push(name + '.png');
+  }
+  async function submit(selector, label, path, destination, phase, values = {}) {
+    const form = page.locator(selector); assert.equal(await form.count(), 1);
+    assert.equal(await form.getAttribute('method'), 'post'); assert.equal(await form.getAttribute('action'), path);
+    const fields = await form.evaluate(f => [...new FormData(f)].filter(([name]) => name !== 'csrf_proof').sort());
+    assert.equal(new Set(fields.map(([name]) => name)).size, fields.length);
+    assert.equal(fields.every(([, value]) => typeof value === 'string'), true);
+    const command = id(fields.find(([name]) => name === 'command_id')?.[1]);
+    const recovery = destination(command);
+    await exchange({phase: 'PEOPLE_ACTION_READY', action_phase: phase, command_id: command, fields});
+    expectMutation(path); expectDocument('POST', path, 303, false); expectDocument('GET', recovery, 200, true);
+    const waiting = page.waitForResponse(r => r.url() === origin + path && r.request().method() === 'POST');
+    const button = form.getByRole('button', {name: label, exact: true});
+    await tabTo(button, 48); await page.keyboard.press('Enter');
+    const response = await waiting;
+    assert.equal(response.status(), 303); assert.equal(response.request().redirectedFrom(), null);
+    const raw = response.request().postData(); assert.equal(typeof raw, 'string');
+    const sent = new URLSearchParams(raw);
+    assert.equal(sent.getAll('csrf_proof').length, 1); assert.ok(sent.get('csrf_proof').length > 0);
+    assert.deepEqual([...sent].filter(([name]) => name !== 'csrf_proof').sort(), fields);
+    assert.equal(Buffer.byteLength(raw), Math.min(Buffer.byteLength(raw), 8192));
+    await page.waitForURL(origin + recovery);
+    result.mutations.push({path, command, status: response.status(), body_sha256: crypto.createHash('sha256').update(raw).digest('hex')});
+    const w = await witness(phase, {command_id: command, ...values});
+    return {command, path: recovery, witness: w};
+  }
+  async function policyCommand(kind, action) {
+    const install = kind === 'install';
+    const revoke = kind === 'revoke';
+    const actionLabel = action === 'read' ? '열람' : '등록';
+    const formPath = install ? policy + '/install' : policy + `/${action}/${kind}`;
+    const label = install ? '사람 등록·열람 권한' : `사람 ${actionLabel} 권한 ${revoke ? '회수' : '연결'}`;
+    await open(formPath, 200, page.getByRole('link', {name: label, exact: true}));
+    if (!install && !revoke) {
+      await page.getByLabel('종료 날짜와 시각 (한국 표준시, UTC+09:00)', {exact: true})
+        .fill(new Date(Date.now() + 86400000 + 9 * 3600000).toISOString().slice(0, 16));
+    }
+    const operation = install ? 'InstallPeopleDirectoryCatalogV1' : revoke ? 'RevokePeopleDirectoryV1' : 'GrantPeopleDirectoryV1';
+    const phase = install ? 'PEOPLE_INSTALLED' : `PEOPLE_${action.toUpperCase()}_${revoke ? 'REVOKED' : 'GRANTED'}`;
+    const path = install ? policy + '/catalog' : revoke ? policy + `/${action}/grants/${id(result[action + '_assignment'])}/revoke` : policy + `/${action}/grants`;
+    const submitted = await submit(`form[data-policy-operation="${operation}"]`,
+      install ? '권한 설정 준비' : label, path, command => policy + `/requests/${kind}/${command}`, phase, {action: action ?? null});
+    assert.equal(await page.locator('[data-policy-outcome="committed"]').isVisible(), true);
+    if (kind === 'grant') result[action + '_assignment'] = id(submitted.witness.assignment_id);
+    return submitted;
+  }
+
+  // Starts on the genuine Company workspace after the unchanged Payroll journey.
+  await exchange({phase: 'PEOPLE_READY'});
+  assert.equal(page.url(), origin + workspace);
+  assert.equal(await page.getByRole('link', {name: '사람', exact: true}).count(), 0);
+  await policyCommand('install');
+  await policyCommand('grant', 'read');
+  await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
+  assert.equal(await page.getByRole('heading', {name: '사람', exact: true, level: 1}).isVisible(), true);
+  assert.equal(await page.getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
+  assert.equal(await page.locator('[data-people-record]').count(), 0);
+  await shot('people-directory-320', 320);
+  await open(directory + '/new', 404); await witness('PEOPLE_READ_ONLY'); result.read_only = true;
+  await open(workspace); await policyCommand('grant', 'create');
+  await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
+  await open(directory + '/new', 200, page.getByRole('link', {name: '사람 등록', exact: true}));
+  await page.getByLabel('이름', {exact: true}).fill(LEGAL_NAME);
+  await page.getByLabel('사번', {exact: true}).fill(EMPLOYEE_NUMBER);
+  await noBusinessStorage();
+  assert.equal(await page.getByText('사람 목록에 등록합니다. 고용과 발령은 별도로 승인해야 합니다.', {exact: true}).isVisible(), true);
+  await shot('people-registration-desktop', 1440);
+  const prepared = await submit('form[data-people-operation="prepare"]', '등록 내용 확인', directory + '/requests',
+    command => directory + '/requests/' + command, 'PEOPLE_PREPARED');
+  result.command = prepared.command; pendingPath = prepared.path;
+  await requestView('pending');
+  await open(pendingPath); await requestView('pending');
+  await witness('PEOPLE_PENDING_REOPENED', {command_id: result.command}); result.pending_reopened = true;
+  await shot('people-pending-320', 320);
+  const committed = await submit('form[data-people-operation="execute"]', '등록 확정', pendingPath + '/execute',
+    () => pendingPath, 'PEOPLE_COMMITTED');
+  result.employee = id(committed.witness.employee_id); result.person = id(committed.witness.person_id);
+  await requestView('committed');
+  await open(pendingPath); await requestView('committed');
+  await witness('PEOPLE_RECEIPT_REOPENED', {command_id: result.command}); result.receipt_reopened = true;
+  detailPath = directory + '/' + result.employee;
+  await open(detailPath, 200, page.getByRole('link', {name: '등록한 사람 보기', exact: true}));
+  await detailView();
+  await witness('PEOPLE_DETAIL'); await shot('people-detail-desktop', 1440); await shot('people-detail-320', 320);
+  await open(detailPath); await detailView(); await witness('PEOPLE_DETAIL_REOPENED'); result.detail_reopened = true;
+  await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
+  const entry = page.locator(`[data-people-record="${result.employee}"]`);
+  assert.equal(await page.locator('[data-people-record]').count(), 1); assert.equal(await entry.isVisible(), true);
+  assert.equal(await entry.getByRole('link', {name: LEGAL_NAME, exact: true}).getAttribute('href'), detailPath);
+  assert.equal(await entry.getByText(EMPLOYEE_NUMBER, {exact: true}).isVisible(), true);
+  await witness('PEOPLE_LIST');
+  await open(workspace); await policyCommand('revoke', 'read');
+  await open(directory, 404); await open(detailPath, 404); await witness('PEOPLE_READ_DENIED'); result.read_revoked = true;
+  await open(pendingPath);
+  await requestView('committed');
+  assert.equal(await page.getByRole('link', {name: '등록한 사람 보기', exact: true}).count(), 0);
+  await witness('PEOPLE_OWN_RECEIPT', {command_id: result.command}); result.create_only_receipt = true;
+  await open(workspace); await policyCommand('revoke', 'create');
+  await open(pendingPath, 404); await witness('PEOPLE_RECEIPT_DENIED'); result.create_revoked = true;
+  await noBusinessStorage(); result.no_local_business_storage = true;
+  result.keyboard = true; result.reflow_320 = true;
+  assert.equal(validEvidence(result), true); return result;
+}
+module.exports = {runPeopleJourney, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};

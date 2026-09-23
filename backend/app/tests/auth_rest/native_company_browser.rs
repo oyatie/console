@@ -9,7 +9,19 @@ async fn native_company_real_browser_policy_grant_payroll_reopen_revoke(pool: Pg
     company_browser_journey(pool, true).await;
 }
 
+#[sqlx::test(migrations = false)]
+async fn native_people_real_browser_register_reopen_and_revoke(pool: PgPool) {
+    company_browser_journey_mode(pool, true, true).await;
+}
+
+#[path = "native_people_browser.rs"]
+mod native_people_browser;
+
 async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
+    company_browser_journey_mode(pool, policy_entry, false).await;
+}
+
+async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_entry: bool) {
     use futures::FutureExt;
     use std::process::Stdio;
     // Explicit local evidence prerequisites, never a silently skipped browser test.
@@ -57,6 +69,21 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
             policy_helpers.push((path, bytes));
         }
     }
+    if people_entry {
+        let path = driver.parent().unwrap().join("people_journey.cjs");
+        assert!(
+            std::fs::symlink_metadata(&path)
+                .unwrap()
+                .file_type()
+                .is_file()
+        );
+        let bytes = std::fs::read(&path).unwrap();
+        assert_eq!(
+            hex::encode(Sha256::digest(&bytes)),
+            native_people_browser::DRIVER_SHA256
+        );
+        policy_helpers.push((path, bytes));
+    }
     let output = PathBuf::from(
         std::env::var_os("CONSOLE_COMPANY_BROWSER_OUTPUT").expect("fresh browser output required"),
     );
@@ -79,7 +106,11 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
         .arg(&driver)
         .arg(address.port().to_string())
         .arg(&output)
-        .args(policy_entry.then_some("policy-entry"))
+        .args(if people_entry {
+            Some("people-entry")
+        } else {
+            policy_entry.then_some("policy-entry")
+        })
         .env_remove("DEBUG")
         .env_remove("PWDEBUG")
         .env_remove("NODE_DEBUG")
@@ -411,6 +442,10 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
             assert_eq!(observed, ["CATALOG_INSTALLED","GRANT_COMMITTED","GRANT_REOPENED","PAYROLL_READ","PAYROLL_REOPENED","PAYROLL_JSON","REVOKE_COMMITTED","REVOKE_REOPENED","PAYROLL_DENIED","PAYROLL_JSON_DENIED","ADMIN_REOPENED"]);
 
         }
+        if people_entry {
+            native_people_browser::observe(&pool, &mut input, &mut events, account, result.company).await;
+            checkpoint_receipts.push("PEOPLE_JOURNEY_VERIFIED");
+        }
         let final_event = browser_owner_event(&mut events).await;
         exact_keys(&final_event, &["kind", "status", "result_path"]);
         assert!(
@@ -456,7 +491,7 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
             .iter()
             .all(|(path, original)| std::fs::read(path).is_ok_and(|bytes| &bytes == original));
     let exit_ok = matches!(child_status, Ok(Ok(status)) if status.success());
-    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
+    let receipt = json!({"kind":"INDEPENDENT_NATIVE_COMPANY_UI_DATABASE_CHECKPOINTS","policy_entry":policy_entry,"people_entry":people_entry,"checkpoints":checkpoint_receipts,"source_unchanged":source_unchanged,"driver_exit_success":exit_ok,"server_shutdown":server_clean,"browser_pid":owned_browser_pid,"browser_seen_alive":browser_seen_alive,"browser_pid_exit_confirmed":browser_exit_confirmed,"browser_final_alive_observation":browser_exit_observation,"limits":"TEST_ONLY terms publication; synthetic authenticator; actual native enrollment/designation/Company route; does not prove grant/revoke, lost-response, human usability, WCAG or production exposure"});
     if output.is_dir() {
         std::fs::write(
             output.join("owner-receipt.json"),
@@ -1063,9 +1098,7 @@ async fn policy_committed_witness(
         "receipt_id":terminal["receipt_id"],"company_epoch":(epoch+1).to_string(),"owner_effects_verified":true,"unrelated_bytes_preserved":true,"original_discovery_preserved":true});
     let roles: Vec<_> = policy_rows(after, "policy_roles")
         .into_iter()
-        .filter(|r| {
-            r["org_id"] == json!(org) && r["role_key"] == "native_payroll_collection_read"
-        })
+        .filter(|r| r["org_id"] == json!(org) && r["role_key"] == "native_payroll_collection_read")
         .collect();
     if op == 1 {
         assert!(roles.is_empty());
