@@ -137,6 +137,20 @@ fn links(html: &str) -> Vec<(&str, &str)> {
         })
         .collect()
 }
+fn destination_href_present(html: &str, href: &str) -> bool {
+    html.contains(&format!("href=\"{href}\""))
+}
+#[test]
+fn destination_href_oracle_distinguishes_independently_authorized_descendant() {
+    let parent = "/companies/id/policy";
+    let descendant = "/companies/id/policy/payroll-read/install";
+    let only_descendant = format!("<a href=\"{descendant}\">급여 목록 열람 권한</a>");
+    assert!(destination_href_present(&only_descendant, descendant));
+    assert!(!destination_href_present(&only_descendant, parent));
+    let with_parent = format!("{only_descendant}<a href=\"{parent}\">권한 관리</a>");
+    assert!(destination_href_present(&with_parent, parent));
+    assert!(!destination_href_present("", parent));
+}
 fn has_expected_cards(html: &str, flags: u8) -> bool {
     let cards: Vec<_> = html.split("<article ").skip(1).collect();
     cards.len() == flags.count_ones() as usize
@@ -271,7 +285,7 @@ fn company_workspace_keeps_each_destination_independently_authorized() {
                 assert_eq!(*actual_label, *label);
             }
             if flags & bit == 0 {
-                assert!(!html.contains(href));
+                assert!(!destination_href_present(&html, href));
             }
         }
         assert_eq!(
