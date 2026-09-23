@@ -52,7 +52,7 @@ mod native_policy_declared_successor_capture {
             (
                 "capture",
                 CAPTURE,
-                "cef950ed6ab8af02f88d742a7c46edf3d13b7cf6fb550cad9893efb22cb6575f",
+                "0fd751b1f9e7e2aa4639c1269622e0d17bf3460bfe79cb11fbc36788ba7dc3c7",
             ),
             (
                 "old capture",

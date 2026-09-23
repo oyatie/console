@@ -54,7 +54,7 @@ mod native_policy_declared_successor_schema_usage_regression {
             (
                 "capture",
                 CAPTURE,
-                "cef950ed6ab8af02f88d742a7c46edf3d13b7cf6fb550cad9893efb22cb6575f",
+                "0fd751b1f9e7e2aa4639c1269622e0d17bf3460bfe79cb11fbc36788ba7dc3c7",
             ),
             (
                 "old capture",
@@ -156,8 +156,44 @@ mod native_policy_declared_successor_schema_usage_regression {
                         "savepoint failed to restore complete original capture tuple");
                     assert!(fault_detected,
                         "NATIVE_POLICY_SCHEMA_USAGE_RED: effective ontology_api USAGE loss did not change snapshot and digest");
+                    // Fixed namespaces and existing restricted startup principal.
+                    // Each fault is isolated and restored before its assertion.
+                    for (schema, grant) in [
+                        ("public", "GRANT CREATE ON SCHEMA public TO console_auth_startup"),
+                        ("ontology_api", "GRANT CREATE ON SCHEMA ontology_api TO console_auth_startup"),
+                        ("ont_policy_api", "GRANT CREATE ON SCHEMA ont_policy_api TO console_auth_startup"),
+                        ("leave_api", "GRANT CREATE ON SCHEMA leave_api TO console_auth_startup"),
+                        ("pg_catalog", "GRANT CREATE ON SCHEMA pg_catalog TO console_auth_startup"),
+                    ] {
+                        let before_create: bool = sqlx::query_scalar(
+                            "SELECT has_schema_privilege('console_auth_startup',$1::text,'CREATE')")
+                            .bind(schema).fetch_one(tx.as_mut()).await.unwrap();
+                        assert!(!before_create,"startup unexpectedly has CREATE on {schema}");
+                        let clean_capture = capture(&mut tx,CAPTURE).await;
+                        assert_eq!(clean_capture,observed,"namespace fault baseline drift for {schema}");
+                        sqlx::raw_sql("SAVEPOINT declared_capture_schema_create_fault")
+                            .execute(tx.as_mut()).await.unwrap();
+                        sqlx::raw_sql(grant).execute(tx.as_mut()).await.unwrap();
+                        let fault_create: bool = sqlx::query_scalar(
+                            "SELECT has_schema_privilege('console_auth_startup',$1::text,'CREATE')")
+                            .bind(schema).fetch_one(tx.as_mut()).await.unwrap();
+                        assert!(fault_create,"CREATE injection ineffective for {schema}");
+                        let fault_capture = capture(&mut tx,CAPTURE).await;
+                        let create_detected = fault_capture.0 != clean_capture.0 && fault_capture.1 != clean_capture.1;
+                        sqlx::raw_sql("ROLLBACK TO SAVEPOINT declared_capture_schema_create_fault; RELEASE SAVEPOINT declared_capture_schema_create_fault")
+                            .execute(tx.as_mut()).await.unwrap();
+                        let restored_create: bool = sqlx::query_scalar(
+                            "SELECT has_schema_privilege('console_auth_startup',$1::text,'CREATE')")
+                            .bind(schema).fetch_one(tx.as_mut()).await.unwrap();
+                        assert_eq!(restored_create,before_create,"savepoint failed to restore CREATE on {schema}");
+                        assert_eq!(capture(&mut tx,CAPTURE).await,clean_capture,
+                            "savepoint failed to restore full capture for {schema}");
+                        assert!(create_detected,
+                            "NATIVE_POLICY_SCHEMA_CREATE_RED: effective startup CREATE grant did not change snapshot and digest for {schema}");
+                    }
+
                     json!({"variant":if variant==0 {"plain"} else {"observer"},
-                        "namespace_usage_fault_detected":true,
+                        "namespace_usage_fault_detected":true,"namespace_create_faults_detected":5,
                         "schema_rights_before":clean_rights,"schema_rights_fault":fault_rights,
                         "schema_rights_restored":restored_rights,
                         "predecessor_sha256":old.1,"successor_sha256":observed.1,
@@ -181,7 +217,7 @@ mod native_policy_declared_successor_schema_usage_regression {
             assert_eq!(captures.len(),2);
             assert_ne!(captures[0]["successor_sha256"],captures[1]["successor_sha256"]);
             for value in &captures { eprintln!("NATIVE_POLICY_SCHEMA_USAGE_REGRESSION {value}"); }
-            eprintln!("NATIVE_POLICY_SCHEMA_USAGE_REGRESSION_COMPLETE variants=2 rollback=verified fault_detected=true acceptance=not_claimed");
+            eprintln!("NATIVE_POLICY_SCHEMA_USAGE_REGRESSION_COMPLETE variants=2 rollback=verified fault_detected=true create_namespaces=5 acceptance=not_claimed");
         }).catch_unwind().await;
         runtime.close().await;
         if let Err(panic) = result {

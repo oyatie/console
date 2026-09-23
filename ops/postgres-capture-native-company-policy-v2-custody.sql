@@ -895,6 +895,33 @@ SELECT jsonb_build_object('root_profile',(SELECT valid FROM root_profile),'proje
           AND record->'startup_execute'='false'::jsonb) FROM deployment_builtin) AS valid
 ), snapshots AS (
  SELECT jsonb_build_object(
+  'required_schemas',(SELECT jsonb_agg(jsonb_build_object(
+    'name',required.name,'present',n.oid IS NOT NULL,
+    'owner',CASE WHEN required.name='pg_catalog' AND n.nspowner=(SELECT proowner FROM deployment_builtin)
+       AND owner.rolsuper THEN jsonb_build_array('builtin_owner')
+      ELSE jsonb_build_array('role',owner.rolname) END,
+    'owner_superuser',owner.rolsuper,'acl_is_null',n.nspacl IS NULL,
+    'acl',COALESCE((SELECT jsonb_agg(jsonb_build_array(
+       CASE WHEN required.name='pg_catalog' AND a.grantor=n.nspowner
+          AND n.nspowner=(SELECT proowner FROM deployment_builtin) AND owner.rolsuper
+         THEN jsonb_build_array('builtin_owner') ELSE jsonb_build_array('role',pg_get_userbyid(a.grantor)) END,
+       CASE WHEN a.grantee=0 THEN jsonb_build_array('public')
+         WHEN required.name='pg_catalog' AND a.grantee=n.nspowner
+          AND n.nspowner=(SELECT proowner FROM deployment_builtin) AND owner.rolsuper
+         THEN jsonb_build_array('builtin_owner') ELSE jsonb_build_array('role',pg_get_userbyid(a.grantee)) END,
+       a.privilege_type,a.is_grantable) ORDER BY
+       CASE WHEN a.grantor=n.nspowner THEN '' ELSE pg_get_userbyid(a.grantor) END,
+       CASE WHEN a.grantee=n.nspowner THEN '' WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,
+       a.privilege_type,a.is_grantable)
+      FROM aclexplode(COALESCE(n.nspacl,acldefault('n',n.nspowner))) a),'[]'::jsonb),
+    'effective_rights',(SELECT jsonb_agg(jsonb_build_array(r.rolname,
+       has_schema_privilege(r.oid,n.oid,'USAGE'),has_schema_privilege(r.oid,n.oid,'CREATE'),
+       has_schema_privilege(r.oid,n.oid,'USAGE WITH GRANT OPTION'),
+       has_schema_privilege(r.oid,n.oid,'CREATE WITH GRANT OPTION')) ORDER BY r.rolname)
+      FROM (SELECT oid,rolname FROM protected_roles UNION SELECT oid,rolname FROM deployment_observer_active) r)
+    ) ORDER BY required.name)
+    FROM (VALUES ('public'),('ontology_api'),('ont_policy_api'),('leave_api'),('pg_catalog')) required(name)
+    LEFT JOIN pg_namespace n ON n.nspname=required.name LEFT JOIN pg_roles owner ON owner.oid=n.nspowner),
   'deployment_operator_boundary',(SELECT record FROM deployment_boundary),
   'legacy_root_boundary',(SELECT boundary FROM legacy_root_boundary),
   'tables',(SELECT jsonb_agg(record ORDER BY record->>'name') FROM relation_records),

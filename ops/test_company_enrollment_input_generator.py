@@ -20,10 +20,27 @@ EXPECTED={'backend/app/src/account_custody_state.sql': '5fb0a2608c5904fe0c1d5872
 
 COMPANY_PROFILE_OUTPUTS={'ops/postgres-company-enrollment-owner.sql': '2a7fffb57eedff3c3ba5981015e22f53ea80972e3222c38ff1c6ace1f0858d2d', 'ops/postgres-capture-company-enrollment-custody.sql': '6ef7b2754176952da89a0b61a7ba999d64b4c12e70fc949add18c63171b0abb5', 'backend/app/src/company_enrollment_custody_state.sql': 'fb2030a4d2891b206c41454ce8258d65920034e8ef817c5f7a812569aae614bd', 'ops/postgres-finalize-company-enrollment.sql': 'bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f'}
 
+
+# Existing native policy outputs were added before this test's roster caught up.
+# Pins are exact15441 historical bytes, independently preserved by capture work.
+POLICY_PROFILE_OUTPUTS={
+    'ops/postgres-native-company-policy-owner.sql': '833300caeac6874f35ebb08017bfbb7891a5fe765a4c761b139466ae221573d5',
+    'ops/postgres-capture-native-company-policy-custody.sql': 'd5d2c45c691383ddde9ac213d9fe2674db0750f3ceabdc733eaaf2a570d937e3',
+    'ops/postgres-native-company-policy-custody-state.sql': '072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479',
+    'backend/app/src/native_company_policy_custody_state.sql': '072794defc065f8730eafeab66a111bdd2439c49b8c1d7c3052ca83a7edf1479',
+    'ops/postgres-finalize-native-company-policy.sql': '4e7fc41b1d2ed6c2155d44d43347c18815ed9e70611eb9285f21e1c590bf996a',
+}
+# Declared capture additions; not custody/profile admission. A corrected capture
+# requires independent review before updating its exact artifact pin.
+POLICY_CAPTURE_OUTPUTS={
+    'ops/postgres-native-company-policy-v2-owner.sql': 'f2050f21ef8151339289b2f013abdd543e90f8803fb6f6d4b9f004abf4409602',
+    'ops/postgres-capture-native-company-policy-v2-custody.sql': '0fd751b1f9e7e2aa4639c1269622e0d17bf3460bfe79cb11fbc36788ba7dc3c7',
+}
+
 class CompanyInputGeneratorTests(unittest.TestCase):
     def test_one_new_output_preserves_all_existing_generated_bytes(self):
         outputs=GENERATOR.generated_files()
-        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS))
+        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS))
         for path,digest in EXPECTED.items():
             if path == "ops/account-custody-migrations.sha384":
                 # Reviewed9b9baed6a appended0229; retain exact historical228pin.
@@ -35,7 +52,7 @@ class CompanyInputGeneratorTests(unittest.TestCase):
             else:
                 self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
-        for path,digest in COMPANY_PROFILE_OUTPUTS.items():
+        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS}.items():
             self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
         emitted=GENERATOR.company_enrollment_input_sql()

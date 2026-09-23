@@ -6450,7 +6450,41 @@ def native_company_policy_v2_snapshot_query():
     if query.count(anchor) != 1:
         raise ValueError('Native policy successor routine capture boundary drift')
     rows = ','.join("('" + name.replace('.', "','", 1) + "')" for name in added)
-    return query.replace(anchor, anchor + rows + ',')
+    query = query.replace(anchor, anchor + rows + ',')
+    # Namespace lookup is an independent prerequisite to function EXECUTE.
+    # Freeze all declared application namespaces, including missing-schema rows.
+    schema_anchor = "  'deployment_operator_boundary',(SELECT record FROM deployment_boundary),"
+    if query.count(schema_anchor) != 1:
+        raise ValueError('Native policy successor schema capture boundary drift')
+    schema_record = """  'required_schemas',(SELECT jsonb_agg(jsonb_build_object(
+    'name',required.name,'present',n.oid IS NOT NULL,
+    'owner',CASE WHEN required.name='pg_catalog' AND n.nspowner=(SELECT proowner FROM deployment_builtin)
+       AND owner.rolsuper THEN jsonb_build_array('builtin_owner')
+      ELSE jsonb_build_array('role',owner.rolname) END,
+    'owner_superuser',owner.rolsuper,'acl_is_null',n.nspacl IS NULL,
+    'acl',COALESCE((SELECT jsonb_agg(jsonb_build_array(
+       CASE WHEN required.name='pg_catalog' AND a.grantor=n.nspowner
+          AND n.nspowner=(SELECT proowner FROM deployment_builtin) AND owner.rolsuper
+         THEN jsonb_build_array('builtin_owner') ELSE jsonb_build_array('role',pg_get_userbyid(a.grantor)) END,
+       CASE WHEN a.grantee=0 THEN jsonb_build_array('public')
+         WHEN required.name='pg_catalog' AND a.grantee=n.nspowner
+          AND n.nspowner=(SELECT proowner FROM deployment_builtin) AND owner.rolsuper
+         THEN jsonb_build_array('builtin_owner') ELSE jsonb_build_array('role',pg_get_userbyid(a.grantee)) END,
+       a.privilege_type,a.is_grantable) ORDER BY
+       CASE WHEN a.grantor=n.nspowner THEN '' ELSE pg_get_userbyid(a.grantor) END,
+       CASE WHEN a.grantee=n.nspowner THEN '' WHEN a.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END,
+       a.privilege_type,a.is_grantable)
+      FROM aclexplode(COALESCE(n.nspacl,acldefault('n',n.nspowner))) a),'[]'::jsonb),
+    'effective_rights',(SELECT jsonb_agg(jsonb_build_array(r.rolname,
+       has_schema_privilege(r.oid,n.oid,'USAGE'),has_schema_privilege(r.oid,n.oid,'CREATE'),
+       has_schema_privilege(r.oid,n.oid,'USAGE WITH GRANT OPTION'),
+       has_schema_privilege(r.oid,n.oid,'CREATE WITH GRANT OPTION')) ORDER BY r.rolname)
+      FROM (SELECT oid,rolname FROM protected_roles UNION SELECT oid,rolname FROM deployment_observer_active) r)
+    ) ORDER BY required.name)
+    FROM (VALUES ('public'),('ontology_api'),('ont_policy_api'),('leave_api'),('pg_catalog')) required(name)
+    LEFT JOIN pg_namespace n ON n.nspname=required.name LEFT JOIN pg_roles owner ON owner.oid=n.nspowner),
+"""
+    return query.replace(schema_anchor, schema_record + schema_anchor)
 
 
 def native_company_policy_v2_capture_files():
