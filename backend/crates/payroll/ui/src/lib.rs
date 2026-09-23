@@ -1751,3 +1751,6 @@ mod workflow_presentation_tests;
 
 #[cfg(all(test, feature = "ssr"))]
 mod native_policy_validation_tests;
+
+#[cfg(all(test, feature = "ssr"))]
+mod native_payroll_tests;
