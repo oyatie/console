@@ -70,6 +70,7 @@ impl NativePolicyCommandRef {
 }
 
 pub enum NativePolicyScopeRequest<'a> {
+    Current(NativePolicyCommandRef),
     Form(NativePolicyCommandRef),
     ValidationForm(NativePolicyCommandRef),
     Accept(&'a NativeCompanyBusinessCommandV1),
@@ -80,7 +81,8 @@ pub enum NativePolicyScopeRequest<'a> {
 impl NativePolicyScopeRequest<'_> {
     pub fn selector(&self) -> NativePolicyCommandRef {
         match self {
-            Self::Form(selector)
+            Self::Current(selector)
+            | Self::Form(selector)
             | Self::ValidationForm(selector)
             | Self::Execute(selector)
             | Self::Status(selector) => *selector,
@@ -193,6 +195,9 @@ pub trait NativePolicyWorkflowScope: Send {
     type FormProof: Send + Sync;
     fn authority(&self) -> &CurrentNativeBootstrapAuthority;
     /// Each operation must reject the wrong scope mode before invoking SQL.
+    fn current(
+        &mut self,
+    ) -> impl Future<Output = Result<NativePolicyFormView, NativePolicyWorkflowError>> + Send;
     fn form(
         &mut self,
     ) -> impl Future<Output = Result<NativePolicyForm<Self::FormProof>, NativePolicyWorkflowError>> + Send;
@@ -263,6 +268,25 @@ fn authorize<P: CompanyPolicyDecisionPort + ?Sized>(
         CompanyPolicyDecision::Allow => Ok(()),
         CompanyPolicyDecision::Deny => Err(NotFound),
     }
+}
+
+/// Read current authorized context without creating an unused mutation proof.
+pub async fn native_policy_current<
+    S: NativePolicyWorkflowStore,
+    P: CompanyPolicyDecisionPort + ?Sized,
+>(
+    store: &S,
+    policy: &P,
+    credentials: &S::Credentials,
+    selector: NativePolicyCommandRef,
+) -> Result<NativePolicyFormView, NativePolicyWorkflowError> {
+    let mut scope = store
+        .lock(credentials, NativePolicyScopeRequest::Current(selector))
+        .await?;
+    authorize(policy, scope.authority(), selector, None)?;
+    let view = scope.current().await?;
+    scope.finish(policy, None).await?;
+    Ok(view)
 }
 
 pub async fn native_policy_form<

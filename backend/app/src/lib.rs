@@ -4031,7 +4031,7 @@ async fn native_company_document(
     }
     let show_payroll_policy_navigation = if native_policy.0 {
         match state
-            .policy_form_document(&headers, &company, "install")
+            .policy_current_document(&headers, &company, "install")
             .await
         {
             Ok(_) => true,

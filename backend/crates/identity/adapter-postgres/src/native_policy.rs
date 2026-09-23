@@ -151,6 +151,37 @@ async fn current_source(
 }
 
 impl PgNativePolicyScope<'_> {
+    async fn current_view(&mut self) -> Result<NativePolicyFormView, Error> {
+        let result = self.query(rows::OPERATOR8, None).await?;
+        let [row] = result.as_slice() else {
+            return Err(Error::Unavailable);
+        };
+        let installed: Option<Uuid> = row.try_get("installed_object_type_id").map_err(sql_error)?;
+        if installed.is_some_and(|id| id.is_nil()) {
+            return Err(Error::Unavailable);
+        }
+        let assignment = rows::assignment_view(
+            row.try_get("role_id").map_err(sql_error)?,
+            row.try_get("role_revision").map_err(sql_error)?,
+            row.try_get("assignment_id").map_err(sql_error)?,
+            row.try_get("assignment_revision").map_err(sql_error)?,
+            row.try_get("assignment_state").map_err(sql_error)?,
+            row.try_get("assignment_valid_from").map_err(sql_error)?,
+            row.try_get("assignment_valid_until").map_err(sql_error)?,
+        )?;
+        if installed.is_none() && assignment.is_some() {
+            return Err(Error::Unavailable);
+        }
+        Ok(NativePolicyFormView {
+            selector: self.request.selector(),
+            group_id: self.authority.source().current_group_id,
+            company_epoch: positive(self.authority.source().company_epoch)?,
+            acting_account_id: self.binding.account,
+            administrative_account_id: account(self.authority.source().administrative_account_id)?,
+            installed_object_type_id: installed,
+            assignment,
+        })
+    }
     fn unused(&self) -> Result<(), Error> {
         if self.completed {
             Err(Error::Unavailable)
@@ -253,6 +284,16 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
         &self.authority
     }
 
+    async fn current(&mut self) -> Result<NativePolicyFormView, Error> {
+        self.unused()?;
+        if !matches!(self.request, NativePolicyScopeRequest::Current(_)) {
+            return Err(Error::Unavailable);
+        }
+        let view = self.current_view().await?;
+        self.completed = true;
+        Ok(view)
+    }
+
     async fn form(&mut self) -> Result<NativePolicyForm<AccountFormProof>, Error> {
         self.unused()?;
         if !matches!(
@@ -261,26 +302,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
         ) {
             return Err(Error::Unavailable);
         }
-        let result = self.query(rows::OPERATOR8, None).await?;
-        let [row] = result.as_slice() else {
-            return Err(Error::Unavailable);
-        };
-        let installed: Option<Uuid> = row.try_get("installed_object_type_id").map_err(sql_error)?;
-        if installed.is_some_and(|id| id.is_nil()) {
-            return Err(Error::Unavailable);
-        }
-        let assignment = rows::assignment_view(
-            row.try_get("role_id").map_err(sql_error)?,
-            row.try_get("role_revision").map_err(sql_error)?,
-            row.try_get("assignment_id").map_err(sql_error)?,
-            row.try_get("assignment_revision").map_err(sql_error)?,
-            row.try_get("assignment_state").map_err(sql_error)?,
-            row.try_get("assignment_valid_from").map_err(sql_error)?,
-            row.try_get("assignment_valid_until").map_err(sql_error)?,
-        )?;
-        if installed.is_none() && assignment.is_some() {
-            return Err(Error::Unavailable);
-        }
+        let view = self.current_view().await?;
         let NativeAccountMode::Policy { issuer } = &self.config.mode else {
             return Err(Error::Unavailable);
         };
@@ -304,20 +326,7 @@ impl NativePolicyWorkflowScope for PgNativePolicyScope<'_> {
         }
         .map_err(auth_error)?;
         self.completed = true;
-        Ok(NativePolicyForm {
-            proof,
-            view: NativePolicyFormView {
-                selector: self.request.selector(),
-                group_id: self.authority.source().current_group_id,
-                company_epoch: positive(self.authority.source().company_epoch)?,
-                acting_account_id: self.binding.account,
-                administrative_account_id: account(
-                    self.authority.source().administrative_account_id,
-                )?,
-                installed_object_type_id: installed,
-                assignment,
-            },
-        })
+        Ok(NativePolicyForm { proof, view })
     }
 
     async fn accept(&mut self, trace: &TraceContext) -> Result<NativePolicyAcceptance, Error> {

@@ -47,6 +47,7 @@ pub enum NativeEntryError {
     Forbidden,
     Unavailable,
     TooLarge,
+    RateLimited,
 }
 
 impl NativeEntryError {
@@ -57,6 +58,7 @@ impl NativeEntryError {
             Self::Forbidden => StatusCode::FORBIDDEN,
             Self::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
             Self::TooLarge => StatusCode::PAYLOAD_TOO_LARGE,
+            Self::RateLimited => StatusCode::TOO_MANY_REQUESTS,
         }
     }
 }
@@ -70,6 +72,7 @@ impl From<BrowserError> for NativeEntryError {
             | BrowserError::EnrollmentInvalid => Self::InvalidRequest,
             BrowserError::RequestOriginDenied => Self::Forbidden,
             BrowserError::RequestTooLarge => Self::TooLarge,
+            BrowserError::RateLimited => Self::RateLimited,
             _ => Self::Unavailable,
         }
     }
@@ -169,6 +172,24 @@ fn admit_document<'a>(
 }
 
 impl AuthRestState {
+    /// Admission for a newly issued native Company form proof. Read-only
+    /// documents and validation that retains an existing proof do not call this.
+    pub async fn limit_company_form(
+        &self,
+        headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
+    ) -> Result<(), NativeEntryError> {
+        configured(self)?;
+        limit(
+            self,
+            headers,
+            client.map(Extension),
+            RateLimitEndpoint::AccountCsrf,
+        )
+        .await
+        .map_err(NativeEntryError::from)
+    }
+
     /// Capture original native form credentials; current Auth and policy checks
     /// still belong to the retained owning transaction. The caller must bound
     /// and strictly parse the body, including duplicate fields, before calling.

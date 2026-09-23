@@ -142,7 +142,22 @@ async fn company_browser_journey(pool: PgPool, policy_entry: bool) {
             .await
             .expect("real native browser app prerequisite");
         state_to_close = Some(state.clone());
-        let router = build_router(state);
+        let router = build_router(state).layer(axum::middleware::from_fn(
+            |request: axum::extract::Request, next: axum::middleware::Next| async move {
+                if request.method() == axum::http::Method::POST
+                    && request.uri().path().starts_with("/companies/")
+                {
+                    let headers = request.headers();
+                    eprintln!("native-policy-form-wire: origin_present={} origin_null={} urlencoded={} metadata_document={}",
+                        headers.contains_key("origin"),
+                        headers.get("origin").is_some_and(|v| v == "null"),
+                        headers.get("content-type").is_some_and(|v| v == "application/x-www-form-urlencoded"),
+                        headers.get("sec-fetch-mode").is_some_and(|v| v == "navigate")
+                            && headers.get("sec-fetch-dest").is_some_and(|v| v == "document"));
+                }
+                next.run(request).await
+            },
+        ));
         let (stop, stopped) = tokio::sync::oneshot::channel();
         shutdown = Some(stop);
         server = Some(tokio::spawn(async move {

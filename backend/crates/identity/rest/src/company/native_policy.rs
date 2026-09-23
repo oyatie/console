@@ -12,15 +12,16 @@ use axum::{
 use console_identity_application::company_policy::{
     business::NativeBusinessOperationV1,
     workflow::{
-        NativePolicyCommandRef, NativePolicyExecution, NativePolicyForm, NativePolicyStatus,
-        NativePolicyWorkflowError, NativePolicyWorkflowStore, execute_native_policy_command,
-        native_policy_command_status, native_policy_form, native_policy_validation_form,
-        submit_native_policy_command,
+        NativePolicyCommandRef, NativePolicyExecution, NativePolicyForm, NativePolicyFormView,
+        NativePolicyStatus, NativePolicyWorkflowError, NativePolicyWorkflowStore,
+        execute_native_policy_command, native_policy_command_status, native_policy_current,
+        native_policy_form, native_policy_validation_form, submit_native_policy_command,
     },
 };
 use console_kernel_core::{OrgId, TraceContext};
 use console_platform_auth::account::{AccountEnrollmentCredentials, AccountFormProof};
 use console_platform_auth_rest::AuthRestState;
+use console_platform_request_context::TrustedClientIp;
 use uuid::Uuid;
 
 pub enum NativePolicySubmission {
@@ -42,7 +43,8 @@ pub enum NativePolicyRequestDocument {
     NotVisible,
     Visible {
         status: NativePolicyStatus,
-        current: NativePolicyForm<AccountFormProof>,
+        current: NativePolicyFormView,
+        proof: Option<AccountFormProof>,
     },
 }
 
@@ -68,6 +70,7 @@ where
     pub async fn policy_form_document(
         &self,
         headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
         company: &str,
         operation: &str,
     ) -> Result<NativePolicyForm<AccountFormProof>, StatusCode> {
@@ -80,7 +83,31 @@ where
             .policy
             .as_ref()
             .ok_or(StatusCode::SERVICE_UNAVAILABLE)?;
+        self.auth
+            .limit_company_form(headers, client)
+            .await
+            .map_err(|e| e.status())?;
         native_policy_form(&self.store, policy.as_ref(), &credentials, selector)
+            .await
+            .map_err(workflow_status)
+    }
+
+    pub async fn policy_current_document(
+        &self,
+        headers: &HeaderMap,
+        company: &str,
+        operation: &str,
+    ) -> Result<NativePolicyFormView, StatusCode> {
+        let selector = selector(company, operation, Uuid::new_v4())?;
+        let credentials = self
+            .auth
+            .company_document_credentials(headers)
+            .map_err(|e| e.status())?;
+        let policy = self
+            .policy
+            .as_ref()
+            .ok_or(StatusCode::SERVICE_UNAVAILABLE)?;
+        native_policy_current(&self.store, policy.as_ref(), &credentials, selector)
             .await
             .map_err(workflow_status)
     }
@@ -88,6 +115,7 @@ where
     pub async fn policy_request_document(
         &self,
         headers: &HeaderMap,
+        client: Option<TrustedClientIp>,
         company: &str,
         operation: &str,
         command: &str,
@@ -108,10 +136,28 @@ where
         if matches!(status, NativePolicyStatus::NotVisible) {
             return Ok(NativePolicyRequestDocument::NotVisible);
         }
-        let current = native_policy_form(&self.store, policy.as_ref(), &credentials, selector)
-            .await
-            .map_err(workflow_status)?;
-        Ok(NativePolicyRequestDocument::Visible { status, current })
+        let (current, proof) = if matches!(status, NativePolicyStatus::AcceptedPending(_)) {
+            self.auth
+                .limit_company_form(headers, client)
+                .await
+                .map_err(|e| e.status())?;
+            let form = native_policy_form(&self.store, policy.as_ref(), &credentials, selector)
+                .await
+                .map_err(workflow_status)?;
+            (form.view, Some(form.proof))
+        } else {
+            (
+                native_policy_current(&self.store, policy.as_ref(), &credentials, selector)
+                    .await
+                    .map_err(workflow_status)?,
+                None,
+            )
+        };
+        Ok(NativePolicyRequestDocument::Visible {
+            status,
+            current,
+            proof,
+        })
     }
 
     pub async fn policy_submit_document(

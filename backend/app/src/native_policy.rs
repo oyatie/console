@@ -1,6 +1,6 @@
 //! Thin HTTP composition for native Company policy documents.
 use axum::{
-    extract::{Path, Request, State},
+    extract::{Extension, Path, Request, State},
     http::{HeaderMap, HeaderValue, Method, StatusCode, header},
     response::Response,
 };
@@ -17,6 +17,7 @@ use console_identity_rest::company::{
     CompanyRestState, NativePolicyPostTarget, NativePolicyRequestDocument, NativePolicySubmission,
 };
 use console_payroll_ui::native_policy as ui;
+use console_platform_request_context::TrustedClientIp;
 use time::OffsetDateTime;
 
 type CompanyState = CompanyRestState<PgOrgStore>;
@@ -161,6 +162,7 @@ pub(super) async fn preflight(
     Path((company, op)): Path<(String, String)>,
     headers: HeaderMap,
     method: Method,
+    client: Option<Extension<TrustedClientIp>>,
 ) -> Response {
     if method != Method::GET {
         return error(StatusCode::METHOD_NOT_ALLOWED);
@@ -169,7 +171,10 @@ pub(super) async fn preflight(
         Ok(value) => value,
         Err(status) => return error(status),
     };
-    let form = match state.policy_form_document(&headers, &company, &op).await {
+    let form = match state
+        .policy_form_document(&headers, client.map(|Extension(ip)| ip), &company, &op)
+        .await
+    {
         Ok(value) => value,
         Err(status) => return error(status),
     };
@@ -190,6 +195,7 @@ pub(super) async fn request_document(
     Path((company, op, command)): Path<(String, String, String)>,
     headers: HeaderMap,
     method: Method,
+    client: Option<Extension<TrustedClientIp>>,
 ) -> Response {
     if method != Method::GET {
         return error(StatusCode::METHOD_NOT_ALLOWED);
@@ -199,28 +205,44 @@ pub(super) async fn request_document(
         Err(status) => return error(status),
     };
     let result = match state
-        .policy_request_document(&headers, &company, &op, &command)
+        .policy_request_document(
+            &headers,
+            client.map(|Extension(ip)| ip),
+            &company,
+            &op,
+            &command,
+        )
         .await
     {
         Ok(value) => value,
         Err(status) => return error(status),
     };
-    let NativePolicyRequestDocument::Visible { status, current } = result else {
+    let NativePolicyRequestDocument::Visible {
+        status,
+        current,
+        proof,
+    } = result
+    else {
         return ui::document(ui::Page::NotVisible, StatusCode::NOT_FOUND);
     };
-    let selector = current.view.selector;
+    let selector = current.selector;
     let (outcome, original) = match status {
         NativePolicyStatus::NotVisible => {
             return ui::document(ui::Page::NotVisible, StatusCode::NOT_FOUND);
         }
-        NativePolicyStatus::AcceptedPending(accepted) => (
-            ui::Outcome::Pending {
-                accepted_at: date(accepted.accepted_at),
-                deadline: date(accepted.execution_not_after),
-                proof: current.proof.as_str().to_owned(),
-            },
-            original(&accepted),
-        ),
+        NativePolicyStatus::AcceptedPending(accepted) => {
+            let Some(proof) = proof else {
+                return error(StatusCode::SERVICE_UNAVAILABLE);
+            };
+            (
+                ui::Outcome::Pending {
+                    accepted_at: date(accepted.accepted_at),
+                    deadline: date(accepted.execution_not_after),
+                    proof: proof.as_str().to_owned(),
+                },
+                original(&accepted),
+            )
+        }
         NativePolicyStatus::AcceptedExpired(accepted) => (
             ui::Outcome::Expired {
                 accepted_at: date(accepted.accepted_at),
@@ -285,7 +307,7 @@ pub(super) async fn request_document(
     };
     ui::document(
         ui::Page::Result {
-            scope: scope(current.view, identity),
+            scope: scope(current, identity),
             operation: operation(selector.operation()),
             command: selector.command_id().to_string(),
             outcome,
