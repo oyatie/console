@@ -2026,6 +2026,7 @@ pub(crate) mod company_setup {
         include!("native_people_directory_staged_startup.rs");
         include!("native_people_directory_absent_startup.rs");
         include!("native_people_directory_finalizer_tests.rs");
+        include!("native_people_directory_owner_tests.rs");
         include!("native_policy_declared_successor_schema_usage.rs");
         include!("native_policy_successor_contract.rs");
         include!("native_payroll_read_owner_tests.rs");

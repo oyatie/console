@@ -18,6 +18,7 @@ fn scope(with_assignment: bool) -> Scope {
         company_link: true,
         policy_link: true,
         payroll_link: false,
+        people_navigation: (false, false),
         company: COMPANY.to_owned(),
         operator: OTHER.to_owned(),
         recipient: RECIPIENT.to_owned(),

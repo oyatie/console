@@ -92,7 +92,12 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
         "browser output must be a fresh owned directory"
     );
     if people_entry {
-        native_policy_startup_tests::native_people_codec2_install_probe::prepare_successor_ready_database(&pool).await;
+        // Verify the actual guarded Directory activation before UI data exists.
+        // Its temporary AppState uses the fixture origin; close it before the
+        // browser creates the fresh TLS-origin-specific state below.
+        let (directory_fixture, _, directory_state) = native_policy_startup_tests::native_people_directory_finalizer_tests::configured_native_directory_fixture(&pool).await;
+        directory_state.shutdown_realtime().await;
+        drop(directory_fixture);
     } else if policy_entry {
         native_policy_startup_tests::prepare_policy_ready_database(&pool).await;
     } else {

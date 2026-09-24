@@ -1,7 +1,7 @@
 // External prerequisite-bound proposal. Include inside native_policy_startup_tests.
 // Requires independently reviewed guarded FINALIZER artifact, not declared SOURCE.
 // Missing artifact is a prerequisite failure, never semantic RED or fake installer.
-mod native_people_directory_finalizer_tests {
+pub(super) mod native_people_directory_finalizer_tests {
     use super::*;
     use sqlx::{Postgres, Transaction};
     const FINALIZER: &str =
@@ -177,7 +177,7 @@ mod native_people_directory_finalizer_tests {
             "finalizer omitted required owning relation locks"
         );
     }
-    pub(super) async fn configured_native_directory_fixture(
+    pub(in super::super) async fn configured_native_directory_fixture(
         pool: &PgPool,
     ) -> (Fixture, SigningKey, AppState) {
         reviewed_capture();

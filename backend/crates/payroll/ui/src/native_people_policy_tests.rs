@@ -272,6 +272,8 @@ fn people_policy_workspace_projection_controls_real_links_and_empty_state() {
             show_policy_navigation: false,
             show_payroll_policy_navigation: false,
             show_payroll_navigation: false,
+            show_people_navigation: false,
+            show_people_create_navigation: false,
             people_policy: visible
                 .then(|| people_scope(Subject::PeopleCatalog, true, false).people_actions),
         });
@@ -295,5 +297,60 @@ fn people_policy_workspace_projection_controls_real_links_and_empty_state() {
         // Policy administration alone must not invent a business-directory link.
         assert!(!html.contains(&format!("href=\"/companies/{COMPANY}/people\"")));
         assert!(!html.contains("<연구") && html.contains("&lt;연구 &amp; 인사&gt;"));
+    }
+}
+
+#[test]
+fn current_people_navigation_is_consistent_on_company_policy_and_payroll_pages() {
+    let company = "11111111-1111-4111-8111-111111111111";
+    for read in [false, true] {
+        for create in [false, true] {
+            let company_html =
+                super::native_account::render(super::native_account::Page::Company {
+                    org_id: company.into(),
+                    name: "실제 회사".into(),
+                    slug: "actual-company".into(),
+                    show_policy_navigation: false,
+                    show_payroll_policy_navigation: false,
+                    show_payroll_navigation: true,
+                    show_people_navigation: read,
+                    show_people_create_navigation: create,
+                    people_policy: None,
+                });
+            let mut scope = people_scope(Subject::PeopleRead, true, true);
+            scope.company = company.into();
+            scope.people_navigation = (read, create);
+            let policy_html = super::native_policy::render(super::native_policy::Page::Form(
+                super::native_policy::Form {
+                    scope,
+                    operation: Operation::Grant,
+                    command: "22222222-2222-4222-8222-222222222222".into(),
+                    proof: "isolated-ui-proof".into(),
+                    validation: None,
+                },
+            ));
+            let payroll_html = super::native_payroll::render(super::native_payroll::Page::Runs(
+                super::native_payroll::Collection {
+                    company: company.into(),
+                    people_navigation: (read, create),
+                    identity: None,
+                    items: Vec::new(),
+                    total: 0,
+                    limit: 25,
+                    offset: 0,
+                },
+            ));
+            for html in [company_html, policy_html, payroll_html] {
+                assert_eq!(
+                    html.contains(&format!("href=\"/companies/{company}/people\"")),
+                    read
+                );
+                assert_eq!(
+                    html.contains(&format!("href=\"/companies/{company}/people/new\"")),
+                    create
+                );
+                assert!(!html.contains("disabled"));
+            }
+        }
     }
 }

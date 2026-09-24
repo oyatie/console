@@ -5,6 +5,7 @@ use axum::http::{StatusCode, header};
 const COMPANY: &str = "00000000-0000-0000-0000-000000000101";
 fn collection() -> Collection {
     Collection {
+        people_navigation: (false, false),
         company: COMPANY.into(),
         identity: Some(CompanyIdentity {
             name: "서울 제조 주식회사".into(),

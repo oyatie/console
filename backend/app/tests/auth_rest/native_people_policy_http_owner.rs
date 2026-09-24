@@ -564,4 +564,5 @@ mod native_people_policy_http_owner {
         close_states(&[state], outcome).await;
     }
     include!("native_people_policy_http_recovery.rs");
+    include!("native_people_directory_http_owner.rs");
 }

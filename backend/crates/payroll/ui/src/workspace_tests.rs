@@ -113,6 +113,8 @@ fn page(flags: u8) -> Page {
         name: "긴 회사 이름 <연구 & 본사> 주식회사".into(),
         slug: "seoul-<research&production>-".repeat(12),
         show_payroll_navigation: flags & 1 != 0,
+        show_people_navigation: false,
+        show_people_create_navigation: false,
         show_policy_navigation: flags & 2 != 0,
         show_payroll_policy_navigation: flags & 4 != 0,
         people_policy: None,

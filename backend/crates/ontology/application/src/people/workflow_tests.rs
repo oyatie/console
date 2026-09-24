@@ -134,6 +134,20 @@ impl DirectoryDecisionPort<Authority> for Policy {
         Ok(self.calls.fetch_add(1, Ordering::SeqCst) + 1 != self.deny_at)
     }
 }
+#[derive(Default)]
+struct Admission {
+    calls: usize,
+    error: Option<DirectoryWorkflowError>,
+}
+impl DirectoryProofAdmission for Admission {
+    async fn admit(&mut self) -> Result<(), DirectoryWorkflowError> {
+        self.calls += 1;
+        match self.error {
+            Some(error) => Err(error),
+            None => Ok(()),
+        }
+    }
+}
 struct Credentials(u8);
 struct Store {
     fault: Fault,
@@ -370,10 +384,11 @@ impl DirectoryWorkflowScope for Scope {
             }),
         }))
     }
-    fn status(
+    async fn status<A: DirectoryProofAdmission + ?Sized>(
         &mut self,
         _: &TraceContext,
-    ) -> impl Future<Output = Result<DirectoryRecovery<u8>, DirectoryWorkflowError>> + Send {
+        admission: &mut A,
+    ) -> Result<DirectoryRecovery<u8>, DirectoryWorkflowError> {
         self.event("status");
         let status = match self.fault {
             Fault::StatusRefreshExpired | Fault::StatusStaleExpiryClock => {
@@ -400,6 +415,9 @@ impl DirectoryWorkflowScope for Scope {
             }
             _ => DirectoryStatus::Pending(self.accepted()),
         };
+        if matches!(&status, DirectoryStatus::Pending(_)) {
+            admission.admit().await?;
+        }
         let proof = if self.fault == Fault::StatusMissingProof {
             None
         } else if self.fault == Fault::StatusTerminalProof
@@ -409,7 +427,7 @@ impl DirectoryWorkflowScope for Scope {
         } else {
             None
         };
-        ready(Ok(DirectoryRecovery { status, proof }))
+        Ok(DirectoryRecovery { status, proof })
     }
     fn finish<P: DirectoryDecisionPort<Authority> + ?Sized>(
         mut self,
@@ -610,7 +628,8 @@ fn directory_workflow_binds_mutation_mode_and_original_request() {
             &p,
             &c,
             locator(),
-            &TraceContext::generate()
+            &TraceContext::generate(),
+            &mut Admission::default(),
         ))
         .is_err()
     );
@@ -750,7 +769,8 @@ fn directory_recovery_proof_and_expiry_are_bound_to_one_scope() {
                 &p,
                 &c,
                 locator(),
-                &TraceContext::generate()
+                &TraceContext::generate(),
+                &mut Admission::default(),
             )),
             Err(DirectoryWorkflowError::Unavailable)
         ));
@@ -768,6 +788,7 @@ fn directory_recovery_proof_and_expiry_are_bound_to_one_scope() {
             &c,
             locator(),
             &TraceContext::generate(),
+            &mut Admission::default(),
         ))
         .unwrap();
         assert_eq!(
@@ -794,7 +815,8 @@ fn directory_recovery_proof_and_expiry_are_bound_to_one_scope() {
             &p,
             &c,
             locator(),
-            &TraceContext::generate()
+            &TraceContext::generate(),
+            &mut Admission::default(),
         )),
         Err(DirectoryWorkflowError::NotFound)
     ));
@@ -847,6 +869,7 @@ fn directory_status_uses_refreshed_retained_observation_after_expiry_materializa
         &c,
         locator(),
         &TraceContext::generate(),
+        &mut Admission::default(),
     ))
     .unwrap();
     let DirectoryStatus::Terminal(terminal) = result.status else {
@@ -869,7 +892,8 @@ fn directory_status_uses_refreshed_retained_observation_after_expiry_materializa
             &p,
             &c,
             locator(),
-            &TraceContext::generate()
+            &TraceContext::generate(),
+            &mut Admission::default(),
         )),
         Err(DirectoryWorkflowError::Unavailable)
     ));
@@ -995,4 +1019,46 @@ fn directory_navigation_finishes_current_authority_without_rows_forms_or_effects
         Err(DirectoryWorkflowError::Unavailable)
     );
     assert_eq!(events(&s), vec!["lock", "discarded"]);
+}
+
+#[test]
+fn directory_pending_proof_admission_is_conditional_and_errors_discard_scope() {
+    for (fault, deny_at, expected_calls) in [
+        (Fault::None, 0, 1),
+        (Fault::StatusExpired, 0, 0),
+        (Fault::StatusHistoricalCommitted, 0, 0),
+        (Fault::None, 1, 0),
+        (Fault::None, 2, 1),
+    ] {
+        let (store, policy, credentials) = fixture(fault, deny_at);
+        let mut admission = Admission::default();
+        let result = run(directory_status(
+            &store,
+            &policy,
+            &credentials,
+            locator(),
+            &TraceContext::generate(),
+            &mut admission,
+        ));
+        assert_eq!(admission.calls, expected_calls);
+        assert_eq!(result.is_ok(), deny_at == 0);
+        if deny_at != 0 {
+            assert!(!events(&store).contains(&"finished"));
+        }
+    }
+    for error in [
+        DirectoryWorkflowError::Capacity,
+        DirectoryWorkflowError::Unavailable,
+    ] {
+        let (store, policy, credentials) = fixture(Fault::None, 0);
+        let mut admission = Admission {
+            calls: 0,
+            error: Some(error),
+        };
+        assert!(
+            matches!(run(directory_status(&store, &policy, &credentials, locator(), &TraceContext::generate(), &mut admission)), Err(actual) if actual == error)
+        );
+        assert_eq!(admission.calls, 1);
+        assert_eq!(events(&store), vec!["lock", "status", "discarded"]);
+    }
 }
