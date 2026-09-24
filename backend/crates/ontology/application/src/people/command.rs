@@ -25,7 +25,7 @@ pub struct DirectoryExpectationsV1 {
 }
 
 impl DirectoryExpectationsV1 {
-    fn validate(self) -> Result<(), KernelError> {
+    pub(super) fn validate(self) -> Result<(), KernelError> {
         for value in [
             self.company_epoch,
             self.action_revision,

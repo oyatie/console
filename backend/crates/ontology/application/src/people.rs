@@ -2,6 +2,7 @@
 
 mod command;
 mod receipt;
+pub mod workflow;
 
 pub use command::{
     DIRECTORY_CODEC_VERSION, DIRECTORY_MANIFEST, DIRECTORY_MAX_INPUT_BYTES,
