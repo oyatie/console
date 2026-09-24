@@ -85,3 +85,19 @@ export_file(
     name = "postgres-native-company-policy-v2-custody-state.sql",
     visibility = ["PUBLIC"],
 )
+
+# Exact reviewed People source and read-only capture inputs for isolated tests.
+export_file(
+    name = "postgres-native-people-directory-owner.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-people-directory-custody.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-capture-native-people-directory-staged-custody.sql",
+    visibility = ["PUBLIC"],
+)
