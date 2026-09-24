@@ -26,6 +26,7 @@
 //! (L-WIRE), this crate does not.
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
+pub mod native_people;
 mod openapi;
 pub use openapi::OPENAPI_FRAGMENT;
 

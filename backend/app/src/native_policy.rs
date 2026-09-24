@@ -224,12 +224,14 @@ fn scope(
     identity: Option<console_identity_application::company_policy::CompanyIdentityView>,
     payroll_link: bool,
     people_actions: Vec<ui::PolicyAction>,
+    people_navigation: (bool, bool),
 ) -> ui::Scope {
     let company = view.selector.company().to_string();
     let now = OffsetDateTime::now_utc();
     ui::Scope {
         subject: subject(view.selector),
         people_actions,
+        people_navigation,
         company_name: identity.as_ref().map(|v| v.name.clone()),
         group: view.group_id.to_string(),
         company_link: identity.is_some(),
@@ -324,6 +326,7 @@ pub(super) fn error(status: StatusCode) -> Response {
 async fn preflight(
     State(state): State<CompanyState>,
     Extension(payroll): Extension<crate::native_payroll::Navigation>,
+    Extension(people): Extension<crate::native_people::PeopleState>,
     Extension(family): Extension<Family>,
     Path(path): Path<PolicyPath>,
     headers: HeaderMap,
@@ -339,6 +342,11 @@ async fn preflight(
     };
     let company = path.org_id;
     let op = path.operation.as_deref().unwrap_or("install");
+    let people_navigation =
+        match crate::native_people::navigation(&people, &headers, &company).await {
+            Ok(value) => value,
+            Err(status) => return error(status),
+        };
     let payroll_link = match payroll.visible(&headers, &company).await {
         Ok(value) => value,
         Err(status) => return error(status),
@@ -367,7 +375,13 @@ async fn preflight(
     let selector = form.view.selector;
     ui::document(
         ui::Page::Form(ui::Form {
-            scope: scope(form.view, identity, payroll_link, actions),
+            scope: scope(
+                form.view,
+                identity,
+                payroll_link,
+                actions,
+                people_navigation,
+            ),
             operation: operation(selector.operation()),
             command: selector.command_id().to_string(),
             proof: form.proof.as_str().to_owned(),
@@ -379,6 +393,7 @@ async fn preflight(
 async fn request_document(
     State(state): State<CompanyState>,
     Extension(payroll): Extension<crate::native_payroll::Navigation>,
+    Extension(people): Extension<crate::native_people::PeopleState>,
     Extension(family): Extension<Family>,
     Path(path): Path<PolicyPath>,
     headers: HeaderMap,
@@ -395,6 +410,11 @@ async fn request_document(
     let company = path.org_id;
     let op = path.operation.as_deref().unwrap_or("install");
     let command = path.command.as_deref().unwrap_or("");
+    let people_navigation =
+        match crate::native_people::navigation(&people, &headers, &company).await {
+            Ok(value) => value,
+            Err(status) => return error(status),
+        };
     let payroll_link = match payroll.visible(&headers, &company).await {
         Ok(value) => value,
         Err(status) => return error(status),
@@ -528,7 +548,7 @@ async fn request_document(
     };
     ui::document(
         ui::Page::Result {
-            scope: scope(current, identity, payroll_link, actions),
+            scope: scope(current, identity, payroll_link, actions, people_navigation),
             operation: operation(selector.operation()),
             command: selector.command_id().to_string(),
             outcome,
@@ -545,6 +565,16 @@ async fn submit(
     request: Request,
 ) -> Response {
     let headers = request.headers().clone();
+    let people_navigation = match request
+        .extensions()
+        .get::<crate::native_people::PeopleState>()
+    {
+        Some(people) => match crate::native_people::navigation(people, &headers, &company).await {
+            Ok(value) => value,
+            Err(status) => return error(status),
+        },
+        None => (false, false),
+    };
     match state
         .policy_submit_for(request, &company, target, selected)
         .await
@@ -578,7 +608,7 @@ async fn submit(
             };
             ui::document(
                 ui::Page::Form(ui::Form {
-                    scope: scope(current.view, identity, false, actions),
+                    scope: scope(current.view, identity, false, actions, people_navigation),
                     operation: operation(draft.selector.operation()),
                     command: draft.selector.command_id().to_string(),
                     proof: current.proof.as_str().to_owned(),

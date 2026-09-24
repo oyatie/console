@@ -55,6 +55,8 @@ pub enum Page {
         slug: String,
         show_policy_navigation: bool,
         show_payroll_navigation: bool,
+        show_people_navigation: bool,
+        show_people_create_navigation: bool,
         show_payroll_policy_navigation: bool,
         people_policy: Option<Vec<super::native_policy::PolicyAction>>,
     },
@@ -281,21 +283,23 @@ fn body(page: Page) -> AnyView {
                 <a class="button primary" href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, people_policy } => view! {
+        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, show_people_navigation, show_people_create_navigation, people_policy } => view! {
             <div class="company-home" data-company-id=org_id.clone()>
                 <div class="page-heading">
                     <p class="page-eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
                     <p class="page-description">"현재 계정으로 열 수 있는 회사 업무를 선택하세요."</p>
                     <details class="company-identifier"><summary>"업무 공간 식별자"</summary><p>{slug}</p></details>
                 </div>
-                {show_payroll_navigation.then(|| view! {
+                {(show_payroll_navigation || show_people_navigation || show_people_create_navigation).then(|| view! {
                     <section class="company-group" aria-labelledby="company-people-title">
                         <h2 id="company-people-title">"사람과 조직"</h2>
                         <nav class="company-destinations" aria-label="사람과 조직">
-                            <article class="company-destination company-payroll" data-company-destination="payroll">
+                            {show_people_navigation.then(||view! {<article class="company-destination" data-company-destination="people"><h3><a href=format!("/companies/{org_id}/people")>"사람"</a></h3><p>"등록된 사람의 정보와 사번을 확인하세요."</p></article>})}
+                            {show_people_create_navigation.then(||view! {<article class="company-destination" data-company-destination="people-create"><h3><a href=format!("/companies/{org_id}/people/new")>"사람 등록"</a></h3><p>"등록 내용을 작성하고 확인한 뒤 사람 목록에 반영하세요."</p></article>})}
+                            {show_payroll_navigation.then(||view! {<article class="company-destination company-payroll" data-company-destination="payroll">
                                 <h3><a href=format!("/companies/{org_id}/payroll")>"급여"</a></h3>
                                 <p>"산정 기간별 급여 회차와 준비 상태, 증빙과 검토 이력을 확인하세요."</p>
-                            </article>
+                            </article>})}
                         </nav>
                     </section>
                 })}
@@ -325,7 +329,7 @@ fn body(page: Page) -> AnyView {
                         </nav>
                     </section>
                 })}
-                {(!show_payroll_navigation && !show_policy_navigation && !show_payroll_policy_navigation && people_policy.is_none()).then(|| view! {
+                {(!show_payroll_navigation && !show_people_navigation && !show_people_create_navigation && !show_policy_navigation && !show_payroll_policy_navigation && people_policy.is_none()).then(|| view! {
                     <section class="panel company-empty" data-company-destinations="empty">
                         <h2>"이 화면에서 열 수 있는 업무가 없습니다"</h2>
                         <p>"내 업무 공간 목록에서 다른 회사를 선택하거나 담당자에게 업무 권한을 확인해 주세요."</p>

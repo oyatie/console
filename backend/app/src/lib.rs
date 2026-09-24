@@ -6,6 +6,7 @@
 #![cfg_attr(test, allow(clippy::unwrap_used, clippy::expect_used, clippy::panic))]
 
 mod native_payroll;
+mod native_people;
 mod native_policy;
 
 use std::collections::{BTreeSet, HashMap};
@@ -3837,6 +3838,8 @@ pub fn build_router(mut state: AppState) -> Router {
             };
             let platform_router = console_platform_rest::router(platform_state);
             let native_payroll_state = native_payroll::state(&state, pool);
+            let native_people_state =
+                native_people::state(&state, pool, native_payroll_state.clone());
             let company_router = match state.company_rest.clone() {
                 Some(company) => console_identity_rest::company::router(company.clone()).merge(
                     Router::new()
@@ -3855,6 +3858,7 @@ pub fn build_router(mut state: AppState) -> Router {
                             ),
                         ))
                         .with_state(company)
+                        .layer(axum::Extension(native_people_state.clone()))
                         .layer(axum::Extension(native_payroll::Navigation(
                             state
                                 .serving_custody_profile
@@ -3874,7 +3878,8 @@ pub fn build_router(mut state: AppState) -> Router {
                 ),
                 _ => Router::new(),
             };
-            let native_payroll = native_payroll::router(native_payroll_state);
+            let native_payroll = native_payroll::router(native_payroll_state)
+                .layer(axum::Extension(native_people_state.clone()));
             // Everything EXCEPT the realtime WS upgrade: base health/openapi
             // routes, the tenant domain routers, the platform tier, and the
             // pre-auth login/refresh endpoints. These are all short-lived
@@ -3884,7 +3889,8 @@ pub fn build_router(mut state: AppState) -> Router {
                     .merge(domain_router)
                     .merge(platform_router)
                     .merge(company_router)
-                    .merge(native_payroll);
+                    .merge(native_payroll)
+                    .merge(native_people::router(native_people_state));
                 let timed = match state.auth_rest.clone() {
                     Some(auth_rest) => {
                         // The auth-rest router carries authenticated tenant
@@ -3972,6 +3978,7 @@ pub fn build_router(mut state: AppState) -> Router {
     let router = console_platform_request_context::with_http_error_envelope(router);
     let router = console_platform_rest::with_platform_list_transport(router);
     let router = native_payroll::with_transport(router);
+    let router = native_people::with_transport(router);
     with_metrics(router, &state)
 }
 
@@ -4036,6 +4043,7 @@ struct NativeCompanyPolicyNavigation(bool, bool);
 async fn native_company_document(
     State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
     axum::Extension(native_policy): axum::Extension<NativeCompanyPolicyNavigation>,
+    axum::Extension(people): axum::Extension<native_people::PeopleState>,
     axum::Extension(payroll): axum::Extension<native_payroll::Navigation>,
     axum::extract::Path(company): axum::extract::Path<String>,
     headers: HeaderMap,
@@ -4049,6 +4057,11 @@ async fn native_company_document(
         Ok(visible) => visible,
         Err(status) => return native_company_document_error(status),
     };
+    let (show_people_navigation, show_people_create_navigation) =
+        match native_people::navigation(&people, &headers, &company).await {
+            Ok(visible) => visible,
+            Err(status) => return native_company_document_error(status),
+        };
     let show_payroll_policy_navigation = if native_policy.0 {
         match state
             .policy_current_document(&headers, &company, "install")
@@ -4080,6 +4093,8 @@ async fn native_company_document(
                 show_policy_navigation: company.show_policy_navigation,
                 show_payroll_policy_navigation,
                 show_payroll_navigation,
+                show_people_navigation,
+                show_people_create_navigation,
                 people_policy,
             },
             StatusCode::OK,

@@ -128,6 +128,7 @@ mod timeout_tests;
 
 async fn collection(
     State(state): State<PayrollRestState>,
+    people: Option<axum::Extension<super::native_people::PeopleState>>,
     path: Result<Path<String>, PathRejection>,
     RawQuery(query): RawQuery,
     headers: HeaderMap,
@@ -138,6 +139,20 @@ async fn collection(
     }
     let Ok(Path(company)) = path else {
         return document(Page::NotVisible, StatusCode::NOT_FOUND);
+    };
+    let people_navigation = match people {
+        Some(axum::Extension(people)) => {
+            match super::native_people::navigation(&people, &headers, &company).await {
+                Ok(value) => value,
+                Err(status) => {
+                    return console_platform_request_context::preserve_native_html_error(document(
+                        Page::Unavailable,
+                        status,
+                    ));
+                }
+            }
+        }
+        None => (false, false),
     };
     let result = match state
         .native_document(&headers, &company, query.as_deref())
@@ -163,6 +178,7 @@ async fn collection(
     document(
         Page::Runs(Collection {
             company: context.id.to_string(),
+            people_navigation,
             identity: context.identity.map(|identity| CompanyIdentity {
                 name: identity.name,
                 slug: identity.slug,

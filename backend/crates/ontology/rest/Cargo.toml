@@ -22,6 +22,7 @@ console-governance-adapter-postgres = { path = "../../governance/adapter-postgre
 console-governance-domain = { path = "../../governance/domain" }
 console-kernel-core.workspace = true
 console-platform-auth = { path = "../../platform/auth" }
+console-platform-auth-rest = { path = "../../platform/auth-rest" }
 console-platform-authz.workspace = true
 console-platform-authz-rest.workspace = true
 console-platform-db.workspace = true

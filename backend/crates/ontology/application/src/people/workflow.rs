@@ -260,6 +260,14 @@ impl DirectoryScopeRequest<'_> {
     }
 }
 
+/// Admission to issue a new Pending recovery proof. Entry adapters provide the
+/// real limiter; there is deliberately no unmetered production implementation.
+/// The owning transaction calls this only after current authorization and the
+/// actual Pending decision, then rechecks current authority/deadline after await.
+pub trait DirectoryProofAdmission: Send {
+    fn admit(&mut self) -> impl Future<Output = Result<(), DirectoryWorkflowError>> + Send;
+}
+
 pub trait DirectoryWorkflowScope: Send {
     type Authority: DirectoryAuthority;
     type FormProof: Send + Sync;
@@ -294,16 +302,19 @@ pub trait DirectoryWorkflowScope: Send {
     ) -> impl Future<Output = Result<DirectoryExecution, DirectoryWorkflowError>> + Send;
     /// Materialize Expired when an authorized pending request reaches deadline.
     /// Otherwise issue an existing Auth session/Account/generation CSRF proof for
-    /// Pending in this SAME transaction. This proof is not command-bound or
+    /// Pending in this SAME transaction. Admission must run immediately before
+    /// issuing that proof, only for Pending; no proof is issued on admission error.
+    /// Terminal/NotVisible do not consume proof-admission capacity. This proof is not command-bound or
     /// one-use: route, owner scope and accepted actor bind the actual operation.
     /// Existing terminals get no new proof or date. After the status decision
     /// and any proof issuance, refresh the checked authority observation from
     /// this retained transaction before returning; do not reuse lock-time time.
     /// Pending deadline is checked against that refreshed observation.
     /// NotVisible does not establish that COMMIT failed.
-    fn status(
+    fn status<A: DirectoryProofAdmission + ?Sized>(
         &mut self,
         trace: &TraceContext,
+        admission: &mut A,
     ) -> impl Future<Output = Result<DirectoryRecovery<Self::FormProof>, DirectoryWorkflowError>> + Send;
     /// Consume scope: drain deferred closure, fresh time/current credentials,
     /// same source identity and Cedar recheck, then COMMIT. Original proof only
@@ -653,12 +664,14 @@ pub async fn directory_cancel<
 pub async fn directory_status<
     S: DirectoryWorkflowStore,
     P: DirectoryDecisionPort<S::Authority> + ?Sized,
+    A: DirectoryProofAdmission + ?Sized,
 >(
     store: &S,
     policy: &P,
     credentials: &S::Credentials,
     locator: DirectoryRequestRef,
     trace: &TraceContext,
+    admission: &mut A,
 ) -> Result<DirectoryRecovery<S::FormProof>, DirectoryWorkflowError> {
     let mut scope = store
         .lock(credentials, DirectoryScopeRequest::Status(locator))
@@ -669,7 +682,7 @@ pub async fn directory_status<
         locator.company(),
         DirectoryScopeKind::Status(locator.command_id()),
     )?;
-    let recovery = scope.status(trace).await?;
+    let recovery = scope.status(trace, admission).await?;
     if let Some(accepted) = recovery.status.accepted() {
         accepted_matches(accepted, locator, actor)?;
         if accepted.accepted_at() > scope.authority().observed_at() {

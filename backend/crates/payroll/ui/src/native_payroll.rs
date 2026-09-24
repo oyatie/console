@@ -7,6 +7,7 @@ pub struct CompanyIdentity {
     pub slug: String,
 }
 pub struct Collection {
+    pub people_navigation: (bool, bool),
     pub company: String,
     pub identity: Option<CompanyIdentity>,
     pub items: Vec<Run>,
@@ -213,7 +214,7 @@ fn problem(title: &'static str, description: &'static str) -> AnyView {
 }
 pub fn render(page: Page) -> String {
     let company = match &page {
-        Page::Runs(page) => Some(page.company.clone()),
+        Page::Runs(page) => Some((page.company.clone(), page.people_navigation)),
         _ => None,
     };
     let content = match page {
@@ -235,7 +236,7 @@ pub fn render(page: Page) -> String {
             "업무 공간에서 급여 목록을 다시 열어 주세요.",
         ),
     };
-    let navigation = company.map(|id|view! { <p class="nav-group">"사람과 조직"</p><nav aria-label="급여 탐색"><a href=format!("/companies/{id}/payroll") aria-current="page">"급여"</a></nav> });
+    let navigation = company.map(|(id, (people_read, people_create))|view! { <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}<a href=format!("/companies/{id}/payroll") aria-current="page">"급여"</a></nav> });
     let html = view! {
         <html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
             <title>"급여 · Console"</title><link rel="stylesheet" href="/assets/workspace.css"/></head>

@@ -182,7 +182,7 @@ fn validation_summary(form: &Registration) -> AnyView {
     view! {
         <section id="people-input-errors" class="people-validation" role="alert" tabindex="-1" autofocus>
             <h3>"입력한 내용을 확인해 주세요"</h3>
-            <p>"아직 요청을 접수하지 않았습니다. 작성한 내용은 아래에 남아 있습니다."</p>
+            <p>"이번 제출로 새 요청을 접수하지 않았습니다. 작성한 내용은 아래에 남아 있습니다."</p>
             {form.form_error.map(|message|view! {<p>{message}</p>})}
             <ul>
                 {form.name_error.map(|message|view! {<li><a href="#people-name">"이름: "{message}</a></li>})}
@@ -333,6 +333,7 @@ pub fn render(page: Page) -> String {
         view! {
             <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">
                 {s.directory_link.then(||view! {<a href=directory(&id) aria-current="page">"사람"</a>})}
+                {s.can_create.then(||view! {<a href=format!("{}/new",directory(&id))>"사람 등록"</a>})}
                 {s.payroll_link.then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}
             </nav>
             {(s.company_link || s.policy_link).then(||view! {

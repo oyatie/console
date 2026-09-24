@@ -136,6 +136,7 @@ pub struct Assignment {
 pub struct Scope {
     pub subject: Subject,
     pub people_actions: Vec<PolicyAction>,
+    pub people_navigation: (bool, bool),
     pub company_name: Option<String>,
     pub group: String,
     pub company_link: bool,
@@ -216,12 +217,13 @@ pub enum Page {
     Unavailable,
 }
 impl Scope {
-    fn navigation(&self) -> (String, bool, bool, bool) {
+    fn navigation(&self) -> (String, bool, bool, bool, (bool, bool)) {
         (
             self.company.clone(),
             self.company_link,
             self.policy_link,
             self.payroll_link,
+            self.people_navigation,
         )
     }
 }
@@ -506,12 +508,12 @@ pub fn render(page: Page) -> String {
         Page::Refused=>view! { <section class="panel" data-policy-outcome="denied"><h2>"이 요청을 열거나 변경할 권한이 없습니다"</h2><p class="policy-panel-body">"내 계정에서 접근할 수 있는 업무 공간을 확인하세요."</p></section> }.into_any(),
         Page::Unavailable=>view! { <section class="panel" data-policy-outcome="unavailable"><h2>"지금 요청을 확인할 수 없습니다"</h2><div class="policy-panel-body"><p>"연결이 복구된 뒤 다시 확인해 주세요."</p><a href="/account">"내 업무 공간 확인"</a></div></section> }.into_any(),
     };
-    let nav = company.map(|(id, company_link, policy_link, payroll_link)| view! {
+    let nav = company.map(|(id, company_link, policy_link, payroll_link, (people_read, people_create))| view! {
         <p class="nav-group">"관리"</p><nav aria-label="회사 업무 탐색">
             {company_link.then(||view! {<a href=format!("/companies/{id}")>"회사 업무 공간"</a>})}
             {policy_link.then(||view! {<a href=format!("/companies/{id}/policy") aria-current="page">"권한 관리"</a>})}
         </nav>
-        {payroll_link.then(||view! {<p class="nav-group">"사람과 조직"</p><nav aria-label="급여 탐색"><a href=format!("/companies/{id}/payroll")>"급여"</a></nav>})}
+        {(payroll_link || people_read || people_create).then(||view! {<p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}{payroll_link.then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}</nav>})}
     });
     let html=view! {
         <html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>

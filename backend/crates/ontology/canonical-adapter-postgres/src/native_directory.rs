@@ -495,9 +495,10 @@ impl DirectoryWorkflowScope for PgNativeDirectoryScope<'_> {
             terminal,
         })
     }
-    async fn status(
+    async fn status<A: DirectoryProofAdmission + ?Sized>(
         &mut self,
         trace: &TraceContext,
+        admission: &mut A,
     ) -> Result<DirectoryRecovery<AccountFormProof>, Error> {
         self.unused()?;
         if !matches!(self.request, DirectoryScopeRequest::Status(_)) {
@@ -510,6 +511,10 @@ impl DirectoryWorkflowScope for PgNativeDirectoryScope<'_> {
                 Some(t) => (DirectoryStatus::Terminal(t), None),
                 None => {
                     let status = pending_status(r.accepted, &mut self.pending_until);
+                    // Real proof admission runs only for this authorized Pending
+                    // result, before minting. Its separate Auth pool may await;
+                    // refresh and finish below retain current auth and deadline.
+                    admission.admit().await?;
                     let proof = self.form_proof(false).await?;
                     self.proof_expected = true;
                     (status, Some(proof))
