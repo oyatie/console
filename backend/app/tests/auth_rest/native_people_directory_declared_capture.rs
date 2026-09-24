@@ -32,7 +32,7 @@ mod native_people_directory_declared_capture {
             (
                 "source",
                 SOURCE,
-                "86ab1703f6a236952764f048aed3dd879daa44daa9c0abfe1a1c7a8501efb92a",
+                "3dd0524bc751eba2aa806ee0dc670dc3cecbf8838c20b83896773a0c5b6016a0",
             ),
             (
                 "capture",
@@ -47,7 +47,7 @@ mod native_people_directory_declared_capture {
             (
                 "migration",
                 MIGRATION,
-                "a48173dbbd28d2c8e1940d2dcf337b6b74ca07bc5b3a8cbf194b28a4b78eebed",
+                "679fa6e9c2a8056278b712ae99ca7758a43b9ddaa03038623991c153c54378a2",
             ),
             (
                 "old capture",
