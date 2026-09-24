@@ -240,3 +240,102 @@ fn people_business_authorizer_panic_is_unavailable_not_allow_or_process_panic() 
         Err(CompanyPolicyError::EvaluatorUnavailable)
     );
 }
+
+#[test]
+fn people_navigation_uses_real_cedar_and_preserves_actor_company_action_and_time() {
+    let p = CompanyPolicy::new().unwrap();
+    for grant in [DirectoryActionV1::Read, DirectoryActionV1::Create] {
+        let a = CurrentPeopleDirectoryAuthority::from_retained_projection(&binding(), row(grant))
+            .unwrap();
+        for change in 0..4 {
+            let action = if change == 3 {
+                if grant == DirectoryActionV1::Read {
+                    DirectoryActionV1::Create
+                } else {
+                    DirectoryActionV1::Read
+                }
+            } else {
+                grant
+            };
+            let req = NativePeopleDirectoryRequestV1::new(
+                OrgId::from_uuid(id(if change == 1 { 99 } else { 11 })),
+                AccountId::from_uuid(id(if change == 2 { 99 } else { 1 })).unwrap(),
+                action,
+                NativePeopleDirectoryResource::Navigation,
+            )
+            .unwrap();
+            p.sdk_calls.store(0, Ordering::SeqCst);
+            assert_eq!(
+                p.decide_native_people_directory(&a, &req),
+                Ok(if change == 0 {
+                    CompanyPolicyDecision::Allow
+                } else {
+                    CompanyPolicyDecision::Deny
+                })
+            );
+            assert_eq!(p.sdk_calls.load(Ordering::SeqCst), 1);
+        }
+        let mut b = binding();
+        b.observed_at = row(grant).assignment_valid_until;
+        let a = CurrentPeopleDirectoryAuthority::from_retained_projection(&b, row(grant)).unwrap();
+        assert_eq!(
+            p.decide_native_people_directory(
+                &a,
+                &request(grant, NativePeopleDirectoryResource::Navigation)
+            ),
+            Ok(CompanyPolicyDecision::Deny)
+        );
+    }
+}
+
+#[test]
+fn people_business_navigation_v2_is_pinned_and_distinct_from_preserved_v1() {
+    let schema = include_str!("company_policy/native-people-directory-business-v1.cedarschema");
+    let policy = include_str!("company_policy/native-people-directory-business-v2.cedar");
+    let prior = include_str!("company_policy/native-people-directory-business-v1.cedar");
+    assert_eq!(
+        hex::encode(Sha256::digest(schema)),
+        "071d02880c01c1c57cbe38c91a600d3d2ffa73681fccac8dcdc1eb75ae407390"
+    );
+    assert_eq!(
+        hex::encode(Sha256::digest(policy)),
+        "79470085d87325678949f3a18b9d68f4f62fa51d4f97de60cd5684898a92900c"
+    );
+    let current = compile_bundle_from_sources(
+        OrgId::from_uuid(id(11)),
+        3,
+        "native-people-directory-business-v2",
+        schema,
+        policy,
+    )
+    .unwrap();
+    let historical = compile_bundle_from_sources(
+        OrgId::from_uuid(id(11)),
+        3,
+        "native-people-directory-business-v1",
+        schema,
+        prior,
+    )
+    .unwrap();
+    assert_eq!(
+        current.key.schema_version,
+        "native-people-directory-business-v2"
+    );
+    assert_eq!(
+        historical.key.schema_version,
+        "native-people-directory-business-v1"
+    );
+    assert_ne!(current.key.bundle_digest, historical.key.bundle_digest);
+    assert_eq!(current.key.cedar_sdk_version, CEDAR_SDK_VERSION);
+    assert_eq!(current.key.cedar_language_version, CEDAR_LANGUAGE_VERSION);
+    assert!(
+        compile_bundle_from_sources(
+            OrgId::from_uuid(id(11)),
+            3,
+            "native-people-directory-business-v2",
+            schema,
+            "permit INVALID;"
+        )
+        .is_err()
+    );
+}

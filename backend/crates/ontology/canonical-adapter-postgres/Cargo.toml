@@ -16,6 +16,9 @@ publish.workspace = true
 # backend/Cargo.lock already carries for this package — anything else rewrites
 # the lock, which no port lane may write.
 [dependencies]
+console-identity-application = { path = "../../identity/application" }
+console-ontology-application = { path = "../application" }
+console-platform-auth = { path = "../../platform/auth" }
 console-ontology-canonical-domain = { path = "../canonical-domain" }
 console-kernel-core = { workspace = true }
 console-platform-authz = { workspace = true }

@@ -641,10 +641,48 @@ fn person_head(id: Uuid, version: i64, attributes: &serde_json::Value) -> Person
     }
 }
 
-fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {
+pub(super) fn attr_string(attributes: &serde_json::Value, key: &str) -> Option<String> {
     attributes
         .get(key)
         .and_then(serde_json::Value::as_str)
         .filter(|value| !value.is_empty())
         .map(str::to_owned)
+}
+
+/// Native Account writer in the existing canonical Person owner. The original
+/// codec1 bytes were decoded and hashed by retained native_directory rows; the
+/// protected native terminal and deferred closure independently bind this frame.
+pub(crate) async fn write_native_directory_person_in_tx(
+    tx: &mut Transaction<'_, Postgres>,
+    terminal: &console_ontology_application::people::DirectoryTerminalV1,
+    effect_digest: &[u8; 32],
+) -> Result<(), sqlx::Error> {
+    use console_ontology_application::people::DirectoryTerminalOutcomeV1;
+    if terminal.outcome() != DirectoryTerminalOutcomeV1::Committed {
+        return Err(sqlx::Error::Protocol(
+            "native Person writer requires committed terminal".into(),
+        ));
+    }
+    let accepted = terminal.accepted();
+    let command = accepted.command();
+    let org = *command.company().as_uuid();
+    let person = command.employee_id();
+    let actor = *accepted.actor().as_uuid();
+    let at = terminal.terminal_at();
+    let receipt = terminal
+        .canonical_result()
+        .ok_or_else(|| sqlx::Error::Protocol("native Person result missing".into()))?;
+    sqlx::query("INSERT INTO public.persons (org_id,id,created_at) VALUES ($1,$2,$3)")
+        .bind(org)
+        .bind(person)
+        .bind(at)
+        .execute(tx.as_mut())
+        .await?;
+    sqlx::query("INSERT INTO public.person_revisions (org_id,person_id,version,command_id,actor_kind,actor_id,actor_account_id,payload_digest,attributes,receipt,created_at) VALUES ($1,$2,1,$3,'ACCOUNT',NULL,$4,$5,$6,$7,$8)")
+      .bind(org).bind(person).bind(command.command_id()).bind(actor).bind(effect_digest.as_slice()).bind(serde_json::json!({"legal_name":command.input().legal_name()})).bind(&receipt).bind(at).execute(tx.as_mut()).await?;
+    sqlx::query("INSERT INTO public.employee_person_bindings (org_id,employee_id,person_id,actor_kind,actor_id,actor_account_id,payload_digest,created_at) VALUES ($1,$2,$2,'ACCOUNT',NULL,$3,$4,$5)")
+      .bind(org).bind(person).bind(actor).bind(effect_digest.as_slice()).bind(at).execute(tx.as_mut()).await?;
+    sqlx::query("INSERT INTO public.ont_action_command_receipts (org_id,command_id,actor_kind,actor_id,actor_account_id,payload_digest,receipt,action_key,object_type_id,created_at,owner,target) VALUES ($1,$2,'ACCOUNT',NULL,$3,$4,$5,'directory_create',$6,$7,'person','people.create_person')")
+      .bind(org).bind(command.command_id()).bind(actor).bind(effect_digest.as_slice()).bind(receipt).bind(command.expected().object_type_id).bind(at).execute(tx.as_mut()).await?;
+    Ok(())
 }

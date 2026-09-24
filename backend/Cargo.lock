@@ -2652,8 +2652,11 @@ dependencies = [
 name = "console-ontology-canonical-adapter-postgres"
 version = "0.1.0"
 dependencies = [
+ "console-identity-application",
  "console-kernel-core",
+ "console-ontology-application",
  "console-ontology-canonical-domain",
+ "console-platform-auth",
  "console-platform-authz",
  "console-platform-db",
  "console-platform-request-context",

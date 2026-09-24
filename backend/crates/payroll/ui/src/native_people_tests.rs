@@ -225,8 +225,8 @@ fn native_people_directory_uses_entry_identity_and_honest_empty_page() {
         records: vec![Record {
             employee_id: EMPLOYEE.into(),
             person_id: PERSON.into(),
-            legal_name: NAME.into(),
-            employee_number: "사번&<1>".into(),
+            legal_name: Some(NAME.into()),
+            employee_number: Some("사번&<1>".into()),
             person_version: "2".into(),
             registered_at: "2026-09-23 10:01".into(),
         }],
@@ -304,5 +304,143 @@ fn native_people_denials_omit_identity_and_documents_remain_private_and_static()
         ] {
             assert!(csp.split(';').any(|s| s.trim() == directive));
         }
+    }
+}
+
+#[test]
+fn native_people_missing_legacy_identity_is_honest_and_links_remain_distinguishable() {
+    let other = "00000000-0000-0000-0000-000000000105";
+    let html = render(Page::Directory {
+        scope: scope(true, false),
+        records: [EMPLOYEE, other]
+            .into_iter()
+            .map(|employee| Record {
+                employee_id: employee.into(),
+                person_id: employee.into(),
+                legal_name: None,
+                employee_number: None,
+                person_version: "1".into(),
+                registered_at: "2026-09-23 10:01".into(),
+            })
+            .collect(),
+        next_after: None,
+    });
+    assert_eq!(html.matches("사번 미등록").count(), 2);
+    for employee in [EMPLOYEE, other] {
+        let href = format!("href=\"/companies/{COMPANY}/people/{employee}\"");
+        let anchor = html
+            .split("<a ")
+            .find(|a| a.split('>').next().unwrap().contains(&href))
+            .unwrap();
+        assert!(anchor.split('>').next().unwrap().contains(&format!(
+            "aria-label=\"이름 미등록 · 목록 기록 {employee}\""
+        )));
+        assert!(
+            anchor
+                .split("</a>")
+                .next()
+                .unwrap()
+                .split_once('>')
+                .unwrap()
+                .1
+                .contains("이름 미등록")
+        );
+        assert!(
+            html.contains(&format!("<dd>{employee}</dd>")),
+            "missing-name identity must also be visible"
+        );
+    }
+    assert!(!html.contains("/people/new") && !html.contains("<form") && !html.contains("<script"));
+}
+
+#[test]
+fn native_people_detail_preserves_present_fields_and_labels_only_actual_absence() {
+    for name in [None, Some(NAME)] {
+        for number in [None, Some("사번&<1>")] {
+            let html = render(Page::Detail {
+                scope: scope(true, false),
+                record: Record {
+                    employee_id: EMPLOYEE.into(),
+                    person_id: PERSON.into(),
+                    legal_name: name.map(str::to_owned),
+                    employee_number: number.map(str::to_owned),
+                    person_version: "1".into(),
+                    registered_at: "2026-09-23 10:01".into(),
+                },
+            });
+            assert_eq!(html.contains("이름 미등록"), name.is_none());
+            assert_eq!(html.contains("사번 미등록"), number.is_none());
+            if name.is_some() {
+                assert!(html.contains("&lt;img src=x onerror=alert(1)&gt;&amp;김하늘"));
+            }
+            if number.is_some() {
+                assert!(html.contains("사번&amp;&lt;1&gt;"));
+            }
+            assert!(!html.contains("<img") && !html.contains("<form"));
+            assert!(html.contains(EMPLOYEE) && html.contains(PERSON));
+        }
+    }
+}
+
+#[test]
+fn native_people_whitespace_fields_are_distinct_from_absence_without_trimming_real_values() {
+    for blank in [" \t ", "\u{2003}\u{3000}"] {
+        let make_record = || Record {
+            employee_id: EMPLOYEE.into(),
+            person_id: PERSON.into(),
+            legal_name: Some(blank.into()),
+            employee_number: Some(blank.into()),
+            person_version: "1".into(),
+            registered_at: "2026-09-23 10:01".into(),
+        };
+        for page in [
+            Page::Directory {
+                scope: scope(true, false),
+                records: vec![make_record()],
+                next_after: None,
+            },
+            Page::Detail {
+                scope: scope(true, false),
+                record: make_record(),
+            },
+        ] {
+            let html = render(page);
+            assert!(html.contains("공백으로 저장된 이름") && html.contains("공백으로 저장된 사번"));
+            assert!(!html.contains("이름 미등록") && !html.contains("사번 미등록"));
+            if html.contains("directory-name") {
+                assert!(html.contains(&format!(
+                    "aria-label=\"공백으로 저장된 이름 · 목록 기록 {EMPLOYEE}\""
+                )));
+                assert!(html.contains(&format!("<dd>{EMPLOYEE}</dd>")));
+            }
+        }
+    }
+    let name = "  김 하늘\u{3000}";
+    let number = "\u{2003}E 001  ";
+    let make_record = || Record {
+        employee_id: EMPLOYEE.into(),
+        person_id: PERSON.into(),
+        legal_name: Some(name.into()),
+        employee_number: Some(number.into()),
+        person_version: "1".into(),
+        registered_at: "2026-09-23 10:01".into(),
+    };
+    for page in [
+        Page::Directory {
+            scope: scope(true, false),
+            records: vec![make_record()],
+            next_after: None,
+        },
+        Page::Detail {
+            scope: scope(true, false),
+            record: make_record(),
+        },
+    ] {
+        let html = render(page);
+        assert!(
+            html.contains(name) && html.contains(number),
+            "nonblank original text was normalized"
+        );
+        assert!(!html.contains("미등록") && !html.contains("공백으로 저장된"));
     }
 }

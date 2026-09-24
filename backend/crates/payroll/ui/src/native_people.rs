@@ -15,8 +15,8 @@ pub struct Scope {
 pub struct Record {
     pub employee_id: String,
     pub person_id: String,
-    pub legal_name: String,
-    pub employee_number: String,
+    pub legal_name: Option<String>,
+    pub employee_number: Option<String>,
     pub person_version: String,
     pub registered_at: String,
 }
@@ -117,15 +117,40 @@ fn consequences() -> AnyView {
     }.into_any()
 }
 
+// Presentation distinguishes absence from a present but visually blank value.
+// This never normalizes or changes the authorized stored projection.
+fn record_name(value: Option<&str>) -> &str {
+    match value {
+        None => "이름 미등록",
+        Some(value) if value.trim().is_empty() => "공백으로 저장된 이름",
+        Some(value) => value,
+    }
+}
+fn record_number(value: Option<&str>) -> &str {
+    match value {
+        None => "사번 미등록",
+        Some(value) if value.trim().is_empty() => "공백으로 저장된 사번",
+        Some(value) => value,
+    }
+}
+
 fn directory_body(scope: &Scope, records: Vec<Record>, next_after: Option<String>) -> AnyView {
     let path = directory(&scope.company);
     let empty = records.is_empty();
-    let entries = records.into_iter().map(|record| view! {
-        <li class="directory-entry" data-people-record=record.employee_id.clone() data-people-person=record.person_id>
-            <a class="directory-name" href=format!("{path}/{}",record.employee_id)>{record.legal_name}</a>
-            <dl><dt>"사번"</dt><dd>{record.employee_number}</dd></dl>
-            <span class="directory-state">"목록에 등록됨"</span>
-        </li>
+    let entries = records.into_iter().map(|record| {
+        let needs_identity = record.legal_name.as_deref().is_none_or(|name| name.trim().is_empty());
+        let name = record_name(record.legal_name.as_deref()).to_owned();
+        let number = record_number(record.employee_number.as_deref()).to_owned();
+        let label = needs_identity.then(|| format!("{name} · 목록 기록 {}", record.employee_id));
+        view! {
+            <li class="directory-entry" data-people-record=record.employee_id.clone() data-people-person=record.person_id>
+                <a class="directory-name" href=format!("{path}/{}",record.employee_id) aria-label=label>{name}</a>
+                <dl><dt>"사번"</dt><dd>{number}</dd>
+                    {needs_identity.then(|| view! {<dt>"목록 기록"</dt><dd>{record.employee_id.clone()}</dd>})}
+                </dl>
+                <span class="directory-state">"목록에 등록됨"</span>
+            </li>
+        }
     }).collect_view();
     view! {
         <section class="panel" aria-labelledby="people-directory-heading">
@@ -269,7 +294,7 @@ fn detail_body(record: Record) -> AnyView {
         <section class="panel people-detail-card" data-people-record=record.employee_id.clone() data-people-person=record.person_id.clone()>
             <h2>"사람 목록 등록 정보"</h2><div class="policy-panel-body">
                 <span class="directory-state">"목록에 등록됨"</span>
-                <dl class="people-accepted"><dt>"사번"</dt><dd>{record.employee_number}</dd>
+                <dl class="people-accepted"><dt>"사번"</dt><dd>{record_number(record.employee_number.as_deref()).to_owned()}</dd>
                     <dt>"등록 시각"</dt><dd>{record.registered_at}</dd><dt>"사람 기록 버전"</dt><dd>{record.person_version}</dd>
                 </dl>
                 <p class="supporting">"사람 목록의 정보입니다. 이 화면의 등록 상태는 고용이나 발령 상태를 나타내지 않습니다."</p>
@@ -293,7 +318,7 @@ pub fn render(page: Page) -> String {
         Page::Directory { .. } => "사람".to_owned(),
         Page::Registration { .. } => "사람 등록".to_owned(),
         Page::Request { .. } => "사람 등록 요청".to_owned(),
-        Page::Detail { record, .. } => record.legal_name.clone(),
+        Page::Detail { record, .. } => record_name(record.legal_name.as_deref()).to_owned(),
         Page::Uncertain { .. } => "등록 결과 확인".to_owned(),
         Page::Refused => "이 페이지를 열 수 없습니다".to_owned(),
         Page::Unavailable => "지금 정보를 불러올 수 없습니다".to_owned(),

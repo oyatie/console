@@ -28,6 +28,7 @@ pub enum DirectoryAction {
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DirectoryResource {
+    Navigation,
     Collection,
     Entry(Uuid),
     Request(Uuid),
@@ -142,8 +143,8 @@ impl DirectoryPageQuery {
 pub struct DirectoryRecord {
     pub employee_id: Uuid,
     pub person_id: Uuid,
-    pub legal_name: String,
-    pub employee_number: String,
+    pub legal_name: Option<String>,
+    pub employee_number: Option<String>,
     pub person_version: u64,
     pub registered_at: OffsetDateTime,
 }
@@ -188,6 +189,7 @@ pub struct DirectoryExecution {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DirectoryScopeKind {
+    Navigation(DirectoryAction),
     List(DirectoryPageQuery),
     Detail(Uuid),
     Form(Uuid),
@@ -201,12 +203,14 @@ pub enum DirectoryScopeKind {
 impl DirectoryScopeKind {
     fn action(self) -> DirectoryAction {
         match self {
+            Self::Navigation(action) => action,
             Self::List(_) | Self::Detail(_) => DirectoryAction::Read,
             _ => DirectoryAction::Create,
         }
     }
     fn resource(self) -> DirectoryResource {
         match self {
+            Self::Navigation(_) => DirectoryResource::Navigation,
             Self::List(_) => DirectoryResource::Collection,
             Self::Detail(id) => DirectoryResource::Entry(id),
             Self::Form(id)
@@ -220,6 +224,7 @@ impl DirectoryScopeKind {
     }
 }
 pub enum DirectoryScopeRequest<'a> {
+    Navigation(OrgId, DirectoryAction),
     List(OrgId, DirectoryPageQuery),
     Detail(OrgId, Uuid),
     Form(DirectoryRequestRef),
@@ -233,7 +238,7 @@ pub enum DirectoryScopeRequest<'a> {
 impl DirectoryScopeRequest<'_> {
     pub fn company(&self) -> OrgId {
         match self {
-            Self::List(c, _) | Self::Detail(c, _) => *c,
+            Self::Navigation(c, _) | Self::List(c, _) | Self::Detail(c, _) => *c,
             Self::Form(r) | Self::Execute(r) | Self::Cancel(r) | Self::Status(r) => r.company(),
             Self::ValidationForm(r, _) => r.company(),
             Self::Preflight(s) | Self::Prepare(s) => s.locator().company(),
@@ -241,6 +246,7 @@ impl DirectoryScopeRequest<'_> {
     }
     pub fn kind(&self) -> DirectoryScopeKind {
         match self {
+            Self::Navigation(_, action) => DirectoryScopeKind::Navigation(*action),
             Self::List(_, q) => DirectoryScopeKind::List(*q),
             Self::Detail(_, id) => DirectoryScopeKind::Detail(*id),
             Self::Form(r) => DirectoryScopeKind::Form(r.command_id()),
@@ -382,6 +388,34 @@ fn current_submission<A: DirectoryAuthority>(
         Some(_) => Err(DirectoryWorkflowError::Conflict),
         None => Err(DirectoryWorkflowError::Unavailable),
     }
+}
+
+/// Point-in-time navigation admission only. No rows, proof, intake or read audit.
+/// Following the destination always invokes its own current authorization again.
+pub async fn directory_navigation<
+    S: DirectoryWorkflowStore,
+    P: DirectoryDecisionPort<S::Authority> + ?Sized,
+>(
+    store: &S,
+    policy: &P,
+    credentials: &S::Credentials,
+    company: OrgId,
+    action: DirectoryAction,
+) -> Result<(), DirectoryWorkflowError> {
+    company_id(company)?;
+    let scope = store
+        .lock(
+            credentials,
+            DirectoryScopeRequest::Navigation(company, action),
+        )
+        .await?;
+    authorize(
+        &scope,
+        policy,
+        company,
+        DirectoryScopeKind::Navigation(action),
+    )?;
+    scope.finish(policy, None).await
 }
 
 pub async fn directory_list<

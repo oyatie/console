@@ -76,6 +76,7 @@ enum Fault {
     CurrentEpoch,
     ReplayOld,
     WrongDetail,
+    LegacyAbsentFields,
     DuplicateList,
     CancelCreatesEffect,
     ExecuteCancels,
@@ -256,8 +257,8 @@ impl Scope {
                 id(4)
             },
             person_id: id(44),
-            legal_name: "김하늘".into(),
-            employee_number: "K-1".into(),
+            legal_name: (self.fault != Fault::LegacyAbsentFields).then(|| "김하늘".into()),
+            employee_number: (self.fault != Fault::LegacyAbsentFields).then(|| "K-1".into()),
             person_version: 2,
             registered_at: self.accepted().accepted_at(),
         }
@@ -890,4 +891,108 @@ fn directory_collection_accepts_full_page_with_last_record_continuation() {
     assert_eq!(result.records[0].employee_id, id(4));
     assert_eq!(result.next_after, Some(id(4)));
     assert_eq!(events(&s), vec!["lock", "list", "finish", "finished"]);
+}
+
+#[test]
+fn directory_workflow_preserves_legacy_absence_and_final_denial_withholds_records() {
+    for deny_at in [0, 2] {
+        let (s, p, c) = fixture(Fault::LegacyAbsentFields, deny_at);
+        let result = run(directory_detail(&s, &p, &c, company(), id(4)));
+        if deny_at == 0 {
+            let record = result.unwrap().unwrap();
+            assert_eq!(record.employee_id, id(4));
+            assert_eq!(record.person_id, id(44));
+            assert_eq!(record.legal_name, None);
+            assert_eq!(record.employee_number, None);
+            assert_eq!(events(&s), vec!["lock", "detail", "finish", "finished"]);
+        } else {
+            assert!(matches!(result, Err(DirectoryWorkflowError::NotFound)));
+            assert_eq!(events(&s), vec!["lock", "detail", "finish", "discarded"]);
+        }
+        let (s, p, c) = fixture(Fault::LegacyAbsentFields, deny_at);
+        let result = run(directory_list(
+            &s,
+            &p,
+            &c,
+            company(),
+            DirectoryPageQuery::new(None, None).unwrap(),
+        ));
+        if deny_at == 0 {
+            let page = result.unwrap();
+            assert_eq!(page.records.len(), 1);
+            assert_eq!(page.records[0].employee_id, id(4));
+            assert_eq!(page.records[0].legal_name, None);
+            assert_eq!(page.records[0].employee_number, None);
+            assert_eq!(events(&s), vec!["lock", "list", "finish", "finished"]);
+        } else {
+            assert!(matches!(result, Err(DirectoryWorkflowError::NotFound)));
+            assert_eq!(events(&s), vec!["lock", "list", "finish", "discarded"]);
+        }
+    }
+}
+
+#[test]
+fn directory_navigation_finishes_current_authority_without_rows_forms_or_effects() {
+    for action in [DirectoryAction::Read, DirectoryAction::Create] {
+        for deny_at in [0, 1, 2] {
+            let (s, p, c) = fixture(Fault::None, deny_at);
+            let result = run(directory_navigation(&s, &p, &c, company(), action));
+            if deny_at == 0 {
+                assert_eq!(result, Ok(()));
+                assert_eq!(events(&s), vec!["lock", "finish", "finished"]);
+            } else {
+                assert_eq!(result, Err(DirectoryWorkflowError::NotFound));
+                assert_eq!(
+                    events(&s),
+                    if deny_at == 1 {
+                        vec!["lock", "discarded"]
+                    } else {
+                        vec!["lock", "finish", "discarded"]
+                    }
+                );
+            }
+        }
+        for fault in [
+            Fault::Company,
+            Fault::Mode,
+            Fault::FinishUnavailable,
+            Fault::FinishUnconfirmed,
+        ] {
+            let (s, p, c) = fixture(fault, 0);
+            let result = run(directory_navigation(&s, &p, &c, company(), action));
+            assert_eq!(
+                result,
+                Err(if fault == Fault::FinishUnconfirmed {
+                    DirectoryWorkflowError::Unconfirmed
+                } else {
+                    DirectoryWorkflowError::Unavailable
+                })
+            );
+            assert!(!events(&s).iter().any(|e| {
+                [
+                    "list",
+                    "detail",
+                    "form",
+                    "prepare",
+                    "execute",
+                    "cancel",
+                    "status",
+                    "preflight",
+                ]
+                .contains(e)
+            }));
+        }
+    }
+    let (s, p, c) = fixture(Fault::Action, 0);
+    assert_eq!(
+        run(directory_navigation(
+            &s,
+            &p,
+            &c,
+            company(),
+            DirectoryAction::Create
+        )),
+        Err(DirectoryWorkflowError::Unavailable)
+    );
+    assert_eq!(events(&s), vec!["lock", "discarded"]);
 }

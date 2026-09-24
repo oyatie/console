@@ -3,9 +3,9 @@ use super::*;
 use console_identity_application::company_policy::{
     CurrentPeopleDirectoryAuthority, NativePeopleDirectoryRequestV1, NativePeopleDirectoryResource,
 };
-const ID: &str = "native-people-directory-business-v1";
+const ID: &str = "native-people-directory-business-v2";
 const SCHEMA: &str = include_str!("native-people-directory-business-v1.cedarschema");
-const POLICY: &str = include_str!("native-people-directory-business-v1.cedar");
+const POLICY: &str = include_str!("native-people-directory-business-v2.cedar");
 pub(super) fn validate_bundle() -> Result<(), CompanyPolicyError> {
     super::native_business::compile(OrgId::platform(), 1, ID, SCHEMA, POLICY).map(|_| ())
 }
@@ -34,6 +34,7 @@ impl CompanyPolicy {
             .map(|p| field_key(p.property(), registered.manifest_digest()))
             .collect();
         let (kind, resource_id) = match requested.resource() {
+            NativePeopleDirectoryResource::Navigation => ("navigation", "navigation".to_owned()),
             NativePeopleDirectoryResource::Collection => ("collection", "collection".to_owned()),
             NativePeopleDirectoryResource::Entry(id) => ("entry", id.to_string()),
             NativePeopleDirectoryResource::Request(id) => ("request", id.to_string()),

@@ -238,3 +238,21 @@ fn native_people_request_modes_and_non_nil_selectors_are_closed() {
         .is_err()
     );
 }
+
+#[test]
+fn native_people_navigation_is_a_distinct_non_object_selector_for_both_actions() {
+    for action in [DirectoryActionV1::Read, DirectoryActionV1::Create] {
+        let request = NativePeopleDirectoryRequestV1::new(
+            OrgId::from_uuid(id(11)),
+            AccountId::from_uuid(id(1)).unwrap(),
+            action,
+            NativePeopleDirectoryResource::Navigation,
+        )
+        .unwrap();
+        assert_eq!(request.action(), action);
+        assert_eq!(
+            request.resource(),
+            NativePeopleDirectoryResource::Navigation
+        );
+    }
+}

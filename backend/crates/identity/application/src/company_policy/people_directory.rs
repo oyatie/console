@@ -25,6 +25,7 @@ fn property_keys(kind: DirectoryActionV1) -> &'static [&'static str] {
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativePeopleDirectoryResource {
+    Navigation,
     Collection,
     Entry(Uuid),
     Request(Uuid),
@@ -44,6 +45,7 @@ impl NativePeopleDirectoryRequestV1 {
     ) -> Result<Self, CompanyPolicyError> {
         company_id(company)?;
         match (action, resource) {
+            (_, NativePeopleDirectoryResource::Navigation) => {}
             (DirectoryActionV1::Read, NativePeopleDirectoryResource::Collection) => {}
             (DirectoryActionV1::Read, NativePeopleDirectoryResource::Entry(id))
             | (DirectoryActionV1::Create, NativePeopleDirectoryResource::Request(id)) => {
