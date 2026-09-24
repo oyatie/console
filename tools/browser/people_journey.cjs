@@ -206,7 +206,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await open(directory + '/new', 404); await witness('PEOPLE_READ_ONLY'); result.read_only = true;
   await open(workspace); await policyCommand('grant', 'create');
   await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
-  await open(directory + '/new', 200, page.getByRole('link', {name: '사람 등록', exact: true}));
+  await open(directory + '/new', 200, page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}));
   await page.getByLabel('이름', {exact: true}).fill(LEGAL_NAME);
   await page.getByLabel('사번', {exact: true}).fill(EMPLOYEE_NUMBER);
   await noBusinessStorage();
