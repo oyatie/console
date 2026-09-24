@@ -490,4 +490,99 @@ mod directory_http {
         }
         close_states(&[state], outcome).await;
     }
+
+    // Actual current policy denial must not consume fresh-proof admission.
+    #[sqlx::test(migrations = false)]
+    async fn directory_http_denied_registration_does_not_charge_form_admission(pool: PgPool) {
+        let (app, key, state) = configured_native_directory_fixture(&pool).await;
+        let mut cleanup = None;
+        let outcome = AssertUnwindSafe(async {
+            let (app, cookies, created) = create_owned_company(&pool, app).await;
+            let (verifier, issuer, ttl) = bindings(&account_browser_config(
+                &pool,
+                app._artifacts.root.clone(),
+                &key,
+            ));
+            let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            cleanup = Some(runtime.clone());
+            let store = PgOrgStore::new(runtime).with_native_account_policy(verifier, issuer, ttl);
+            let policy = CompanyPolicy::new().unwrap();
+            let company = OrgId::from_uuid(created.company);
+            let actor = AccountId::from_uuid(created.administrator).unwrap();
+            let installed = transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Install,
+                None,
+                1,
+                None,
+                None,
+            )
+            .await;
+            let read = transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Grant,
+                Some(DirectoryActionV1::Read),
+                2,
+                None,
+                Some(installed.receipt_id),
+            )
+            .await;
+            let root = format!("/companies/{company}/people");
+            let denied = readonly_document(
+                &pool,
+                &app,
+                &cookies,
+                &format!("{root}/new"),
+                StatusCode::NOT_FOUND,
+            )
+            .await;
+            let html = native_entry_html(&denied, StatusCode::NOT_FOUND);
+            assert!(!html.contains("<form") && !html.contains("csrf_proof"));
+            // Same Account legitimately receives Create through its real owner;
+            // existing registration/preflight oracle requires exactly one pair
+            // of AccountCsrf buckets and no unrelated durable effects.
+            transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Grant,
+                Some(DirectoryActionV1::Create),
+                3,
+                None,
+                Some(read.receipt_id),
+            )
+            .await;
+            let fields = registration(&pool, &app, &cookies, &root).await;
+            assert!(
+                !fields
+                    .iter()
+                    .find(|(key, _)| key == "csrf_proof")
+                    .unwrap()
+                    .1
+                    .is_empty()
+            );
+        })
+        .catch_unwind()
+        .await;
+        if let Some(runtime) = cleanup {
+            runtime.close().await;
+        }
+        close_states(&[state], outcome).await;
+    }
 }
