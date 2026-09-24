@@ -1,5 +1,17 @@
 //! Validated native directory input, shared by preparation and execution.
 
+mod command;
+mod receipt;
+
+pub use command::{
+    DIRECTORY_CODEC_VERSION, DIRECTORY_MANIFEST, DIRECTORY_MAX_INPUT_BYTES,
+    DirectoryExpectationsV1, NativeDirectoryCommandV1,
+};
+pub use receipt::{
+    AcceptedDirectoryRequestV1, DirectoryRejectionV1, DirectoryTerminalOutcomeV1,
+    DirectoryTerminalV1,
+};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DirectoryInputField {
     LegalName,
