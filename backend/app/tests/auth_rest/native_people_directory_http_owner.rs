@@ -747,7 +747,27 @@ mod directory_http {
             );
             assert!(form.contains("type=\"submit\""));
             for (key, value) in &capacity_fields {
-                assert_eq!(field(form, key), *value, "capacity replaced original {key}");
+                if key == "legal_name" {
+                    // field() intentionally accepts only unescaped canonical
+                    // policy fields. Check this known display value separately.
+                    assert_eq!(value, NAME);
+                    let inputs: Vec<_> = form
+                        .split("<input")
+                        .skip(1)
+                        .map(|tag| tag.split('>').next().unwrap())
+                        .filter(|tag| tag.contains("name=\"legal_name\""))
+                        .collect();
+                    assert_eq!(inputs.len(), 1, "legal name input missing/duplicated");
+                    let values: Vec<_> = inputs[0]
+                        .split("value=\"")
+                        .skip(1)
+                        .map(|attribute| attribute.split('"').next().unwrap())
+                        .collect();
+                    assert_eq!(values.len(), 1, "legal name value missing/duplicated");
+                    assert_eq!(values[0], "김하늘 &lt;연구 &amp; 운영&gt;");
+                } else {
+                    assert_eq!(field(form, key), *value, "capacity replaced original {key}");
+                }
             }
             // Free one slot through its real cancel owner, then retry the exact
             // form bytes/identity that previously received Capacity.
