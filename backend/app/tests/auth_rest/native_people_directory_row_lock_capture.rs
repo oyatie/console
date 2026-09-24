@@ -1,0 +1,456 @@
+// Additive diagnostic only. Both actual v1 profiles and corrections roll back.
+// No corrected serving profile, installer, affected-row proof or release acceptance.
+mod native_people_directory_row_lock_capture {
+    use super::*;
+    use sqlx::{Acquire, Postgres, Transaction};
+
+    const SOURCE: &str = include_str!("../../../../ops/postgres-native-people-directory-owner.sql");
+    const CAPTURE: &str =
+        include_str!("../../../../ops/postgres-capture-native-people-directory-custody.sql");
+    const CLOSED: &str =
+        include_str!("../../../../ops/postgres-capture-native-people-directory-staged-custody.sql");
+    const MIGRATION: &str = include_str!(
+        "../../../crates/platform/db/migrations/0230_native_people_directory_storage.sql"
+    );
+    const OLD_CAPTURE: &str =
+        include_str!("../../../../ops/postgres-capture-native-company-policy-v2-custody.sql");
+    const OBSERVER: &str = include_str!("../../../../ops/postgres-install-durability-observer.sql");
+    const ACCOUNT: &str = include_str!("../../../../ops/postgres-finalize-account-custody.sql");
+    const CREDENTIAL: &str =
+        include_str!("../../../../ops/postgres-finalize-account-credentials.sql");
+    const COMPANY: &str = include_str!("../../../../ops/postgres-finalize-company-enrollment.sql");
+    const POLICY_V2: &str =
+        include_str!("../../../../ops/postgres-finalize-native-company-policy-v2.sql");
+    const PREDECESSORS: [&str; 2] = [
+        "e94251d48fdee392d7632709b19d80cc04d53ea6742e0f2d6538d68391ab8bf2",
+        "f132054a56641dcb0cc5875d6485846df2091e631d0d902a18356d2202343fd9",
+    ];
+    fn digest(source: &str) -> String {
+        hex::encode(Sha256::digest(source.as_bytes()))
+    }
+    fn reviewed_sources() {
+        for (name, source, expected) in [
+            (
+                "source",
+                SOURCE,
+                "3dd0524bc751eba2aa806ee0dc670dc3cecbf8838c20b83896773a0c5b6016a0",
+            ),
+            (
+                "capture",
+                CAPTURE,
+                "bc8a1f87f57cd676ca1a3deae12263b1cca4a290c71a12e9a1749d189e090ca7",
+            ),
+            (
+                "closed capture",
+                CLOSED,
+                "890ebc034fe9836f45e26c13d05352085db753f17e4a72b1ec05b6ecbe0a0e36",
+            ),
+            (
+                "migration",
+                MIGRATION,
+                "679fa6e9c2a8056278b712ae99ca7758a43b9ddaa03038623991c153c54378a2",
+            ),
+            (
+                "old capture",
+                OLD_CAPTURE,
+                "7534375fbae287ccf5e5015815e788ef0d7a379eed623af9a72f5db0d89614b4",
+            ),
+            (
+                "observer",
+                OBSERVER,
+                "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc",
+            ),
+            (
+                "Account",
+                ACCOUNT,
+                "fb532ef3b82f6d03b58d6e164a26567683039444098cf1a0a98d33e27e5dd4f8",
+            ),
+            (
+                "credential",
+                CREDENTIAL,
+                "2f960163c9bd8832cdd3a058a6ae69d7503cf1009c476ef292af9443036624d9",
+            ),
+            (
+                "Company",
+                COMPANY,
+                "bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f",
+            ),
+            (
+                "policy v1",
+                POLICY_INSTALLER,
+                "4e7fc41b1d2ed6c2155d44d43347c18815ed9e70611eb9285f21e1c590bf996a",
+            ),
+            (
+                "policy v2",
+                POLICY_V2,
+                "ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e",
+            ),
+        ] {
+            assert_eq!(digest(source), expected, "unreviewed {name} bytes");
+        }
+    }
+    async fn closed(tx: &mut Transaction<'_, Postgres>) -> (Value, String) {
+        sqlx::raw_sql(CLASSIFIER_SESSION)
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+        sqlx::query_as(sqlx::AssertSqlSafe(CLOSED))
+            .fetch_one(tx.as_mut())
+            .await
+            .expect("actual closed extension capture must execute; SQL error is not a profile")
+    }
+    async fn full(
+        tx: &mut Transaction<'_, Postgres>,
+        source: &'static str,
+    ) -> (Value, String, Option<bool>) {
+        sqlx::raw_sql(CLASSIFIER_SESSION)
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+        sqlx::query_as(sqlx::AssertSqlSafe(source))
+            .fetch_one(tx.as_mut())
+            .await
+            .expect("actual complete capture must execute; SQL error is not a profile")
+    }
+    async fn execute(tx: &mut Transaction<'_, Postgres>, source: &'static str) {
+        sqlx::raw_sql("SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL statement_timeout='120s'; SET LOCAL lock_timeout='5s'; SET LOCAL jit=off")
+            .execute(tx.as_mut()).await.unwrap();
+        sqlx::raw_sql(sqlx::AssertSqlSafe(source))
+            .execute(tx.as_mut())
+            .await
+            .expect("unchanged production bootstrap or reviewed capture source must execute");
+        sqlx::raw_sql("SET CONSTRAINTS ALL IMMEDIATE")
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+    }
+    async fn observer_absent(tx: &mut Transaction<'_, Postgres>) {
+        let absent: bool = sqlx::query_scalar("SELECT NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname='console_durability_observer') AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_proc p JOIN pg_catalog.pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname='console_durability_observation_v1')")
+            .fetch_one(tx.as_mut()).await.unwrap();
+        assert!(
+            absent,
+            "dedicated capture cluster requires genuinely absent observer"
+        );
+    }
+    async fn capture_detects_added_namespace(
+        tx: &mut Transaction<'_, Postgres>,
+        original: &(Value, String, Option<bool>),
+        extension: &(Value, String),
+    ) {
+        for mutation in [
+            "CREATE TABLE public.native_people_capture_corruption_probe_v1 (unexpected integer)",
+            "CREATE FUNCTION public.native_people_capture_corruption_probe_v1() RETURNS integer LANGUAGE sql IMMUTABLE AS 'SELECT 1'",
+        ] {
+            let mut probe = tx.begin().await.unwrap();
+            execute(&mut probe, mutation).await;
+            let changed_full = full(&mut probe, CAPTURE).await;
+            let changed_closed = closed(&mut probe).await;
+            assert_ne!(
+                changed_full.0, original.0,
+                "complete capture omitted actual unexpected metadata"
+            );
+            assert_ne!(changed_full.1, original.1);
+            assert_ne!(
+                changed_closed.0, extension.0,
+                "extension capture omitted native namespace drift"
+            );
+            assert_ne!(changed_closed.1, extension.1);
+            probe.rollback().await.unwrap();
+            assert_eq!(
+                &full(tx, CAPTURE).await,
+                original,
+                "corruption rollback changed complete baseline"
+            );
+            assert_eq!(
+                &closed(tx).await,
+                extension,
+                "corruption rollback changed extension baseline"
+            );
+        }
+    }
+
+    const ACTIVE: [&str; 2] = [
+        "e9891784422768abcb07f731adb1295c17b40c026236c1c4ea5b9993f6ddba9b",
+        "bf87ef1475ec983c4e1bd286337687ead135b76fe70e28f79fe8cd430a1c95bc",
+    ];
+    const CORRECTION: &str = r###"-- Corrective custody source: apply only after exact Directory v1 verification.
+-- PostgreSQL RI checks lock the accepted input FOR KEY SHARE as its owner.
+-- One column UPDATE privilege permits that lock; the existing ALWAYS statement
+-- trigger still rejects every UPDATE, DELETE and TRUNCATE, including zero rows.
+-- No runtime grant, table-wide UPDATE, historical rewrite or new writer.
+GRANT UPDATE(command_id) ON public.native_people_inputs_v1 TO console_account_owner;
+"###;
+    async fn denied_as(
+        tx: &mut Transaction<'_, Postgres>,
+        role: &'static str,
+        statement: &'static str,
+        code: &str,
+        message: &str,
+    ) {
+        let mut attempt = tx.begin().await.unwrap();
+        sqlx::raw_sql(sqlx::AssertSqlSafe(role))
+            .execute(attempt.as_mut())
+            .await
+            .unwrap();
+        let error = sqlx::raw_sql(sqlx::AssertSqlSafe(statement))
+            .execute(attempt.as_mut())
+            .await
+            .unwrap_err();
+        let error = error
+            .as_database_error()
+            .expect("database denial, not infrastructure failure");
+        assert_eq!(error.code().as_deref(), Some(code));
+        assert_eq!(error.message(), message);
+        attempt.rollback().await.unwrap();
+    }
+    async fn correction_diagnostic(
+        tx: &mut Transaction<'_, Postgres>,
+        active: &(Value, String, Option<bool>),
+        variant: usize,
+    ) -> Value {
+        assert_eq!(
+            active.1, ACTIVE[variant],
+            "must begin at exact actual v1 active profile"
+        );
+        assert_eq!(active.2, Some(true));
+        assert_eq!(active.0["tables"].as_array().unwrap().len(), 73);
+        assert_eq!(
+            digest(CORRECTION),
+            "d3c48ec3134fd8f67241f0eb4a19d76b02ab51266821a1a1faec530893f67f79"
+        );
+        const OWNER: &str = "SET LOCAL ROLE console_account_owner";
+        const RUNTIME: &str = "SET LOCAL ROLE console_rt";
+        const ROW_LOCK: &str =
+            "SELECT command_id FROM public.native_people_inputs_v1 WHERE false FOR KEY SHARE";
+        const ACL_DENIED: &str = "permission denied for table native_people_inputs_v1";
+        denied_as(tx, OWNER, ROW_LOCK, "42501", ACL_DENIED).await;
+        assert_eq!(&full(tx, CAPTURE).await, active);
+        let mut corrected_tx = tx.begin().await.unwrap();
+        execute(&mut corrected_tx, CORRECTION).await;
+        let corrected = full(&mut corrected_tx, CAPTURE).await;
+        assert_eq!(corrected.2, Some(true));
+        assert_ne!(corrected.1, active.1);
+        assert_eq!(
+            full(&mut corrected_tx, CAPTURE).await,
+            corrected,
+            "capture must be deterministic"
+        );
+        // Exact independent expected delta, not a normalization that could hide drift.
+        let mut expected = active.0.clone();
+        let table = expected["tables"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|v| v["name"] == "native_people_inputs_v1")
+            .unwrap();
+        let column = table["column_security"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|v| v["name"] == "command_id")
+            .unwrap();
+        assert_eq!(column["acl_is_null"], true);
+        assert!(column["acl"].is_null());
+        column["acl_is_null"] = json!(false);
+        column["acl"] = json!([[
+            "console_account_owner",
+            "console_account_owner",
+            "UPDATE",
+            false
+        ]]);
+        assert_eq!(
+            corrected.0, expected,
+            "correction changed more than one owner column ACL"
+        );
+        let exact_rights: bool = sqlx::query_scalar("SELECT pg_catalog.has_column_privilege('console_account_owner','public.native_people_inputs_v1','command_id','UPDATE') AND NOT pg_catalog.has_table_privilege('console_account_owner','public.native_people_inputs_v1','UPDATE') AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_attribute a WHERE a.attrelid='public.native_people_inputs_v1'::regclass AND a.attnum>0 AND NOT a.attisdropped AND a.attname<>'command_id' AND pg_catalog.has_column_privilege('console_account_owner',a.attrelid,a.attnum,'UPDATE')) AND NOT pg_catalog.has_table_privilege('console_account_owner','public.native_people_inputs_v1','DELETE,TRUNCATE') AND NOT pg_catalog.has_table_privilege('console_rt','public.native_people_inputs_v1','SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER') AND NOT pg_catalog.has_any_column_privilege('console_rt','public.native_people_inputs_v1','SELECT,INSERT,UPDATE,REFERENCES')")
+            .fetch_one(corrected_tx.as_mut()).await.unwrap();
+        assert!(
+            exact_rights,
+            "minimal owner-only UPDATE(command_id), runtime remains closed"
+        );
+        let mut row_lock = corrected_tx.begin().await.unwrap();
+        sqlx::raw_sql(OWNER)
+            .execute(row_lock.as_mut())
+            .await
+            .unwrap();
+        let result = sqlx::raw_sql(ROW_LOCK)
+            .execute(row_lock.as_mut())
+            .await
+            .unwrap();
+        assert_eq!(
+            result.rows_affected(),
+            0,
+            "empty-schema privilege diagnostic only"
+        );
+        row_lock.rollback().await.unwrap();
+        denied_as(
+            &mut corrected_tx,
+            OWNER,
+            "UPDATE public.native_people_inputs_v1 SET command_id=command_id WHERE false",
+            "P0001",
+            "people.directory.history_immutable",
+        )
+        .await;
+        denied_as(
+            &mut corrected_tx,
+            OWNER,
+            "DELETE FROM public.native_people_inputs_v1 WHERE false",
+            "42501",
+            ACL_DENIED,
+        )
+        .await;
+        denied_as(
+            &mut corrected_tx,
+            OWNER,
+            "TRUNCATE public.native_people_inputs_v1",
+            "42501",
+            ACL_DENIED,
+        )
+        .await;
+        for statement in [
+            "UPDATE public.native_people_inputs_v1 SET command_id=command_id WHERE false",
+            "DELETE FROM public.native_people_inputs_v1 WHERE false",
+            "TRUNCATE public.native_people_inputs_v1",
+        ] {
+            denied_as(&mut corrected_tx, RUNTIME, statement, "42501", ACL_DENIED).await;
+        }
+        assert_eq!(full(&mut corrected_tx, CAPTURE).await, corrected);
+        execute(&mut corrected_tx, CORRECTION).await;
+        assert_eq!(
+            full(&mut corrected_tx, CAPTURE).await,
+            corrected,
+            "repeated grant drifted metadata"
+        );
+        corrected_tx.rollback().await.unwrap();
+        assert_eq!(
+            &full(tx, CAPTURE).await,
+            active,
+            "correction rollback changed v1 metadata"
+        );
+        json!({"corrected_sha256":corrected.1,"corrected_snapshot":corrected.0,
+            "startup_rights_valid":corrected.2,"correction_sha256":digest(CORRECTION),
+            "denial_controls":7,"row_lock_privilege":true,"row_count":0,
+            "affected_row_or_actual_fk_acceptance":false,"correction_rollback":true})
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn actual_v1_profiles_capture_minimal_row_lock_correction_and_rollback_both_variants(
+        pool: PgPool,
+    ) {
+        reviewed_sources();
+        let marked: bool = sqlx::query_scalar("SELECT session_user=current_user AND session_user='console_buck_admin' AND starts_with(current_database(),'_sqlx_test_') AND current_setting('console.sqlx_test_bootstrap',true)='buck-sqlx-superuser-v1' AND (SELECT rolsuper FROM pg_catalog.pg_roles WHERE rolname=current_user) AND to_regclass('public._sqlx_migrations') IS NULL")
+            .fetch_one(&pool).await.unwrap();
+        assert!(
+            marked,
+            "requires marked fresh disposable SQLx operator database"
+        );
+        // Real production migration entry, including Apalis. No alternate schema,
+        // truncated migration set, synthesized ledger or business fixtures.
+        prepare_http_database_staging(&pool).await;
+        let ledger: (i64, bool, Vec<u8>) = sqlx::query_as(
+            "SELECT version, success, checksum FROM public._sqlx_migrations WHERE version=230",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("actual current migration230 prerequisite");
+        assert_eq!((ledger.0, ledger.1), (230, true));
+        use sha2::Sha384;
+        assert_eq!(ledger.2, Sha384::digest(MIGRATION.as_bytes()).to_vec());
+        let before = all_rows(&pool).await;
+        let mut baseline_tx = pool.begin().await.unwrap();
+        observer_absent(&mut baseline_tx).await;
+        let baseline_closed = closed(&mut baseline_tx).await;
+        let baseline_full = full(&mut baseline_tx, CAPTURE).await;
+        assert_eq!(
+            baseline_closed.0["protocol"],
+            "native_people_directory_closed230_v1"
+        );
+        assert_eq!(baseline_closed.0["tables"].as_array().unwrap().len(), 7);
+        baseline_tx.rollback().await.unwrap();
+        let mut captures = Vec::new();
+        for (variant, predecessor) in PREDECESSORS.iter().enumerate() {
+            let mut tx = pool.begin().await.unwrap();
+            let result = AssertUnwindSafe(async {
+                sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='120s'; SET LOCAL search_path=pg_catalog,pg_temp")
+                    .execute(tx.as_mut()).await.unwrap();
+                observer_absent(&mut tx).await;
+                assert_eq!(closed(&mut tx).await, baseline_closed);
+                // Dedicated serialized capture coordinates actual cluster role DDL.
+                // It does not grant serving capabilities or emulate an installer.
+                let _: String = sqlx::query_scalar("SELECT oid::text FROM pg_catalog.pg_authid WHERE rolname='console_account_owner' FOR UPDATE")
+                    .fetch_one(tx.as_mut()).await.unwrap();
+                let mut stages = vec![json!({"stage":"all230", "closed_sha256":baseline_closed.1})];
+                if variant == 1 {
+                    execute(&mut tx, OBSERVER).await;
+                    assert_eq!(closed(&mut tx).await, baseline_closed, "observer altered closed extension");
+                    stages.push(json!({"stage":"observer", "closed_sha256":baseline_closed.1}));
+                }
+                for (name, source) in [("account", ACCOUNT), ("credentials", CREDENTIAL), ("company", COMPANY), ("policy_v1", POLICY_INSTALLER), ("policy_v2", POLICY_V2)] {
+                    execute(&mut tx, source).await;
+                    let observed = closed(&mut tx).await;
+                    assert_eq!(observed, baseline_closed, "closed extension changed during original {name} bootstrap");
+                    stages.push(json!({"stage":name, "closed_sha256":observed.1}));
+                }
+                let old = full(&mut tx, OLD_CAPTURE).await;
+                assert_eq!(&old.1, predecessor, "all230 changed actual frozen policyv2 predecessor");
+                assert_eq!(old.2, Some(true));
+                let staged = full(&mut tx, CAPTURE).await;
+                assert_eq!(staged.2, Some(true), "staged effective startup rights failed");
+                assert_eq!(full(&mut tx, CAPTURE).await, staged);
+                capture_detects_added_namespace(&mut tx, &staged, &baseline_closed).await;
+                execute(&mut tx, SOURCE).await;
+                let active = full(&mut tx, CAPTURE).await;
+                let active_extension = closed(&mut tx).await;
+                assert_eq!(active.2, Some(true), "activated effective startup rights failed");
+                assert_ne!(active.0, staged.0, "complete capture omitted activation");
+                assert_ne!(active.1, staged.1);
+                assert_ne!(active_extension, baseline_closed, "closed capture failed to detect activation");
+                assert_eq!(full(&mut tx, CAPTURE).await, active, "actual activated capture is unstable");
+                capture_detects_added_namespace(&mut tx, &active, &active_extension).await;
+                let correction = correction_diagnostic(&mut tx, &active, variant).await;
+                json!({"correction":correction,"variant":if variant==0 {"plain"} else {"observer"},
+                    "stages":stages,"predecessor_sha256":old.1,
+                    "closed_sha256":baseline_closed.1,"closed_snapshot":baseline_closed.0,
+                    "staged_sha256":staged.1,"staged_snapshot":staged.0,
+                    "active_sha256":active.1,"active_snapshot":active.0,
+                    "source_sha256":digest(SOURCE),"capture_sha256":digest(CAPTURE),
+                    "closed_capture_sha256":digest(CLOSED),"migration_sha256":digest(MIGRATION),
+                    "startup_rights_valid":active.2,"corruption_controls":4})
+            }).catch_unwind().await;
+            tx.rollback()
+                .await
+                .expect("all bootstrap/source/observer DDL must roll back");
+            assert_eq!(
+                all_rows(&pool).await,
+                before,
+                "capture changed persistent business rows or migration ledger"
+            );
+            let mut restored = pool.begin().await.unwrap();
+            observer_absent(&mut restored).await;
+            assert_eq!(
+                closed(&mut restored).await,
+                baseline_closed,
+                "rollback changed closed extension metadata"
+            );
+            assert_eq!(
+                full(&mut restored, CAPTURE).await,
+                baseline_full,
+                "rollback changed complete metadata"
+            );
+            restored.rollback().await.unwrap();
+            match result {
+                Ok(value) => captures.push(value),
+                Err(panic) => std::panic::resume_unwind(panic),
+            }
+        }
+        assert_eq!(captures.len(), 2);
+        assert_ne!(captures[0]["staged_sha256"], captures[1]["staged_sha256"]);
+        assert_ne!(captures[0]["active_sha256"], captures[1]["active_sha256"]);
+        for value in &captures {
+            eprintln!("NATIVE_PEOPLE_ROW_LOCK_CAPTURE {value}");
+        }
+        eprintln!(
+            "NATIVE_PEOPLE_ROW_LOCK_CAPTURE_COMPLETE variants=2 closed_parity=verified rollback=verified corruption_controls=8 denial_controls=14 actual_fk_acceptance=not_claimed"
+        );
+    }
+}
