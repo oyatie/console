@@ -333,7 +333,8 @@ $account_custody$;
             **credential_generated_files(),
             **native_company_policy_generated_files(),
             **native_company_policy_v2_capture_files(),
-            **native_company_policy_v2_finalized_files()}
+            **native_company_policy_v2_finalized_files(),
+            **native_people_directory_capture_files()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6622,6 +6623,116 @@ def native_company_policy_v2_finalized_files():
         'ops/postgres-native-company-policy-v2-custody-state.sql': native_company_policy_v2_state_query() + ';\n',
         'backend/app/src/native_company_policy_v2_custody_state.sql': native_company_policy_v2_state_query() + ';\n',
         'ops/postgres-finalize-native-company-policy-v2.sql': native_company_policy_v2_finalizer_sql(),
+    }
+
+
+
+
+# Additive directory capture only. No serving profile/finalizer without reviewed captures.
+NATIVE_DIRECTORY_SOURCE_SHA256 = {'codec-v1.sql': '78908ae7a9b976efbebf57f6b13070c3e17a60713cb61d3219d11d4c5dfb85e6', 'current-source-v1.sql': 'da0011ca29712d345804081414d7a8bc5e12cbf64692b9086a76e9eb24f9db04', 'commands-v1.sql': 'e73265703ac95078bd6ac825ef566405244253fca6bc8b482fe8fd446062b7b2', 'guards-v1.sql': '0cd5a02bd5eefc2b2cd0b871fa7bf417ab7489ff63c83750f191af738101eaa2', 'closure-v1.sql': 'fe69b4f546bc1a71adb3db8c6c6d3012a7ebd869fb2a3b13509db82ecfb3a3b5', 'legacy-import-v1.sql': 'c675bfc7a9d7e29c94479464136fc209e12b19ac1fbd702c4c283622dc9e9f21', 'activation-v1.sql': '60a0e446bd06d69958a9dd66f792e78563bf2af26371361be6d9ea8be27b9c70'}
+NATIVE_DIRECTORY_MIGRATION = 'backend/crates/platform/db/migrations/0230_native_people_directory_storage.sql'
+NATIVE_DIRECTORY_MIGRATION_SHA256 = 'ebd1d191e0ef000bd06f1bed3d9e64ddf0ccc800ed33cb922ccf1e6e47fda9ad'
+NATIVE_DIRECTORY_ADDED_RELATIONS = (
+    'native_people_inputs_v1', 'native_people_terminals_v1', 'employees', 'persons',
+    'person_revisions', 'employee_person_bindings', 'ont_action_command_receipts',
+    'employee_employment_profiles', 'employee_lifecycle_events',
+    'employment_source_bindings', 'employment_revisions', 'leave_balance_import_receipts',
+)
+
+
+def native_people_directory_source_files():
+    files = [(NATIVE_DIRECTORY_MIGRATION, NATIVE_DIRECTORY_MIGRATION_SHA256)]
+    files.extend(('ops/native-people-directory/' + name, digest)
+                 for name, digest in NATIVE_DIRECTORY_SOURCE_SHA256.items())
+    sources = {}
+    for name, expected in files:
+        path = ROOT / name
+        if path.is_symlink() or not path.is_file():
+            raise SystemExit('Directory declared source must be a regular file: ' + name)
+        raw = path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != expected:
+            raise SystemExit('Directory declared source differs from reviewed bytes: ' + name)
+        sources[name] = raw.decode('utf-8')
+    return sources
+
+
+def native_people_directory_source_sql():
+    sources = native_people_directory_source_files()
+    return '-- Declared source for disposable capture only; not a custody finalizer.\n' + '\n'.join(
+        '-- source: ' + name + '\n' + source for name, source in sources.items()
+        if name != NATIVE_DIRECTORY_MIGRATION)
+
+
+def native_people_directory_routine_names():
+    import re
+    names = sorted(set(re.findall(r'CREATE(?: OR REPLACE)? FUNCTION ([a-z_]+\.[a-z_0-9]+)\(',
+                                  '\n'.join(native_people_directory_source_files().values()))))
+    if len(names) != 27:
+        raise ValueError('Directory declared routine roster drift')
+    return names
+
+
+def native_people_directory_snapshot_query():
+    query = native_company_policy_v2_snapshot_query()
+    anchor = " ('audit_events'),\n"
+    if query.count(anchor) != 1:
+        raise ValueError('Directory capture relation anchor drift')
+    query = query.replace(anchor, anchor + ''.join(" ('" + name + "'),\n"
+                         for name in NATIVE_DIRECTORY_ADDED_RELATIONS), 1)
+    anchor = ' WHERE (n.nspname,p.proname) IN (VALUES '
+    if query.count(anchor) != 1:
+        raise ValueError('Directory routine capture boundary drift')
+    routines = ','.join("('" + name.replace('.', "','", 1) + "')"
+                        for name in native_people_directory_routine_names())
+    query = query.replace(anchor, anchor + routines + ',', 1)
+    anchor = '), owner_roles AS ('
+    if query.count(anchor) != 1:
+        raise ValueError('Directory routine namespace boundary drift')
+    query = query.replace(anchor, " OR (n.nspname='public' AND starts_with(p.proname,'native_people_'))\n" + anchor, 1)
+    # Import is an existing protected writer whose retained owner must be captured.
+    for before, after in (
+        ("rolname IN ('console_account_owner','console_terms_owner','console_credential_owner','console_ontology_writer')",
+         "rolname IN ('console_account_owner','console_terms_owner','console_credential_owner','console_ontology_writer','console_leave_definer')"),
+        ("rolname IN ('console_account_owner','console_terms_owner','console_credential_owner','console_auth_rt','console_auth_startup','console_ontology_writer','console_ontology_cmd','console_platform_force_cmd','console_rt','console_app')",
+         "rolname IN ('console_account_owner','console_terms_owner','console_credential_owner','console_auth_rt','console_auth_startup','console_ontology_writer','console_ontology_cmd','console_platform_force_cmd','console_rt','console_app','console_leave_definer','console_leave_cmd')"),
+    ):
+        if query.count(before) != 1:
+            raise ValueError('Directory import owner role boundary drift')
+        query = query.replace(before, after, 1)
+    start = '), company_startup_rights AS (\n SELECT\n'
+    end = ' AS valid\n), snapshots AS ('
+    if query.count(start) != 1 or query.count(end) != 1:
+        raise ValueError('Directory startup rights boundary drift')
+    prefix, rest = query.split(start, 1)
+    predicate, suffix = rest.split(end, 1)
+    for before, after in (
+        ('count(*)=61 AND count(oid)=61', 'count(*)=73 AND count(oid)=73'),
+        ('count(*)=70 AND count(oid)=70', 'count(*)=82 AND count(oid)=82'),
+        ('count(*)=560 AND bool_and', 'count(*)=656 AND bool_and'),
+        ('count(DISTINCT name)=65', 'count(DISTINCT name)=73'),
+    ):
+        if predicate.count(before) != 1:
+            raise ValueError('Directory startup rights cardinality drift')
+        predicate = predicate.replace(before, after, 1)
+    query = prefix + start + predicate + end + suffix
+    anchor = '), snapshots AS (\n SELECT jsonb_build_object(\n'
+    if query.count(anchor) != 1:
+        raise ValueError('Directory relation namespace capture boundary drift')
+    query = query.replace(anchor, anchor +
+        "  'native_directory_relation_namespace',(SELECT jsonb_agg(jsonb_build_array(n.nspname,c.relname,c.relkind,pg_get_userbyid(c.relowner)) ORDER BY n.nspname,c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND starts_with(c.relname,'native_people_')),\n", 1)
+    return query.replace('AS native_policy_startup_rights_valid FROM snapshots',
+                         'AS native_directory_startup_rights_valid FROM snapshots')
+
+
+def native_people_directory_staged_snapshot_query():
+    return '-- New closed230 extension-scope capture; NEVER an old profile projection.\n-- Existing historical classifier must independently accept the whole base.\nWITH complete_directory_capture AS (\n' + native_people_directory_snapshot_query() + "\n), extension_capture AS (\n SELECT jsonb_build_object(\n  'protocol','native_people_directory_closed230_v1',\n  'tables',(SELECT jsonb_agg(t ORDER BY t->>'name') FROM jsonb_array_elements(snapshot->'tables') t WHERE t->>'name' IN ('native_people_inputs_v1','native_people_terminals_v1','employees','persons','person_revisions','employee_person_bindings','ont_action_command_receipts')),\n  'routines',(SELECT jsonb_agg(r ORDER BY r#>>'{metadata,schema}',r#>>'{metadata,name}',r#>>'{metadata,identity_arguments}') FROM jsonb_array_elements(snapshot->'routines') r WHERE (r#>>'{metadata,schema}',r#>>'{metadata,name}') IN (VALUES ('leave_api','apply_employee_import_batch'),('public','console_employee_number_unique'),('public','identity_company_people_projection_v1'),('public','native_people_accept_snapshot_v1'),('public','native_people_assert_closed_v1'),('public','native_people_audit_guard_v1'),('public','native_people_audit_material_v1'),('public','native_people_canonical_guard_v1'),('public','native_people_current_v1'),('public','native_people_decode_v1'),('public','native_people_deferred_closure_v1'),('public','native_people_effect_digest_v1'),('public','native_people_employee_guard_v1'),('public','native_people_employee_shape_v1'),('public','native_people_encode_v1'),('public','native_people_expectations_match_v1'),('public','native_people_frame_v1'),('public','native_people_history_immutable_v1'),('public','native_people_input_guard_v1'),('public','native_people_non_directory_effect_guard_v1'),('public','native_people_preflight_v1'),('public','native_people_prepare_v1'),('public','native_people_result_v1'),('public','native_people_terminal_guard_v1'),('public','native_people_terminal_open_v1'),('public','native_people_terminal_snapshot_v1'),('public','native_people_text_valid_v1')) OR (r#>>'{metadata,schema}'='public' AND starts_with(r#>>'{metadata,name}','native_people_'))),\n  'native_relation_namespace',snapshot->'native_directory_relation_namespace'\n ) AS snapshot FROM complete_directory_capture\n)\nSELECT snapshot,encode(sha256(convert_to(snapshot::text,'UTF8')),'hex') AS snapshot_sha256\nFROM extension_capture"
+
+
+def native_people_directory_capture_files():
+    return {
+        'ops/postgres-native-people-directory-owner.sql': native_people_directory_source_sql(),
+        'ops/postgres-capture-native-people-directory-custody.sql': native_people_directory_snapshot_query() + ';\n',
+        'ops/postgres-capture-native-people-directory-staged-custody.sql': native_people_directory_staged_snapshot_query() + ';\n',
     }
 
 
