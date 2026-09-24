@@ -585,4 +585,501 @@ mod directory_http {
         }
         close_states(&[state], outcome).await;
     }
+
+    // Real HTTP owner oracle. No UI seed/stub or synthetic owner response.
+    fn conflict_recovery(
+        response: &Response,
+        root: &str,
+        command: Uuid,
+        proof: &str,
+        name: &str,
+        require_original: bool,
+    ) {
+        assert_eq!(response.status, StatusCode::CONFLICT);
+        let html = std::str::from_utf8(&response.bytes).unwrap();
+        let main = html
+            .split("<main ")
+            .nth(1)
+            .unwrap()
+            .split("</main>")
+            .next()
+            .unwrap();
+        assert!(
+            !main.contains("<form") && !main.contains("type=\"submit\""),
+            "known conflict must not offer a stale primary submission"
+        );
+        assert!(
+            !html.contains(proof),
+            "known conflict must not expose a reusable proof"
+        );
+        let original = format!("{root}/requests/{command}");
+        let fresh = format!("{root}/new");
+        let paths = if require_original {
+            vec![original.as_str(), fresh.as_str()]
+        } else {
+            vec![fresh.as_str()]
+        };
+        for path in paths {
+            let links: Vec<_> = main
+                .split("<a ")
+                .skip(1)
+                .filter(|tail| {
+                    tail.split('>')
+                        .next()
+                        .unwrap()
+                        .contains(&format!("href=\"{path}\""))
+                })
+                .collect();
+            assert!(
+                !links.is_empty(),
+                "recovery link must be beside conflict, not only global navigation: {path}"
+            );
+            assert!(links.iter().any(|link| {
+                !link
+                    .split("</a>")
+                    .next()
+                    .unwrap()
+                    .split_once('>')
+                    .unwrap()
+                    .1
+                    .trim()
+                    .is_empty()
+            }));
+        }
+        assert!(
+            main.contains(name) && main.contains(NUMBER),
+            "retain submitted values for deliberate recovery"
+        );
+        assert!(!html.contains("<script") && !html.contains("/pkg/"));
+        native_entry_html(response, StatusCode::CONFLICT);
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn directory_http_conflict_recovery_preserves_capacity_retry_and_original_request(
+        pool: PgPool,
+    ) {
+        let (app, key, state) = configured_native_directory_fixture(&pool).await;
+        let mut cleanup = None;
+        let outcome = AssertUnwindSafe(async {
+            let (app, cookies, created) = create_owned_company(&pool, app).await;
+            let (verifier, issuer, ttl) = bindings(&account_browser_config(
+                &pool,
+                app._artifacts.root.clone(),
+                &key,
+            ));
+            let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            cleanup = Some(runtime.clone());
+            let store = PgOrgStore::new(runtime).with_native_account_policy(verifier, issuer, ttl);
+            let policy = CompanyPolicy::new().unwrap();
+            let company = OrgId::from_uuid(created.company);
+            let actor = AccountId::from_uuid(created.administrator).unwrap();
+            let (previous, read_assignment, _) =
+                install_and_grant(&pool, &app, &cookies, &store, &policy, company, actor).await;
+            let root = format!("/companies/{company}/people");
+            // Obtain a real form once. Each subsequent request has a distinct
+            // command identity, with the exact returned proof/expectations.
+            let initial = registration(&pool, &app, &cookies, &root).await;
+            let mut submissions = Vec::new();
+            for _ in 0..16 {
+                let mut fields = initial.clone();
+                let command = Uuid::new_v4();
+                change(&mut fields, "command_id", &command.to_string());
+                let before = all_rows(&pool).await;
+                redirect(
+                    &post(&app, &format!("{root}/requests"), &cookies, &fields).await,
+                    &format!("{root}/requests/{command}"),
+                );
+                accepted(&before, &all_rows(&pool).await, company, actor, &fields);
+                submissions.push((command, fields));
+            }
+            let mut capacity_fields = initial.clone();
+            let capacity_command = Uuid::new_v4();
+            change(
+                &mut capacity_fields,
+                "command_id",
+                &capacity_command.to_string(),
+            );
+            let before = all_rows(&pool).await;
+            let mut capacity = post(
+                &app,
+                &format!("{root}/requests"),
+                &cookies,
+                &capacity_fields,
+            )
+            .await;
+            assert_eq!(capacity.status, StatusCode::TOO_MANY_REQUESTS);
+            assert!(
+                before == all_rows(&pool).await,
+                "capacity rejection changed durable state"
+            );
+            let proof = capacity_fields
+                .iter()
+                .find(|(key, _)| key == "csrf_proof")
+                .unwrap()
+                .1
+                .clone();
+            // Ordinary retry deliberately returns the original proof exactly
+            // once in its body, never in response headers (existing validation contract).
+            assert_eq!(
+                capacity
+                    .bytes
+                    .windows(proof.len())
+                    .filter(|window| *window == proof.as_bytes())
+                    .count(),
+                1
+            );
+            for (_, value) in &capacity.headers {
+                assert!(
+                    !value
+                        .as_bytes()
+                        .windows(proof.len())
+                        .any(|window| window == proof.as_bytes())
+                );
+            }
+            capacity.sent_secrets.retain(|secret| secret != &proof);
+            let html = native_entry_html(&capacity, StatusCode::TOO_MANY_REQUESTS);
+            let form = operation(html, "prepare");
+            assert!(
+                form.split('>')
+                    .next()
+                    .unwrap()
+                    .contains(&format!("action=\"{root}/requests\""))
+            );
+            assert!(form.contains("type=\"submit\""));
+            for (key, value) in &capacity_fields {
+                assert_eq!(field(form, key), *value, "capacity replaced original {key}");
+            }
+            // Free one slot through its real cancel owner, then retry the exact
+            // form bytes/identity that previously received Capacity.
+            let (cancelled, _) = &submissions[0];
+            let cancelled_path = format!("{root}/requests/{cancelled}");
+            let cancellation = pending(&pool, &app, &cookies, &cancelled_path, *cancelled).await;
+            let before_cancel = all_rows(&pool).await;
+            redirect(
+                &post(
+                    &app,
+                    &format!("{cancelled_path}/cancel"),
+                    &cookies,
+                    &cancellation,
+                )
+                .await,
+                &cancelled_path,
+            );
+            exact_delta(
+                &before_cancel,
+                &all_rows(&pool).await,
+                &[("native_people_terminals_v1", 1), ("audit_events", 1)],
+            );
+            let before_retry = all_rows(&pool).await;
+            let capacity_path = format!("{root}/requests/{capacity_command}");
+            redirect(
+                &post(
+                    &app,
+                    &format!("{root}/requests"),
+                    &cookies,
+                    &capacity_fields,
+                )
+                .await,
+                &capacity_path,
+            );
+            accepted(
+                &before_retry,
+                &all_rows(&pool).await,
+                company,
+                actor,
+                &capacity_fields,
+            );
+            // Same accepted command, changed input is a known typed Conflict.
+            let mut conflicting = capacity_fields.clone();
+            change(&mut conflicting, "legal_name", "박충돌");
+            let before_conflict = all_rows(&pool).await;
+            let response = post(&app, &format!("{root}/requests"), &cookies, &conflicting).await;
+            assert!(
+                before_conflict == all_rows(&pool).await,
+                "conflict rewrote acknowledged history"
+            );
+            conflict_recovery(&response, &root, capacity_command, &proof, "박충돌", true);
+            let _ = pending(&pool, &app, &cookies, &capacity_path, capacity_command).await;
+            // Current Create remains allowed after a genuine Read revocation,
+            // but the form's old Company epoch must never be silently replaced.
+            let stale = registration(&pool, &app, &cookies, &root).await;
+            let stale_command: Uuid = stale
+                .iter()
+                .find(|(key, _)| key == "command_id")
+                .unwrap()
+                .1
+                .parse()
+                .unwrap();
+            transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Revoke,
+                Some(DirectoryActionV1::Read),
+                4,
+                Some(read_assignment),
+                Some(previous),
+            )
+            .await;
+            let before_stale = all_rows(&pool).await;
+            let response = post(&app, &format!("{root}/requests"), &cookies, &stale).await;
+            assert!(
+                before_stale == all_rows(&pool).await,
+                "stale submission mutated state"
+            );
+            let stale_proof = stale
+                .iter()
+                .find(|(key, _)| key == "csrf_proof")
+                .unwrap()
+                .1
+                .as_str();
+            // This fresh stale command was never accepted. Do not mandate a
+            // dead original-record link; generic Conflict is not existence proof.
+            conflict_recovery(
+                &response,
+                &root,
+                stale_command,
+                stale_proof,
+                "연구 &amp; 운영",
+                false,
+            );
+            let fresh = registration(&pool, &app, &cookies, &root).await;
+            for name in ["command_id", "expected_company_epoch"] {
+                assert_ne!(
+                    fresh.iter().find(|(key, _)| key == name).unwrap().1,
+                    stale.iter().find(|(key, _)| key == name).unwrap().1,
+                    "new request did not refresh {name}"
+                );
+            }
+        })
+        .catch_unwind()
+        .await;
+        if let Some(runtime) = cleanup {
+            runtime.close().await;
+        }
+        close_states(&[state], outcome).await;
+    }
+
+    // Additive actual HTTP oracle. No new authority fixture or direct business writes.
+    fn missing_request_recovery(response: &Response, root: &str, command: Uuid) -> String {
+        let html = native_entry_html(response, StatusCode::NOT_FOUND);
+        let main = html
+            .split("<main ")
+            .nth(1)
+            .unwrap()
+            .split("</main>")
+            .next()
+            .unwrap();
+        assert!(main.contains("data-people-outcome=\"not-visible\""));
+        assert!(main.contains("이 화면은 등록이 실패했거나 취소되었다는 뜻이 아닙니다."));
+        for absent in [
+            "<form",
+            "csrf_proof",
+            "type=\"submit\"",
+            "접수 시각",
+            "접수 기록",
+        ] {
+            assert!(
+                !html.contains(absent),
+                "missing status exposed mutation/acceptance material"
+            );
+        }
+        for (path, label) in [
+            (
+                format!("{root}/requests/{command}"),
+                "같은 요청 상태 다시 확인",
+            ),
+            (format!("{root}/new"), "새 등록 요청 작성"),
+        ] {
+            let links: Vec<_> = main
+                .split("<a ")
+                .skip(1)
+                .filter(|tail| {
+                    tail.split('>')
+                        .next()
+                        .unwrap()
+                        .contains(&format!("href=\"{path}\""))
+                })
+                .collect();
+            assert_eq!(links.len(), 1, "local recovery link must be unique: {path}");
+            assert!(links[0].split("</a>").next().unwrap().contains(label));
+        }
+        assert!(!html.contains("<script") && !html.contains("/pkg/"));
+        html.to_owned()
+    }
+
+    fn no_request_disclosure(response: &Response, secrets: &[&str]) {
+        let html = native_entry_html(response, StatusCode::NOT_FOUND);
+        for secret in secrets {
+            assert!(!secret.is_empty());
+            assert!(!html.contains(secret), "404 disclosed request data");
+            for (_, value) in &response.headers {
+                assert!(
+                    !value
+                        .as_bytes()
+                        .windows(secret.len())
+                        .any(|w| w == secret.as_bytes()),
+                    "404 header disclosed request data"
+                );
+            }
+        }
+        assert!(!html.contains("<form") && !html.contains("csrf_proof"));
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn directory_http_missing_request_recovery_preserves_404_and_current_authority(
+        pool: PgPool,
+    ) {
+        let (app, key, state) = configured_native_directory_fixture(&pool).await;
+        let mut cleanup = None;
+        let outcome = AssertUnwindSafe(async {
+            let (app, cookies, created) = create_owned_company(&pool, app).await;
+            let (verifier, issuer, ttl) = bindings(&account_browser_config(
+                &pool,
+                app._artifacts.root.clone(),
+                &key,
+            ));
+            let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            cleanup = Some(runtime.clone());
+            let store = PgOrgStore::new(runtime).with_native_account_policy(verifier, issuer, ttl);
+            let policy = CompanyPolicy::new().unwrap();
+            let company = OrgId::from_uuid(created.company);
+            let actor = AccountId::from_uuid(created.administrator).unwrap();
+            let (previous, _, create_assignment) =
+                install_and_grant(&pool, &app, &cookies, &store, &policy, company, actor).await;
+            let root = format!("/companies/{company}/people");
+            // Actual owner form issues a locator, but no prepare is submitted for it.
+            let unsent = registration(&pool, &app, &cookies, &root).await;
+            let unsent_command: Uuid = unsent
+                .iter()
+                .find(|(k, _)| k == "command_id")
+                .unwrap()
+                .1
+                .parse()
+                .unwrap();
+            let unsent_path = format!("{root}/requests/{unsent_command}");
+            let unsent_proof = &unsent.iter().find(|(k, _)| k == "csrf_proof").unwrap().1;
+            let missing =
+                readonly_document(&pool, &app, &cookies, &unsent_path, StatusCode::NOT_FOUND).await;
+            let missing_html = missing_request_recovery(&missing, &root, unsent_command);
+            no_request_disclosure(&missing, &[NAME, NUMBER, unsent_proof]);
+            let again =
+                readonly_document(&pool, &app, &cookies, &unsent_path, StatusCode::NOT_FOUND).await;
+            assert!(
+                missing.bytes == again.bytes,
+                "status recheck changed missing-request representation"
+            );
+            // Follow the asserted fresh URL through the real owner. Its form is new;
+            // neither the GET nor the prior404 claims the original operation rolled back.
+            let submitted = registration(&pool, &app, &cookies, &root).await;
+            let command: Uuid = submitted
+                .iter()
+                .find(|(k, _)| k == "command_id")
+                .unwrap()
+                .1
+                .parse()
+                .unwrap();
+            assert_ne!(command, unsent_command);
+            let path = format!("{root}/requests/{command}");
+            let proof = &submitted.iter().find(|(k, _)| k == "csrf_proof").unwrap().1;
+            let before = all_rows(&pool).await;
+            redirect(
+                &post(&app, &format!("{root}/requests"), &cookies, &submitted).await,
+                &path,
+            );
+            accepted(&before, &all_rows(&pool).await, company, actor, &submitted);
+            let _ = pending(&pool, &app, &cookies, &path, command).await;
+            let missing_after =
+                readonly_document(&pool, &app, &cookies, &unsent_path, StatusCode::NOT_FOUND).await;
+            assert!(
+                missing_html == missing_request_recovery(&missing_after, &root, unsent_command),
+                "unrelated accepted request altered missing-request disclosure"
+            );
+            no_request_disclosure(
+                &missing_after,
+                &[NAME, "김하늘 &lt;연구 &amp; 운영&gt;", NUMBER, proof],
+            );
+            // This foreign Account is genuinely unauthorized for this Company.
+            // It is not a substitute for the unavailable second-authorized-actor case.
+            let (_, outsider) = enrolled(&app).await;
+            let foreign_known =
+                readonly_document(&pool, &app, &outsider, &path, StatusCode::NOT_FOUND).await;
+            let foreign_missing =
+                readonly_document(&pool, &app, &outsider, &unsent_path, StatusCode::NOT_FOUND)
+                    .await;
+            for response in [&foreign_known, &foreign_missing] {
+                no_request_disclosure(
+                    response,
+                    &[NAME, "김하늘 &lt;연구 &amp; 운영&gt;", NUMBER, proof],
+                );
+                assert!(
+                    !std::str::from_utf8(&response.bytes)
+                        .unwrap()
+                        .contains("data-people-outcome=\"not-visible\"")
+                );
+            }
+            for response in [&foreign_known, &foreign_missing] {
+                let html = std::str::from_utf8(&response.bytes).unwrap();
+                assert!(html.contains("<h1>이 페이지를 열 수 없습니다</h1>"));
+                assert!(html.contains("href=\"/account\""));
+                no_request_disclosure(
+                    response,
+                    &[
+                        &company.to_string(),
+                        "연결된 업무 회사",
+                        &format!("/companies/{company}"),
+                        &root,
+                        &format!("/companies/{company}/policy"),
+                    ],
+                );
+            }
+            assert!(
+                foreign_known.bytes == foreign_missing.bytes,
+                "unauthorized404 revealed request existence"
+            );
+            // Read remains separately granted; losing Create must deny request status.
+            transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Revoke,
+                Some(DirectoryActionV1::Create),
+                4,
+                Some(create_assignment),
+                Some(previous),
+            )
+            .await;
+            let denied_known =
+                readonly_document(&pool, &app, &cookies, &path, StatusCode::NOT_FOUND).await;
+            let denied_missing =
+                readonly_document(&pool, &app, &cookies, &unsent_path, StatusCode::NOT_FOUND).await;
+            for response in [&denied_known, &denied_missing] {
+                no_request_disclosure(
+                    response,
+                    &[NAME, "김하늘 &lt;연구 &amp; 운영&gt;", NUMBER, proof],
+                );
+                let html = std::str::from_utf8(&response.bytes).unwrap();
+                assert!(!html.contains("data-people-outcome=\"not-visible\""));
+                assert!(!html.contains(&path) && !html.contains(&unsent_path));
+            }
+            assert!(
+                denied_known.bytes == denied_missing.bytes,
+                "revoked404 revealed request existence"
+            );
+        })
+        .catch_unwind()
+        .await;
+        if let Some(runtime) = cleanup {
+            runtime.close().await;
+        }
+        close_states(&[state], outcome).await;
+    }
 }
