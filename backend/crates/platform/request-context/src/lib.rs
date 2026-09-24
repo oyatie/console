@@ -1259,7 +1259,11 @@ mod tests {
         #[derive(Clone, Debug, PartialEq, Eq)]
         struct RetainedExtension;
         const BODY: &str = r#"{"fixture":"exact preserved response bytes"}"#;
-        fn rendered(status: StatusCode, types: &[&'static str]) -> Response {
+        fn rendered(
+            status: StatusCode,
+            types: &[&'static str],
+            retry_after: Option<&'static str>,
+        ) -> Response {
             let mut response = Response::new(Body::from(BODY));
             *response.status_mut() = status;
             response.headers_mut().insert(
@@ -1290,57 +1294,169 @@ mod tests {
             response
                 .headers_mut()
                 .insert("x-original", HeaderValue::from_static("preserve-exactly"));
+            response
+                .headers_mut()
+                .insert("x-console-native-error", HeaderValue::from_static("true"));
+            if let Some(value) = retry_after {
+                response
+                    .headers_mut()
+                    .insert(header::RETRY_AFTER, HeaderValue::from_static(value));
+            }
             response.extensions_mut().insert(RetainedExtension);
             response
         }
-        for (status, types, preserved) in [
+        // Preserve the historical test name and all 413/408 cases. Only the old
+        // marked single-HTML 429 oracle changes: native recovery must survive.
+        for (status, types, preserved, marked, retry_after) in [
             (
                 StatusCode::PAYLOAD_TOO_LARGE,
                 vec!["text/html; charset=utf-8"],
                 true,
+                true,
+                None,
             ),
             (
                 StatusCode::PAYLOAD_TOO_LARGE,
                 vec!["Text/Html; charset=utf-8"],
                 true,
+                true,
+                None,
             ),
-            (StatusCode::PAYLOAD_TOO_LARGE, vec!["text/plain"], false),
-            (StatusCode::PAYLOAD_TOO_LARGE, vec![], false),
+            (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                vec!["text/plain"],
+                false,
+                true,
+                None,
+            ),
+            (StatusCode::PAYLOAD_TOO_LARGE, vec![], false, true, None),
             (
                 StatusCode::PAYLOAD_TOO_LARGE,
                 vec!["text/html", "text/html"],
                 false,
+                true,
+                None,
             ),
             (
                 StatusCode::PAYLOAD_TOO_LARGE,
                 vec!["text/html", "application/json"],
                 false,
+                true,
+                None,
             ),
             // Preserve the prior JSON classifier: first JSON is still JSON.
             (
                 StatusCode::PAYLOAD_TOO_LARGE,
                 vec!["application/json", "text/html"],
                 true,
+                true,
+                None,
             ),
             (
                 StatusCode::PAYLOAD_TOO_LARGE,
                 vec!["application/json"],
                 true,
+                true,
+                None,
             ),
-            (StatusCode::REQUEST_TIMEOUT, vec!["text/html"], false),
-            (StatusCode::TOO_MANY_REQUESTS, vec!["text/html"], false),
+            (
+                StatusCode::REQUEST_TIMEOUT,
+                vec!["text/html"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html"],
+                true,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["Text/Html; charset=utf-8"],
+                true,
+                true,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html"],
+                false,
+                false,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/plain"],
+                false,
+                true,
+                None,
+            ),
+            (StatusCode::TOO_MANY_REQUESTS, vec![], false, true, None),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html", "text/html"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html", "application/json"],
+                false,
+                true,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["text/html, application/json"],
+                false,
+                true,
+                None,
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["application/json", "text/html"],
+                true,
+                false,
+                Some("17"),
+            ),
+            (
+                StatusCode::TOO_MANY_REQUESTS,
+                vec!["application/json"],
+                true,
+                false,
+                None,
+            ),
         ] {
-            let expected_headers = rendered(status, &types).headers().clone();
+            let mut expected_headers = rendered(status, &types, retry_after).headers().clone();
+            if status == StatusCode::TOO_MANY_REQUESTS && retry_after.is_none() {
+                expected_headers.insert(header::RETRY_AFTER, HeaderValue::from_static("60"));
+            }
             let mut app = with_http_error_envelope(axum::Router::new().route(
                 "/",
                 get(move || {
                     let types = types.clone();
-                    async move { preserve_native_html_error(rendered(status, &types)) }
+                    async move {
+                        let response = rendered(status, &types, retry_after);
+                        if marked {
+                            preserve_native_html_error(response)
+                        } else {
+                            response
+                        }
+                    }
                 }),
             ));
             let response = Service::call(
                 &mut app,
-                Request::builder().uri("/").body(Body::empty()).unwrap(),
+                Request::builder()
+                    .uri("/")
+                    .header(header::ACCEPT, "text/html")
+                    .header("x-console-native-error", "true")
+                    .body(Body::empty())
+                    .unwrap(),
             )
             .await
             .unwrap();
@@ -1364,6 +1480,7 @@ mod tests {
                     "application/json"
                 );
                 assert!(!response.headers().contains_key("x-original"));
+                assert!(response.extensions().get::<RetainedExtension>().is_none());
                 let (code, message) = match status {
                     StatusCode::REQUEST_TIMEOUT => ("request_timeout", "request timed out"),
                     StatusCode::TOO_MANY_REQUESTS => {
