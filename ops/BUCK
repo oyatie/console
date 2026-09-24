@@ -101,3 +101,8 @@ export_file(
     name = "postgres-capture-native-people-directory-staged-custody.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "account-custody-migrations.sha384",
+    visibility = ["PUBLIC"],
+)
