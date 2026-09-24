@@ -563,6 +563,14 @@ mod native_payroll_read_owner_tests {
         trace: Mutex<DecisionTrace>,
     }
     impl CompanyPolicyDecisionPort for FaultPolicy {
+        fn decide_native_people_directory(
+            &self,
+            _: &console_identity_application::company_policy::CurrentPeopleDirectoryAuthority,
+            _: &console_identity_application::company_policy::NativePeopleDirectoryRequestV1,
+        ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+            panic!("unexpected People business dispatch in non-People fixture")
+        }
+
         fn decide_native_bootstrap(
             &self,
             _: &CurrentNativeBootstrapAuthority,

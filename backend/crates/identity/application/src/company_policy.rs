@@ -10,6 +10,12 @@ const INITIAL_MANIFEST: &str = "0d3d0c3bc0357c0394b02400295f77231178cd5dc22a668a
 
 pub mod business;
 mod native_business;
+mod people_directory;
+pub use people_directory::{
+    CurrentPeopleDirectoryAuthority, NamedPeopleDirectoryProperty,
+    NativePeopleDirectoryProjectionRow, NativePeopleDirectoryRequestV1,
+    NativePeopleDirectoryResource, decode_native_people_directory_registration,
+};
 pub mod people_business;
 #[cfg(test)]
 mod people_policy_tests;
@@ -476,6 +482,11 @@ impl CurrentCompanyAuthority {
 }
 
 pub trait CompanyPolicyDecisionPort: Send + Sync {
+    fn decide_native_people_directory(
+        &self,
+        authority: &CurrentPeopleDirectoryAuthority,
+        request: &NativePeopleDirectoryRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError>;
     fn decide_native_bootstrap(
         &self,
         authority: &CurrentNativeBootstrapAuthority,

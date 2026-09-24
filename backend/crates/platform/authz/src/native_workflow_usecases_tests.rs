@@ -333,6 +333,14 @@ impl Policy {
     }
 }
 impl CompanyPolicyDecisionPort for Policy {
+    fn decide_native_people_directory(
+        &self,
+        _: &console_identity_application::company_policy::CurrentPeopleDirectoryAuthority,
+        _: &console_identity_application::company_policy::NativePeopleDirectoryRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        panic!("unexpected People business dispatch in non-People fixture")
+    }
+
     fn decide_native_bootstrap(
         &self,
         a: &CurrentNativeBootstrapAuthority,

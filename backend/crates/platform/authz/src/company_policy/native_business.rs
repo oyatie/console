@@ -28,7 +28,7 @@ pub(super) fn validate_bundles() -> Result<(), CompanyPolicyError> {
     Ok(())
 }
 
-fn compile(
+pub(super) fn compile(
     company: OrgId,
     epoch: u64,
     id: &str,
@@ -185,7 +185,7 @@ impl CompanyPolicy {
         )
     }
 
-    fn evaluate_native_request(
+    pub(super) fn evaluate_native_request(
         &self,
         bundle: &CompiledBundle,
         selectors: (&str, &str, &str, &str),

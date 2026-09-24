@@ -1,0 +1,19 @@
+entity Account = { "account_id": String, "session_id": String, "security_generation": String, "state": String };
+entity PeopleDirectory = {
+    "org_id": String, "object_type_id": String, "registered_action_id": String,
+    "registration_revision": String, "manifest_digest": String, "granted_action": String,
+    "recipient_account_id": String, "assignment_id": String, "assignment_revision": String,
+    "assignment_state": String, "valid_from_us": Long, "valid_until_us": Long,
+    "role_id": String, "role_revision": String, "role_state": String,
+    "company_epoch": String, "current_policy_receipt_id": String, "delegable": Bool,
+    "allowed_fields": Set<String>
+};
+action "people.directory.read", "people.directory.create" appliesTo {
+    principal: [Account], resource: [PeopleDirectory],
+    context: {
+        "requested_org_id": String, "requested_actor_id": String,
+        "object_type_id": String, "registered_action_id": String,
+        "requested_fields": Set<String>, "observed_at_us": Long,
+        "resource_kind": String, "resource_id": String
+    }
+};

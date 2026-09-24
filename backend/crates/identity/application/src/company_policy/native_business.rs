@@ -302,7 +302,7 @@ impl CurrentPayrollReadAuthority {
 }
 
 impl NativePolicySourceBinding {
-    fn check(
+    pub(super) fn check(
         &self,
         account: Uuid,
         session: Uuid,
@@ -341,7 +341,7 @@ fn positive_decimal(value: &str) -> Result<u64, CompanyPolicyError> {
     Ok(parsed)
 }
 
-fn exact_micros(value: OffsetDateTime) -> Result<i64, CompanyPolicyError> {
+pub(super) fn exact_micros(value: OffsetDateTime) -> Result<i64, CompanyPolicyError> {
     let nanos = value.unix_timestamp_nanos();
     if nanos % 1_000 != 0 {
         return Err(CompanyPolicyError::MaterialUnavailable);

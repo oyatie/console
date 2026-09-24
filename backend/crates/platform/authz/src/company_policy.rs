@@ -3,7 +3,8 @@ use cedar_policy::{Authorizer, Context, Decision, Entities, EntityUid, Request};
 use console_identity_application::company_policy::{
     CompanyPolicyDecision, CompanyPolicyDecisionPort, CompanyPolicyError, CompanyPolicyRequest,
     CurrentCompanyAuthority, CurrentNativeBootstrapAuthority, CurrentPayrollReadAuthority,
-    InitialCompanyAction, NativeBootstrapRequestV1, PropertyRef,
+    CurrentPeopleDirectoryAuthority, InitialCompanyAction, NativeBootstrapRequestV1,
+    NativePeopleDirectoryRequestV1, PropertyRef,
 };
 use console_kernel_core::OrgId;
 use serde_json::json;
@@ -17,6 +18,7 @@ use crate::cedar_pbac::engine::{
 const SCHEMA_ID: &str = "native-company-authorization-2026-09-19.1";
 const SCHEMA: &str = include_str!("company_policy/native-company-authorization.cedarschema");
 mod native_business;
+mod people_directory;
 
 pub struct CompanyPolicy {
     #[cfg(test)]
@@ -30,6 +32,7 @@ impl CompanyPolicy {
         std::panic::catch_unwind(|| {
             sdk_identity()?;
             native_business::validate_bundles()?;
+            people_directory::validate_bundle()?;
             // Validate the fixed schema at composition, before any request.
             compile_bundle_from_sources(
                 OrgId::platform(),
@@ -191,6 +194,17 @@ impl CompanyPolicy {
 }
 
 impl CompanyPolicyDecisionPort for CompanyPolicy {
+    fn decide_native_people_directory(
+        &self,
+        authority: &CurrentPeopleDirectoryAuthority,
+        request: &NativePeopleDirectoryRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        std::panic::catch_unwind(AssertUnwindSafe(|| {
+            self.evaluate_native_people_directory(authority, request)
+        }))
+        .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+    }
+
     fn decide_native_bootstrap(
         &self,
         authority: &CurrentNativeBootstrapAuthority,
@@ -249,3 +263,7 @@ mod tests;
 #[cfg(test)]
 #[path = "native_business_policy_unit_tests.rs"]
 mod native_business_tests;
+
+#[cfg(test)]
+#[path = "native_people_directory_policy_tests.rs"]
+mod native_people_directory_tests;

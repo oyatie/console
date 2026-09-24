@@ -49,6 +49,14 @@ impl ObservedCompanyPolicy {
     }
 }
 impl CompanyPolicyDecisionPort for ObservedCompanyPolicy {
+    fn decide_native_people_directory(
+        &self,
+        authority: &console_identity_application::company_policy::CurrentPeopleDirectoryAuthority,
+        request: &console_identity_application::company_policy::NativePeopleDirectoryRequestV1,
+    ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
+        self.real.decide_native_people_directory(authority, request)
+    }
+
     fn decide_native_bootstrap(
         &self,
         authority: &console_identity_application::company_policy::CurrentNativeBootstrapAuthority,
