@@ -42,14 +42,14 @@ impl<S, P> Clone for NativePeopleRestState<S, P> {
     }
 }
 // Auth owns admission. The application requests it only when the retained
-// status transaction will issue a Pending form proof; read-only outcomes never
+// transaction will issue a fresh or Pending form proof; read-only outcomes never
 // consume a CSRF bucket. No proof or current-authority result crosses this port.
-struct StatusProofAdmission<'a> {
+struct FormProofAdmission<'a> {
     auth: &'a AuthRestState,
     headers: &'a HeaderMap,
     client: Option<TrustedClientIp>,
 }
-impl DirectoryProofAdmission for StatusProofAdmission<'_> {
+impl DirectoryProofAdmission for FormProofAdmission<'_> {
     async fn admit(&mut self) -> Result<(), DirectoryWorkflowError> {
         self.auth
             .limit_company_form(self.headers, self.client)
@@ -165,16 +165,18 @@ where
         let company = form::company(company)?;
         let credentials = self.credentials(headers)?;
         let locator = DirectoryRequestRef::new(company, Uuid::new_v4()).map_err(owner_status)?;
-        self.auth
-            .limit_company_form(headers, client)
-            .await
-            .map_err(|e| e.status())?;
+        let mut admission = FormProofAdmission {
+            auth: &self.auth,
+            headers,
+            client,
+        };
         directory_form(
             self.store.as_ref(),
             self.policy.as_ref(),
             &credentials,
             locator,
             None,
+            &mut admission,
         )
         .await
         .map_err(owner_status)
@@ -192,7 +194,7 @@ where
         let locator = DirectoryRequestRef::new(form::company(company)?, form::id(command)?)
             .map_err(owner_status)?;
         let credentials = self.credentials(headers)?;
-        let mut admission = StatusProofAdmission {
+        let mut admission = FormProofAdmission {
             auth: &self.auth,
             headers,
             client,
@@ -241,6 +243,11 @@ where
         let trace = TraceContext::generate();
         match parsed.input {
             form::Input::Prepare { draft, submission } => {
+                let mut admission = FormProofAdmission {
+                    auth: &self.auth,
+                    headers: &parts.headers,
+                    client: parts.extensions.get::<TrustedClientIp>().copied(),
+                };
                 let result = match submission {
                     Some(input) => {
                         directory_prepare(
@@ -252,7 +259,11 @@ where
                         )
                         .await
                     }
-                    None => return self.validation(&credentials, draft, None).await,
+                    None => {
+                        return self
+                            .validation(&credentials, draft, None, &mut admission)
+                            .await;
+                    }
                 };
                 match result {
                     Ok(_) => Ok(Submission::Confirmed(draft.locator)),
@@ -262,7 +273,10 @@ where
                     Err(
                         problem @ (DirectoryWorkflowError::Capacity
                         | DirectoryWorkflowError::Conflict),
-                    ) => self.validation(&credentials, draft, Some(problem)).await,
+                    ) => {
+                        self.validation(&credentials, draft, Some(problem), &mut admission)
+                            .await
+                    }
                     Err(error) => Err(owner_status(error)),
                 }
             }
@@ -295,6 +309,7 @@ where
         credentials: &AccountEnrollmentCredentials,
         draft: Draft,
         problem: Option<DirectoryWorkflowError>,
+        admission: &mut FormProofAdmission<'_>,
     ) -> Result<Submission, StatusCode> {
         // Same original proof and expectations survive invalid input. No new proof,
         // command identity or authority is minted during validation redisplay.
@@ -304,6 +319,7 @@ where
             credentials,
             draft.locator,
             Some(draft.expected),
+            admission,
         )
         .await
         .map_err(owner_status)?;

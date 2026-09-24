@@ -672,7 +672,8 @@ fn directory_workflow_form_proof_and_pure_preflight_follow_distinct_modes() {
                 &p,
                 &c,
                 locator(),
-                validation.then_some(expected())
+                validation.then_some(expected()),
+                &mut Admission::default()
             ))
             .unwrap()
             .proof,
@@ -682,7 +683,15 @@ fn directory_workflow_form_proof_and_pure_preflight_follow_distinct_modes() {
     }
     let (s, p, c) = fixture(Fault::CurrentEpoch, 0);
     let original = expected();
-    let form = run(directory_form(&s, &p, &c, locator(), Some(original))).unwrap();
+    let form = run(directory_form(
+        &s,
+        &p,
+        &c,
+        locator(),
+        Some(original),
+        &mut Admission::default(),
+    ))
+    .unwrap();
     assert_eq!(form.expected, original);
     assert_eq!(form.proof, 9);
     assert_eq!(events(&s), vec!["lock", "form", "finish", "finished"]);
@@ -1060,5 +1069,85 @@ fn directory_pending_proof_admission_is_conditional_and_errors_discard_scope() {
         );
         assert_eq!(admission.calls, 1);
         assert_eq!(events(&store), vec!["lock", "status", "discarded"]);
+    }
+}
+
+#[test]
+fn directory_fresh_form_admission_follows_authority_and_validation_never_charges() {
+    for (deny_at, expected_calls) in [(0, 1), (1, 0), (2, 1)] {
+        let (store, policy, credentials) = fixture(Fault::None, deny_at);
+        let mut admission = Admission::default();
+        let result = run(directory_form(
+            &store,
+            &policy,
+            &credentials,
+            locator(),
+            None,
+            &mut admission,
+        ));
+        assert_eq!(admission.calls, expected_calls);
+        assert_eq!(result.is_ok(), deny_at == 0);
+        assert_eq!(
+            events(&store),
+            match deny_at {
+                0 => vec!["lock", "form", "finish", "finished"],
+                1 => vec!["lock", "discarded"],
+                _ => vec!["lock", "form", "finish", "discarded"],
+            }
+        );
+    }
+    for error in [
+        DirectoryWorkflowError::Capacity,
+        DirectoryWorkflowError::Unavailable,
+    ] {
+        let (store, policy, credentials) = fixture(Fault::None, 0);
+        let mut admission = Admission {
+            calls: 0,
+            error: Some(error),
+        };
+        assert!(
+            matches!(run(directory_form(&store, &policy, &credentials, locator(), None, &mut admission)), Err(actual) if actual == error)
+        );
+        assert_eq!(admission.calls, 1);
+        assert_eq!(events(&store), vec!["lock", "discarded"]);
+    }
+    for fault in [Fault::Company, Fault::Action, Fault::Mode] {
+        let (store, policy, credentials) = fixture(fault, 0);
+        let mut admission = Admission::default();
+        assert!(
+            run(directory_form(
+                &store,
+                &policy,
+                &credentials,
+                locator(),
+                None,
+                &mut admission
+            ))
+            .is_err()
+        );
+        assert_eq!(admission.calls, 0);
+        assert_eq!(events(&store), vec!["lock", "discarded"]);
+    }
+    // Existing proof and expectations survive validation. Even a callback that
+    // would deny admission must never be invoked in ValidationForm mode.
+    for admission_error in [None, Some(DirectoryWorkflowError::Capacity)] {
+        let (store, policy, credentials) = fixture(Fault::CurrentEpoch, 0);
+        let mut admission = Admission {
+            calls: 0,
+            error: admission_error,
+        };
+        let result = run(directory_form(
+            &store,
+            &policy,
+            &credentials,
+            locator(),
+            Some(expected()),
+            &mut admission,
+        ))
+        .unwrap();
+        assert_eq!(admission.calls, 0);
+        assert_eq!(result.expected, expected());
+        assert_eq!(result.proof, 9);
+        assert_eq!(events(&store), vec!["lock", "form", "finish", "finished"]);
     }
 }

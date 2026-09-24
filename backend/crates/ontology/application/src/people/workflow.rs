@@ -260,10 +260,10 @@ impl DirectoryScopeRequest<'_> {
     }
 }
 
-/// Admission to issue a new Pending recovery proof. Entry adapters provide the
+/// Admission to issue a fresh form or new Pending recovery proof. Entry adapters provide the
 /// real limiter; there is deliberately no unmetered production implementation.
 /// The owning transaction calls this only after current authorization and the
-/// actual Pending decision, then rechecks current authority/deadline after await.
+/// fresh-form or Pending decision, then rechecks current authority/deadline after await.
 pub trait DirectoryProofAdmission: Send {
     fn admit(&mut self) -> impl Future<Output = Result<(), DirectoryWorkflowError>> + Send;
 }
@@ -500,12 +500,14 @@ pub async fn directory_detail<
 pub async fn directory_form<
     S: DirectoryWorkflowStore,
     P: DirectoryDecisionPort<S::Authority> + ?Sized,
+    A: DirectoryProofAdmission + ?Sized,
 >(
     store: &S,
     policy: &P,
     credentials: &S::Credentials,
     locator: DirectoryRequestRef,
     original_expectations: Option<DirectoryExpectationsV1>,
+    admission: &mut A,
 ) -> Result<DirectoryForm<S::FormProof>, DirectoryWorkflowError> {
     let request = match original_expectations {
         Some(expected) => {
@@ -519,6 +521,9 @@ pub async fn directory_form<
     let kind = request.kind();
     let mut scope = store.lock(credentials, request).await?;
     authorize(&scope, policy, locator.company(), kind)?;
+    if original_expectations.is_none() {
+        admission.admit().await?;
+    }
     let form = scope.form().await?;
     if form.locator != locator
         || form.expected.validate().is_err()

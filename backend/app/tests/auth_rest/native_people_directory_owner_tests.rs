@@ -157,6 +157,7 @@ mod native_people_directory_owner {
                 &read_credentials(&self.cookies),
                 locator,
                 None,
+                &mut TestAdmission::default(),
             )
             .await
             .unwrap();
