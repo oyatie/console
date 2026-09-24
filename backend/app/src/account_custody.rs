@@ -8,17 +8,24 @@ pub(crate) enum VerifiedCustodyProfile {
     CompanyEnrollment,
     NativeCompanyPolicy,
     NativeCompanyPolicyV2,
+    NativePeopleDirectory,
 }
 
 impl VerifiedCustodyProfile {
+    pub(crate) fn supports_native_directory(self) -> bool {
+        self == Self::NativePeopleDirectory
+    }
     pub(crate) fn supports_policy(self) -> bool {
         matches!(
             self,
-            Self::NativeCompanyPolicy | Self::NativeCompanyPolicyV2
+            Self::NativeCompanyPolicy | Self::NativeCompanyPolicyV2 | Self::NativePeopleDirectory
         )
     }
     pub(crate) fn supports_people(self) -> bool {
-        self == Self::NativeCompanyPolicyV2
+        matches!(
+            self,
+            Self::NativeCompanyPolicyV2 | Self::NativePeopleDirectory
+        )
     }
 }
 
@@ -32,6 +39,22 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
+    let directory: String =
+        sqlx::query_scalar(include_str!("native_people_directory_custody_state.sql"))
+            .fetch_one(&mut *transaction)
+            .await?;
+    if directory == "native_people_directory.finalized" {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativePeopleDirectory);
+    }
+    if !matches!(
+        directory.as_str(),
+        "native_people_directory.absent" | "native_people_directory.staged_closed"
+    ) {
+        return Err(AppError::Config(directory));
+    }
+    // Exact closed230 metadata permits only the independently checked historical
+    // profile below. It never enables native directory operations.
     let successor: String =
         sqlx::query_scalar(include_str!("native_company_policy_v2_custody_state.sql"))
             .fetch_one(&mut *transaction)

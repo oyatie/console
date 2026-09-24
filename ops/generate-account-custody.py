@@ -334,7 +334,8 @@ $account_custody$;
             **native_company_policy_generated_files(),
             **native_company_policy_v2_capture_files(),
             **native_company_policy_v2_finalized_files(),
-            **native_people_directory_capture_files()}
+            **native_people_directory_capture_files(),
+            **native_people_directory_classifier_files()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6733,6 +6734,103 @@ def native_people_directory_capture_files():
         'ops/postgres-native-people-directory-owner.sql': native_people_directory_source_sql(),
         'ops/postgres-capture-native-people-directory-custody.sql': native_people_directory_snapshot_query() + ';\n',
         'ops/postgres-capture-native-people-directory-staged-custody.sql': native_people_directory_staged_snapshot_query() + ';\n',
+    }
+
+
+
+# New directory profiles captured from the complete declared source; historical
+# serializers and fingerprints above remain unchanged. No finalizer is added.
+NATIVE_DIRECTORY_CLOSED_SHA256 = 'b8799fe7ffa4c99c6e9109af5220102da6c9f03ec122240b437a26c7c363e6aa'
+NATIVE_DIRECTORY_FINALIZED_SHA256 = ('e9891784422768abcb07f731adb1295c17b40c026236c1c4ea5b9993f6ddba9b', 'bf87ef1475ec983c4e1bd286337687ead135b76fe70e28f79fe8cd430a1c95bc')
+
+
+def native_people_directory_fingerprints():
+    values = (NATIVE_DIRECTORY_CLOSED_SHA256, *NATIVE_DIRECTORY_FINALIZED_SHA256)
+    if len(NATIVE_DIRECTORY_FINALIZED_SHA256) != 2 or len(set(values)) != 3 or any(
+        not isinstance(value, str) or len(value) != 64
+        or any(c not in '0123456789abcdef' for c in value) for value in values
+    ):
+        raise SystemExit('Directory fingerprints require independently reviewed closed/active captures')
+    return NATIVE_DIRECTORY_CLOSED_SHA256, NATIVE_DIRECTORY_FINALIZED_SHA256
+
+
+def native_people_directory_presence_query():
+    # The caller supplies both exact capture CTEs. Derive their relation scopes
+    # from those records rather than maintaining a second table-name roster.
+    return """WITH structural_markers AS (
+ SELECT relation_namespace.nspname::text AS schema_name, c.relname::text AS relation_name
+ FROM pg_constraint k JOIN pg_namespace n ON n.oid=k.connamespace
+ LEFT JOIN pg_class c ON c.oid=k.conrelid
+ LEFT JOIN pg_namespace relation_namespace ON relation_namespace.oid=c.relnamespace
+ WHERE n.nspname='public' AND (starts_with(k.conname,'native_people_') OR k.conname IN (
+  'employee_person_bindings_actor_protocol_v1','employee_person_bindings_actor_staged_user_v1',
+  'employee_person_bindings_native_actor_v1','employees_native_intake_v1',
+  'employees_provenance_protocol_v1','employees_provenance_staged_legacy_v1',
+  'ont_action_receipts_actor_protocol_v1','ont_action_receipts_actor_staged_user_v1',
+  'ont_action_receipts_native_actor_v1','person_revisions_actor_protocol_v1',
+  'person_revisions_actor_staged_user_v1','person_revisions_native_actor_v1'))
+ UNION ALL
+ SELECT n.nspname::text,c.relname::text
+ FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
+ JOIN pg_namespace n ON n.oid=c.relnamespace
+ WHERE n.nspname='public' AND starts_with(t.tgname,'native_people_')
+ UNION ALL
+ SELECT n.nspname::text,c.relname::text
+ FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid
+ JOIN pg_namespace n ON n.oid=c.relnamespace
+ WHERE n.nspname='public' AND starts_with(p.polname,'native_people_')
+)
+SELECT EXISTS(SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+ WHERE n.nspname='public' AND starts_with(c.relname,'native_people_'))
+ OR EXISTS(SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+ WHERE n.nspname='public' AND (starts_with(p.proname,'native_people_')
+  OR p.proname='identity_company_people_projection_v1'))
+ OR EXISTS(SELECT 1 FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
+ JOIN pg_namespace n ON n.oid=c.relnamespace
+ WHERE n.nspname='public' AND a.attnum>0 AND NOT a.attisdropped
+ AND ((c.relname IN ('person_revisions','employee_person_bindings','ont_action_command_receipts')
+       AND a.attname IN ('actor_kind','actor_account_id'))
+   OR (c.relname='employees' AND a.attname IN ('source_kind','native_command_id'))))
+ OR EXISTS(SELECT 1 FROM structural_markers) AS present,
+ NOT EXISTS(SELECT 1 FROM structural_markers marker WHERE NOT EXISTS(
+  SELECT 1 FROM staged_capture captured
+  CROSS JOIN LATERAL jsonb_array_elements(captured.snapshot->'tables') item
+  WHERE marker.schema_name='public' AND item->>'name'=marker.relation_name
+ )) AS closed_namespace_valid,
+ NOT EXISTS(SELECT 1 FROM structural_markers marker WHERE NOT EXISTS(
+  SELECT 1 FROM full_capture captured
+  CROSS JOIN LATERAL jsonb_array_elements(captured.snapshot->'tables') item
+  WHERE marker.schema_name='public' AND item->>'name'=marker.relation_name
+ )) AS active_namespace_valid"""
+
+
+def native_people_directory_state_query():
+    closed, finalized = native_people_directory_fingerprints()
+    finalized = ','.join("'" + value + "'" for value in finalized)
+    return f"""WITH full_capture AS (
+{native_people_directory_snapshot_query()}
+), staged_capture AS (
+{native_people_directory_staged_snapshot_query()}
+), directory_presence AS (
+{native_people_directory_presence_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM full_capture) IN ({finalized})
+ AND (SELECT native_directory_startup_rights_valid FROM full_capture) IS TRUE
+ AND (SELECT active_namespace_valid FROM directory_presence) IS TRUE
+ THEN 'native_people_directory.finalized'
+ WHEN (SELECT snapshot_sha256 FROM staged_capture)='{closed}'
+ AND (SELECT closed_namespace_valid FROM directory_presence) IS TRUE
+ THEN 'native_people_directory.staged_closed'
+ WHEN (SELECT present FROM directory_presence) IS FALSE
+ THEN 'native_people_directory.absent'
+ ELSE 'native_people_directory.profile_mismatch' END AS state"""
+
+
+def native_people_directory_classifier_files():
+    query = native_people_directory_state_query() + ';\n'
+    return {
+        'ops/postgres-native-people-directory-custody-state.sql': query,
+        'backend/app/src/native_people_directory_custody_state.sql': query,
     }
 
 
