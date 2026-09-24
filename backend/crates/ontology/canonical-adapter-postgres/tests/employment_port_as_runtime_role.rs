@@ -2901,3 +2901,53 @@ where
         .await
         .unwrap()
 }
+
+// Append inside the EXISTING corresponding integration-test file; not a new fixture framework.
+// Isolated actual runtime owner tests; fixture SQL does not provision browser business data.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn receipt_reader_binds_present_action_and_object_without_resealing(owner_pool: PgPool) {
+    let (org, actor, port) = fixture(&owner_pool).await;
+    let employee = seed_employee(&owner_pool, ORG, "receipt-compatibility").await;
+    let accepted = command(
+        org,
+        actor,
+        EmploymentQuery::Appoint {
+            employee_id: employee,
+            valid_from: at(0),
+            attributes: attributes(ORG_UNIT_SALES, JOB_STAFF, "ACTIVE"),
+        },
+    );
+    let original = execute(&port, accepted.clone()).await.unwrap();
+    let receipt_before: serde_json::Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2",
+    )
+    .bind(*org.as_uuid())
+    .bind(*accepted.command_id.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    for change in 0..2 {
+        let mut retry = accepted.clone();
+        if change == 0 {
+            retry.action_key = "different_accepted_wrapper".to_owned();
+        } else {
+            retry.object_type_id = Uuid::from_u128(0xeeee);
+        }
+        let refused = execute(&port, retry).await.unwrap_err();
+        assert!(
+            matches!(refused, EmploymentError::DigestConflict(id) if id == *accepted.command_id.as_uuid()),
+            "change {change}: {refused:?}"
+        );
+        let receipt_after: serde_json::Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2")
+            .bind(*org.as_uuid()).bind(*accepted.command_id.as_uuid()).fetch_one(&owner_pool).await.unwrap();
+        assert_eq!(
+            receipt_after, receipt_before,
+            "refusal rewrote stored receipt"
+        );
+    }
+    assert_eq!(
+        execute(&port, accepted).await.unwrap(),
+        original,
+        "unchanged command still replays"
+    );
+}

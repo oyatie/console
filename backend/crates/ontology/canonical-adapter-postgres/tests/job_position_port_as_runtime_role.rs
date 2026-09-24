@@ -983,3 +983,44 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
         "a receipt the roster cannot read must be refused, never replayed; got {refused:?}"
     );
 }
+
+// Append inside the EXISTING corresponding integration-test file; not a new fixture framework.
+// Isolated actual runtime owner tests; fixture SQL does not provision browser business data.
+#[sqlx::test(migrations = "../../platform/db/migrations")]
+async fn receipt_reader_binds_present_action_and_object_without_resealing(owner_pool: PgPool) {
+    let (org, actor, unit, port) = fixture(&owner_pool).await;
+    let accepted = command(org, actor, create(unit, "호환 직위"));
+    let original = execute(&port, accepted.clone()).await.unwrap();
+    let receipt_before: serde_json::Value = sqlx::query_scalar(
+        "SELECT to_jsonb(r) FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2",
+    )
+    .bind(*org.as_uuid())
+    .bind(*accepted.command_id.as_uuid())
+    .fetch_one(&owner_pool)
+    .await
+    .unwrap();
+    for change in 0..2 {
+        let mut retry = accepted.clone();
+        if change == 0 {
+            retry.action_key = "different_accepted_wrapper".to_owned();
+        } else {
+            retry.object_type_id = Uuid::from_u128(0xeeee);
+        }
+        let refused = execute(&port, retry).await.unwrap_err();
+        assert!(
+            matches!(refused, JobPositionError::DigestConflict(id) if id == *accepted.command_id.as_uuid()),
+            "change {change}: {refused:?}"
+        );
+        let receipt_after: serde_json::Value = sqlx::query_scalar("SELECT to_jsonb(r) FROM ont_action_command_receipts r WHERE org_id=$1 AND command_id=$2")
+            .bind(*org.as_uuid()).bind(*accepted.command_id.as_uuid()).fetch_one(&owner_pool).await.unwrap();
+        assert_eq!(
+            receipt_after, receipt_before,
+            "refusal rewrote stored receipt"
+        );
+    }
+    assert_eq!(
+        execute(&port, accepted).await.unwrap(),
+        original,
+        "unchanged command still replays"
+    );
+}
