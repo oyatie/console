@@ -250,6 +250,15 @@ async fn read(
                 )
                 .await
             {
+                Ok(result) if matches!(result.status, DirectoryStatus::NotVisible) => {
+                    return document(
+                        ui::Page::RequestNotVisible {
+                            scope,
+                            command: command.to_owned(),
+                        },
+                        StatusCode::NOT_FOUND,
+                    );
+                }
                 Ok(result) => request_page(scope, result),
                 Err(status) => Err(status),
             },

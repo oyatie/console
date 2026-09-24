@@ -89,6 +89,10 @@ pub enum Page {
         scope: Scope,
         request: Request,
     },
+    RequestNotVisible {
+        scope: Scope,
+        command: String,
+    },
     Detail {
         scope: Scope,
         record: Record,
@@ -311,6 +315,7 @@ pub fn render(page: Page) -> String {
         Page::Directory { scope, .. }
         | Page::Registration { scope, .. }
         | Page::Request { scope, .. }
+        | Page::RequestNotVisible { scope, .. }
         | Page::Detail { scope, .. } => Some(scope),
         _ => None,
     };
@@ -318,6 +323,7 @@ pub fn render(page: Page) -> String {
         Page::Directory { .. } => "사람".to_owned(),
         Page::Registration { .. } => "사람 등록".to_owned(),
         Page::Request { .. } => "사람 등록 요청".to_owned(),
+        Page::RequestNotVisible { .. } => "요청 상태를 확인할 수 없습니다".to_owned(),
         Page::Detail { record, .. } => record_name(record.legal_name.as_deref()).to_owned(),
         Page::Uncertain { .. } => "등록 결과 확인".to_owned(),
         Page::Refused => "이 페이지를 열 수 없습니다".to_owned(),
@@ -348,6 +354,20 @@ pub fn render(page: Page) -> String {
         Page::Directory { scope, records, next_after } => directory_body(&scope, records, next_after),
         Page::Registration { scope, form } => registration_body(&scope, form),
         Page::Request { scope, request } => request_body(&scope, request),
+        Page::RequestNotVisible { scope, command } => view! {
+            <section class="panel" data-people-outcome="not-visible"><h2>"요청 상태를 확인할 수 없습니다"</h2>
+                <div class="policy-panel-body">
+                    <p>"현재 권한으로 이 요청의 처리 결과를 확인할 수 없습니다. 이 화면은 등록이 실패했거나 취소되었다는 뜻이 아닙니다."</p>
+                    <p>"새 요청을 작성하기 전에 기존 요청의 처리 여부를 확인하세요."</p>
+                    <div class="policy-actions">
+                        <a class="policy-button" href=format!("{}/requests/{command}",directory(&scope.company))>"같은 요청 상태 다시 확인"</a>
+                        {scope.can_create.then(||view! {
+                            <a href=format!("{}/new",directory(&scope.company))>"새 등록 요청 작성"</a>
+                        })}
+                    </div>
+                </div>
+            </section>
+        }.into_any(),
         Page::Detail { record, .. } => detail_body(record),
         Page::Uncertain { company, command } => view! {
             <section class="panel" data-people-outcome="uncertain"><h2>"처리 결과를 아직 확인하지 못했습니다"</h2>
