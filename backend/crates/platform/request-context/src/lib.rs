@@ -811,7 +811,10 @@ async fn http_error_envelope(request: Request, next: Next) -> Response {
                     .headers_mut()
                     .insert(header::RETRY_AFTER, RETRY_AFTER_SECONDS);
             }
-            if content_type_is_json(&response) {
+            if content_type_is_json(&response)
+                || (response.extensions().get::<NativeHtmlError>().is_some()
+                    && content_type_is_single_html(&response))
+            {
                 return response;
             }
             let mut json = error_response(
