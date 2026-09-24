@@ -47,7 +47,7 @@ mod native_people_directory_declared_capture {
             (
                 "migration",
                 MIGRATION,
-                "ebd1d191e0ef000bd06f1bed3d9e64ddf0ccc800ed33cb922ccf1e6e47fda9ad",
+                "a48173dbbd28d2c8e1940d2dcf337b6b74ca07bc5b3a8cbf194b28a4b78eebed",
             ),
             (
                 "old capture",

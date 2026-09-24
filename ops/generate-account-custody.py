@@ -6631,7 +6631,7 @@ def native_company_policy_v2_finalized_files():
 # Additive directory capture only. No serving profile/finalizer without reviewed captures.
 NATIVE_DIRECTORY_SOURCE_SHA256 = {'codec-v1.sql': '78908ae7a9b976efbebf57f6b13070c3e17a60713cb61d3219d11d4c5dfb85e6', 'current-source-v1.sql': 'da0011ca29712d345804081414d7a8bc5e12cbf64692b9086a76e9eb24f9db04', 'commands-v1.sql': 'e73265703ac95078bd6ac825ef566405244253fca6bc8b482fe8fd446062b7b2', 'guards-v1.sql': '0cd5a02bd5eefc2b2cd0b871fa7bf417ab7489ff63c83750f191af738101eaa2', 'closure-v1.sql': 'fe69b4f546bc1a71adb3db8c6c6d3012a7ebd869fb2a3b13509db82ecfb3a3b5', 'legacy-import-v1.sql': 'c675bfc7a9d7e29c94479464136fc209e12b19ac1fbd702c4c283622dc9e9f21', 'activation-v1.sql': '60a0e446bd06d69958a9dd66f792e78563bf2af26371361be6d9ea8be27b9c70'}
 NATIVE_DIRECTORY_MIGRATION = 'backend/crates/platform/db/migrations/0230_native_people_directory_storage.sql'
-NATIVE_DIRECTORY_MIGRATION_SHA256 = 'ebd1d191e0ef000bd06f1bed3d9e64ddf0ccc800ed33cb922ccf1e6e47fda9ad'
+NATIVE_DIRECTORY_MIGRATION_SHA256 = 'a48173dbbd28d2c8e1940d2dcf337b6b74ca07bc5b3a8cbf194b28a4b78eebed'
 NATIVE_DIRECTORY_ADDED_RELATIONS = (
     'native_people_inputs_v1', 'native_people_terminals_v1', 'employees', 'persons',
     'person_revisions', 'employee_person_bindings', 'ont_action_command_receipts',

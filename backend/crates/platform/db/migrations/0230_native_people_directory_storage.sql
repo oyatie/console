@@ -81,7 +81,7 @@ CREATE TABLE public.native_people_terminals_v1 (
     result_code text NOT NULL,
     CHECK((outcome,result_code) IN (('COMMITTED','registered'),('REJECTED','revision_conflict'),
       ('REJECTED','employee_number_conflict'),('REJECTED','command_conflict'),
-      ('CANCELLED','cancelled'),('EXPIRED','intake_expired')),
+      ('CANCELLED','cancelled'),('EXPIRED','intake_expired'))),
     transition_kind text NOT NULL CHECK(transition_kind IN ('EXECUTE','CANCEL','STATUS')),
     CHECK((transition_kind='EXECUTE' AND outcome<>'CANCELLED')
       OR (transition_kind='CANCEL' AND outcome IN ('CANCELLED','EXPIRED'))
@@ -149,6 +149,24 @@ ALTER TABLE public.native_people_inputs_v1 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.native_people_inputs_v1 FORCE ROW LEVEL SECURITY;
 ALTER TABLE public.native_people_terminals_v1 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.native_people_terminals_v1 FORCE ROW LEVEL SECURITY;
+-- Immutability blocks UPDATE/DELETE/TRUNCATE independently of ordinary ACLs.
+-- No append authority is granted; the insert gate remains closed.
+CREATE FUNCTION public.native_people_history_immutable_v1()
+RETURNS trigger LANGUAGE plpgsql VOLATILE SECURITY INVOKER PARALLEL UNSAFE
+SET search_path=pg_catalog,pg_temp AS $body$
+BEGIN
+    RAISE EXCEPTION 'people.directory.history_immutable' USING ERRCODE='P0001';
+END;
+$body$;
+REVOKE ALL ON FUNCTION public.native_people_history_immutable_v1() FROM PUBLIC;
+CREATE TRIGGER native_people_inputs_immutable_v1
+    BEFORE UPDATE OR DELETE OR TRUNCATE ON public.native_people_inputs_v1
+    FOR EACH STATEMENT EXECUTE FUNCTION public.native_people_history_immutable_v1();
+CREATE TRIGGER native_people_terminals_immutable_v1
+    BEFORE UPDATE OR DELETE OR TRUNCATE ON public.native_people_terminals_v1
+    FOR EACH STATEMENT EXECUTE FUNCTION public.native_people_history_immutable_v1();
+ALTER TABLE public.native_people_inputs_v1 ENABLE ALWAYS TRIGGER native_people_inputs_immutable_v1;
+ALTER TABLE public.native_people_terminals_v1 ENABLE ALWAYS TRIGGER native_people_terminals_immutable_v1;
 -- No policy or DML grant during staging. Existing company_actors migration0227
 -- is the precedent: remove ALL inherited table ACLs including owner self-grants.
 DO $custody$
@@ -168,24 +186,6 @@ BEGIN
     END LOOP;
 END;
 $custody$;
--- Immutability blocks UPDATE/DELETE/TRUNCATE independently of ordinary ACLs.
--- No append authority is granted; the insert gate remains closed.
-CREATE FUNCTION public.native_people_history_immutable_v1()
-RETURNS trigger LANGUAGE plpgsql VOLATILE SECURITY INVOKER PARALLEL UNSAFE
-SET search_path=pg_catalog,pg_temp AS $body$
-BEGIN
-    RAISE EXCEPTION 'people.directory.history_immutable' USING ERRCODE='P0001';
-END;
-$body$;
-REVOKE ALL ON FUNCTION public.native_people_history_immutable_v1() FROM PUBLIC;
-CREATE TRIGGER native_people_inputs_immutable_v1
-    BEFORE UPDATE OR DELETE OR TRUNCATE ON public.native_people_inputs_v1
-    FOR EACH STATEMENT EXECUTE FUNCTION public.native_people_history_immutable_v1();
-CREATE TRIGGER native_people_terminals_immutable_v1
-    BEFORE UPDATE OR DELETE OR TRUNCATE ON public.native_people_terminals_v1
-    FOR EACH STATEMENT EXECUTE FUNCTION public.native_people_history_immutable_v1();
-ALTER TABLE public.native_people_inputs_v1 ENABLE ALWAYS TRIGGER native_people_inputs_immutable_v1;
-ALTER TABLE public.native_people_terminals_v1 ENABLE ALWAYS TRIGGER native_people_terminals_immutable_v1;
 
 COMMENT ON COLUMN public.person_revisions.actor_kind IS 'pd:personal — canonical Person actor attribution protocol';
 COMMENT ON COLUMN public.person_revisions.actor_account_id IS 'pd:personal — canonical Person Account actor identity';
