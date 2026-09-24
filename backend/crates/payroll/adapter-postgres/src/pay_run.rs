@@ -104,6 +104,10 @@
 //! trait ever gains an async form.
 
 use console_kernel_core::{KernelError, OrgId, UserId};
+use console_ontology_canonical_domain::legacy_receipt_compatibility::{
+    LegacyReceiptBinding, LegacyReceiptExpectation, legacy_receipt_binding,
+    legacy_user_receipt_shape,
+};
 use console_ontology_canonical_domain::{
     CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, CommandReceipt, DispatchTarget,
     ObjectKey, PayRun, Preflight, ReceiptOwner,
@@ -566,21 +570,52 @@ impl PgPayRunPort {
             .await?;
 
         if let Some(stored) = sqlx::query(
-            "SELECT actor_id, payload_digest, receipt, created_at \
-             FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
+            "SELECT r.actor_id, r.payload_digest, r.receipt, r.created_at, r.owner, r.target, r.action_key, r.object_type_id, \
+             to_jsonb(r)->'actor_kind' AS receipt_actor_kind, to_jsonb(r)->'actor_account_id' AS receipt_actor_account \
+             FROM ont_action_command_receipts r WHERE r.org_id = $1 AND r.command_id = $2",
         )
         .bind(org)
         .bind(command_uuid)
         .fetch_optional(&mut *tx)
         .await?
         {
-            let stored_digest: Vec<u8> = stored.get("payload_digest");
+            let kind: Option<serde_json::Value> = stored.try_get("receipt_actor_kind")?;
+        let account: Option<serde_json::Value> = stored.try_get("receipt_actor_account")?;
+        if !legacy_user_receipt_shape(kind.as_ref(), account.as_ref()) {
+            return Err(PayRunError::DigestConflict(command_uuid));
+        }
+        let stored_actor: Option<Uuid> = stored.try_get("actor_id")?;
+        let owner: String = stored.try_get("owner")?;
+        let stored_target_key: Option<String> = stored.try_get("target")?;
+        let action_key: Option<String> = stored.try_get("action_key")?;
+        if !legacy_receipt_binding(
+            &LegacyReceiptBinding {
+                actor: stored_actor,
+                owner: &owner,
+                target: stored_target_key.as_deref(),
+                action_key: action_key.as_deref(),
+                object_type_id: stored.try_get("object_type_id")?,
+            },
+            &LegacyReceiptExpectation {
+                actor: *command.actor_id.as_uuid(),
+                target: Some(command.query.target()),
+                action_key: &command.action_key,
+                object_type_id: command.object_type_id,
+            },
+        ) {
+            return Err(PayRunError::DigestConflict(command_uuid));
+        }
+        let stored_actor = stored_actor.ok_or(PayRunError::DigestConflict(command_uuid))?;
+        let stored_digest: Vec<u8> = stored.get("payload_digest");
             if stored_digest != digest {
                 return Err(PayRunError::DigestConflict(command_uuid));
             }
             let result: serde_json::Value = stored.get("receipt");
             let target = stored_target(command_uuid, &result)?;
-            let stored_actor: Uuid = stored.get("actor_id");
+        if target != command.query.target() {
+            return Err(PayRunError::DigestConflict(command_uuid));
+        }
+
             let created_at: OffsetDateTime = stored.get("created_at");
             return Ok(receipt(
                 command,

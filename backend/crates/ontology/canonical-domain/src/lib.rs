@@ -21,6 +21,8 @@
 //! Layer: domain. No sqlx, no axum, no tokio — the layer-boundary gate enforces
 //! that, which is what keeps `preflight` honest about being pure.
 
+pub mod legacy_receipt_compatibility;
+
 use console_kernel_core::{KernelError, OrgId, UserId};
 
 // ---------------------------------------------------------------------------

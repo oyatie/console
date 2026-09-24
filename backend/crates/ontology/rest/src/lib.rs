@@ -56,6 +56,10 @@ use console_ontology_application::{
     ActionDefinition, ActionDispatch, CommandInputs, PreparedCommand, PreparedDispatch,
     WritebackInputs,
 };
+use console_ontology_canonical_domain::legacy_receipt_compatibility::{
+    LegacyReceiptBinding, LegacyReceiptExpectation, legacy_receipt_binding,
+    legacy_receipt_result_target, legacy_user_receipt_shape,
+};
 use console_ontology_canonical_domain::{
     CanonicalObject, CanonicalPort, CanonicalPortError, CanonicalQuery, CommandId, DispatchTarget,
     ObjectKey,
@@ -1769,11 +1773,11 @@ impl OntologyRestState {
                             org,
                             move |tx| {
                                 Box::pin(async move {
-                                    let row: Option<(Uuid, Option<String>, Option<Uuid>)> =
-                                        sqlx::query_as(
-                                            "SELECT actor_id, action_key, object_type_id \
-                                                 FROM ont_action_command_receipts \
-                                                 WHERE org_id = $1 AND command_id = $2",
+                                    let row = sqlx::query(
+                                            "SELECT r.actor_id, r.action_key, r.object_type_id, r.owner, r.target, r.receipt, \
+                                             to_jsonb(r)->'actor_kind' AS receipt_actor_kind, to_jsonb(r)->'actor_account_id' AS receipt_actor_account \
+                                             FROM ont_action_command_receipts r \
+                                             WHERE r.org_id = $1 AND r.command_id = $2",
                                         )
                                         .bind(*org.as_uuid())
                                         .bind(command_id)
@@ -1788,7 +1792,30 @@ impl OntologyRestState {
                     }
                     _ => None,
                 };
-                if let Some((prior_actor, prior_action_key, prior_object_type_id)) = prior {
+                if let Some(row) = prior {
+                    let (prior_actor, prior_action_key, prior_object_type_id) =
+                        (|| -> Result<_, PgOntologyError> {
+                            let kind: Option<Value> = row.try_get("receipt_actor_kind")?;
+                            let account: Option<Value> = row.try_get("receipt_actor_account")?;
+                            if !legacy_user_receipt_shape(kind.as_ref(), account.as_ref()) {
+                                return Err(KernelError::conflict(
+                                    "command_id has incompatible receipt attribution",
+                                )
+                                .into());
+                            }
+                            let actor: Option<Uuid> = row.try_get("actor_id")?;
+                            let actor = actor.ok_or_else(|| {
+                                KernelError::conflict(
+                                    "command_id has incompatible receipt attribution",
+                                )
+                            })?;
+                            Ok((
+                                actor,
+                                row.try_get::<Option<String>, _>("action_key")?,
+                                row.try_get::<Option<Uuid>, _>("object_type_id")?,
+                            ))
+                        })()
+                        .map_err(ActionError::Store)?;
                     if prior_actor != *principal.user_id.as_uuid() {
                         return Err(ActionError::Store(PgOntologyError::Domain(
                             KernelError::forbidden("command_id belongs to another principal"),
@@ -1821,6 +1848,34 @@ impl OntologyRestState {
                             "command_id was accepted under a different object type",
                         )));
                     }
+                    (|| -> Result<(), PgOntologyError> {
+                        let owner: String = row.try_get("owner")?;
+                        let stored_target: Option<String> = row.try_get("target")?;
+                        let result: Value = row.try_get("receipt")?;
+                        if !legacy_receipt_binding(
+                            &LegacyReceiptBinding {
+                                actor: Some(prior_actor),
+                                owner: &owner,
+                                target: stored_target.as_deref(),
+                                action_key: prior_action_key.as_deref(),
+                                object_type_id: prior_object_type_id,
+                            },
+                            &LegacyReceiptExpectation {
+                                actor: *principal.user_id.as_uuid(),
+                                target: canonical_target,
+                                action_key,
+                                object_type_id: *command.object_type_id.as_uuid(),
+                            },
+                        ) || legacy_receipt_result_target(canonical_target, &result).is_err()
+                        {
+                            return Err(KernelError::conflict(
+                                "command_id belongs to an incompatible receipt owner or target",
+                            )
+                            .into());
+                        }
+                        Ok(())
+                    })()
+                    .map_err(ActionError::Store)?;
                     // Recheck the CURRENT authority effect: owning the historical
                     // receipt is proof of ownership, not of present authorization.
                     // A requester who has since lost the org-wide capability is
@@ -2425,20 +2480,43 @@ async fn instance_revision_writeback(
                 .bind(command_id.to_string())
                 .execute(tx.as_mut()).await?;
             if let Some(row) = sqlx::query(
-                "SELECT actor_id, payload_digest, receipt FROM ont_action_command_receipts WHERE org_id = $1 AND command_id = $2",
+                "SELECT r.actor_id, r.payload_digest, r.receipt, r.owner, r.target, r.action_key, r.object_type_id, \
+                 to_jsonb(r)->'actor_kind' AS receipt_actor_kind, to_jsonb(r)->'actor_account_id' AS receipt_actor_account \
+                 FROM ont_action_command_receipts r WHERE r.org_id = $1 AND r.command_id = $2",
             )
             .bind(*org.as_uuid()).bind(command_id).fetch_optional(tx.as_mut()).await? {
-                let receipt_actor: Uuid = row.try_get("actor_id")?;
+                let kind: Option<Value> = row.try_get("receipt_actor_kind")?;
+                let account: Option<Value> = row.try_get("receipt_actor_account")?;
+                if !legacy_user_receipt_shape(kind.as_ref(), account.as_ref()) {
+                    return Err(KernelError::conflict("command_id has incompatible receipt attribution").into());
+                }
+                let receipt_actor: Option<Uuid> = row.try_get("actor_id")?;
+                let receipt_actor = receipt_actor.ok_or_else(|| KernelError::conflict("command_id has incompatible receipt attribution"))?;
                 if receipt_actor != *actor.as_uuid() {
                     return Err(KernelError::forbidden("command_id belongs to another principal").into());
+                }
+                let owner: String = row.try_get("owner")?;
+                let stored_target: Option<String> = row.try_get("target")?;
+                let stored_action: Option<String> = row.try_get("action_key")?;
+                if !legacy_receipt_binding(
+                    &LegacyReceiptBinding { actor: Some(receipt_actor), owner: &owner,
+                        target: stored_target.as_deref(), action_key: stored_action.as_deref(),
+                        object_type_id: row.try_get("object_type_id")? },
+                    &LegacyReceiptExpectation { actor: *actor.as_uuid(), target: None,
+                        action_key: &action_key, object_type_id: *object_type_id.as_uuid() },
+                ) {
+                    return Err(KernelError::conflict("command_id belongs to an incompatible receipt owner or target").into());
                 }
                 let stored: Vec<u8> = row.try_get("payload_digest")?;
                 if stored != payload_digest {
                     return Err(KernelError::conflict("command_id was already used with a different payload").into());
                 }
-                return Ok((row.try_get::<serde_json::Value, _>("receipt")
-                    .map_err(|e| KernelError::validation(format!("invalid command receipt: {e}")))
-                    .and_then(|value| serde_json::from_value(value).map_err(|e| KernelError::validation(format!("invalid command receipt: {e}"))))?, vec![]));
+                let result: Value = row.try_get("receipt")?;
+                if legacy_receipt_result_target(None, &result).is_err() {
+                    return Err(KernelError::conflict("command_id belongs to an incompatible receipt owner or target").into());
+                }
+                return Ok((serde_json::from_value(result)
+                    .map_err(|e| KernelError::validation(format!("invalid command receipt: {e}")))?, vec![]));
             }
 
             // Lock and CAS the edit head before consuming a four-eyes approval. The

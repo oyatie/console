@@ -13,8 +13,10 @@
 //! hand-listed set, so a seventh object key cannot be added without either
 //! passing here or failing loudly.
 
+use console_ontology_canonical_domain::legacy_receipt_compatibility::legacy_user_receipt_shape;
 use console_ontology_canonical_domain::{DispatchTarget, ReceiptOwner};
-use sqlx::PgPool;
+use serde_json::Value;
+use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 async fn seed_actor(pool: &PgPool) -> (Uuid, Uuid) {
@@ -181,4 +183,39 @@ async fn every_dispatch_target_attributes_to_its_owning_object(pool: PgPool) {
         mislabelled, 0,
         "no canonical receipt may fall back to the instance-action default"
     );
+}
+
+#[sqlx::test(migrations = false)]
+async fn receipt_presence_projection_distinguishes_absent_columns_from_json_null(pool: PgPool) {
+    let mut tx = pool.begin().await.unwrap();
+    sqlx::query("CREATE TEMP TABLE receipt_projection_probe (actor_id UUID, owner TEXT NOT NULL, target TEXT, action_key TEXT, object_type_id UUID)").execute(tx.as_mut()).await.unwrap();
+    sqlx::query("INSERT INTO receipt_projection_probe(owner) VALUES('ontology.action')")
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    // Exactly the expression required at all eight production readers; neither
+    // newly introduced column is referenced as a PostgreSQL identifier.
+    let before=sqlx::query("SELECT r.actor_id,r.owner,r.target,r.action_key,r.object_type_id,to_jsonb(r)->'actor_kind' AS receipt_actor_kind,to_jsonb(r)->'actor_account_id' AS receipt_actor_account FROM receipt_projection_probe r").fetch_one(tx.as_mut()).await.unwrap();
+    let kind: Option<Value> = before.try_get("receipt_actor_kind").unwrap();
+    let account: Option<Value> = before.try_get("receipt_actor_account").unwrap();
+    assert_eq!(kind, None);
+    assert_eq!(account, None);
+    assert!(legacy_user_receipt_shape(kind.as_ref(), account.as_ref()));
+    sqlx::query("ALTER TABLE receipt_projection_probe ADD COLUMN actor_kind TEXT DEFAULT 'USER', ADD COLUMN actor_account_id UUID").execute(tx.as_mut()).await.unwrap();
+    let after=sqlx::query("SELECT r.actor_id,r.owner,r.target,r.action_key,r.object_type_id,to_jsonb(r)->'actor_kind' AS receipt_actor_kind,to_jsonb(r)->'actor_account_id' AS receipt_actor_account FROM receipt_projection_probe r").fetch_one(tx.as_mut()).await.unwrap();
+    let kind: Option<Value> = after.try_get("receipt_actor_kind").unwrap();
+    let account: Option<Value> = after.try_get("receipt_actor_account").unwrap();
+    assert_eq!(kind, Some(serde_json::json!("USER")));
+    assert_eq!(account, Some(Value::Null));
+    assert!(legacy_user_receipt_shape(kind.as_ref(), account.as_ref()));
+    sqlx::query("UPDATE receipt_projection_probe SET actor_kind=NULL")
+        .execute(tx.as_mut())
+        .await
+        .unwrap();
+    let malformed=sqlx::query("SELECT to_jsonb(r)->'actor_kind' AS receipt_actor_kind,to_jsonb(r)->'actor_account_id' AS receipt_actor_account FROM receipt_projection_probe r").fetch_one(tx.as_mut()).await.unwrap();
+    let kind: Option<Value> = malformed.try_get("receipt_actor_kind").unwrap();
+    let account: Option<Value> = malformed.try_get("receipt_actor_account").unwrap();
+    assert_eq!(kind, Some(Value::Null));
+    assert!(!legacy_user_receipt_shape(kind.as_ref(), account.as_ref()));
+    tx.rollback().await.unwrap();
 }

@@ -1898,3 +1898,52 @@ sh_test(
     deps = ["//backend/crates/platform/auth-rest:console-platform-auth-rest-unit"],
     labels = ["test.unit", "resource.postgres", "needs-postgres"],
 )
+
+# Canonical owner suites use the same isolated PostgreSQL credential loader.
+sh_test(
+    name = "ontology-canonical-company-port-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-company_port_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-company_port_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-canonical-employment-port-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-employment_port_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-employment_port_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-canonical-job-position-port-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-job_position_port_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-job_position_port_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-canonical-org-unit-port-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-org_unit_port_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-org_unit_port_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-canonical-person-port-as-runtime-role-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-person_port_as_runtime_role)"],
+    deps = ["//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-person_port_as_runtime_role"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
+
+sh_test(
+    name = "ontology-canonical-receipt-owner-widening-pg",
+    test = "run_test_with_postgres_env.sh",
+    args = ["$(location //backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-receipt_owner_widening)"],
+    deps = ["//backend/crates/ontology/canonical-adapter-postgres:console-ontology-canonical-adapter-postgres-itest-receipt_owner_widening"],
+    labels = ["test.integration", "resource.postgres", "needs-postgres"],
+)
