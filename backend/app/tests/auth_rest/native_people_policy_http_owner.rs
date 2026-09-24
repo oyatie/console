@@ -563,6 +563,147 @@ mod native_people_policy_http_owner {
         }
         close_states(&[state], outcome).await;
     }
+
+    #[sqlx::test(migrations = false)]
+    async fn old_directory_profile_keeps_policy_but_hides_navigation_and_refuses_all_routes(
+        pool: PgPool,
+    ) {
+        let (app, key, state) =
+            super::native_people_directory_finalizer_tests::configured_native_directory_fixture(
+                &pool,
+            )
+            .await;
+        let mut cleanup = None;
+        let outcome = AssertUnwindSafe(async {
+            let (app, cookies, created) = create_owned_company(&pool, app).await;
+            let (verifier, issuer, ttl) = bindings(&account_browser_config(
+                &pool,
+                app._artifacts.root.clone(),
+                &key,
+            ));
+            let runtime = login_test_pool(&pool, TestDatabaseLogin::Business).await;
+            cleanup = Some(runtime.clone());
+            let store = PgOrgStore::new(runtime).with_native_account_policy(verifier, issuer, ttl);
+            let policy = CompanyPolicy::new().unwrap();
+            let company = OrgId::from_uuid(created.company);
+            let actor = AccountId::from_uuid(created.administrator).unwrap();
+            let installed = transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Install,
+                None,
+                1,
+                None,
+                None,
+            )
+            .await;
+            let read = transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Grant,
+                Some(DirectoryActionV1::Read),
+                2,
+                None,
+                Some(installed.receipt_id),
+            )
+            .await;
+            transition(
+                &pool,
+                &app,
+                &cookies,
+                &store,
+                &policy,
+                company,
+                actor,
+                NativeBusinessOperationV1::Grant,
+                Some(DirectoryActionV1::Create),
+                3,
+                None,
+                Some(read.receipt_id),
+            )
+            .await;
+            assert_eq!(ready_status(&state).await, StatusCode::OK);
+            let root = format!("/companies/{company}");
+            // Actual policy remains available on the historical profile. This is
+            // a capability hold, not a missing account or absent grant scenario.
+            let policy_page = preflight(
+                &pool,
+                &app,
+                &format!("{root}/policy/people-directory/read/revoke"),
+                &cookies,
+                StatusCode::OK,
+            )
+            .await;
+            native_entry_html(&policy_page, StatusCode::OK);
+            let before = all_rows(&pool).await;
+            let page = document(&app, &root, &cookies).await;
+            let html = native_entry_html(&page, StatusCode::OK);
+            for action in ["read", "create"] {
+                assert!(html.contains(&format!(
+                    "href=\"{root}/policy/people-directory/{action}/revoke\""
+                )));
+            }
+            assert!(
+                !html.contains(&format!("href=\"{root}/people")),
+                "old profile exposed unsupported Directory navigation"
+            );
+            assert!(
+                before == all_rows(&pool).await,
+                "workspace projection changed durable state"
+            );
+            let command = Uuid::new_v4();
+            let employee = Uuid::new_v4();
+            for path in [
+                format!("{root}/people"),
+                format!("{root}/people/new"),
+                format!("{root}/people/requests/{command}"),
+                format!("{root}/people/{employee}"),
+            ] {
+                let before = all_rows(&pool).await;
+                let denied = document(&app, &path, &cookies).await;
+                let html = native_entry_html(&denied, StatusCode::SERVICE_UNAVAILABLE);
+                assert!(!html.contains("<form") && !html.contains("csrf_proof"));
+                assert!(
+                    before == all_rows(&pool).await,
+                    "held Directory GET invoked an owner or admission: {path}"
+                );
+            }
+            // Empty bodies deliberately require capability refusal before body
+            // parsing. These do not claim mutation validation/authorization proof.
+            for path in [
+                format!("{root}/people/requests"),
+                format!("{root}/people/requests/{command}/execute"),
+                format!("{root}/people/requests/{command}/cancel"),
+            ] {
+                let before = all_rows(&pool).await;
+                let denied = post(&app, &path, &cookies, &[]).await;
+                let html = native_entry_html(&denied, StatusCode::SERVICE_UNAVAILABLE);
+                assert!(!html.contains("<form") && !html.contains("csrf_proof"));
+                assert!(
+                    before == all_rows(&pool).await,
+                    "held Directory POST invoked an owner or admission: {path}"
+                );
+            }
+            assert_eq!(ready_status(&state).await, StatusCode::OK);
+        })
+        .catch_unwind()
+        .await;
+        if let Some(runtime) = cleanup {
+            runtime.close().await;
+        }
+        close_states(&[state], outcome).await;
+    }
+
     include!("native_people_policy_http_recovery.rs");
     include!("native_people_directory_http_owner.rs");
 }

@@ -117,3 +117,18 @@ export_file(
     name = "postgres-native-people-directory-custody-state.sql",
     visibility = ["PUBLIC"],
 )
+
+export_file(
+    name = "postgres-finalize-native-people-directory-row-lock.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-people-directory-row-lock-custody-state.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "native-people-directory/input-row-lock-v1.sql",
+    visibility = ["PUBLIC"],
+)

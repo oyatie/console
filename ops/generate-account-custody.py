@@ -336,7 +336,8 @@ $account_custody$;
             **native_company_policy_v2_finalized_files(),
             **native_people_directory_capture_files(),
             **native_people_directory_classifier_files(),
-            'ops/postgres-finalize-native-people-directory.sql': native_people_directory_finalizer_sql()}
+            'ops/postgres-finalize-native-people-directory.sql': native_people_directory_finalizer_sql(),
+            **native_people_directory_row_lock_files()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6907,6 +6908,152 @@ BEGIN
 END
 $native_people_directory_custody$;
 """
+
+
+# Additive correction; original Directory sources, profiles and serializers stay frozen.
+NATIVE_DIRECTORY_ROW_LOCK_SOURCE = 'ops/native-people-directory/input-row-lock-v1.sql'
+NATIVE_DIRECTORY_ROW_LOCK_SOURCE_SHA256 = 'd3c48ec3134fd8f67241f0eb4a19d76b02ab51266821a1a1faec530893f67f79'
+NATIVE_DIRECTORY_ROW_LOCK_FINALIZED_SHA256 = (
+    'b0d8ced14929a0c4ef041dfceb57519c64663cb87f39c1dccf61d61227e2278e',
+    '2c69786d88b784ca348725dc85730b9d8be1bc835e1069f64de7b7d3ec6ac80d',
+)
+NATIVE_DIRECTORY_V1_FINALIZER_SHA256 = 'f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357'
+
+
+def native_people_directory_row_lock_profiles():
+    closed, prior = native_people_directory_fingerprints()
+    corrected = NATIVE_DIRECTORY_ROW_LOCK_FINALIZED_SHA256
+    values = (closed, *NATIVE_DIRECTORY_STAGED_SHA256, *prior, *corrected)
+    if len(corrected) != 2 or len(values) != 7 or len(set(values)) != 7 or any(
+            not isinstance(value, str) or len(value) != 64
+            or any(c not in '0123456789abcdef' for c in value) for value in values):
+        raise SystemExit('Directory row-lock correction requires independently reviewed paired captures')
+    return prior, corrected
+
+
+def native_people_directory_row_lock_source_sql():
+    path = ROOT / NATIVE_DIRECTORY_ROW_LOCK_SOURCE
+    if path.is_symlink() or not path.is_file():
+        raise SystemExit('Directory row-lock source must be a regular file')
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != NATIVE_DIRECTORY_ROW_LOCK_SOURCE_SHA256:
+        raise SystemExit('Directory row-lock source differs from reviewed bytes')
+    return raw.decode('utf-8')
+
+
+def native_people_directory_row_lock_state_query():
+    prior, corrected = native_people_directory_row_lock_profiles()
+    old = ','.join("'" + value + "'" for value in prior)
+    final = ','.join("'" + value + "'" for value in corrected)
+    # Keep the historical query byte-for-byte as a predecessor classifier.
+    # Corrected profiles reuse the exact complete serializer and namespace checks.
+    return f"""WITH full_capture AS (
+{native_people_directory_snapshot_query()}
+), staged_capture AS (
+{native_people_directory_staged_snapshot_query()}
+), directory_presence AS (
+{native_people_directory_presence_query()}
+), predecessor AS (
+{native_people_directory_state_query()}
+)
+SELECT CASE WHEN (SELECT snapshot_sha256 FROM full_capture) IN ({final})
+ AND (SELECT native_directory_startup_rights_valid FROM full_capture) IS TRUE
+ AND (SELECT active_namespace_valid FROM directory_presence) IS TRUE
+ THEN 'native_people_directory.finalized'
+ WHEN (SELECT snapshot_sha256 FROM full_capture) IN ({old})
+ AND (SELECT state FROM predecessor)='native_people_directory.finalized'
+ THEN 'native_people_directory.row_lock_required'
+ WHEN (SELECT state FROM predecessor) IN (
+  'native_people_directory.absent','native_people_directory.staged_closed')
+ THEN (SELECT state FROM predecessor)
+ ELSE 'native_people_directory.profile_mismatch' END AS state"""
+
+
+def native_people_directory_row_lock_finalizer_sql():
+    prior, corrected = native_people_directory_row_lock_profiles()
+    correction = native_people_directory_row_lock_source_sql()
+    historical = native_people_directory_finalizer_sql()
+    if hashlib.sha256(historical.encode('utf-8')).hexdigest() != NATIVE_DIRECTORY_V1_FINALIZER_SHA256:
+        raise SystemExit('Directory v1 finalizer differs from reviewed historical bytes')
+    delimiter = '$native_people_directory_v1_input$'
+    if delimiter in historical:
+        raise SystemExit('Directory v1 finalizer embedding delimiter collision')
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS,
+        *NATIVE_DIRECTORY_ADDED_RELATIONS))
+    if len(names) != 73 or len(set(names)) != 73:
+        raise ValueError('Directory row-lock custody relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    final = ','.join("'" + value + "'" for value in corrected)
+    inspect = ('SELECT classified.state,captured.snapshot_sha256,captured.native_directory_startup_rights_valid\n'
+               ' INTO phase,observed,rights_valid FROM (\n'
+               + native_people_directory_row_lock_state_query() + '\n) classified CROSS JOIN (\n'
+               + native_people_directory_snapshot_query() + '\n) captured;')
+    return f"""-- Generated additive Directory input row-lock custody correction.
+-- The packaged operator must validate TLS/target and lock/check the exact applied
+-- migration ledger in this same transaction before invoking this metadata owner.
+DO $native_people_directory_row_lock_custody$
+DECLARE phase text; observed text; rights_valid boolean;
+ expected_prior text; expected_final text;
+ relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user<>current_user OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+  OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+   'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+   'console_platform_force_cmd','console_account_owner','console_terms_owner','console_credential_owner',
+   'console_durability_observer') THEN RAISE EXCEPTION 'native_people_directory.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+  RAISE EXCEPTION 'native_people_directory.unsupported_isolation'; END IF;
+ PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+ PERFORM pg_catalog.set_config('lock_timeout','1s',true);
+ FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relname IN ({literals}) ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ IF locked_relations<>73 THEN RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+ {inspect}
+ IF phase='native_people_directory.finalized' AND observed IN ({final}) AND rights_valid IS TRUE THEN
+  RETURN;
+ END IF;
+ expected_prior:=CASE observed
+  WHEN '{NATIVE_DIRECTORY_STAGED_SHA256[0]}' THEN '{prior[0]}'
+  WHEN '{NATIVE_DIRECTORY_STAGED_SHA256[1]}' THEN '{prior[1]}'
+  WHEN '{prior[0]}' THEN '{prior[0]}'
+  WHEN '{prior[1]}' THEN '{prior[1]}' ELSE NULL END;
+ expected_final:=CASE expected_prior
+  WHEN '{prior[0]}' THEN '{corrected[0]}'
+  WHEN '{prior[1]}' THEN '{corrected[1]}' ELSE NULL END;
+ IF (phase IS DISTINCT FROM 'native_people_directory.staged_closed'
+     AND phase IS DISTINCT FROM 'native_people_directory.row_lock_required')
+  OR expected_prior IS NULL OR expected_final IS NULL OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+ -- Original v1 SQL executes unchanged, with the same session and retained locks.
+ EXECUTE {delimiter}{historical}{delimiter};
+ {inspect}
+ IF phase IS DISTINCT FROM 'native_people_directory.row_lock_required'
+  OR observed IS DISTINCT FROM expected_prior OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+{correction}
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF phase IS DISTINCT FROM 'native_people_directory.finalized'
+  OR observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+END
+$native_people_directory_row_lock_custody$;
+"""
+
+
+def native_people_directory_row_lock_files():
+    query = native_people_directory_row_lock_state_query() + ';\n'
+    return {
+        'ops/postgres-native-people-directory-row-lock-custody-state.sql': query,
+        'backend/app/src/native_people_directory_row_lock_custody_state.sql': query,
+        'ops/postgres-finalize-native-people-directory-row-lock.sql': native_people_directory_row_lock_finalizer_sql(),
+    }
 
 
 def main():

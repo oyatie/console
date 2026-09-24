@@ -8,23 +8,30 @@ pub(crate) enum VerifiedCustodyProfile {
     CompanyEnrollment,
     NativeCompanyPolicy,
     NativeCompanyPolicyV2,
+    // Verified predecessor substrate; Directory needs the row-lock correction.
     NativePeopleDirectory,
+    NativePeopleDirectoryRowLock,
 }
 
 impl VerifiedCustodyProfile {
     pub(crate) fn supports_native_directory(self) -> bool {
-        self == Self::NativePeopleDirectory
+        self == Self::NativePeopleDirectoryRowLock
     }
     pub(crate) fn supports_policy(self) -> bool {
         matches!(
             self,
-            Self::NativeCompanyPolicy | Self::NativeCompanyPolicyV2 | Self::NativePeopleDirectory
+            Self::NativeCompanyPolicy
+                | Self::NativeCompanyPolicyV2
+                | Self::NativePeopleDirectory
+                | Self::NativePeopleDirectoryRowLock
         )
     }
     pub(crate) fn supports_people(self) -> bool {
         matches!(
             self,
-            Self::NativeCompanyPolicyV2 | Self::NativePeopleDirectory
+            Self::NativeCompanyPolicyV2
+                | Self::NativePeopleDirectory
+                | Self::NativePeopleDirectoryRowLock
         )
     }
 }
@@ -39,11 +46,18 @@ pub(crate) async fn verify(pool: &PgPool) -> Result<VerifiedCustodyProfile, AppE
     sqlx::raw_sql(include_str!("account_custody_session.sql"))
         .execute(&mut *transaction)
         .await?;
-    let directory: String =
-        sqlx::query_scalar(include_str!("native_people_directory_custody_state.sql"))
-            .fetch_one(&mut *transaction)
-            .await?;
+    let directory: String = sqlx::query_scalar(include_str!(
+        "native_people_directory_row_lock_custody_state.sql"
+    ))
+    .fetch_one(&mut *transaction)
+    .await?;
     if directory == "native_people_directory.finalized" {
+        transaction.commit().await?;
+        return Ok(VerifiedCustodyProfile::NativePeopleDirectoryRowLock);
+    }
+    if directory == "native_people_directory.row_lock_required" {
+        // Exact predecessor still supports Account/Company/policy. Composition
+        // withholds Directory owner/navigation until the corrected profile.
         transaction.commit().await?;
         return Ok(VerifiedCustodyProfile::NativePeopleDirectory);
     }

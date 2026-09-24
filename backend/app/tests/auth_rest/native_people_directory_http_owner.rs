@@ -1,7 +1,7 @@
 // Include inside native_people_policy_http_owner. Isolated actual HTTP/database
 // evidence, not browser or production qualification. No fixture business SQL.
 mod directory_http {
-    use super::super::native_people_directory_finalizer_tests::configured_native_directory_fixture;
+    use super::super::native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture as configured_native_directory_fixture;
     use super::*;
     use console_ontology_application::people::NativeDirectoryCommandV1;
     const NAME: &str = "김하늘 <연구 & 운영>";

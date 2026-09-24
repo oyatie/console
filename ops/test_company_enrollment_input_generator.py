@@ -54,10 +54,13 @@ DIRECTORY_OUTPUTS={
     'ops/postgres-finalize-native-people-directory.sql': 'f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357',
 }
 
+# Exact additive row-lock correction outputs; historical pins stay unchanged.
+DIRECTORY_ROW_LOCK_OUTPUTS={'backend/app/src/native_people_directory_row_lock_custody_state.sql': '781cc446ce26525cbad6cd281c66239d1a7366eb9369d914068f39886cad3d6e', 'ops/postgres-finalize-native-people-directory-row-lock.sql': '040652e06b9ae491514898964ff9cd6db03ffe860db3e14dfd9ccf8ea85b221f', 'ops/postgres-native-people-directory-row-lock-custody-state.sql': '781cc446ce26525cbad6cd281c66239d1a7366eb9369d914068f39886cad3d6e'}
+
 class CompanyInputGeneratorTests(unittest.TestCase):
     def test_one_new_output_preserves_all_existing_generated_bytes(self):
         outputs=GENERATOR.generated_files()
-        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS)|set(POLICY_FINALIZER_OUTPUTS)|set(DIRECTORY_OUTPUTS))
+        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS)|set(POLICY_FINALIZER_OUTPUTS)|set(DIRECTORY_OUTPUTS)|set(DIRECTORY_ROW_LOCK_OUTPUTS))
         for path,digest in EXPECTED.items():
             if path == "ops/account-custody-migrations.sha384":
                 # Reviewed9b9baed6a appended0229; retain exact historical228pin.
@@ -76,7 +79,7 @@ class CompanyInputGeneratorTests(unittest.TestCase):
             else:
                 self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
-        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS,**POLICY_FINALIZER_OUTPUTS,**DIRECTORY_OUTPUTS}.items():
+        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS,**POLICY_FINALIZER_OUTPUTS,**DIRECTORY_OUTPUTS,**DIRECTORY_ROW_LOCK_OUTPUTS}.items():
             self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
         emitted=GENERATOR.company_enrollment_input_sql()

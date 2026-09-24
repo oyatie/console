@@ -95,7 +95,7 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
         // Verify the actual guarded Directory activation before UI data exists.
         // Its temporary AppState uses the fixture origin; close it before the
         // browser creates the fresh TLS-origin-specific state below.
-        let (directory_fixture, _, directory_state) = native_policy_startup_tests::native_people_directory_finalizer_tests::configured_native_directory_fixture(&pool).await;
+        let (directory_fixture, _, directory_state) = native_policy_startup_tests::native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(&pool).await;
         directory_state.shutdown_realtime().await;
         drop(directory_fixture);
     } else if policy_entry {

@@ -49,7 +49,7 @@ mod native_people_directory_owner {
     impl DirectoryFixture {
         async fn new(pool: &PgPool) -> Self {
             let (app, key, state) =
-                native_people_directory_finalizer_tests::configured_native_directory_fixture(pool)
+                native_people_directory_finalizer_tests::native_people_directory_row_lock_tests::configured_row_lock_native_directory_fixture(pool)
                     .await;
             let (app, cookies, created) = create_owned_company(pool, app).await;
             let config = account_browser_config(pool, app._artifacts.root.clone(), &key);
@@ -382,4 +382,5 @@ mod native_people_directory_owner {
         }).catch_unwind().await;
         f.close(outcome).await;
     }
+    include!("native_people_directory_row_lock_immutability.rs");
 }
