@@ -308,6 +308,19 @@ async fn write(
         Ok(Submission::Validation {
             current,
             draft,
+            problem: Some(DirectoryWorkflowError::Conflict),
+        }) => document(
+            ui::Page::RegistrationConflict {
+                scope,
+                command: current.locator.command_id().to_string(),
+                legal_name: draft.legal_name,
+                employee_number: draft.employee_number,
+            },
+            StatusCode::CONFLICT,
+        ),
+        Ok(Submission::Validation {
+            current,
+            draft,
             problem,
         }) => {
             let (status, form_error) = match problem {
@@ -315,12 +328,6 @@ async fn write(
                     StatusCode::TOO_MANY_REQUESTS,
                     Some(
                         "처리 중인 등록 요청이 한도에 도달했습니다. 기존 요청을 완료하거나 취소한 뒤 같은 요청을 다시 제출하세요.",
-                    ),
-                ),
-                Some(DirectoryWorkflowError::Conflict) => (
-                    StatusCode::CONFLICT,
-                    Some(
-                        "요청 당시의 회사 설정이나 요청 내용이 현재 기록과 일치하지 않습니다. 원래 요청의 결과를 확인하고 새 요청을 작성하세요.",
                     ),
                 ),
                 _ => (StatusCode::UNPROCESSABLE_ENTITY, None),

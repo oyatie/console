@@ -85,6 +85,12 @@ pub enum Page {
         scope: Scope,
         form: Registration,
     },
+    RegistrationConflict {
+        scope: Scope,
+        command: String,
+        legal_name: String,
+        employee_number: String,
+    },
     Request {
         scope: Scope,
         request: Request,
@@ -314,6 +320,7 @@ pub fn render(page: Page) -> String {
     let scope = match &page {
         Page::Directory { scope, .. }
         | Page::Registration { scope, .. }
+        | Page::RegistrationConflict { scope, .. }
         | Page::Request { scope, .. }
         | Page::RequestNotVisible { scope, .. }
         | Page::Detail { scope, .. } => Some(scope),
@@ -322,6 +329,7 @@ pub fn render(page: Page) -> String {
     let title = match &page {
         Page::Directory { .. } => "사람".to_owned(),
         Page::Registration { .. } => "사람 등록".to_owned(),
+        Page::RegistrationConflict { .. } => "등록 내용을 다시 확인하세요".to_owned(),
         Page::Request { .. } => "사람 등록 요청".to_owned(),
         Page::RequestNotVisible { .. } => "요청 상태를 확인할 수 없습니다".to_owned(),
         Page::Detail { record, .. } => record_name(record.legal_name.as_deref()).to_owned(),
@@ -353,6 +361,22 @@ pub fn render(page: Page) -> String {
     let content = match page {
         Page::Directory { scope, records, next_after } => directory_body(&scope, records, next_after),
         Page::Registration { scope, form } => registration_body(&scope, form),
+        Page::RegistrationConflict { scope, command, legal_name, employee_number } => view! {
+            <section class="panel" data-people-outcome="prepare-conflict" role="alert" tabindex="-1" autofocus>
+                <h2>"등록 내용을 다시 확인하세요"</h2><div class="policy-panel-body">
+                    <p>"회사 설정이나 제출 내용이 현재 기록과 일치하지 않습니다. 요청 상태를 확인한 뒤 새 요청을 작성하세요."</p>
+                    <dl class="people-accepted" aria-label="제출한 내용">
+                        <dt>"이름"</dt><dd>{legal_name}</dd><dt>"사번"</dt><dd>{employee_number}</dd>
+                    </dl>
+                    <div class="policy-actions">
+                        <a class="policy-button" href=format!("{}/requests/{command}",directory(&scope.company))>"요청 상태 확인"</a>
+                        {scope.can_create.then(||view! {
+                            <a href=format!("{}/new",directory(&scope.company))>"새 등록 요청 작성"</a>
+                        })}
+                    </div>
+                </div>
+            </section>
+        }.into_any(),
         Page::Request { scope, request } => request_body(&scope, request),
         Page::RequestNotVisible { scope, command } => view! {
             <section class="panel" data-people-outcome="not-visible"><h2>"요청 상태를 확인할 수 없습니다"</h2>
