@@ -335,7 +335,8 @@ $account_custody$;
             **native_company_policy_v2_capture_files(),
             **native_company_policy_v2_finalized_files(),
             **native_people_directory_capture_files(),
-            **native_people_directory_classifier_files()}
+            **native_people_directory_classifier_files(),
+            'ops/postgres-finalize-native-people-directory.sql': native_people_directory_finalizer_sql()}
 
 
 # Additive Company candidate; historical serializers and fingerprints retain
@@ -6832,6 +6833,80 @@ def native_people_directory_classifier_files():
         'ops/postgres-native-people-directory-custody-state.sql': query,
         'backend/app/src/native_people_directory_custody_state.sql': query,
     }
+
+
+# Exact staged profiles captured independently with the closed230 extension.
+# Pair order is plain, then durability observer; historical profiles are unchanged.
+NATIVE_DIRECTORY_STAGED_SHA256 = (
+    'eaff3623d29f22768cb8056f27dd97cb9827a71194dedc59b289744fee7fdb0f',
+    'd5cad51f05a3cd9bf8abd6a4a9a5f154ff6e82df512966d333e75bba52f22761',
+)
+
+
+def native_people_directory_finalizer_sql():
+    closed, finalized = native_people_directory_fingerprints()
+    profiles = (closed, *NATIVE_DIRECTORY_STAGED_SHA256, *finalized)
+    if len(NATIVE_DIRECTORY_STAGED_SHA256) != 2 or len(set(profiles)) != 5 or any(
+            not isinstance(value, str) or len(value) != 64
+            or any(c not in '0123456789abcdef' for c in value) for value in profiles):
+        raise SystemExit('Directory finalizer requires independently reviewed paired captures')
+    source = native_people_directory_source_sql()
+    names = sorted((*TABLES, *CREDENTIAL_TABLES, 'company_actors',
+        'account_context_candidates', 'deployment_operator_receipts', 'deployment_operator_head',
+        'audit_events', *COMPANY_CUSTODY_ADDITIONAL_RELATIONS, *NATIVE_POLICY_RELATIONS,
+        *NATIVE_DIRECTORY_ADDED_RELATIONS))
+    if len(names) != 73 or len(set(names)) != len(names):
+        raise ValueError('Directory custody relation roster drift')
+    literals = ','.join("'" + name + "'" for name in names)
+    final = ','.join("'" + value + "'" for value in finalized)
+    # Both existing complete queries share one statement snapshot. Reuse the
+    # classifier, including its reserved structural markers outside full73.
+    inspect = ('SELECT classified.state,captured.snapshot_sha256,captured.native_directory_startup_rights_valid\n'
+               ' INTO phase,observed,rights_valid FROM (\n'
+               + native_people_directory_state_query() + '\n) classified CROSS JOIN (\n'
+               + native_people_directory_snapshot_query() + '\n) captured;')
+    return f"""-- Generated atomic native People Directory custody activation.
+-- Metadata owner only: packaged operator must validate target/TLS and lock/check
+-- the exact applied migration ledger in the same transaction before this SQL.
+DO $native_people_directory_custody$
+DECLARE phase text; observed text; rights_valid boolean; expected_final text;
+ relation_name text; locked_relations integer:=0;
+BEGIN
+ IF session_user<>current_user OR NOT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname=session_user AND rolsuper)
+  OR session_user IN ('console_app','console_rt','console_auth_rt','console_auth_startup',
+   'console_leave_cmd','console_leave_definer','console_ontology_cmd','console_ontology_writer',
+   'console_platform_force_cmd','console_account_owner','console_terms_owner','console_credential_owner',
+   'console_durability_observer') THEN RAISE EXCEPTION 'native_people_directory.operator_identity_mismatch'; END IF;
+ IF pg_catalog.current_setting('transaction_isolation')<>'read committed' THEN
+  RAISE EXCEPTION 'native_people_directory.unsupported_isolation'; END IF;
+ PERFORM pg_catalog.set_config('search_path','pg_catalog,pg_temp',true);
+ PERFORM pg_catalog.set_config('lock_timeout','1s',true);
+ FOR relation_name IN SELECT c.relname::text FROM pg_catalog.pg_class c JOIN pg_catalog.pg_namespace n ON n.oid=c.relnamespace
+  WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relname IN ({literals}) ORDER BY c.relname COLLATE "C"
+ LOOP
+  EXECUTE pg_catalog.format('LOCK TABLE ONLY public.%I IN ACCESS EXCLUSIVE MODE',relation_name);
+  locked_relations:=locked_relations+1;
+ END LOOP;
+ IF locked_relations<>73 THEN RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+ {inspect}
+ IF phase='native_people_directory.finalized' AND observed IN ({final}) AND rights_valid IS TRUE THEN
+  RETURN;
+ END IF;
+ expected_final:=CASE observed
+  WHEN '{NATIVE_DIRECTORY_STAGED_SHA256[0]}' THEN '{finalized[0]}'
+  WHEN '{NATIVE_DIRECTORY_STAGED_SHA256[1]}' THEN '{finalized[1]}' ELSE NULL END;
+ IF phase IS DISTINCT FROM 'native_people_directory.staged_closed'
+  OR expected_final IS NULL OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+{source}
+ SET CONSTRAINTS ALL IMMEDIATE;
+ {inspect}
+ IF phase IS DISTINCT FROM 'native_people_directory.finalized'
+  OR observed IS DISTINCT FROM expected_final OR rights_valid IS NOT TRUE THEN
+  RAISE EXCEPTION 'native_people_directory.profile_mismatch'; END IF;
+END
+$native_people_directory_custody$;
+"""
 
 
 def main():

@@ -106,3 +106,14 @@ export_file(
     name = "account-custody-migrations.sha384",
     visibility = ["PUBLIC"],
 )
+
+# Guarded native Directory activation and its complete serving classifier.
+export_file(
+    name = "postgres-finalize-native-people-directory.sql",
+    visibility = ["PUBLIC"],
+)
+
+export_file(
+    name = "postgres-native-people-directory-custody-state.sql",
+    visibility = ["PUBLIC"],
+)

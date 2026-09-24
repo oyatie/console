@@ -32,8 +32,10 @@ mod native_people_directory_finalizer_tests {
             hex::encode(Sha256::digest(OBSERVER.as_bytes())),
             "ffe7038b43de0207d6ae3e3ce0487498edc4d061c21e4249abacc91abaacdbbc"
         );
-        // Finalizer source pin is bound by the exact independent implementation
-        // receipt before mount. Do not infer it from the target database.
+        assert_eq!(
+            hex::encode(Sha256::digest(FINALIZER.as_bytes())),
+            "f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357"
+        );
     }
     // Fixture prerequisite only: the real packaged operator separately owns
     // same-transaction ledger locking and actual TLS negative controls.
@@ -407,6 +409,63 @@ mod native_people_directory_finalizer_tests {
         assert!(all_rows(&pool).await == rows);
     }
 
+    // This test has already run the real migration and created historical data.
+    // Reuse the actual custody owners without re-entering empty-database setup.
+    async fn finalize_populated_legacy_predecessor(pool: &PgPool) {
+        assert_actual_applied_ledger(pool).await;
+        finalize_serving_account_custody(pool).await;
+        const COMPANY: &str =
+            include_str!("../../../../ops/postgres-finalize-company-enrollment.sql");
+        assert_eq!(
+            hex::encode(Sha256::digest(COMPANY.as_bytes())),
+            "bc35b52d5692e474a3c890dde73112f56e7b85a241ab390075d58b5d5b43a92f"
+        );
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL search_path=pg_catalog,pg_temp")
+            .execute(tx.as_mut()).await.unwrap();
+        sqlx::raw_sql(COMPANY).execute(tx.as_mut()).await.unwrap();
+        tx.commit().await.unwrap();
+        seed_terms(pool).await;
+        install_policy(pool).await;
+        const SUCCESSOR: &str =
+            include_str!("../../../../ops/postgres-finalize-native-company-policy-v2.sql");
+        const SUCCESSOR_CLASSIFIER: &str =
+            include_str!("../../../../ops/postgres-native-company-policy-v2-custody-state.sql");
+        assert_eq!(
+            hex::encode(Sha256::digest(SUCCESSOR.as_bytes())),
+            "ec945607e209b93843116ae2b2a20772797dce38ff7884fb96081f09651f7d8e"
+        );
+        assert_eq!(
+            hex::encode(Sha256::digest(SUCCESSOR_CLASSIFIER.as_bytes())),
+            "e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc"
+        );
+        assert_eq!(
+            SUCCESSOR_CLASSIFIER,
+            include_str!("../../src/native_company_policy_v2_custody_state.sql")
+        );
+        let mut tx = pool.begin().await.unwrap();
+        sqlx::raw_sql("SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET LOCAL search_path=pg_catalog,pg_temp; SET LOCAL lock_timeout='1s'; SET LOCAL statement_timeout='120s'")
+            .execute(tx.as_mut()).await.unwrap();
+        sqlx::raw_sql(SUCCESSOR).execute(tx.as_mut()).await.unwrap();
+        sqlx::raw_sql("SET CONSTRAINTS ALL IMMEDIATE")
+            .execute(tx.as_mut())
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+        let runtime = login_test_pool(pool, TestDatabaseLogin::Business).await;
+        let checked = AssertUnwindSafe(async {
+            assert_eq!(
+                classified(&runtime, SUCCESSOR_CLASSIFIER).await,
+                "native_company_policy_v2.finalized"
+            );
+        })
+        .catch_unwind()
+        .await;
+        runtime.close().await;
+        if let Err(panic) = checked {
+            std::panic::resume_unwind(panic);
+        }
+    }
     async fn legacy_person_execute(
         runtime: &PgPool,
         command: &console_ontology_canonical_adapter_postgres::person::PersonCommand,
@@ -465,7 +524,7 @@ mod native_people_directory_finalizer_tests {
             for table in ["employees","persons","person_revisions","employee_person_bindings","ont_action_command_receipts"] {
                 assert_ne!(populated[table],"[]","empty fixture cannot prove populated expansion: {table}");
             }
-            native_people_codec2_install_probe::prepare_successor_ready_database(&pool).await;
+            finalize_populated_legacy_predecessor(&pool).await;
         assert_actual_applied_ledger(&pool).await;
             let before=all_rows(&pool).await;
             for table in ["employees","persons","person_revisions","employee_person_bindings","ont_action_command_receipts"] {

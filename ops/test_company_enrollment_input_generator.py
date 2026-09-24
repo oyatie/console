@@ -44,22 +44,39 @@ POLICY_FINALIZER_OUTPUTS={
     'backend/app/src/native_company_policy_v2_custody_state.sql': 'e507d75f446ad8d3e0befe9321d94731a1a2cc9b3e0e9c0306c1459a098a53cc',
 }
 
+# Independently reviewed Directory capture, classifier, and guarded finalizer.
+DIRECTORY_OUTPUTS={
+    'ops/postgres-native-people-directory-owner.sql': '3dd0524bc751eba2aa806ee0dc670dc3cecbf8838c20b83896773a0c5b6016a0',
+    'ops/postgres-capture-native-people-directory-custody.sql': 'bc8a1f87f57cd676ca1a3deae12263b1cca4a290c71a12e9a1749d189e090ca7',
+    'ops/postgres-capture-native-people-directory-staged-custody.sql': '890ebc034fe9836f45e26c13d05352085db753f17e4a72b1ec05b6ecbe0a0e36',
+    'ops/postgres-native-people-directory-custody-state.sql': '20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd',
+    'backend/app/src/native_people_directory_custody_state.sql': '20c96bc2a9264d5ed4b86cb948cbe0574450243509263469c45af955d5aff3dd',
+    'ops/postgres-finalize-native-people-directory.sql': 'f4f99cf873c2ab970789e44ccf9737f2dd38f6dc6b05f1849fbd4461bf6a2357',
+}
+
 class CompanyInputGeneratorTests(unittest.TestCase):
     def test_one_new_output_preserves_all_existing_generated_bytes(self):
         outputs=GENERATOR.generated_files()
-        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS)|set(POLICY_FINALIZER_OUTPUTS))
+        self.assertEqual(set(outputs),set(EXPECTED)|{PARSER,SCHEMA,INTAKE,NEW}|set(COMPANY_PROFILE_OUTPUTS)|set(POLICY_PROFILE_OUTPUTS)|set(POLICY_CAPTURE_OUTPUTS)|set(POLICY_FINALIZER_OUTPUTS)|set(DIRECTORY_OUTPUTS))
         for path,digest in EXPECTED.items():
             if path == "ops/account-custody-migrations.sha384":
                 # Reviewed9b9baed6a appended0229; retain exact historical228pin.
                 suffix = b'229\t08ece6d6edf558d06eff11297da18184e9a762ff4f5455fab135c84a1b34dbef449b6c957f3d7fce197af113f821a659\n'
-                ledger = outputs[path].encode()
+                # Prove the exact reviewed230 append before projecting historical229.
+                checksum230 = '69b9f0de4175868ce73f01ce52ac47ee5607ae6d88c91ab9bc519112ea1cb9682945c2cc0b87a91a78edb32a2b3fade1'
+                self.assertEqual(hashlib.sha384((ROOT/'backend/crates/platform/db/migrations/0230_native_people_directory_storage.sql').read_bytes()).hexdigest(),checksum230)
+                suffix230 = ('230\t'+checksum230+'\n').encode()
+                complete_ledger = outputs[path].encode()
+                self.assertTrue(complete_ledger.endswith(suffix230))
+                self.assertEqual(len(complete_ledger.splitlines()),230)
+                ledger = complete_ledger[:-len(suffix230)]
                 self.assertTrue(ledger.endswith(suffix))
                 self.assertEqual(len(ledger.splitlines()),229)
                 self.assertEqual(hashlib.sha256(ledger[:-len(suffix)]).hexdigest(),digest,path)
             else:
                 self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
-        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS,**POLICY_FINALIZER_OUTPUTS}.items():
+        for path,digest in {**COMPANY_PROFILE_OUTPUTS,**POLICY_PROFILE_OUTPUTS,**POLICY_CAPTURE_OUTPUTS,**POLICY_FINALIZER_OUTPUTS,**DIRECTORY_OUTPUTS}.items():
             self.assertEqual(hashlib.sha256(outputs[path].encode()).hexdigest(),digest,path)
             self.assertEqual(outputs[path].encode(),(ROOT/path).read_bytes(),path)
         emitted=GENERATOR.company_enrollment_input_sql()
