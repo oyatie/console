@@ -4788,8 +4788,7 @@ mod account_browser {
         }
     }
 
-    // Pre-change helper regression proposal. Append inside account_browser.
-    // Uses the actual issuer with a fixed independent database clock; creates
+    // Actual issuer control with a fixed independent database clock. Creates
     // no database identity and makes no product admission/security claim.
     #[test]
     fn actual_issuer_fixed_database_expiry_is_accepted_by_projection() {
@@ -4835,12 +4834,36 @@ mod account_browser {
         let expiry = OffsetDateTime::from_unix_timestamp(claims["exp"].as_i64().unwrap()).unwrap();
         assert!(expiry > issued && expiry <= issued + Duration::minutes(15));
         let value = json!({"account_id":account,"session":{"assurance":"PASSKEY_PRIMARY","expires_at":expiry.format(&time::format_description::well_known::Rfc3339).unwrap()},"permitted_self_actions":[{"action_key":"account.session.logout","registration_revision":"1"}]});
-        // Existing helper reads the process clock and incorrectly rejects this
-        // database-valid issuer result. No ignored argument or invented seam.
-        projection(&value, account);
+        projection_at(&value, account, issued);
+        let cap = issued + Duration::seconds(120);
+        let capped = issuer
+            .issue_account_access_token(AccountAccessTokenInput {
+                account_id: account,
+                session_id: Uuid::new_v4(),
+                security_generation: 1,
+                auth_time: issued,
+                assurance: AccountAssurance::PasskeyPrimary,
+                issued_at: issued,
+                family_expires_at: cap,
+            })
+            .unwrap();
+        let claims = signed_claims(capped.as_str(), &key).unwrap();
+        assert_eq!(claims["exp"].as_i64().unwrap(), cap.unix_timestamp());
+        assert_eq!(
+            claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(),
+            120
+        );
+        projection_at(
+            &clock_projection(
+                account,
+                OffsetDateTime::from_unix_timestamp(claims["exp"].as_i64().unwrap()).unwrap(),
+            ),
+            account,
+            issued,
+        );
     }
 
-    fn projection(value: &Value, account: Uuid) {
+    fn projection_at(value: &Value, account: Uuid, observed_database_time: OffsetDateTime) {
         exact_keys(value, &["account_id", "session", "permitted_self_actions"]);
         assert_eq!(value["account_id"], account.to_string());
         exact_keys(&value["session"], &["assurance", "expires_at"]);
@@ -4851,8 +4874,8 @@ mod account_browser {
         )
         .unwrap();
         assert!(
-            expiry > OffsetDateTime::now_utc()
-                && expiry <= OffsetDateTime::now_utc() + Duration::minutes(15)
+            expiry > observed_database_time
+                && expiry <= observed_database_time + Duration::minutes(15)
         );
         assert_eq!(
             value["permitted_self_actions"],
@@ -4860,11 +4883,26 @@ mod account_browser {
         );
     }
 
-    fn session(response: &Response, status: StatusCode, account: Uuid, cookies: &mut Cookies) {
+    async fn projection(value: &Value, account: Uuid, pool: &PgPool) {
+        let observed_database_time: OffsetDateTime =
+            sqlx::query_scalar("SELECT pg_catalog.clock_timestamp()")
+                .fetch_one(pool)
+                .await
+                .unwrap();
+        projection_at(value, account, observed_database_time);
+    }
+
+    async fn session(
+        response: &Response,
+        status: StatusCode,
+        account: Uuid,
+        cookies: &mut Cookies,
+        pool: &PgPool,
+    ) {
         let value = response.json(status);
         response.private();
         exact_keys(&value, &["account"]);
-        projection(&value["account"], account);
+        projection(&value["account"], account, pool).await;
         cookies.absorb(&response.headers);
         assert!(cookies.0.contains_key(ACCESS) && cookies.0.contains_key(REFRESH));
         assert!(!cookies.0.contains_key(ENROLLMENT) && !cookies.0.contains_key(LOGIN));
@@ -4900,7 +4938,9 @@ mod account_browser {
             StatusCode::CREATED,
             attempt.account,
             &mut cookies,
-        );
+            &router.pool,
+        )
+        .await;
         (attempt, cookies)
     }
 
@@ -5063,7 +5103,7 @@ mod account_browser {
         let (attempt, cookies) = enrolled(&router).await;
         assert_committed(&pool, &attempt).await;
         let me = request(&router, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-        projection(&me.json(StatusCode::OK), attempt.account);
+        projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
         me.private();
         assert_no_company_identity(&pool, attempt.account).await;
         let contexts = request(
@@ -5119,7 +5159,9 @@ mod account_browser {
             StatusCode::CREATED,
             attempt.account,
             &mut attempt.cookies.clone(),
-        );
+            &pool,
+        )
+        .await;
         assert_committed(&pool, &attempt).await;
     }
 
@@ -5175,14 +5217,18 @@ mod account_browser {
             StatusCode::CREATED,
             attempt.account,
             &mut attempt.cookies.clone(),
-        );
+            &pool,
+        )
+        .await;
         assert_committed(&pool, &attempt).await;
         session(
             &finish(&router, &other).await,
             StatusCode::CREATED,
             other.account,
             &mut other.cookies.clone(),
-        );
+            &pool,
+        )
+        .await;
         assert_committed(&pool, &other).await;
     }
 
@@ -5202,7 +5248,9 @@ mod account_browser {
             StatusCode::CREATED,
             attempt.account,
             &mut attempt.cookies.clone(),
-        );
+            &pool,
+        )
+        .await;
         refusal.error(StatusCode::UNAUTHORIZED, "enrollment_invalid");
         assert_committed(&pool, &attempt).await;
         let before = snapshot(&pool, attempt.account).await;
@@ -5278,7 +5326,9 @@ mod account_browser {
             .await
             .json(StatusCode::OK),
             other.account,
-        );
+            &pool,
+        )
+        .await;
         let before_other = snapshot(&pool, other.account).await;
         let login_before: Option<OffsetDateTime> =
             sqlx::query_scalar("SELECT consumed_at FROM auth_webauthn_ceremonies WHERE id=$1")
@@ -5323,13 +5373,22 @@ mod account_browser {
         )
         .await;
         let mut restored = cookies.clone();
-        session(&response, StatusCode::OK, attempt.account, &mut restored);
+        session(
+            &response,
+            StatusCode::OK,
+            attempt.account,
+            &mut restored,
+            &pool,
+        )
+        .await;
         projection(
             &request(&router, "GET", "/api/v2/accounts/me", &restored, None, &[])
                 .await
                 .json(StatusCode::OK),
             attempt.account,
-        );
+            &pool,
+        )
+        .await;
         let keys: i64 =
             sqlx::query_scalar("SELECT count(*) FROM auth_webauthn_credentials WHERE user_id=$1")
                 .bind(attempt.account)
@@ -5424,7 +5483,9 @@ mod account_browser {
             StatusCode::OK,
             attempt.account,
             &mut Cookies::default(),
-        );
+            &pool,
+        )
+        .await;
         let committed = snapshot(&pool, attempt.account).await;
         let committed_ceremonies = native_login_ceremony_rows(&pool).await;
         request(
@@ -5557,7 +5618,14 @@ mod account_browser {
                 &[],
             )
             .await;
-            session(&positive, StatusCode::OK, attempt.account, &mut cookies);
+            session(
+                &positive,
+                StatusCode::OK,
+                attempt.account,
+                &mut cookies,
+                &pool,
+            )
+            .await;
             reached += 1;
         }
         assert_eq!(reached, 4);
@@ -5649,7 +5717,9 @@ mod account_browser {
                     StatusCode::OK,
                     attempt.account,
                     &mut winning_cookies,
-                );
+                    &pool,
+                )
+                .await;
                 successes += 1;
             } else {
                 response.error(StatusCode::UNAUTHORIZED, "authentication_invalid");
@@ -5863,7 +5933,9 @@ mod account_browser {
                 StatusCode::OK,
                 attempt.account,
                 &mut Cookies::default(),
-            );
+                &pool,
+            )
+            .await;
             reached += 1;
         }
         assert_eq!(reached, 4);
@@ -5906,7 +5978,9 @@ mod account_browser {
             StatusCode::OK,
             attempt.account,
             &mut Cookies::default(),
-        );
+            &pool,
+        )
+        .await;
         let after = snapshot(&pool, attempt.account).await;
         assert!(after["terms"] == before["terms"] && after["events"] == before["events"]);
     }
@@ -5963,7 +6037,14 @@ mod account_browser {
         )
         .await;
         let mut restored = cookies.clone();
-        session(&positive, StatusCode::OK, attempt.account, &mut restored);
+        session(
+            &positive,
+            StatusCode::OK,
+            attempt.account,
+            &mut restored,
+            &pool,
+        )
+        .await;
         let claims = signed_claims(&restored.0[ACCESS], &signer).unwrap();
         assert_eq!(claim_generation(&claims), 3);
         let after = snapshot(&pool, attempt.account).await;
@@ -6005,7 +6086,9 @@ mod account_browser {
             StatusCode::OK,
             attempt.account,
             &mut Cookies::default(),
-        );
+            &pool,
+        )
+        .await;
         let before = snapshot(&pool, attempt.account).await;
         let ceremonies = native_login_ceremony_rows(&pool).await;
         // Original valid signature/challenge, but its counter predates the committed key.
@@ -6036,7 +6119,9 @@ mod account_browser {
             StatusCode::OK,
             attempt.account,
             &mut Cookies::default(),
-        );
+            &pool,
+        )
+        .await;
     }
 
     #[sqlx::test(migrations = false)]
@@ -6128,7 +6213,9 @@ mod account_browser {
             StatusCode::OK,
             attempt.account,
             &mut Cookies::default(),
-        );
+            &pool,
+        )
+        .await;
     }
 
     include!("auth_rest/historical_native_enrollment.rs");
@@ -6170,7 +6257,14 @@ mod account_browser {
             &[("X-Console-CSRF", &proof1)],
         )
         .await;
-        session(&refreshed, StatusCode::OK, attempt.account, &mut cookies);
+        session(
+            &refreshed,
+            StatusCode::OK,
+            attempt.account,
+            &mut cookies,
+            &pool,
+        )
+        .await;
         assert!(
             cookies.0[REFRESH] != old_refresh,
             "refresh cookie did not rotate"
@@ -6258,7 +6352,7 @@ mod account_browser {
             &[("X-Console-CSRF", &own)],
         )
         .await;
-        session(&response, StatusCode::OK, a.account, &mut cookies);
+        session(&response, StatusCode::OK, a.account, &mut cookies, &pool).await;
     }
 
     #[sqlx::test(migrations = false)]
@@ -6318,7 +6412,9 @@ mod account_browser {
                 .await
                 .json(StatusCode::OK),
             attempt.account,
-        );
+            &pool,
+        )
+        .await;
     }
 
     #[sqlx::test(migrations = false)]
@@ -6377,18 +6473,258 @@ mod account_browser {
     #[test]
     fn strict_projection_oracle_refuses_wrong_account_and_hidden_fields() {
         let account = Uuid::new_v4();
-        let expiry = (OffsetDateTime::now_utc() + Duration::minutes(5))
+        let observed_database_time = OffsetDateTime::from_unix_timestamp(1_900_000_000).unwrap();
+        let expiry = (observed_database_time + Duration::minutes(5))
             .format(&time::format_description::well_known::Rfc3339)
             .unwrap();
         let valid = json!({"account_id":account,"session":{"assurance":"PASSKEY_PRIMARY","expires_at":expiry},"permitted_self_actions":[{"action_key":"account.session.logout","registration_revision":"1"}]});
-        projection(&valid, account);
-        assert!(std::panic::catch_unwind(|| projection(&valid, Uuid::new_v4())).is_err());
+        projection_at(&valid, account, observed_database_time);
+        assert!(
+            std::panic::catch_unwind(|| projection_at(
+                &valid,
+                Uuid::new_v4(),
+                observed_database_time
+            ))
+            .is_err()
+        );
         let mut leaked = valid.clone();
         leaked["access_token"] = json!("TEST_ONLY_TOKEN_CANARY");
-        assert!(std::panic::catch_unwind(|| projection(&leaked, account)).is_err());
+        assert!(
+            std::panic::catch_unwind(|| projection_at(&leaked, account, observed_database_time))
+                .is_err()
+        );
         leaked = valid;
         leaked["session"]["org_id"] = json!(Uuid::new_v4());
-        assert!(std::panic::catch_unwind(|| projection(&leaked, account)).is_err());
+        assert!(
+            std::panic::catch_unwind(|| projection_at(&leaked, account, observed_database_time))
+                .is_err()
+        );
+    }
+
+    fn clock_projection(account: Uuid, expiry: OffsetDateTime) -> Value {
+        json!({"account_id":account,"session":{"assurance":"PASSKEY_PRIMARY","expires_at":expiry.format(&time::format_description::well_known::Rfc3339).unwrap()},"permitted_self_actions":[{"action_key":"account.session.logout","registration_revision":"1"}]})
+    }
+
+    fn signed_projection_at(
+        value: &Value,
+        token: &str,
+        key: &SigningKey,
+        account: Uuid,
+        family: Uuid,
+        family_expires_at: OffsetDateTime,
+        observed_database_time: OffsetDateTime,
+    ) {
+        projection_at(value, account, observed_database_time);
+        let claims = signed_claims(token, key).expect("valid access signature");
+        assert_eq!(claims["sub"], json!(account));
+        assert_eq!(claims["sid"], json!(family));
+        let issued = claims["iat"].as_i64().expect("integer issued time");
+        let expires = claims["exp"].as_i64().expect("integer expiry");
+        assert!((1..=900).contains(&expires.checked_sub(issued).unwrap()));
+        assert!(issued >= 0 && issued <= observed_database_time.unix_timestamp());
+        let expiry = OffsetDateTime::from_unix_timestamp(expires).unwrap();
+        let projected = OffsetDateTime::parse(
+            value["session"]["expires_at"].as_str().unwrap(),
+            &time::format_description::well_known::Rfc3339,
+        )
+        .unwrap();
+        assert_eq!(projected, expiry);
+        assert!(expiry > observed_database_time && expiry <= family_expires_at);
+    }
+
+    #[test]
+    fn projection_database_clock_controls_preserve_exact_bounds() {
+        let account = Uuid::new_v4();
+        let second = OffsetDateTime::from_unix_timestamp(1_900_000_000).unwrap();
+        let observed_database_time = second + Duration::milliseconds(4);
+        let hypothetical_host_time = second - Duration::milliseconds(4);
+        let expiry = second + Duration::seconds(900);
+        assert!(
+            expiry > hypothetical_host_time + Duration::seconds(900),
+            "old host-clock predicate rejects the valid database lifetime"
+        );
+        projection_at(
+            &clock_projection(account, expiry),
+            account,
+            observed_database_time,
+        );
+        for delta in [Duration::nanoseconds(1), Duration::seconds(900)] {
+            projection_at(
+                &clock_projection(account, observed_database_time + delta),
+                account,
+                observed_database_time,
+            );
+        }
+        for delta in [
+            Duration::seconds(-1),
+            Duration::ZERO,
+            Duration::seconds(900) + Duration::nanoseconds(1),
+        ] {
+            let value = clock_projection(account, observed_database_time + delta);
+            assert!(
+                std::panic::catch_unwind(|| projection_at(&value, account, observed_database_time))
+                    .is_err()
+            );
+        }
+        // An expired token can look fresh to a host behind the database.
+        let expired = observed_database_time - Duration::milliseconds(1);
+        assert!(expired > hypothetical_host_time);
+        assert!(
+            std::panic::catch_unwind(|| projection_at(
+                &clock_projection(account, expired),
+                account,
+                observed_database_time
+            ))
+            .is_err()
+        );
+        let valid = clock_projection(account, expiry);
+        let mut missing = valid.clone();
+        missing["session"]
+            .as_object_mut()
+            .unwrap()
+            .remove("expires_at");
+        assert!(
+            std::panic::catch_unwind(|| projection_at(&missing, account, observed_database_time))
+                .is_err()
+        );
+        let mut malformed = valid;
+        malformed["session"]["expires_at"] = json!("not-a-timestamp");
+        assert!(
+            std::panic::catch_unwind(|| projection_at(&malformed, account, observed_database_time))
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn signed_projection_clock_controls_detect_lifetime_identity_and_signature_corruption() {
+        let key = SigningKey::random(&mut OsRng);
+        let other_key = SigningKey::random(&mut OsRng);
+        let account = Uuid::new_v4();
+        let family = Uuid::new_v4();
+        let observed = OffsetDateTime::from_unix_timestamp(1_900_000_100).unwrap();
+        let ceiling = observed + Duration::days(1);
+        let valid =
+            json!({"sub":account,"sid":family,"iat":1_900_000_000i64,"exp":1_900_000_900i64});
+        let value = clock_projection(
+            account,
+            OffsetDateTime::from_unix_timestamp(valid["exp"].as_i64().unwrap()).unwrap(),
+        );
+        let token = sign_proof_claims(&valid, &key);
+        signed_projection_at(&value, &token, &key, account, family, ceiling, observed);
+        for (field, replacement) in [
+            ("iat", json!(1_899_999_999i64)), // Original901s lifetime, remaining800s.
+            ("iat", json!(1_900_000_901i64)), // Nonpositive lifetime.
+            ("iat", json!(1_900_000_101i64)), // Future issue at observation.
+            ("exp", json!(1_900_000_899i64)), // Signed/projected mismatch.
+            ("sub", json!(Uuid::new_v4())),
+            ("sid", json!(Uuid::new_v4())),
+        ] {
+            let mut changed = valid.clone();
+            changed[field] = replacement;
+            let token = sign_proof_claims(&changed, &key);
+            assert!(
+                std::panic::catch_unwind(|| signed_projection_at(
+                    &value, &token, &key, account, family, ceiling, observed
+                ))
+                .is_err(),
+                "undetected signed corruption: {field}"
+            );
+        }
+        assert!(
+            std::panic::catch_unwind(|| signed_projection_at(
+                &value, &token, &other_key, account, family, ceiling, observed
+            ))
+            .is_err()
+        );
+        assert!(
+            std::panic::catch_unwind(|| signed_projection_at(
+                &value,
+                &token,
+                &key,
+                account,
+                family,
+                observed + Duration::seconds(799),
+                observed
+            ))
+            .is_err()
+        );
+        // A genuine short family ceiling is valid, without a full900s demand.
+        let mut capped = valid;
+        capped["exp"] = json!(1_900_000_120i64);
+        let cap = OffsetDateTime::from_unix_timestamp(1_900_000_120).unwrap();
+        signed_projection_at(
+            &clock_projection(account, cap),
+            &sign_proof_claims(&capped, &key),
+            &key,
+            account,
+            family,
+            cap,
+            observed,
+        );
+    }
+
+    #[sqlx::test(migrations = false)]
+    async fn account_projected_expiry_matches_actual_signed_registration_and_refresh(pool: PgPool) {
+        let (router, key) = signed_fixture(&pool).await;
+        let family_absolute_ttl =
+            account_browser_config(&pool, router._artifacts.root.clone(), &key)
+                .auth_rest
+                .as_ref()
+                .unwrap()
+                .refresh_family_absolute_ttl;
+        let attempt = start(&router).await;
+        let registration = finish(&router, &attempt).await;
+        let mut cookies = attempt.cookies.clone();
+        session(
+            &registration,
+            StatusCode::CREATED,
+            attempt.account,
+            &mut cookies,
+            &pool,
+        )
+        .await;
+        for pass in 0..2 {
+            let value = if pass == 0 {
+                registration.json(StatusCode::CREATED)["account"].clone()
+            } else {
+                let csrf = proof(&router, &cookies).await;
+                let refreshed = native_rotation(&router, &cookies, &csrf).await;
+                session(
+                    &refreshed,
+                    StatusCode::OK,
+                    attempt.account,
+                    &mut cookies,
+                    &pool,
+                )
+                .await;
+                refreshed.json(StatusCode::OK)["account"].clone()
+            };
+            // Bind family independently through the actual returned refresh
+            // token, never by trusting the access token's sid as the lookup key.
+            let (family, family_created_at): (Uuid, OffsetDateTime) = sqlx::query_as("SELECT f.id,f.created_at FROM public.auth_refresh_tokens t JOIN public.auth_refresh_token_families f ON f.id=t.family_id WHERE t.token_hash=$1 AND t.user_id=$2 AND f.user_id=$2 AND f.protocol='ACCOUNT_V1' AND t.used_at IS NULL AND t.revoked_at IS NULL AND f.revoked_at IS NULL")
+                .bind(Sha256::digest(cookies.0[REFRESH].as_bytes()).to_vec())
+                .bind(attempt.account).fetch_one(&pool).await.unwrap();
+            let family_expires_at = family_created_at.checked_add(family_absolute_ttl).unwrap();
+            let observed_database_time: OffsetDateTime =
+                sqlx::query_scalar("SELECT pg_catalog.clock_timestamp()")
+                    .fetch_one(&pool)
+                    .await
+                    .unwrap();
+            signed_projection_at(
+                &value,
+                &cookies.0[ACCESS],
+                &key,
+                attempt.account,
+                family,
+                family_expires_at,
+                observed_database_time,
+            );
+            let claims = signed_claims(&cookies.0[ACCESS], &key).unwrap();
+            assert_eq!(
+                claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(),
+                900
+            );
+        }
     }
 
     #[test]
@@ -6531,7 +6867,14 @@ mod account_browser {
             &[],
         )
         .await;
-        session(&response, StatusCode::OK, attempt.account, &mut cookies);
+        session(
+            &response,
+            StatusCode::OK,
+            attempt.account,
+            &mut cookies,
+            &router.pool,
+        )
+        .await;
         cookies
     }
 
@@ -6728,7 +7071,14 @@ mod account_browser {
             &[("X-Console-CSRF", &valid)],
         )
         .await;
-        session(&response, StatusCode::OK, attempt.account, &mut cookies);
+        session(
+            &response,
+            StatusCode::OK,
+            attempt.account,
+            &mut cookies,
+            &pool,
+        )
+        .await;
         assert!(snapshot(&pool, attempt.account).await["families"] == before["families"]);
     }
 
@@ -6781,7 +7131,14 @@ mod account_browser {
             &[("X-Console-CSRF", &valid)],
         )
         .await;
-        session(&response, StatusCode::OK, attempt.account, &mut cookies);
+        session(
+            &response,
+            StatusCode::OK,
+            attempt.account,
+            &mut cookies,
+            &pool,
+        )
+        .await;
     }
 
     #[sqlx::test(migrations = false)]
@@ -6861,7 +7218,9 @@ mod account_browser {
                 .await
                 .json(StatusCode::OK),
             attempt.account,
-        );
+            &pool,
+        )
+        .await;
         let response = request(
             &router,
             "POST",
@@ -6871,7 +7230,14 @@ mod account_browser {
             &[("X-Console-CSRF", &second_proof)],
         )
         .await;
-        session(&response, StatusCode::OK, attempt.account, &mut second);
+        session(
+            &response,
+            StatusCode::OK,
+            attempt.account,
+            &mut second,
+            &pool,
+        )
+        .await;
     }
 
     #[sqlx::test(migrations = false)]
@@ -7068,7 +7434,7 @@ mod account_browser {
     ) {
         let before = snapshot(&router.pool, attempt.account).await;
         let me = request(router, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-        projection(&me.json(StatusCode::OK), attempt.account);
+        projection(&me.json(StatusCode::OK), attempt.account, &router.pool).await;
         me.private();
         let csrf = proof(router, &cookies).await;
         assert!(snapshot(&router.pool, attempt.account).await == before);
@@ -7081,7 +7447,14 @@ mod account_browser {
             &[("X-Console-CSRF", &csrf)],
         )
         .await;
-        session(&refreshed, StatusCode::OK, attempt.account, &mut cookies);
+        session(
+            &refreshed,
+            StatusCode::OK,
+            attempt.account,
+            &mut cookies,
+            &router.pool,
+        )
+        .await;
         let rotated = snapshot(&router.pool, attempt.account).await;
         assert!(rotated["families"] == before["families"]);
         assert!(rotated["terms"] == before["terms"]);
@@ -7151,7 +7524,9 @@ mod account_browser {
             StatusCode::CREATED,
             fresh.account,
             &mut fresh.cookies.clone(),
-        );
+            &pool,
+        )
+        .await;
         let committed = snapshot(&pool, fresh.account).await;
         assert_eq!(committed["security"]["security_state"], "ACTIVE");
         assert_eq!(committed["keys"].as_array().unwrap().len(), 1);
@@ -7242,7 +7617,9 @@ mod account_browser {
                 .await
                 .json(StatusCode::OK),
             established.account,
-        );
+            &pool,
+        )
+        .await;
         let after = snapshot(&pool, established.account).await;
         assert!(after["terms"] == established_before["terms"]);
         let old_term_events: Vec<_> = established_before["events"]
@@ -7327,7 +7704,9 @@ mod account_browser {
             StatusCode::CREATED,
             pending.account,
             &mut pending.cookies.clone(),
-        );
+            &pool,
+        )
+        .await;
         assert_committed(&pool, &pending).await;
         finish(&router, &pending)
             .await

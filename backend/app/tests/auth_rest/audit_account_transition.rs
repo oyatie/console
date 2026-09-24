@@ -497,7 +497,7 @@ mod audit_account_transition {
             let actual = AppState::from_config(config).await.unwrap();
             let service = build_router(actual.clone());
             let me = request(&service, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-            projection(&me.json(StatusCode::OK), attempt.account);
+            projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
             me.private();
             actual.shutdown_realtime().await;
         }

@@ -108,7 +108,9 @@ async fn native_refresh_reuse_commits_revocation_and_denies_successor(pool: PgPo
         StatusCode::OK,
         attempt.account,
         &mut current,
-    );
+        &pool,
+    )
+    .await;
     let before = snapshot(&pool, attempt.account).await;
     let reused = before["tokens"]
         .as_array()
@@ -148,7 +150,9 @@ async fn native_refresh_wrong_proof_cannot_revoke_used_token_family(pool: PgPool
         StatusCode::OK,
         attempt.account,
         &mut current,
-    );
+        &pool,
+    )
+    .await;
     let before = snapshot(&pool, attempt.account).await;
     let other_before = snapshot(&pool, other.account).await;
     for invalid in [&foreign, "invalid-signature"] {
@@ -164,7 +168,9 @@ async fn native_refresh_wrong_proof_cannot_revoke_used_token_family(pool: PgPool
         StatusCode::OK,
         attempt.account,
         &mut current,
-    );
+        &pool,
+    )
+    .await;
     assert!(snapshot(&pool, other.account).await == other_before);
 }
 
@@ -188,7 +194,9 @@ async fn native_refresh_expired_consumed_is_reuse_but_unused_expiry_is_inert(poo
                 StatusCode::OK,
                 attempt.account,
                 &mut successor,
-            );
+                &pool,
+            )
+            .await;
         }
         let before = snapshot(&pool, attempt.account).await;
         sqlx::query("SELECT pg_sleep(GREATEST(0.0,extract(epoch FROM $1::timestamptz-clock_timestamp()))+0.025)")
@@ -302,7 +310,9 @@ async fn native_refresh_same_token_concurrency_creates_one_successor_then_revoke
         StatusCode::OK,
         attempt.account,
         &mut winner,
-    );
+        &pool,
+    )
+    .await;
     responses
         .iter()
         .find(|r| r.status == StatusCode::UNAUTHORIZED)
@@ -492,7 +502,9 @@ async fn native_refresh_account_wait_rechecks_proof_before_consuming_token(pool:
         StatusCode::OK,
         attempt.account,
         &mut current,
-    );
+        &pool,
+    )
+    .await;
 }
 
 #[sqlx::test(migrations = false)]
@@ -506,7 +518,9 @@ async fn native_refresh_reuse_event_wait_expiry_rolls_back_revocation_and_audit(
         StatusCode::OK,
         attempt.account,
         &mut current,
-    );
+        &pool,
+    )
+    .await;
     let before = snapshot(&pool, attempt.account).await;
     let reused = before["tokens"]
         .as_array()

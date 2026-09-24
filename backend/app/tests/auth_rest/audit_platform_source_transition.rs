@@ -453,7 +453,7 @@ mod platform_source_transition {
                 let app = AppState::from_config(config.clone()).await.unwrap();
                 let service = build_router(app.clone());
                 let me = request(&service, "GET", "/api/v2/accounts/me", cookies, None, &[]).await;
-                projection(&me.json(StatusCode::OK), account.account);
+                projection(&me.json(StatusCode::OK), account.account, &pool).await;
                 me.private();
                 app.shutdown_realtime().await;
             }

@@ -48,7 +48,7 @@ mod native_group_attribution {
         let app = fixture(&pool).await;
         let (account, cookies) = enrolled(&app).await;
         let me = request(&app, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-        projection(&me.json(StatusCode::OK), account.account);
+        projection(&me.json(StatusCode::OK), account.account, &pool).await;
         let legacy_rows: i64 = sqlx::query_scalar("SELECT count(*) FROM public.users WHERE id=$1")
             .bind(account.account)
             .fetch_one(&pool)

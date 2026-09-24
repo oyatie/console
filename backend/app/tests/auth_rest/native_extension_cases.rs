@@ -379,7 +379,7 @@ async fn native_final9_http_enrollment_upgrade_preserves_history_and_allows_logi
         &[],
     )
     .await;
-    projection(&me.json(StatusCode::OK), attempt.account);
+    projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
     me.private();
     let (mut cookies, input) = login_attempt(&service, &mut attempt).await;
     let signed_in = request(
@@ -391,7 +391,14 @@ async fn native_final9_http_enrollment_upgrade_preserves_history_and_allows_logi
         &[],
     )
     .await;
-    session(&signed_in, StatusCode::OK, attempt.account, &mut cookies);
+    session(
+        &signed_in,
+        StatusCode::OK,
+        attempt.account,
+        &mut cookies,
+        &pool,
+    )
+    .await;
     let after_login = snapshot(&pool, attempt.account).await;
     for field in ["security", "terms", "events"] {
         assert!(
@@ -418,7 +425,14 @@ async fn native_final9_http_enrollment_upgrade_preserves_history_and_allows_logi
         &[("X-Console-CSRF", &proof)],
     )
     .await;
-    session(&refreshed, StatusCode::OK, attempt.account, &mut cookies);
+    session(
+        &refreshed,
+        StatusCode::OK,
+        attempt.account,
+        &mut cookies,
+        &pool,
+    )
+    .await;
     assert!(
         cookies.0[REFRESH] != old_refresh,
         "refresh did not rotate its token"
@@ -564,7 +578,7 @@ async fn native_extended227_upgrade_to228_preserves_history_and_admits_startup(p
         &[],
     )
     .await;
-    projection(&me.json(StatusCode::OK), attempt.account);
+    projection(&me.json(StatusCode::OK), attempt.account, &pool).await;
     me.private();
     assert!(
         native_extension_rows_equal(&after_rows, &native_extension_rows(&pool).await),

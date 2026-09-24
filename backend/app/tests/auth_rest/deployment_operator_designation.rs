@@ -534,7 +534,7 @@ pub(crate) mod deployment_operator_designation {
         let (a, cookies) = enrolled(&app).await;
         let (b, _) = enrolled(&app).await;
         let me = request(&app, "GET", "/api/v2/accounts/me", &cookies, None, &[]).await;
-        projection(&me.json(StatusCode::OK), a.account);
+        projection(&me.json(StatusCode::OK), a.account, &pool).await;
         let runtime = startup(&pool).await;
         let input = designation(&pool, a.account).await;
         let untouched = rows(&pool, TABLES).await;
