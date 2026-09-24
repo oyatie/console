@@ -29,7 +29,7 @@ pub struct CompanyPolicy {
 
 impl CompanyPolicy {
     pub fn new() -> Result<Self, CompanyPolicyError> {
-        std::panic::catch_unwind(|| {
+        with_cedar_stack(|| {
             sdk_identity()?;
             native_business::validate_bundles()?;
             people_directory::validate_bundle()?;
@@ -49,7 +49,6 @@ impl CompanyPolicy {
                 panic_at_authorizer: false,
             })
         })
-        .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
     }
 
     fn evaluate(
@@ -199,10 +198,7 @@ impl CompanyPolicyDecisionPort for CompanyPolicy {
         authority: &CurrentPeopleDirectoryAuthority,
         request: &NativePeopleDirectoryRequestV1,
     ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
-        std::panic::catch_unwind(AssertUnwindSafe(|| {
-            self.evaluate_native_people_directory(authority, request)
-        }))
-        .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+        with_cedar_stack(|| self.evaluate_native_people_directory(authority, request))
     }
 
     fn decide_native_bootstrap(
@@ -210,18 +206,14 @@ impl CompanyPolicyDecisionPort for CompanyPolicy {
         authority: &CurrentNativeBootstrapAuthority,
         request: &NativeBootstrapRequestV1,
     ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
-        std::panic::catch_unwind(AssertUnwindSafe(|| {
-            self.evaluate_native_bootstrap(authority, request)
-        }))
-        .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+        with_cedar_stack(|| self.evaluate_native_bootstrap(authority, request))
     }
 
     fn decide_native_payroll_collection(
         &self,
         authority: &CurrentPayrollReadAuthority,
     ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
-        std::panic::catch_unwind(AssertUnwindSafe(|| self.evaluate_native_payroll(authority)))
-            .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+        with_cedar_stack(|| self.evaluate_native_payroll(authority))
     }
 
     fn decide(
@@ -229,9 +221,20 @@ impl CompanyPolicyDecisionPort for CompanyPolicy {
         authority: &CurrentCompanyAuthority,
         request: &CompanyPolicyRequest,
     ) -> Result<CompanyPolicyDecision, CompanyPolicyError> {
-        std::panic::catch_unwind(AssertUnwindSafe(|| self.evaluate(authority, request)))
-            .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
+        with_cedar_stack(|| self.evaluate(authority, request))
     }
+}
+
+// Deep HTTP frames can exhaust Cedar's remaining-stack budget. Reserve one
+// bounded, same-thread segment per entry; Cedar's own recursion guard remains.
+fn with_cedar_stack<T>(
+    evaluate: impl FnOnce() -> Result<T, CompanyPolicyError>,
+) -> Result<T, CompanyPolicyError> {
+    const STACK_BYTES: usize = 2 * 1024 * 1024;
+    std::panic::catch_unwind(AssertUnwindSafe(|| {
+        stacker::maybe_grow(STACK_BYTES, STACK_BYTES, evaluate)
+    }))
+    .map_err(|_| CompanyPolicyError::EvaluatorUnavailable)?
 }
 
 fn sdk_identity() -> Result<(), CompanyPolicyError> {

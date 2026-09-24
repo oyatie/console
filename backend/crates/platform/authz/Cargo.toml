@@ -17,6 +17,8 @@ time = { workspace = true }
 # Default features only: the shadow-first Cedar boundary does not use
 # partial-eval/entity-manifest. Pinned exact for provable bundle equivalence.
 cedar-policy = "=4.13.0"
+# Reuse Cedar's pinned stack allocator at the synchronous policy boundary.
+stacker = "=0.1.24"
 sha2 = { workspace = true }
 hex = { workspace = true }
 # Coexistence-map loader (cedar_pbac::map) parses the canonical map JSON at runtime.
