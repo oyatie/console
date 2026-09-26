@@ -27,9 +27,15 @@ PACKAGE_FILES = {
 }
 DRIVERS = {
     "account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
-    "company.cjs": "9edab0630df042767ccd4da092b79d6b6f34b566f1bc1c2d9dd5df493187f7cd",
+    "company.cjs": "c8c9ea003a385bbca311abff3810bf4ad800792f1a813affc9b546dd4d5ab34a",
     "company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
     "hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
+}
+COMPANIONS = {
+    "native_header.cjs": "37dac3e5853f1ed5b3a6e13a3ff78700b6adf589e304ee783f1f2f56dc42313f",
+    "people_journey.cjs": "861343c520b6e556f28f23a2ce9d5632a5800892626199f096204460bed1b4f1",
+    "policy_journey.cjs": "b1735ef0ab51c3a14a0db0c511dabc468516ac2f60bd2e3e31c416a6c1c4ef5a",
+    "recovery_controls.cjs": "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
 }
 FAMILIES = {
     "CONSOLE_BROWSER_JOURNEY": "account.cjs",
@@ -130,9 +136,9 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         for name, expected in PACKAGE_FILES.items():
             if sha256(ROOT / EVIDENCE / name) != expected:
                 raise RuntimeError("prerequisite: package source pin mismatch " + name)
-        for name, expected in DRIVERS.items():
+        for name, expected in {**DRIVERS, **COMPANIONS}.items():
             if sha256(ROOT / "tools/browser" / name) != expected:
-                raise RuntimeError("prerequisite: reviewed driver pin mismatch " + name)
+                raise RuntimeError("prerequisite: reviewed browser source pin mismatch " + name)
 
     def setUp(self):
         self.assertTrue(INSTALLER.is_file(), "NATIVE_BROWSER_INSTALLER_REQUIRED")
@@ -145,7 +151,7 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         self.script = self.repo / "tools/browser/prepare_native_browser.sh"
         self.script.parent.mkdir(parents=True)
         shutil.copy2(INSTALLER, self.script)
-        for name in DRIVERS:
+        for name in {**DRIVERS, **COMPANIONS}:
             shutil.copy2(ROOT / "tools/browser" / name, self.script.parent / name)
         sources = self.repo / EVIDENCE
         sources.mkdir(parents=True)
@@ -225,6 +231,10 @@ class PrepareNativeBrowserTests(unittest.TestCase):
             self.assertFalse(output.exists(), "browser leaf output must remain fresh")
             outputs.add(output)
         self.assertEqual(4, len(outputs))
+        for name, expected in COMPANIONS.items():
+            companion = stage / name
+            self.assertFalse(companion.is_symlink())
+            self.assertEqual(expected, sha256(companion))
         runtime = stage / "runtime"
         self.assertEqual(PACKAGE_FILES["playwright-package.json"], sha256(runtime / "package.json"))
         self.assertEqual(PACKAGE_FILES["playwright-package-lock.json"], sha256(runtime / "package-lock.json"))
@@ -252,6 +262,7 @@ class PrepareNativeBrowserTests(unittest.TestCase):
         }.items():
             self.assertEqual(expected, evidence["digests"][key])
         self.assertEqual(DRIVERS, evidence["digests"]["drivers"])
+        self.assertEqual(COMPANIONS, evidence["digests"]["companions"])
         return stage
 
     def test_real_archive_staging_is_pinned_fresh_and_publishes_only_after_success(self):
@@ -286,6 +297,15 @@ class PrepareNativeBrowserTests(unittest.TestCase):
     def test_changed_driver_publishes_nothing(self):
         with (self.script.parent / "account.cjs").open("a") as stream:
             stream.write("\n// injected source corruption\n")
+        self.assert_failure()
+
+    def test_changed_companion_publishes_nothing(self):
+        with (self.script.parent / "native_header.cjs").open("a") as stream:
+            stream.write("\n// injected source corruption\n")
+        self.assert_failure()
+
+    def test_missing_companion_publishes_nothing(self):
+        (self.script.parent / "people_journey.cjs").unlink()
         self.assert_failure()
 
     def test_newline_runner_path_publishes_nothing(self):
