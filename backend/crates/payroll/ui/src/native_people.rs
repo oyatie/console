@@ -419,7 +419,9 @@ pub fn render(page: Page) -> String {
         </head><body class="workspace native-people-workspace">
             <a class="skip-link" href="#main-content">"본문 바로가기"</a>
             {header}
-            <main id="main-content" tabindex="-1"><div class="page-heading">{company}<h1>{title}</h1></div>{content}</main>
+            // When the mobile menu hides on resize, Tab must reach visible content
+            // even if an authorized directory has no records or actions.
+            <main id="main-content" tabindex="0"><div class="page-heading">{company}<h1>{title}</h1></div>{content}</main>
         </body></html>
     }.to_html();
     format!("<!DOCTYPE html>{html}")
