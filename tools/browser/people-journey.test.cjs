@@ -3,10 +3,23 @@
 // provision business records; they cannot qualify the actual browser journey.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const {validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME} = require('./people_journey.cjs');
+const {expectedNativeHeaders, completeNativeHeaders, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME} = require('./people_journey.cjs');
 const {completeDocuments, completeMutations, observeMutations} = require('./company.cjs');
 const {EventEmitter} = require('node:events');
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+// Classifier-only positive record; never published as browser acceptance evidence.
+function headerWitness(expected) {
+  return {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
+    allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
+    payroll_path: expected.payrollPath ?? null,
+    widths: [320, 680, 681, 1280].map(width => ({width, header_height: 90, main_top: 90,
+      title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
+      routes_exact: true, current_exact: true, inactive_hidden: true})),
+    enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
+    values_preserved: true, location_preserved: true, no_product_script: true,
+    unique_ids: true, network_requests: 0};
+}
+
 function evidence() {
   const r = {company: uuid(1), account: uuid(2), command: uuid(3), employee: uuid(4), person: uuid(4),
     read_assignment: uuid(5), create_assignment: uuid(6), checkpoints: [], mutations: [],
@@ -19,6 +32,8 @@ function evidence() {
   r.mutations = [p + '/catalog', p + '/read/grants', p + '/create/grants', d + '/requests',
     d + `/requests/${r.command}/execute`, p + `/read/grants/${r.read_assignment}/revoke`,
     p + `/create/grants/${r.create_assignment}/revoke`].map((path, i) => ({path, command: i === 3 || i === 4 ? r.command : uuid(10 + i), status: 303, body_sha256: 'a'.repeat(64)}));
+  r.header_origin = 'https://localhost:1234';
+  r.native_headers = expectedNativeHeaders(r).map(headerWitness);
   return r;
 }
 test('positive People evidence control', () => assert.equal(validEvidence(evidence()), true));
@@ -82,3 +97,37 @@ test('denied projection checks decoded text, attributes and escaped response con
   assert.equal(deniedProjectionSafe({...safe, attributes: [LEGAL_NAME]}, [LEGAL_NAME]), false);
   assert.equal(deniedProjectionSafe({...safe, text: undefined}, [LEGAL_NAME]), false);
 });
+
+// Additive header requirements do not replace any original evidence controls.
+test('People mandatory header positive control', () => assert.equal(completeNativeHeaders(evidence()), true));
+test('People header expected policy and exact current routes', () => {
+  const r = evidence(), w = '/companies/' + r.company, d = w + '/people';
+  const e = expectedNativeHeaders(r);
+  assert.deepEqual(e.map(row => row.phase), ['PEOPLE_HEADER_READ_ONLY', 'PEOPLE_HEADER_REGISTRATION',
+    'PEOPLE_HEADER_PENDING', 'PEOPLE_HEADER_DETAIL', 'PEOPLE_HEADER_CREATE_ONLY']);
+  assert.deepEqual(e.map(row => row.currentPath ?? null), [d, d + '/new', null, null, null]);
+  assert.deepEqual(e[0].paths, ['/account', w, w + '/policy', d]);
+  assert.deepEqual(e[4].paths, ['/account', w, w + '/policy', d + '/new']);
+  assert.deepEqual(e.map(row => row.url), [d, d + '/new', d + '/requests/' + r.command,
+    d + '/' + r.employee, d + '/requests/' + r.command].map(path => r.header_origin + path));
+});
+for (let i = 0; i < 5; i++) {
+  test(`missing mandatory People header ${i} refused by full evidence`, () => {
+    const r = evidence(); r.native_headers.splice(i, 1); assert.equal(validEvidence(r), false);
+  });
+  test(`unpreserved form at People header ${i} refused`, () => {
+    const r = evidence(); r.native_headers[i].values_preserved = false; assert.equal(validEvidence(r), false);
+  });
+  test(`unexpected request at People header ${i} refused`, () => {
+    const r = evidence(); r.native_headers[i].network_requests = 1; assert.equal(validEvidence(r), false);
+  });
+  test(`wrong People header ${i} location refused`, () => {
+    const r = evidence(); r.native_headers[i].url += '/wrong'; assert.equal(validEvidence(r), false);
+  });
+  test(`unpermitted People header ${i} route refused`, () => {
+    const r = evidence(); r.native_headers[i].allowed_paths.push('/companies/foreign/people'); assert.equal(validEvidence(r), false);
+  });
+}
+test('duplicate People header refused', () => { const r = evidence(); r.native_headers.push(r.native_headers[0]); assert.equal(validEvidence(r), false); });
+test('reordered People header refused', () => { const r = evidence(); [r.native_headers[0], r.native_headers[1]] = [r.native_headers[1], r.native_headers[0]]; assert.equal(validEvidence(r), false); });
+test('missing entire People header history refused', () => { const r = evidence(); delete r.native_headers; assert.equal(validEvidence(r), false); });

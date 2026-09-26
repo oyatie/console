@@ -49,3 +49,58 @@ for(const key of ['company_layout_320','company_layout_desktop','payroll_company
  test(`Company missing observation ${key} refused`,()=>{const v=companyPositive();delete v[key];assert.equal(completeCompanyWorkspace(v),false);});
  for(const value of [false,null,1,'true'])test(`Company false observation ${key}:${value} refused`,()=>assert.equal(completeCompanyWorkspace({...companyPositive(),[key]:value}),false));
 }
+
+// Mandatory native policy/Payroll header classifier controls. No product fixtures.
+const {expectedNativeHeaders,completeNativeHeaders}=require(process.env.CONSOLE_NAVIGATION_DRIVER||'./company.cjs');
+// Classifier-only positive record; never published as browser acceptance evidence.
+function headerWitness(expected) {
+  return {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
+    allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
+    payroll_path: expected.payrollPath ?? null,
+    widths: [320, 680, 681, 1280].map(width => ({width, header_height: 90, main_top: 90,
+      title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
+      routes_exact: true, current_exact: true, inactive_hidden: true})),
+    enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
+    values_preserved: true, location_preserved: true, no_product_script: true,
+    unique_ids: true, network_requests: 0};
+}
+
+function headerEvidence() {
+  const r = {policy_entry: true, org_id: '00000000-0000-4000-8000-000000000001', header_origin: 'https://localhost:1234',
+    policy: {mutations: [2, 3, 4].map(n => ({command_id: '00000000-0000-4000-8000-' + String(n).padStart(12, '0')}))}};
+  r.native_headers = expectedNativeHeaders(r).map(headerWitness); return r;
+}
+test('policy Payroll mandatory header positive control', () => assert.equal(completeNativeHeaders(headerEvidence()), true));
+test('unrelated Company-only mode does not claim native headers', () => assert.equal(completeNativeHeaders({policy_entry: false}), true));
+test('policy Payroll exact route and current expectations', () => {
+  const r = headerEvidence(), w = '/companies/' + r.org_id, p = w + '/payroll';
+  const e = expectedNativeHeaders(r);
+  assert.deepEqual(e.map(row => row.phase), ['POLICY_HEADER_PREFLIGHT', 'CATALOG_INSTALLED',
+    'GRANT_COMMITTED', 'GRANT_REOPENED', 'PAYROLL_READ', 'PAYROLL_REOPENED', 'REVOKE_COMMITTED', 'REVOKE_REOPENED']);
+  assert.deepEqual(e.map(row => row.currentPath ?? null), [null, null, null, null, p, p, null, null]);
+  assert.deepEqual(e[0].paths, ['/account', w, w + '/policy']);
+  assert.deepEqual(e[2].paths, ['/account', w, w + '/policy', p]);
+  assert.deepEqual(e[4].paths, ['/account', p]);
+  assert.deepEqual(e[6].paths, ['/account', w, w + '/policy']);
+});
+for (let i = 0; i < 8; i++) {
+  test(`missing mandatory policy Payroll header ${i} refused`, () => {
+    const r = headerEvidence(); r.native_headers.splice(i, 1); assert.equal(completeNativeHeaders(r), false);
+  });
+  test(`unpreserved form at policy Payroll header ${i} refused`, () => {
+    const r = headerEvidence(); r.native_headers[i].values_preserved = false; assert.equal(completeNativeHeaders(r), false);
+  });
+  test(`unexpected request at policy Payroll header ${i} refused`, () => {
+    const r = headerEvidence(); r.native_headers[i].network_requests = 1; assert.equal(completeNativeHeaders(r), false);
+  });
+  test(`wrong policy Payroll header ${i} location refused`, () => {
+    const r = headerEvidence(); r.native_headers[i].url += '/wrong'; assert.equal(completeNativeHeaders(r), false);
+  });
+  test(`unpermitted policy Payroll header ${i} route refused`, () => {
+    const r = headerEvidence(); r.native_headers[i].allowed_paths.push('/companies/foreign/payroll'); assert.equal(completeNativeHeaders(r), false);
+  });
+}
+test('duplicate policy Payroll header refused', () => { const r = headerEvidence(); r.native_headers.push(r.native_headers[0]); assert.equal(completeNativeHeaders(r), false); });
+test('reordered policy Payroll header refused', () => { const r = headerEvidence(); [r.native_headers[0], r.native_headers[1]] = [r.native_headers[1], r.native_headers[0]]; assert.equal(completeNativeHeaders(r), false); });
+test('missing entire policy Payroll header history refused', () => { const r = headerEvidence(); delete r.native_headers; assert.equal(completeNativeHeaders(r), false); });
+test('People and policy origin disagreement refused', () => { const r = headerEvidence(); r.people_entry = true; r.people = {header_origin: 'https://localhost:4321'}; assert.equal(completeNativeHeaders(r), false); });
