@@ -32,9 +32,13 @@ verify_sha "${stage}/runtime/package.json" 8d57d95d41a1c2833b846f382610db55b8d19
 verify_sha "${stage}/runtime/package-lock.json" a9c22966fb530b30d45f4f17faca408679a0405f3978fdaa9abd6b1857578044
 for entry in \
   account:3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d \
-  company:9edab0630df042767ccd4da092b79d6b6f34b566f1bc1c2d9dd5df493187f7cd \
+  company:c8c9ea003a385bbca311abff3810bf4ad800792f1a813affc9b546dd4d5ab34a \
   company-preview:a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90 \
-  hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c; do
+  hydration:fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c \
+  native_header:37dac3e5853f1ed5b3a6e13a3ff78700b6adf589e304ee783f1f2f56dc42313f \
+  people_journey:861343c520b6e556f28f23a2ce9d5632a5800892626199f096204460bed1b4f1 \
+  policy_journey:b1735ef0ab51c3a14a0db0c511dabc468516ac2f60bd2e3e31c416a6c1c4ef5a \
+  recovery_controls:fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6; do
   cp "${repo_root}/tools/browser/${entry%%:*}.cjs" "${stage}/${entry%%:*}.cjs"
   verify_sha "${stage}/${entry%%:*}.cjs" "${entry#*:}"
 done
@@ -68,12 +72,14 @@ const drivers = {
   CONSOLE_COMPANY_PREVIEW_BROWSER: 'company-preview',
   CONSOLE_HYDRATION_BROWSER: 'hydration',
 };
+const companions = ['native_header', 'people_journey', 'policy_journey', 'recovery_controls'];
 const digests = {
   package: hash('runtime/package.json'), lock: hash('runtime/package-lock.json'),
   browsers: hash('runtime/node_modules/playwright-core/browsers.json'),
   archive: hash('browser.zip'),
   executable: hash('runtime/browser/chrome-headless-shell-linux64/chrome-headless-shell'),
   drivers: Object.fromEntries(Object.values(drivers).map(name => [name + '.cjs', hash(name + '.cjs')])),
+  companions: Object.fromEntries(companions.map(name => [name + '.cjs', hash(name + '.cjs')])),
 };
 fs.writeFileSync(path.join(stage, 'prerequisites.json'), JSON.stringify({
   tools: {node: process.version, npm: npmVersion, openssl: opensslVersion},
