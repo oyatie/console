@@ -176,6 +176,43 @@ describe("fail-closed inputs", () => {
       /examine zero subjects|no \/api\/ operations/i,
     );
   });
+
+  it("ignores a resolved non-API document route using any while keeping API coverage", () => {
+    const root = fixture({
+      "routes.rs": `fn router() -> Router {
+    Router::new()
+        .route("/companies/{org_id}/payroll", any(document))
+        .route("/api/x", get(handler))
+        .route("/api/v1/dev-auth/session", post(dev_auth))
+        .route("/api/v1/mail/mox/webhook", post(mox))
+}
+`,
+      "openapi.yaml": openApi(["GET /api/x"]),
+    });
+    const result = checkOpenApiRouteDrift({
+      openApiPath: join(root, "openapi.yaml"),
+      routeSourceFiles: [join(root, "routes.rs")],
+    });
+    assert.equal(result.backendOperations.has("GET /api/x"), true);
+    assert.equal(result.backendOperations.size, 3);
+  });
+
+  it("still refuses an API route whose method cannot be recognized", () => {
+    const root = fixture({
+      "routes.rs": `fn router() -> Router {
+    Router::new().route("/api/ambiguous", any(handler))
+}
+`,
+      "openapi.yaml": openApi(["GET /api/ambiguous"]),
+    });
+    assert.throws(
+      () => checkOpenApiRouteDrift({
+        openApiPath: join(root, "openapi.yaml"),
+        routeSourceFiles: [join(root, "routes.rs")],
+      }),
+      /route \/api\/ambiguous has no recognized HTTP method/,
+    );
+  });
 });
 
 describe("real tree", () => {
