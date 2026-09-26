@@ -72,7 +72,8 @@ function validEvidence(r) {
       'detail_reopened', 'read_revoked', 'create_only_receipt', 'create_revoked', 'no_local_business_storage']) {
       assert.equal(r[flag], true);
     }
-    for (const name of ['people-directory-320.png', 'people-registration-desktop.png',
+    for (const name of ['people-directory-320.png', 'people-workspace-next-task.png',
+      'people-workspace-next-task-320.png', 'people-registration-desktop.png',
       'people-pending-320.png', 'people-detail-desktop.png', 'people-detail-320.png']) {
       assert.equal(r.screenshots.filter(x => x === name).length, 1);
     }
@@ -89,10 +90,11 @@ function expectedDocuments(r) {
   const receipt = (kind, index) => p + `/requests/${kind}/${r.mutations[index].command}`;
   return [get(p + '/install'), ...action(0, receipt('install', 0)), get(p + '/read/grant'),
     ...action(1, receipt('grant', 1)), get(d), get(d + '/new', 404), get(w), get(p + '/create/grant'),
-    ...action(2, receipt('grant', 2)), get(d), get(d + '/new'), ...action(3, request), get(request),
+    ...action(2, receipt('grant', 2)), get(d), get(d + '/new'), get(w), get(d + '/new'),
+    ...action(3, request), get(request),
     ...action(4, request), get(request), get(detail), get(detail), get(d), get(w), get(p + '/read/revoke'),
     ...action(5, receipt('revoke', 5)), get(d, 404), get(detail, 404), get(request), get(w), get(p + '/create/revoke'),
-    ...action(6, receipt('revoke', 6)), get(request, 404)];
+    ...action(6, receipt('revoke', 6)), get(w), get(d + '/new', 404), get(request, 404)];
 }
 
 async function runPeopleJourney({page, company, companyName, account, exchange, capture, tabTo,
@@ -120,6 +122,15 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
       assert.equal(await menu.evaluate(e => e.open), true);
     }
     return banner.getByRole('link', {name: '사람', exact: true});
+  }
+  async function nextTask(name, destination) {
+    const task = page.getByRole('main').getByRole('region', {name: '다음 업무', exact: true});
+    assert.equal(await task.count(), 1);
+    assert.equal(await task.locator('a,button,[role="button"]').count(), 1);
+    const link = task.getByRole('link', {name, exact: true});
+    assert.equal(await link.count(), 1);
+    assert.equal(await link.getAttribute('href'), destination);
+    return link;
   }
   let pendingPath, detailPath;
   async function noBusinessStorage() {
@@ -212,13 +223,13 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     const w = await witness(phase, {command_id: command, ...values});
     return {command, path: recovery, witness: w};
   }
-  async function policyCommand(kind, action) {
+  async function policyCommand(kind, action, entryLink) {
     const install = kind === 'install';
     const revoke = kind === 'revoke';
     const actionLabel = action === 'read' ? '열람' : '등록';
     const formPath = install ? policy + '/install' : policy + `/${action}/${kind}`;
     const label = install ? '사람 등록·열람 권한' : `사람 ${actionLabel} 권한 ${revoke ? '회수' : '연결'}`;
-    await open(formPath, 200, page.getByRole('link', {name: label, exact: true}));
+    await open(formPath, 200, entryLink ?? page.getByRole('link', {name: label, exact: true}));
     if (!install && !revoke) {
       await page.getByLabel('종료 날짜와 시각 (한국 표준시, UTC+09:00)', {exact: true})
         .fill(new Date(Date.now() + 86400000 + 9 * 3600000).toISOString().slice(0, 16));
@@ -237,18 +248,32 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await exchange({phase: 'PEOPLE_READY'});
   assert.equal(page.url(), origin + workspace);
   assert.equal(await page.getByRole('link', {name: '사람', exact: true}).count(), 0);
-  await policyCommand('install');
+  assert.equal(await page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
+  assert.equal(await page.getByRole('main').locator(`a[href="${directory}/new"]`).count(), 0);
+  await policyCommand('install', undefined, await nextTask('사람 권한 설정 시작', policy + '/install'));
   await policyCommand('grant', 'read');
   await open(directory, 200, await directoryNavigation());
   assert.equal(await page.getByRole('heading', {name: '사람', exact: true, level: 1}).isVisible(), true);
   assert.equal(await page.getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
   assert.equal(await page.locator('[data-people-record]').count(), 0);
+  assert.equal(await page.getByRole('main').getByRole('link', {name: '목록 처음부터 보기', exact: true}).count(), 0);
+  assert.equal(await page.locator('.people-empty').locator('a,button,[role="button"]').count(), 0);
   await header('PEOPLE_HEADER_READ_ONLY');
   await shot('people-directory-320', 320);
   await open(directory + '/new', 404); await witness('PEOPLE_READ_ONLY'); result.read_only = true;
-  await open(workspace); await policyCommand('grant', 'create');
+  await open(workspace);
+  await policyCommand('grant', 'create', await nextTask('사람 등록 권한 연결', policy + '/create/grant'));
   await open(directory, 200, await directoryNavigation());
-  await open(directory + '/new', 200, page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}));
+  assert.equal(await page.locator('.people-empty').count(), 1);
+  assert.equal(await page.getByRole('main').getByRole('link', {name: '목록 처음부터 보기', exact: true}).count(), 0);
+  const emptyCreate = page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true});
+  assert.equal(await emptyCreate.count(), 1);
+  assert.equal(await emptyCreate.getAttribute('href'), directory + '/new');
+  await open(directory + '/new', 200, emptyCreate);
+  await open(workspace);
+  await shot('people-workspace-next-task', 1440);
+  await shot('people-workspace-next-task-320', 320);
+  await open(directory + '/new', 200, await nextTask('사람 등록', directory + '/new'));
   await page.getByLabel('이름', {exact: true}).fill(LEGAL_NAME);
   await page.getByLabel('사번', {exact: true}).fill(EMPLOYEE_NUMBER);
   await noBusinessStorage();
@@ -289,6 +314,11 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await witness('PEOPLE_OWN_RECEIPT', {command_id: result.command}); result.create_only_receipt = true;
   await header('PEOPLE_HEADER_CREATE_ONLY');
   await open(workspace); await policyCommand('revoke', 'create');
+  await open(workspace);
+  assert.equal(await page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
+  assert.equal(await page.getByRole('main').locator(`a[href="${directory}/new"]`).count(), 0);
+  await nextTask('사람 등록 권한 연결', policy + '/create/grant');
+  await open(directory + '/new', 404);
   await open(pendingPath, 404); await witness('PEOPLE_RECEIPT_DENIED'); result.create_revoked = true;
   await noBusinessStorage(); result.no_local_business_storage = true;
   result.keyboard = true; result.reflow_320 = true;

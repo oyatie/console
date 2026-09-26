@@ -23,7 +23,8 @@ function headerWitness(expected) {
 function evidence() {
   const r = {company: uuid(1), account: uuid(2), command: uuid(3), employee: uuid(4), person: uuid(4),
     read_assignment: uuid(5), create_assignment: uuid(6), checkpoints: [], mutations: [],
-    screenshots: ['people-directory-320.png', 'people-registration-desktop.png', 'people-pending-320.png',
+    screenshots: ['people-directory-320.png', 'people-workspace-next-task.png',
+      'people-workspace-next-task-320.png', 'people-registration-desktop.png', 'people-pending-320.png',
       'people-detail-desktop.png', 'people-detail-320.png']};
   r.checkpoints = PHASES.map(phase => ({phase, company: r.company, account: r.account, owner_effects_verified: true}));
   for (const flag of ['keyboard', 'reflow_320', 'read_only', 'pending_reopened', 'receipt_reopened',
@@ -51,10 +52,10 @@ test('missing screenshot refused', () => { const r = evidence(); r.screenshots.p
 test('unobserved permission loss refused', () => { const r = evidence(); r.create_revoked = 'true'; assert.equal(validEvidence(r), false); });
 test('document plan binds exact command, record and action identities', () => {
   const r = evidence(), rows = expectedDocuments(r);
-  assert.equal(rows.length, 35);
+  assert.equal(rows.length, 39);
   assert.equal(rows.filter(x => x.method === 'POST').length, 7);
   assert.equal(rows.filter(x => x.redirected).length, 7);
-  assert.equal(rows.filter(x => x.status === 404).length, 4);
+  assert.equal(rows.filter(x => x.status === 404).length, 5);
 });
 function aggregate() {
   const people = evidence(), company = people.company, command = uuid(90);
@@ -75,7 +76,7 @@ function aggregate() {
   r.posts = Object.fromEntries(paths.map(path => [path, 1])); return r;
 }
 test('combined census positive control', () => { const r = aggregate(); assert.equal(completeDocuments(r), true); assert.equal(completeMutations(r), true); });
-for (let i = 0; i < 35; i++) test(`missing People document ${i} refused`, () => {
+for (let i = 0; i < 39; i++) test(`missing People document ${i} refused`, () => {
   const r = aggregate(); r.documents.splice(12 + i, 1); assert.equal(completeDocuments(r), false);
 });
 test('missing aggregate mutation refused', () => { const r = aggregate(); r.mutations.pop(); assert.equal(completeMutations(r), false); });
