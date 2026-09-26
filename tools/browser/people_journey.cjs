@@ -3,6 +3,7 @@
 // supplied by company.cjs. Database checkpoints are independently acknowledged.
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const {assertNativeHeader, validHeaderEvidence} = require('./native_header.cjs');
 const PHASES = Object.freeze(['PEOPLE_INSTALLED', 'PEOPLE_READ_GRANTED', 'PEOPLE_READ_ONLY',
   'PEOPLE_CREATE_GRANTED', 'PEOPLE_PREPARED', 'PEOPLE_PENDING_REOPENED', 'PEOPLE_COMMITTED',
   'PEOPLE_RECEIPT_REOPENED', 'PEOPLE_DETAIL', 'PEOPLE_DETAIL_REOPENED', 'PEOPLE_LIST',
@@ -24,9 +25,31 @@ function deniedProjectionSafe(material, forbidden) {
   return forbidden.every(value => ![material.html, material.visible, material.text, ...material.attributes]
     .some(text => text.includes(value) || text.includes(escape(value))));
 }
+// Fixed route/permission expectations for actual checkpoints, independent of DOM.
+function expectedNativeHeaders(r) {
+  assert.match(r.header_origin, /^https:\/\/localhost:[1-9][0-9]*$/);
+  const w = `/companies/${id(r.company)}`, d = w + '/people';
+  const base = ['/account', w, w + '/policy'];
+  const item = (phase, path, read, create, currentPath) => ({phase, url: r.header_origin + path,
+    paths: [...base, ...(read ? [d] : []), ...(create ? [d + '/new'] : [])], currentPath, boundTitle: true});
+  return [item('PEOPLE_HEADER_READ_ONLY', d, true, false, d),
+    item('PEOPLE_HEADER_REGISTRATION', d + '/new', true, true, d + '/new'),
+    item('PEOPLE_HEADER_PENDING', d + '/requests/' + r.command, true, true),
+    item('PEOPLE_HEADER_DETAIL', d + '/' + r.employee, true, true),
+    item('PEOPLE_HEADER_CREATE_ONLY', d + '/requests/' + r.command, false, true)];
+}
+function completeNativeHeaders(r) {
+  try {
+    const expected = expectedNativeHeaders(r);
+    return Array.isArray(r.native_headers) && r.native_headers.length === expected.length &&
+      r.native_headers.every((row, i) => validHeaderEvidence(row, expected[i]));
+  } catch { return false; }
+}
+
 function validEvidence(r) {
   try {
     id(r.company); id(r.account); id(r.command); id(r.employee); id(r.person);
+    assert.equal(completeNativeHeaders(r), true);
     assert.equal(r.employee, r.person);
     assert.deepEqual(r.checkpoints.map(x => x.phase), PHASES);
     assert.equal(r.mutations.length, 7);
@@ -79,7 +102,25 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   const workspace = `/companies/${company}`;
   const directory = workspace + '/people';
   const policy = workspace + '/policy/people-directory';
-  const result = {company, account, checkpoints: [], mutations: [], screenshots: []};
+  const result = {company, account, checkpoints: [], mutations: [], screenshots: [],
+    header_origin: origin, native_headers: []};
+  async function header(phase) {
+    const expected = expectedNativeHeaders(result).filter(row => row.phase === phase);
+    assert.equal(expected.length, 1);
+    result.native_headers.push(await assertNativeHeader(page, tabTo, expected[0]));
+  }
+  async function directoryNavigation() {
+    const banner = page.getByRole('banner');
+    if (page.viewportSize().width <= 680) {
+      const summary = banner.locator('summary').filter({hasText: /^업무 탐색$/});
+      assert.equal(await summary.count(), 1);
+      const menu = summary.locator('..');
+      assert.equal(await menu.evaluate(e => e.open), false);
+      await tabTo(summary, 48); await page.keyboard.press('Enter');
+      assert.equal(await menu.evaluate(e => e.open), true);
+    }
+    return banner.getByRole('link', {name: '사람', exact: true});
+  }
   let pendingPath, detailPath;
   async function noBusinessStorage() {
     assert.equal(await page.evaluate(({name, number}) => {
@@ -198,19 +239,21 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await page.getByRole('link', {name: '사람', exact: true}).count(), 0);
   await policyCommand('install');
   await policyCommand('grant', 'read');
-  await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
+  await open(directory, 200, await directoryNavigation());
   assert.equal(await page.getByRole('heading', {name: '사람', exact: true, level: 1}).isVisible(), true);
   assert.equal(await page.getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
   assert.equal(await page.locator('[data-people-record]').count(), 0);
+  await header('PEOPLE_HEADER_READ_ONLY');
   await shot('people-directory-320', 320);
   await open(directory + '/new', 404); await witness('PEOPLE_READ_ONLY'); result.read_only = true;
   await open(workspace); await policyCommand('grant', 'create');
-  await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
+  await open(directory, 200, await directoryNavigation());
   await open(directory + '/new', 200, page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}));
   await page.getByLabel('이름', {exact: true}).fill(LEGAL_NAME);
   await page.getByLabel('사번', {exact: true}).fill(EMPLOYEE_NUMBER);
   await noBusinessStorage();
   assert.equal(await page.getByText('사람 목록에 등록합니다. 고용과 발령은 별도로 승인해야 합니다.', {exact: true}).isVisible(), true);
+  await header('PEOPLE_HEADER_REGISTRATION');
   await shot('people-registration-desktop', 1440);
   const prepared = await submit('form[data-people-operation="prepare"]', '등록 내용 확인', directory + '/requests',
     command => directory + '/requests/' + command, 'PEOPLE_PREPARED');
@@ -218,6 +261,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await requestView('pending');
   await open(pendingPath); await requestView('pending');
   await witness('PEOPLE_PENDING_REOPENED', {command_id: result.command}); result.pending_reopened = true;
+  await header('PEOPLE_HEADER_PENDING');
   await shot('people-pending-320', 320);
   const committed = await submit('form[data-people-operation="execute"]', '등록 확정', pendingPath + '/execute',
     () => pendingPath, 'PEOPLE_COMMITTED');
@@ -230,7 +274,8 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await detailView();
   await witness('PEOPLE_DETAIL'); await shot('people-detail-desktop', 1440); await shot('people-detail-320', 320);
   await open(detailPath); await detailView(); await witness('PEOPLE_DETAIL_REOPENED'); result.detail_reopened = true;
-  await open(directory, 200, page.getByRole('link', {name: '사람', exact: true}));
+  await header('PEOPLE_HEADER_DETAIL');
+  await open(directory, 200, await directoryNavigation());
   const entry = page.locator(`[data-people-record="${result.employee}"]`);
   assert.equal(await page.locator('[data-people-record]').count(), 1); assert.equal(await entry.isVisible(), true);
   assert.equal(await entry.getByRole('link', {name: LEGAL_NAME, exact: true}).getAttribute('href'), detailPath);
@@ -242,10 +287,11 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await requestView('committed');
   assert.equal(await page.getByRole('link', {name: '등록한 사람 보기', exact: true}).count(), 0);
   await witness('PEOPLE_OWN_RECEIPT', {command_id: result.command}); result.create_only_receipt = true;
+  await header('PEOPLE_HEADER_CREATE_ONLY');
   await open(workspace); await policyCommand('revoke', 'create');
   await open(pendingPath, 404); await witness('PEOPLE_RECEIPT_DENIED'); result.create_revoked = true;
   await noBusinessStorage(); result.no_local_business_storage = true;
   result.keyboard = true; result.reflow_320 = true;
   assert.equal(validEvidence(result), true); return result;
 }
-module.exports = {runPeopleJourney, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};
+module.exports = {expectedNativeHeaders, completeNativeHeaders, runPeopleJourney, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME, EMPLOYEE_NUMBER};

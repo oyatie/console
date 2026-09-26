@@ -4,6 +4,7 @@
 const fs=require('node:fs');const path=require('node:path');const crypto=require('node:crypto');
 const tls=require('node:tls');const net=require('node:net');const readline=require('node:readline');
 const {execFileSync}=require('node:child_process');const {once}=require('node:events');
+const {assertNativeHeader,validHeaderEvidence}=require('./native_header.cjs');
 const browserPin={
  'darwin-arm64':['chrome-headless-shell-mac-arm64/chrome-headless-shell','a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282'],
  'linux-x64':['chrome-headless-shell-linux64/chrome-headless-shell','ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e']
@@ -84,7 +85,28 @@ function validCompanyLayout(value,expectedCount,viewport){
 }
 function completeCompanyWorkspace(r){return ['company_layout_320','company_layout_desktop'].every(key=>r[key]===true)&&(r.policy_entry!==true||['payroll_company_layout_320','payroll_company_layout_desktop'].every(key=>r[key]===true));}
 function completeNavigation(r){return ['payroll_nav_before_grant_absent','payroll_receipt_link','payroll_workspace_link','keyboard_payroll_navigation','reflow_payroll_workspace_320','payroll_nav_after_revoke_absent'].every(key=>r[key]===true);}
-function completeObservations(r){return (r.people_entry!==true||(require('./people_journey.cjs').validEvidence(r.people)&&JSON.stringify(r.people_documents)===JSON.stringify(require('./people_journey.cjs').expectedDocuments(r.people))))&&completeCompanyWorkspace(r)&&completeDocuments(r)&&completeMutations(r)&&r.browser_version==='153.0.8010.12'&&r.unexpected_mutations===0&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')===(r.policy_entry===true?'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED,POLICY_ENTRY_READY,POLICY_PREFLIGHT,CATALOG_INSTALLED,GRANT_COMMITTED,GRANT_REOPENED,PAYROLL_READ,PAYROLL_REOPENED,PAYROLL_JSON,REVOKE_COMMITTED,REVOKE_REOPENED,PAYROLL_DENIED,PAYROLL_JSON_DENIED,ADMIN_REOPENED':'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED')&&(r.policy_entry!==true||(require('./policy_journey.cjs').validEvidence(r.policy)&&completePolicyPlan(r)&&completeNavigation(r)&&['current_context','policy_entry_link','policy_preflight','reflow_policy_320','keyboard_policy_entry','keyboard_policy_submit','full_policy_journey','payroll_ssr','payroll_reopened','payroll_json','payroll_denied','payroll_json_denied','administration_reopened'].every(key=>r[key]===true)))&&MUTATION_PATHS.every(p=>r.posts?.[p]===1)&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','reflow_result_320','reflow_company_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','keyboard_company_submit','company_wire','company_result','company_reopen','company_workspace','company_back','invalid_input_preserved','recipient_consequence','business_input_not_stored'].every(key=>r[key]===true);}
+function expectedNativeHeaders(r){
+ if(!validOrigin(r.header_origin)||!nonnil(r.org_id))throw Error('NATIVE_HEADER_IDENTITY');
+ const w=`/companies/${r.org_id}`,p=w+'/policy/payroll-read',payroll=w+'/payroll';
+ const commands=r.policy?.mutations?.map(m=>m.command_id)||[];
+ const policy=(phase,path,active=false)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,boundTitle:true});
+ const read=phase=>({phase,url:r.header_origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,boundTitle:true});
+ return [policy('POLICY_HEADER_PREFLIGHT',p+'/install'),
+  policy('CATALOG_INSTALLED',p+'/requests/install/'+commands[0]),
+  policy('GRANT_COMMITTED',p+'/requests/grant/'+commands[1],true),
+  policy('GRANT_REOPENED',p+'/requests/grant/'+commands[1],true),
+  read('PAYROLL_READ'),read('PAYROLL_REOPENED'),
+  policy('REVOKE_COMMITTED',p+'/requests/revoke/'+commands[2]),
+  policy('REVOKE_REOPENED',p+'/requests/revoke/'+commands[2])];
+}
+function completeNativeHeaders(r){try{
+ if(r.policy_entry!==true)return true;
+ const expected=expectedNativeHeaders(r);
+ return Array.isArray(r.native_headers)&&r.native_headers.length===expected.length&&r.native_headers.every((row,i)=>validHeaderEvidence(row,expected[i]))&&
+  (r.people_entry!==true||r.people?.header_origin===r.header_origin);
+}catch{return false;}}
+
+function completeObservations(r){return completeNativeHeaders(r)&&(r.people_entry!==true||(require('./people_journey.cjs').validEvidence(r.people)&&JSON.stringify(r.people_documents)===JSON.stringify(require('./people_journey.cjs').expectedDocuments(r.people))))&&completeCompanyWorkspace(r)&&completeDocuments(r)&&completeMutations(r)&&r.browser_version==='153.0.8010.12'&&r.unexpected_mutations===0&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')===(r.policy_entry===true?'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED,POLICY_ENTRY_READY,POLICY_PREFLIGHT,CATALOG_INSTALLED,GRANT_COMMITTED,GRANT_REOPENED,PAYROLL_READ,PAYROLL_REOPENED,PAYROLL_JSON,REVOKE_COMMITTED,REVOKE_REOPENED,PAYROLL_DENIED,PAYROLL_JSON_DENIED,ADMIN_REOPENED':'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED')&&(r.policy_entry!==true||(require('./policy_journey.cjs').validEvidence(r.policy)&&completePolicyPlan(r)&&completeNavigation(r)&&['current_context','policy_entry_link','policy_preflight','reflow_policy_320','keyboard_policy_entry','keyboard_policy_submit','full_policy_journey','payroll_ssr','payroll_reopened','payroll_json','payroll_denied','payroll_json_denied','administration_reopened'].every(key=>r[key]===true)))&&MUTATION_PATHS.every(p=>r.posts?.[p]===1)&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','reflow_result_320','reflow_company_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','keyboard_company_submit','company_wire','company_result','company_reopen','company_workspace','company_back','invalid_input_preserved','recipient_consequence','business_input_not_stored'].every(key=>r[key]===true);}
 function leafStatus(r){return !r.failure&&completeObservations(r)&&r.cleanup?.confirmed===true?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';}
 function publicError(error){const allowed=new Set(['TIMEOUT','OWNER_PROTOCOL','OWNER_EOF','OWNER_REFUSED','PREREQUISITE','TLS_RELAY_FAILED','UI_PUBLIC_ENTRY_MISSING','UI_LINK_MISSING','TERMS_CONTROL','REGISTRATION_WIRE','REGISTRATION_EFFECT','RESIDENT','COOKIE_SECURITY','SECRET_DISCLOSURE','ACCOUNT_SSR','LOGOUT_EFFECT','LOGIN_WIRE','LOGIN_EFFECT','EXTERNAL_REQUEST','OBSERVATION_INCOMPLETE','REFLOW_320','KEYBOARD_FOCUS','KEYBOARD_DISCOVERY','KEYBOARD_SKIP','KEYBOARD_TERMS','COMPANY_ENTRY','COMPANY_FORM','COMPANY_WIRE','COMPANY_RESULT','COMPANY_WORKSPACE','COMPANY_REOPEN','INPUT_PRESERVATION','BUSINESS_STORAGE','CURRENT_CONTEXT','POLICY_ENTRY','POLICY_PREFLIGHT','PEOPLE_ENTRY']);if(allowed.has(error?.code))return error.code;const network=String(error?.message??'').match(/\bnet::(ERR_[A-Z0-9_]{1,76})\b/);if(network)return network[1];if(error?.name==='TimeoutError')return 'BROWSER_TIMEOUT';if(error?.name==='SyntaxError')return 'INVALID_JSON';if(error?.name==='TypeError')return 'BROWSER_TYPE_ERROR';if(/No (?:resource with given identifier found|data found for resource with given identifier)/.test(String(error?.message??'')))return 'RESPONSE_BODY_UNAVAILABLE';if(String(error?.message??'').includes('Execution context was destroyed'))return 'BROWSER_CONTEXT_DESTROYED';return 'UNCLASSIFIED_FAILURE';}
 
@@ -158,6 +180,7 @@ async function main(backendPort,out,mode){
   relay.on('tlsClientError',error=>{result.tls_client_error=true;result.tls_client_error_code=/^[A-Z0-9_]{1,80}$/.test(error?.code??'')?error.code:'UNKNOWN';});
   await new Promise((resolve,reject)=>{relay.once('error',reject);relay.listen(0,'127.0.0.1',resolve);});
   const origin=`https://localhost:${relay.address().port}`;requireFact(validOrigin(origin),'PREREQUISITE');
+  result.header_origin=origin;result.native_headers=[];
   for(const file of files)fs.unlinkSync(file); // Private test key stays memory-only after TLS initialization.
   reader=readline.createInterface({input:process.stdin,crlfDelay:Infinity});const input=reader[Symbol.asyncIterator]();
   watchOwner(reader,requestCancel);
@@ -290,6 +313,7 @@ async function main(backendPort,out,mode){
    const submitInstall=form.getByRole('button',{name:'열람 권한 설정 준비',exact:true});requireFact(await submitInstall.count()===1&&await submitInstall.isVisible()&&await submitInstall.isEnabled(),'POLICY_PREFLIGHT');
    await tabTo(submitInstall,32);result.keyboard_policy_submit=true;result.policy_preflight=true;
    result.reflow_policy_320=await reflow320();requireFact(result.reflow_policy_320,'REFLOW_320');await secretFree();await capture('06-policy-install-preflight.png');
+   result.native_headers.push(await assertNativeHeader(page,tabTo,expectedNativeHeaders(result)[0]));
    emit({kind:'CHECKPOINT',phase:'POLICY_PREFLIGHT',account_id:account,org_id:body.org_id,group_id:body.group_id,command_id:command,expected_company_epoch:epoch});requireFact(validCheckpointCommand(await receive(),'POLICY_PREFLIGHT'),'OWNER_PROTOCOL');result.checkpoints.push('POLICY_PREFLIGHT');
    stage='policy_actions';result.policy_documents=[];result.policy_expected_mutations=[];
    const expectDocument=(method,path,status,redirected)=>result.policy_documents.push({method,path,status,redirected});
@@ -301,6 +325,7 @@ async function main(backendPort,out,mode){
     const html=await response.text();
     if(status===200){requireFact(html.includes('data-screen="payroll"')&&html.includes('data-state="empty"'),'POLICY_PREFLIGHT');requireFact(await page.locator('[data-screen="payroll"] [data-state="empty"]').isVisible(),'POLICY_PREFLIGHT');}
     else {for(const secret of [account,body.org_id,body.group_id,companyName])requireFact(!html.includes(secret),'SECRET_DISCLOSURE');requireFact(await page.locator('[data-screen="payroll"], [data-run-id], form').count()===0,'SECRET_DISCLOSURE');}
+    if(status===200)result.native_headers.push(await assertNativeHeader(page,tabTo,{phase,url:origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,boundTitle:true}));
     await exchange({phase});result.checkpoints.push(phase);await capture(phase.toLowerCase()+'.png');
    };
    const jsonPhase=async(phase,status)=>{
@@ -316,12 +341,23 @@ async function main(backendPort,out,mode){
     expiresAtLocal:new Date(Date.now()+86400000+9*3600000).toISOString().slice(0,16),expectDocument,
     capture:async name=>capture(name+'.png'),
     beforeSubmit:async action=>{result.policy_expected_mutations.push(action.path);await exchange({phase:'POLICY_ACTION_READY',operation:action.operation,command_id:action.command_id,expected_company_epoch:action.expected_company_epoch,fields:action.fields,assignment_id:action.operation==='RevokePayrollReadV1'?action.path.split('/').at(-2):null});},
-    checkpoint:async event=>{const reply=await exchange(event);result.checkpoints.push(event.phase);return reply.witness;},
+    checkpoint:async event=>{const reply=await exchange(event);result.checkpoints.push(event.phase);
+     const active=['GRANT_COMMITTED','GRANT_REOPENED'].includes(event.phase);
+     const kind=event.phase==='CATALOG_INSTALLED'?'install':active?'grant':'revoke';
+     const w=`/companies/${body.org_id}`;
+     result.native_headers.push(await assertNativeHeader(page,tabTo,{phase:event.phase,url:origin+`${w}/policy/payroll-read/requests/${kind}/${event.command_id}`,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,boundTitle:true}));
+     return reply.witness;},
     readPayroll:async()=>{const receiptPath=new URL(page.url()).pathname;
      const receiptPayroll=page.getByRole('link',{name:'급여',exact:true});
      result.payroll_receipt_link=await exactVisibleLink(receiptPayroll,payroll);
      requireFact(result.payroll_receipt_link,'POLICY_ENTRY');await secretFree();await capture('payroll-navigation-receipt-320.png');
-     const workspacePath=`/companies/${body.org_id}`,workspace=page.getByRole('link',{name:'회사 업무 공간',exact:true});
+     if(page.viewportSize().width<=680){
+      const summary=page.getByRole('banner').locator('summary').filter({hasText:/^업무 탐색$/});
+      requireFact(await summary.count()===1,'KEYBOARD_DISCOVERY');const menu=summary.locator('..');
+      requireFact(await menu.evaluate(e=>e.open)===false,'KEYBOARD_DISCOVERY');
+      await tabTo(summary,48);await page.keyboard.press('Enter');requireFact(await menu.evaluate(e=>e.open)===true,'KEYBOARD_DISCOVERY');
+     }
+     const workspacePath=`/companies/${body.org_id}`,workspace=page.getByRole('banner').getByRole('link',{name:'회사 업무 공간',exact:true});
      requireFact(await exactVisibleLink(workspace,workspacePath),'COMPANY_WORKSPACE');
      expectDocument('GET',workspacePath,200,false);await tabTo(workspace,32);
      const workspaceResponse=page.waitForResponse(r=>r.url()===origin+workspacePath&&r.request().isNavigationRequest());await page.keyboard.press('Enter');
@@ -357,5 +393,5 @@ async function main(backendPort,out,mode){
  }catch(error){result.failure??={stage,code:publicError(error)};}
  finally{clearTimeout(watchdog);await finish();}
 }
-module.exports={validCompanyLayout,completeCompanyWorkspace,exactVisibleLink,completeNavigation,completePolicyPlan,expectedDocumentRows,completeDocumentsOriginal,completeMutationsOriginal,installFormControlsSafe,completeMutations,observeMutations,completeDocuments,observeDocuments,validOrigin,validCheckpointCommand,completeObservations,leafStatus,scrub,watchOwner,closeOwnedBrowser,certificateArgs,publicError,configureResponseRetention};
+module.exports={expectedNativeHeaders,completeNativeHeaders,validCompanyLayout,completeCompanyWorkspace,exactVisibleLink,completeNavigation,completePolicyPlan,expectedDocumentRows,completeDocumentsOriginal,completeMutationsOriginal,installFormControlsSafe,completeMutations,observeMutations,completeDocuments,observeDocuments,validOrigin,validCheckpointCommand,completeObservations,leafStatus,scrub,watchOwner,closeOwnedBrowser,certificateArgs,publicError,configureResponseRetention};
 if(require.main===module)main(process.argv[2],process.argv[3],process.argv[4]).catch(()=>{process.stderr.write('Company UI browser producer initialization failed; no acceptance result.\n');process.exitCode=2;});
