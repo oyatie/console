@@ -444,3 +444,305 @@ fn native_people_whitespace_fields_are_distinct_from_absence_without_trimming_re
         assert!(!html.contains("미등록") && !html.contains("공백으로 저장된"));
     }
 }
+
+// Renderer fixtures only. Actual Conflict/Capacity classification is exercised
+// by the owning HTTP test, not inferred from localized UI message text.
+fn recovery_registration() -> Registration {
+    Registration {
+        command: COMMAND.into(),
+        proof: PROOF.into(),
+        expected: Expectations {
+            company_epoch: "3".into(),
+            object_type_id: "unit-object".into(),
+            action_type_id: "unit-action".into(),
+            action_revision: "4".into(),
+            schema_revision: "5".into(),
+            legal_name_property_id: "unit-name-property".into(),
+            employee_number_property_id: "unit-number-property".into(),
+        },
+        legal_name: NAME.into(),
+        employee_number: "사번&<1>".into(),
+        name_error: None,
+        number_error: None,
+        form_error: None,
+    }
+}
+
+fn native_header_regions(html: &str) -> (&str, &str) {
+    let header = html
+        .split("<header ")
+        .nth(1)
+        .expect("one native header")
+        .split("</header>")
+        .next()
+        .unwrap();
+    assert_eq!(html.matches("<header ").count(), 1);
+    let desktop_marker = "data-native-navigation=\"desktop\"";
+    let mobile_marker = "data-native-navigation=\"mobile\"";
+    assert_eq!(
+        header.matches(desktop_marker).count(),
+        1,
+        "one desktop presentation"
+    );
+    assert_eq!(
+        header.matches(mobile_marker).count(),
+        1,
+        "one mobile presentation"
+    );
+    let (_, desktop) = header.split_once(desktop_marker).unwrap();
+    let (desktop, mobile) = desktop.split_once(mobile_marker).unwrap();
+    for region in [desktop, mobile] {
+        assert!(!region.contains("<form") && !region.contains("csrf_proof"));
+    }
+    (desktop, mobile)
+}
+
+fn native_header_links(region: &str) -> Vec<(&str, bool)> {
+    region
+        .split("<a ")
+        .skip(1)
+        .map(|link| {
+            let tag = link.split('>').next().unwrap();
+            let href = tag
+                .split("href=\"")
+                .nth(1)
+                .expect("navigation link href")
+                .split('"')
+                .next()
+                .unwrap();
+            (href, tag.contains("aria-current=\"page\""))
+        })
+        .collect()
+}
+
+fn exact_current_people_link(html: &str, expected: Option<&str>) {
+    let (desktop, mobile) = native_header_regions(html);
+    for region in [desktop, mobile] {
+        let current: Vec<_> = native_header_links(region)
+            .into_iter()
+            .filter_map(|(path, current)| current.then_some(path))
+            .collect();
+        assert_eq!(
+            current.len(),
+            usize::from(expected.is_some()),
+            "per presentation only the exact destination may be page-current"
+        );
+        if let Some(path) = expected {
+            assert_eq!(current, vec![path]);
+        }
+    }
+}
+
+#[test]
+fn native_people_navigation_marks_only_the_exact_current_page() {
+    let root = format!("/companies/{COMPANY}/people");
+    for create in [false, true] {
+        let html = render(Page::Directory {
+            scope: scope(true, create),
+            records: vec![],
+            next_after: None,
+        });
+        exact_current_people_link(&html, Some(&root));
+    }
+    for read in [false, true] {
+        let html = render(Page::Registration {
+            scope: scope(read, true),
+            form: recovery_registration(),
+        });
+        exact_current_people_link(&html, Some(&format!("{root}/new")));
+        for outcome in [
+            Outcome::Pending {
+                proof: PROOF.into(),
+            },
+            committed(),
+            Outcome::Cancelled,
+        ] {
+            let html = render(Page::Request {
+                scope: scope(read, true),
+                request: request(outcome),
+            });
+            exact_current_people_link(&html, None);
+        }
+    }
+    let html = render(Page::Detail {
+        scope: scope(true, false),
+        record: Record {
+            employee_id: EMPLOYEE.into(),
+            person_id: PERSON.into(),
+            legal_name: Some(NAME.into()),
+            employee_number: Some("사번&<1>".into()),
+            person_version: "1".into(),
+            registered_at: "2026-09-23 10:01".into(),
+        },
+    });
+    exact_current_people_link(&html, None);
+}
+
+#[test]
+fn native_people_header_projects_only_permitted_destinations_in_each_presentation() {
+    let root = format!("/companies/{COMPANY}");
+    for read in [false, true] {
+        for create in [false, true] {
+            for payroll in [false, true] {
+                for company in [false, true] {
+                    for policy in [false, true] {
+                        let mut authorized = scope(read, create);
+                        authorized.company_link = company;
+                        authorized.policy_link = policy;
+                        authorized.payroll_link = payroll;
+                        let html = render(Page::Directory {
+                            scope: authorized,
+                            records: vec![],
+                            next_after: None,
+                        });
+                        let mut expected = vec!["/account".to_owned()];
+                        if read {
+                            expected.push(format!("{root}/people"));
+                        }
+                        if create {
+                            expected.push(format!("{root}/people/new"));
+                        }
+                        if company {
+                            expected.push(root.clone());
+                        }
+                        if policy {
+                            expected.push(format!("{root}/policy"));
+                        }
+                        if payroll {
+                            expected.push(format!("{root}/payroll"));
+                        }
+                        expected.sort();
+                        let (desktop, mobile) = native_header_regions(&html);
+                        for region in [desktop, mobile] {
+                            let mut actual: Vec<_> = native_header_links(region)
+                                .into_iter()
+                                .map(|(p, _)| p.to_owned())
+                                .collect();
+                            actual.sort();
+                            assert_eq!(
+                                actual, expected,
+                                "each permitted destination occurs once in each presentation"
+                            );
+                        }
+                        assert_eq!(
+                            mobile.matches("data-native-payroll-shortcut").count(),
+                            usize::from(payroll)
+                        );
+                        let menu = mobile
+                            .split("<details")
+                            .nth(1)
+                            .expect("native mobile disclosure")
+                            .split("</details>")
+                            .next()
+                            .unwrap();
+                        assert!(
+                            !menu.contains(&format!("href=\"{root}/payroll\"")),
+                            "shortcut must not be duplicated inside menu"
+                        );
+                        let ids: Vec<_> = html
+                            .split(" id=\"")
+                            .skip(1)
+                            .map(|s| s.split('"').next().unwrap())
+                            .collect();
+                        let unique: std::collections::BTreeSet<_> = ids.iter().collect();
+                        assert_eq!(ids.len(), unique.len(), "responsive copies duplicated IDs");
+                        exact_current_people_link(
+                            &html,
+                            read.then_some(format!("{root}/people")).as_deref(),
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn native_people_header_refusals_do_not_fabricate_company_navigation() {
+    for page in [
+        Page::Refused,
+        Page::Unavailable,
+        Page::Uncertain {
+            company: COMPANY.into(),
+            command: COMMAND.into(),
+        },
+    ] {
+        let html = render(page);
+        let (desktop, mobile) = native_header_regions(&html);
+        for region in [desktop, mobile] {
+            assert_eq!(native_header_links(region), vec![("/account", false)]);
+            assert!(!region.contains(COMPANY) && !region.contains("data-native-payroll-shortcut"));
+        }
+    }
+}
+
+#[test]
+fn native_people_notvisible_header_keeps_scoped_routes_without_false_current_page() {
+    let root = format!("/companies/{COMPANY}");
+    for read in [false, true] {
+        for create in [false, true] {
+            let html = render(Page::RequestNotVisible {
+                scope: scope(read, create),
+                command: COMMAND.into(),
+            });
+            exact_current_people_link(&html, None);
+            let mut expected = vec!["/account".to_owned(), root.clone()];
+            if read {
+                expected.push(format!("{root}/people"));
+            }
+            if create {
+                expected.push(format!("{root}/people/new"));
+            }
+            expected.sort();
+            let (desktop, mobile) = native_header_regions(&html);
+            for region in [desktop, mobile] {
+                let mut actual: Vec<_> = native_header_links(region)
+                    .into_iter()
+                    .map(|(p, _)| p.to_owned())
+                    .collect();
+                actual.sort();
+                assert_eq!(actual, expected);
+                assert!(
+                    !region.contains(COMMAND),
+                    "requested locator is recovery context, not navigation authority"
+                );
+            }
+        }
+    }
+}
+#[test]
+fn native_people_conflict_header_keeps_scoped_routes_without_false_current_page() {
+    let root = format!("/companies/{COMPANY}");
+    for read in [false, true] {
+        for create in [false, true] {
+            let html = render(Page::RegistrationConflict {
+                scope: scope(read, create),
+                command: COMMAND.into(),
+                legal_name: NAME.into(),
+                employee_number: "사번&<1>".into(),
+            });
+            exact_current_people_link(&html, None);
+            let mut expected = vec!["/account".to_owned(), root.clone()];
+            if read {
+                expected.push(format!("{root}/people"));
+            }
+            if create {
+                expected.push(format!("{root}/people/new"));
+            }
+            expected.sort();
+            let (desktop, mobile) = native_header_regions(&html);
+            for region in [desktop, mobile] {
+                let mut actual: Vec<_> = native_header_links(region)
+                    .into_iter()
+                    .map(|(p, _)| p.to_owned())
+                    .collect();
+                actual.sort();
+                assert_eq!(actual, expected);
+                assert!(
+                    !region.contains(COMMAND),
+                    "requested locator is recovery context, not navigation authority"
+                );
+            }
+        }
+    }
+}

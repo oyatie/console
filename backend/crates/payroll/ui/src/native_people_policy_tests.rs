@@ -354,3 +354,219 @@ fn current_people_navigation_is_consistent_on_company_policy_and_payroll_pages()
         }
     }
 }
+
+fn policy_nav_regions(html: &str) -> (&str, &str) {
+    let header = html
+        .split("<header ")
+        .nth(1)
+        .expect("one native header")
+        .split("</header>")
+        .next()
+        .unwrap();
+    assert_eq!(html.matches("<header ").count(), 1);
+    let desktop_marker = "data-native-navigation=\"desktop\"";
+    let mobile_marker = "data-native-navigation=\"mobile\"";
+    assert_eq!(
+        header.matches(desktop_marker).count(),
+        1,
+        "one desktop presentation"
+    );
+    assert_eq!(
+        header.matches(mobile_marker).count(),
+        1,
+        "one mobile presentation"
+    );
+    let (_, desktop) = header.split_once(desktop_marker).unwrap();
+    let (desktop, mobile) = desktop.split_once(mobile_marker).unwrap();
+    for region in [desktop, mobile] {
+        assert!(!region.contains("<form") && !region.contains("csrf_proof"));
+    }
+    (desktop, mobile)
+}
+
+fn policy_nav_links(region: &str) -> Vec<(&str, bool)> {
+    region
+        .split("<a ")
+        .skip(1)
+        .map(|link| {
+            let tag = link.split('>').next().unwrap();
+            let href = tag
+                .split("href=\"")
+                .nth(1)
+                .expect("navigation link href")
+                .split('"')
+                .next()
+                .unwrap();
+            (href, tag.contains("aria-current=\"page\""))
+        })
+        .collect()
+}
+
+fn exact_policy_header(html: &str, mut expected: Vec<String>, payroll: bool) {
+    expected.sort();
+    let (desktop, mobile) = policy_nav_regions(html);
+    for region in [desktop, mobile] {
+        let links = policy_nav_links(region);
+        let mut actual: Vec<_> = links.iter().map(|(path, _)| path.to_string()).collect();
+        actual.sort();
+        assert_eq!(actual, expected);
+        assert!(
+            links.iter().all(|(_, current)| !current),
+            "task/result is not the policyindex page"
+        );
+    }
+    assert_eq!(
+        mobile.matches("data-native-payroll-shortcut").count(),
+        usize::from(payroll)
+    );
+    let menu = mobile
+        .split("<details")
+        .nth(1)
+        .unwrap()
+        .split("</details>")
+        .next()
+        .unwrap();
+    assert!(!menu.contains(&format!("href=\"/companies/{COMPANY}/payroll\"")));
+    let ids: Vec<_> = html
+        .split(" id=\"")
+        .skip(1)
+        .map(|s| s.split('"').next().unwrap())
+        .collect();
+    assert_eq!(
+        ids.len(),
+        ids.iter().collect::<std::collections::BTreeSet<_>>().len()
+    );
+}
+
+#[test]
+fn native_policy_header_projects_authorized_links_without_changing_grant_form() {
+    let root = format!("/companies/{COMPANY}");
+    for read in [false, true] {
+        for create in [false, true] {
+            for payroll in [false, true] {
+                for company in [false, true] {
+                    for policy in [false, true] {
+                        let mut projection = scope(false);
+                        projection.people_navigation = (read, create);
+                        projection.payroll_link = payroll;
+                        projection.company_link = company;
+                        projection.policy_link = policy;
+                        let html = page(projection, None);
+                        let mut expected = vec!["/account".to_owned()];
+                        if read {
+                            expected.push(format!("{root}/people"));
+                        }
+                        if create {
+                            expected.push(format!("{root}/people/new"));
+                        }
+                        if payroll {
+                            expected.push(format!("{root}/payroll"));
+                        }
+                        if company {
+                            expected.push(root.clone());
+                        }
+                        if policy {
+                            expected.push(format!("{root}/policy"));
+                        }
+                        exact_policy_header(&html, expected, payroll);
+                        // Original pendinggrant hiddeninputs remain unique and unchanged; no navigationcopy may clone the form.
+                        assert_eq!(html.matches("<form").count(), 1);
+                        assert!(input(&html, "csrf_proof").contains(&format!("value=\"{PROOF}\"")));
+                        assert!(
+                            input(&html, "command_id").contains(&format!("value=\"{COMMAND}\""))
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn native_policy_header_all_subject_tasks_and_receipts_have_no_false_current_index() {
+    let root = format!("/companies/{COMPANY}");
+    for subject in [
+        Subject::PayrollRead,
+        Subject::PeopleCatalog,
+        Subject::PeopleRead,
+        Subject::PeopleCreate,
+    ] {
+        let operation = if subject == Subject::PeopleCatalog {
+            Operation::Install
+        } else {
+            Operation::Grant
+        };
+        let expected = vec![
+            "/account".to_owned(),
+            root.clone(),
+            format!("{root}/policy"),
+        ];
+        let mut projection = scope(false);
+        projection.subject = subject;
+        let html = render(Page::Form(Form {
+            scope: projection,
+            operation,
+            command: COMMAND.into(),
+            proof: PROOF.into(),
+            validation: None,
+        }));
+        exact_policy_header(&html, expected.clone(), false);
+        for pending in [false, true] {
+            let mut projection = scope(false);
+            projection.subject = subject;
+            let outcome = if pending {
+                Outcome::Pending {
+                    accepted_at: "2026-09-23 09:00 KST".into(),
+                    deadline: "2026-09-23 10:00 KST".into(),
+                    proof: PROOF.into(),
+                }
+            } else {
+                Outcome::Committed {
+                    title: "권한 처리를 완료했습니다",
+                    description: "기록된 처리입니다",
+                    receipt: OTHER.into(),
+                    at: "2026-09-23 09:01 KST".into(),
+                }
+            };
+            let html = render(Page::Result {
+                scope: projection,
+                operation,
+                command: COMMAND.into(),
+                outcome,
+                original: OriginalRecord {
+                    accepted_at: "2026-09-23 09:00 KST".into(),
+                    deadline: "2026-09-23 10:00 KST".into(),
+                    intake_receipt: OTHER.into(),
+                    expected_company_epoch: "9".into(),
+                    expected_assignment: None,
+                    requested_until: None,
+                    effect_period: None,
+                    effect_epochs: None,
+                },
+            });
+            exact_policy_header(&html, expected.clone(), false);
+            assert_eq!(html.matches("<form").count(), usize::from(pending));
+        }
+    }
+}
+
+#[test]
+fn native_policy_header_errors_do_not_disclose_company_navigation() {
+    for page in [
+        Page::NotVisible,
+        Page::Refused,
+        Page::Unavailable,
+        Page::Uncertain {
+            result_path: format!(
+                "/companies/{COMPANY}/policy/payroll-read/requests/grant/{COMMAND}"
+            ),
+        },
+    ] {
+        let html = render(page);
+        exact_policy_header(&html, vec!["/account".to_owned()], false);
+        let (desktop, mobile) = policy_nav_regions(&html);
+        for region in [desktop, mobile] {
+            assert!(!region.contains(COMPANY));
+        }
+    }
+}

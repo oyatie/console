@@ -15,11 +15,11 @@
     "backend/crates/payroll/ui/src/native_account.rs": "614a895e28ec144f022f37cda2d1ef8245124a335db0ed5bc3eb66a592246073",
     "backend/crates/payroll/ui/src/native_payroll.css": "e8d6648d516db9e26632a7482387c29a6350e2dd3f34541e7d2193827ed6fbfc",
     "backend/crates/payroll/ui/src/native_payroll.rs": "c8a7ed7e11180c7ed3dd4fad1abd83688961f68c71379d75e30885ab09ec931e",
-    "backend/crates/payroll/ui/src/native_payroll_tests.rs": "8b3df6f0eaf65acc57bbad1e78e0ef36525f2013dfd90b625bbb84f259636194",
+    "backend/crates/payroll/ui/src/native_payroll_tests.rs": "684ba94ff5cbdd7048967b534d8782a33742a30a21a98d8c46fc6f68902e9676",
     "backend/crates/payroll/ui/src/native_people.css": "50179b4f289a5d6e317ca40a084160619da6b44f4cd082bd0a50ac42334346ad",
     "backend/crates/payroll/ui/src/native_people.rs": "0a0f2ad102a6248d73d97568b261bfad9f56e72aa23f3700b53262cbaad45131",
-    "backend/crates/payroll/ui/src/native_people_policy_tests.rs": "30d9c21d48b1a43b1fa3e8fbc62ea567910fea1b35b72272516ee205585c9aa8",
-    "backend/crates/payroll/ui/src/native_people_tests.rs": "d9af5334593386e6d0722620292b8498e6096caf3f15735b7ab924441d4e1da3",
+    "backend/crates/payroll/ui/src/native_people_policy_tests.rs": "80273a6738ca731e17378e3bad7bb10e842c51ea443c12fe540152a69b522026",
+    "backend/crates/payroll/ui/src/native_people_tests.rs": "aeea74638b5ebfc3e3caffb2c3fe38673e919c906d852a4c586c3c81aed5ba6b",
     "backend/crates/payroll/ui/src/native_policy.css": "6009a91315d65142fd22c0556c002c8c0d479986cc0281a4d96202d7d7936701",
     "backend/crates/payroll/ui/src/native_policy.rs": "f4ca3567397a69a4789fd6e2c40fe72ead4ad9828358fdcc5d41710a06d9f581",
     "backend/crates/payroll/ui/src/native_policy_validation_tests.rs": "13925f9f08df9ad6a36ad8492b95c09e8a87453eebd4510f0fbae55a329d8d28",
@@ -177,7 +177,7 @@
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "0ab0c9cf25490dabdeee86ec94bdce3f8db68194424273d83d17b0d912885b9a",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "516bcc97d979dd04a938f76ea5fee330eee201e331ee7d098a5371587415acbf"
+    "source_snapshot_sha256": "be7d6f98d8079ef01eb5ce319e3f63bbf2e8ee3407637e24231fb11dd7c8d4c0"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",

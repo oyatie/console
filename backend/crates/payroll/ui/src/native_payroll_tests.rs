@@ -519,3 +519,137 @@ fn native_payroll_errors_have_no_scoped_context_and_all_documents_are_private() 
         );
     }
 }
+
+fn payroll_nav_regions(html: &str) -> (&str, &str) {
+    let header = html
+        .split("<header ")
+        .nth(1)
+        .expect("one native header")
+        .split("</header>")
+        .next()
+        .unwrap();
+    assert_eq!(html.matches("<header ").count(), 1);
+    let desktop_marker = "data-native-navigation=\"desktop\"";
+    let mobile_marker = "data-native-navigation=\"mobile\"";
+    assert_eq!(
+        header.matches(desktop_marker).count(),
+        1,
+        "one desktop presentation"
+    );
+    assert_eq!(
+        header.matches(mobile_marker).count(),
+        1,
+        "one mobile presentation"
+    );
+    let (_, desktop) = header.split_once(desktop_marker).unwrap();
+    let (desktop, mobile) = desktop.split_once(mobile_marker).unwrap();
+    for region in [desktop, mobile] {
+        assert!(!region.contains("<form") && !region.contains("csrf_proof"));
+    }
+    (desktop, mobile)
+}
+
+fn payroll_nav_links(region: &str) -> Vec<(&str, bool)> {
+    region
+        .split("<a ")
+        .skip(1)
+        .map(|link| {
+            let tag = link.split('>').next().unwrap();
+            let href = tag
+                .split("href=\"")
+                .nth(1)
+                .expect("navigation link href")
+                .split('"')
+                .next()
+                .unwrap();
+            (href, tag.contains("aria-current=\"page\""))
+        })
+        .collect()
+}
+
+#[test]
+fn native_payroll_header_keeps_authorized_routes_and_one_current_payroll_per_presentation() {
+    let root = format!("/companies/{COMPANY}");
+    let payroll = format!("{root}/payroll");
+    for read in [false, true] {
+        for create in [false, true] {
+            for identity in [false, true] {
+                let mut page = collection();
+                page.people_navigation = (read, create);
+                if !identity {
+                    page.identity = None;
+                }
+                let html = render(Page::Runs(page));
+                let mut expected = vec!["/account".to_owned(), payroll.clone()];
+                if read {
+                    expected.push(format!("{root}/people"));
+                }
+                if create {
+                    expected.push(format!("{root}/people/new"));
+                }
+                expected.sort();
+                let (desktop, mobile) = payroll_nav_regions(&html);
+                for region in [desktop, mobile] {
+                    let links = payroll_nav_links(region);
+                    let mut actual: Vec<_> =
+                        links.iter().map(|(path, _)| path.to_string()).collect();
+                    actual.sort();
+                    assert_eq!(actual, expected);
+                    assert_eq!(
+                        links
+                            .iter()
+                            .filter_map(|(p, current)| current.then_some(*p))
+                            .collect::<Vec<_>>(),
+                        vec![payroll.as_str()]
+                    );
+                    // Existing Payrollheader never asserted Company/policy discovery; identity lives in its actual content.
+                    assert!(
+                        !links
+                            .iter()
+                            .any(|(path, _)| *path == root || *path == format!("{root}/policy"))
+                    );
+                }
+                assert_eq!(mobile.matches("data-native-payroll-shortcut").count(), 1);
+                let menu = mobile
+                    .split("<details")
+                    .nth(1)
+                    .unwrap()
+                    .split("</details>")
+                    .next()
+                    .unwrap();
+                assert!(!menu.contains(&format!("href=\"{payroll}\"")));
+                let ids: Vec<_> = html
+                    .split(" id=\"")
+                    .skip(1)
+                    .map(|s| s.split('"').next().unwrap())
+                    .collect();
+                assert_eq!(
+                    ids.len(),
+                    ids.iter().collect::<std::collections::BTreeSet<_>>().len()
+                );
+                assert_eq!(
+                    html.matches("<form").count(),
+                    1,
+                    "keep only actual paginationform"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn native_payroll_header_errors_keep_only_account_recovery() {
+    for page in [
+        Page::NotVisible,
+        Page::AuthenticationRequired,
+        Page::Unavailable,
+        Page::InvalidRequest,
+    ] {
+        let html = render(page);
+        let (desktop, mobile) = payroll_nav_regions(&html);
+        for region in [desktop, mobile] {
+            assert_eq!(payroll_nav_links(region), vec![("/account", false)]);
+            assert!(!region.contains(COMPANY) && !region.contains("data-native-payroll-shortcut"));
+        }
+    }
+}
