@@ -7,7 +7,7 @@
  * the gate while disagreeing with the server.
  */
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { after, describe, it } from "node:test";
@@ -223,5 +223,79 @@ describe("real tree", () => {
     });
     assert.equal(run.status, 0, run.stderr || run.stdout);
     assert.match(run.stdout, /OpenAPI route drift gate passed \(\d+ backend \/api\/ operations/);
+  });
+});
+
+function trackedRouteFixture({ testName, parentName, guarded = true, extraInclude = false, rogue = false, testApiRoute = true }) {
+  const files = {
+    "scripts/check-platform-contract-drift.mjs": readFileSync(cli, "utf8"),
+    "backend/openapi/openapi.yaml": openApi(["GET /api/x"]),
+    "backend/app/src/registered.rs": `fn router() -> Router {
+    Router::new()
+        .route("/api/x", get(handler))
+        .route("/api/v1/dev-auth/session", post(dev_auth))
+        .route("/api/v1/mail/mox/webhook", post(mox))
+}
+`,
+    [`backend/app/src/${parentName}`]: `${guarded ? "#[cfg(test)]\n" : ""}#[path = "${testName}"]\nmod timeout_tests;\n`,
+    [`backend/app/src/${testName}`]: `fn router() -> Router {
+    Router::new().route("${testApiRoute ? "/api/test-only" : "/internal/test-only"}", ${testApiRoute ? "any" : "get"}(handler))
+}
+`,
+  };
+  if (extraInclude) {
+    files["backend/app/src/extra.rs"] = `include!("${testName}");\n`;
+    files["backend/app/src/lib.rs"] = "mod extra;\n";
+  }
+  if (rogue) {
+    files["backend/app/src/unguarded_tests.rs"] = `fn router() -> Router {
+    Router::new().route("/api/rogue", get(handler))
+}
+`;
+  }
+  const root = realpathSync(fixture(files));
+  const init = spawnSync("git", ["init", "-q", root], { encoding: "utf8" });
+  assert.equal(init.status, 0, init.stderr);
+  const add = spawnSync("git", ["-C", root, "add", "-A"], { encoding: "utf8" });
+  assert.equal(add.status, 0, add.stderr);
+  return spawnSync(process.execPath, [join(root, "scripts/check-platform-contract-drift.mjs")], {
+    cwd: root,
+    encoding: "utf8",
+  });
+}
+
+describe("production route harvest", () => {
+  for (const [testName, parentName] of [
+    ["native_payroll_timeout_tests.rs", "native_payroll.rs"],
+    ["native_people_timeout_tests.rs", "native_people.rs"],
+  ]) {
+    it(`excludes ${testName} while its sole inclusion is cfg(test)`, () => {
+      const guarded = trackedRouteFixture({ testName, parentName });
+      assert.equal(guarded.status, 0, guarded.stderr || guarded.stdout);
+      assert.match(guarded.stdout, /1 backend \/api\/ operations/);
+    });
+
+    it(`counts ${testName} when its cfg(test) guard is removed`, () => {
+      const unguarded = trackedRouteFixture({ testName, parentName, guarded: false });
+      assert.notEqual(unguarded.status, 0, "removing cfg(test) must fail closed");
+      assert.match(unguarded.stderr, /test-only|recognized HTTP method|inclusion/i);
+    });
+
+    it(`counts ${testName} when production includes it too`, () => {
+      const extra = trackedRouteFixture({ testName, parentName, extraInclude: true });
+      assert.notEqual(extra.status, 0, "an extra production inclusion must fail closed");
+      assert.match(extra.stderr, /test-only|recognized HTTP method|inclusion/i);
+    });
+  }
+
+  it("still counts an unguarded new _tests.rs API router", () => {
+    const result = trackedRouteFixture({
+      testName: "native_payroll_timeout_tests.rs",
+      parentName: "native_payroll.rs",
+      rogue: true,
+      testApiRoute: false,
+    });
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /GET \/api\/rogue/);
   });
 });
