@@ -272,7 +272,8 @@ describe("production route harvest", () => {
     it(`excludes ${testName} while its sole inclusion is cfg(test)`, () => {
       const guarded = trackedRouteFixture({ testName, parentName });
       assert.equal(guarded.status, 0, guarded.stderr || guarded.stdout);
-      assert.match(guarded.stdout, /1 backend \/api\/ operations/);
+      // The fixture has one documented route and two checked exemptions.
+      assert.match(guarded.stdout, /3 backend \/api\/ operations across 1 route sources/);
     });
 
     it(`counts ${testName} when its cfg(test) guard is removed`, () => {
