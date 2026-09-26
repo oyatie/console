@@ -1,5 +1,6 @@
 //! Native directory pages composed from current authorized projections.
 //! No client storage, identity matching, employment decisions, or mutations.
+use super::native_workspace_header::{self, NavigationMode};
 use leptos::prelude::*;
 
 pub struct Scope {
@@ -317,6 +318,8 @@ fn detail_body(record: Record) -> AnyView {
 }
 
 pub fn render(page: Page) -> String {
+    let directory_current = matches!(&page, Page::Directory { .. });
+    let registration_current = matches!(&page, Page::Registration { .. });
     let scope = match &page {
         Page::Directory { scope, .. }
         | Page::Registration { scope, .. }
@@ -342,13 +345,18 @@ pub fn render(page: Page) -> String {
         <p class="page-eyebrow">{s.company_name.clone().unwrap_or_else(||"선택한 회사".into())}</p>
     }.into_any()
     });
-    let navigation = scope.map(|s| {
-        let id = s.company.clone();
+    let payroll_shortcut = scope
+        .filter(|s| s.payroll_link)
+        .map(|s| (format!("/companies/{}/payroll", s.company), false));
+    let header = native_workspace_header::render(
+        |mode| {
+            scope.map(|s| {
+        let id = &s.company;
         view! {
             <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">
-                {s.directory_link.then(||view! {<a href=directory(&id) aria-current="page">"사람"</a>})}
-                {s.can_create.then(||view! {<a href=format!("{}/new",directory(&id))>"사람 등록"</a>})}
-                {s.payroll_link.then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}
+                {s.directory_link.then(||view! {<a href=directory(id) aria-current=directory_current.then_some("page")>"사람"</a>})}
+                {s.can_create.then(||view! {<a href=format!("{}/new",directory(id)) aria-current=registration_current.then_some("page")>"사람 등록"</a>})}
+                {(s.payroll_link && mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}
             </nav>
             {(s.company_link || s.policy_link).then(||view! {
                 <p class="nav-group">"관리"</p><nav aria-label="회사 관리">
@@ -357,7 +365,10 @@ pub fn render(page: Page) -> String {
                 </nav>
             })}
         }.into_any()
-    });
+    }).unwrap_or_else(|| ().into_any())
+        },
+        payroll_shortcut,
+    );
     let content = match page {
         Page::Directory { scope, records, next_after } => directory_body(&scope, records, next_after),
         Page::Registration { scope, form } => registration_body(&scope, form),
@@ -408,9 +419,7 @@ pub fn render(page: Page) -> String {
             <title>{format!("{title} · Console")}</title><link rel="stylesheet" href="/assets/workspace.css"/>
         </head><body class="workspace native-people-workspace">
             <a class="skip-link" href="#main-content">"본문 바로가기"</a>
-            <header class="app"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>{navigation}
-                <nav class="policy-account-nav" aria-label="계정 탐색"><a href="/account">"내 계정 · 업무 공간 선택"</a></nav>
-            </header>
+            {header}
             <main id="main-content" tabindex="-1"><div class="page-heading">{company}<h1>{title}</h1></div>{content}</main>
         </body></html>
     }.to_html();

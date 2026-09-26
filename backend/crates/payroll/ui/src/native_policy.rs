@@ -1,4 +1,5 @@
 //! Server-rendered policy tasks. Every value is a currently authorized projection.
+use super::native_workspace_header::{self, NavigationMode};
 use leptos::prelude::*;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -508,21 +509,27 @@ pub fn render(page: Page) -> String {
         Page::Refused=>view! { <section class="panel" data-policy-outcome="denied"><h2>"이 요청을 열거나 변경할 권한이 없습니다"</h2><p class="policy-panel-body">"내 계정에서 접근할 수 있는 업무 공간을 확인하세요."</p></section> }.into_any(),
         Page::Unavailable=>view! { <section class="panel" data-policy-outcome="unavailable"><h2>"지금 요청을 확인할 수 없습니다"</h2><div class="policy-panel-body"><p>"연결이 복구된 뒤 다시 확인해 주세요."</p><a href="/account">"내 업무 공간 확인"</a></div></section> }.into_any(),
     };
-    let nav = company.map(|(id, company_link, policy_link, payroll_link, (people_read, people_create))| view! {
+    let payroll_shortcut = company.as_ref().and_then(|(id, _, _, payroll_link, _)| {
+        payroll_link.then(|| (format!("/companies/{id}/payroll"), false))
+    });
+    let header = native_workspace_header::render(
+        |mode| {
+            company.as_ref().map(|(id, company_link, policy_link, payroll_link, (people_read, people_create))| view! {
         <p class="nav-group">"관리"</p><nav aria-label="회사 업무 탐색">
             {company_link.then(||view! {<a href=format!("/companies/{id}")>"회사 업무 공간"</a>})}
-            {policy_link.then(||view! {<a href=format!("/companies/{id}/policy") aria-current="page">"권한 관리"</a>})}
+            {policy_link.then(||view! {<a href=format!("/companies/{id}/policy")>"권한 관리"</a>})}
         </nav>
-        {(payroll_link || people_read || people_create).then(||view! {<p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}{payroll_link.then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}</nav>})}
-    });
+        {(*payroll_link || *people_read || *people_create).then(||view! {<p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}{(*payroll_link && mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll")>"급여"</a>})}</nav>})}
+    }.into_any()).unwrap_or_else(|| ().into_any())
+        },
+        payroll_shortcut,
+    );
     let html=view! {
         <html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
             <title>{format!("{title} · Console")}</title><link rel="stylesheet" href="/assets/workspace.css"/>
         </head><body class="workspace policy-workspace">
             <a class="skip-link" href="#main-content">"본문 바로가기"</a>
-            <header class="app"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>{nav}
-                <nav class="policy-account-nav" aria-label="계정 탐색"><a href="/account">"내 계정 · 업무 공간 선택"</a></nav>
-            </header>
+            {header}
             <main id="main-content" tabindex="-1"><div class="page-heading"><p class="page-eyebrow">{eyebrow}</p><h1>{title}</h1>
                 <p class="page-description">"대상 계정과 업무 범위, 권한이 적용되는 기간을 확인하고 관리하세요."</p>
             </div>{content}</main>

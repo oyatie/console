@@ -1,4 +1,5 @@
 //! SSR-only Payroll collection. Inputs are committed, authorized owner projections.
+use super::native_workspace_header::{self, NavigationMode};
 use leptos::prelude::*;
 use serde_json::Value;
 
@@ -236,13 +237,20 @@ pub fn render(page: Page) -> String {
             "업무 공간에서 급여 목록을 다시 열어 주세요.",
         ),
     };
-    let navigation = company.map(|(id, (people_read, people_create))|view! { <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}<a href=format!("/companies/{id}/payroll") aria-current="page">"급여"</a></nav> });
+    let payroll_shortcut = company
+        .as_ref()
+        .map(|(id, _)| (format!("/companies/{id}/payroll"), true));
+    let header = native_workspace_header::render(
+        |mode| {
+            company.as_ref().map(|(id, (people_read, people_create))|view! { <p class="nav-group">"사람과 조직"</p><nav aria-label="사람과 조직 탐색">{people_read.then(||view! {<a href=format!("/companies/{id}/people")>"사람"</a>})}{people_create.then(||view! {<a href=format!("/companies/{id}/people/new")>"사람 등록"</a>})}{(mode == NavigationMode::Desktop).then(||view! {<a href=format!("/companies/{id}/payroll") aria-current="page">"급여"</a>})}</nav> }.into_any()).unwrap_or_else(|| ().into_any())
+        },
+        payroll_shortcut,
+    );
     let html = view! {
         <html lang="ko"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
             <title>"급여 · Console"</title><link rel="stylesheet" href="/assets/workspace.css"/></head>
         <body class="workspace payroll-workspace"><a class="skip-link" href="#main-content">"본문 바로가기"</a>
-            <header class="app"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>{navigation}
-                <nav class="payroll-account-nav" aria-label="계정 탐색"><a href="/account">"내 계정 · 업무 공간 선택"</a></nav></header>
+            {header}
             <main id="main-content" tabindex="-1"><div class="page-heading"><p class="page-eyebrow">"사람과 조직 / 급여"</p><h1>"급여"</h1>
                 <p class="page-description">"산정 기간별 준비 상태와 증빙, 검토 기록을 확인하세요."</p></div>{content}</main>
         </body></html>

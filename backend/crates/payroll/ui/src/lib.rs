@@ -1781,3 +1781,5 @@ mod native_payroll_tests;
 
 #[cfg(all(test, feature = "ssr"))]
 mod native_people_tests;
+
+mod native_workspace_header;
