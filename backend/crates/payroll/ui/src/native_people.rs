@@ -166,13 +166,12 @@ fn directory_body(scope: &Scope, records: Vec<Record>, next_after: Option<String
     view! {
         <section class="panel" aria-labelledby="people-directory-heading">
             <div class="people-list-heading"><h2 id="people-directory-heading">"사람 목록"</h2>
-                {scope.can_create.then(||view! {<a class="policy-button" href=format!("{path}/new")>"사람 등록"</a>})}
+                {(!empty && scope.can_create).then(||view! {<a class="policy-button" href=format!("{path}/new")>"사람 등록"</a>})}
             </div>
             {if empty {view! {
                 <div class="people-empty"><h3>"표시할 사람이 없습니다"</h3>
                     <p>"현재 목록에 표시할 등록 정보가 없습니다."</p>
-                    <a href=path.clone()>"목록 처음부터 보기"</a>
-                    {scope.can_create.then(||view! {<p>"새 기록은 사람 등록에서 작성하세요."</p>})}
+                    {scope.can_create.then(||view! {<a class="policy-button" href=format!("{path}/new")>"사람 등록"</a>})}
                 </div>
             }.into_any()} else {view! {<ul class="directory-list">{entries}</ul>}.into_any()}}
             {next_after.map(|after|view! {

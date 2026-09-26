@@ -283,13 +283,35 @@ fn body(page: Page) -> AnyView {
                 <a class="button primary" href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, show_people_navigation, show_people_create_navigation, people_policy } => view! {
+        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, show_people_navigation, show_people_create_navigation, people_policy } => {
+            use super::native_policy::{Operation, Subject};
+            let next_task = if show_people_create_navigation {
+                Some(("사람 등록", format!("/companies/{org_id}/people/new"),
+                    "이름과 사번을 확인한 뒤 회사 사람 목록에 등록합니다. 고용과 발령은 별도 업무입니다."))
+            } else if people_policy.as_ref().is_some_and(|actions| actions.iter().any(|action| {
+                action.subject == Subject::PeopleCreate && matches!(action.operation, Operation::Grant)
+            })) {
+                Some(("사람 등록 권한 연결", format!("/companies/{org_id}/policy/people-directory/create/grant"),
+                    "등록할 담당 계정과 권한의 종료 시각을 확인하세요. 연결한 뒤 사람을 등록할 수 있습니다."))
+            } else if people_policy.as_ref().is_some_and(Vec::is_empty) {
+                Some(("사람 권한 설정 시작", format!("/companies/{org_id}/policy/people-directory/install"),
+                    "사람 등록과 열람 권한을 준비합니다. 준비만으로 계정에 권한이 생기지 않습니다."))
+            } else {
+                None
+            };
+            view! {
             <div class="company-home" data-company-id=org_id.clone()>
                 <div class="page-heading">
                     <p class="page-eyebrow">"회사 업무 공간"</p><h1>{name}</h1>
                     <p class="page-description">"현재 계정으로 열 수 있는 회사 업무를 선택하세요."</p>
                     <details class="company-identifier"><summary>"업무 공간 식별자"</summary><p>{slug}</p></details>
                 </div>
+                {next_task.map(|(label, href, consequence)| view! {
+                    <section class="company-next-task" aria-labelledby="company-next-task-title">
+                        <div><h2 id="company-next-task-title">"다음 업무"</h2><p>{consequence}</p></div>
+                        <a class="policy-button" href=href>{label}</a>
+                    </section>
+                })}
                 {(show_payroll_navigation || show_people_navigation || show_people_create_navigation).then(|| view! {
                     <section class="company-group" aria-labelledby="company-people-title">
                         <h2 id="company-people-title">"사람과 조직"</h2>
@@ -336,7 +358,8 @@ fn body(page: Page) -> AnyView {
                     </section>
                 })}
             </div>
-        }.into_any(),
+            }.into_any()
+        },
         Page::CompanyPolicy { org_id, action_keys, delegable_action_keys } => view! {
             <section class="entry-card">
                 <p class="eyebrow">"회사 업무 공간"</p><h1>"권한 관리"</h1>

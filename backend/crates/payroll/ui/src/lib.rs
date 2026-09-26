@@ -48,6 +48,9 @@ header.app nav a[aria-current]{background:var(--accent-bg);color:#62410b;font-we
 .company-workspace .company-identifier{margin-top:16px;font-size:13px;color:var(--muted)}
 .company-workspace .company-identifier summary{display:list-item;min-height:44px;padding:10px 0;cursor:pointer}
 .company-workspace .company-identifier p{margin:0;padding:8px 0;font-variant-numeric:tabular-nums}
+.company-workspace .company-next-task{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px 24px;min-width:0;margin:0 0 28px;padding:20px 24px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px}
+.company-workspace .company-next-task h2{margin:0 0 6px;font-size:17px;color:var(--ink)}
+.company-workspace .company-next-task p{margin:0;color:var(--muted);font-size:14px;word-break:keep-all;overflow-wrap:anywhere}
 .company-workspace .company-group{margin:0 0 32px}
 .company-workspace .company-group h2{margin:0 0 12px;font-size:15px;font-weight:650;color:var(--muted)}
 .company-workspace .company-destinations{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
@@ -58,7 +61,7 @@ header.app nav a[aria-current]{background:var(--accent-bg);color:#62410b;font-we
 .company-workspace .company-destination a:hover{color:var(--accent);background:var(--surface-subtle)}
 .company-workspace .company-destination p{margin:0;padding:0 22px 22px;color:var(--muted);font-size:14px;word-break:keep-all;overflow-wrap:anywhere}
 .company-workspace .company-empty p{padding:0 22px 16px;color:var(--muted)}
-@media(max-width:680px){.company-workspace .company-account-nav{margin-top:12px}.company-workspace .company-current{display:inline-block}.company-workspace .company-destination a{padding:16px 18px 10px}.company-workspace .company-destination p{padding:0 18px 18px}}
+@media(max-width:680px){.company-workspace .company-account-nav{margin-top:12px}.company-workspace .company-current{display:inline-block}.company-workspace .company-next-task{grid-template-columns:minmax(0,1fr);padding:16px}.company-workspace .company-next-task .policy-button{width:100%}.company-workspace .company-destination a{padding:16px 18px 10px}.company-workspace .company-destination p{padding:0 18px 18px}}
 
 main{min-width:0;width:100%;max-width:1440px;padding:36px 40px 80px;margin:0 auto}
 .page-heading{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--line)}
