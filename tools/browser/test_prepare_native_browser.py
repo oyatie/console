@@ -27,13 +27,13 @@ PACKAGE_FILES = {
 }
 DRIVERS = {
     "account.cjs": "3e59f4f63cce565fee6cd7da94c4f6dc81bba05d7a4e6b309ecc2e13f88c161d",
-    "company.cjs": "c8c9ea003a385bbca311abff3810bf4ad800792f1a813affc9b546dd4d5ab34a",
+    "company.cjs": "0fcdd91546fe87184b9db384f035cefde2563a056c97e6ce6c6688307968ef83",
     "company-preview.cjs": "a1c4c3ad5b1cf5a5c01c86795b4e0db10d3b6c233a7a7d2f84065735ea919d90",
     "hydration.cjs": "fcb0d0b95981833017d47f2723459879478640e1faed8f4065cac1a0d6a5ac1c",
 }
 COMPANIONS = {
     "native_header.cjs": "37dac3e5853f1ed5b3a6e13a3ff78700b6adf589e304ee783f1f2f56dc42313f",
-    "people_journey.cjs": "29b7eb9290024cda1fa438286151023f7e56895b41b042bed5b5ddfdcdf5962c",
+    "people_journey.cjs": "6d8b8dfde9dec2b32ebef5fc21c6c0170358c93f590364c3fefa7549a2d82518",
     "policy_journey.cjs": "b1735ef0ab51c3a14a0db0c511dabc468516ac2f60bd2e3e31c416a6c1c4ef5a",
     "recovery_controls.cjs": "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
 }

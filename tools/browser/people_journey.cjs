@@ -8,10 +8,14 @@ const PHASES = Object.freeze(['PEOPLE_INSTALLED', 'PEOPLE_READ_GRANTED', 'PEOPLE
   'PEOPLE_CREATE_GRANTED', 'PEOPLE_DIRECTORY_CREATE_READY', 'PEOPLE_REGISTRATION_OPENED',
   'PEOPLE_WORKSPACE_REOPENED', 'PEOPLE_REGISTRATION_REOPENED', 'PEOPLE_PREPARED', 'PEOPLE_PENDING_REOPENED', 'PEOPLE_COMMITTED',
   'PEOPLE_RECEIPT_REOPENED', 'PEOPLE_DETAIL', 'PEOPLE_DETAIL_REOPENED', 'PEOPLE_LIST',
-  'PEOPLE_READ_REVOKED', 'PEOPLE_READ_DENIED', 'PEOPLE_OWN_RECEIPT',
+  'PEOPLE_SEARCH_MATCH', 'PEOPLE_SEARCH_DETAIL', 'PEOPLE_SEARCH_DETAIL_REOPENED',
+  'PEOPLE_SEARCH_MATCH_REOPENED', 'PEOPLE_SEARCH_MISS', 'PEOPLE_SEARCH_CLEAR',
+  'PEOPLE_READ_REVOKED', 'PEOPLE_READ_DENIED', 'PEOPLE_SEARCH_READ_DENIED', 'PEOPLE_OWN_RECEIPT',
   'PEOPLE_CREATE_REVOKED', 'PEOPLE_RECEIPT_DENIED']);
 const LEGAL_NAME = '김하늘 <연구 & 운영>';
 const EMPLOYEE_NUMBER = 'UI-사람-001';
+const NONMATCHING_NUMBER = 'UI-사람-999';
+const searchPath = (directory, number) => `${directory}?${new URLSearchParams({employee_number: number})}`;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 function id(value) {
   assert.equal(typeof value, 'string'); assert.match(value, UUID);
@@ -70,12 +74,16 @@ function validEvidence(r) {
       assert.equal(c.owner_effects_verified, true);
     }
     for (const flag of ['keyboard', 'reflow_320', 'read_only', 'pending_reopened', 'receipt_reopened',
-      'detail_reopened', 'read_revoked', 'create_only_receipt', 'create_revoked', 'no_local_business_storage']) {
+      'detail_reopened', 'search_match', 'search_detail_reopened', 'search_miss', 'search_clear',
+      'search_denied', 'search_asset_referrer_absent', 'search_detail_referrer_absent',
+      'search_response_policy', 'read_revoked', 'create_only_receipt', 'create_revoked',
+      'no_local_business_storage']) {
       assert.equal(r[flag], true);
     }
     for (const name of ['people-directory-320.png', 'people-workspace-next-task.png',
       'people-workspace-next-task-320.png', 'people-registration-desktop.png',
-      'people-pending-320.png', 'people-detail-desktop.png', 'people-detail-320.png']) {
+      'people-pending-320.png', 'people-detail-desktop.png', 'people-detail-320.png',
+      'people-search-match-320.png', 'people-search-miss-320.png']) {
       assert.equal(r.screenshots.filter(x => x === name).length, 1);
     }
     return true;
@@ -85,6 +93,7 @@ function validEvidence(r) {
 function expectedDocuments(r) {
   const p = `/companies/${r.company}/policy/people-directory`, d = `/companies/${r.company}/people`;
   const w = `/companies/${r.company}`, request = d + `/requests/${r.command}`, detail = d + '/' + r.employee;
+  const match = searchPath(d, EMPLOYEE_NUMBER), miss = searchPath(d, NONMATCHING_NUMBER);
   const get = (path, status = 200) => ({method: 'GET', path, status, redirected: false});
   const action = (index, destination) => [{method: 'POST', path: r.mutations[index].path, status: 303, redirected: false},
     {method: 'GET', path: destination, status: 200, redirected: true}];
@@ -93,8 +102,10 @@ function expectedDocuments(r) {
     ...action(1, receipt('grant', 1)), get(d), get(d + '/new', 404), get(w), get(p + '/create/grant'),
     ...action(2, receipt('grant', 2)), get(d), get(d + '/new'), get(w), get(d + '/new'),
     ...action(3, request), get(request),
-    ...action(4, request), get(request), get(detail), get(detail), get(d), get(w), get(p + '/read/revoke'),
-    ...action(5, receipt('revoke', 5)), get(d, 404), get(detail, 404), get(request), get(w), get(p + '/create/revoke'),
+    ...action(4, request), get(request), get(detail), get(detail), get(d),
+    get(match), get(detail), get(detail), get(match), get(miss), get(d),
+    get(w), get(p + '/read/revoke'),
+    ...action(5, receipt('revoke', 5)), get(d, 404), get(detail, 404), get(match, 404), get(request), get(w), get(p + '/create/revoke'),
     ...action(6, receipt('revoke', 6)), get(w), get(d + '/new', 404), get(request, 404)];
 }
 
@@ -198,6 +209,56 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     await page.setViewportSize({width, height: 900}); await secretFree();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
     await capture(name); result.screenshots.push(name + '.png');
+  }
+  function searchPolicy(response) {
+    assert.equal(response.headers()['cache-control'], 'no-store');
+    assert.equal(response.headers()['referrer-policy'], 'no-referrer');
+  }
+  async function noReferer(request) {
+    assert.equal(Object.hasOwn(await request.allHeaders(), 'referer'), false);
+  }
+  async function search(number, currentValue, coldAsset = false) {
+    const form = page.getByRole('main').locator('form[method="get"]');
+    if (await form.count() !== 1) {
+      const error = new Error('PEOPLE_SEARCH_FORM_MISSING');
+      error.code = 'PEOPLE_SEARCH_FORM_MISSING';
+      throw error;
+    }
+    assert.equal(await form.getAttribute('action'), directory);
+    const field = form.locator('input[name="employee_number"]');
+    assert.equal(await field.count(), 1);
+    const label = await field.evaluateHandle(input => [...input.labels].find(label =>
+      label.textContent.trim().includes('사번')) ?? null);
+    assert.equal(await label.asElement()?.isVisible(), true);
+    await label.dispose();
+    assert.equal(await field.inputValue(), currentValue);
+    const submit = form.locator('button:not([type]),button[type="submit"],input[type="submit"]');
+    assert.equal(await submit.count(), 1); assert.equal(await submit.isVisible(), true);
+    const path = searchPath(directory, number);
+    await field.fill(number);
+    const asset = coldAsset ? page.waitForResponse(r => r.url() === origin + '/assets/workspace.css' &&
+      r.request().resourceType() === 'stylesheet') : null;
+    if (coldAsset) {
+      const cdp = await page.context().newCDPSession(page);
+      await cdp.send('Network.clearBrowserCache');
+      await cdp.detach();
+    }
+    expectDocument('GET', path, 200, false);
+    const waiting = page.waitForResponse(r => r.url() === origin + path && r.request().isNavigationRequest());
+    await tabTo(submit, 48); await page.keyboard.press('Enter');
+    const response = await waiting;
+    await page.waitForURL(origin + path);
+    assert.equal(response.status(), 200); assert.equal(response.request().redirectedFrom(), null);
+    assert.deepEqual([...new URL(page.url()).searchParams], [['employee_number', number]]);
+    searchPolicy(response);
+    assert.equal(await page.locator('form[method="get"] input[name="employee_number"]').inputValue(), number);
+    if (asset) {
+      const response = await asset;
+      assert.equal(response.status(), 200);
+      await noReferer(response.request());
+      result.search_asset_referrer_absent = true;
+    }
+    return path;
   }
   async function submit(selector, label, path, destination, phase, values = {}) {
     const form = page.locator(selector); assert.equal(await form.count(), 1);
@@ -311,8 +372,44 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await entry.getByRole('link', {name: LEGAL_NAME, exact: true}).getAttribute('href'), detailPath);
   assert.equal(await entry.getByText(EMPLOYEE_NUMBER, {exact: true}).isVisible(), true);
   await witness('PEOPLE_LIST');
+  const matchPath = await search(EMPLOYEE_NUMBER, '', true);
+  const match = page.locator(`[data-people-record="${result.employee}"]`);
+  assert.equal(await page.locator('[data-people-record]').count(), 1);
+  assert.equal(await match.getByText(EMPLOYEE_NUMBER, {exact: true}).isVisible(), true);
+  const matchLink = match.getByRole('link', {name: LEGAL_NAME, exact: true});
+  assert.equal(await matchLink.getAttribute('href'), detailPath);
+  await shot('people-search-match-320', 320);
+  await witness('PEOPLE_SEARCH_MATCH'); result.search_match = true;
+  const searchedDetail = await open(detailPath, 200, matchLink);
+  await noReferer(searchedDetail.request()); result.search_detail_referrer_absent = true;
+  await detailView(); await witness('PEOPLE_SEARCH_DETAIL');
+  await open(detailPath); await detailView();
+  await witness('PEOPLE_SEARCH_DETAIL_REOPENED'); result.search_detail_reopened = true;
+  const searchedAgain = await open(matchPath);
+  searchPolicy(searchedAgain);
+  assert.equal(await page.locator(`[data-people-record="${result.employee}"]`).count(), 1);
+  await witness('PEOPLE_SEARCH_MATCH_REOPENED');
+  await search(NONMATCHING_NUMBER, EMPLOYEE_NUMBER);
+  assert.equal(await page.locator('[data-people-record]').count(), 0);
+  const emptySearch = page.locator('.people-empty');
+  assert.equal(await emptySearch.count(), 1);
+  assert.match(await emptySearch.innerText(), /(?:현재|이) 회사/);
+  assert.match(await emptySearch.innerText(), /일치/);
+  await shot('people-search-miss-320', 320);
+  await witness('PEOPLE_SEARCH_MISS'); result.search_miss = true;
+  const clear = page.getByRole('main').getByRole('link', {name: '검색 지우기', exact: true});
+  assert.equal(await clear.count(), 1);
+  await open(directory, 200, clear);
+  assert.equal(await page.locator(`[data-people-record="${result.employee}"]`).count(), 1);
+  assert.equal(await page.locator('form[method="get"] input[name="employee_number"]').inputValue(), '');
+  assert.equal(await page.getByRole('main').getByRole('link', {name: '검색 지우기', exact: true}).count(), 0);
+  await witness('PEOPLE_SEARCH_CLEAR'); result.search_clear = true;
   await open(workspace); await policyCommand('revoke', 'read');
   await open(directory, 404); await open(detailPath, 404); await witness('PEOPLE_READ_DENIED'); result.read_revoked = true;
+  const deniedSearch = await open(matchPath, 404);
+  searchPolicy(deniedSearch);
+  await witness('PEOPLE_SEARCH_READ_DENIED'); result.search_denied = true;
+  result.search_response_policy = true;
   await open(pendingPath);
   await requestView('committed');
   assert.equal(await page.getByRole('link', {name: '등록한 사람 보기', exact: true}).count(), 0);

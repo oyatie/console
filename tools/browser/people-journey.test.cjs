@@ -4,7 +4,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {expectedNativeHeaders, completeNativeHeaders, validEvidence, expectedDocuments, deniedProjectionSafe, PHASES, LEGAL_NAME} = require('./people_journey.cjs');
-const {completeDocuments, completeMutations, observeMutations} = require('./company.cjs');
+const {completeDocuments, completeMutations, observeDocuments, observeMutations} = require('./company.cjs');
 const {EventEmitter} = require('node:events');
 const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 // Classifier-only positive record; never published as browser acceptance evidence.
@@ -25,10 +25,14 @@ function evidence() {
     read_assignment: uuid(5), create_assignment: uuid(6), checkpoints: [], mutations: [],
     screenshots: ['people-directory-320.png', 'people-workspace-next-task.png',
       'people-workspace-next-task-320.png', 'people-registration-desktop.png', 'people-pending-320.png',
-      'people-detail-desktop.png', 'people-detail-320.png']};
+      'people-detail-desktop.png', 'people-detail-320.png', 'people-search-match-320.png',
+      'people-search-miss-320.png']};
   r.checkpoints = PHASES.map(phase => ({phase, company: r.company, account: r.account, owner_effects_verified: true}));
   for (const flag of ['keyboard', 'reflow_320', 'read_only', 'pending_reopened', 'receipt_reopened',
-    'detail_reopened', 'read_revoked', 'create_only_receipt', 'create_revoked', 'no_local_business_storage']) r[flag] = true;
+    'detail_reopened', 'search_match', 'search_detail_reopened', 'search_miss', 'search_clear',
+    'search_denied', 'search_asset_referrer_absent', 'search_detail_referrer_absent',
+    'search_response_policy', 'read_revoked', 'create_only_receipt', 'create_revoked',
+    'no_local_business_storage']) r[flag] = true;
   const p = `/companies/${r.company}/policy/people-directory`, d = `/companies/${r.company}/people`;
   r.mutations = [p + '/catalog', p + '/read/grants', p + '/create/grants', d + '/requests',
     d + `/requests/${r.command}/execute`, p + `/read/grants/${r.read_assignment}/revoke`,
@@ -52,10 +56,12 @@ test('missing screenshot refused', () => { const r = evidence(); r.screenshots.p
 test('unobserved permission loss refused', () => { const r = evidence(); r.create_revoked = 'true'; assert.equal(validEvidence(r), false); });
 test('document plan binds exact command, record and action identities', () => {
   const r = evidence(), rows = expectedDocuments(r);
-  assert.equal(rows.length, 39);
+  assert.equal(rows.length, 46);
   assert.equal(rows.filter(x => x.method === 'POST').length, 7);
   assert.equal(rows.filter(x => x.redirected).length, 7);
-  assert.equal(rows.filter(x => x.status === 404).length, 5);
+  assert.equal(rows.filter(x => x.status === 404).length, 6);
+  assert.equal(rows.filter(x => x.path.includes('?employee_number=')).length, 4);
+  assert.equal(rows.filter(x => x.path.includes('?employee_number=') && x.status === 404).length, 1);
 });
 function aggregate() {
   const people = evidence(), company = people.company, command = uuid(90);
@@ -76,8 +82,31 @@ function aggregate() {
   r.posts = Object.fromEntries(paths.map(path => [path, 1])); return r;
 }
 test('combined census positive control', () => { const r = aggregate(); assert.equal(completeDocuments(r), true); assert.equal(completeMutations(r), true); });
-for (let i = 0; i < 39; i++) test(`missing People document ${i} refused`, () => {
+for (let i = 0; i < 46; i++) test(`missing People document ${i} refused`, () => {
   const r = aggregate(); r.documents.splice(12 + i, 1); assert.equal(completeDocuments(r), false);
+});
+test('document observer binds the complete planned search query and refuses extra keys', () => {
+  const origin = 'https://localhost:1234', planned = aggregate();
+  const index = planned.documents.findIndex(row => row.path.includes('?employee_number='));
+  assert.ok(index >= 12);
+  function observed(suffix) {
+    const r = aggregate(), page = new EventEmitter(), frame = {};
+    r.documents.length = index;
+    page.mainFrame = () => frame;
+    observeDocuments(page, origin, r);
+    const request = {frame: () => frame, resourceType: () => 'document',
+      isNavigationRequest: () => true, url: () => origin + planned.documents[index].path + suffix,
+      method: () => 'GET', redirectedFrom: () => null};
+    const response = {request: () => request, status: () => 200, url: request.url};
+    page.emit('request', request); page.emit('response', response);
+    return r;
+  }
+  const exact = observed('');
+  assert.equal(exact.document_failures, 0);
+  assert.equal(exact.documents.at(-1).path, planned.documents[index].path);
+  const extra = observed('&extra=1');
+  assert.ok(extra.document_failures > 0);
+  assert.equal(extra.documents.at(-1).path, '<unexpected>');
 });
 test('missing aggregate mutation refused', () => { const r = aggregate(); r.mutations.pop(); assert.equal(completeMutations(r), false); });
 test('unplanned extra People mutation refused', () => { const r = aggregate(); r.mutations.push({...r.mutations.at(-1), ordinal: 14}); assert.equal(completeMutations(r), false); });

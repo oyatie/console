@@ -3,7 +3,7 @@
 use super::*;
 
 pub(super) const DRIVER_SHA256: &str =
-    "29b7eb9290024cda1fa438286151023f7e56895b41b042bed5b5ddfdcdf5962c";
+    "6d8b8dfde9dec2b32ebef5fc21c6c0170358c93f590364c3fefa7549a2d82518";
 const NAME: &str = "김하늘 <연구 & 운영>";
 const NUMBER: &str = "UI-사람-001";
 const PHASES: &[&str] = &[
@@ -22,8 +22,15 @@ const PHASES: &[&str] = &[
     "PEOPLE_DETAIL",
     "PEOPLE_DETAIL_REOPENED",
     "PEOPLE_LIST",
+    "PEOPLE_SEARCH_MATCH",
+    "PEOPLE_SEARCH_DETAIL",
+    "PEOPLE_SEARCH_DETAIL_REOPENED",
+    "PEOPLE_SEARCH_MATCH_REOPENED",
+    "PEOPLE_SEARCH_MISS",
+    "PEOPLE_SEARCH_CLEAR",
     "PEOPLE_READ_REVOKED",
     "PEOPLE_READ_DENIED",
+    "PEOPLE_SEARCH_READ_DENIED",
     "PEOPLE_OWN_RECEIPT",
     "PEOPLE_CREATE_REVOKED",
     "PEOPLE_RECEIPT_DENIED",
@@ -704,7 +711,16 @@ pub(super) async fn observe(
                     witness["person_id"] = person["id"].clone();
                     employee = Some(policy_uuid(&record["id"]));
                 }
-                "PEOPLE_READ_ONLY" | "PEOPLE_DETAIL" | "PEOPLE_DETAIL_REOPENED" | "PEOPLE_LIST" => {
+                "PEOPLE_READ_ONLY"
+                | "PEOPLE_DETAIL"
+                | "PEOPLE_DETAIL_REOPENED"
+                | "PEOPLE_LIST"
+                | "PEOPLE_SEARCH_MATCH"
+                | "PEOPLE_SEARCH_DETAIL"
+                | "PEOPLE_SEARCH_DETAIL_REOPENED"
+                | "PEOPLE_SEARCH_MATCH_REOPENED"
+                | "PEOPLE_SEARCH_MISS"
+                | "PEOPLE_SEARCH_CLEAR" => {
                     audited(
                         &prior,
                         &current,
