@@ -3,7 +3,7 @@
 use super::*;
 
 pub(super) const DRIVER_SHA256: &str =
-    "63330e978585d813c8480c8ca7dbc85d814d567e13257cc129c31580041bf9ac";
+    "29b7eb9290024cda1fa438286151023f7e56895b41b042bed5b5ddfdcdf5962c";
 const NAME: &str = "김하늘 <연구 & 운영>";
 const NUMBER: &str = "UI-사람-001";
 const PHASES: &[&str] = &[
@@ -11,6 +11,10 @@ const PHASES: &[&str] = &[
     "PEOPLE_READ_GRANTED",
     "PEOPLE_READ_ONLY",
     "PEOPLE_CREATE_GRANTED",
+    "PEOPLE_DIRECTORY_CREATE_READY",
+    "PEOPLE_REGISTRATION_OPENED",
+    "PEOPLE_WORKSPACE_REOPENED",
+    "PEOPLE_REGISTRATION_REOPENED",
     "PEOPLE_PREPARED",
     "PEOPLE_PENDING_REOPENED",
     "PEOPLE_COMMITTED",
@@ -528,20 +532,9 @@ pub(super) async fn observe(
         } else if phase == "PEOPLE_ACTION_READY" {
             assert!(ready.is_none());
             assert_eq!(event["action_phase"], PHASES[next]);
-            let remaining = if PHASES[next] == "PEOPLE_PREPARED" {
-                audited(
-                    &prior,
-                    &current,
-                    account,
-                    company,
-                    &["people.directory.read"],
-                );
-                additions(&prior, &current, &[("audit_events", 1)]).unwrap()
-            } else {
-                current.clone()
-            };
+            let exact_proof = policy_preflight_effects(&prior, &current, at, now);
             assert!(
-                remaining == prior || policy_preflight_effects(&prior, &remaining, at, now),
+                current == prior || (PHASES[next] != "PEOPLE_PREPARED" && exact_proof),
                 "unexpected preflight effects"
             );
             ready = Some(event.clone());
@@ -596,6 +589,27 @@ pub(super) async fn observe(
                     );
                     accepted = Some(row);
                 }
+                "PEOPLE_DIRECTORY_CREATE_READY" => {
+                    audited(
+                        &prior,
+                        &current,
+                        account,
+                        company,
+                        &["people.directory.read"],
+                    );
+                    assert!(
+                        additions(&prior, &current, &[("audit_events", 1)]).unwrap() == prior,
+                        "directory list changed other state"
+                    );
+                }
+                "PEOPLE_REGISTRATION_OPENED" | "PEOPLE_REGISTRATION_REOPENED" => assert!(
+                    policy_preflight_effects(&prior, &current, at, now),
+                    "registration form issues exactly one proof"
+                ),
+                "PEOPLE_WORKSPACE_REOPENED" => assert!(
+                    current == prior,
+                    "return to workspace changed durable state"
+                ),
                 "PEOPLE_PENDING_REOPENED" => {
                     assert_eq!(
                         event["command_id"],

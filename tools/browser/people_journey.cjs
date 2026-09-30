@@ -5,7 +5,8 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const {assertNativeHeader, validHeaderEvidence} = require('./native_header.cjs');
 const PHASES = Object.freeze(['PEOPLE_INSTALLED', 'PEOPLE_READ_GRANTED', 'PEOPLE_READ_ONLY',
-  'PEOPLE_CREATE_GRANTED', 'PEOPLE_PREPARED', 'PEOPLE_PENDING_REOPENED', 'PEOPLE_COMMITTED',
+  'PEOPLE_CREATE_GRANTED', 'PEOPLE_DIRECTORY_CREATE_READY', 'PEOPLE_REGISTRATION_OPENED',
+  'PEOPLE_WORKSPACE_REOPENED', 'PEOPLE_REGISTRATION_REOPENED', 'PEOPLE_PREPARED', 'PEOPLE_PENDING_REOPENED', 'PEOPLE_COMMITTED',
   'PEOPLE_RECEIPT_REOPENED', 'PEOPLE_DETAIL', 'PEOPLE_DETAIL_REOPENED', 'PEOPLE_LIST',
   'PEOPLE_READ_REVOKED', 'PEOPLE_READ_DENIED', 'PEOPLE_OWN_RECEIPT',
   'PEOPLE_CREATE_REVOKED', 'PEOPLE_RECEIPT_DENIED']);
@@ -269,11 +270,15 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   const emptyCreate = page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true});
   assert.equal(await emptyCreate.count(), 1);
   assert.equal(await emptyCreate.getAttribute('href'), directory + '/new');
+  await witness('PEOPLE_DIRECTORY_CREATE_READY');
   await open(directory + '/new', 200, emptyCreate);
+  await witness('PEOPLE_REGISTRATION_OPENED');
   await open(workspace);
   await shot('people-workspace-next-task', 1440);
   await shot('people-workspace-next-task-320', 320);
+  await witness('PEOPLE_WORKSPACE_REOPENED');
   await open(directory + '/new', 200, await nextTask('사람 등록', directory + '/new'));
+  await witness('PEOPLE_REGISTRATION_REOPENED');
   await page.getByLabel('이름', {exact: true}).fill(LEGAL_NAME);
   await page.getByLabel('사번', {exact: true}).fill(EMPLOYEE_NUMBER);
   await noBusinessStorage();
