@@ -14,7 +14,7 @@ use console_ontology_canonical_adapter_postgres::native_directory::{
     DirectoryCedarDecision, PgNativeDirectoryStore,
 };
 use console_ontology_rest::native_people::{
-    NativePeopleRestState, PostTarget, RecoveryLocator, Submission,
+    NativePeopleRestState, PostTarget, RecoveryLocator, Submission, parse_list_query,
 };
 use console_payroll_ui::native_people as ui;
 use console_platform_auth::account::AccountFormProof;
@@ -117,6 +117,8 @@ async fn timeout_response(mut request: Request, next: Next) -> Response {
         return next.run(request).await;
     }
     let head = request.method() == Method::HEAD;
+    let private_query = (request.method() == Method::GET || request.method() == Method::HEAD)
+        && request.uri().query().is_some();
     let recovery = RecoveryLocator::default();
     request.extensions_mut().insert(recovery.clone());
     let mut response = next.run(request).await;
@@ -134,6 +136,12 @@ async fn timeout_response(mut request: Request, next: Next) -> Response {
     }
     if head {
         *response.body_mut() = axum::body::Body::empty();
+    }
+    if private_query {
+        response.headers_mut().insert(
+            header::REFERRER_POLICY,
+            HeaderValue::from_static("no-referrer"),
+        );
     }
     response
 }
@@ -197,6 +205,14 @@ async fn read(
     let Some(owner) = state.owner.as_ref() else {
         return error(StatusCode::SERVICE_UNAVAILABLE);
     };
+    let list_query = if matched.as_str() == LIST {
+        match parse_list_query(query.as_deref()) {
+            Ok(value) => Some(value),
+            Err(status) => return error(status),
+        }
+    } else {
+        None
+    };
     // Navigation happens first. The displayed owner result is reauthorized and
     // committed last, so no identity/proof is retained across navigation waits.
     let scope = match scope(&state, &headers, &route.org_id).await {
@@ -205,12 +221,30 @@ async fn read(
     };
     let result: Result<ui::Page, StatusCode> = match matched.as_str() {
         LIST => owner
-            .list(&headers, &route.org_id, query.as_deref())
+            .list(
+                &headers,
+                &route.org_id,
+                list_query.clone().expect("list query parsed"),
+            )
             .await
-            .map(|page| ui::Page::Directory {
-                scope,
-                records: page.records.into_iter().map(record).collect(),
-                next_after: page.next_after.map(|id| id.to_string()),
+            .map(|page| {
+                let query = list_query.expect("list query parsed");
+                let search_number = query.employee_number().map(str::to_owned);
+                let next_href = page.next_after.map(|after| {
+                    let mut params = url::form_urlencoded::Serializer::new(String::new());
+                    if let Some(number) = query.employee_number() {
+                        params.append_pair("employee_number", number);
+                    }
+                    params.append_pair("after_employee_id", &after.to_string());
+                    format!("/companies/{}/people?{}", route.org_id, params.finish())
+                });
+                ui::Page::Directory {
+                    scope,
+                    records: page.records.into_iter().map(record).collect(),
+                    search_number,
+                    next_href,
+                    after_cursor: query.after().is_some(),
+                }
             }),
         NEW => owner
             .registration(

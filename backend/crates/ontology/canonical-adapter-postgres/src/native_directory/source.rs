@@ -81,25 +81,25 @@ pub(super) fn identity_action(action: DirectoryAction) -> DirectoryActionV1 {
         DirectoryAction::Create => DirectoryActionV1::Create,
     }
 }
-pub(super) fn action(kind: DirectoryScopeKind) -> DirectoryAction {
+pub(super) fn action(kind: &DirectoryScopeKind) -> DirectoryAction {
     match kind {
-        DirectoryScopeKind::Navigation(action) => action,
+        DirectoryScopeKind::Navigation(action) => *action,
         DirectoryScopeKind::List(_) | DirectoryScopeKind::Detail(_) => DirectoryAction::Read,
         _ => DirectoryAction::Create,
     }
 }
-pub(super) fn resource(kind: DirectoryScopeKind) -> DirectoryResource {
+pub(super) fn resource(kind: &DirectoryScopeKind) -> DirectoryResource {
     match kind {
         DirectoryScopeKind::Navigation(_) => DirectoryResource::Navigation,
         DirectoryScopeKind::List(_) => DirectoryResource::Collection,
-        DirectoryScopeKind::Detail(id) => DirectoryResource::Entry(id),
+        DirectoryScopeKind::Detail(id) => DirectoryResource::Entry(*id),
         DirectoryScopeKind::Form(id)
         | DirectoryScopeKind::ValidationForm(id)
         | DirectoryScopeKind::Preflight(id)
         | DirectoryScopeKind::Prepare(id)
         | DirectoryScopeKind::Execute(id)
         | DirectoryScopeKind::Cancel(id)
-        | DirectoryScopeKind::Status(id) => DirectoryResource::Request(id),
+        | DirectoryScopeKind::Status(id) => DirectoryResource::Request(*id),
     }
 }
 pub(super) struct Source {
@@ -128,7 +128,7 @@ pub(super) async fn live_session(
     tx: &mut Transaction<'_, Postgres>,
     store: &PgNativeDirectoryStore,
     credentials: &AccountEnrollmentCredentials,
-    kind: DirectoryScopeKind,
+    kind: &DirectoryScopeKind,
 ) -> Result<AccountLiveSession, Error> {
     match kind {
         DirectoryScopeKind::ValidationForm(_)
@@ -158,10 +158,10 @@ pub(super) async fn current(
     family: Uuid,
 ) -> Result<Source, Error> {
     let mut rows=sqlx::query_as::<_,SqlSource>("SELECT company_epoch,current_policy_receipt_id,assignment_id,assignment_revision,role_id,role_revision,registered_clauses::text,assignment_valid_from,assignment_valid_until,action_reference::text,named_properties::text,pg_current_xact_id()::text AS source_xid,pg_backend_pid() AS source_backend_pid,clock_timestamp() AS observed_at FROM public.identity_company_people_projection_v1($1,$2,$3,$4) LIMIT 2")
-      .bind(actor).bind(family).bind(*company.as_uuid()).bind(identity_action(action(kind)).as_str()).fetch_all(tx.as_mut()).await.map_err(sql_error)?;
+      .bind(actor).bind(family).bind(*company.as_uuid()).bind(identity_action(action(&kind)).as_str()).fetch_all(tx.as_mut()).await.map_err(sql_error)?;
     // Current Auth is required even when the source is absent. This follows the
     // canonical Group-first query's locks; signed IDs alone are not a session.
-    let session = live_session(tx, store, credentials, kind).await?;
+    let session = live_session(tx, store, credentials, &kind).await?;
     if session.account_id != actor || session.session_id != family || rows.len() > 1 {
         return Err(Error::Unavailable);
     }
@@ -201,7 +201,7 @@ pub(super) async fn current(
         assignment_valid_until: row.assignment_valid_until,
         action_reference: row.action_reference.clone(),
         named_properties: row.named_properties.clone(),
-        action: identity_action(action(kind)),
+        action: identity_action(action(&kind)),
         observed_at: row.observed_at,
         source_xid: row.source_xid.clone(),
         source_backend_pid: row.source_backend_pid,

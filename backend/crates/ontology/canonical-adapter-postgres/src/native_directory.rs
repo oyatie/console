@@ -326,7 +326,9 @@ impl RecordRow {
     }
 }
 macro_rules! record_query { ($tail:literal) => {concat!("SELECT e.id AS employee_id,b.person_id,jsonb_build_object('legal_name',r.attributes->'legal_name') AS name_attributes,e.employee_number,e.source_kind,r.version AS person_version,e.created_at AS registered_at FROM public.employees e JOIN public.employee_person_bindings b ON b.org_id=e.org_id AND b.employee_id=e.id JOIN LATERAL (SELECT version,attributes FROM public.person_revisions WHERE org_id=b.org_id AND person_id=b.person_id ORDER BY version DESC LIMIT 1) r ON true WHERE e.org_id=$1", $tail)}; }
-const LIST_SQL: &str = record_query!(" AND ($2::uuid IS NULL OR e.id>$2) ORDER BY e.id LIMIT $3");
+const LIST_SQL: &str = record_query!(
+    " AND ($2::text IS NULL OR e.employee_number COLLATE \"C\" = $2::text COLLATE \"C\") AND ($3::uuid IS NULL OR e.id>$3) ORDER BY e.id LIMIT $4"
+);
 const DETAIL_SQL: &str = record_query!(" AND e.id=$2 LIMIT 2");
 impl DirectoryWorkflowScope for PgNativeDirectoryScope<'_> {
     type Authority = NativeDirectoryAuthority;
@@ -339,14 +341,20 @@ impl DirectoryWorkflowScope for PgNativeDirectoryScope<'_> {
     }
     async fn list(&mut self) -> Result<DirectoryPage, Error> {
         self.unused()?;
-        let DirectoryScopeRequest::List(_, query) = self.request else {
-            return Err(Error::Unavailable);
+        let (number, after, limit) = match &self.request {
+            DirectoryScopeRequest::List(_, query) => (
+                query.employee_number().map(str::to_owned),
+                query.after(),
+                query.limit(),
+            ),
+            _ => return Err(Error::Unavailable),
         };
         self.arm().await?;
         let rows = sqlx::query_as::<_, RecordRow>(LIST_SQL)
             .bind(*self.request.company().as_uuid())
-            .bind(query.after())
-            .bind(i64::from(query.limit()) + 1)
+            .bind(number.as_deref())
+            .bind(after)
+            .bind(i64::from(limit) + 1)
             .fetch_all(self.tx.as_mut())
             .await
             .map_err(sql_error)?;
@@ -354,8 +362,8 @@ impl DirectoryWorkflowScope for PgNativeDirectoryScope<'_> {
             .into_iter()
             .map(RecordRow::view)
             .collect::<Result<Vec<_>, _>>()?;
-        let more = records.len() > usize::from(query.limit());
-        records.truncate(usize::from(query.limit()));
+        let more = records.len() > usize::from(limit);
+        records.truncate(usize::from(limit));
         let next_after = if more {
             records.last().map(|r| r.employee_id)
         } else {
@@ -562,8 +570,8 @@ impl DirectoryWorkflowScope for PgNativeDirectoryScope<'_> {
         let access = DirectoryAccess {
             company: self.request.company(),
             actor: self.source.binding.account,
-            action: source::action(self.request.kind()),
-            resource: source::resource(self.request.kind()),
+            action: source::action(&self.request.kind()),
+            resource: source::resource(&self.request.kind()),
         };
         if !policy.permits(&self.source.authority, access)? {
             return Err(Error::NotFound);

@@ -119,24 +119,44 @@ impl DirectorySubmission {
         &self.input
     }
 }
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DirectoryPageQuery {
     after: Option<Uuid>,
     limit: u16,
+    employee_number: Option<String>,
 }
 impl DirectoryPageQuery {
     pub fn new(after: Option<Uuid>, limit: Option<u16>) -> Result<Self, DirectoryWorkflowError> {
+        Self::with_number(after, limit, None)
+    }
+    pub fn with_number(
+        after: Option<Uuid>,
+        limit: Option<u16>,
+        employee_number: Option<String>,
+    ) -> Result<Self, DirectoryWorkflowError> {
         let limit = limit.unwrap_or(25);
         if !(1..=100).contains(&limit) || after.is_some_and(|id| id.is_nil()) {
             return Err(DirectoryWorkflowError::InvalidInput);
         }
-        Ok(Self { after, limit })
+        if employee_number.as_deref().is_some_and(|number| {
+            DirectoryRegistrationInput::normalized_employee_number(number) != Ok(number)
+        }) {
+            return Err(DirectoryWorkflowError::InvalidInput);
+        }
+        Ok(Self {
+            after,
+            limit,
+            employee_number,
+        })
     }
-    pub const fn after(self) -> Option<Uuid> {
+    pub const fn after(&self) -> Option<Uuid> {
         self.after
     }
-    pub const fn limit(self) -> u16 {
+    pub const fn limit(&self) -> u16 {
         self.limit
+    }
+    pub fn employee_number(&self) -> Option<&str> {
+        self.employee_number.as_deref()
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -187,7 +207,7 @@ pub struct DirectoryExecution {
     pub terminal: DirectoryTerminalV1,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DirectoryScopeKind {
     Navigation(DirectoryAction),
     List(DirectoryPageQuery),
@@ -201,25 +221,25 @@ pub enum DirectoryScopeKind {
     Status(Uuid),
 }
 impl DirectoryScopeKind {
-    fn action(self) -> DirectoryAction {
+    fn action(&self) -> DirectoryAction {
         match self {
-            Self::Navigation(action) => action,
+            Self::Navigation(action) => *action,
             Self::List(_) | Self::Detail(_) => DirectoryAction::Read,
             _ => DirectoryAction::Create,
         }
     }
-    fn resource(self) -> DirectoryResource {
+    fn resource(&self) -> DirectoryResource {
         match self {
             Self::Navigation(_) => DirectoryResource::Navigation,
             Self::List(_) => DirectoryResource::Collection,
-            Self::Detail(id) => DirectoryResource::Entry(id),
+            Self::Detail(id) => DirectoryResource::Entry(*id),
             Self::Form(id)
             | Self::ValidationForm(id)
             | Self::Preflight(id)
             | Self::Prepare(id)
             | Self::Execute(id)
             | Self::Cancel(id)
-            | Self::Status(id) => DirectoryResource::Request(id),
+            | Self::Status(id) => DirectoryResource::Request(*id),
         }
     }
 }
@@ -247,7 +267,7 @@ impl DirectoryScopeRequest<'_> {
     pub fn kind(&self) -> DirectoryScopeKind {
         match self {
             Self::Navigation(_, action) => DirectoryScopeKind::Navigation(*action),
-            Self::List(_, q) => DirectoryScopeKind::List(*q),
+            Self::List(_, q) => DirectoryScopeKind::List(q.clone()),
             Self::Detail(_, id) => DirectoryScopeKind::Detail(*id),
             Self::Form(r) => DirectoryScopeKind::Form(r.command_id()),
             Self::ValidationForm(r, _) => DirectoryScopeKind::ValidationForm(r.command_id()),
@@ -441,9 +461,17 @@ pub async fn directory_list<
 ) -> Result<DirectoryPage, DirectoryWorkflowError> {
     company_id(company)?;
     let mut scope = store
-        .lock(credentials, DirectoryScopeRequest::List(company, query))
+        .lock(
+            credentials,
+            DirectoryScopeRequest::List(company, query.clone()),
+        )
         .await?;
-    authorize(&scope, policy, company, DirectoryScopeKind::List(query))?;
+    authorize(
+        &scope,
+        policy,
+        company,
+        DirectoryScopeKind::List(query.clone()),
+    )?;
     let page = scope.list().await?;
     if page.records.len() > usize::from(query.limit())
         || page.records.iter().any(|r| {
@@ -452,6 +480,9 @@ pub async fn directory_list<
                 || r.person_version == 0
                 || r.person_version > i64::MAX as u64
                 || query.after().is_some_and(|after| r.employee_id <= after)
+                || query
+                    .employee_number()
+                    .is_some_and(|number| r.employee_number.as_deref() != Some(number))
         })
         || page
             .records

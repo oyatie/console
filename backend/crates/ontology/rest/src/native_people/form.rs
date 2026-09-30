@@ -52,16 +52,40 @@ pub(super) fn company(raw: &str) -> Result<OrgId, StatusCode> {
     Ok(company)
 }
 pub(super) fn pagination(raw: Option<&str>) -> Result<DirectoryPageQuery, StatusCode> {
-    let after = match raw {
-        None => None,
-        Some(raw) => {
-            let value = raw
-                .strip_prefix("after_employee_id=")
-                .ok_or(StatusCode::BAD_REQUEST)?;
-            Some(id(value).map_err(|_| StatusCode::BAD_REQUEST)?)
+    let mut after = None;
+    let mut number = None;
+    if let Some(raw) = raw {
+        // The bound is on the encoded bytes, before any decoding or allocation.
+        if raw.is_empty() || raw.len() > 1024 {
+            return Err(StatusCode::BAD_REQUEST);
         }
+        for pair in raw.split('&') {
+            let (key, value) = pair.split_once('=').ok_or(StatusCode::BAD_REQUEST)?;
+            match key {
+                "after_employee_id" if after.is_none() => {
+                    let decoded = decode(value.as_bytes())?;
+                    after = Some(id(&decoded).map_err(|_| StatusCode::BAD_REQUEST)?);
+                }
+                "employee_number" if number.is_none() => {
+                    let decoded = decode(value.as_bytes())?;
+                    if decoded.len() > 256 {
+                        return Err(StatusCode::BAD_REQUEST);
+                    }
+                    number = Some(decoded);
+                }
+                _ => return Err(StatusCode::BAD_REQUEST),
+            }
+        }
+    }
+    let number = match number.as_deref() {
+        None | Some("") => None,
+        Some(value) => Some(
+            DirectoryRegistrationInput::normalized_employee_number(value)
+                .map_err(|_| StatusCode::BAD_REQUEST)?
+                .to_owned(),
+        ),
     };
-    DirectoryPageQuery::new(after, None).map_err(|_| StatusCode::BAD_REQUEST)
+    DirectoryPageQuery::with_number(after, None, number).map_err(|_| StatusCode::BAD_REQUEST)
 }
 pub(super) fn no_query(raw: Option<&str>) -> Result<(), StatusCode> {
     if raw.is_some() {

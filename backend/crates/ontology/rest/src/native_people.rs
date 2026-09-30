@@ -14,6 +14,12 @@ pub use form::{Draft, PostTarget};
 use std::sync::{Arc, OnceLock};
 use uuid::Uuid;
 
+/// Parse the bounded collection selector before app composition opens any
+/// Company navigation or directory transaction.
+pub fn parse_list_query(raw: Option<&str>) -> Result<DirectoryPageQuery, StatusCode> {
+    form::pagination(raw)
+}
+
 /// Recovery routing only. Requested identifiers never establish authority and
 /// are never evidence of an accepted or committed command.
 #[derive(Clone, Default)]
@@ -118,10 +124,9 @@ where
         &self,
         headers: &HeaderMap,
         company: &str,
-        query: Option<&str>,
+        query: DirectoryPageQuery,
     ) -> Result<DirectoryPage, StatusCode> {
         let company = form::company(company)?;
-        let query = form::pagination(query)?;
         let credentials = self.credentials(headers)?;
         directory_list(
             self.store.as_ref(),

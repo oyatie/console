@@ -80,7 +80,9 @@ pub enum Page {
     Directory {
         scope: Scope,
         records: Vec<Record>,
-        next_after: Option<String>,
+        search_number: Option<String>,
+        next_href: Option<String>,
+        after_cursor: bool,
     },
     Registration {
         scope: Scope,
@@ -145,9 +147,16 @@ fn record_number(value: Option<&str>) -> &str {
     }
 }
 
-fn directory_body(scope: &Scope, records: Vec<Record>, next_after: Option<String>) -> AnyView {
+fn directory_body(
+    scope: &Scope,
+    records: Vec<Record>,
+    search_number: Option<String>,
+    next_href: Option<String>,
+    after_cursor: bool,
+) -> AnyView {
     let path = directory(&scope.company);
     let empty = records.is_empty();
+    let searched = search_number.is_some();
     let entries = records.into_iter().map(|record| {
         let needs_identity = record.legal_name.as_deref().is_none_or(|name| name.trim().is_empty());
         let name = record_name(record.legal_name.as_deref()).to_owned();
@@ -165,18 +174,32 @@ fn directory_body(scope: &Scope, records: Vec<Record>, next_after: Option<String
     }).collect_view();
     view! {
         <section class="panel" aria-labelledby="people-directory-heading">
-            <div class="people-list-heading"><h2 id="people-directory-heading">"사람 목록"</h2>
+            <div class="people-list-heading"><h2 id="people-directory-heading">{if searched {"사번 검색 결과"} else {"사람 목록"}}</h2>
                 {(!empty && scope.can_create).then(||view! {<a class="policy-button" href=format!("{path}/new")>"사람 등록"</a>})}
             </div>
+            <form class="people-search" method="get" action=path.clone() role="search">
+                <label for="people-search-number">"전체 사번으로 정확히 찾기"</label>
+                <div class="people-search-controls">
+                    <input id="people-search-number" name="employee_number" type="search"
+                        value=search_number.clone().unwrap_or_default() autocomplete="off"
+                        aria-describedby="people-search-help"/>
+                    <button class="policy-button" type="submit">"찾기"</button>
+                    {searched.then(||view! {<a href=path.clone()>"검색 지우기"</a>})}
+                </div>
+                <p id="people-search-help" class="supporting">"현재 회사의 사번 전체를 입력하세요. 이름이나 일부 사번은 검색되지 않습니다."</p>
+            </form>
             {if empty {view! {
-                <div class="people-empty"><h3>"표시할 사람이 없습니다"</h3>
-                    <p>"현재 목록에 표시할 등록 정보가 없습니다."</p>
-                    {scope.can_create.then(||view! {<a class="policy-button" href=format!("{path}/new")>"사람 등록"</a>})}
+                <div class="people-empty"><h3>{if searched {"일치하는 사번이 없습니다"} else {"표시할 사람이 없습니다"}}</h3>
+                    <p>{if searched {
+                        if after_cursor {"현재 회사에서 더 이상 일치하는 사람이 없습니다."}
+                        else {"현재 회사에서 이 사번과 일치하는 사람이 없습니다."}
+                    } else {"현재 목록에 표시할 등록 정보가 없습니다."}}</p>
+                    {(!searched && scope.can_create).then(||view! {<a class="policy-button" href=format!("{path}/new")>"사람 등록"</a>})}
                 </div>
             }.into_any()} else {view! {<ul class="directory-list">{entries}</ul>}.into_any()}}
-            {next_after.map(|after|view! {
+            {next_href.map(|href|view! {
                 <nav class="people-pagination" aria-label="사람 목록 페이지">
-                    <a class="policy-button secondary" href=format!("{path}?after_employee_id={after}")>"다음 사람 보기"</a>
+                    <a class="policy-button secondary" href=href>"다음 사람 보기"</a>
                 </nav>
             })}
         </section>
@@ -341,7 +364,7 @@ pub fn render(page: Page) -> String {
     };
     let company = scope.map(|s| {
         view! {
-        <p class="page-eyebrow">{s.company_name.clone().unwrap_or_else(||"선택한 회사".into())}</p>
+        <p class="page-eyebrow">{s.company_name.clone().unwrap_or_else(||format!("회사 ID {}", s.company))}</p>
     }.into_any()
     });
     let payroll_shortcut = scope
@@ -369,7 +392,8 @@ pub fn render(page: Page) -> String {
         payroll_shortcut,
     );
     let content = match page {
-        Page::Directory { scope, records, next_after } => directory_body(&scope, records, next_after),
+        Page::Directory { scope, records, search_number, next_href, after_cursor } =>
+            directory_body(&scope, records, search_number, next_href, after_cursor),
         Page::Registration { scope, form } => registration_body(&scope, form),
         Page::RegistrationConflict { scope, command, legal_name, employee_number } => view! {
             <section class="panel" data-people-outcome="prepare-conflict" role="alert" tabindex="-1" autofocus>

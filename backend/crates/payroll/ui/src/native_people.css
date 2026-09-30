@@ -2,6 +2,11 @@
 .native-people-workspace .panel{max-width:1080px}
 .people-list-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
 .people-list-heading h2{padding:0;border:0}
+.people-search{padding:18px 22px;border-bottom:1px solid var(--line)}
+.people-search label{display:block;margin-bottom:8px;font-weight:650}
+.people-search-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.people-search input{flex:1 1 240px;min-width:0;min-height:44px;padding:10px 12px;border:1px solid var(--control-border);border-radius:8px;background:var(--surface);color:var(--ink)}
+.people-search .policy-button{min-height:44px}.people-search a{display:inline-flex;align-items:center;min-height:44px}
 .directory-list{list-style:none;margin:0;padding:0}
 .directory-entry{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,.6fr) auto;gap:16px;align-items:center;padding:22px;border-bottom:1px solid var(--line)}
 .directory-entry:last-child{border-bottom:0}
@@ -24,7 +29,7 @@
 .people-request .policy-actions form{margin:0}.people-outcome-description{max-width:68ch}
 .people-detail-card .record-meta,.people-request .record-meta{grid-template-columns:120px minmax(0,1fr)}
 @media(max-width:1100px){.people-task-layout{grid-template-columns:minmax(0,1fr)}.directory-entry{grid-template-columns:minmax(0,1fr) minmax(120px,.6fr)}.directory-state{grid-column:1/-1}}
-@media(max-width:680px){.people-list-heading,.people-pagination{padding:16px}.people-empty{padding:28px 16px}.directory-entry{padding:16px;grid-template-columns:minmax(0,1fr);gap:8px}.directory-name{min-height:44px}.directory-entry dl{display:flex;flex-wrap:wrap;gap:8px}.people-list-heading .policy-button{width:100%}.people-accepted,.people-detail-card .record-meta,.people-request .record-meta{grid-template-columns:minmax(0,1fr);gap:6px}.people-accepted dd{margin-bottom:14px}.people-request .policy-actions form,.people-request .policy-actions button{width:100%}.people-task-layout{gap:0}}
+@media(max-width:680px){.people-list-heading,.people-pagination,.people-search{padding:16px}.people-search input{flex-basis:100%}.people-search .policy-button{flex:1}.people-empty{padding:28px 16px}.directory-entry{padding:16px;grid-template-columns:minmax(0,1fr);gap:8px}.directory-name{min-height:44px}.directory-entry dl{display:flex;flex-wrap:wrap;gap:8px}.people-list-heading .policy-button{width:100%}.people-accepted,.people-detail-card .record-meta,.people-request .record-meta{grid-template-columns:minmax(0,1fr);gap:6px}.people-accepted dd{margin-bottom:14px}.people-request .policy-actions form,.people-request .policy-actions button{width:100%}.people-task-layout{gap:0}}
 .native-workspace-header [data-native-navigation="mobile"]{display:none}
 .native-workspace-header .native-account-nav{margin-top:32px}
 @media(max-width:680px){

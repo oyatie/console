@@ -44,9 +44,13 @@ impl DirectoryRegistrationInput {
     pub fn new(legal_name: &str, employee_number: &str) -> Result<Self, DirectoryInputError> {
         Ok(Self {
             legal_name: validated(legal_name, DirectoryInputField::LegalName, 200)?.to_owned(),
-            employee_number: validated(employee_number, DirectoryInputField::EmployeeNumber, 64)?
-                .to_owned(),
+            employee_number: Self::normalized_employee_number(employee_number)?.to_owned(),
         })
+    }
+
+    /// The same number grammar is used by registration and exact directory lookup.
+    pub fn normalized_employee_number(raw: &str) -> Result<&str, DirectoryInputError> {
+        validated(raw, DirectoryInputField::EmployeeNumber, 64)
     }
 
     pub fn legal_name(&self) -> &str {
