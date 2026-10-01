@@ -232,8 +232,8 @@ impl Scope {
 fn Consequences(subject: Subject) -> impl IntoView {
     let (heading, detail, limit) = match subject {
         Subject::PayrollRead => (
-            "이 권한으로 볼 수 있는 정보",
-            "이 계정은 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 볼 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다.",
+            "이 권한의 공개 범위",
+            "권한이 연결되어 유효하고 현재 정책이 허용할 때, 대상 관리 계정이 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 확인할 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다.",
             "급여의 상세 내역·수정·지급·내보내기 권한은 연결되지 않습니다. 다른 회사에는 적용되지 않습니다.",
         ),
         Subject::PeopleCatalog => (
@@ -242,13 +242,13 @@ fn Consequences(subject: Subject) -> impl IntoView {
             "설정 준비만으로 사람 정보가 공개되거나 등록 권한이 연결되지는 않습니다.",
         ),
         Subject::PeopleRead => (
-            "이 권한으로 볼 수 있는 정보",
-            "이 회사에 등록된 사람의 이름, 사번, 식별자와 등록 기록을 확인할 수 있습니다.",
+            "이 권한의 공개 범위",
+            "권한이 연결되어 유효하고 현재 정책이 허용할 때, 대상 관리 계정이 이 회사에 등록된 사람의 이름, 사번, 식별자와 등록 기록을 확인할 수 있습니다.",
             "등록·고용 변경·급여 권한은 포함되지 않습니다. 다른 회사에는 적용되지 않습니다.",
         ),
         Subject::PeopleCreate => (
-            "이 권한으로 할 수 있는 일",
-            "이 회사에 이름과 사번으로 사람을 등록하고 본인이 접수한 등록 요청의 처리 결과를 확인할 수 있습니다.",
+            "이 권한의 공개 범위",
+            "권한이 연결되어 유효하고 현재 정책이 허용할 때, 대상 관리 계정이 이 회사에 이름과 사번으로 사람을 등록하고 본인이 접수한 등록 요청의 처리 결과를 확인할 수 있습니다.",
             "사람 목록 열람이나 고용·급여 권한은 별도입니다. 다른 회사에는 적용되지 않습니다.",
         ),
     };
@@ -292,12 +292,19 @@ fn identities(scope: &Scope) -> AnyView {
     view! {
         <section class="panel"><h2>"대상과 업무 범위"</h2><div class="policy-panel-body">
             <dl class="record-meta">
-                <dt>"회사"</dt><dd data-policy-company=scope.company.clone()>{scope.company_name.clone().map(|name| view! {<strong>{name}</strong><br/>})}{scope.company.clone()}</dd>
-                <dt>"그룹"</dt><dd>{scope.group.clone()}</dd>
-                <dt>"권한 대상"</dt><dd data-policy-recipient=scope.recipient.clone()>{scope.recipient.clone()}</dd>
-                <dt>"현재 담당 계정"</dt><dd data-policy-operator=scope.operator.clone()>{scope.operator.clone()}</dd>
+                <dt>"회사"</dt><dd><strong>{scope.company_name.clone().unwrap_or_else(|| "선택한 회사".into())}</strong></dd>
+                <dt>"권한 대상"</dt><dd>"회사 등록 시 지정된 관리 계정"</dd>
+                <dt>"작업 담당"</dt><dd>"현재 로그인 계정"</dd>
             </dl>
             <p class="supporting">"회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다."</p>
+            <details class="policy-provenance"><summary>"회사·계정 식별 정보"</summary>
+                <dl class="record-meta">
+                    <dt>"회사"</dt><dd data-policy-company=scope.company.clone()>{scope.company.clone()}</dd>
+                    <dt>"그룹"</dt><dd>{scope.group.clone()}</dd>
+                    <dt>"권한 대상"</dt><dd data-policy-recipient=scope.recipient.clone()>{scope.recipient.clone()}</dd>
+                    <dt>"현재 담당 계정"</dt><dd data-policy-operator=scope.operator.clone()>{scope.operator.clone()}</dd>
+                </dl>
+            </details>
         </div></section>
     }.into_any()
 }
