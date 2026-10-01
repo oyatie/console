@@ -1227,7 +1227,9 @@ async fn submit_and_decide_drive_the_statements_this_crate_already_owned(owner_p
 #[sqlx::test(migrations = "../../platform/db/migrations")]
 async fn a_decider_who_submitted_the_run_is_refused(owner_pool: PgPool) {
     let (org, submitter, _, port) = fixture(&owner_pool).await;
-    const COWORKER_GROSS_WON: i64 = 4_192_837;
+    // June rates: health total 431,400 / half 215,700; care total 56,680 /
+    // half 28,340. Both half-share rounding candidates agree at this gross.
+    const COWORKER_GROSS_WON: i64 = 6_000_000;
     let [first, coworker] = complete_roster_submission_tests::two_employees(&owner_pool, org).await;
     let prepared = complete_roster_submission_tests::prepare_runs(
         &owner_pool,
@@ -1881,34 +1883,131 @@ async fn a_stored_receipt_naming_no_dispatch_target_is_refused(owner_pool: PgPoo
     let receipt = execute(&port, cmd.clone()).await.unwrap();
     let command_uuid = *cmd.command_id.as_uuid();
 
-    // Stand a hostile row where the good one was, carrying the SAME digest — so
-    // the replay gets PAST the digest comparison and the refusal below is the
-    // target read, not a `DigestConflict` — but a receipt naming no dispatch
-    // target, which is the shape an `ontology.action` row has. 0177's trigger
-    // refuses UPDATE and DELETE per row and TRUNCATE is statement-level, so this
-    // is the only way a test can replace the row.
-    sqlx::query("TRUNCATE ont_action_command_receipts")
-        .execute(&owner_pool)
+    // A second real owner receipt is an unchanged-row control. It reuses the
+    // natural key, so it does not stage another run.
+    let control_cmd = command(org, actor, cmd.query.clone());
+    let control_command_uuid = *control_cmd.command_id.as_uuid();
+    assert_ne!(control_command_uuid, command_uuid);
+    let control_receipt = execute(&port, control_cmd).await.unwrap();
+    assert_eq!(control_receipt.result()["created"], false);
+    assert_eq!(
+        control_receipt.result()["run_id"],
+        receipt.result()["run_id"]
+    );
+
+    let snapshot_sql =
+        "SELECT to_jsonb(r) FROM public.ont_action_command_receipts r ORDER BY org_id, command_id";
+    let before: Vec<serde_json::Value> = sqlx::query_scalar(snapshot_sql)
+        .fetch_all(&owner_pool)
         .await
         .unwrap();
-    sqlx::query(
-        "INSERT INTO ont_action_command_receipts \
-             (org_id, command_id, actor_id, payload_digest, receipt, created_at) \
-         VALUES ($1, $2, $3, $4, $5, now())",
+    assert!(
+        before
+            .iter()
+            .any(|row| row["command_id"] == json!(control_command_uuid))
+    );
+    let hostile = json!({ "run_id": receipt.result()["run_id"].clone() });
+    let mut expected = before.clone();
+    let selected = expected
+        .iter_mut()
+        .find(|row| row["org_id"] == json!(ORG) && row["command_id"] == json!(command_uuid))
+        .unwrap();
+    assert_eq!(selected["owner"], "pay_run");
+    assert_eq!(selected["target"], "payroll.create_run");
+    selected["receipt"] = hostile.clone();
+    // Retain the original historical ontology.action/NULL metadata control.
+    // Actor, digest, action/object binding, creation time and all other rows
+    // remain byte-identical. Only this receipt's result/owner/target change.
+    selected["owner"] = json!("ontology.action");
+    selected["target"] = serde_json::Value::Null;
+
+    let trigger_sql = "SELECT tgenabled::text FROM pg_trigger WHERE tgrelid='public.ont_action_command_receipts'::regclass AND tgname='trg_ont_action_command_receipts_immutable'";
+    let mut tx = owner_pool.begin().await.unwrap();
+    let original_trigger: String = sqlx::query_scalar(trigger_sql)
+        .fetch_one(&mut *tx)
+        .await
+        .unwrap();
+    let restore_trigger = match original_trigger.as_str() {
+        "O" => {
+            "ALTER TABLE public.ont_action_command_receipts ENABLE TRIGGER trg_ont_action_command_receipts_immutable"
+        }
+        "A" => {
+            "ALTER TABLE public.ont_action_command_receipts ENABLE ALWAYS TRIGGER trg_ont_action_command_receipts_immutable"
+        }
+        mode => panic!("receipt immutability must already be enforced, found trigger mode {mode}"),
+    };
+    // Disposable owner-only corruption. PostgreSQL rolls back both DDL and
+    // row change together on failure; no broad trigger, RLS or ACL bypass.
+    sqlx::query("ALTER TABLE public.ont_action_command_receipts DISABLE TRIGGER trg_ont_action_command_receipts_immutable")
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let changed = sqlx::query(
+        "UPDATE public.ont_action_command_receipts \
+         SET receipt=$3, owner='ontology.action', target=NULL \
+         WHERE org_id=$1 AND command_id=$2",
     )
     .bind(ORG)
     .bind(command_uuid)
-    .bind(actor.as_uuid())
-    .bind(receipt.payload_digest().as_slice())
-    .bind(serde_json::json!({ "run_id": receipt.result()["run_id"].clone() }))
-    .execute(&owner_pool)
+    .bind(hostile)
+    .execute(&mut *tx)
     .await
     .unwrap();
+    assert_eq!(changed.rows_affected(), 1);
+    sqlx::query(restore_trigger)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+    let staged_trigger: String = sqlx::query_scalar(trigger_sql)
+        .fetch_one(&mut *tx)
+        .await
+        .unwrap();
+    assert_eq!(staged_trigger, original_trigger);
+    tx.commit().await.unwrap();
+
+    // Independent readback and an actual refused no-op update prove the
+    // original enforcement was restored before exercising the receipt reader.
+    let restored_trigger: String = sqlx::query_scalar(trigger_sql)
+        .fetch_one(&owner_pool)
+        .await
+        .unwrap();
+    assert_eq!(restored_trigger, original_trigger);
+    let immutable = sqlx::query(
+        "UPDATE public.ont_action_command_receipts SET receipt=receipt \
+         WHERE org_id=$1 AND command_id=$2",
+    )
+    .bind(ORG)
+    .bind(command_uuid)
+    .execute(&owner_pool)
+    .await
+    .expect_err("restored receipt trigger must refuse even a no-op owner update");
+    let database = immutable.as_database_error().unwrap();
+    assert_eq!(database.code().as_deref(), Some("P0001"));
+    assert_eq!(
+        database.message(),
+        "ontology action command receipts are immutable"
+    );
+    let corrupted: Vec<serde_json::Value> = sqlx::query_scalar(snapshot_sql)
+        .fetch_all(&owner_pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        corrupted, expected,
+        "only the selected result/owner/target may change"
+    );
 
     let error = execute(&port, cmd).await.unwrap_err();
     assert!(
         matches!(error, PayRunError::UnreadableReceipt(id, _) if id == command_uuid),
         "a receipt naming no target must be refused, never replayed: {error:?}"
+    );
+    let after: Vec<serde_json::Value> = sqlx::query_scalar(snapshot_sql)
+        .fetch_all(&owner_pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        after, expected,
+        "refused replay must preserve every stored receipt byte"
     );
 }
 
