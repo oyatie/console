@@ -160,7 +160,7 @@ test('Company observer accepts actual Policy-root and rejects foreign Policy-roo
 
 // Classifier-only Policy task controls. These records never stand in for the
 // mounted browser, current policy or independent database-effect census.
-const {COPY,validTaskEvidence,taskEvidenceIssues,taskIssues,collectTask}=require('./policy_journey.cjs');
+const {COPY,validTaskEvidence,taskEvidenceIssues,taskIssues,collectTask,identifiersReadable}=require('./policy_journey.cjs');
 function taskHistory(sameAccount=true) {
   const uuid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
   const e={company:uuid(1),group:uuid(2),recipient:uuid(3),operator:uuid(sameAccount?3:4),company_name:'연구 <회사 & 본사>',origin:'https://localhost:1234',
@@ -242,21 +242,34 @@ test('Policy DOM collector controls under pinned Chromium, never business accept
   const browser=await chromium.launch({headless:true,executablePath:executable});t.after(()=>browser.close());
   const page=await browser.newPage();
   const scope=taskHistory(),escape=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  const identifier=(value,change)=>change==='nested-transparent-identifiers'?`<span style="opacity:0">${value}</span>`:change==='nested-hidden-identifiers'?`<span hidden>${value}</span>`:value;
   // Deliberately synthetic DOM fixtures test the collector only, in a separate
   // browser. No Company route, Account, source, command or database is seeded.
   const fixture=change=>`<section class="panel"><h2>대상과 업무 범위</h2><div class="policy-panel-body"><dl>
     <dt>회사</dt><dd>${escape(scope.company_name)}</dd><dt>권한 대상</dt><dd ${change==='hidden-role'?'hidden':''}>회사 등록 시 지정된 관리 계정</dd>
     <dt>작업 담당</dt><dd>현재 로그인 계정</dd></dl><p ${change==='hidden-restriction'?'hidden':''}>회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다.</p>
     <p>현재 로그인 계정이 권한 대상입니다</p><details><summary ${change==='not-tab-accessible'?'tabindex="-1"':''}>회사·계정 식별 정보</summary><dl>
-    <dt>회사</dt><dd data-policy-company="${scope.company}">${scope.company}</dd><dt>그룹</dt><dd>${scope.group}</dd>
-    <dt>권한 대상</dt><dd data-policy-recipient="${scope.recipient}">${scope.recipient}</dd><dt>현재 담당 계정</dt><dd data-policy-operator="${scope.operator}">${scope.operator}</dd></dl></details></div></section>
+    <dt>회사</dt><dd data-policy-company="${scope.company}">${identifier(scope.company,change)}</dd><dt>그룹</dt><dd>${identifier(scope.group,change)}</dd>
+    <dt>권한 대상</dt><dd data-policy-recipient="${scope.recipient}">${identifier(scope.recipient,change)}</dd><dt>현재 담당 계정</dt><dd data-policy-operator="${scope.operator}">${identifier(scope.operator,change)}</dd></dl></details></div></section>
     <section class="policy-consequences"><h2 ${change==='hidden-heading'?'hidden':''}>${COPY.heading}</h2>
-    <p ${change==='hidden-copy'?'hidden':change==='transparent-copy'?'style="opacity:0"':''}>${COPY.consequence}</p>
+    <p ${change==='hidden-copy'?'hidden':change==='transparent-copy'?'style="opacity:0"':''}>${change==='nested-transparent-copy'?'<span style="opacity:0">':change==='nested-hidden-copy'?'<span hidden>':''}${COPY.consequence}${['nested-transparent-copy','nested-hidden-copy'].includes(change)?'</span>':''}</p>
     <p class="policy-limit">${COPY.scope}</p>${change==='extra-claim'||change==='hidden-copy'?'<span>이 계정은 지금 급여 목록을 볼 수 있습니다.</span>':''}</section>`;
   for(const [change,expected] of [['visible',[]],['hidden-heading',['CONDITIONAL_SCOPE']],['hidden-copy',['CONDITIONAL_SCOPE']],['transparent-copy',['CONDITIONAL_SCOPE']],
+    ['nested-transparent-copy',['CONDITIONAL_SCOPE']],['nested-hidden-copy',['CONDITIONAL_SCOPE']],
     ['extra-claim',['CONDITIONAL_SCOPE']],['hidden-role',['PRIMARY_CONTEXT']],['hidden-restriction',['PRIMARY_CONTEXT']],['not-tab-accessible',['IDENTIFIER_DETAILS']]])await t.test(change,async()=>{
     await page.setContent(fixture(change));const row=await page.evaluate(collectTask,'MACHINERY_DOM_CONTROL');
     // This noninteractive collector control cannot supply interaction evidence.
     assert.deepEqual(taskIssues(row,scope).filter(code=>code!=='DISCLOSURE_INTERACTION'),expected);
+  });
+  for(const change of ['visible','nested-transparent-identifiers','nested-hidden-identifiers'])await t.test(`keyboard-opened identifiers: ${change}`,async()=>{
+    await page.setContent(fixture(change));
+    assert.equal(identifiersReadable(await page.evaluate(collectTask,'MACHINERY_DOM_CONTROL')),false);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.locator('summary').evaluate(e=>document.activeElement===e),true);
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('details').evaluate(e=>e.open),true);
+    assert.equal(identifiersReadable(await page.evaluate(collectTask,'MACHINERY_DOM_CONTROL')),change==='visible');
+    await page.keyboard.press('Space');
+    assert.equal(await page.locator('details').evaluate(e=>e.open),false);
   });
 });

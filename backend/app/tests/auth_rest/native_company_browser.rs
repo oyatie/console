@@ -64,7 +64,7 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
         for (name, digest) in [
             (
                 "policy_journey.cjs",
-                "0898ad71d87f7691082b5a4e60e530ad746406da4fc131dfd666692804ff4412",
+                "766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea",
             ),
             (
                 "recovery_controls.cjs",

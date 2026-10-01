@@ -34,7 +34,7 @@ DRIVERS = {
 COMPANIONS = {
     "native_header.cjs": "3e8cf19a45086dc07cf0ddba012404e9d1c9614b43a0c7363eb18deefeab00e3",
     "people_journey.cjs": "7d6a445929d5b905d02fc60b063fa89a67db7bd3cd4b1a853ed666db150cdea2",
-    "policy_journey.cjs": "0898ad71d87f7691082b5a4e60e530ad746406da4fc131dfd666692804ff4412",
+    "policy_journey.cjs": "766da87a7ad3c7c6c41dd98725ddbda951477d1e7b43e5961e213d92c4d5f4ea",
     "recovery_controls.cjs": "fe3afc43196cc034d6a5f9bd0b12ad787eaeddf2cb1b1b837b595cb9f49036c6",
 }
 FAMILIES = {

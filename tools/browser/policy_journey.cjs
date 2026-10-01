@@ -52,6 +52,9 @@ function taskEvidenceIssues(e) {
   } catch { return ['TASK_HISTORY_INCOMPLETE']; }
 }
 function validTaskEvidence(e) { return taskEvidenceIssues(e).length === 0; }
+function identifiersReadable(row) {
+  return Array.isArray(row?.identifiers) && row.identifiers.length===4 && JSON.stringify(row.visible_identifiers)===JSON.stringify(row.identifiers);
+}
 function collectTask(site) {
   const visible=e=>e?.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})===true;
   const normalize=text=>String(text ?? '').trim().replace(/\s+/g,' ');
@@ -64,21 +67,24 @@ function collectTask(site) {
   const attrs=['data-policy-company','data-policy-recipient','data-policy-operator'].flatMap(name=>[...document.querySelectorAll(`[${name}]`)].map(e=>[name,e.getAttribute(name)]));
   const consequence=document.querySelector('.policy-consequences');
   const heading=consequence?.querySelector('h2'),description=consequence?.querySelector('p'),limit=consequence?.querySelector('.policy-limit');
-  const body=panel?.querySelector('.policy-panel-body');
-  const walker=body && document.createTreeWalker(body,NodeFilter.SHOW_TEXT);
-  const primaryText=[];
-  if(walker)while(walker.nextNode()){
-    const node=walker.currentNode;
-    if(!node.parentElement.closest('details') && visible(node.parentElement))primaryText.push(node.textContent);
-  }
+  const visibleText=(root,excludeDetails=false)=>{
+    const walker=root && document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const text=[];
+    if(walker)while(walker.nextNode()){
+      const node=walker.currentNode;
+      if((!excludeDetails || !node.parentElement.closest('details')) && visible(node.parentElement))text.push(node.textContent);
+    }
+    return normalize(text.join(' '));
+  };
   const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);
   return {site,url:location.href,current_state:document.querySelector('[data-policy-current-state]')?.getAttribute('data-policy-current-state') ?? null,
     heading:heading?.textContent ?? null,description:description?.textContent ?? null,limit:limit?.textContent ?? null,
-    heading_visible:visible(heading),description_visible:visible(description),limit_visible:visible(limit),consequence_text:normalize(consequence?.innerText),
+    heading_visible:visible(heading),description_visible:visible(description),limit_visible:visible(limit),consequence_text:visibleText(consequence),
     primary:pairs(panel),primary_prose:panel ? [...panel.querySelectorAll('p')].filter(p=>!p.closest('details')).map(p=>p.textContent) : [],
-    primary_visible:primaryNodes.length>0 && primaryNodes.every(e=>visible(e) && (e.tagName!=='DT' || visible(e.nextElementSibling))),primary_text:normalize(primaryText.join(' ')),
+    primary_visible:primaryNodes.length>0 && primaryNodes.every(e=>visible(e) && (e.tagName!=='DT' || visible(e.nextElementSibling))),primary_text:visibleText(panel?.querySelector('.policy-panel-body'),true),
     details_count:details.length,details_native:selected?.tagName==='DETAILS',details_title:selected?.querySelector('summary')?.textContent ?? null,
     initially_closed:selected?.open===false,summary_tab_index:summary?.tabIndex ?? null,summary_visible:visible(summary),identifiers:pairs(selected),identity_attributes:attrs,
+    visible_identifiers:selected ? [...selected.querySelectorAll('dt')].map(dt=>[visibleText(dt),visibleText(dt.nextElementSibling)]) : [],
     attributes_in_details:attrs.length===3 && ['data-policy-company','data-policy-recipient','data-policy-operator'].every(name=>[...document.querySelectorAll(`[${name}]`)].every(e=>selected?.contains(e))),
     identifiers_hidden:selected!==null && [...selected.querySelectorAll('dd')].every(e=>!visible(e)),
     unique_ids:new Set(ids).size===ids.length,no_product_script:document.scripts.length===0};
@@ -101,7 +107,7 @@ async function observeTask(page, context, site, tabTo) {
         if(row.tab_discovered){
           row.focus_visible=await summary.evaluate(e=>e.matches(':focus-visible'));
           await page.keyboard.press('Enter');row.keyboard_opened=await summary.evaluate(e=>e.parentElement.open===true);
-          row.identifiers_visible=await summary.evaluate(e=>[...e.parentElement.querySelectorAll('dd')].length===4 && [...e.parentElement.querySelectorAll('dd')].every(d=>d.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})));
+          row.identifiers_visible=identifiersReadable(await page.evaluate(collectTask,site));
           await page.keyboard.press('Space');row.keyboard_closed=await summary.evaluate(e=>e.parentElement.open===false);
         }
       }
@@ -345,4 +351,4 @@ async function runPolicyJourney({ page, context, company, group, companyName, re
     await capture('policy-revoked-reopened');assert.equal(validEvidence(result),true);return result;
   } finally { context.off('request',onRequest);context.off('response',onResponse);context.off('requestfailed',onFailure); }
 }
-module.exports={runPolicyJourney,assertOutcome,validEvidence,exactRecoveryHref,deniedMaterialSafe,COPY,TASK_SITES,taskIssues,taskEvidenceIssues,validTaskEvidence,collectTask};
+module.exports={runPolicyJourney,assertOutcome,validEvidence,exactRecoveryHref,deniedMaterialSafe,COPY,TASK_SITES,taskIssues,taskEvidenceIssues,validTaskEvidence,collectTask,identifiersReadable};
