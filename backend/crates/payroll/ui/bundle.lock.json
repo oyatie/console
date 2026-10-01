@@ -30,7 +30,7 @@
     "backend/crates/payroll/ui/src/people_tests.rs": "8d3d171b6f9339b1a9a6891e4a4c567a45f3b118fd265bf20a0adef2969fd680",
     "backend/crates/payroll/ui/src/theme.css": "a2f352cc6798b7d217711e4556394026fe754b3ad595bcfcac73ce5f7b5bf2d7",
     "backend/crates/payroll/ui/src/workflow_presentation_tests.rs": "7d0e3351a39c4d12cca9f9039479cd0e8d0c18fb9c47719985332ce9b6785c32",
-    "backend/crates/payroll/ui/src/workspace_tests.rs": "50e55a7dac2aef4063371b8f0423fc248ed94c00a0ea3f2cbd4c7cecdbf4bb56",
+    "backend/crates/payroll/ui/src/workspace_tests.rs": "3330d87b40e65b228948a80404bb516471874844d7b0a94aa3ec2f5e46b5baa4",
     "rust-toolchain.toml": "b927a8442ae55a00de8486f0b246918a38b3971108b9edab5f8fb042d67d5a28",
     "third-party/rust/fixups/anyhow/fixups.toml": "878b7b58cc80899dcd09290b5ae7cb30e8e73aa1dd81b3fc4dc82daa6d2ae28e",
     "third-party/rust/fixups/apalis-postgres/fixups.toml": "65ff94a5601fca57b17157ae2ecdf9d3762887c872208bd35dea40ba44ffc84d",
@@ -178,7 +178,7 @@
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "3218d4688aae6bfc51d420c681022bb655e604ae8382011f61da28ac3ca9eaed",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "baa6cdf97a28ff8db74c13c2c42f974922e613f77d6e97b5f6740fd86bde8760"
+    "source_snapshot_sha256": "5fc23c897ed9b5a2a569f94daa08e3cefdabfaed44b9c19369cf62b570ca1c9d"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",

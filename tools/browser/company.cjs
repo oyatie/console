@@ -17,7 +17,7 @@ const TERMS=[{kind:'test.account.service',title:'테스트 서비스 약관'},{k
 const MUTATION_PATHS=['/api/v2/auth/registration/start','/api/v2/auth/registration/finish','/api/v2/companies/enroll'];
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 function nonnil(value){return typeof value==='string'&&UUID.test(value)&&value!=='00000000-0000-0000-0000-000000000000';}
-function documentPaths(result){if(!nonnil(result.command_id)||!nonnil(result.org_id))return null;const saved=`/account/companies/requests/${result.command_id}`;return ['/','/account/register','/account','/account','/account/companies/new',saved,saved,`/companies/${result.org_id}`,saved,...(result.policy_entry===true?['/account',`/companies/${result.org_id}`,`/companies/${result.org_id}/policy/payroll-read/install`]:[])];}
+function documentPaths(result){if(!nonnil(result.command_id)||!nonnil(result.org_id))return null;const saved=`/account/companies/requests/${result.command_id}`;return ['/','/account/register','/account','/account','/account/companies/new',saved,saved,`/companies/${result.org_id}`,...(result.policy_entry===true?[]:[`/companies/${result.org_id}/policy`,`/companies/${result.org_id}/policy`,`/companies/${result.org_id}`]),saved,...(result.policy_entry===true?['/account',`/companies/${result.org_id}`,`/companies/${result.org_id}/policy/payroll-read/install`]:[])];}
 function completeDocumentsOriginal(result){const expected=documentPaths(result);return !!expected&&result.document_failures===0&&Array.isArray(result.documents)&&result.documents.length===expected.length&&result.documents.every((row,index)=>row&&Object.keys(row).sort().join(',')==='method,ordinal,path,redirected,status,url_exact'&&row.ordinal===index+1&&row.method==='GET'&&row.path===expected[index]&&row.redirected===false&&row.status===200&&row.url_exact===true);}
 function expectedDocumentRows(result){const paths=documentPaths(result);return paths&&paths.map(path=>({method:'GET',path,status:200,redirected:false})).concat(result.policy_documents||[],result.people_documents||[]);}
 function completeDocuments(result){if(!result.policy_entry)return completeDocumentsOriginal(result);const expected=expectedDocumentRows(result);return !!expected&&result.document_failures===0&&result.documents?.length===expected.length&&result.documents.every((row,i)=>Object.keys(row).sort().join(',')==='method,ordinal,path,redirected,status,url_exact'&&row.ordinal===i+1&&row.url_exact===true&&['method','path','status','redirected'].every(k=>row[k]===expected[i][k]));}
@@ -28,11 +28,12 @@ function observeDocuments(page,origin,result){
   if(!isDocument(request))return;
   const url=new URL(request.url());
   const allowed=['/','/account/register','/account','/account/companies/new'].includes(url.pathname)||/^\/account\/companies\/requests\/[0-9a-f-]{36}$/.test(url.pathname)||/^\/companies\/[0-9a-f-]{36}$/.test(url.pathname);
+  const policyRoot=result.policy_entry!==true&&url.pathname===`/companies/${result.org_id}/policy`;
   const policyEntry=result.policy_entry===true&&url.pathname===`/companies/${result.org_id}/policy/payroll-read/install`;
   const policyStep=result.policy_entry===true&&result.policy_documents?.some(d=>d.path===url.pathname);
   const fullPath=url.pathname+url.search;
   const peopleStep=result.people_entry===true&&result.people_documents?.some(d=>d.path===fullPath);
-  const canonical=(allowed||policyEntry||policyStep||peopleStep)&&url.origin===origin&&(!url.search||peopleStep)&&!url.hash&&!url.username&&!url.password;
+  const canonical=(allowed||policyRoot||policyEntry||policyStep||peopleStep)&&url.origin===origin&&(!url.search||peopleStep)&&!url.hash&&!url.username&&!url.password;
   const row={ordinal:result.documents.length+1,method:request.method(),path:canonical?fullPath:'<unexpected>',redirected:request.redirectedFrom()!==null,status:null,url_exact:false};
   if(owners.has(request)||request.resourceType()!=='document'||!request.isNavigationRequest())result.document_failures++;
   owners.set(request,row);result.documents.push(row);
@@ -89,27 +90,31 @@ function completeNavigation(r){return ['payroll_nav_before_grant_absent','payrol
 function expectedNativeHeaders(r){
  if(!validOrigin(r.header_origin)||!nonnil(r.org_id))throw Error('NATIVE_HEADER_IDENTITY');
  const w=`/companies/${r.org_id}`,p=w+'/policy/payroll-read',payroll=w+'/payroll';
+ const initial=(phase,path=w)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy'],currentPath:path,boundTitle:true,deniedPrefixes:[w+'/people',payroll]});
+ const first=initial('COMPANY_HEADER_FIRST');
+ if(r.policy_entry!==true)return [first,initial('POLICY_ROOT_OPENED',w+'/policy'),initial('POLICY_ROOT_REOPENED',w+'/policy'),initial('COMPANY_POLICY_RETURNED')];
  const commands=r.policy?.mutations?.map(m=>m.command_id)||[];
  const policy=(phase,path,active=false)=>({phase,url:r.header_origin+path,paths:['/account',w,w+'/policy',...(active?[payroll]:[])],payrollPath:active?payroll:undefined,boundTitle:true});
  const read=phase=>({phase,url:r.header_origin+payroll,paths:['/account',payroll],payrollPath:payroll,currentPath:payroll,boundTitle:true});
- return [policy('POLICY_HEADER_PREFLIGHT',p+'/install'),
+ return [first,policy('POLICY_HEADER_PREFLIGHT',p+'/install'),
   policy('CATALOG_INSTALLED',p+'/requests/install/'+commands[0]),
   policy('GRANT_COMMITTED',p+'/requests/grant/'+commands[1],true),
   policy('GRANT_REOPENED',p+'/requests/grant/'+commands[1],true),
+  {...policy('PAYROLL_COMPANY_HEADER',w,true),currentPath:w},
   read('PAYROLL_READ'),read('PAYROLL_REOPENED'),
   policy('REVOKE_COMMITTED',p+'/requests/revoke/'+commands[2]),
-  policy('REVOKE_REOPENED',p+'/requests/revoke/'+commands[2])];
+  policy('REVOKE_REOPENED',p+'/requests/revoke/'+commands[2]),
+  initial('REVOKED_COMPANY_HEADER')];
 }
 function completeNativeHeaders(r){try{
- if(r.policy_entry!==true)return true;
  const expected=expectedNativeHeaders(r);
  return Array.isArray(r.native_headers)&&r.native_headers.length===expected.length&&r.native_headers.every((row,i)=>validHeaderEvidence(row,expected[i]))&&
   (r.people_entry!==true||r.people?.header_origin===r.header_origin);
 }catch{return false;}}
 
-function completeObservations(r){return completeNativeHeaders(r)&&(r.people_entry!==true||(require('./people_journey.cjs').validEvidence(r.people)&&JSON.stringify(r.people_documents)===JSON.stringify(require('./people_journey.cjs').expectedDocuments(r.people))))&&completeCompanyWorkspace(r)&&completeDocuments(r)&&completeMutations(r)&&r.browser_version==='153.0.8010.12'&&r.unexpected_mutations===0&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')===(r.policy_entry===true?'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED,POLICY_ENTRY_READY,POLICY_PREFLIGHT,CATALOG_INSTALLED,GRANT_COMMITTED,GRANT_REOPENED,PAYROLL_READ,PAYROLL_REOPENED,PAYROLL_JSON,REVOKE_COMMITTED,REVOKE_REOPENED,PAYROLL_DENIED,PAYROLL_JSON_DENIED,ADMIN_REOPENED':'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED')&&(r.policy_entry!==true||(require('./policy_journey.cjs').validEvidence(r.policy)&&completePolicyPlan(r)&&completeNavigation(r)&&['current_context','policy_entry_link','policy_preflight','reflow_policy_320','keyboard_policy_entry','keyboard_policy_submit','full_policy_journey','payroll_ssr','payroll_reopened','payroll_json','payroll_denied','payroll_json_denied','administration_reopened'].every(key=>r[key]===true)))&&MUTATION_PATHS.every(p=>r.posts?.[p]===1)&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','reflow_result_320','reflow_company_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','keyboard_company_submit','company_wire','company_result','company_reopen','company_workspace','company_back','invalid_input_preserved','recipient_consequence','business_input_not_stored'].every(key=>r[key]===true);}
+function completeObservations(r){return completeNativeHeaders(r)&&(r.policy_entry===true||r.policy_root_journey===true)&&(r.people_entry!==true||(require('./people_journey.cjs').validEvidence(r.people)&&JSON.stringify(r.people_documents)===JSON.stringify(require('./people_journey.cjs').expectedDocuments(r.people))))&&completeCompanyWorkspace(r)&&completeDocuments(r)&&completeMutations(r)&&r.browser_version==='153.0.8010.12'&&r.unexpected_mutations===0&&r.relay_failure!==true&&r.tls_client_error!==true&&r.root_status===200&&r.registration_wire===true&&r.resident===true&&r.cookie_security===true&&r.literal_secret_absent===true&&r.external_requests===0&&r.checkpoints?.join(',')===(r.policy_entry===true?'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED,POLICY_ENTRY_READY,POLICY_PREFLIGHT,CATALOG_INSTALLED,GRANT_COMMITTED,GRANT_REOPENED,PAYROLL_READ,PAYROLL_REOPENED,PAYROLL_JSON,REVOKE_COMMITTED,REVOKE_REOPENED,PAYROLL_DENIED,PAYROLL_JSON_DENIED,ADMIN_REOPENED':'ENROLLED,COMPANY_COMMITTED,COMPANY_REOPENED')&&(r.policy_entry!==true||(require('./policy_journey.cjs').validEvidence(r.policy)&&completePolicyPlan(r)&&completeNavigation(r)&&['current_context','policy_entry_link','policy_preflight','reflow_policy_320','keyboard_policy_entry','keyboard_policy_submit','full_policy_journey','payroll_ssr','payroll_reopened','payroll_json','payroll_denied','payroll_json_denied','administration_reopened'].every(key=>r[key]===true)))&&MUTATION_PATHS.every(p=>r.posts?.[p]===1)&&['reflow_root_320','reflow_register_320','reflow_account_320','reflow_setup_320','reflow_result_320','reflow_company_320','keyboard_skip','keyboard_registration','keyboard_terms','keyboard_registration_submit','keyboard_company_entry','keyboard_company_submit','company_wire','company_result','company_reopen','company_workspace','company_back','invalid_input_preserved','recipient_consequence','business_input_not_stored'].every(key=>r[key]===true);}
 function leafStatus(r){return !r.failure&&completeObservations(r)&&r.cleanup?.confirmed===true?'BROWSER_LEAF_PASSED':'BROWSER_LEAF_FAILED';}
-function publicError(error){const allowed=new Set(['TIMEOUT','OWNER_PROTOCOL','OWNER_EOF','OWNER_REFUSED','PREREQUISITE','TLS_RELAY_FAILED','UI_PUBLIC_ENTRY_MISSING','UI_LINK_MISSING','TERMS_CONTROL','REGISTRATION_WIRE','REGISTRATION_EFFECT','RESIDENT','COOKIE_SECURITY','SECRET_DISCLOSURE','ACCOUNT_SSR','LOGOUT_EFFECT','LOGIN_WIRE','LOGIN_EFFECT','EXTERNAL_REQUEST','OBSERVATION_INCOMPLETE','REFLOW_320','KEYBOARD_FOCUS','KEYBOARD_DISCOVERY','KEYBOARD_SKIP','KEYBOARD_TERMS','COMPANY_ENTRY','COMPANY_FORM','COMPANY_WIRE','COMPANY_RESULT','COMPANY_WORKSPACE','COMPANY_REOPEN','INPUT_PRESERVATION','BUSINESS_STORAGE','CURRENT_CONTEXT','POLICY_ENTRY','POLICY_PREFLIGHT','PEOPLE_ENTRY','PEOPLE_SEARCH_FORM_MISSING']);if(allowed.has(error?.code))return error.code;const network=String(error?.message??'').match(/\bnet::(ERR_[A-Z0-9_]{1,76})\b/);if(network)return network[1];if(error?.name==='TimeoutError')return 'BROWSER_TIMEOUT';if(error?.name==='SyntaxError')return 'INVALID_JSON';if(error?.name==='TypeError')return 'BROWSER_TYPE_ERROR';if(/No (?:resource with given identifier found|data found for resource with given identifier)/.test(String(error?.message??'')))return 'RESPONSE_BODY_UNAVAILABLE';if(String(error?.message??'').includes('Execution context was destroyed'))return 'BROWSER_CONTEXT_DESTROYED';return 'UNCLASSIFIED_FAILURE';}
+function publicError(error){const allowed=new Set(['TIMEOUT','OWNER_PROTOCOL','OWNER_EOF','OWNER_REFUSED','PREREQUISITE','TLS_RELAY_FAILED','UI_PUBLIC_ENTRY_MISSING','UI_LINK_MISSING','TERMS_CONTROL','REGISTRATION_WIRE','REGISTRATION_EFFECT','RESIDENT','COOKIE_SECURITY','SECRET_DISCLOSURE','ACCOUNT_SSR','LOGOUT_EFFECT','LOGIN_WIRE','LOGIN_EFFECT','EXTERNAL_REQUEST','OBSERVATION_INCOMPLETE','REFLOW_320','KEYBOARD_FOCUS','KEYBOARD_DISCOVERY','KEYBOARD_SKIP','KEYBOARD_TERMS','COMPANY_ENTRY','COMPANY_FORM','COMPANY_WIRE','COMPANY_RESULT','COMPANY_WORKSPACE','COMPANY_REOPEN','INPUT_PRESERVATION','BUSINESS_STORAGE','CURRENT_CONTEXT','POLICY_ENTRY','POLICY_PREFLIGHT','NATIVE_HEADER','POLICY_ROOT','PEOPLE_ENTRY','PEOPLE_SEARCH_FORM_MISSING']);if(allowed.has(error?.code))return error.code;const network=String(error?.message??'').match(/\bnet::(ERR_[A-Z0-9_]{1,76})\b/);if(network)return network[1];if(error?.name==='TimeoutError')return 'BROWSER_TIMEOUT';if(error?.name==='SyntaxError')return 'INVALID_JSON';if(error?.name==='TypeError')return 'BROWSER_TYPE_ERROR';if(/No (?:resource with given identifier found|data found for resource with given identifier)/.test(String(error?.message??'')))return 'RESPONSE_BODY_UNAVAILABLE';if(String(error?.message??'').includes('Execution context was destroyed'))return 'BROWSER_CONTEXT_DESTROYED';return 'UNCLASSIFIED_FAILURE';}
 
 // Same observer and teardown are used by the real driver and machinery-only controls.
 function watchOwner(reader,cancel){
@@ -208,7 +213,7 @@ async function main(backendPort,out,mode){
    if(withPayroll)expected.unshift(['급여',company+'/payroll']);
    const rects=[];
    for(const [name,href] of expected){
-    const link=page.getByRole('link',{name,exact:true});
+    const link=page.getByRole('main').getByRole('link',{name,exact:true});
     if(!await exactVisibleLink(link,href))return false;
     rects.push(await link.boundingBox());
    }
@@ -228,6 +233,11 @@ async function main(backendPort,out,mode){
     if(await locator.evaluate(element=>document.activeElement===element)){requireFact(await focusVisible(locator),'KEYBOARD_FOCUS');return;}
    }
    requireFact(false,'KEYBOARD_DISCOVERY');
+  }
+  async function nativeHeader(phase){
+   const expected=expectedNativeHeaders(result).filter(row=>row.phase===phase);requireFact(expected.length===1,'NATIVE_HEADER');
+   try{result.native_headers.push(await assertNativeHeader(page,tabTo,expected[0]));}
+   catch(error){result.header_failure_phase=phase;error.code='NATIVE_HEADER';throw error;}
   }
   async function checkpoint(phase,account){emit({kind:'CHECKPOINT',phase,account_id:account});const command=await receive();requireFact(validCheckpointCommand(command,phase),'OWNER_PROTOCOL');result.checkpoints.push(phase);}
   async function secretFree(){const cookies=await context.cookies(origin);const secrets=cookies.filter(c=>c.name.startsWith('__Host-console_account_')).map(c=>c.value);const html=await page.content();const storage=await page.evaluate(()=>JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}));requireFact(secrets.every(s=>s.length>0&&!html.includes(s)&&!storage.includes(s)),'SECRET_DISCLOSURE');result.literal_secret_absent=true;return cookies;}
@@ -281,8 +291,37 @@ async function main(backendPort,out,mode){
   emit({kind:'CHECKPOINT',phase:'COMPANY_COMMITTED',account_id:account,command_id:sent.command_id,org_id:body.org_id,group_id:body.group_id,receipt_id:body.receipt_id});requireFact(validCheckpointCommand(await receive(),'COMPANY_COMMITTED'),'OWNER_PROTOCOL');result.checkpoints.push('COMPANY_COMMITTED');
   stage='company_reopen';await page.reload({waitUntil:'domcontentloaded'});result.company_reopen=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1&&await committedCompanyResult();requireFact(result.company_reopen,'COMPANY_REOPEN');
   await openCompany.click();await page.waitForURL(origin+`/companies/${body.org_id}`);
-  result.company_workspace=await page.getByRole('heading',{name:companyName,exact:true}).count()===1&&await page.getByRole('link',{name:'권한 관리',exact:true}).count()===1;requireFact(result.company_workspace,'COMPANY_WORKSPACE');
+  stage='company_header_first';await nativeHeader('COMPANY_HEADER_FIRST');
+  result.company_workspace=await page.getByRole('main').getByRole('heading',{name:companyName,exact:true}).count()===1&&await page.getByRole('main').getByRole('link',{name:'권한 관리',exact:true}).count()===1;requireFact(result.company_workspace,'COMPANY_WORKSPACE');
   result.reflow_company_320=await reflow320();requireFact(result.reflow_company_320,'REFLOW_320');result.company_layout_320=await companyLayout(320,false);result.company_layout_desktop=await companyLayout(1440,false);await secretFree();await capture('company-workspace-desktop.png');await page.setViewportSize({width:320,height:900});await capture('05-company-workspace.png');requireFact(result.company_layout_320&&result.company_layout_desktop,'COMPANY_WORKSPACE');
+  if(!result.policy_entry){
+   const w=`/companies/${body.org_id}`,root=w+'/policy',main=page.getByRole('main');
+   async function policyRootContents(response){
+    requireFact(response.status()===200&&response.request().method()==='GET'&&response.request().redirectedFrom()===null,'POLICY_ROOT');
+    const headers=await response.allHeaders();
+    requireFact(headers['cache-control']==='no-store'&&headers['x-content-type-options']==='nosniff'&&headers['content-security-policy']?.includes("script-src 'none'"),'POLICY_ROOT');
+    requireFact(await main.getByRole('heading',{name:'권한 관리',exact:true,level:1}).isVisible(),'POLICY_ROOT');
+    for(const name of ['연결된 사용 조항','위임 상한에 포함된 조항'])requireFact(await main.getByRole('heading',{name,exact:true,level:2}).count()===1,'POLICY_ROOT');
+    requireFact(await main.getByText(/실행.*현재.*정책/).count()>=1,'POLICY_ROOT');
+    for(const name of ['사용할 수 있는 기능','다른 계정에 연결할 수 있는 범위'])requireFact(await main.getByRole('heading',{name,exact:true}).count()===0,'POLICY_ROOT');
+    const raw=await main.locator('a[href]').evaluateAll(links=>links.map(a=>a.getAttribute('href')));
+    requireFact(raw.length===1&&raw[0]===w&&await main.locator('form,button').count()===0,'POLICY_ROOT');
+    await secretFree();
+   }
+   stage='policy_root_open';const policyCard=main.getByRole('link',{name:'권한 관리',exact:true});
+   requireFact(await exactVisibleLink(policyCard,root),'POLICY_ROOT');await tabTo(policyCard,48);
+   const opened=page.waitForResponse(r=>r.url()===origin+root&&r.request().isNavigationRequest());
+   await page.keyboard.press('Enter');await page.waitForURL(origin+root);await nativeHeader('POLICY_ROOT_OPENED');
+   await policyRootContents(await opened);await capture('company-policy-root-320.png');
+   stage='policy_root_reopen';const reopened=await page.reload({waitUntil:'domcontentloaded'});await nativeHeader('POLICY_ROOT_REOPENED');
+   await policyRootContents(reopened);await page.setViewportSize({width:1280,height:900});await capture('company-policy-root-desktop.png');await page.setViewportSize({width:320,height:900});
+   stage='policy_root_return';const back=main.getByRole('link',{name:'회사 업무 공간으로',exact:true});
+   requireFact(await exactVisibleLink(back,w),'POLICY_ROOT');await tabTo(back,48);
+   const returned=page.waitForResponse(r=>r.url()===origin+w&&r.request().isNavigationRequest());
+   await page.keyboard.press('Enter');await page.waitForURL(origin+w);requireFact((await returned).status()===200,'POLICY_ROOT');
+   await nativeHeader('COMPANY_POLICY_RETURNED');requireFact(await main.getByRole('heading',{name:companyName,exact:true,level:1}).isVisible(),'COMPANY_WORKSPACE');
+   result.policy_root_journey=true;
+  }
   // A fresh real document read of the stable result URL models reopening; no back-forward cache is accepted as server evidence.
   await page.goto(origin+body.result_path,{waitUntil:'domcontentloaded'});result.company_back=page.url()===origin+body.result_path&&await page.getByText('생성 완료',{exact:true}).count()===1&&await committedCompanyResult();requireFact(result.company_back,'COMPANY_REOPEN');
   result.business_input_not_stored=await page.evaluate(({name,slug})=>!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(name)&&!JSON.stringify({local:Object.entries(localStorage),session:Object.entries(sessionStorage)}).includes(slug),{name:companyName,slug});requireFact(result.business_input_not_stored,'BUSINESS_STORAGE');
@@ -292,8 +331,8 @@ async function main(backendPort,out,mode){
    const currentCompany=page.getByRole('link',{name:companyName,exact:true});
    result.current_context=await currentCompany.count()===1&&await currentCompany.isVisible()&&await currentCompany.getAttribute('href')===`/companies/${body.org_id}`;
    requireFact(result.current_context,'CURRENT_CONTEXT');await tabTo(currentCompany,24);await page.keyboard.press('Enter');await page.waitForURL(origin+`/companies/${body.org_id}`);
-   result.payroll_nav_before_grant_absent=await page.getByRole('link',{name:'급여',exact:true}).count()===0;requireFact(result.payroll_nav_before_grant_absent,'POLICY_ENTRY');
-   stage='policy_entry';const policy=page.getByRole('link',{name:'급여 목록 열람 권한',exact:true});const install=`/companies/${body.org_id}/policy/payroll-read/install`;
+   result.payroll_nav_before_grant_absent=await page.locator(`a[href="/companies/${body.org_id}/payroll"]`).count()===0;requireFact(result.payroll_nav_before_grant_absent,'POLICY_ENTRY');
+   stage='policy_entry';const policy=page.getByRole('main').getByRole('link',{name:'급여 목록 열람 권한',exact:true});const install=`/companies/${body.org_id}/policy/payroll-read/install`;
    result.policy_entry_link=await policy.count()===1&&await policy.isVisible()&&await policy.getAttribute('href')===install;
    requireFact(result.policy_entry_link,'POLICY_ENTRY');await checkpoint('POLICY_ENTRY_READY',account);
    await tabTo(policy,24);const destination=page.waitForResponse(r=>r.url()===origin+install&&r.request().isNavigationRequest());await page.keyboard.press('Enter');result.keyboard_policy_entry=true;
@@ -314,7 +353,7 @@ async function main(backendPort,out,mode){
    const submitInstall=form.getByRole('button',{name:'열람 권한 설정 준비',exact:true});requireFact(await submitInstall.count()===1&&await submitInstall.isVisible()&&await submitInstall.isEnabled(),'POLICY_PREFLIGHT');
    await tabTo(submitInstall,32);result.keyboard_policy_submit=true;result.policy_preflight=true;
    result.reflow_policy_320=await reflow320();requireFact(result.reflow_policy_320,'REFLOW_320');await secretFree();await capture('06-policy-install-preflight.png');
-   result.native_headers.push(await assertNativeHeader(page,tabTo,expectedNativeHeaders(result)[0]));
+   await nativeHeader('POLICY_HEADER_PREFLIGHT');
    emit({kind:'CHECKPOINT',phase:'POLICY_PREFLIGHT',account_id:account,org_id:body.org_id,group_id:body.group_id,command_id:command,expected_company_epoch:epoch});requireFact(validCheckpointCommand(await receive(),'POLICY_PREFLIGHT'),'OWNER_PROTOCOL');result.checkpoints.push('POLICY_PREFLIGHT');
    stage='policy_actions';result.policy_documents=[];result.policy_expected_mutations=[];
    const expectDocument=(method,path,status,redirected)=>result.policy_documents.push({method,path,status,redirected});
@@ -363,20 +402,22 @@ async function main(backendPort,out,mode){
      expectDocument('GET',workspacePath,200,false);await tabTo(workspace,32);
      const workspaceResponse=page.waitForResponse(r=>r.url()===origin+workspacePath&&r.request().isNavigationRequest());await page.keyboard.press('Enter');
      requireFact((await workspaceResponse).status()===200,'COMPANY_WORKSPACE');await page.waitForURL(origin+workspacePath);
-     const payrollLink=page.getByRole('link',{name:'급여',exact:true});
+     await nativeHeader('PAYROLL_COMPANY_HEADER');
+     const payrollLink=page.getByRole('main').getByRole('link',{name:'급여',exact:true});
      result.payroll_workspace_link=await exactVisibleLink(payrollLink,payroll);
      requireFact(result.payroll_workspace_link,'POLICY_ENTRY');result.reflow_payroll_workspace_320=await reflow320();requireFact(result.reflow_payroll_workspace_320,'REFLOW_320');
      result.payroll_company_layout_320=await companyLayout(320,true);await secretFree();await capture('payroll-navigation-workspace-320.png');result.payroll_company_layout_desktop=await companyLayout(1440,true);await capture('payroll-navigation-workspace-desktop.png');await page.setViewportSize({width:320,height:900});requireFact(result.payroll_company_layout_320&&result.payroll_company_layout_desktop,'COMPANY_WORKSPACE');
      await readPhase('PAYROLL_READ',200,false,async()=>{await tabTo(payrollLink,32);const opened=page.waitForResponse(r=>r.url()===origin+payroll&&r.request().isNavigationRequest());await page.keyboard.press('Enter');const response=await opened;await page.waitForURL(origin+payroll);result.keyboard_payroll_navigation=true;return response;});result.payroll_ssr=true;await readPhase('PAYROLL_REOPENED',200,true);result.payroll_reopened=true;await jsonPhase('PAYROLL_JSON',200);result.payroll_json=true;expectDocument('GET',receiptPath,200,false);const back=await page.goto(origin+receiptPath);requireFact(back.status()===200,'POLICY_PREFLIGHT');}
    });
    result.full_policy_journey=true;
-   requireFact(await page.getByRole('link',{name:'급여',exact:true}).count()===0,'POLICY_ENTRY');
+   requireFact(await page.locator(`a[href="/companies/${body.org_id}/payroll"]`).count()===0,'POLICY_ENTRY');
    await readPhase('PAYROLL_DENIED',404);result.payroll_denied=true;await jsonPhase('PAYROLL_JSON_DENIED',404);result.payroll_json_denied=true;
    expectDocument('GET','/account',200,false);const accountAgain=await page.goto(origin+'/account');requireFact(accountAgain.status()===200,'CURRENT_CONTEXT');
    const retainedCompany=page.getByRole('link',{name:companyName,exact:true});requireFact(await retainedCompany.count()===1&&await retainedCompany.isVisible()&&await retainedCompany.getAttribute('href')===`/companies/${body.org_id}`,'CURRENT_CONTEXT');
    expectDocument('GET',`/companies/${body.org_id}`,200,false);await tabTo(retainedCompany,24);await page.keyboard.press('Enter');await page.waitForURL(origin+`/companies/${body.org_id}`);
-   result.payroll_nav_after_revoke_absent=await page.getByRole('link',{name:'급여',exact:true}).count()===0;requireFact(result.payroll_nav_after_revoke_absent,'POLICY_ENTRY');
-   const retainedPolicy=page.getByRole('link',{name:'급여 목록 열람 권한',exact:true});requireFact(await retainedPolicy.isVisible()&&await retainedPolicy.getAttribute('href')===install,'POLICY_ENTRY');
+   await nativeHeader('REVOKED_COMPANY_HEADER');
+   result.payroll_nav_after_revoke_absent=await page.locator(`a[href="/companies/${body.org_id}/payroll"]`).count()===0;requireFact(result.payroll_nav_after_revoke_absent,'POLICY_ENTRY');
+   const retainedPolicy=page.getByRole('main').getByRole('link',{name:'급여 목록 열람 권한',exact:true});requireFact(await retainedPolicy.isVisible()&&await retainedPolicy.getAttribute('href')===install,'POLICY_ENTRY');
    await exchange({phase:'ADMIN_REOPENED'});result.checkpoints.push('ADMIN_REOPENED');result.administration_reopened=true;await capture('policy-administration-retained.png');
 
   }

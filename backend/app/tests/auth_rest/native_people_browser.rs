@@ -3,7 +3,7 @@
 use super::*;
 
 pub(super) const DRIVER_SHA256: &str =
-    "6d8b8dfde9dec2b32ebef5fc21c6c0170358c93f590364c3fefa7549a2d82518";
+    "7d6a445929d5b905d02fc60b063fa89a67db7bd3cd4b1a853ed666db150cdea2";
 const NAME: &str = "김하늘 <연구 & 운영>";
 const NUMBER: &str = "UI-사람-001";
 const PHASES: &[&str] = &[

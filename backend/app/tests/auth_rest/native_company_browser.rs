@@ -46,6 +46,20 @@ async fn company_browser_journey_mode(pool: PgPool, policy_entry: bool, people_e
     );
     // Source-bound companion helpers are regular files in the same fresh stage.
     let mut policy_helpers = Vec::new();
+    // Required in all three modes, including the first mounted Company home.
+    let header_path = driver.parent().unwrap().join("native_header.cjs");
+    assert!(
+        std::fs::symlink_metadata(&header_path)
+            .unwrap()
+            .file_type()
+            .is_file()
+    );
+    let header_bytes = std::fs::read(&header_path).unwrap();
+    assert_eq!(
+        hex::encode(Sha256::digest(&header_bytes)),
+        "3e8cf19a45086dc07cf0ddba012404e9d1c9614b43a0c7363eb18deefeab00e3"
+    );
+    policy_helpers.push((header_path, header_bytes));
     if policy_entry {
         for (name, digest) in [
             (

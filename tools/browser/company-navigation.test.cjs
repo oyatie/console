@@ -56,34 +56,36 @@ const {expectedNativeHeaders,completeNativeHeaders}=require(process.env.CONSOLE_
 function headerWitness(expected) {
   return {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
     allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
-    payroll_path: expected.payrollPath ?? null,
+    payroll_path: expected.payrollPath ?? null, denied_prefixes: [...(expected.deniedPrefixes ?? [])].sort(),
     widths: [320, 680, 681, 1280].map(width => ({width, header_height: 90, main_top: 90,
       title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
-      routes_exact: true, current_exact: true, inactive_hidden: true})),
+      routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true})),
     enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
     values_preserved: true, location_preserved: true, no_product_script: true,
     unique_ids: true, network_requests: 0};
 }
 
-function headerEvidence() {
-  const r = {policy_entry: true, org_id: '00000000-0000-4000-8000-000000000001', header_origin: 'https://localhost:1234',
+function headerEvidence(mode = 'policy') {
+  const r = {policy_entry: mode !== 'company', people_entry: mode === 'people', org_id: '00000000-0000-4000-8000-000000000001', header_origin: 'https://localhost:1234',
     policy: {mutations: [2, 3, 4].map(n => ({command_id: '00000000-0000-4000-8000-' + String(n).padStart(12, '0')}))}};
-  r.native_headers = expectedNativeHeaders(r).map(headerWitness); return r;
+  r.native_headers = expectedNativeHeaders(r).map(headerWitness);
+  if (r.people_entry) r.people = {header_origin: r.header_origin};
+  return r;
 }
 test('policy Payroll mandatory header positive control', () => assert.equal(completeNativeHeaders(headerEvidence()), true));
-test('unrelated Company-only mode does not claim native headers', () => assert.equal(completeNativeHeaders({policy_entry: false}), true));
+test('Company-only mode without native header observations is refused', () => assert.equal(completeNativeHeaders({policy_entry: false}), false));
 test('policy Payroll exact route and current expectations', () => {
   const r = headerEvidence(), w = '/companies/' + r.org_id, p = w + '/payroll';
   const e = expectedNativeHeaders(r);
-  assert.deepEqual(e.map(row => row.phase), ['POLICY_HEADER_PREFLIGHT', 'CATALOG_INSTALLED',
-    'GRANT_COMMITTED', 'GRANT_REOPENED', 'PAYROLL_READ', 'PAYROLL_REOPENED', 'REVOKE_COMMITTED', 'REVOKE_REOPENED']);
-  assert.deepEqual(e.map(row => row.currentPath ?? null), [null, null, null, null, p, p, null, null]);
+  assert.deepEqual(e.map(row => row.phase), ['COMPANY_HEADER_FIRST', 'POLICY_HEADER_PREFLIGHT', 'CATALOG_INSTALLED',
+    'GRANT_COMMITTED', 'GRANT_REOPENED', 'PAYROLL_COMPANY_HEADER', 'PAYROLL_READ', 'PAYROLL_REOPENED', 'REVOKE_COMMITTED', 'REVOKE_REOPENED', 'REVOKED_COMPANY_HEADER']);
+  assert.deepEqual(e.map(row => row.currentPath ?? null), [w, null, null, null, null, w, p, p, null, null, w]);
   assert.deepEqual(e[0].paths, ['/account', w, w + '/policy']);
-  assert.deepEqual(e[2].paths, ['/account', w, w + '/policy', p]);
-  assert.deepEqual(e[4].paths, ['/account', p]);
-  assert.deepEqual(e[6].paths, ['/account', w, w + '/policy']);
+  assert.deepEqual(e[3].paths, ['/account', w, w + '/policy', p]);
+  assert.deepEqual(e[6].paths, ['/account', p]);
+  assert.deepEqual(e[8].paths, ['/account', w, w + '/policy']);
 });
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < expectedNativeHeaders(headerEvidence()).length; i++) {
   test(`missing mandatory policy Payroll header ${i} refused`, () => {
     const r = headerEvidence(); r.native_headers.splice(i, 1); assert.equal(completeNativeHeaders(r), false);
   });
@@ -104,3 +106,54 @@ test('duplicate policy Payroll header refused', () => { const r = headerEvidence
 test('reordered policy Payroll header refused', () => { const r = headerEvidence(); [r.native_headers[0], r.native_headers[1]] = [r.native_headers[1], r.native_headers[0]]; assert.equal(completeNativeHeaders(r), false); });
 test('missing entire policy Payroll header history refused', () => { const r = headerEvidence(); delete r.native_headers; assert.equal(completeNativeHeaders(r), false); });
 test('People and policy origin disagreement refused', () => { const r = headerEvidence(); r.people_entry = true; r.people = {header_origin: 'https://localhost:4321'}; assert.equal(completeNativeHeaders(r), false); });
+
+// Same first mounted Company observation is mandatory in every real launch mode.
+for (const mode of ['company', 'policy', 'people']) {
+  test(`${mode} first Company header positive control`, () => assert.equal(completeNativeHeaders(headerEvidence(mode)), true));
+  for (const [label, change] of [
+    ['missing first', r => r.native_headers.shift()],
+    ['missing history', r => delete r.native_headers],
+    ['duplicate first', r => r.native_headers.splice(1, 0, r.native_headers[0])],
+    ['reordered first', r => [r.native_headers[0], r.native_headers[1]] = [r.native_headers[1], r.native_headers[0]]],
+    ['wrong Company URL', r => r.native_headers[0].url += '/wrong'],
+    ['wrong current route', r => r.native_headers[0].current_path += '/policy'],
+    ['stale Payroll rights', r => r.native_headers[0].allowed_paths.push(`/companies/${r.org_id}/payroll`)],
+    ['stale People rights', r => r.native_headers[0].allowed_paths.push(`/companies/${r.org_id}/people`)],
+    ['missing denied-route census', r => delete r.native_headers[0].denied_prefixes],
+    ['duplicate visible landmarks', r => r.native_headers[0].widths[0].visible_landmarks_unique = false],
+    ['hidden denied anchor', r => r.native_headers[0].widths[0].denied_hrefs_absent = false],
+  ]) test(`${mode} ${label} Company header refused`, () => {
+    const r = headerEvidence(mode); change(r); assert.equal(completeNativeHeaders(r), false);
+  });
+}
+const {completeDocumentsOriginal, observeDocuments} = require('./company.cjs');
+function companyDocuments() {
+  const command = '00000000-0000-4000-8000-000000000090', company = '00000000-0000-4000-8000-000000000001';
+  const w = '/companies/' + company, saved = '/account/companies/requests/' + command;
+  return {command_id: command, org_id: company, policy_entry: false, document_failures: 0,
+    documents: ['/', '/account/register', '/account', '/account', '/account/companies/new', saved, saved,
+      w, w + '/policy', w + '/policy', w, saved].map((path, i) =>
+        ({method: 'GET', path, status: 200, redirected: false, ordinal: i + 1, url_exact: true}))};
+}
+test('Company Policy-root open/reload/return exact twelve-document history', () => assert.equal(completeDocumentsOriginal(companyDocuments()), true));
+for (let i = 0; i < 12; i++) {
+  test(`Company omitted document ${i} refused`, () => {const r = companyDocuments(); r.documents.splice(i, 1); assert.equal(completeDocumentsOriginal(r), false);});
+  test(`Company duplicated document ${i} refused`, () => {const r = companyDocuments(); r.documents.splice(i, 0, r.documents[i]); assert.equal(completeDocumentsOriginal(r), false);});
+}
+for (const index of [8, 9, 10]) for (const [key, wrong] of [['method', 'POST'], ['path', '/companies/wrong/policy'], ['status', 404], ['redirected', true], ['url_exact', false]]) {
+  test(`Company Policy-root document ${index} wrong ${key} refused`, () => {const r = companyDocuments(); r.documents[index][key] = wrong; assert.equal(completeDocumentsOriginal(r), false);});
+}
+test('Company Policy-root reordered return refused', () => {const r = companyDocuments(); [r.documents[9], r.documents[10]] = [r.documents[10], r.documents[9]]; assert.equal(completeDocumentsOriginal(r), false);});
+test('Company observer accepts actual Policy-root and rejects foreign Policy-root', () => {
+  const {EventEmitter} = require('node:events');
+  for (const foreign of [false, true]) {
+    const r = companyDocuments(); r.documents = [];
+    const page = new EventEmitter(), frame = {}; page.mainFrame = () => frame;
+    observeDocuments(page, 'https://localhost:1234', r);
+    const route = '/companies/' + (foreign ? '00000000-0000-4000-8000-000000000099' : r.org_id) + '/policy';
+    const request = {frame: () => frame, resourceType: () => 'document', isNavigationRequest: () => true,
+      url: () => 'https://localhost:1234' + route, method: () => 'GET', redirectedFrom: () => null};
+    page.emit('request', request);
+    assert.equal(r.documents[0].path, foreign ? '<unexpected>' : route);
+  }
+});

@@ -11,10 +11,10 @@ const uuid = n => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 function headerWitness(expected) {
   return {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
     allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
-    payroll_path: expected.payrollPath ?? null,
+    payroll_path: expected.payrollPath ?? null, denied_prefixes: [...(expected.deniedPrefixes ?? [])].sort(),
     widths: [320, 680, 681, 1280].map(width => ({width, header_height: 90, main_top: 90,
       title_top: 160, no_overflow: true, open_no_overflow: width <= 680 ? true : null,
-      routes_exact: true, current_exact: true, inactive_hidden: true})),
+      routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true})),
     enter_opened: true, space_closed: true, closed_focus_safe: true, resize_focus_safe: true,
     values_preserved: true, location_preserved: true, no_product_script: true,
     unique_ids: true, network_requests: 0};

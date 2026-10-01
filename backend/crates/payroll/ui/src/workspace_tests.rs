@@ -235,38 +235,52 @@ fn company_workspace_keeps_each_destination_independently_authorized() {
         );
         assert_eq!(html.matches("<main ").count(), 1);
         assert_eq!(html.matches("<header ").count(), 1);
-        assert!(html.contains("<header class=\"app\""));
+        assert!(html.contains("native-workspace-header"));
         assert!(html.contains("aria-label=\"계정 탐색\""));
-        assert_eq!(html.matches("aria-current=\"page\"").count(), 1);
-        assert_eq!(
-            html.split("aria-current=\"page\"")
-                .nth(1)
-                .unwrap()
-                .split_once('>')
-                .unwrap()
-                .1
-                .split('<')
-                .next()
-                .unwrap(),
-            "회사 업무 공간"
-        );
+        let (desktop, mobile) = company_header_presentations(&html);
+        for region in [desktop, mobile] {
+            let current: Vec<_> = region
+                .split("<a ")
+                .skip(1)
+                .filter(|link| {
+                    link.split('>')
+                        .next()
+                        .unwrap()
+                        .contains("aria-current=\"page\"")
+                })
+                .collect();
+            assert_eq!(current.len(), 1);
+            assert!(current[0].contains(&format!("href=\"/companies/{COMPANY}\"")));
+            let account: Vec<_> = links(region)
+                .into_iter()
+                .filter(|(href, _)| *href == "/account")
+                .collect();
+            assert_eq!(account, vec![("/account", "내 계정 · 업무 공간 선택")]);
+        }
         assert!(
             !html.contains("<script")
                 && !html.contains("<leptos-island")
                 && !html.contains("native-account.js")
         );
-        let actual = links(&html);
-        assert!(has_expected_cards(&html, flags));
-        assert!(one_account_destination(&html));
+        let main = company_main_region(&html);
+        let actual = links(main);
+        assert!(has_expected_cards(main, flags));
+        assert_eq!(
+            links(main)
+                .iter()
+                .filter(|(href, _)| *href == "/account")
+                .count(),
+            0
+        );
         assert_eq!(
             actual
                 .iter()
                 .filter(|(href, _)| *href == "/account")
                 .count(),
-            1
+            0
         );
         assert_eq!(
-            actual
+            links(&html)
                 .iter()
                 .filter(|(href, _)| *href == "#main-content")
                 .count(),
@@ -296,14 +310,15 @@ fn company_workspace_keeps_each_destination_independently_authorized() {
                 .iter()
                 .filter(|(href, label)| *href == "/account" && *label == "내 업무 공간 목록")
                 .count(),
-            1
+            0
         );
-        for (href, _) in &actual {
+        for (href, _) in links(&html) {
             assert!(
-                ["/", "/account", "#main-content"].contains(href)
+                ["/", "/account", "#main-content"].contains(&href)
+                    || href == format!("/companies/{COMPANY}")
                     || allowed
                         .iter()
-                        .any(|(bit, path, _)| flags & bit != 0 && href == path)
+                        .any(|(bit, path, _)| flags & bit != 0 && href == path.as_str())
             );
         }
         assert_eq!(
@@ -363,6 +378,299 @@ fn static_company_csp_preserves_private_headers_and_interactive_account_script()
     assert_eq!(
         native_account::document(Page::SignIn, StatusCode::OK).headers()
             [header::CONTENT_SECURITY_POLICY],
+        "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    );
+}
+
+// Renderer fixtures only. These inputs do not grant rights or qualify a real browser state.
+fn company_main_region(html: &str) -> &str {
+    assert_eq!(html.matches("<main ").count(), 1);
+    html.split_once("<main ")
+        .unwrap()
+        .1
+        .split_once("</main>")
+        .unwrap()
+        .0
+}
+
+fn company_header_presentations(html: &str) -> (&str, &str) {
+    assert_eq!(html.matches("<header ").count(), 1);
+    let header = html
+        .split_once("<header ")
+        .unwrap()
+        .1
+        .split_once("</header>")
+        .unwrap()
+        .0;
+    let desktop_marker = "data-native-navigation=\"desktop\"";
+    let mobile_marker = "data-native-navigation=\"mobile\"";
+    assert_eq!(
+        header.matches(desktop_marker).count(),
+        1,
+        "Company must use the shared desktop header"
+    );
+    assert_eq!(
+        header.matches(mobile_marker).count(),
+        1,
+        "Company must use the shared mobile header"
+    );
+    let desktop = header.split_once(desktop_marker).unwrap().1;
+    desktop.split_once(mobile_marker).unwrap()
+}
+
+fn company_shared_header_matrix_case(flags: u8) {
+    use super::native_policy::{Operation, PolicyAction, Subject};
+    let root = format!("/companies/{COMPANY}");
+    let read = flags & 1 != 0;
+    let create = flags & 2 != 0;
+    let policy = flags & 4 != 0;
+    let payroll = flags & 8 != 0;
+    for people_policy_case in 0..3 {
+        let people_policy = match people_policy_case {
+            0 => None,
+            1 => Some(vec![]),
+            _ => Some(vec![
+                PolicyAction {
+                    subject: Subject::PeopleRead,
+                    operation: Operation::Grant,
+                },
+                PolicyAction {
+                    subject: Subject::PeopleCreate,
+                    operation: Operation::Grant,
+                },
+            ]),
+        };
+        let html = native_account::render(Page::Company {
+            org_id: COMPANY.into(),
+            name: "회사 <연구 & 본사>".into(),
+            slug: "unit-scope".into(),
+            show_people_navigation: read,
+            show_people_create_navigation: create,
+            show_policy_navigation: policy,
+            show_payroll_navigation: payroll,
+            show_payroll_policy_navigation: false,
+            people_policy,
+        });
+        let main = company_main_region(&html);
+        let (desktop, mobile) = company_header_presentations(&html);
+        let mut expected = vec!["/account".to_owned(), root.clone()];
+        for (visible, suffix) in [
+            (read, "/people"),
+            (create, "/people/new"),
+            (policy, "/policy"),
+            (payroll, "/payroll"),
+        ] {
+            let href = format!("{root}{suffix}");
+            assert_eq!(
+                destination_href_present(&html, &href),
+                visible,
+                "raw href flags={flags} policy_case={people_policy_case}"
+            );
+            assert_eq!(
+                links(main).iter().filter(|(path, _)| *path == href).count(),
+                usize::from(visible),
+                "main destination must be unique"
+            );
+            if visible {
+                expected.push(href);
+            }
+        }
+        expected.sort();
+        for region in [desktop, mobile] {
+            let mut actual: Vec<_> = links(region)
+                .into_iter()
+                .map(|(href, _)| href.to_owned())
+                .collect();
+            actual.sort();
+            assert_eq!(
+                actual, expected,
+                "header projections flags={flags} policy_case={people_policy_case}"
+            );
+            assert_eq!(region.matches("aria-current=\"page\"").count(), 1);
+            let current = region
+                .split("<a ")
+                .skip(1)
+                .find(|link| {
+                    link.split('>')
+                        .next()
+                        .unwrap()
+                        .contains("aria-current=\"page\"")
+                })
+                .unwrap();
+            assert!(
+                current
+                    .split('>')
+                    .next()
+                    .unwrap()
+                    .contains(&format!("href=\"{root}\""))
+            );
+            assert!(!region.contains("<form") && !region.contains("<input"));
+            let labels: Vec<_> = format!("{region}{main}")
+                .split("<nav ")
+                .skip(1)
+                .map(|part| {
+                    part.split_once("aria-label=\"")
+                        .unwrap()
+                        .1
+                        .split('"')
+                        .next()
+                        .unwrap()
+                        .to_owned()
+                })
+                .collect();
+            assert_eq!(
+                labels.len(),
+                labels
+                    .iter()
+                    .collect::<std::collections::BTreeSet<_>>()
+                    .len(),
+                "visible landmark names must differ"
+            );
+        }
+        assert!(desktop.contains("aria-label=\"회사 업무 탐색\""));
+        assert_eq!(
+            desktop.contains("aria-label=\"사람과 조직 탐색\""),
+            read || create || payroll
+        );
+        assert_eq!(
+            mobile.matches("data-native-payroll-shortcut").count(),
+            usize::from(payroll)
+        );
+        let menu = mobile.split_once("<details ").unwrap().1;
+        assert!(!destination_href_present(menu, &format!("{root}/payroll")));
+        assert!(main.contains("<summary>업무 공간 식별자</summary>"));
+        assert!(main.contains("tabindex=\"-1\""));
+        assert!(!html.contains("<script") && !html.contains("disabled"));
+        assert!(
+            !destination_href_present(&html, "#")
+                && !html.contains("/organization")
+                && !html.contains("/employment")
+                && !html.contains("/approval")
+        );
+        let shortcut = if create {
+            Some(format!("{root}/people/new"))
+        } else if people_policy_case == 1 {
+            Some(format!("{root}/policy/people-directory/install"))
+        } else if people_policy_case == 2 {
+            Some(format!("{root}/policy/people-directory/create/grant"))
+        } else {
+            None
+        };
+        assert_eq!(
+            main.contains("id=\"company-next-task-title\">바로가기</h2>"),
+            shortcut.is_some()
+        );
+        assert!(!main.contains("id=\"company-next-task-title\">다음 업무</h2>"));
+        if let Some(target) = shortcut {
+            assert_eq!(
+                links(main)
+                    .iter()
+                    .filter(|(href, _)| *href == target)
+                    .count(),
+                1,
+                "shortcut must have no competing main action"
+            );
+        }
+    }
+}
+
+macro_rules! company_header_case {
+    ($name:ident, $flags:literal) => {
+        #[test]
+        fn $name() {
+            company_shared_header_matrix_case($flags);
+        }
+    };
+}
+company_header_case!(company_shared_header_flags_0000, 0);
+company_header_case!(company_shared_header_flags_0001, 1);
+company_header_case!(company_shared_header_flags_0010, 2);
+company_header_case!(company_shared_header_flags_0011, 3);
+company_header_case!(company_shared_header_flags_0100, 4);
+company_header_case!(company_shared_header_flags_0101, 5);
+company_header_case!(company_shared_header_flags_0110, 6);
+company_header_case!(company_shared_header_flags_0111, 7);
+company_header_case!(company_shared_header_flags_1000, 8);
+company_header_case!(company_shared_header_flags_1001, 9);
+company_header_case!(company_shared_header_flags_1010, 10);
+company_header_case!(company_shared_header_flags_1011, 11);
+company_header_case!(company_shared_header_flags_1100, 12);
+company_header_case!(company_shared_header_flags_1101, 13);
+company_header_case!(company_shared_header_flags_1110, 14);
+company_header_case!(company_shared_header_flags_1111, 15);
+
+#[test]
+fn company_policy_root_clauses_are_truthful_static_rows() {
+    let html = native_account::render(Page::CompanyPolicy {
+        org_id: COMPANY.into(),
+        action_keys: vec!["company.identity.read".into()],
+        delegable_action_keys: vec!["company.identity.read".into()],
+    });
+    let main = company_main_region(&html);
+    let (desktop, mobile) = company_header_presentations(&html);
+    for region in [desktop, mobile] {
+        assert_eq!(region.matches("aria-current=\"page\"").count(), 1);
+        assert!(region.contains(&format!("href=\"/companies/{COMPANY}/policy\"")));
+    }
+    assert!(main.contains("연결된 사용 조항") && main.contains("위임 상한에 포함된 조항"));
+    assert!(
+        !main.contains("사용할 수 있는 기능") && !main.contains("다른 계정에 연결할 수 있는 범위")
+    );
+    assert!(main.contains("실행") && main.contains("현재 정책"));
+    assert!(main.contains("회사 이름과 식별자 열람"));
+    assert!(!html.contains("<script") && !main.contains("<form") && !main.contains("<button"));
+    for href in [
+        format!("/companies/{COMPANY}/people"),
+        format!("/companies/{COMPANY}/people/new"),
+        format!("/companies/{COMPANY}/payroll"),
+    ] {
+        assert!(
+            !destination_href_present(&html, &href),
+            "clauses alone must not create action destinations"
+        );
+    }
+    let response = native_account::document(
+        Page::CompanyPolicy {
+            org_id: COMPANY.into(),
+            action_keys: vec![],
+            delegable_action_keys: vec![],
+        },
+        StatusCode::OK,
+    );
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+    assert_eq!(
+        response.headers()[header::CONTENT_SECURITY_POLICY],
+        "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+    );
+}
+
+#[test]
+fn company_policy_root_refusal_preserves_status_csp_and_omits_protected_context() {
+    let html = native_account::render(Page::Refused);
+    for forbidden in [
+        COMPANY,
+        "会社",
+        "/companies/",
+        "<form",
+        "data-company-id",
+        "unit-scope",
+    ] {
+        assert!(!html.contains(forbidden));
+    }
+    let response = native_account::document(Page::Refused, StatusCode::NOT_FOUND);
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
+    assert_eq!(
+        response.headers()[header::X_CONTENT_TYPE_OPTIONS],
+        "nosniff"
+    );
+    assert_eq!(
+        response.headers()[header::VARY],
+        "Authorization, Cookie, Origin"
+    );
+    assert_eq!(
+        response.headers()[header::CONTENT_SECURITY_POLICY],
         "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
     );
 }

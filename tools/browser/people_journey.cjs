@@ -136,12 +136,14 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     return banner.getByRole('link', {name: '사람', exact: true});
   }
   async function nextTask(name, destination) {
-    const task = page.getByRole('main').getByRole('region', {name: '다음 업무', exact: true});
+    const task = page.getByRole('main').getByRole('region', {name: '바로가기', exact: true});
     assert.equal(await task.count(), 1);
     assert.equal(await task.locator('a,button,[role="button"]').count(), 1);
     const link = task.getByRole('link', {name, exact: true});
     assert.equal(await link.count(), 1);
     assert.equal(await link.getAttribute('href'), destination);
+    assert.equal(await page.getByRole('main').locator(`a[href="${destination}"]`).count(), 1,
+      'capability shortcut must have no competing main-page action to the same route');
     return link;
   }
   let pendingPath, detailPath;
@@ -309,14 +311,14 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   // Starts on the genuine Company workspace after the unchanged Payroll journey.
   await exchange({phase: 'PEOPLE_READY'});
   assert.equal(page.url(), origin + workspace);
-  assert.equal(await page.getByRole('link', {name: '사람', exact: true}).count(), 0);
-  assert.equal(await page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
+  assert.equal(await page.locator(`a[href="${directory}"]`).count(), 0);
+  assert.equal(await page.locator(`a[href="${directory}/new"]`).count(), 0);
   assert.equal(await page.getByRole('main').locator(`a[href="${directory}/new"]`).count(), 0);
   await policyCommand('install', undefined, await nextTask('사람 권한 설정 시작', policy + '/install'));
   await policyCommand('grant', 'read');
   await open(directory, 200, await directoryNavigation());
   assert.equal(await page.getByRole('heading', {name: '사람', exact: true, level: 1}).isVisible(), true);
-  assert.equal(await page.getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
+  assert.equal(await page.locator(`a[href="${directory}/new"]`).count(), 0);
   assert.equal(await page.locator('[data-people-record]').count(), 0);
   assert.equal(await page.getByRole('main').getByRole('link', {name: '목록 처음부터 보기', exact: true}).count(), 0);
   assert.equal(await page.locator('.people-empty').locator('a,button,[role="button"]').count(), 0);
@@ -417,7 +419,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   await header('PEOPLE_HEADER_CREATE_ONLY');
   await open(workspace); await policyCommand('revoke', 'create');
   await open(workspace);
-  assert.equal(await page.getByRole('main').getByRole('link', {name: '사람 등록', exact: true}).count(), 0);
+  assert.equal(await page.locator(`a[href="${directory}/new"]`).count(), 0);
   assert.equal(await page.getByRole('main').locator(`a[href="${directory}/new"]`).count(), 0);
   await nextTask('사람 등록 권한 연결', policy + '/create/grant');
   await open(directory + '/new', 404);

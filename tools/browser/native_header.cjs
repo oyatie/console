@@ -11,12 +11,15 @@ function validHeaderEvidence(record, expected) {
     assert.deepEqual(record.allowed_paths, [...expected.paths].sort());
     assert.equal(record.current_path, expected.currentPath ?? null);
     assert.equal(record.payroll_path, expected.payrollPath ?? null);
+    assert.deepEqual(record.denied_prefixes, [...(expected.deniedPrefixes ?? [])].sort());
     assert.deepEqual(record.widths.map(x => x.width), [320, 680, 681, 1280]);
     for (const row of record.widths) {
       assert.equal(row.no_overflow, true);
       assert.equal(row.routes_exact, true);
       assert.equal(row.current_exact, true);
       assert.equal(row.inactive_hidden, true);
+      assert.equal(row.visible_landmarks_unique, true);
+      assert.equal(row.denied_hrefs_absent, true);
       if (row.width <= 680) {
         assert.equal(row.open_no_overflow, true);
         assert.equal(Number.isFinite(row.header_height) && row.header_height > 0 && row.header_height <= 128, true);
@@ -44,7 +47,7 @@ async function assertNativeHeader(page, tabTo, expected) {
     [f.method, f.action, [...new FormData(f)].map(([k, v]) => [k, typeof v === 'string' ? v : [v.name, v.size, v.type]])])));
   const record = {kind: 'REAL_NATIVE_HEADER_BROWSER_CHECK', phase: expected.phase, url: expected.url,
     allowed_paths: [...expected.paths].sort(), current_path: expected.currentPath ?? null,
-    payroll_path: expected.payrollPath ?? null, widths: []};
+    payroll_path: expected.payrollPath ?? null, denied_prefixes: [...(expected.deniedPrefixes ?? [])].sort(), widths: []};
   let requests = 0;
   const observedRequest = () => { requests += 1; };
   page.on('request', observedRequest);
@@ -55,6 +58,13 @@ async function assertNativeHeader(page, tabTo, expected) {
   const visibleLinks = () => banner.getByRole('link').evaluateAll(links => links.map(a => a.getAttribute('href')).sort());
   const visibleCurrent = () => banner.getByRole('link').evaluateAll(links => links
     .filter(a => a.getAttribute('aria-current') === 'page').map(a => a.getAttribute('href')).sort());
+  const uniqueVisibleLandmarks = async () => {
+    const names = await page.getByRole('navigation').evaluateAll(elements => elements.map(e =>
+      e.getAttribute('aria-label') ?? (e.getAttribute('aria-labelledby') ?? '').split(/\s+/)
+        .filter(Boolean).map(id => document.getElementById(id)?.textContent.trim() ?? '').join(' ')));
+    assert.equal(names.every(name => name.length > 0) && new Set(names).size === names.length, true,
+      'visible navigation landmark names must be unique');
+  };
   const focusIsVisible = () => page.evaluate(() => {
     const e = document.activeElement;
     return e && e !== document.body && e.getClientRects().length > 0 &&
@@ -91,6 +101,11 @@ async function assertNativeHeader(page, tabTo, expected) {
       assert.equal(await banner.locator('form,input').count(), 0);
       const everyHref = await banner.locator('a[href]').evaluateAll(links => links.map(a => a.getAttribute('href')));
       assert.equal(everyHref.every(path => ['/', ...expected.paths].includes(path)), true, 'hiddenpresentation must not expose unpermittedroutes');
+      const rawHrefs = await page.locator('a[href]').evaluateAll(links => links.map(a => a.getAttribute('href')));
+      assert.equal(rawHrefs.every(path => !(expected.deniedPrefixes ?? []).some(prefix =>
+        path === prefix || path.startsWith(prefix + '/') || path.startsWith(prefix + '?'))), true,
+        'every DOM anchor must omit denied destinations, including hidden copies and main cards');
+      await uniqueVisibleLandmarks();
       let openNoOverflow = null;
       if (width <= 680) {
         assert.equal(await summary.count(), 1);
@@ -101,6 +116,7 @@ async function assertNativeHeader(page, tabTo, expected) {
         openNoOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
         assert.equal(openNoOverflow, true, 'open mobile menu overflowed viewport');
         same(await visibleLinks(), ['/', ...expected.paths].sort(), 'openedmenu linkset');
+        await uniqueVisibleLandmarks();
         same(await visibleCurrent(), expected.currentPath ? [expected.currentPath] : [], 'openedmenu currentpage');
         if (expected.payrollPath) assert.equal(await disclosure.locator(`a[href="${expected.payrollPath}"]`).count(), 0);
         await tabTo(summary, 48);
@@ -122,7 +138,7 @@ async function assertNativeHeader(page, tabTo, expected) {
       const noOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
       assert.equal(noOverflow, true);
       record.widths.push({width, header_height: header.height, main_top: main.y, title_top: title.y,
-        no_overflow: true, open_no_overflow: openNoOverflow, routes_exact: true, current_exact: true, inactive_hidden: true});
+        no_overflow: true, open_no_overflow: openNoOverflow, routes_exact: true, current_exact: true, inactive_hidden: true, visible_landmarks_unique: true, denied_hrefs_absent: true});
     }
     await page.setViewportSize({width: 680, height: 900});
     await openMenu();
