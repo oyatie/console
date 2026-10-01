@@ -4122,22 +4122,52 @@ fn native_company_document_error(status: StatusCode) -> axum::response::Response
 
 async fn native_company_policy_document(
     State(state): State<console_identity_rest::company::CompanyRestState<PgOrgStore>>,
+    axum::Extension(people): axum::Extension<native_people::PeopleState>,
+    axum::Extension(payroll): axum::Extension<native_payroll::Navigation>,
     axum::extract::Path(company): axum::extract::Path<String>,
     headers: HeaderMap,
     method: axum::http::Method,
 ) -> axum::response::Response {
-    use console_payroll_ui::native_account::{Page, document};
+    use console_payroll_ui::native_account::{
+        CompanyPolicyNavigation, Page, document, document_with_policy_navigation,
+    };
     if method != axum::http::Method::GET {
         return document(Page::Refused, StatusCode::METHOD_NOT_ALLOWED);
     }
+    // Each optional destination uses its current owner projection. Policy read
+    // alone does not confer identity, People, or Payroll access.
+    let (show_people_navigation, show_people_create_navigation) =
+        match native_people::navigation(&people, &headers, &company).await {
+            Ok(visible) => visible,
+            Err(status) => return native_company_document_error(status),
+        };
+    let show_payroll_navigation = match payroll.visible(&headers, &company).await {
+        Ok(visible) => visible,
+        Err(status) => return native_company_document_error(status),
+    };
+    // Read identity after the other optional checks so its name is not retained
+    // across their authorization waits. Identity denial leaves Policy usable.
+    let company_name = match state.company_document(&headers, &company).await {
+        Ok(identity) => Some(identity.name),
+        Err(StatusCode::NOT_FOUND | StatusCode::FORBIDDEN) => None,
+        Err(status) => return native_company_document_error(status),
+    };
+    // Fetch the protected clauses last; unavailable/denied checks above must
+    // not retain policy content across their authorization waits.
     match state.policy_document(&headers, &company).await {
-        Ok(view) => document(
+        Ok(view) => document_with_policy_navigation(
             Page::CompanyPolicy {
                 org_id: view.initial_ceiling.org_id.to_string(),
                 action_keys: view.initial_ceiling.action_keys,
                 delegable_action_keys: view.initial_ceiling.delegable_action_keys,
             },
             StatusCode::OK,
+            CompanyPolicyNavigation {
+                company_name,
+                show_people_navigation,
+                show_people_create_navigation,
+                show_payroll_navigation,
+            },
         ),
         Err(status) => native_company_document_error(status),
     }

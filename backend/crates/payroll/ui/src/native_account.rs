@@ -1,5 +1,16 @@
 //! Native Account documents. Inputs are safe projections composed by the app.
+use super::native_workspace_header::{self, NavigationMode};
 use leptos::prelude::*;
+
+/// Optional Policy-root destinations, projected independently by their owners.
+/// A Company name is present only after a current identity read succeeds.
+#[derive(Default)]
+pub struct CompanyPolicyNavigation {
+    pub company_name: Option<String>,
+    pub show_people_navigation: bool,
+    pub show_people_create_navigation: bool,
+    pub show_payroll_navigation: bool,
+}
 
 pub struct TermsItem {
     pub kind: String,
@@ -83,7 +94,7 @@ fn AttemptStatus() -> impl IntoView {
     }
 }
 
-fn body(page: Page) -> AnyView {
+fn body(page: Page, policy_navigation: &CompanyPolicyNavigation) -> AnyView {
     match page {
         Page::Public => view! {
             <section class="entry-card welcome">
@@ -283,8 +294,14 @@ fn body(page: Page) -> AnyView {
                 <a class="button primary" href="/account">"내 계정으로"</a>
             </section>
         }.into_any(),
-        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, show_people_navigation, show_people_create_navigation, people_policy } => {
+        Page::Company { org_id, name, slug, show_policy_navigation, show_payroll_policy_navigation, show_payroll_navigation, show_people_navigation, show_people_create_navigation, mut people_policy } => {
             use super::native_policy::{Operation, Subject};
+            let shortcut_owns_create_grant = !show_people_create_navigation
+                && people_policy.as_ref().is_some_and(|actions| actions.iter().any(|action| {
+                    action.subject == Subject::PeopleCreate && matches!(action.operation, Operation::Grant)
+                }));
+            let shortcut_owns_install = !show_people_create_navigation
+                && people_policy.as_ref().is_some_and(Vec::is_empty);
             let next_task = if show_people_create_navigation {
                 Some(("사람 등록", format!("/companies/{org_id}/people/new"),
                     "이름과 사번을 확인한 뒤 회사 사람 목록에 등록합니다. 고용과 발령은 별도 업무입니다."))
@@ -299,6 +316,14 @@ fn body(page: Page) -> AnyView {
             } else {
                 None
             };
+            if shortcut_owns_create_grant {
+                // The shortcut owns this action; keep distinct card destinations.
+                if let Some(actions) = people_policy.as_mut() {
+                    actions.retain(|action| action.subject != Subject::PeopleCreate
+                        || !matches!(action.operation, Operation::Grant));
+                }
+            }
+            let show_people_policy_card = people_policy.is_some() && !shortcut_owns_install;
             view! {
             <div class="company-home" data-company-id=org_id.clone()>
                 <div class="page-heading">
@@ -308,16 +333,15 @@ fn body(page: Page) -> AnyView {
                 </div>
                 {next_task.map(|(label, href, consequence)| view! {
                     <section class="company-next-task" aria-labelledby="company-next-task-title">
-                        <div><h2 id="company-next-task-title">"다음 업무"</h2><p>{consequence}</p></div>
+                        <div><h2 id="company-next-task-title">"바로가기"</h2><p>{consequence}</p></div>
                         <a class="policy-button" href=href>{label}</a>
                     </section>
                 })}
-                {(show_payroll_navigation || show_people_navigation || show_people_create_navigation).then(|| view! {
+                {(show_payroll_navigation || show_people_navigation).then(|| view! {
                     <section class="company-group" aria-labelledby="company-people-title">
                         <h2 id="company-people-title">"사람과 조직"</h2>
                         <nav class="company-destinations" aria-label="사람과 조직">
                             {show_people_navigation.then(||view! {<article class="company-destination" data-company-destination="people"><h3><a href=format!("/companies/{org_id}/people")>"사람"</a></h3><p>"등록된 사람의 정보와 사번을 확인하세요."</p></article>})}
-                            {show_people_create_navigation.then(||view! {<article class="company-destination" data-company-destination="people-create"><h3><a href=format!("/companies/{org_id}/people/new")>"사람 등록"</a></h3><p>"등록 내용을 작성하고 확인한 뒤 사람 목록에 반영하세요."</p></article>})}
                             {show_payroll_navigation.then(||view! {<article class="company-destination company-payroll" data-company-destination="payroll">
                                 <h3><a href=format!("/companies/{org_id}/payroll")>"급여"</a></h3>
                                 <p>"산정 기간별 급여 회차와 준비 상태, 증빙과 검토 이력을 확인하세요."</p>
@@ -325,17 +349,17 @@ fn body(page: Page) -> AnyView {
                         </nav>
                     </section>
                 })}
-                {(show_policy_navigation || show_payroll_policy_navigation || people_policy.is_some()).then(|| view! {
+                {(show_policy_navigation || show_payroll_policy_navigation || show_people_policy_card).then(|| view! {
                     <section class="company-group" aria-labelledby="company-admin-title">
                         <h2 id="company-admin-title">"관리"</h2>
                         <nav class="company-destinations" aria-label="회사 관리">
                             {show_policy_navigation.then(|| view! {
                                 <article class="company-destination" data-company-destination="policy">
                                     <h3><a href=format!("/companies/{org_id}/policy")>"권한 관리"</a></h3>
-                                    <p>"이 회사에서 현재 계정에 연결된 권한과 위임할 수 있는 기능을 확인하세요."</p>
+                                    <p>"이 회사에서 현재 계정에 연결된 사용 조항과 위임 상한에 포함된 조항을 확인하세요."</p>
                                 </article>
                             })}
-                            {people_policy.as_ref().map(|actions| view! {
+                            {people_policy.as_ref().filter(|_| show_people_policy_card).map(|actions| view! {
                                 <article class="company-destination" data-company-destination="people-policy">
                                     <h3><a href=format!("/companies/{org_id}/policy/people-directory/install")>"사람 등록·열람 권한"</a></h3>
                                     <p>"사람 정보를 볼 수 있는 권한과 새로 등록할 수 있는 권한을 각각 관리하세요."</p>
@@ -361,16 +385,32 @@ fn body(page: Page) -> AnyView {
             }.into_any()
         },
         Page::CompanyPolicy { org_id, action_keys, delegable_action_keys } => view! {
-            <section class="entry-card">
-                <p class="eyebrow">"회사 업무 공간"</p><h1>"권한 관리"</h1>
-                <p class="lead">"이 회사에서 현재 계정에 연결된 권한입니다."</p>
-                <h2>"사용할 수 있는 기능"</h2>
-                <ul>{action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
-                <h2>"다른 계정에 연결할 수 있는 범위"</h2>
-                <ul>{delegable_action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
-                <p>"회사 정보는 이름과 업무 공간 식별자만 포함됩니다. 급여·인사 정보와 다른 회사의 권한은 포함되지 않습니다."</p>
-                <a class="button secondary" href=format!("/companies/{org_id}")>"회사 업무 공간으로"</a>
-            </section>
+            <div class="company-policy-root" data-company-id=org_id.clone()>
+                <div class="page-heading">
+                    <p class="page-eyebrow">{policy_navigation.company_name.clone().unwrap_or_else(|| format!("회사 ID {org_id}"))}</p>
+                    <h1>"권한 관리"</h1>
+                    <p class="page-description">"이 회사에서 현재 계정에 연결된 사용 조항과 위임 상한을 확인하세요."</p>
+                </div>
+                <section class="panel">
+                    <h2>"연결된 사용 조항"</h2>
+                    <div class="policy-panel-body">
+                        <ul>{action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
+                    </div>
+                </section>
+                <section class="panel">
+                    <h2>"위임 상한에 포함된 조항"</h2>
+                    <div class="policy-panel-body">
+                        <ul>{delegable_action_keys.into_iter().map(|key| view! { <li>{company_action_label(key)}</li> }).collect_view()}</ul>
+                    </div>
+                </section>
+                <p class="page-description">"조항이 연결되어 있어도 실행이나 위임 시 현재 정책과 적용 범위를 다시 확인합니다."</p>
+                <p class="page-description">"회사 정보 조항은 이름과 업무 공간 식별자를 대상으로 합니다. 급여·인사 정보와 다른 회사의 권한은 포함되지 않습니다."</p>
+                {policy_navigation.company_name.as_ref().map(|_| view! {
+                    <div class="policy-actions">
+                        <a class="policy-button secondary" href=format!("/companies/{org_id}")>"회사 업무 공간으로"</a>
+                    </div>
+                })}
+            </div>
         }.into_any(),
         Page::Refused => view! {
             <section class="entry-card">
@@ -402,7 +442,14 @@ fn company_action_label(key: &str) -> &'static str {
 }
 
 pub fn render(page: Page) -> String {
-    let company_workspace = matches!(&page, Page::Company { .. });
+    render_with_policy_navigation(page, CompanyPolicyNavigation::default())
+}
+
+pub fn render_with_policy_navigation(
+    page: Page,
+    policy_navigation: CompanyPolicyNavigation,
+) -> String {
+    let company_workspace = matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. });
     let title = match &page {
         Page::Public => "Console · 업무의 연결",
         Page::SignIn => "로그인 · Console",
@@ -418,7 +465,59 @@ pub fn render(page: Page) -> String {
         Page::Refused => "요청 확인 · Console",
         Page::Unavailable => "다시 시도 · Console",
     };
-    let content = body(page);
+    let navigation = match &page {
+        Page::Company {
+            org_id,
+            show_policy_navigation,
+            show_people_navigation,
+            show_people_create_navigation,
+            show_payroll_navigation,
+            ..
+        } => Some((
+            org_id.as_str(),
+            true,
+            *show_policy_navigation,
+            *show_people_navigation,
+            *show_people_create_navigation,
+            *show_payroll_navigation,
+            false,
+        )),
+        Page::CompanyPolicy { org_id, .. } => Some((
+            org_id.as_str(),
+            policy_navigation.company_name.is_some(),
+            true,
+            policy_navigation.show_people_navigation,
+            policy_navigation.show_people_create_navigation,
+            policy_navigation.show_payroll_navigation,
+            true,
+        )),
+        _ => None,
+    };
+    let header = navigation.map(|(org_id, company_link, policy_link, people_read, people_create, payroll, policy_current)| {
+        native_workspace_header::render(
+            |mode| view! {
+                <p class="nav-group">"관리"</p>
+                <nav aria-label="회사 업무 탐색">
+                    {company_link.then(|| view! {
+                        <a href=format!("/companies/{org_id}") aria-current=(!policy_current).then_some("page")>"회사 업무 공간"</a>
+                    })}
+                    {policy_link.then(|| view! {
+                        <a href=format!("/companies/{org_id}/policy") aria-current=policy_current.then_some("page")>"권한 관리"</a>
+                    })}
+                </nav>
+                {(people_read || people_create || (payroll && mode == NavigationMode::Desktop)).then(|| view! {
+                    <p class="nav-group">"사람과 조직"</p>
+                    <nav aria-label="사람과 조직 탐색">
+                        {people_read.then(|| view! {<a href=format!("/companies/{org_id}/people")>"사람"</a>})}
+                        {people_create.then(|| view! {<a href=format!("/companies/{org_id}/people/new")>"사람 등록"</a>})}
+                        {(payroll && mode == NavigationMode::Desktop).then(|| view! {<a href=format!("/companies/{org_id}/payroll")>"급여"</a>})}
+                    </nav>
+                })}
+            }.into_any(),
+            payroll.then(|| (format!("/companies/{org_id}/payroll"), false)),
+        )
+    });
+    let content = body(page, &policy_navigation);
     if company_workspace {
         let html = view! {
             <html lang="ko"><head><meta charset="utf-8"/>
@@ -426,15 +525,11 @@ pub fn render(page: Page) -> String {
                 <title>{title}</title><link rel="stylesheet" href="/assets/workspace.css"/>
             </head><body class="workspace company-workspace">
                 <a class="skip-link" href="#main-content">"본문 바로가기"</a>
-                <header class="app">
-                    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">"C"</span>"Console"</a>
-                    <p class="nav-group">"업무 공간"</p>
-                    <p class="company-current" aria-current="page">"회사 업무 공간"</p>
-                    <nav class="company-account-nav" aria-label="계정 탐색"><a href="/account">"내 업무 공간 목록"</a></nav>
-                </header>
+                {header}
                 <main id="main-content" tabindex="-1">{content}</main>
             </body></html>
-        }.to_html();
+        }
+        .to_html();
         return format!("<!DOCTYPE html>{html}");
     }
     let html = view! {
@@ -459,10 +554,23 @@ pub fn render(page: Page) -> String {
 
 #[cfg(feature = "ssr")]
 pub fn document(page: Page, status: axum::http::StatusCode) -> axum::response::Response {
-    let policy = if matches!(&page, Page::Company { .. }) {
+    document_with_policy_navigation(page, status, CompanyPolicyNavigation::default())
+}
+
+#[cfg(feature = "ssr")]
+pub fn document_with_policy_navigation(
+    page: Page,
+    status: axum::http::StatusCode,
+    navigation: CompanyPolicyNavigation,
+) -> axum::response::Response {
+    let policy = if matches!(&page, Page::Company { .. } | Page::CompanyPolicy { .. }) {
         "default-src 'self'; script-src 'none'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
     } else {
         "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
     };
-    super::ssr::private_document(render(page), status, policy)
+    super::ssr::private_document(
+        render_with_policy_navigation(page, navigation),
+        status,
+        policy,
+    )
 }
