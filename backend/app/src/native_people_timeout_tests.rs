@@ -40,12 +40,71 @@ fn fixture(captured: bool, count: Arc<AtomicUsize>) -> Router {
     with_transport(console_platform_request_context::with_http_error_envelope(
         Router::new()
             .route(PREPARE, endpoint.clone())
+            .route(LIST, endpoint.clone())
             .route("/unrelated", endpoint)
             .layer(TimeoutLayer::with_status_code(
                 StatusCode::REQUEST_TIMEOUT,
                 std::time::Duration::from_millis(1),
             )),
     ))
+}
+
+#[tokio::test]
+async fn queried_people_reads_keep_no_referrer_on_all_transport_outcomes() {
+    let path = format!("/companies/{COMPANY}/people?employee_number=%FF");
+    for status in [
+        StatusCode::OK,
+        StatusCode::BAD_REQUEST,
+        StatusCode::NOT_FOUND,
+        StatusCode::SERVICE_UNAVAILABLE,
+    ] {
+        for method in ["GET", "HEAD"] {
+            let router =
+                with_transport(Router::new().route(LIST, any(move || async move { status })));
+            let response = router
+                .oneshot(
+                    axum::http::Request::builder()
+                        .method(method)
+                        .uri(&path)
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), status);
+            assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
+            if method == "HEAD" {
+                assert!(
+                    to_bytes(response.into_body(), 1024)
+                        .await
+                        .unwrap()
+                        .is_empty()
+                );
+            }
+        }
+    }
+    for method in ["GET", "HEAD"] {
+        let response = fixture(false, Arc::new(AtomicUsize::new(0)))
+            .oneshot(
+                axum::http::Request::builder()
+                    .method(method)
+                    .uri(&path)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::REQUEST_TIMEOUT);
+        assert_eq!(response.headers()[header::REFERRER_POLICY], "no-referrer");
+        if method == "HEAD" {
+            assert!(
+                to_bytes(response.into_body(), 32768)
+                    .await
+                    .unwrap()
+                    .is_empty()
+            );
+        }
+    }
 }
 #[tokio::test]
 async fn people_timeout_retains_only_requested_locator_after_capture_and_cancels_handler() {
@@ -68,6 +127,7 @@ async fn people_timeout_retains_only_requested_locator_after_capture_and_cancels
         assert_eq!(count.load(Ordering::SeqCst), i + 1);
         assert_eq!(response.headers()[header::CACHE_CONTROL], "no-store");
         assert_eq!(response.headers()[header::PRAGMA], "no-cache");
+        assert_eq!(response.headers()[header::REFERRER_POLICY], "same-origin");
         assert!(
             response.headers()[header::CONTENT_TYPE]
                 .to_str()

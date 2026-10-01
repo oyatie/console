@@ -366,3 +366,276 @@ fn native_policy_documents_preserve_post_origin_and_private_security_headers() {
 }
 
 include!("native_people_policy_tests.rs");
+
+// Shared Policy presentation acceptance; pure SSR fixtures, never product provisioning.
+fn task_presentation(html: &str, subject: Subject, expected_company: &str, operator: &str) {
+    let context = html
+        .split("<h2>대상과 업무 범위</h2>")
+        .nth(1)
+        .expect("authorized context panel")
+        .split("</section>")
+        .next()
+        .unwrap();
+    let (primary, disclosure) = context.split_once("<details").expect("native disclosure");
+    for text in [
+        expected_company,
+        "회사 등록 시 지정된 관리 계정",
+        "작업 담당",
+        "현재 로그인 계정",
+        "회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다.",
+    ] {
+        assert!(primary.contains(text), "primary authorized context missing");
+    }
+    for opaque in [
+        COMPANY,
+        RECIPIENT,
+        operator,
+        "00000000-0000-0000-0000-000000000106",
+    ] {
+        assert!(
+            !primary.contains(opaque),
+            "opaque identifier replaced primary task context"
+        );
+        assert!(disclosure.contains(opaque), "exact identifier lost");
+    }
+    assert_eq!(context.matches("<details").count(), 1);
+    let tag = disclosure.split('>').next().unwrap();
+    assert!(
+        !tag.split_whitespace()
+            .any(|a| a == "open" || a.starts_with("open=")),
+        "identifier disclosure must start closed"
+    );
+    assert!(disclosure.contains("<summary>회사·계정 식별 정보</summary>"));
+    for (label, attribute, value) in [
+        ("회사", "data-policy-company", COMPANY),
+        ("권한 대상", "data-policy-recipient", RECIPIENT),
+        ("현재 담당 계정", "data-policy-operator", operator),
+    ] {
+        let expected = format!("{attribute}=\"{value}\"");
+        assert_eq!(
+            html.matches(&expected).count(),
+            1,
+            "identity attribute missing or duplicated"
+        );
+        assert!(
+            disclosure.contains(&format!("<dt>{label}</dt><dd {expected}>{value}</dd>")),
+            "exact identifier must also be readable text"
+        );
+    }
+    assert!(disclosure.contains("<dt>그룹</dt><dd>00000000-0000-0000-0000-000000000106</dd>"));
+    assert!(!html.contains("<script") && !html.contains("leptos-island"));
+    let consequence = html
+        .split("aria-labelledby=\"disclosure-heading\"")
+        .nth(1)
+        .unwrap()
+        .split("</section>")
+        .next()
+        .unwrap();
+    if subject == Subject::PeopleCatalog {
+        assert!(consequence.contains("등록과 열람을 각각 관리합니다"));
+        assert!(
+            consequence.contains(
+                "설정 준비만으로 사람 정보가 공개되거나 등록 권한이 연결되지는 않습니다."
+            )
+        );
+    } else {
+        assert!(consequence.contains("이 권한의 공개 범위"));
+        assert!(
+            consequence
+                .contains("권한이 연결되어 유효하고 현재 정책이 허용할 때, 대상 관리 계정이")
+        );
+        let (scope, exclusion) = match subject {
+            Subject::PayrollRead => (
+                "선택한 회사의 급여 목록과 목록에 포함된 모든 항목",
+                "급여의 상세 내역·수정·지급·내보내기 권한은 연결되지 않습니다.",
+            ),
+            Subject::PeopleRead => (
+                "이 회사에 등록된 사람의 이름, 사번, 식별자와 등록 기록",
+                "등록·고용 변경·급여 권한은 포함되지 않습니다.",
+            ),
+            Subject::PeopleCreate => (
+                "이 회사에 이름과 사번으로 사람을 등록하고 본인이 접수한 등록 요청",
+                "사람 목록 열람이나 고용·급여 권한은 별도입니다.",
+            ),
+            Subject::PeopleCatalog => unreachable!(),
+        };
+        assert!(consequence.contains(scope) && consequence.contains(exclusion));
+        assert!(consequence.contains("다른 회사에는 적용되지 않습니다."));
+    }
+}
+
+#[test]
+fn policy_task_context_and_conditional_scope_cover_all_supported_forms_and_results() {
+    let long_name = "회사 <연구 & 인사>".repeat(32);
+    let escaped_name = "회사 &lt;연구 &amp; 인사&gt;".repeat(32);
+    let mut rendered = 0;
+    for subject in [
+        Subject::PayrollRead,
+        Subject::PeopleCatalog,
+        Subject::PeopleRead,
+        Subject::PeopleCreate,
+    ] {
+        let operations: &[Operation] = match subject {
+            Subject::PayrollRead => &[Operation::Install, Operation::Grant, Operation::Revoke],
+            Subject::PeopleCatalog => &[Operation::Install],
+            _ => &[Operation::Grant, Operation::Revoke],
+        };
+        // These are owner projections: an elapsed, nonrevoked assignment
+        // remains ACTIVE, and permits both grant replacement and revocation.
+        let states: &[&str] = if subject == Subject::PeopleCatalog {
+            &["absent"]
+        } else {
+            &["absent", "active", "revoked", "expired"]
+        };
+        for operation in operations {
+            for state in states {
+                for same_account in [false, true] {
+                    for name in [None, Some("검토 회사"), Some(long_name.as_str())] {
+                        let make_scope = || {
+                            let mut s = scope(*state != "absent");
+                            s.subject = subject;
+                            s.company_name = name.map(str::to_owned);
+                            s.operator = if same_account { RECIPIENT } else { OTHER }.into();
+                            s.installed = !matches!(operation, Operation::Install);
+                            if let Some(a) = s.assignment.as_mut() {
+                                a.state = if *state == "revoked" {
+                                    "REVOKED"
+                                } else {
+                                    "ACTIVE"
+                                };
+                                a.label = match *state {
+                                    "active" => "권한 연결됨",
+                                    "revoked" => "회수됨",
+                                    "expired" => "권한 기간 종료",
+                                    _ => unreachable!(),
+                                };
+                                a.can_grant = *state != "active";
+                                a.can_revoke = *state != "revoked";
+                            }
+                            s
+                        };
+                        let expected_name = if name == Some(long_name.as_str()) {
+                            escaped_name.as_str()
+                        } else {
+                            name.unwrap_or("선택한 회사")
+                        };
+                        let operator = if same_account { RECIPIENT } else { OTHER };
+                        let html = render(Page::Form(Form {
+                            scope: make_scope(),
+                            operation: *operation,
+                            command: COMMAND.into(),
+                            proof: PROOF.into(),
+                            validation: None,
+                        }));
+                        task_presentation(&html, subject, expected_name, operator);
+                        let actionable = match operation {
+                            Operation::Install => true,
+                            Operation::Grant => *state != "active",
+                            Operation::Revoke => matches!(*state, "active" | "expired"),
+                        };
+                        assert_eq!(html.contains("<form"), actionable);
+                        if actionable {
+                            assert!(
+                                input(&html, "command_id")
+                                    .contains(&format!("value=\"{COMMAND}\""))
+                            );
+                            assert!(
+                                input(&html, "csrf_proof").contains(&format!("value=\"{PROOF}\""))
+                            );
+                        } else {
+                            assert!(!html.contains("<input") && !html.contains(PROOF));
+                        }
+                        rendered += 1;
+                        for result in ["committed", "pending", "rejected", "expired"] {
+                            let outcome = match result {
+                                "committed" => Outcome::Committed {
+                                    title: "확정된 원래 처리",
+                                    description: "이전 처리 결과",
+                                    receipt: OTHER.into(),
+                                    at: "2026-09-01 09:00".into(),
+                                },
+                                "pending" => Outcome::Pending {
+                                    accepted_at: "2026-09-01 09:00".into(),
+                                    deadline: "2026-09-30 09:00".into(),
+                                    proof: PROOF.into(),
+                                },
+                                "rejected" => Outcome::Rejected {
+                                    description: "원래 거절 사유",
+                                    receipt: OTHER.into(),
+                                    at: "2026-09-01 09:00".into(),
+                                },
+                                _ => Outcome::Expired {
+                                    accepted_at: "2026-09-01 09:00".into(),
+                                },
+                            };
+                            let html = render(Page::Result {
+                                scope: make_scope(),
+                                operation: *operation,
+                                command: COMMAND.into(),
+                                outcome,
+                                original: OriginalRecord {
+                                    accepted_at: "2026-09-01 09:00".into(),
+                                    deadline: "2026-09-30 09:00".into(),
+                                    intake_receipt: COMMAND.into(),
+                                    expected_company_epoch: "9".into(),
+                                    expected_assignment: None,
+                                    requested_until: None,
+                                    effect_period: None,
+                                    effect_epochs: None,
+                                },
+                            });
+                            task_presentation(&html, subject, expected_name, operator);
+                            assert!(html.contains(&format!("data-policy-outcome=\"{result}\"")));
+                            assert!(
+                                html.contains("이 요청의 처리 기록")
+                                    && html.contains("2026-09-01 09:00")
+                            );
+                            assert!(html.contains(&format!("data-policy-command=\"{COMMAND}\"")));
+                            assert_eq!(html.contains(PROOF), result == "pending");
+                            rendered += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(
+        rendered, 870,
+        "all supported subject/operation/state/account/name/outcome cases executed"
+    );
+}
+
+#[test]
+fn policy_unscoped_outcomes_do_not_invent_authorized_context() {
+    for page in [
+        Page::Uncertain {
+            result_path: "/account".into(),
+        },
+        Page::Problem {
+            state: "conflict",
+            title: "현재 확인 필요",
+            description: "같은 요청을 다시 확인하세요.",
+        },
+        Page::NotVisible,
+        Page::Refused,
+        Page::Unavailable,
+    ] {
+        let html = render(page);
+        for private in [
+            COMPANY,
+            RECIPIENT,
+            OTHER,
+            "data-policy-company",
+            "data-policy-recipient",
+            "data-policy-operator",
+            "회사·계정 식별 정보",
+            "권한이 연결되어 유효하고 현재 정책이 허용할 때",
+        ] {
+            assert!(
+                !html.contains(private),
+                "unscoped outcome invented authorized context"
+            );
+        }
+        assert!(!html.contains("<form") && !html.contains(PROOF));
+    }
+}

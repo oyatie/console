@@ -19,10 +19,10 @@
     "backend/crates/payroll/ui/src/native_people.css": "75b9d52ba128e509733a87813f1cd9627409f9c4204bf710e53c77eed4a7934f",
     "backend/crates/payroll/ui/src/native_people.rs": "c4404775d3edd8eab17267743d5e2531d9aa0a1a56ed5b9500462227ce0b017e",
     "backend/crates/payroll/ui/src/native_people_policy_tests.rs": "80273a6738ca731e17378e3bad7bb10e842c51ea443c12fe540152a69b522026",
-    "backend/crates/payroll/ui/src/native_people_tests.rs": "aeea74638b5ebfc3e3caffb2c3fe38673e919c906d852a4c586c3c81aed5ba6b",
+    "backend/crates/payroll/ui/src/native_people_tests.rs": "ad58e2020893cf923d93997f965c1a34b02f589d1f08d3c234507c1d85d1643d",
     "backend/crates/payroll/ui/src/native_policy.css": "6009a91315d65142fd22c0556c002c8c0d479986cc0281a4d96202d7d7936701",
     "backend/crates/payroll/ui/src/native_policy.rs": "344d0b85151638813fddc14d985b2fef0faf5f07fbc85d762a1db4a259bc89db",
-    "backend/crates/payroll/ui/src/native_policy_validation_tests.rs": "13925f9f08df9ad6a36ad8492b95c09e8a87453eebd4510f0fbae55a329d8d28",
+    "backend/crates/payroll/ui/src/native_policy_validation_tests.rs": "0d6dc43a774ea52fe1994cec4a6ffe0e0798c35ed54307e0b243e3609caa3a78",
     "backend/crates/payroll/ui/src/native_workspace_header.rs": "aa825db4ef8dceb0c2ea1e44b6f1555dd69efb4e8d68a13027ec99168571bdfa",
     "backend/crates/payroll/ui/src/organization.rs": "25b4b0bd6ecd6f3e7323e171f8a2d1505649697d7b20f66d9aae19278de76f5b",
     "backend/crates/payroll/ui/src/payroll_workspace.rs": "d43635588577347cb7284cec1c9a5c1d0bd4fa1e152c9a1d2e1620a8fb3fbbc9",
@@ -178,7 +178,7 @@
     "bindgen_executable_sha256": "bfd71cad98185cf9206951993bcfac1c4b628a75e3bf05471ef2db91947ec86b",
     "compiled_wasm_sha256": "3218d4688aae6bfc51d420c681022bb655e604ae8382011f61da28ac3ca9eaed",
     "kind": "buck2-native-hydration-v1",
-    "source_snapshot_sha256": "65a31fa85c730bcc6e522813c7c43bf32080371aef86bb16dd417930bd722f71"
+    "source_snapshot_sha256": "09a6c8122cba7963b2d2f1f9dfec39f86c1c87d2e231169e56935f1edb67bb1a"
   },
   "toolchain_channel": "1.98.1",
   "wasm_bindgen": "0.2.123",

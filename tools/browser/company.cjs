@@ -429,6 +429,7 @@ async function main(backendPort,out,mode){
    stage='people_journey';result.people_documents=[];result.people_expected_mutations=[];
    result.people=await require('./people_journey.cjs').runPeopleJourney({page,company:body.org_id,companyName,account,
     capture:async name=>capture(name+'.png'),tabTo,secretFree,
+    clearBrowserCache:()=>cdp.send('Network.clearBrowserCache'),
     expectDocument:(method,path,status,redirected)=>result.people_documents.push({method,path,status,redirected}),
     expectMutation:path=>result.people_expected_mutations.push(path),
     exchange:async event=>{emit({kind:'CHECKPOINT',account_id:account,org_id:body.org_id,...event});const reply=await receive();requireFact(reply.kind==='CONTINUE'&&reply.phase===event.phase,'OWNER_PROTOCOL');return reply.witness;}

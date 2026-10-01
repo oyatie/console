@@ -285,7 +285,7 @@ impl DirectoryWorkflowScope for Scope {
         &self.authority
     }
     fn kind(&self) -> DirectoryScopeKind {
-        self.kind
+        self.kind.clone()
     }
     fn list(
         &mut self,
@@ -924,6 +924,32 @@ fn directory_collection_accepts_full_page_with_last_record_continuation() {
     assert_eq!(result.records[0].employee_id, id(4));
     assert_eq!(result.next_after, Some(id(4)));
     assert_eq!(events(&s), vec!["lock", "list", "finish", "finished"]);
+}
+
+#[test]
+fn directory_collection_rejects_a_wrong_number_from_its_adapter() {
+    for (number, expected) in [
+        ("K-1", Ok(())),
+        ("K-2", Err(DirectoryWorkflowError::Unavailable)),
+    ] {
+        let (store, policy, credentials) = fixture(Fault::None, 0);
+        let result = run(directory_list(
+            &store,
+            &policy,
+            &credentials,
+            company(),
+            DirectoryPageQuery::with_number(None, None, Some(number.into())).unwrap(),
+        ));
+        assert_eq!(result.map(|_| ()), expected);
+        assert_eq!(
+            events(&store),
+            if expected.is_ok() {
+                vec!["lock", "list", "finish", "finished"]
+            } else {
+                vec!["lock", "list", "discarded"]
+            }
+        );
+    }
 }
 
 #[test]

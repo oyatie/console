@@ -230,18 +230,27 @@ fn native_people_directory_uses_entry_identity_and_honest_empty_page() {
             person_version: "2".into(),
             registered_at: "2026-09-23 10:01".into(),
         }],
-        next_after: Some(EMPLOYEE.into()),
+        search_number: None,
+        next_href: Some(format!(
+            "/companies/{COMPANY}/people?after_employee_id={EMPLOYEE}"
+        )),
+        after_cursor: false,
     });
     assert!(html.contains(&format!("href=\"/companies/{COMPANY}/people/{EMPLOYEE}\"")));
     assert!(!html.contains(&format!("href=\"/companies/{COMPANY}/people/{PERSON}\"")));
     assert!(html.contains(&format!("?after_employee_id={EMPLOYEE}")));
-    assert!(!html.contains("/people/new") && !html.contains("<form") && !html.contains("<img"));
+    assert!(!html.contains("/people/new") && !html.contains("<img"));
+    assert_eq!(html.matches("<form").count(), 1);
+    assert!(html.contains("method=\"get\"") && html.contains("전체 사번으로 정확히 찾기"));
+    assert!(!html.contains("method=\"post\"") && !html.contains(PROOF));
     assert!(html.contains("&lt;img src=x onerror=alert(1)&gt;&amp;김하늘"));
     for create in [false, true] {
         let html = render(Page::Directory {
             scope: scope(true, create),
             records: vec![],
-            next_after: None,
+            search_number: None,
+            next_href: None,
+            after_cursor: false,
         });
         assert!(html.contains("표시할 사람이 없습니다"));
         assert!(
@@ -251,6 +260,25 @@ fn native_people_directory_uses_entry_identity_and_honest_empty_page() {
         );
         assert_eq!(html.contains("/people/new"), create);
     }
+    let html = render(Page::Directory {
+        scope: scope(true, true),
+        records: vec![],
+        search_number: Some("K+1&한".into()),
+        next_href: None,
+        after_cursor: false,
+    });
+    assert!(html.contains("일치하는 사번이 없습니다"));
+    assert!(html.contains("value=\"K+1&amp;한\""));
+    assert!(html.contains("전체 사번으로 정확히 찾기"));
+    assert!(html.contains(&format!("href=\"/companies/{COMPANY}/people\"")));
+    let empty = html
+        .split("class=\"people-empty\"")
+        .nth(1)
+        .unwrap()
+        .split("</div>")
+        .next()
+        .unwrap();
+    assert!(!empty.contains("/people/new"));
 }
 
 #[test]
@@ -323,7 +351,9 @@ fn native_people_missing_legacy_identity_is_honest_and_links_remain_distinguisha
                 registered_at: "2026-09-23 10:01".into(),
             })
             .collect(),
-        next_after: None,
+        search_number: None,
+        next_href: None,
+        after_cursor: false,
     });
     assert_eq!(html.matches("사번 미등록").count(), 2);
     for employee in [EMPLOYEE, other] {
@@ -350,7 +380,9 @@ fn native_people_missing_legacy_identity_is_honest_and_links_remain_distinguisha
             "missing-name identity must also be visible"
         );
     }
-    assert!(!html.contains("/people/new") && !html.contains("<form") && !html.contains("<script"));
+    assert!(!html.contains("/people/new") && !html.contains("<script"));
+    assert_eq!(html.matches("<form").count(), 1);
+    assert!(html.contains("method=\"get\"") && !html.contains("method=\"post\""));
 }
 
 #[test]
@@ -397,7 +429,9 @@ fn native_people_whitespace_fields_are_distinct_from_absence_without_trimming_re
             Page::Directory {
                 scope: scope(true, false),
                 records: vec![make_record()],
-                next_after: None,
+                search_number: None,
+                next_href: None,
+                after_cursor: false,
             },
             Page::Detail {
                 scope: scope(true, false),
@@ -429,7 +463,9 @@ fn native_people_whitespace_fields_are_distinct_from_absence_without_trimming_re
         Page::Directory {
             scope: scope(true, false),
             records: vec![make_record()],
-            next_after: None,
+            search_number: None,
+            next_href: None,
+            after_cursor: false,
         },
         Page::Detail {
             scope: scope(true, false),
@@ -540,7 +576,9 @@ fn native_people_navigation_marks_only_the_exact_current_page() {
         let html = render(Page::Directory {
             scope: scope(true, create),
             records: vec![],
-            next_after: None,
+            search_number: None,
+            next_href: None,
+            after_cursor: false,
         });
         exact_current_people_link(&html, Some(&root));
     }
@@ -593,7 +631,9 @@ fn native_people_header_projects_only_permitted_destinations_in_each_presentatio
                         let html = render(Page::Directory {
                             scope: authorized,
                             records: vec![],
-                            next_after: None,
+                            search_number: None,
+                            next_href: None,
+                            after_cursor: false,
                         });
                         let mut expected = vec!["/account".to_owned()];
                         if read {

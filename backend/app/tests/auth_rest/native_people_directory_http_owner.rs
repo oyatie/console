@@ -352,9 +352,29 @@ mod directory_http {
             let policy = CompanyPolicy::new().unwrap();
             let company = OrgId::from_uuid(created.company);
             let actor = AccountId::from_uuid(created.administrator).unwrap();
+            let root = format!("/companies/{company}/people");
+            let before = all_rows(&pool).await;
+            let malformed = document(&app, &format!("{root}?employee_number=%FF"), &cookies).await;
+            assert_eq!(malformed.status, StatusCode::BAD_REQUEST);
+            malformed.private();
+            assert_eq!(
+                malformed
+                    .headers
+                    .get_all(header::REFERRER_POLICY)
+                    .iter()
+                    .count(),
+                1
+            );
+            assert_eq!(malformed.headers[header::REFERRER_POLICY], "no-referrer");
+            assert!(!String::from_utf8_lossy(&malformed.bytes).contains("%FF"));
+            let not_granted =
+                document(&app, &format!("{root}?employee_number=K-1"), &cookies).await;
+            assert_eq!(not_granted.status, StatusCode::NOT_FOUND);
+            not_granted.private();
+            assert_eq!(not_granted.headers[header::REFERRER_POLICY], "no-referrer");
+            assert_eq!(before, all_rows(&pool).await);
             let (previous, read_assignment, create_assignment) =
                 install_and_grant(&pool, &app, &cookies, &store, &policy, company, actor).await;
-            let root = format!("/companies/{company}/people");
             let fields = registration(&pool, &app, &cookies, &root).await;
             let command: Uuid = fields
                 .iter()
@@ -429,6 +449,46 @@ mod directory_http {
                 document(&app, &root, &cookies).await.status,
                 StatusCode::NOT_FOUND
             );
+            let searched = format!("{root}?employee_number=HTTP-%EC%82%AC%EB%9E%8C-001");
+            let denied_search =
+                readonly_document(&pool, &app, &cookies, &searched, StatusCode::NOT_FOUND).await;
+            assert_eq!(
+                denied_search
+                    .headers
+                    .get_all(header::REFERRER_POLICY)
+                    .iter()
+                    .count(),
+                1
+            );
+            assert_eq!(
+                denied_search.headers[header::REFERRER_POLICY],
+                "no-referrer"
+            );
+            let denied_text = String::from_utf8_lossy(&denied_search.bytes);
+            assert!(!denied_text.contains(NUMBER));
+            assert!(
+                !denied_text.contains("data-people-record") && !denied_text.contains("/people/new")
+            );
+            let head = request(
+                &app.service,
+                "HEAD",
+                &searched,
+                &cookies,
+                None,
+                &[
+                    ("Sec-Fetch-Mode", "navigate"),
+                    ("Sec-Fetch-Dest", "document"),
+                ],
+            )
+            .await;
+            assert_eq!(head.status, StatusCode::METHOD_NOT_ALLOWED);
+            assert!(head.bytes.is_empty());
+            head.private();
+            assert_eq!(
+                head.headers.get_all(header::REFERRER_POLICY).iter().count(),
+                1
+            );
+            assert_eq!(head.headers[header::REFERRER_POLICY], "no-referrer");
             assert!(before == all_rows(&pool).await, "unexpected state mutation");
             // Create remains separately authorized after Read is revoked.
             let recovery = pending(&pool, &app, &cookies, &path, command).await;

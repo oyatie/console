@@ -126,3 +126,46 @@ fn native_people_routes_and_cursor_accept_only_exact_non_nil_selectors() {
     assert!(no_query(Some("")).is_err());
     assert!(no_query(None).is_ok());
 }
+
+#[test]
+fn native_people_exact_number_query_decodes_once_and_rejects_unbounded_or_ambiguous_inputs() {
+    for (raw, expected) in [
+        ("employee_number=A%2BB", Some("A+B")),
+        ("employee_number=A+B", Some("A B")),
+        ("employee_number=A%26B", Some("A&B")),
+        ("employee_number=%ED%95%9C", Some("한")),
+        ("employee_number=", None),
+    ] {
+        assert_eq!(pagination(Some(raw)).unwrap().employee_number(), expected);
+    }
+    let page = pagination(Some(&format!(
+        "employee_number=A%2BB&after_employee_id={COMMAND}"
+    )))
+    .unwrap();
+    assert_eq!(page.employee_number(), Some("A+B"));
+    assert_eq!(page.after(), Some(id(COMMAND).unwrap()));
+    assert_eq!(page.limit(), 25);
+    for raw in [
+        "employee_number=A&employee_number=A",
+        "employee_number=A&ignored=1",
+        "employee%5Fnumber=A",
+        "employee_number=%",
+        "employee_number=%GG",
+        "employee_number=%FF",
+        "employee_number=%00",
+        "employee_number=A%0AB",
+        "employee_number=%2526",
+    ] {
+        if raw == "employee_number=%2526" {
+            // A single decode produces literal "%26", never an ampersand.
+            assert_eq!(
+                pagination(Some(raw)).unwrap().employee_number(),
+                Some("%26")
+            );
+        } else {
+            assert!(pagination(Some(raw)).is_err(), "accepted {raw}");
+        }
+    }
+    assert!(pagination(Some(&format!("employee_number={}", "x".repeat(65)))).is_err());
+    assert!(pagination(Some(&format!("employee_number={}", "x".repeat(1024)))).is_err());
+}

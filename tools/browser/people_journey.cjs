@@ -110,7 +110,7 @@ function expectedDocuments(r) {
 }
 
 async function runPeopleJourney({page, company, companyName, account, exchange, capture, tabTo,
-  expectDocument, expectMutation, secretFree}) {
+  expectDocument, expectMutation, secretFree, clearBrowserCache}) {
   id(company); id(account);
   const origin = new URL(page.url()).origin;
   const workspace = `/companies/${company}`;
@@ -230,9 +230,11 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     const field = form.locator('input[name="employee_number"]');
     assert.equal(await field.count(), 1);
     const label = await field.evaluateHandle(input => [...input.labels].find(label =>
-      label.textContent.trim().includes('사번')) ?? null);
+      label.textContent.trim() === '전체 사번으로 정확히 찾기') ?? null);
     assert.equal(await label.asElement()?.isVisible(), true);
     await label.dispose();
+    assert.equal(await form.locator('#people-search-help').innerText(),
+      '현재 회사의 사번 전체를 입력하세요. 이름이나 일부 사번은 검색되지 않습니다.');
     assert.equal(await field.inputValue(), currentValue);
     const submit = form.locator('button:not([type]),button[type="submit"],input[type="submit"]');
     assert.equal(await submit.count(), 1); assert.equal(await submit.isVisible(), true);
@@ -241,9 +243,7 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
     const asset = coldAsset ? page.waitForResponse(r => r.url() === origin + '/assets/workspace.css' &&
       r.request().resourceType() === 'stylesheet') : null;
     if (coldAsset) {
-      const cdp = await page.context().newCDPSession(page);
-      await cdp.send('Network.clearBrowserCache');
-      await cdp.detach();
+      await clearBrowserCache();
     }
     expectDocument('GET', path, 200, false);
     const waiting = page.waitForResponse(r => r.url() === origin + path && r.request().isNavigationRequest());
@@ -397,6 +397,8 @@ async function runPeopleJourney({page, company, companyName, account, exchange, 
   assert.equal(await emptySearch.count(), 1);
   assert.match(await emptySearch.innerText(), /(?:현재|이) 회사/);
   assert.match(await emptySearch.innerText(), /일치/);
+  assert.equal(await emptySearch.getByRole('heading', {name: '일치하는 사번이 없습니다'}).count(), 1);
+  assert.equal(await emptySearch.getByRole('link', {name: '사람 등록'}).count(), 0);
   await shot('people-search-miss-320', 320);
   await witness('PEOPLE_SEARCH_MISS'); result.search_miss = true;
   const clear = page.getByRole('main').getByRole('link', {name: '검색 지우기', exact: true});
