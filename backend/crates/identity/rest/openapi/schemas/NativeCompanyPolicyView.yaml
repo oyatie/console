@@ -1,0 +1,38 @@
+type: object
+additionalProperties: false
+required: [initial_ceiling]
+properties:
+  initial_ceiling:
+    type: object
+    additionalProperties: false
+    required: [org_id, account_id, action_keys, action_refs, delegable_action_keys, delegable_action_refs, company_property_keys, company_property_refs, delegable_company_property_keys, delegable_company_property_refs, future_registrations, group_control]
+    properties:
+      org_id: {type: string, format: uuid}
+      account_id: {type: string, format: uuid}
+      action_keys:
+        type: array
+        items: {type: string}
+      action_refs:
+        type: array
+        items: {$ref: '#/components/schemas/NativeCompanyActionRef'}
+      delegable_action_keys:
+        type: array
+        items: {type: string}
+      delegable_action_refs:
+        type: array
+        items: {$ref: '#/components/schemas/NativeCompanyActionRef'}
+      company_property_keys:
+        type: array
+        items: {type: string}
+      company_property_refs:
+        type: array
+        items: {$ref: '#/components/schemas/NativeCompanyPropertyRef'}
+      delegable_company_property_keys:
+        type: array
+        items: {type: string}
+      delegable_company_property_refs:
+        type: array
+        items: {$ref: '#/components/schemas/NativeCompanyPropertyRef'}
+      future_registrations: {type: boolean, const: false}
+      group_control: {type: boolean, const: false}
+description: Current authorized ceiling. Display keys do not independently grant authority; registered refs and current policy govern actions.

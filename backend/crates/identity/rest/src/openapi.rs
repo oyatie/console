@@ -784,6 +784,38 @@ const PATHS: &[PathItem] = &[
         }],
     },
     PathItem {
+        path: "/api/v2/companies/enroll",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!("../openapi/paths/api__v2__companies__enroll.post.yaml"),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/companies/enrollments/{command_id}",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!(
+                "../openapi/paths/api__v2__companies__enrollments__command_id.get.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/companies/enrollments/{command_id}/cancel",
+        operations: &[Operation {
+            method: "post",
+            body: include_str!(
+                "../openapi/paths/api__v2__companies__enrollments__command_id__cancel.post.yaml"
+            ),
+        }],
+    },
+    PathItem {
+        path: "/api/v2/companies/{org_id}/policy",
+        operations: &[Operation {
+            method: "get",
+            body: include_str!("../openapi/paths/api__v2__companies__org_id__policy.get.yaml"),
+        }],
+    },
+    PathItem {
         path: "/healthz",
         operations: &[Operation {
             method: "get",
@@ -1071,6 +1103,30 @@ const SCHEMAS: &[NamedYaml] = &[
     NamedYaml {
         name: "NativeAccountTermsAcknowledgment",
         body: include_str!("../openapi/schemas/NativeAccountTermsAcknowledgment.yaml"),
+    },
+    NamedYaml {
+        name: "NativeCompanyActionRef",
+        body: include_str!("../openapi/schemas/NativeCompanyActionRef.yaml"),
+    },
+    NamedYaml {
+        name: "NativeCompanyEnrollmentCommitted",
+        body: include_str!("../openapi/schemas/NativeCompanyEnrollmentCommitted.yaml"),
+    },
+    NamedYaml {
+        name: "NativeCompanyEnrollmentInput",
+        body: include_str!("../openapi/schemas/NativeCompanyEnrollmentInput.yaml"),
+    },
+    NamedYaml {
+        name: "NativeCompanyEnrollmentStatus",
+        body: include_str!("../openapi/schemas/NativeCompanyEnrollmentStatus.yaml"),
+    },
+    NamedYaml {
+        name: "NativeCompanyPolicyView",
+        body: include_str!("../openapi/schemas/NativeCompanyPolicyView.yaml"),
+    },
+    NamedYaml {
+        name: "NativeCompanyPropertyRef",
+        body: include_str!("../openapi/schemas/NativeCompanyPropertyRef.yaml"),
     },
     NamedYaml {
         name: "NativeWebAuthnAssertionResponse",

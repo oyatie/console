@@ -1,0 +1,48 @@
+tags: [company]
+operationId: getNativeCompanyPolicy
+summary: Read the current authorized Company policy ceiling
+description: >-
+  The Company UUID selects a requested resource, not authority. The owning read checks current Account,
+  Group and Company policy before projecting the initial ceiling. A missing or unauthorized Company is
+  404. Keys are display names; registered references and current policy govern executable authority.
+  Native handler responses use private no-store JSON with Vary: Cookie, Origin.
+  Authentication uses only the native Account session cookie. Any Authorization header or duplicate
+  recognized Account cookie is refused. Combined Cookie field bytes, including separators, are bounded
+  to 16 KiB. Current authority is established by the owning transaction, not by supplied identifiers.
+  The outer application timeout can return JSON 408 without the native handler's private headers;
+  a timed-out mutation must be reconciled through its original command before retrying.
+security:
+- nativeAccountSession: []
+parameters:
+- name: org_id
+  in: path
+  required: true
+  description: Non-nil canonical lowercase hyphenated Company UUID.
+  schema: {type: string, format: uuid, minLength: 36, maxLength: 36, pattern: '^(?!00000000-0000-0000-0000-000000000000$)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'}
+- name: Origin
+  in: header
+  required: false
+  schema: {type: string, format: uri}
+- name: Sec-Fetch-Site
+  in: header
+  required: false
+  schema: {type: string, enum: [same-origin]}
+responses:
+  '200':
+    description: Currently authorized Company ceiling.
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/NativeCompanyPolicyView'}
+  '400': {description: Ambiguous credentials., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '401': {description: Invalid Account authentication., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '403': {description: Origin denial., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '404': {description: Company absent or denied by omission., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '409': {description: Current context changed during the read., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '408':
+    description: Outer application request timeout; no absence or rollback is implied.
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/ErrorBody'}
+  '413': {description: Combined Cookie field bytes exceed 16 KiB., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '422': {description: Non-text Cookie header., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '503': {description: Current policy or evaluator unavailable., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}

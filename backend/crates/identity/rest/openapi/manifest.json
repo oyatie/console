@@ -288,6 +288,18 @@
     "/api/v2/auth/token/refresh": [
       "post"
     ],
+    "/api/v2/companies/enroll": [
+      "post"
+    ],
+    "/api/v2/companies/enrollments/{command_id}": [
+      "get"
+    ],
+    "/api/v2/companies/enrollments/{command_id}/cancel": [
+      "post"
+    ],
+    "/api/v2/companies/{org_id}/policy": [
+      "get"
+    ],
     "/healthz": [
       "get"
     ],
@@ -364,6 +376,12 @@
     "NativeAccountRegistrationStartInput",
     "NativeAccountSession",
     "NativeAccountTermsAcknowledgment",
+    "NativeCompanyActionRef",
+    "NativeCompanyEnrollmentCommitted",
+    "NativeCompanyEnrollmentInput",
+    "NativeCompanyEnrollmentStatus",
+    "NativeCompanyPolicyView",
+    "NativeCompanyPropertyRef",
     "NativeWebAuthnAssertionResponse",
     "NativeWebAuthnAttestationResponse",
     "NativeWebAuthnAuthenticationClientExtensions",

@@ -5463,6 +5463,77 @@ export type NativeAccountTermsAcknowledgment = {
   accepted: true;
 };
 
+export type NativeCompanyActionRef = {
+  org_id: string;
+  action_type_id: string;
+  object_type_id: string;
+  registration_revision: number;
+  manifest_digest: string;
+};
+
+export type NativeCompanyEnrollmentCommitted = {
+  outcome: "COMMITTED";
+  original_command_id: string;
+  receipt_id: string;
+  org_id: string;
+  group_id: string;
+  administrative_account_id: string;
+  replayed: boolean;
+  result_path: string;
+};
+
+/**
+ * Closed v1 input. Unknown or duplicate members and bodies above 4096 bytes are refused.
+ */
+export type NativeCompanyEnrollmentInput = {
+  command_id: string;
+  group_id: null;
+  slug: string;
+  name: string;
+  administrative_account_id: string;
+};
+
+/**
+ * A command is never inferred absent from a transport failure. Reopen by its original command ID.
+ */
+export type NativeCompanyEnrollmentStatus = NativeCompanyEnrollmentCommitted | {
+  outcome: "PENDING";
+  original_command_id: string;
+  result_path: string;
+  input: NativeCompanyEnrollmentInput;
+} | {
+  outcome: "CANCELLED" | "EXPIRED";
+  original_command_id: string;
+  result_path: string;
+};
+
+/**
+ * Current authorized ceiling. Display keys do not independently grant authority; registered refs and current policy govern actions.
+ */
+export type NativeCompanyPolicyView = {
+  initial_ceiling: {
+    org_id: string;
+    account_id: string;
+    action_keys: Array<string>;
+    action_refs: Array<NativeCompanyActionRef>;
+    delegable_action_keys: Array<string>;
+    delegable_action_refs: Array<NativeCompanyActionRef>;
+    company_property_keys: Array<string>;
+    company_property_refs: Array<NativeCompanyPropertyRef>;
+    delegable_company_property_keys: Array<string>;
+    delegable_company_property_refs: Array<NativeCompanyPropertyRef>;
+    future_registrations: false;
+    group_control: false;
+  };
+};
+
+export type NativeCompanyPropertyRef = {
+  org_id: string;
+  object_type_id: string;
+  property_id: string;
+  schema_revision: number;
+};
+
 /**
  * Decoder accepts omitted/null userHandle; Native Account verification additionally requires its exact bytes to equal the stored Account UUID. Original signed bytes go to the pinned verifier; parsing is not authentication.
  */

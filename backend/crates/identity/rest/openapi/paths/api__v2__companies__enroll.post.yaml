@@ -1,0 +1,69 @@
+tags: [company]
+operationId: enrollNativeCompany
+summary: Enroll a Company from a designated native Account
+description: >-
+  Cookie-authenticated, CSRF-protected command. The current designated Account may create a Group-of-one
+  Company through its owning transaction. The command ID is durable: after a lost response, read the
+  enrollment status before retrying the identical bytes. Exporting or opening the result page does not
+  establish authority. Unknown fields, duplicate JSON members, noncanonical UUIDs, a non-null group_id,
+  and bodies above 4096 bytes are refused. Native handler responses are private JSON with Cache-Control: no-store,
+  Pragma: no-cache, X-Content-Type-Options: nosniff, and Vary: Cookie, Origin.
+  Authentication uses only the native Account session cookie. Any Authorization header or duplicate
+  recognized Account cookie is refused. Combined Cookie field bytes, including separators, are bounded
+  to 16 KiB. Current authority is established by the owning transaction, not by supplied identifiers.
+  The outer application timeout can return JSON 408 without the native handler's private headers;
+  a timed-out mutation must be reconciled through its original command before retrying.
+security:
+- nativeAccountSession: []
+parameters:
+- name: Origin
+  in: header
+  required: true
+  description: Exact configured HTTPS origin; duplicate or invalid values are refused.
+  schema: {type: string, format: uri}
+- name: Sec-Fetch-Site
+  in: header
+  required: false
+  schema: {type: string, enum: [same-origin]}
+- name: X-Console-CSRF
+  in: header
+  required: true
+  description: Current opaque proof bound to the same Account session and generation.
+  schema: {type: string, minLength: 1, maxLength: 4096}
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        $ref: '#/components/schemas/NativeCompanyEnrollmentInput'
+responses:
+  '201':
+    description: Newly committed Company enrollment.
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/NativeCompanyEnrollmentCommitted'}
+  '200':
+    description: Idempotent replay of the same committed command.
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/NativeCompanyEnrollmentCommitted'}
+  '400': {description: Ambiguous credentials., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '401': {description: Invalid Account authentication., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '403': {description: CSRF, origin, or designation denial., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '409': {description: Command conflict or uncertain commit; inspect status before retry., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '413': {description: Body or CSRF proof exceeds 4096 bytes or combined Cookie fields exceed 16 KiB., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '422': {description: Invalid closed input or Content-Type framing or unavailable Group selection., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}
+  '429':
+    description: Enrollment capacity is exhausted. The outer envelope supplies a conservative delay; it does not promise capacity after that delay.
+    headers:
+      Retry-After:
+        schema: {type: string, const: '60'}
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/ErrorBody'}
+  '408':
+    description: Outer application request timeout; no absence or rollback is implied.
+    content:
+      application/json:
+        schema: {$ref: '#/components/schemas/ErrorBody'}
+  '503': {description: Enrollment or current authority unavailable., content: {application/json: {schema: {$ref: '#/components/schemas/ErrorBody'}}}}

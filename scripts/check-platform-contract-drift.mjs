@@ -20,8 +20,9 @@
  * router is merged into the production app — a `Router` that is built and never
  * mounted still counts as served — and it cannot evaluate `#[cfg]`, so a router
  * assembled inside a `#[cfg(test)]` module is indistinguishable from a mounted
- * one. Scoping the comparison to `/api/` paths is what keeps that second limit
- * harmless: the in-repo test routers all register non-`/api/` paths.
+ * one. Only the two known timeout sources are excluded after verifying their
+ * real test-only inclusion. This bounded check is not Rust module reachability;
+ * ambiguous inclusions fail closed and every other route source remains scanned.
  * `backend/app/tests/openapi_drift.rs` is the compiled counterpart and remains
  * the authority on which surfaces are actually mounted.
  *
@@ -44,6 +45,10 @@ const defaultOpenApiPath = resolve(root, "backend/openapi/openapi.yaml");
 const httpMethods = ["get", "put", "post", "delete", "options", "head", "patch", "trace"];
 const httpMethodSet = new Set(httpMethods);
 const methodConstructor = new RegExp(`\\b(${httpMethods.join("|")})\\s*\\(`, "g");
+const testOnlyRouteParents = new Map([
+  ["backend/app/src/native_payroll_timeout_tests.rs", "backend/app/src/native_payroll.rs"],
+  ["backend/app/src/native_people_timeout_tests.rs", "backend/app/src/native_people.rs"],
+]);
 
 /**
  * Operations the backend serves on purpose and the customer contract must not
@@ -124,21 +129,97 @@ export function checkOpenApiRouteDrift({
 }
 
 function discoverRouteSourceFiles() {
-  return execFileSync("git", ["-C", root, "ls-files", "-z", "--", "backend"], {
+  const rustSources = execFileSync("git", ["-C", root, "ls-files", "-z", "--", "backend"], {
     encoding: "utf8",
     maxBuffer: 64 * 1024 * 1024,
   })
     .split("\0")
-    .filter((file) => file.endsWith(".rs") && file.includes("/src/"))
-    .map((file) => resolve(root, file))
+    .filter((file) => file.endsWith(".rs") && file.includes("/src/"));
+  const sources = new Map(rustSources.map((file) => [file, readFileSync(resolve(root, file), "utf8")]));
+  // An unresolved include can spell either excluded file through a macro.
+  // Current source inclusions use direct ordinary literals; other shapes deny.
+  for (const [file, source] of sources) {
+    const tokens = rustCodeTokens(source);
+    for (let index = 0; index < tokens.length; index += 1) {
+      if (tokens[index] === "include" && tokens[index + 1] === "!") {
+        if (tokens[index + 2] !== "(" || !tokens[index + 3]?.startsWith('"')
+          || tokens[index + 4] !== ")") {
+          throw new Error(`${file}: unresolved Rust source inclusion`);
+        }
+      }
+    }
+  }
+
+  for (const [testSource, parent] of testOnlyRouteParents) {
+    if (!sources.has(testSource)) continue;
+    const filename = testSource.slice(testSource.lastIndexOf("/") + 1);
+    const stem = filename.slice(0, -3);
+    // Count raw references conservatively: comments cannot grant admission and
+    // raw strings must not hide an extra include. The stem also catches Rust's
+    // default `mod native_*_timeout_tests;` inclusion without a .rs suffix.
+    const references = [...sources].flatMap(([file, source]) => {
+      // Rust escapes can spell an additional include without the raw stem.
+      // Keep the raw census, adding decoded aliases rather than trusting them.
+      const aliases = [...stripRustCommentsAndLiterals(source)
+        .matchAll(/"(?:\\.|[^"\\])*"/gs)]
+        .filter(([literal]) => !literal.includes(stem))
+        .reduce((count, [literal]) => count + rustStringValue(literal).split(stem).length - 1, 0);
+      const count = source.split(stem).length - 1 + aliases;
+      return count ? [{ file, count, source }] : [];
+    });
+    const declaration = ["#", "[", "cfg", "(", "test", ")", "]", "#", "[", "path", "=",
+      JSON.stringify(filename), "]", "mod", "timeout_tests", ";"];
+    const tokens = references.length === 1
+      ? rustCodeTokens(references[0].source)
+      : [];
+    let depth = 0;
+    let declarations = 0;
+    for (let index = 0; index < tokens.length; index += 1) {
+      if (depth === 0 && declaration.every((token, offset) => tokens[index + offset] === token)) {
+        declarations += 1;
+      }
+      if (["(", "[", "{"].includes(tokens[index])) depth += 1;
+      if ([")", "]", "}"].includes(tokens[index])) depth -= 1;
+      if (depth < 0) throw new Error(`${parent}: malformed Rust source inclusion`);
+    }
+    const guarded = references.length === 1 && references[0].file === parent
+      && references[0].count === 1
+      && depth === 0 && declarations === 1;
+    if (!guarded) {
+      throw new Error(`${testSource}: test-only route source inclusion is not solely cfg(test)`);
+    }
+  }
+
+  return rustSources
+    .filter((file) => !testOnlyRouteParents.has(file))
     // Discover after stripping comments/raw/char literals. A raw `.includes(".route(")` on
     // the file text admitted modules whose only hit lived in a doc comment; the later
     // strip+parse then saw zero registrations and aborted the gate on an otherwise valid tree.
     // Do not mask ordinary string literals here — route path arguments live in them, and a
     // whole-file string mask over real routers can swallow `.route(` call sites.
     .filter((file) =>
-      stripRustCommentsAndLiterals(readFileSync(file, "utf8")).includes(".route("),
-    );
+      stripRustCommentsAndLiterals(sources.get(file)).includes(".route("),
+    )
+    .map((file) => resolve(root, file));
+}
+
+function rustCodeTokens(source) {
+  return stripRustCommentsAndLiterals(source)
+    .match(/"(?:\\.|[^"\\])*"|[A-Za-z_][A-Za-z0-9_]*|[^\s]/g) ?? [];
+}
+
+function rustStringValue(literal) {
+  return literal.slice(1, -1).replace(
+    /\\(?:x([0-9a-fA-F]{2})|u\{([0-9a-fA-F_]+)\}|(\r?\n)\s*|(.))/gs,
+    (_, hex, unicode, newline, escape) => {
+      if (hex) return String.fromCharCode(Number.parseInt(hex, 16));
+      if (unicode) return String.fromCodePoint(Number.parseInt(unicode.replaceAll("_", ""), 16));
+      if (newline) return "";
+      const escapes = { n: "\n", r: "\r", t: "\t", 0: "\0", "\\": "\\", '"': '"', "'": "'" };
+      if (!Object.hasOwn(escapes, escape)) throw new Error("unrecognized Rust string escape in route inclusion census");
+      return escapes[escape];
+    },
+  );
 }
 
 function backendRouteOperations(routeSourceFiles) {
@@ -179,6 +260,8 @@ function backendRouteOperations(routeSourceFiles) {
 
     let registered = 0;
     const record = (routePath, methodExpression) => {
+      registered += 1;
+      if (!routePath.startsWith("/api/")) return;
       // Method discovery must not see prose inside string literals. A handler body or
       // comment-turned-string that says `documentation says get() here` would otherwise
       // invent a GET (or any other verb) that the router never registered.
@@ -192,11 +275,8 @@ function backendRouteOperations(routeSourceFiles) {
       }
       for (const method of methods) {
         const key = operationKey(method, routePath);
-        if (routePath.startsWith("/api/")) {
-          operations.add(key);
-        }
+        operations.add(key);
       }
-      registered += 1;
     };
 
     const deferred = [];

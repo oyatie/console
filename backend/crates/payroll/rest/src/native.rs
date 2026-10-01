@@ -5,7 +5,7 @@ use axum::{
     extract::{Path, RawQuery, State, rejection::PathRejection},
     http::{HeaderMap, HeaderValue, Method, StatusCode, header},
     response::{IntoResponse, Response},
-    routing::any,
+    routing::get,
 };
 use console_kernel_core::{ErrorKind, OrgId};
 use console_payroll_application::read::{
@@ -154,7 +154,10 @@ fn pagination(raw: Option<&str>) -> Result<ListPayrollRuns, StatusCode> {
 
 pub fn native_router(state: PayrollRestState) -> Router {
     Router::new()
-        .route(NATIVE_PAYROLL_RUNS_PATH, any(runs))
+        .route(
+            NATIVE_PAYROLL_RUNS_PATH,
+            get(runs).fallback(|| async { method_not_allowed() }),
+        )
         .with_state(state)
 }
 
@@ -167,7 +170,7 @@ async fn runs(
 ) -> Response {
     // Axum GET also handles HEAD. Refuse it before credentials/owner/audit.
     if method != Method::GET {
-        return error(StatusCode::METHOD_NOT_ALLOWED);
+        return method_not_allowed();
     }
     let Ok(Path(company)) = path else {
         return error(StatusCode::NOT_FOUND);
@@ -186,6 +189,15 @@ async fn runs(
         Ok(result) => private(Json(result.page).into_response()),
         Err(status) => error(status),
     }
+}
+
+fn method_not_allowed() -> Response {
+    let mut response = error(StatusCode::METHOD_NOT_ALLOWED);
+    // GET routing dispatches HEAD too, but the guard rejects it before the owner.
+    response
+        .headers_mut()
+        .insert(header::ALLOW, HeaderValue::from_static("GET"));
+    response
 }
 
 fn error(status: StatusCode) -> Response {

@@ -1,0 +1,29 @@
+oneOf:
+- $ref: '#/components/schemas/NativeCompanyEnrollmentCommitted'
+- type: object
+  additionalProperties: false
+  required: [outcome, original_command_id, result_path, input]
+  properties:
+    outcome:
+      type: string
+      const: PENDING
+    original_command_id:
+      type: string
+      format: uuid
+    result_path:
+      type: string
+    input:
+      $ref: '#/components/schemas/NativeCompanyEnrollmentInput'
+- type: object
+  additionalProperties: false
+  required: [outcome, original_command_id, result_path]
+  properties:
+    outcome:
+      type: string
+      enum: [CANCELLED, EXPIRED]
+    original_command_id:
+      type: string
+      format: uuid
+    result_path:
+      type: string
+description: A command is never inferred absent from a transport failure. Reopen by its original command ID.
