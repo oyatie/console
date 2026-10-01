@@ -379,7 +379,7 @@ async function main(backendPort,out,mode){
     await exchange({phase});result.checkpoints.push(phase);
    };
    const {runPolicyJourney}=require('./policy_journey.cjs');
-   result.policy=await runPolicyJourney({page,context,company:body.org_id,group:body.group_id,companyName,recipient:account,operator:account,
+   result.policy=await runPolicyJourney({page,context,company:body.org_id,group:body.group_id,companyName,recipient:account,operator:account,tabTo,
     expiresAtLocal:new Date(Date.now()+86400000+9*3600000).toISOString().slice(0,16),expectDocument,
     capture:async name=>capture(name+'.png'),
     beforeSubmit:async action=>{result.policy_expected_mutations.push(action.path);await exchange({phase:'POLICY_ACTION_READY',operation:action.operation,command_id:action.command_id,expected_company_epoch:action.expected_company_epoch,fields:action.fields,assignment_id:action.operation==='RevokePayrollReadV1'?action.path.split('/').at(-2):null});},

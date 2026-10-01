@@ -160,7 +160,7 @@ test('Company observer accepts actual Policy-root and rejects foreign Policy-roo
 
 // Classifier-only Policy task controls. These records never stand in for the
 // mounted browser, current policy or independent database-effect census.
-const {COPY,validTaskEvidence,taskEvidenceIssues}=require('./policy_journey.cjs');
+const {COPY,validTaskEvidence,taskEvidenceIssues,taskIssues,collectTask}=require('./policy_journey.cjs');
 function taskHistory(sameAccount=true) {
   const uuid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
   const e={company:uuid(1),group:uuid(2),recipient:uuid(3),operator:uuid(sameAccount?3:4),company_name:'연구 <회사 & 본사>',origin:'https://localhost:1234',
@@ -172,17 +172,19 @@ function taskHistory(sameAccount=true) {
     ['REVOKE_PREFLIGHT',b+'/revoke','ACTIVE'],['REVOKE_COMMITTED',result('revoke',2),'REVOKED'],['REVOKE_REOPENED',result('revoke',2),'REVOKED']];
   e.ui_observations=sites.map(([site,url,current_state])=>({site,url,current_state,heading:COPY.heading,description:COPY.consequence,limit:COPY.scope,
     primary:[['회사',e.company_name],['권한 대상','회사 등록 시 지정된 관리 계정'],['작업 담당','현재 로그인 계정']],
+    heading_visible:true,description_visible:true,limit_visible:true,consequence_text:[COPY.heading,COPY.consequence,COPY.scope].join(' '),primary_visible:true,
     primary_prose:['회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다.',...(sameAccount?['현재 로그인 계정이 권한 대상입니다']:[])],
-    details_count:1,details_native:true,details_title:'회사·계정 식별 정보',initially_closed:true,
+    details_count:1,details_native:true,details_title:'회사·계정 식별 정보',initially_closed:true,summary_tab_index:0,summary_visible:true,
     identifiers:[['회사',e.company],['그룹',e.group],['권한 대상',e.recipient],['현재 담당 계정',e.operator]],
     identity_attributes:[['data-policy-company',e.company],['data-policy-recipient',e.recipient],['data-policy-operator',e.operator]],
     attributes_in_details:true,identifiers_hidden:true,keyboard_opened:true,keyboard_closed:true,identifiers_visible:true,
-    network_requests:0,values_preserved:true,location_preserved:true,unique_ids:true,no_product_script:true}));
+    tab_discovered:true,focus_visible:true,network_requests:0,values_preserved:true,location_preserved:true,unique_ids:true,no_product_script:true}));
+  for(const row of e.ui_observations)row.primary_text=row.primary.flat().concat(row.primary_prose).join(' ');
   return e;
 }
 for(const same of [true,false])test(`Policy task context positive, same Account=${same}`,()=>assert.equal(validTaskEvidence(taskHistory(same)),true));
 test('Policy same-Account relationship is optional, never a human inference',()=>{
-  const e=taskHistory();for(const row of e.ui_observations)row.primary_prose.pop();assert.equal(validTaskEvidence(e),true);
+  const e=taskHistory();for(const row of e.ui_observations){row.primary_prose.pop();row.primary_text=row.primary.flat().concat(row.primary_prose).join(' ');}assert.equal(validTaskEvidence(e),true);
 });
 for(let i=0;i<9;i++) {
   test(`Policy omitted task observation ${i} refused`,()=>{const e=taskHistory();e.ui_observations.splice(i,1);assert.equal(validTaskEvidence(e),false);});
@@ -197,7 +199,7 @@ for(let i=0;i<9;i++) {
 }
 test('Policy reordered task history refused',()=>{const e=taskHistory();[e.ui_observations[0],e.ui_observations[1]]=[e.ui_observations[1],e.ui_observations[0]];assert.equal(validTaskEvidence(e),false);});
 test('Policy absent task history refused',()=>{const e=taskHistory();delete e.ui_observations;assert.deepEqual(taskEvidenceIssues(e),['TASK_HISTORY_INCOMPLETE']);});
-for(const key of ['heading','description','limit','primary','primary_prose','details_count','details_native','details_title','initially_closed','identifiers','identity_attributes','attributes_in_details','identifiers_hidden','keyboard_opened','keyboard_closed','identifiers_visible','network_requests','values_preserved','location_preserved','unique_ids','no_product_script']) {
+for(const key of ['heading_visible','description_visible','limit_visible','consequence_text','primary_visible','primary_text','tab_discovered','focus_visible','summary_tab_index','summary_visible','heading','description','limit','primary','primary_prose','details_count','details_native','details_title','initially_closed','identifiers','identity_attributes','attributes_in_details','identifiers_hidden','keyboard_opened','keyboard_closed','identifiers_visible','network_requests','values_preserved','location_preserved','unique_ids','no_product_script']) {
   test(`Policy missing task field ${key} refused`,()=>{const e=taskHistory();delete e.ui_observations[8][key];assert.equal(validTaskEvidence(e),false);});
 }
 for(let i=0;i<4;i++)for(const change of ['missing','duplicate','replaced'])test(`Policy ${change} identifier role ${i} refused`,()=>{
@@ -208,7 +210,7 @@ for(let i=0;i<4;i++)for(const change of ['missing','duplicate','replaced'])test(
 for(const key of ['company','group','recipient','operator'])test(`Policy invalid canonical ${key} cannot support relationship claims`,()=>{
   for(const value of ['',null,'00000000-0000-0000-0000-000000000000']){const e=taskHistory();e[key]=value;assert.equal(validTaskEvidence(e),false);}
 });
-for(const [key,value] of [['details_count',2],['details_native',false],['initially_closed',false],['identifiers_hidden',false],['attributes_in_details',false],['keyboard_opened',false],['keyboard_closed',false],['identifiers_visible',false],['network_requests',1],['network_requests','0'],['values_preserved',false],['location_preserved',false],['unique_ids',false],['no_product_script',false]])test(`Policy corrupt ${key}:${value} refused`,()=>{
+for(const [key,value] of [['heading_visible',false],['description_visible',false],['limit_visible',false],['primary_visible',false],['tab_discovered',false],['focus_visible',false],['summary_tab_index',-1],['summary_visible',false],['details_count',2],['details_native',false],['initially_closed',false],['identifiers_hidden',false],['attributes_in_details',false],['keyboard_opened',false],['keyboard_closed',false],['identifiers_visible',false],['network_requests',1],['network_requests','0'],['values_preserved',false],['location_preserved',false],['unique_ids',false],['no_product_script',false]])test(`Policy corrupt ${key}:${value} refused`,()=>{
   const e=taskHistory();e.ui_observations[8][key]=value;assert.equal(validTaskEvidence(e),false);
 });
 test('Policy different Accounts cannot claim the current Account is the target',()=>{
@@ -222,4 +224,39 @@ test('Policy invented target name and prominent raw identities refused',()=>{
 });
 test('Policy duplicated identity attribute cannot disappear from its census',()=>{
   const e=taskHistory();e.ui_observations[8].identity_attributes.push(e.ui_observations[8].identity_attributes[0]);assert.equal(validTaskEvidence(e),false);
+});
+
+test('Policy DOM collector controls under pinned Chromium, never business acceptance',async t=>{
+  const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+  const driver=process.env.CONSOLE_COMPANY_BROWSER_DRIVER;
+  assert.equal(typeof driver,'string','source-bound browser stage prerequisite required');assert.equal(path.isAbsolute(driver),true);
+  const stage=path.dirname(driver),runtime=path.join(stage,'runtime');
+  const pin={'darwin-arm64':['chrome-headless-shell-mac-arm64/chrome-headless-shell','a0bfe7b4da4787b66058477d696cd1d09065d25f06a548947722b9af77ee8282'],
+    'linux-x64':['chrome-headless-shell-linux64/chrome-headless-shell','ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e']}[process.platform+'-'+process.arch];
+  assert.ok(pin,'reviewed Chromium platform required');
+  const executable=path.join(runtime,'browser',pin[0]);
+  assert.equal(crypto.createHash('sha256').update(fs.readFileSync(executable)).digest('hex'),pin[1]);
+  assert.equal(require(path.join(runtime,'node_modules/playwright/package.json')).version,'1.63.0');
+  assert.equal(require(path.join(runtime,'node_modules/playwright-core/package.json')).version,'1.63.0');
+  const {chromium}=require(path.join(runtime,'node_modules/playwright'));
+  const browser=await chromium.launch({headless:true,executablePath:executable});t.after(()=>browser.close());
+  const page=await browser.newPage();
+  const scope=taskHistory(),escape=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  // Deliberately synthetic DOM fixtures test the collector only, in a separate
+  // browser. No Company route, Account, source, command or database is seeded.
+  const fixture=change=>`<section class="panel"><h2>대상과 업무 범위</h2><div class="policy-panel-body"><dl>
+    <dt>회사</dt><dd>${escape(scope.company_name)}</dd><dt>권한 대상</dt><dd ${change==='hidden-role'?'hidden':''}>회사 등록 시 지정된 관리 계정</dd>
+    <dt>작업 담당</dt><dd>현재 로그인 계정</dd></dl><p ${change==='hidden-restriction'?'hidden':''}>회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다.</p>
+    <p>현재 로그인 계정이 권한 대상입니다</p><details><summary ${change==='not-tab-accessible'?'tabindex="-1"':''}>회사·계정 식별 정보</summary><dl>
+    <dt>회사</dt><dd data-policy-company="${scope.company}">${scope.company}</dd><dt>그룹</dt><dd>${scope.group}</dd>
+    <dt>권한 대상</dt><dd data-policy-recipient="${scope.recipient}">${scope.recipient}</dd><dt>현재 담당 계정</dt><dd data-policy-operator="${scope.operator}">${scope.operator}</dd></dl></details></div></section>
+    <section class="policy-consequences"><h2 ${change==='hidden-heading'?'hidden':''}>${COPY.heading}</h2>
+    <p ${change==='hidden-copy'?'hidden':change==='transparent-copy'?'style="opacity:0"':''}>${COPY.consequence}</p>
+    <p class="policy-limit">${COPY.scope}</p>${change==='extra-claim'||change==='hidden-copy'?'<span>이 계정은 지금 급여 목록을 볼 수 있습니다.</span>':''}</section>`;
+  for(const [change,expected] of [['visible',[]],['hidden-heading',['CONDITIONAL_SCOPE']],['hidden-copy',['CONDITIONAL_SCOPE']],['transparent-copy',['CONDITIONAL_SCOPE']],
+    ['extra-claim',['CONDITIONAL_SCOPE']],['hidden-role',['PRIMARY_CONTEXT']],['hidden-restriction',['PRIMARY_CONTEXT']],['not-tab-accessible',['IDENTIFIER_DETAILS']]])await t.test(change,async()=>{
+    await page.setContent(fixture(change));const row=await page.evaluate(collectTask,'MACHINERY_DOM_CONTROL');
+    // This noninteractive collector control cannot supply interaction evidence.
+    assert.deepEqual(taskIssues(row,scope).filter(code=>code!=='DISCLOSURE_INTERACTION'),expected);
+  });
 });
