@@ -10,10 +10,88 @@ const PHASES = ['CATALOG_INSTALLED', 'GRANT_COMMITTED', 'GRANT_REOPENED', 'REVOK
 const ACTIONS = ['InstallPayrollReadCatalogV1', 'GrantPayrollReadV1', 'RevokePayrollReadV1'];
 const COPY = Object.freeze({
   title: '급여 목록 열람 권한',
-  consequence: '이 계정은 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 볼 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다.',
+  heading: '이 권한의 공개 범위',
+  consequence: '권한이 연결되어 유효하고 현재 정책이 허용할 때, 대상 관리 계정이 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 확인할 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다.',
   scope: '급여의 상세 내역·수정·지급·내보내기 권한은 연결되지 않습니다. 다른 회사에는 적용되지 않습니다.',
   expiry: '종료 날짜와 시각 (한국 표준시, UTC+09:00)',
 });
+const TASK_SITES = ['INSTALL_PREFLIGHT','CATALOG_INSTALLED','GRANT_PREFLIGHT','GRANT_COMMITTED','GRANT_REOPENED','GRANT_RETURNED','REVOKE_PREFLIGHT','REVOKE_COMMITTED','REVOKE_REOPENED'];
+const TARGET_RESTRICTION = '회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다.';
+const SAME_ACCOUNT = '현재 로그인 계정이 권한 대상입니다';
+function taskIssues(row, scope) {
+  const issues = [];
+  const equal = (a,b) => JSON.stringify(a) === JSON.stringify(b);
+  if(row?.heading !== COPY.heading || row?.description !== COPY.consequence || row?.limit !== COPY.scope) issues.push('CONDITIONAL_SCOPE');
+  const primary = [['회사',scope.company_name],['권한 대상','회사 등록 시 지정된 관리 계정'],['작업 담당','현재 로그인 계정']];
+  const prose = [TARGET_RESTRICTION];
+  if(scope.recipient === scope.operator && row?.primary_prose?.includes(SAME_ACCOUNT)) prose.push(SAME_ACCOUNT);
+  if(!equal(row?.primary,primary) || !equal(row?.primary_prose,prose)) issues.push('PRIMARY_CONTEXT');
+  const identifiers = [['회사',scope.company],['그룹',scope.group],['권한 대상',scope.recipient],['현재 담당 계정',scope.operator]];
+  const attributes = [['data-policy-company',scope.company],['data-policy-recipient',scope.recipient],['data-policy-operator',scope.operator]];
+  if(row?.details_count !== 1 || row?.details_native !== true || row?.details_title !== '회사·계정 식별 정보' || row?.initially_closed !== true ||
+    !equal(row?.identifiers,identifiers) || !equal(row?.identity_attributes,attributes) || row?.attributes_in_details !== true || row?.identifiers_hidden !== true) issues.push('IDENTIFIER_DETAILS');
+  if(row?.keyboard_opened !== true || row?.keyboard_closed !== true || row?.identifiers_visible !== true || row?.network_requests !== 0 ||
+    row?.values_preserved !== true || row?.location_preserved !== true || row?.unique_ids !== true || row?.no_product_script !== true) issues.push('DISCLOSURE_INTERACTION');
+  return issues;
+}
+function taskEvidenceIssues(e) {
+  try {
+    for(const key of ['company','group','recipient','operator']) id(e[key]);
+    assert.equal(typeof e.company_name,'string'); assert.ok(e.company_name.length > 0);
+    assert.equal(new URL(e.origin).origin,e.origin); assert.match(e.origin,/^https:\/\/localhost:\d+$/);
+    const commands=e.mutations.map(m=>id(m.command_id)); assert.equal(commands.length,3);
+    const base=`${e.origin}/companies/${e.company}/policy/payroll-read`;
+    const install=base+'/requests/install/'+commands[0], grant=base+'/requests/grant/'+commands[1], revoke=base+'/requests/revoke/'+commands[2];
+    const urls=[base+'/install',install,base+'/grant',grant,grant,grant,base+'/revoke',revoke,revoke];
+    const states=['NONE','NONE','NONE','ACTIVE','ACTIVE','ACTIVE','ACTIVE','REVOKED','REVOKED'];
+    assert.deepEqual(e.ui_observations.map(r=>r.site),TASK_SITES);
+    return e.ui_observations.flatMap((row,i)=>[
+      ...(row.url===urls[i] && row.current_state===states[i] ? [] : [`${row.site}:CURRENT_LOCATION`]),
+      ...taskIssues(row,e).map(issue=>`${row.site}:${issue}`),
+    ]);
+  } catch { return ['TASK_HISTORY_INCOMPLETE']; }
+}
+function validTaskEvidence(e) { return taskEvidenceIssues(e).length === 0; }
+async function observeTask(page, context, site) {
+  // New presentation findings are evidence, not an early gate: retain every
+  // immediate owner/transport assertion and the complete ADMIN_REOPENED history.
+  const row = await page.evaluate(site => {
+    const panel=[...document.querySelectorAll('section.panel')].find(e=>e.querySelector('h2')?.textContent==='대상과 업무 범위');
+    const details=panel ? [...panel.querySelectorAll('details')].filter(e=>e.querySelector('summary')?.textContent==='회사·계정 식별 정보') : [];
+    const selected=details.length===1 ? details[0] : null;
+    const pairs=root=>root ? [...root.querySelectorAll('dt')].filter(dt=>root===selected || !dt.closest('details')).map(dt=>[dt.textContent,dt.nextElementSibling?.textContent]) : [];
+    const attrs=['data-policy-company','data-policy-recipient','data-policy-operator'].flatMap(name=>[...document.querySelectorAll(`[${name}]`)].map(e=>[name,e.getAttribute(name)]));
+    const consequence=document.querySelector('.policy-consequences');
+    const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);
+    return {site,url:location.href,current_state:document.querySelector('[data-policy-current-state]')?.getAttribute('data-policy-current-state') ?? null,
+      heading:consequence?.querySelector('h2')?.textContent ?? null,description:consequence?.querySelector('p')?.textContent ?? null,limit:consequence?.querySelector('.policy-limit')?.textContent ?? null,
+      primary:pairs(panel),primary_prose:panel ? [...panel.querySelectorAll('p')].filter(p=>!p.closest('details')).map(p=>p.textContent) : [],
+      details_count:details.length,details_native:selected?.tagName==='DETAILS',details_title:selected?.querySelector('summary')?.textContent ?? null,
+      initially_closed:selected?.open===false,identifiers:pairs(selected),identity_attributes:attrs,
+      attributes_in_details:attrs.length===3 && ['data-policy-company','data-policy-recipient','data-policy-operator'].every(name=>[...document.querySelectorAll(`[${name}]`)].every(e=>selected?.contains(e))),
+      identifiers_hidden:selected!==null && [...selected.querySelectorAll('dd')].every(e=>e.getClientRects().length===0),
+      unique_ids:new Set(ids).size===ids.length,no_product_script:document.scripts.length===0};
+  },site);
+  row.keyboard_opened=false; row.keyboard_closed=false; row.identifiers_visible=false; row.network_requests=0;
+  const snapshot=()=>page.evaluate(()=>JSON.stringify({url:location.href,forms:[...document.forms].map(f=>[...new FormData(f)])}));
+  const before=await snapshot(); const url=page.url();
+  const request=()=>row.network_requests++;
+  context.on('request',request);
+  try {
+    if(row.details_count===1 && row.details_native && row.initially_closed) {
+      const summary=page.locator('section.panel details > summary').filter({hasText:/^회사·계정 식별 정보$/});
+      if(await summary.count()===1) {
+        await summary.focus(); await page.keyboard.press('Enter');
+        row.keyboard_opened=await summary.evaluate(e=>e.parentElement.open===true);
+        row.identifiers_visible=await summary.evaluate(e=>[...e.parentElement.querySelectorAll('dd')].length===4 && [...e.parentElement.querySelectorAll('dd')].every(d=>d.getClientRects().length>0));
+        await page.keyboard.press('Space'); row.keyboard_closed=await summary.evaluate(e=>e.parentElement.open===false);
+      }
+    }
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    row.values_preserved=(await snapshot())===before; row.location_preserved=page.url()===url;
+  } finally {context.off('request',request);}
+  return row;
+}
 function validEvidence(e) {
   try {
     id(e.company); id(e.recipient); id(e.operator);
@@ -135,14 +213,14 @@ async function assertOutcome(page, state, expected) {
     assert.equal(new URL(page.url()).origin,expected.origin);
   }
 }
-async function runPolicyJourney({ page, context, company, recipient, operator, expiresAtLocal, checkpoint, capture, beforeSubmit, expectDocument, readPayroll }) {
-  id(company); id(recipient); id(operator);
+async function runPolicyJourney({ page, context, company, group, companyName, recipient, operator, expiresAtLocal, checkpoint, capture, beforeSubmit, expectDocument, readPayroll }) {
+  id(company); id(group); id(recipient); id(operator); assert.equal(typeof companyName,'string'); assert.ok(companyName.length > 0);
   assert.match(expiresAtLocal, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
   assert.equal(typeof checkpoint, 'function'); assert.equal(typeof capture, 'function');
   for (const fn of [beforeSubmit,expectDocument,readPayroll]) assert.equal(typeof fn,'function');
   const origin = new URL(page.url()).origin; assert.match(origin, /^https:\/\/localhost:\d+$/);
   const base = `/companies/${company}/policy/payroll-read`;
-  const result = {company,recipient,operator,mutations:[],checkpoints:[],unexpected_mutations:0,mutation_failures:0};
+  const result = {company,group,company_name:companyName,origin,recipient,operator,mutations:[],checkpoints:[],ui_observations:[],unexpected_mutations:0,mutation_failures:0};
   const requests = new Map(); let active = null;
   const onRequest = request => {
     if (['GET','HEAD','OPTIONS'].includes(request.method())) return;
@@ -179,7 +257,7 @@ async function runPolicyJourney({ page, context, company, recipient, operator, e
     assert.equal(await page.locator('[data-policy-company]').getAttribute('data-policy-company'),company);
     assert.equal(await page.locator('[data-policy-recipient]').getAttribute('data-policy-recipient'),recipient);
     assert.equal(await page.locator('[data-policy-operator]').getAttribute('data-policy-operator'),operator);
-    await visibleText(page,COPY.consequence); await visibleText(page,COPY.scope);
+    await visibleText(page,COPY.scope);
   }
   async function submit(operation,label,path) {
     const form=page.locator(`form[data-policy-operation="${operation}"]`);
@@ -210,11 +288,12 @@ async function runPolicyJourney({ page, context, company, recipient, operator, e
   }
   try {
     // Entry harness has already navigated and independently witnessed this preflight.
-    assert.equal(page.url(),origin+base+'/install');await inspectSubject();
+    assert.equal(page.url(),origin+base+'/install');await inspectSubject();result.ui_observations.push(await observeTask(page,context,'INSTALL_PREFLIGHT'));
     const install=await submit(ACTIONS[0],'열람 권한 설정 준비',base+'/catalog');
     await visibleText(page,'설정 준비 완료');await visibleText(page,'계정에 열람 권한은 연결되지 않았습니다');
     const installed=await witness(PHASES[0],install); assert.equal(installed.business_assignment_count,0);result.install_did_not_grant=true;
-    await navigate('grant');await inspectSubject();
+    result.ui_observations.push(await observeTask(page,context,'CATALOG_INSTALLED'));
+    await navigate('grant');await inspectSubject();result.ui_observations.push(await observeTask(page,context,'GRANT_PREFLIGHT'));
     await page.getByLabel(COPY.expiry,{exact:true}).fill(expiresAtLocal);
     await capture('policy-before-grant');
     const grant=await submit(ACTIONS[1],'열람 권한 연결',base+'/grants');
@@ -223,14 +302,18 @@ async function runPolicyJourney({ page, context, company, recipient, operator, e
     assert.equal(granted.role_revision,'1');assert.equal(granted.role_valid_until,null);
     assert.ok(Date.parse(granted.valid_until)>Date.parse(granted.valid_from));
     assert.ok(Date.parse(granted.valid_until)-Date.parse(granted.valid_from)<=30*86400000);
+    result.ui_observations.push(await observeTask(page,context,'GRANT_COMMITTED'));
     await reopen();await assertOutcome(page,'committed');await witness(PHASES[2],grant);result.grant_receipt_reopened=true;
+    result.ui_observations.push(await observeTask(page,context,'GRANT_REOPENED'));
     await readPayroll();
+    result.ui_observations.push(await observeTask(page,context,'GRANT_RETURNED'));
     await capture('policy-grant-reopened');
-    await navigate('revoke');await inspectSubject();await page.setViewportSize({width:320,height:900});
+    await navigate('revoke');await inspectSubject();result.ui_observations.push(await observeTask(page,context,'REVOKE_PREFLIGHT'));await page.setViewportSize({width:320,height:900});
     result.reflow_320=await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth);
     await capture('policy-active-320');
     const revoke=await submit(ACTIONS[2],'열람 권한 회수',base+'/grants/'+id(granted.assignment_id)+'/revoke');
     const revoked=await witness(PHASES[3],revoke);await visibleText(page,'열람 권한을 회수했습니다');
+    result.ui_observations.push(await observeTask(page,context,'REVOKE_COMMITTED'));
     await reopen();await assertOutcome(page,'committed');
     assert.equal(await page.locator('[data-policy-command]').getAttribute('data-policy-command'),revoke);
     assert.equal(await page.locator('[data-policy-receipt]').getAttribute('data-policy-receipt'),revoked.receipt_id);
@@ -238,7 +321,8 @@ async function runPolicyJourney({ page, context, company, recipient, operator, e
     const reopened=await witness(PHASES[4],revoke);
     assert.equal(reopened.current_state,'REVOKED');assert.equal(reopened.reload_had_no_effects,true);
     result.revoked_receipt_reopened=true;result.keyboard_submit=true;
+    result.ui_observations.push(await observeTask(page,context,'REVOKE_REOPENED'));
     await capture('policy-revoked-reopened');assert.equal(validEvidence(result),true);return result;
   } finally { context.off('request',onRequest);context.off('response',onResponse);context.off('requestfailed',onFailure); }
 }
-module.exports={runPolicyJourney,assertOutcome,validEvidence,exactRecoveryHref,deniedMaterialSafe,COPY};
+module.exports={runPolicyJourney,assertOutcome,validEvidence,exactRecoveryHref,deniedMaterialSafe,COPY,TASK_SITES,taskIssues,taskEvidenceIssues,validTaskEvidence};

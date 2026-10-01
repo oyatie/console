@@ -157,3 +157,69 @@ test('Company observer accepts actual Policy-root and rejects foreign Policy-roo
     assert.equal(r.documents[0].path, foreign ? '<unexpected>' : route);
   }
 });
+
+// Classifier-only Policy task controls. These records never stand in for the
+// mounted browser, current policy or independent database-effect census.
+const {COPY,validTaskEvidence,taskEvidenceIssues}=require('./policy_journey.cjs');
+function taskHistory(sameAccount=true) {
+  const uuid=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+  const e={company:uuid(1),group:uuid(2),recipient:uuid(3),operator:uuid(sameAccount?3:4),company_name:'연구 <회사 & 본사>',origin:'https://localhost:1234',
+    mutations:[5,6,7].map(n=>({command_id:uuid(n)}))};
+  const b=e.origin+'/companies/'+e.company+'/policy/payroll-read';
+  const result=(kind,i)=>b+'/requests/'+kind+'/'+e.mutations[i].command_id;
+  const sites=[['INSTALL_PREFLIGHT',b+'/install','NONE'],['CATALOG_INSTALLED',result('install',0),'NONE'],['GRANT_PREFLIGHT',b+'/grant','NONE'],
+    ['GRANT_COMMITTED',result('grant',1),'ACTIVE'],['GRANT_REOPENED',result('grant',1),'ACTIVE'],['GRANT_RETURNED',result('grant',1),'ACTIVE'],
+    ['REVOKE_PREFLIGHT',b+'/revoke','ACTIVE'],['REVOKE_COMMITTED',result('revoke',2),'REVOKED'],['REVOKE_REOPENED',result('revoke',2),'REVOKED']];
+  e.ui_observations=sites.map(([site,url,current_state])=>({site,url,current_state,heading:COPY.heading,description:COPY.consequence,limit:COPY.scope,
+    primary:[['회사',e.company_name],['권한 대상','회사 등록 시 지정된 관리 계정'],['작업 담당','현재 로그인 계정']],
+    primary_prose:['회사 등록 시 지정된 관리 계정에 한해 연결할 수 있습니다.',...(sameAccount?['현재 로그인 계정이 권한 대상입니다']:[])],
+    details_count:1,details_native:true,details_title:'회사·계정 식별 정보',initially_closed:true,
+    identifiers:[['회사',e.company],['그룹',e.group],['권한 대상',e.recipient],['현재 담당 계정',e.operator]],
+    identity_attributes:[['data-policy-company',e.company],['data-policy-recipient',e.recipient],['data-policy-operator',e.operator]],
+    attributes_in_details:true,identifiers_hidden:true,keyboard_opened:true,keyboard_closed:true,identifiers_visible:true,
+    network_requests:0,values_preserved:true,location_preserved:true,unique_ids:true,no_product_script:true}));
+  return e;
+}
+for(const same of [true,false])test(`Policy task context positive, same Account=${same}`,()=>assert.equal(validTaskEvidence(taskHistory(same)),true));
+test('Policy same-Account relationship is optional, never a human inference',()=>{
+  const e=taskHistory();for(const row of e.ui_observations)row.primary_prose.pop();assert.equal(validTaskEvidence(e),true);
+});
+for(let i=0;i<9;i++) {
+  test(`Policy omitted task observation ${i} refused`,()=>{const e=taskHistory();e.ui_observations.splice(i,1);assert.equal(validTaskEvidence(e),false);});
+  test(`Policy duplicate task observation ${i} refused`,()=>{const e=taskHistory();e.ui_observations.splice(i,0,e.ui_observations[i]);assert.equal(validTaskEvidence(e),false);});
+  test(`Policy wrong task URL/state ${i} refused`,()=>{
+    for(const key of ['url','current_state']){const e=taskHistory();e.ui_observations[i][key]+='-wrong';assert.equal(validTaskEvidence(e),false);}
+  });
+  test(`Policy unconditional task disclosure ${i} refused`,()=>{
+    const e=taskHistory();e.ui_observations[i].description='이 계정은 선택한 회사의 급여 목록과 목록에 포함된 모든 항목을 볼 수 있습니다. 근태 마감 증빙 전체와 결정 사유도 포함됩니다.';
+    assert.equal(validTaskEvidence(e),false);assert.ok(taskEvidenceIssues(e).includes(e.ui_observations[i].site+':CONDITIONAL_SCOPE'));
+  });
+}
+test('Policy reordered task history refused',()=>{const e=taskHistory();[e.ui_observations[0],e.ui_observations[1]]=[e.ui_observations[1],e.ui_observations[0]];assert.equal(validTaskEvidence(e),false);});
+test('Policy absent task history refused',()=>{const e=taskHistory();delete e.ui_observations;assert.deepEqual(taskEvidenceIssues(e),['TASK_HISTORY_INCOMPLETE']);});
+for(const key of ['heading','description','limit','primary','primary_prose','details_count','details_native','details_title','initially_closed','identifiers','identity_attributes','attributes_in_details','identifiers_hidden','keyboard_opened','keyboard_closed','identifiers_visible','network_requests','values_preserved','location_preserved','unique_ids','no_product_script']) {
+  test(`Policy missing task field ${key} refused`,()=>{const e=taskHistory();delete e.ui_observations[8][key];assert.equal(validTaskEvidence(e),false);});
+}
+for(let i=0;i<4;i++)for(const change of ['missing','duplicate','replaced'])test(`Policy ${change} identifier role ${i} refused`,()=>{
+  const e=taskHistory(),rows=e.ui_observations[8].identifiers;
+  if(change==='missing')rows.splice(i,1);else if(change==='duplicate')rows.splice(i,0,rows[i]);else rows[i]=[rows[i][0],'00000000-0000-4000-8000-000000000099'];
+  assert.equal(validTaskEvidence(e),false);
+});
+for(const key of ['company','group','recipient','operator'])test(`Policy invalid canonical ${key} cannot support relationship claims`,()=>{
+  for(const value of ['',null,'00000000-0000-0000-0000-000000000000']){const e=taskHistory();e[key]=value;assert.equal(validTaskEvidence(e),false);}
+});
+for(const [key,value] of [['details_count',2],['details_native',false],['initially_closed',false],['identifiers_hidden',false],['attributes_in_details',false],['keyboard_opened',false],['keyboard_closed',false],['identifiers_visible',false],['network_requests',1],['network_requests','0'],['values_preserved',false],['location_preserved',false],['unique_ids',false],['no_product_script',false]])test(`Policy corrupt ${key}:${value} refused`,()=>{
+  const e=taskHistory();e.ui_observations[8][key]=value;assert.equal(validTaskEvidence(e),false);
+});
+test('Policy different Accounts cannot claim the current Account is the target',()=>{
+  const e=taskHistory(false);e.ui_observations[8].primary_prose.push('현재 로그인 계정이 권한 대상입니다');assert.equal(validTaskEvidence(e),false);
+});
+test('Policy Account equality cannot claim natural-person equality',()=>{
+  const e=taskHistory();e.ui_observations[8].primary_prose.push('두 계정은 같은 사람입니다');assert.equal(validTaskEvidence(e),false);
+});
+test('Policy invented target name and prominent raw identities refused',()=>{
+  for(const value of ['김관리자','invented@example.com',taskHistory().recipient]){const e=taskHistory();e.ui_observations[8].primary[1][1]=value;assert.equal(validTaskEvidence(e),false);}
+});
+test('Policy duplicated identity attribute cannot disappear from its census',()=>{
+  const e=taskHistory();e.ui_observations[8].identity_attributes.push(e.ui_observations[8].identity_attributes[0]);assert.equal(validTaskEvidence(e),false);
+});
