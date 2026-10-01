@@ -157,6 +157,390 @@ async fn count(owner_pool: &PgPool, sql: &'static str, org: Uuid) -> i64 {
 
 const COUNT_RUNS: &str = "SELECT count(*)::bigint FROM payroll_draft_runs WHERE org_id = $1";
 
+mod complete_roster_submission_tests {
+    use super::*;
+    use console_attendance_adapter_postgres::PgAttendanceStore;
+    use console_attendance_application::{CallerScope, CloseMonth};
+    use console_kernel_core::ErrorKind;
+    use console_ontology_canonical_domain::CanonicalPortError;
+    use console_payroll_adapter_postgres::lifecycle::{
+        calculate_run_in_tx, close_attendance_in_tx,
+    };
+    use console_platform_db::with_org_conn;
+
+    // Deliberate lower-boundary fixture: production employee import does not
+    // write this payroll object or verify these figures. Neither this fixture
+    // nor its successful control establishes native source entry, daily work
+    // coverage, minimum-wage applicability or qualified Korean payroll math.
+    async fn calculated_roster(
+        owner: &PgPool,
+        complete_bob_source: bool,
+    ) -> (OrgId, UserId, PgPayRunPort, Uuid) {
+        let (org, submitter, decider, port) = fixture(owner).await;
+        assert_ne!(submitter, decider);
+        let import_id = Uuid::new_v4();
+        sqlx::query(
+            "INSERT INTO data_import_runs \
+             (id, org_id, entity_type, status, source_filename, source_format, \
+              source_sha256, pay_period_start, pay_period_end) \
+             VALUES ($1, $2, 'employee_hr', 'DRY_RUN', 'roster.xlsx', 'xlsx', \
+                     repeat('a', 64), DATE '2026-06-01', DATE '2026-06-30')",
+        )
+        .bind(import_id)
+        .bind(ORG)
+        .execute(owner)
+        .await
+        .unwrap();
+        let payroll_source = json!({
+            "monthly_gross_pay_won": 3_000_000,
+            "nts_tax_row": {
+                "table_version": "NTS-간이세액표-fixture-row-v1",
+                "monthly_income_tax_won": 74_350,
+                "local_income_tax_won": 7_430,
+            },
+        });
+        let mut expected_sources = Vec::new();
+        for (source_row, source_key, name) in [
+            (1_i32, "alice-2026-06", "Alice"),
+            (2_i32, "bob-2026-06", "Bob"),
+        ] {
+            let employee_id: Uuid = sqlx::query_scalar(
+                "INSERT INTO employees \
+                 (org_id, company, name, source_filename, source_sheet, source_row, source_key) \
+                 VALUES ($1, 'KNL', $2, 'roster.xlsx', 's', $3, $4) RETURNING id",
+            )
+            .bind(ORG)
+            .bind(name)
+            .bind(source_row)
+            .bind(source_key)
+            .fetch_one(owner)
+            .await
+            .unwrap();
+            let mut canonical = json!({"source_key": source_key});
+            if source_row == 1 || complete_bob_source {
+                canonical["payroll"] = payroll_source.clone();
+            }
+            let row_id: Uuid = sqlx::query_scalar(
+                "INSERT INTO data_import_rows \
+                 (org_id, run_id, source_sheet, source_row, source_key, row_status, \
+                  raw_row, canonical_row) \
+                 VALUES ($1, $2, 's', $3, $4, 'CANDIDATE', $5, $6) RETURNING id",
+            )
+            .bind(ORG)
+            .bind(import_id)
+            .bind(source_row)
+            .bind(format!("filename:roster.xlsx|sheet:s|row:{source_row}"))
+            .bind(json!({"기본급": "3000000", "소득세": "74350", "근무시간": "209"}))
+            .bind(canonical)
+            .fetch_one(owner)
+            .await
+            .unwrap();
+            expected_sources.push((employee_id, source_key, row_id));
+        }
+        assert_ne!(expected_sources[0].0, expected_sources[1].0);
+        assert_ne!(expected_sources[0].2, expected_sources[1].2);
+
+        // Satisfy 0166's real writer/audit guards; an APPLIED INSERT or an
+        // unarmed UPDATE would either be rejected or silently change no row.
+        let mut tx = owner.begin().await.unwrap();
+        sqlx::query("SET LOCAL ROLE console_leave_definer")
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        sqlx::query("SELECT set_config('app.current_org', $1, true)")
+            .bind(ORG.to_string())
+            .execute(&mut *tx)
+            .await
+            .unwrap();
+        let applied = sqlx::query(
+            "UPDATE data_import_runs \
+             SET status = 'APPLIED', applied_by = $3, applied_at = now(), updated_at = now() \
+             WHERE org_id = $1 AND id = $2",
+        )
+        .bind(ORG)
+        .bind(import_id)
+        .bind(*submitter.as_uuid())
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+        assert_eq!(applied.rows_affected(), 1);
+        sqlx::query(
+            "INSERT INTO audit_events \
+             (actor, action, target_type, target_id, before_snap, after_snap, \
+              trace_id, span_id, occurred_at, org_id) \
+             VALUES ($1, 'data_import.apply', 'data_import_run', $2, NULL, '{}'::jsonb, \
+                     '0123456789abcdef0123456789abcdef', '0123456789abcdef', now(), $3)",
+        )
+        .bind(*submitter.as_uuid())
+        .bind(import_id.to_string())
+        .bind(ORG)
+        .execute(&mut *tx)
+        .await
+        .unwrap();
+        tx.commit().await.unwrap();
+        let applied: bool = sqlx::query_scalar(
+            "SELECT r.status = 'APPLIED' AND r.applied_by = $2 AND r.applied_at IS NOT NULL \
+                    AND (SELECT count(*) FROM audit_events a \
+                         WHERE a.org_id = r.org_id AND a.target_id = r.id::text \
+                           AND a.action = 'data_import.apply' AND a.actor = r.applied_by) = 1 \
+             FROM data_import_runs r WHERE r.id = $1",
+        )
+        .bind(import_id)
+        .bind(*submitter.as_uuid())
+        .fetch_one(owner)
+        .await
+        .unwrap();
+        assert!(applied, "the guarded import must commit before CreateRun");
+
+        let created = execute(&port, command(org, submitter, create(Uuid::new_v4())))
+            .await
+            .expect("CreateRun must materialize the real two-line roster as console_rt");
+        assert_eq!(created.target(), DispatchTarget::PayrollCreateRun);
+        let run_id: Uuid = created.result()["draft_run_id"]
+            .as_str()
+            .expect("CreateRun must return its successor's run identity")
+            .parse()
+            .unwrap();
+        let lines = sqlx::query(
+            "SELECT id, employee_id, employee_source_key, source_data_import_row_ids, \
+                    payroll_source_row_count, attendance_source_row_count, \
+                    gross_pay_source_present, nts_tax_row_status \
+             FROM payroll_draft_lines WHERE run_id = $1 ORDER BY employee_source_key",
+        )
+        .bind(run_id)
+        .fetch_all(owner)
+        .await
+        .unwrap();
+        assert_eq!(lines.len(), 2);
+        for (line, (employee_id, source_key, row_id)) in lines.iter().zip(&expected_sources) {
+            assert_eq!(line.get::<Uuid, _>("employee_id"), *employee_id);
+            assert_eq!(line.get::<String, _>("employee_source_key"), *source_key);
+            assert_eq!(
+                line.get::<Vec<Uuid>, _>("source_data_import_row_ids"),
+                vec![*row_id]
+            );
+            assert_eq!(line.get::<i32, _>("payroll_source_row_count"), 1);
+            assert_eq!(line.get::<i32, _>("attendance_source_row_count"), 1);
+            assert!(line.get::<bool, _>("gross_pay_source_present"));
+            assert_eq!(
+                line.get::<String, _>("nts_tax_row_status"),
+                "REQUIRED_NOT_SUPPLIED"
+            );
+        }
+        // Fixture-only owner override reaches the missing-amounts branch even
+        // though Bob's gross/readiness flags are true. It is not verification.
+        let marked = sqlx::query(
+            "UPDATE payroll_draft_lines SET nts_tax_row_status = 'VERIFIED_SOURCE_ROW' \
+             WHERE run_id = $1",
+        )
+        .bind(run_id)
+        .execute(owner)
+        .await
+        .unwrap();
+        assert_eq!(marked.rows_affected(), 2);
+
+        let runtime_pool = runtime_role_pool(owner).await;
+        let attendance = PgAttendanceStore::new(runtime_pool.clone());
+        let close = attendance
+            .close_month(
+                &CallerScope {
+                    org_id: ORG,
+                    user_id: *submitter.as_uuid(),
+                    branch_ids: vec![],
+                    org_wide: true,
+                },
+                CloseMonth {
+                    month: "2026-06".to_owned(),
+                    branch_scope: None,
+                    attest: true,
+                },
+            )
+            .await
+            .expect("Attendance owner must create the org-wide June close and payroll lock");
+        assert_eq!(close.month, date!(2026 - 06 - 01));
+        assert_eq!(close.branch_id, None);
+        let lock_id = close
+            .period_lock_id
+            .expect("org-wide close must own a payroll lock");
+        let close_and_lock: bool = sqlx::query_scalar(
+            "SELECT c.org_id = $1 AND c.month = DATE '2026-06-01' AND c.branch_id IS NULL \
+                    AND c.checks = '{\"open_exceptions\":0,\"pending_leave\":0,\"already_closed\":false}'::jsonb \
+                    AND l.id = $3 AND l.org_id = c.org_id AND l.domain = 'payroll' \
+                    AND l.period_start = DATE '2026-06-01' AND l.period_end = DATE '2026-06-30' \
+                    AND l.unlocked_at IS NULL \
+             FROM attendance_month_closes c JOIN period_locks l ON l.id = c.period_lock_id \
+             WHERE c.id = $2",
+        )
+        .bind(ORG)
+        .bind(close.id)
+        .bind(lock_id)
+        .fetch_one(owner)
+        .await
+        .unwrap();
+        assert!(
+            close_and_lock,
+            "read back the committed Attendance-owned close/lock"
+        );
+        let outcome = with_org_conn::<_, _, LifecycleError>(&runtime_pool, org, move |tx| {
+            Box::pin(async move {
+                close_attendance_in_tx(tx, run_id, *submitter.as_uuid(), OffsetDateTime::now_utc())
+                    .await?;
+                calculate_run_in_tx(tx, run_id).await
+            })
+        })
+        .await
+        .expect("the payroll owner must calculate, without a synthetic CALCULATED state");
+        assert_eq!(outcome.version, 1);
+        assert_eq!(
+            outcome.calculated_lines,
+            if complete_bob_source { 2 } else { 1 }
+        );
+        assert_eq!(
+            outcome.blocked_lines,
+            if complete_bob_source { 0 } else { 1 }
+        );
+        assert_eq!(outcome.exceptions_created, 0);
+        let calculations: Vec<(Uuid, i32, bool)> = sqlx::query_as(
+            "SELECT line_id, version, payable FROM payroll_line_calculations \
+             WHERE run_id = $1 ORDER BY line_id",
+        )
+        .bind(run_id)
+        .fetch_all(owner)
+        .await
+        .unwrap();
+        assert_eq!(calculations.len(), if complete_bob_source { 2 } else { 1 });
+        assert!(
+            calculations
+                .iter()
+                .all(|(_, version, payable)| *version == 1 && !payable)
+        );
+        for (index, line) in lines.iter().enumerate() {
+            let line_id = line.get::<Uuid, _>("id");
+            let should_calculate = index == 0 || complete_bob_source;
+            assert_eq!(
+                calculations
+                    .iter()
+                    .filter(|(id, _, _)| *id == line_id)
+                    .count(),
+                usize::from(should_calculate)
+            );
+            let (status, blockers): (String, serde_json::Value) = sqlx::query_as(
+                "SELECT calculation_status, blockers FROM payroll_draft_lines WHERE id = $1",
+            )
+            .bind(line_id)
+            .fetch_one(owner)
+            .await
+            .unwrap();
+            assert_eq!(
+                status,
+                if should_calculate {
+                    "READY_FOR_REVIEW"
+                } else {
+                    "BLOCKED_LEGAL_GATE"
+                }
+            );
+            assert_eq!(
+                blockers,
+                if should_calculate {
+                    json!([])
+                } else {
+                    json!(["SOURCE_AMOUNTS_NOT_MATERIALIZED"])
+                }
+            );
+        }
+        (org, submitter, port, run_id)
+    }
+
+    // One owner snapshot captures every stored run/roster/calculation byte and
+    // all receipt/approval consumption records. Denial logs are not success
+    // audits; the existing canonical and REST success action names are counted.
+    async fn snapshot(owner: &PgPool, run_id: Uuid) -> String {
+        sqlx::query_scalar(
+            "SELECT jsonb_build_object( \
+               'run', (SELECT to_jsonb(r) FROM payroll_draft_runs r WHERE r.id = $1), \
+               'lines', (SELECT coalesce(jsonb_agg(to_jsonb(l) ORDER BY l.id), '[]'::jsonb) \
+                         FROM payroll_draft_lines l WHERE l.run_id = $1), \
+               'calculations', (SELECT coalesce(jsonb_agg(to_jsonb(c) ORDER BY c.id), '[]'::jsonb) \
+                                FROM payroll_line_calculations c WHERE c.run_id = $1), \
+               'receipts', (SELECT coalesce(jsonb_agg(to_jsonb(r) ORDER BY r.command_id), '[]'::jsonb) \
+                            FROM ont_action_command_receipts r WHERE r.org_id = $2), \
+               'success_audits', (SELECT count(*) FROM audit_events \
+                                  WHERE org_id = $2 AND action IN ('payroll.submit_run', 'payroll_run.submit')), \
+               'approval_consumptions', (SELECT coalesce(jsonb_agg(to_jsonb(c) ORDER BY c.id), '[]'::jsonb) \
+                                          FROM gov_approval_consumptions c WHERE c.org_id = $2), \
+               'exception_count', (SELECT count(*) FROM payroll_run_exceptions WHERE run_id = $1) \
+             )::text",
+        )
+        .bind(run_id)
+        .bind(ORG)
+        .fetch_one(owner)
+        .await
+        .unwrap()
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn partial_calculated_roster_cannot_submit_as_runtime_role(owner: PgPool) {
+        let (org, submitter, port, run_id) = calculated_roster(&owner, false).await;
+        let before = snapshot(&owner, run_id).await;
+        let facts: serde_json::Value = serde_json::from_str(&before).unwrap();
+        assert_eq!(facts["run"]["status"], "CALCULATED");
+        assert!(facts["run"]["submitted_by"].is_null());
+        assert!(facts["run"]["submitted_at"].is_null());
+        assert_eq!(facts["receipts"].as_array().unwrap().len(), 1);
+        assert_eq!(facts["success_audits"], 0);
+        assert_eq!(facts["approval_consumptions"], json!([]));
+        assert_eq!(
+            facts["exception_count"], 0,
+            "no exception may mask the source guard"
+        );
+        let submit = command(org, submitter, PayRunQuery::SubmitRun { run_id });
+        for attempt in 1..=2 {
+            let error = execute(&port, submit.clone())
+                .await
+                .expect_err("PARTIAL_CALCULATED_ROSTER_SUBMITTED: Bob has no calculation and a named source blocker");
+            match error {
+                PayRunError::Blocked(blockers) => assert!(!blockers.is_empty()),
+                error => assert_eq!(error.into_kernel_error().kind, ErrorKind::Conflict),
+            }
+            assert_eq!(
+                snapshot(&owner, run_id).await,
+                before,
+                "refused submit attempt {attempt} must preserve all roster/calculation bytes and mint no receipt, success audit or approval consumption",
+            );
+        }
+    }
+
+    #[sqlx::test(migrations = "../../platform/db/migrations")]
+    async fn complete_calculated_roster_can_submit_as_runtime_role(owner: PgPool) {
+        let (org, submitter, port, run_id) = calculated_roster(&owner, true).await;
+        let before: serde_json::Value =
+            serde_json::from_str(&snapshot(&owner, run_id).await).unwrap();
+        assert_eq!(before["run"]["status"], "CALCULATED");
+        let submit = command(org, submitter, PayRunQuery::SubmitRun { run_id });
+        let receipt = execute(&port, submit.clone())
+            .await
+            .expect("the source guard must permit a complete two-line calculated roster");
+        assert_eq!(receipt.target(), DispatchTarget::PayrollSubmitRun);
+        let committed = snapshot(&owner, run_id).await;
+        let after: serde_json::Value = serde_json::from_str(&committed).unwrap();
+        assert_eq!(after["run"]["status"], "SUBMITTED");
+        assert_eq!(after["run"]["submitted_by"], json!(submitter.as_uuid()));
+        assert!(after["run"]["submitted_at"].is_string());
+        assert_eq!(after["lines"], before["lines"]);
+        assert_eq!(after["calculations"], before["calculations"]);
+        assert_eq!(after["receipts"].as_array().unwrap().len(), 2);
+        assert_eq!(
+            after["approval_consumptions"],
+            before["approval_consumptions"]
+        );
+        let replay = execute(&port, submit)
+            .await
+            .expect("same submit command must replay");
+        assert_eq!(replay.result(), receipt.result());
+        assert_eq!(snapshot(&owner, run_id).await, committed);
+    }
+}
+
 /// Move a staged run to `CALCULATED` as the table owner. Submitting requires it,
 /// and the port deliberately does NOT own a "calculate" target — `calculate_run_in_tx`
 /// already exists in this crate and is not one of the contract's three PayRun
