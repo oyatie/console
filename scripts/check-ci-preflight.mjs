@@ -947,6 +947,7 @@ const requiredAlwaysPreflightCommands = [
   ciPreflightTestCommand,
   buckImpactPlannerTestCommand,
   consoleRouteInventoryTestCommand,
+  "python3 tools/lanes/fanout.test.py",
   "npm run check:ci-preflight",
   "npm run check:package-lock",
   // Locked on arrival. repo-gates taught this repository that a step wired into
@@ -1062,6 +1063,7 @@ const requiredJobRunContracts = Object.freeze({
     proofRun("JavaScript test reachability ratchet", "npm run check:js-test-reachability", { if: preflightNpmCiDependentCondition }),
     proofRun("JavaScript test reachability unit tests", "npm run test:js-test-reachability", { if: preflightNpmCiDependentCondition }),
     proofRun("Lane fan-out harness preflight", "node scripts/console/workflows/lane-fanout.test.mjs", { if: preflightNpmCiDependentCondition }),
+    proofRun("Python lane fan-out harness regression", "python3 tools/lanes/fanout.test.py", { if: preflightNpmCiDependentCondition }),
     proofRun("Workflow test-runner credential literals", "npm run check:test-credentials", { if: preflightNpmCiDependentCondition }),
     proofRun("Collect failures", "node scripts/ci-collect-failures.mjs", { if: collectFailuresCondition }),
   ],
