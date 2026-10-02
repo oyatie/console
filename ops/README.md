@@ -158,8 +158,10 @@ export CONSOLE_PLATFORM_FORCE_COMMAND_POSTGRES_PASSWORD='<a third distinct comma
 All six passwords are mandatory and pairwise distinct. `postgres` starts with
 the cluster administrator, then the one-shot `postgres-topology` service runs
 `postgres-reconcile-topology.sh` on both fresh and existing volumes. It creates
-or pins the exact seven application roles, makes `console_app` the database/schema
-owner, gives that migration-only identity explicit `BYPASSRLS` for populated
+or pins the exact seven application roles, makes `console_app` the database owner,
+and keeps `public` owned by PostgreSQL's `pg_database_owner`, whose authority is
+local to the current database owner. It gives the migration-only `console_app`
+identity explicit `BYPASSRLS` for populated
 tenant-wide backfills, makes it a non-admin member of both NOLOGIN definers,
 and verifies readback. The `migrate` service then connects directly as
 `console_app`; API and worker connect directly as `console_rt`. Runtime, command, and
@@ -192,7 +194,8 @@ the shared local socket as the extant `console_app` bootstrap superuser. Postgre
 18 does not permit any role to remove `SUPERUSER` from that bootstrap identity,
 so the guarded conversion creates a temporary administrator, renames the
 bootstrap identity to the requested distinct admin, recreates `console_app` as the
-non-superuser migration role, and transfers user-schema ownership to it. Every
+non-superuser migration role, and transfers user-object ownership to it. The
+`public` schema retains `pg_database_owner` ownership. Every
 password-bearing statement runs with transaction-local logging suppression.
 
 ```sh
