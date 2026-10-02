@@ -2549,4 +2549,146 @@ describe("native Company raw-byte request contracts", () => {
       return `${broken}\nmod unmounted_original_transport { ${source} }\n`;
     }), (root) => assertSourceRefused(root, [cancel]));
   });
+
+  // These controls add real validation constraints to the reviewed Company DTOs.
+  // Checking only expected fields must not hide an applicable sibling keyword.
+  // The witnesses satisfy the fixed source descriptor; each added constraint
+  // excludes that witness. This is a bounded oracle, not a schema interpreter.
+  const enrollmentWitness = {
+    command_id: "11111111-1111-4111-8111-111111111111",
+    group_id: null,
+    slug: "hangeul",
+    name: "한결",
+    administrative_account_id: "22222222-2222-4222-8222-222222222222",
+  };
+
+  function addConstraint(schema, keyword, value) {
+    assert.ok(!Object.hasOwn(schema, keyword), `fixture must not already own ${keyword}`);
+    schema[keyword] = value;
+    assert.deepEqual(schema[keyword], value);
+  }
+
+  for (const [name, transform] of [
+    ["name anyOf restricts accepted Company names", (schema) => {
+      const branches = [{ pattern: "^주식회사 " }, { pattern: "^유한회사 " }];
+      assert.ok(branches.every(({ pattern }) => !new RegExp(pattern).test(enrollmentWitness.name)));
+      addConstraint(schema.properties.name, "anyOf", branches);
+    }],
+    ["command UUID allOf requires a UUID version the owner does not require", (schema) => {
+      const pattern = "^[0-9a-f]{8}-[0-9a-f]{4}-5";
+      assert.equal(new RegExp(pattern).test(enrollmentWitness.command_id), false);
+      addConstraint(schema.properties.command_id, "allOf", [{ pattern }]);
+    }],
+    ["name const admits only one Company name", (schema) => {
+      const name = "주식회사 한결";
+      assert.notEqual(name, enrollmentWitness.name);
+      addConstraint(schema.properties.name, "const", name);
+    }],
+    ["slug oneOf excludes other canonical slugs", (schema) => {
+      const branches = [{ pattern: "^seoul-" }, { pattern: "^busan-" }];
+      assert.ok(branches.every(({ pattern }) => !new RegExp(pattern).test(enrollmentWitness.slug)));
+      addConstraint(schema.properties.slug, "oneOf", branches);
+    }],
+    ["administrative Account not excludes a canonical non-nil UUID", (schema) => {
+      addConstraint(schema.properties.administrative_account_id, "not", {
+        const: enrollmentWitness.administrative_account_id,
+      });
+    }],
+    ["required null Group const requires an unavailable Group", (schema) => {
+      const group = "33333333-3333-4333-8333-333333333333";
+      assert.notEqual(group, enrollmentWitness.group_id);
+      addConstraint(schema.properties.group_id, "const", group);
+    }],
+    ["name pattern restricts accepted Company names", (schema) => {
+      const pattern = "^주식회사 ";
+      assert.equal(new RegExp(pattern).test(enrollmentWitness.name), false);
+      addConstraint(schema.properties.name, "pattern", pattern);
+    }],
+    ["name enum restricts accepted Company names", (schema) => {
+      const names = ["주식회사 한결", "유한회사 한결"];
+      assert.equal(names.includes(enrollmentWitness.name), false);
+      addConstraint(schema.properties.name, "enum", names);
+    }],
+    ["object minProperties rejects the complete five-member command", (schema) => {
+      assert.equal(Object.keys(enrollmentWitness).length, 5);
+      addConstraint(schema, "minProperties", 6);
+    }],
+    ["object dependentRequired introduces an unowned required member", (schema) => {
+      assert.ok(Object.hasOwn(enrollmentWitness, "slug"));
+      assert.equal(Object.hasOwn(enrollmentWitness, "registration_number"), false);
+      addConstraint(schema, "dependentRequired", { slug: ["registration_number"] });
+    }],
+  ]) {
+    it(`rejects additional enrollment schema constraint: ${name}`, () => {
+      withMutation((edit) => changeDocument(edit, (document) => {
+        transform(document.components.schemas.NativeCompanyEnrollmentInput);
+      }), (root) => assertSchemaMismatch(root, enroll));
+    });
+  }
+
+  for (const [name, transform] of [
+    ["maxProperties sibling rejects the complete five-member command", (schema) => {
+      assert.equal(Object.keys(enrollmentWitness).length, 5);
+      addConstraint(schema, "maxProperties", 4);
+    }],
+    ["properties sibling narrows the referenced Company name", (schema) => {
+      const pattern = "^주식회사 ";
+      assert.equal(new RegExp(pattern).test(enrollmentWitness.name), false);
+      addConstraint(schema, "properties", { name: { pattern } });
+    }],
+    ["const sibling admits only one complete Company command", (schema) => {
+      const command = { ...enrollmentWitness, name: "주식회사 한결" };
+      assert.notDeepEqual(command, enrollmentWitness);
+      addConstraint(schema, "const", command);
+    }],
+  ]) {
+    it(`rejects applicable enrollment $ref sibling constraint: ${name}`, () => {
+      withMutation((edit) => changeDocument(edit, (document) => {
+        const schema = document.paths["/api/v2/companies/enroll"].post
+          .requestBody.content["application/json"].schema;
+        assert.equal(schema.$ref, "#/components/schemas/NativeCompanyEnrollmentInput");
+        transform(schema);
+      }), (root) => assertSchemaMismatch(root, enroll));
+    });
+  }
+
+  for (const [name, transform] of [
+    ["minProperties rejects the admitted empty object", (schema) => {
+      addConstraint(schema, "minProperties", 1);
+    }],
+    ["const requires a body which the byte owner rejects", (schema) => {
+      const body = { memo: "취소 확인" };
+      assert.notDeepEqual(body, {});
+      addConstraint(schema, "const", body);
+    }],
+    ["not excludes the admitted empty object", (schema) => {
+      addConstraint(schema, "not", { const: {} });
+    }],
+  ]) {
+    it(`rejects additional cancellation schema constraint: ${name}`, () => {
+      withMutation((edit) => changeDocument(edit, (document) => {
+        transform(document.paths["/api/v2/companies/enrollments/{command_id}/cancel"]
+          .post.requestBody.content["application/json"].schema);
+      }), (root) => assertSchemaMismatch(root, cancel));
+    });
+  }
+
+  it("allows annotation-only additions to the fixed Company name property", () => {
+    withMutation((edit) => changeDocument(edit, (document) => {
+      const name = document.components.schemas.NativeCompanyEnrollmentInput.properties.name;
+      addConstraint(name, "title", "법인명");
+      addConstraint(name, "examples", [enrollmentWitness.name]);
+    }), assertResolved);
+  });
+
+  it("allows annotation-only enrollment $ref siblings", () => {
+    withMutation((edit) => changeDocument(edit, (document) => {
+      const schema = document.paths["/api/v2/companies/enroll"].post
+        .requestBody.content["application/json"].schema;
+      assert.equal(schema.$ref, "#/components/schemas/NativeCompanyEnrollmentInput");
+      addConstraint(schema, "title", "법인 등록 입력");
+      addConstraint(schema, "description", "현재 계정과 법인 소유자가 검증하는 등록 명령입니다.");
+      addConstraint(schema, "examples", [enrollmentWitness]);
+    }), assertResolved);
+  });
 });
